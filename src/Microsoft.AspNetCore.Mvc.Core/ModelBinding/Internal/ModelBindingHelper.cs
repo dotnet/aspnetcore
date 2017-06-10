@@ -331,8 +331,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
             }
 
             var memberExpression = (MemberExpression)expression;
-            var memberInfo = memberExpression.Member as PropertyInfo;
-            if (memberInfo != null)
+            if (memberExpression.Member is PropertyInfo memberInfo)
             {
                 if (memberExpression.Expression.NodeType != ExpressionType.Parameter)
                 {
@@ -531,8 +530,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
                 return false;
             }
 
-            var collection = model as ICollection<T>;
-            if (collection != null && !collection.IsReadOnly)
+            if (model is ICollection<T> collection && !collection.IsReadOnly)
             {
                 // Can use the existing collection.
                 return true;
@@ -615,8 +613,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
             }
 
             // Does collection exist and can it be reused?
-            var collection = model as ICollection<T>;
-            if (collection != null && !collection.IsReadOnly)
+            if (model is ICollection<T> collection && !collection.IsReadOnly)
             {
                 collection.Clear();
 
@@ -739,8 +736,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
             destinationType = UnwrapNullableType(destinationType);
 
             // if this is a user-input value but the user didn't type anything, return no value
-            var valueAsString = value as string;
-            if (valueAsString != null && string.IsNullOrWhiteSpace(valueAsString))
+            if (value is string valueAsString && string.IsNullOrWhiteSpace(valueAsString))
             {
                 return null;
             }

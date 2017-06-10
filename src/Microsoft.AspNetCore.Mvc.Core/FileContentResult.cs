@@ -56,10 +56,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public byte[] FileContents
         {
-            get
-            {
-                return _fileContents;
-            }
+            get => _fileContents;
             set
             {
                 if (value == null)

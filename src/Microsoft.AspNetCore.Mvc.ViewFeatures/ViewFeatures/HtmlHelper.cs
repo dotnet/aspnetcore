@@ -88,24 +88,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <inheritdoc />
         public Html5DateRenderingMode Html5DateRenderingMode
         {
-            get
-            {
-                return ViewContext.Html5DateRenderingMode;
-            }
-            set
-            {
-                ViewContext.Html5DateRenderingMode = value;
-            }
+            get => ViewContext.Html5DateRenderingMode;
+            set => ViewContext.Html5DateRenderingMode = value;
         }
 
         /// <inheritdoc />
-        public string IdAttributeDotReplacement
-        {
-            get
-            {
-                return _htmlGenerator.IdAttributeDotReplacement;
-            }
-        }
+        public string IdAttributeDotReplacement => _htmlGenerator.IdAttributeDotReplacement;
 
         /// <inheritdoc />
         public ViewContext ViewContext
@@ -119,38 +107,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
                 return _viewContext;
             }
-            private set
-            {
-                _viewContext = value;
-            }
+            private set => _viewContext = value;
         }
 
         /// <inheritdoc />
-        public dynamic ViewBag
-        {
-            get
-            {
-                return ViewContext.ViewBag;
-            }
-        }
+        public dynamic ViewBag => ViewContext.ViewBag;
 
         /// <inheritdoc />
-        public ViewDataDictionary ViewData
-        {
-            get
-            {
-                return ViewContext.ViewData;
-            }
-        }
+        public ViewDataDictionary ViewData => ViewContext.ViewData;
 
         /// <inheritdoc />
-        public ITempDataDictionary TempData
-        {
-            get
-            {
-                return ViewContext.TempData;
-            }
-        }
+        public ITempDataDictionary TempData => ViewContext.TempData;
 
         /// <inheritdoc />
         public UrlEncoder UrlEncoder { get; }

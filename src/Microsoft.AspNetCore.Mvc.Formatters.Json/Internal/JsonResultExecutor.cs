@@ -99,14 +99,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
 
             var response = context.HttpContext.Response;
 
-            string resolvedContentType;
-            Encoding resolvedContentTypeEncoding;
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 result.ContentType,
                 response.ContentType,
                 DefaultContentType,
-                out resolvedContentType,
-                out resolvedContentTypeEncoding);
+                out var resolvedContentType,
+                out var resolvedContentTypeEncoding);
 
             response.ContentType = resolvedContentType;
 

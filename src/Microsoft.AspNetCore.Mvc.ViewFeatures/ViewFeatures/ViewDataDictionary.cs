@@ -367,7 +367,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public object Eval(string expression)
         {
             var info = GetViewDataInfo(expression);
-            return (info != null) ? info.Value : null;
+            return info?.Value;
         }
 
         /// <summary>

@@ -57,13 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// <summary>
         /// Gets the <see cref="AspNetCore.Routing.RouteData"/> for the executing action.
         /// </summary>
-        public RouteData RouteData
-        {
-            get
-            {
-                return PageContext.RouteData;
-            }
-        }
+        public RouteData RouteData => PageContext.RouteData;
 
         /// <summary>
         /// Gets the <see cref="ModelStateDictionary"/>.

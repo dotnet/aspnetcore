@@ -48,13 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Controllers
         /// <summary>
         /// The <see cref="IControllerActivator"/> used to create a controller.
         /// </summary>
-        protected IControllerActivator ControllerActivator
-        {
-            get
-            {
-                return _controllerActivator;
-            }
-        }
+        protected IControllerActivator ControllerActivator => _controllerActivator;
 
         /// <inheritdoc />
         public virtual object CreateController(ControllerContext context)

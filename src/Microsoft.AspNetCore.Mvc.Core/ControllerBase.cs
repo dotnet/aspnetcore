@@ -35,57 +35,27 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/> for the executing action.
         /// </summary>
-        public HttpContext HttpContext
-        {
-            get
-            {
-                return ControllerContext.HttpContext;
-            }
-        }
+        public HttpContext HttpContext => ControllerContext.HttpContext;
 
         /// <summary>
         /// Gets the <see cref="HttpRequest"/> for the executing action.
         /// </summary>
-        public HttpRequest Request
-        {
-            get
-            {
-                return HttpContext?.Request;
-            }
-        }
+        public HttpRequest Request => HttpContext?.Request;
 
         /// <summary>
         /// Gets the <see cref="HttpResponse"/> for the executing action.
         /// </summary>
-        public HttpResponse Response
-        {
-            get
-            {
-                return HttpContext?.Response;
-            }
-        }
+        public HttpResponse Response => HttpContext?.Response;
 
         /// <summary>
         /// Gets the <see cref="AspNetCore.Routing.RouteData"/> for the executing action.
         /// </summary>
-        public RouteData RouteData
-        {
-            get
-            {
-                return ControllerContext.RouteData;
-            }
-        }
+        public RouteData RouteData => ControllerContext.RouteData;
 
         /// <summary>
         /// Gets the <see cref="ModelStateDictionary"/> that contains the state of the model and of model-binding validation.
         /// </summary>
-        public ModelStateDictionary ModelState
-        {
-            get
-            {
-                return ControllerContext?.ModelState;
-            }
-        }
+        public ModelStateDictionary ModelState => ControllerContext?.ModelState;
 
         /// <summary>
         /// Gets or sets the <see cref="Mvc.ControllerContext"/>.
@@ -222,13 +192,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> for user associated with the executing action.
         /// </summary>
-        public ClaimsPrincipal User
-        {
-            get
-            {
-                return HttpContext?.User;
-            }
-        }
+        public ClaimsPrincipal User => HttpContext?.User;
 
         /// <summary>
         /// Creates a <see cref="StatusCodeResult"/> object by specifying a <paramref name="statusCode"/>.

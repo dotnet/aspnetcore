@@ -48,8 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             var cache = CurrentCache;
 
-            CacheEntry entry;
-            if (cache.Entries.TryGetValue(action, out entry))
+            if (cache.Entries.TryGetValue(action, out var entry))
             {
                 return GetActionConstraintsFromEntry(entry, httpContext, action);
             }

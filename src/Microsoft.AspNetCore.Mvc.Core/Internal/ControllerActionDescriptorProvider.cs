@@ -44,10 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _conventions = optionsAccessor.Value.Conventions;
         }
 
-        public int Order
-        {
-            get { return -1000; }
-        }
+        public int Order => -1000;
 
         /// <inheritdoc />
         public void OnProvidersExecuting(ActionDescriptorProviderContext context)
@@ -98,14 +95,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        internal protected IEnumerable<ControllerActionDescriptor> GetDescriptors()
+        protected internal IEnumerable<ControllerActionDescriptor> GetDescriptors()
         {
             var applicationModel = BuildModel();
             ApplicationModelConventions.ApplyConventions(applicationModel, _conventions);
             return ControllerActionDescriptorBuilder.Build(applicationModel);
         }
 
-        internal protected ApplicationModel BuildModel()
+        protected internal ApplicationModel BuildModel()
         {
             var controllerTypes = GetControllerTypes();
             var context = new ApplicationModelProviderContext(controllerTypes);

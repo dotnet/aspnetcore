@@ -15,8 +15,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class QueryStringValueProvider : BindingSourceValueProvider, IEnumerableValueProvider
     {
         private readonly CultureInfo _culture;
+        private readonly IQueryCollection _values;
         private PrefixContainer _prefixContainer;
-        private IQueryCollection _values;
 
         /// <summary>
         /// Creates a value provider for <see cref="IQueryCollection"/>.
@@ -44,13 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             _culture = culture;
         }
 
-        public CultureInfo Culture
-        {
-            get
-            {
-                return _culture;
-            }
-        }
+        public CultureInfo Culture => _culture;
 
         protected PrefixContainer PrefixContainer
         {

@@ -47,13 +47,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Represents the model name used during model binding.
         /// </summary>
-        string IModelNameProvider.Name
-        {
-            get
-            {
-                return Prefix;
-            }
-        }
+        string IModelNameProvider.Name => Prefix;
 
         /// <inheritdoc />
         public Func<ModelMetadata, bool> PropertyFilter

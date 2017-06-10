@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
     /// </summary>
     public class MultiSelectList : IEnumerable<SelectListItem>
     {
-        private IList<SelectListGroup> _groups;
+        private readonly IList<SelectListGroup> _groups;
         private IList<SelectListItem> _selectListItems;
 
         public MultiSelectList(IEnumerable items)
@@ -100,15 +100,15 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// <summary>
         /// Gets or sets the data group field.
         /// </summary>
-        public string DataGroupField { get; private set; }
+        public string DataGroupField { get; }
 
-        public string DataTextField { get; private set; }
+        public string DataTextField { get; }
 
-        public string DataValueField { get; private set; }
+        public string DataValueField { get; }
 
-        public IEnumerable Items { get; private set; }
+        public IEnumerable Items { get; }
 
-        public IEnumerable SelectedValues { get; private set; }
+        public IEnumerable SelectedValues { get; }
 
         public virtual IEnumerator<SelectListItem> GetEnumerator()
         {

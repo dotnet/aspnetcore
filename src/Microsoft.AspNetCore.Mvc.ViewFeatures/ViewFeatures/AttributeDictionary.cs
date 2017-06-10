@@ -60,49 +60,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public int Count => _items == null ? 0 : _items.Count;
 
         /// <inheritdoc />
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReadOnly => false;
 
         /// <inheritdoc />
-        public ICollection<string> Keys
-        {
-            get
-            {
-                return new KeyCollection(this);
-            }
-        }
+        public ICollection<string> Keys => new KeyCollection(this);
 
         /// <inheritdoc />
-        public ICollection<string> Values
-        {
-            get
-            {
-                return new ValueCollection(this);
-            }
-        }
+        public ICollection<string> Values => new ValueCollection(this);
 
         /// <inheritdoc />
-        IEnumerable<string> IReadOnlyDictionary<string, string>.Keys
-        {
-            get
-            {
-                return new KeyCollection(this);
-            }
-        }
+        IEnumerable<string> IReadOnlyDictionary<string, string>.Keys => new KeyCollection(this);
 
         /// <inheritdoc />
-        IEnumerable<string> IReadOnlyDictionary<string, string>.Values
-        {
-            get
-            {
-                return new ValueCollection(this);
-            }
-        }
+        IEnumerable<string> IReadOnlyDictionary<string, string>.Values => new ValueCollection(this);
 
         private KeyValuePair<string, string> Get(int index)
         {
@@ -389,22 +359,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             }
 
             /// <inheritdoc />
-            public KeyValuePair<string, string> Current
-            {
-                get
-                {
-                    return _attributes.Get(_index);
-                }
-            }
+            public KeyValuePair<string, string> Current => _attributes.Get(_index);
 
             /// <inheritdoc />
-            object IEnumerator.Current
-            {
-                get
-                {
-                    return Current;
-                }
-            }
+            object IEnumerator.Current => Current;
 
             /// <inheritdoc />
             public void Dispose()
@@ -486,7 +444,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             public Enumerator GetEnumerator()
             {
-                return new Enumerator(this._attributes);
+                return new Enumerator(_attributes);
             }
 
             public bool Remove(string item)
@@ -517,21 +475,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     _index = -1;
                 }
 
-                public string Current
-                {
-                    get
-                    {
-                        return _attributes.Get(_index).Key;
-                    }
-                }
+                public string Current => _attributes.Get(_index).Key;
 
-                object IEnumerator.Current
-                {
-                    get
-                    {
-                        return Current;
-                    }
-                }
+                object IEnumerator.Current => Current;
 
                 public void Dispose()
                 {
@@ -606,7 +552,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             public Enumerator GetEnumerator()
             {
-                return new Enumerator(this._attributes);
+                return new Enumerator(_attributes);
             }
 
             public bool Remove(string item)
@@ -637,21 +583,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     _index = -1;
                 }
 
-                public string Current
-                {
-                    get
-                    {
-                        return _attributes.Get(_index).Key;
-                    }
-                }
+                public string Current => _attributes.Get(_index).Key;
 
-                object IEnumerator.Current
-                {
-                    get
-                    {
-                        return Current;
-                    }
-                }
+                object IEnumerator.Current => Current;
 
                 public void Dispose()
                 {

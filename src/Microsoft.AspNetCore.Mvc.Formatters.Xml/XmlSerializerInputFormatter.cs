@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class XmlSerializerInputFormatter : TextInputFormatter
     {
-        private ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
+        private readonly ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
         private readonly bool _suppressInputFormatterBuffering;
 
@@ -75,10 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// The quotas include - DefaultMaxDepth, DefaultMaxStringContentLength, DefaultMaxArrayLength,
         /// DefaultMaxBytesPerRead, DefaultMaxNameTableCharCount
         /// </summary>
-        public XmlDictionaryReaderQuotas XmlDictionaryReaderQuotas
-        {
-            get { return _readerQuotas; }
-        }
+        public XmlDictionaryReaderQuotas XmlDictionaryReaderQuotas => _readerQuotas;
 
         /// <inheritdoc />
         public override async Task<InputFormatterResult> ReadRequestBodyAsync(
@@ -119,8 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // Unwrap only if the original type was wrapped.
                 if (type != context.ModelType)
                 {
-                    var unwrappable = deserializedObject as IUnwrappable;
-                    if (unwrappable != null)
+                    if (deserializedObject is IUnwrappable unwrappable)
                     {
                         deserializedObject = unwrappable.Unwrap(declaredType: context.ModelType);
                     }
@@ -210,8 +206,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(type));
             }
 
-            object serializer;
-            if (!_serializerCache.TryGetValue(type, out serializer))
+            if (!_serializerCache.TryGetValue(type, out var serializer))
             {
                 serializer = CreateSerializer(type);
                 if (serializer != null)

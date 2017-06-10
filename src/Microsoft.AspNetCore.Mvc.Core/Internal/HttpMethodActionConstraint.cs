@@ -42,18 +42,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _httpMethods = new ReadOnlyCollection<string>(methods);
         }
 
-        public IEnumerable<string> HttpMethods
-        {
-            get
-            {
-                return _httpMethods;
-            }
-        }
+        public IEnumerable<string> HttpMethods => _httpMethods;
 
-        public int Order
-        {
-            get { return HttpMethodConstraintOrder; }
-        }
+        public int Order => HttpMethodConstraintOrder;
 
         public bool Accept(ActionConstraintContext context)
         {

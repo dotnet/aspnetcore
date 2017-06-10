@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.Mvc
     public class FromBodyAttribute : Attribute, IBindingSourceMetadata
     {
         /// <inheritdoc />
-        public BindingSource BindingSource { get { return BindingSource.Body; } }
+        public BindingSource BindingSource => BindingSource.Body;
     }
 }

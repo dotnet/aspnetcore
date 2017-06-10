@@ -57,12 +57,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets or sets the <see cref="CultureInfo"/> associated with the values.
         /// </summary>
-        public CultureInfo Culture { get; private set; }
+        public CultureInfo Culture { get; }
 
         /// <summary>
         /// Gets or sets the values.
         /// </summary>
-        public StringValues Values { get; private set; }
+        public StringValues Values { get; }
 
         /// <summary>
         /// Gets the first value based on the order values were provided in the request. Use <see cref="FirstValue"/>
@@ -84,13 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the number of submitted values.
         /// </summary>
-        public int Length
-        {
-            get
-            {
-                return Values.Count;
-            }
-        }
+        public int Length => Values.Count;
 
         /// <inheritdoc />
         public override bool Equals(object obj)

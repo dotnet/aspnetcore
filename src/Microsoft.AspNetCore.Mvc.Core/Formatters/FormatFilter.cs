@@ -30,8 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <inheritdoc />
         public virtual string GetFormat(ActionContext context)
         {
-            object obj;
-            if (context.RouteData.Values.TryGetValue("format", out obj))
+            if (context.RouteData.Values.TryGetValue("format", out var obj))
             {
                 // null and string.Empty are equivalent for route values.
                 var routeValue = obj?.ToString();

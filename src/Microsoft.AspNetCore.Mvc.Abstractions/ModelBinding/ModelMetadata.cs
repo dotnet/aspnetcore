@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the container type of this metadata if it represents a property, otherwise <c>null</c>.
         /// </summary>
-        public Type ContainerType { get { return Identity.ContainerType; } }
+        public Type ContainerType => Identity.ContainerType;
 
         /// <summary>
         /// Gets the metadata of the container type that the current instance is part of.
@@ -56,23 +56,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets a value indicating the kind of metadata element represented by the current instance.
         /// </summary>
-        public ModelMetadataKind MetadataKind { get { return Identity.MetadataKind; } }
+        public ModelMetadataKind MetadataKind => Identity.MetadataKind;
 
         /// <summary>
         /// Gets the model type represented by the current instance.
         /// </summary>
-        public Type ModelType { get { return Identity.ModelType; } }
+        public Type ModelType => Identity.ModelType;
 
         /// <summary>
         /// Gets the property name represented by the current instance.
         /// </summary>
-        public string PropertyName
-        {
-            get
-            {
-                return Identity.Name;
-            }
-        }
+        public string PropertyName => Identity.Name;
 
         /// <summary>
         /// Gets the key for the current instance.

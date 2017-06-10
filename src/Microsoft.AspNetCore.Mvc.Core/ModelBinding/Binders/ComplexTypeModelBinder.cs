@@ -410,7 +410,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             ModelBindingContext bindingContext)
         {
             var targetInvocationException = exception as TargetInvocationException;
-            if (targetInvocationException != null && targetInvocationException.InnerException != null)
+            if (targetInvocationException?.InnerException != null)
             {
                 exception = targetInvocationException.InnerException;
             }

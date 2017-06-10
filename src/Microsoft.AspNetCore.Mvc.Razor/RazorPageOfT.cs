@@ -15,13 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// Gets the Model property of the <see cref="ViewData"/> property.
         /// </summary>
-        public TModel Model
-        {
-            get
-            {
-                return ViewData == null ? default(TModel) : ViewData.Model;
-            }
-        }
+        public TModel Model => ViewData == null ? default(TModel) : ViewData.Model;
 
         /// <summary>
         /// Gets or sets the dictionary for view data.

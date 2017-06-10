@@ -186,15 +186,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 {
                     var value = page.Buffer[j];
 
-                    var valueAsString = value.Value as string;
-                    if (valueAsString != null)
+                    if (value.Value is string valueAsString)
                     {
                         writer.Write(valueAsString);
                         continue;
                     }
 
-                    var valueAsHtmlContent = value.Value as IHtmlContent;
-                    if (valueAsHtmlContent != null)
+                    if (value.Value is IHtmlContent valueAsHtmlContent)
                     {
                         valueAsHtmlContent.WriteTo(writer, encoder);
                         continue;
@@ -228,22 +226,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 {
                     var value = page.Buffer[j];
 
-                    var valueAsString = value.Value as string;
-                    if (valueAsString != null)
+                    if (value.Value is string valueAsString)
                     {
                         await writer.WriteAsync(valueAsString);
                         continue;
                     }
 
-                    var valueAsViewBuffer = value.Value as ViewBuffer;
-                    if (valueAsViewBuffer != null)
+                    if (value.Value is ViewBuffer valueAsViewBuffer)
                     {
                         await valueAsViewBuffer.WriteToAsync(writer, encoder);
                         continue;
                     }
 
-                    var valueAsHtmlContent = value.Value as IHtmlContent;
-                    if (valueAsHtmlContent != null)
+                    if (value.Value is IHtmlContent valueAsHtmlContent)
                     {
                         valueAsHtmlContent.WriteTo(writer, encoder);
                         await writer.FlushAsync();
@@ -296,8 +291,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             // Perf: We have an efficient implementation when the destination is another view buffer,
             // we can just insert our pages as-is.
-            var other = destination as ViewBuffer;
-            if (other != null)
+            if (destination is ViewBuffer other)
             {
                 MoveTo(other);
                 return;

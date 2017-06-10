@@ -302,13 +302,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 return pagePath;
             }
 
-            string absolutePath;
             if (string.IsNullOrEmpty(executingFilePath))
             {
                 // Given a relative path i.e. not yet application-relative (starting with "~/" or "/"), interpret
                 // path relative to currently-executing view, if any.
                 // Not yet executing a view. Start in app root.
-                absolutePath = "/" + pagePath;
+                var absolutePath = "/" + pagePath;
                 return ViewEnginePath.ResolvePath(absolutePath);
             }
 

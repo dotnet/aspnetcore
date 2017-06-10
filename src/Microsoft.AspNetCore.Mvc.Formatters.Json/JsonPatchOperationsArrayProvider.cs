@@ -31,10 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json
         /// <remarks>
         /// The order -999 ensures that this provider is executed right after the <c>Microsoft.AspNetCore.Mvc.ApiExplorer.DefaultApiDescriptionProvider</c>.
         /// </remarks>
-        public int Order
-        {
-            get { return -999; }
-        }
+        public int Order => -999;
 
         /// <inheritdoc />
         public void OnProvidersExecuting(ApiDescriptionProviderContext context)

@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// The group name.
         /// </summary>
-        public string GroupName { get; private set; }
+        public string GroupName { get; }
 
         /// <summary>
         /// A collection of <see cref="ApiDescription"/> items for this group.
         /// </summary>
-        public IReadOnlyList<ApiDescription> Items { get; private set; }
+        public IReadOnlyList<ApiDescription> Items { get; }
     }
 }

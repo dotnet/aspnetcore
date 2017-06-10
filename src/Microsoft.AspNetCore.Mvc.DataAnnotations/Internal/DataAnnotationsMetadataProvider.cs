@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
 
             // DisplayName
             // DisplayAttribute has precendence over DisplayNameAttribute.
-            if (displayAttribute != null && displayAttribute.GetName() != null)
+            if (displayAttribute?.GetName() != null)
             {
                 if (localizer != null &&
                     !string.IsNullOrEmpty(displayAttribute.Name) &&

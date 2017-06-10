@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public class LanguageViewLocationExpander : IViewLocationExpander
     {
         private const string ValueKey = "language";
-        private LanguageViewLocationExpanderFormat _format;
+        private readonly LanguageViewLocationExpanderFormat _format;
 
         /// <summary>
         /// Instantiates a new <see cref="LanguageViewLocationExpander"/> instance.
@@ -68,8 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new ArgumentNullException(nameof(viewLocations));
             }
 
-            string value;
-            context.Values.TryGetValue(ValueKey, out value);
+            context.Values.TryGetValue(ValueKey, out var value);
 
             if (!string.IsNullOrEmpty(value))
             {

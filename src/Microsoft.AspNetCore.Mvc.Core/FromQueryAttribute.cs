@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class FromQueryAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider
     {
         /// <inheritdoc />
-        public BindingSource BindingSource { get { return BindingSource.Query; } }
+        public BindingSource BindingSource => BindingSource.Query;
 
         /// <inheritdoc />
         public string Name { get; set; }

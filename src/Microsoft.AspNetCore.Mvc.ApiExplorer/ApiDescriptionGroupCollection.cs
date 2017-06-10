@@ -30,11 +30,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// Returns the list of <see cref="IReadOnlyList{ApiDescriptionGroup}"/>.
         /// </summary>
-        public IReadOnlyList<ApiDescriptionGroup> Items { get; private set; }
+        public IReadOnlyList<ApiDescriptionGroup> Items { get; }
 
         /// <summary>
         /// Returns the unique version of the current items.
         /// </summary>
-        public int Version { get; private set; }
+        public int Version { get; }
     }
 }

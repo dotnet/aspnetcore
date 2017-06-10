@@ -26,13 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         /// <inheritdoc />
-        public int Order
-        {
-            get
-            {
-                return -1000;
-            }
-        }
+        public int Order => -1000;
 
         /// <inheritdoc />
         public virtual void OnProvidersExecuting(ApplicationModelProviderContext context)
@@ -485,8 +479,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var createSelectorForSilentRouteProviders = false;
             foreach (var attribute in attributes)
             {
-                var routeTemplateProvider = attribute as IRouteTemplateProvider;
-                if (routeTemplateProvider != null)
+                if (attribute is IRouteTemplateProvider routeTemplateProvider)
                 {
                     if (IsSilentRouteAttribute(routeTemplateProvider))
                     {

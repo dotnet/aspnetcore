@@ -31,35 +31,17 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/>.
         /// </summary>
-        public HttpContext HttpContext
-        {
-            get
-            {
-                return ViewContext?.HttpContext;
-            }
-        }
+        public HttpContext HttpContext => ViewContext?.HttpContext;
 
         /// <summary>
         /// Gets the <see cref="HttpRequest"/>.
         /// </summary>
-        public HttpRequest Request
-        {
-            get
-            {
-                return ViewContext?.HttpContext?.Request;
-            }
-        }
+        public HttpRequest Request => ViewContext?.HttpContext?.Request;
 
         /// <summary>
         /// Gets the <see cref="IPrincipal"/> for the current user.
         /// </summary>
-        public IPrincipal User
-        {
-            get
-            {
-                return ViewContext?.HttpContext?.User;
-            }
-        }
+        public IPrincipal User => ViewContext?.HttpContext?.User;
 
         /// <summary>
         /// Gets the <see cref="ClaimsPrincipal"/> for the current user.
@@ -69,13 +51,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the <see cref="RouteData"/> for the current request.
         /// </summary>
-        public RouteData RouteData
-        {
-            get
-            {
-                return ViewContext?.RouteData;
-            }
-        }
+        public RouteData RouteData => ViewContext?.RouteData;
 
         /// <summary>
         /// Gets the view bag.
@@ -96,13 +72,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the <see cref="ModelStateDictionary"/>.
         /// </summary>
-        public ModelStateDictionary ModelState
-        {
-            get
-            {
-                return ViewData?.ModelState;
-            }
-        }
+        public ModelStateDictionary ModelState => ViewData?.ModelState;
 
         /// <summary>
         /// Gets or sets the <see cref="IUrlHelper"/>.
@@ -159,35 +129,17 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the <see cref="ViewContext"/>.
         /// </summary>
-        public ViewContext ViewContext
-        {
-            get
-            {
-                return ViewComponentContext.ViewContext;
-            }
-        }
+        public ViewContext ViewContext => ViewComponentContext.ViewContext;
 
         /// <summary>
         /// Gets the <see cref="ViewDataDictionary"/>.
         /// </summary>
-        public ViewDataDictionary ViewData
-        {
-            get
-            {
-                return ViewComponentContext.ViewData;
-            }
-        }
+        public ViewDataDictionary ViewData => ViewComponentContext.ViewData;
 
         /// <summary>
         /// Gets the <see cref="ITempDataDictionary"/>.
         /// </summary>
-        public ITempDataDictionary TempData
-        {
-            get
-            {
-                return ViewComponentContext.TempData;
-            }
-        }
+        public ITempDataDictionary TempData => ViewComponentContext.TempData;
 
         /// <summary>
         /// Gets or sets the <see cref="ICompositeViewEngine"/>.

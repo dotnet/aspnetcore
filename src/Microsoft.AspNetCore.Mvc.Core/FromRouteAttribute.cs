@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class FromRouteAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider
     {
         /// <inheritdoc />
-        public BindingSource BindingSource { get { return BindingSource.Path; } }
+        public BindingSource BindingSource => BindingSource.Path;
 
         /// <inheritdoc />
         public string Name { get; set; }

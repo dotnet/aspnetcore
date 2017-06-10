@@ -43,10 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         public virtual new CompiledPageActionDescriptor ActionDescriptor
         {
-            get
-            {
-                return _actionDescriptor;
-            }
+            get => _actionDescriptor;
             set
             {
                 if (value == null)
@@ -89,10 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         public virtual ViewDataDictionary ViewData
         {
-            get
-            {
-                return _viewData;
-            }
+            get => _viewData;
             set
             {
                 if (value == null)
@@ -109,10 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         public virtual IList<Func<IRazorPage>> ViewStartFactories
         {
-            get
-            {
-                return _viewStartFactories;
-            }
+            get => _viewStartFactories;
             set
             {
                 if (value == null)

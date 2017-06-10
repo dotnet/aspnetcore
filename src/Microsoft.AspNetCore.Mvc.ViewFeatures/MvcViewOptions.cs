@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public HtmlHelperOptions HtmlHelperOptions
         {
-            get { return _htmlHelperOptions; }
+            get => _htmlHelperOptions;
             set
             {
                 if (value == null)

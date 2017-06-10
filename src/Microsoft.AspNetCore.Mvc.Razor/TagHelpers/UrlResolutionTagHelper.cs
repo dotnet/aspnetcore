@@ -96,13 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         }
 
         /// <inheritdoc />
-        public override int Order
-        {
-            get
-            {
-                return -1000 - 999;
-            }
-        }
+        public override int Order => -1000 - 999;
 
         protected IUrlHelperFactory UrlHelperFactory { get; }
 

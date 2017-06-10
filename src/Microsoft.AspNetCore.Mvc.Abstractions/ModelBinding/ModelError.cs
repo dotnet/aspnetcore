@@ -32,8 +32,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ErrorMessage = errorMessage ?? string.Empty;
         }
 
-        public Exception Exception { get; private set; }
+        public Exception Exception { get; }
 
-        public string ErrorMessage { get; private set; }
+        public string ErrorMessage { get; }
     }
 }

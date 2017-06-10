@@ -9,17 +9,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     internal class ReferenceEqualityComparer : IEqualityComparer<object>
     {
-        private static readonly ReferenceEqualityComparer _instance = new ReferenceEqualityComparer();
-
         private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;
 
-        public static ReferenceEqualityComparer Instance
-        {
-            get
-            {
-                return _instance;
-            }
-        }
+        public static ReferenceEqualityComparer Instance { get; } = new ReferenceEqualityComparer();
 
         public new bool Equals(object x, object y)
         {

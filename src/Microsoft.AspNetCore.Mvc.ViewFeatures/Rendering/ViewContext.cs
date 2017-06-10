@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
         /// </summary>
         public virtual FormContext FormContext
         {
-            get { return _formContext; }
+            get => _formContext;
 
             set
             {

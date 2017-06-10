@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Mvc
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public sealed class AcceptVerbsAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
     {
-        private readonly IEnumerable<string> _httpMethods;
         private int? _order;
 
         /// <summary>
@@ -36,19 +35,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// <param name="methods">The HTTP methods the action supports.</param>
         public AcceptVerbsAttribute(params string[] methods)
         {
-            _httpMethods = methods.Select(method => method.ToUpperInvariant());
+            HttpMethods = methods.Select(method => method.ToUpperInvariant());
         }
 
         /// <summary>
         /// Gets the HTTP methods the action supports.
         /// </summary>
-        public IEnumerable<string> HttpMethods
-        {
-            get
-            {
-                return _httpMethods;
-            }
-        }
+        public IEnumerable<string> HttpMethods { get; }
 
         /// <summary>
         /// The route template. May be null.
@@ -56,10 +49,7 @@ namespace Microsoft.AspNetCore.Mvc
         public string Route { get; set; }
 
         /// <inheritdoc />
-        string IRouteTemplateProvider.Template
-        {
-            get { return Route; }
-        }
+        string IRouteTemplateProvider.Template => Route;
 
         /// <summary>
         /// Gets the route order. The order determines the order of route execution. Routes with a lower
@@ -74,13 +64,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <inheritdoc />
-        int? IRouteTemplateProvider.Order
-        {
-            get
-            {
-                return _order;
-            }
-        }
+        int? IRouteTemplateProvider.Order => _order;
 
         /// <inheritdoc />
         public string Name { get; set; }

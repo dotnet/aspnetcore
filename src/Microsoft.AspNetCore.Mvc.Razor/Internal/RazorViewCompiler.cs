@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly Action<RoslynCompilationContext> _compilationCallback;
         private readonly ILogger _logger;
         private readonly CSharpCompiler _csharpCompiler;
-        private IMemoryCache _cache;
+        private readonly IMemoryCache _cache;
 
         public RazorViewCompiler(
             IFileProvider fileProvider,

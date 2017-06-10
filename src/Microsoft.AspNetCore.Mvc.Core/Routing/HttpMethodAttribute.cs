@@ -12,7 +12,6 @@ namespace Microsoft.AspNetCore.Mvc.Routing
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = true, Inherited = true)]
     public abstract class HttpMethodAttribute : Attribute, IActionHttpMethodProvider, IRouteTemplateProvider
     {
-        private readonly IEnumerable<string> _httpMethods;
         private int? _order;
 
         /// <summary>
@@ -42,21 +41,15 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 throw new ArgumentNullException(nameof(httpMethods));
             }
 
-            _httpMethods = httpMethods;
+            HttpMethods = httpMethods;
             Template = template;
         }
 
         /// <inheritdoc />
-        public IEnumerable<string> HttpMethods
-        {
-            get
-            {
-                return _httpMethods;
-            }
-        }
+        public IEnumerable<string> HttpMethods { get; }
 
         /// <inheritdoc />
-        public string Template { get; private set; }
+        public string Template { get; }
 
         /// <summary>
         /// Gets the route order. The order determines the order of route execution. Routes with a lower
@@ -71,13 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         }
 
         /// <inheritdoc />
-        int? IRouteTemplateProvider.Order
-        {
-            get
-            {
-                return _order;
-            }
-        }
+        int? IRouteTemplateProvider.Order => _order;
 
         /// <inheritdoc />
         public string Name { get; set; }

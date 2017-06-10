@@ -552,13 +552,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
             }
 
-            public int Count
-            {
-                get
-                {
-                    return 2;
-                }
-            }
+            public int Count => 2;
 
             public IEnumerator<KeyValuePair<string, object>> GetEnumerator()
             {

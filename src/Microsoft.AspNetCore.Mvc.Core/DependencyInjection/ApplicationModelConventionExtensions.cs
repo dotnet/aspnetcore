@@ -86,7 +86,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private class ParameterApplicationModelConvention : IApplicationModelConvention
         {
-            private IParameterModelConvention _parameterModelConvention;
+            private readonly IParameterModelConvention _parameterModelConvention;
 
             public ParameterApplicationModelConvention(IParameterModelConvention parameterModelConvention)
             {
@@ -121,7 +121,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private class ActionApplicationModelConvention : IApplicationModelConvention
         {
-            private IActionModelConvention _actionModelConvention;
+            private readonly IActionModelConvention _actionModelConvention;
 
             public ActionApplicationModelConvention(IActionModelConvention actionModelConvention)
             {
@@ -153,7 +153,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private class ControllerApplicationModelConvention : IApplicationModelConvention
         {
-            private IControllerModelConvention _controllerModelConvention;
+            private readonly IControllerModelConvention _controllerModelConvention;
 
             public ControllerApplicationModelConvention(IControllerModelConvention controllerConvention)
             {

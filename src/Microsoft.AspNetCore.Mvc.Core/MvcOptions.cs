@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public int MaxModelValidationErrors
         {
-            get { return _maxModelStateErrors; }
+            get => _maxModelStateErrors;
             set
             {
                 if (value < 0)

@@ -49,13 +49,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// Gets the descriptor associated with the current page.
         /// </summary>
-        public new virtual CompiledPageActionDescriptor ActionDescriptor
-        {
-            get
-            {
-                return (CompiledPageActionDescriptor)base.ActionDescriptor;
-            }
-        }
+        public new virtual CompiledPageActionDescriptor ActionDescriptor => 
+            (CompiledPageActionDescriptor)base.ActionDescriptor;
 
         /// <summary>
         /// Gets or sets the <see cref="IActionResult"/> to execute. Setting <see cref="Result"/> to a non-<c>null</c>

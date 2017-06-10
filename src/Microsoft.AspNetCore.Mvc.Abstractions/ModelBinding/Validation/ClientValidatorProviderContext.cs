@@ -33,13 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <remarks>
         /// This property provides convenience access to <see cref="ModelMetadata.ValidatorMetadata"/>.
         /// </remarks>
-        public IReadOnlyList<object> ValidatorMetadata
-        {
-            get
-            {
-                return ModelMetadata.ValidatorMetadata;
-            }
-        }
+        public IReadOnlyList<object> ValidatorMetadata => ModelMetadata.ValidatorMetadata;
 
         /// <summary>
         /// Gets the list of <see cref="ClientValidatorItem"/> instances. <see cref="IClientModelValidatorProvider"/>

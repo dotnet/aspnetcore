@@ -64,14 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </summary>
         public bool SuppressPathMatching { get; set; }
 
-        public bool IsAbsoluteTemplate
-        {
-            get
-            {
-                return Template != null &&
-                    IsOverridePattern(Template);
-            }
-        }
+        public bool IsAbsoluteTemplate => Template != null && IsOverridePattern(Template);
 
         /// <summary>
         /// Combines two <see cref="AttributeRouteModel"/> instances and returns
@@ -368,8 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                                 .Replace("[[", "[")
                                 .Replace("]]", "]");
 
-                            string value;
-                            if (!values.TryGetValue(token, out value))
+                            if (!values.TryGetValue(token, out var value))
                             {
                                 // Value not found
                                 var message = Resources.FormatAttributeRoute_TokenReplacement_ReplacementValueNotFound(

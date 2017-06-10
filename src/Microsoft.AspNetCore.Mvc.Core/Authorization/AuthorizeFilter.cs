@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         /// If<c>null</c>, the policy will be constructed using
         /// <see cref="AuthorizationPolicy.CombineAsync(IAuthorizationPolicyProvider, IEnumerable{IAuthorizeData})"/>.
         /// </remarks>
-        public AuthorizationPolicy Policy { get; private set; }
+        public AuthorizationPolicy Policy { get; }
 
         bool IFilterFactory.IsReusable => true;
 

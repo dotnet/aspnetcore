@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class MvcRouteHandler : IRouter
     {
-        private IActionContextAccessor _actionContextAccessor;
-        private IActionInvokerFactory _actionInvokerFactory;
-        private IActionSelector _actionSelector;
-        private ILogger _logger;
-        private DiagnosticSource _diagnosticSource;
+        private readonly IActionContextAccessor _actionContextAccessor;
+        private readonly IActionInvokerFactory _actionInvokerFactory;
+        private readonly IActionSelector _actionSelector;
+        private readonly ILogger _logger;
+        private readonly DiagnosticSource _diagnosticSource;
 
         public MvcRouteHandler(
             IActionInvokerFactory actionInvokerFactory,

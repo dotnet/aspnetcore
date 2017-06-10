@@ -83,21 +83,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 _keyMappingEnumerator = keyMappings.GetEnumerator();
             }
 
-            public ValidationEntry Current
-            {
-                get
-                {
-                    return _entry;
-                }
-            }
+            public ValidationEntry Current => _entry;
 
-            object IEnumerator.Current
-            {
-                get
-                {
-                    return Current;
-                }
-            }
+            object IEnumerator.Current => Current;
 
             public bool MoveNext()
             {

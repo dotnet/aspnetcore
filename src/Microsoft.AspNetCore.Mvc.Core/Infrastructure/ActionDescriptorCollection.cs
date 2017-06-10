@@ -31,11 +31,11 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
         /// <summary>
         /// Returns the cached <see cref="IReadOnlyList{ActionDescriptor}"/>.
         /// </summary>
-        public IReadOnlyList<ActionDescriptor> Items { get; private set; }
+        public IReadOnlyList<ActionDescriptor> Items { get; }
 
         /// <summary>
         /// Returns the unique version of the currently cached items.
         /// </summary>
-        public int Version { get; private set; }
+        public int Version { get; }
     }
 }

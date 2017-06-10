@@ -251,9 +251,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 Details = details;
             }
 
-            public ModelMetadata Metadata { get; private set; }
+            public ModelMetadata Metadata { get; }
 
-            public DefaultMetadataDetails Details { get; private set; }
+            public DefaultMetadataDetails Details { get; }
         }
 
         private class ModelMetadataIdentityComparer : IEqualityComparer<ModelMetadataIdentity>

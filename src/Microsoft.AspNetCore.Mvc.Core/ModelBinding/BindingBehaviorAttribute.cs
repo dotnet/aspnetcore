@@ -23,6 +23,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// Gets the <see cref="BindingBehavior"/> to apply.
         /// </summary>
-        public BindingBehavior Behavior { get; private set; }
+        public BindingBehavior Behavior { get; }
     }
 }

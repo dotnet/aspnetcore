@@ -11,12 +11,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     /// <summary>
     /// Used for tracking validation state to customize validation behavior for a model object.
     /// </summary>
-    public class ValidationStateDictionary : 
-        IDictionary<object, ValidationStateEntry>, 
+    public class ValidationStateDictionary :
+        IDictionary<object, ValidationStateEntry>,
         IReadOnlyDictionary<object, ValidationStateEntry>
     {
         private readonly Dictionary<object, ValidationStateEntry> _inner;
-        
+
         /// <summary>
         /// Creates a new <see cref="ValidationStateDictionary"/>.
         /// </summary>
@@ -30,8 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         {
             get
             {
-                ValidationStateEntry entry;
-                TryGetValue(key, out entry);
+                TryGetValue(key, out var entry);
                 return entry;
             }
 
@@ -42,58 +41,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         }
 
         /// <inheritdoc />
-        public int Count
-        {
-            get
-            {
-                return _inner.Count;
-            }
-        }
+        public int Count => _inner.Count;
 
         /// <inheritdoc />
-        public bool IsReadOnly
-        {
-            get
-            {
-                return ((IDictionary<object, ValidationStateEntry>)_inner).IsReadOnly;
-            }
-        }
+        public bool IsReadOnly => ((IDictionary<object, ValidationStateEntry>)_inner).IsReadOnly;
 
         /// <inheritdoc />
-        public ICollection<object> Keys
-        {
-            get
-            {
-                return ((IDictionary<object, ValidationStateEntry>)_inner).Keys;
-            }
-        }
+        public ICollection<object> Keys => ((IDictionary<object, ValidationStateEntry>)_inner).Keys;
 
         /// <inheritdoc />
-        public ICollection<ValidationStateEntry> Values
-        {
-            get
-            {
-                return ((IDictionary<object, ValidationStateEntry>)_inner).Values;
-            }
-        }
+        public ICollection<ValidationStateEntry> Values => ((IDictionary<object, ValidationStateEntry>)_inner).Values;
 
         /// <inheritdoc />
-        IEnumerable<object> IReadOnlyDictionary<object, ValidationStateEntry>.Keys
-        {
-            get
-            {
-                return ((IReadOnlyDictionary<object, ValidationStateEntry>)_inner).Keys;
-            }
-        }
+        IEnumerable<object> IReadOnlyDictionary<object, ValidationStateEntry>.Keys =>
+            ((IReadOnlyDictionary<object, ValidationStateEntry>)_inner).Keys;
 
         /// <inheritdoc />
-        IEnumerable<ValidationStateEntry> IReadOnlyDictionary<object, ValidationStateEntry>.Values
-        {
-            get
-            {
-                return ((IReadOnlyDictionary<object, ValidationStateEntry>)_inner).Values;
-            }
-        }
+        IEnumerable<ValidationStateEntry> IReadOnlyDictionary<object, ValidationStateEntry>.Values =>
+            ((IReadOnlyDictionary<object, ValidationStateEntry>)_inner).Values;
 
         /// <inheritdoc />
         public void Add(KeyValuePair<object, ValidationStateEntry> item)
@@ -160,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         {
             return ((IDictionary<object, ValidationStateEntry>)_inner).GetEnumerator();
         }
-        
+
         private class ReferenceEqualityComparer : IEqualityComparer<object>
         {
             private static readonly bool IsMono = Type.GetType("Mono.Runtime") != null;

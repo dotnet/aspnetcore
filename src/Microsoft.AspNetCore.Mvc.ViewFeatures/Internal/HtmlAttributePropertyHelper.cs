@@ -30,10 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
         public override string Name
         {
-            get
-            {
-                return base.Name;
-            }
+            get => base.Name;
 
             protected set
             {

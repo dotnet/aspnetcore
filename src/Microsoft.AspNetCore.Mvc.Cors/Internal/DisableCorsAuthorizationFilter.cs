@@ -16,15 +16,9 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
     public class DisableCorsAuthorizationFilter : ICorsAuthorizationFilter
     {
         /// <inheritdoc />
-        public int Order
-        {
-            get
-            {
-                // Since clients' preflight requests would not have data to authenticate requests, this
-                // filter must run before any other authorization filters.
-                return int.MinValue + 100;
-            }
-        }
+        // Since clients' preflight requests would not have data to authenticate requests, this
+        // filter must run before any other authorization filters.
+        public int Order => int.MinValue + 100;
 
         /// <inheritdoc />
         public Task OnAuthorizationAsync(AuthorizationFilterContext context)

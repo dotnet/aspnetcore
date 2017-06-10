@@ -58,10 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         /// </summary>
         public DefaultModelBindingMessageProvider ModelBindingMessageProvider
         {
-            get
-            {
-                return _messageProvider;
-            }
+            get => _messageProvider;
             set
             {
                 if (value == null)

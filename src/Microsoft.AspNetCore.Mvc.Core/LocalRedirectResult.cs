@@ -71,10 +71,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public string Url
         {
-            get
-            {
-                return _localUrl;
-            }
+            get => _localUrl;
             set
             {
                 if (string.IsNullOrEmpty(value))

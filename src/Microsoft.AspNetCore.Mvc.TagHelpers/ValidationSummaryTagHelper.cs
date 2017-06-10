@@ -28,13 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <inheritdoc />
-        public override int Order
-        {
-            get
-            {
-                return -1000;
-            }
-        }
+        public override int Order => -1000;
 
         [HtmlAttributeNotBound]
         [ViewContext]
@@ -54,10 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [HtmlAttributeName(ValidationSummaryAttributeName)]
         public ValidationSummary ValidationSummary
         {
-            get
-            {
-                return _validationSummary;
-            }
+            get => _validationSummary;
             set
             {
                 switch (value)

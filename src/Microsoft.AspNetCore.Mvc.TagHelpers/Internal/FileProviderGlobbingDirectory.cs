@@ -64,21 +64,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Internal
             }
         }
 
-        public override string Name
-        {
-            get
-            {
-                return _fileInfo?.Name;
-            }
-        }
+        public override string Name => _fileInfo?.Name;
 
-        public override DirectoryInfoBase ParentDirectory
-        {
-            get
-            {
-                return _parent;
-            }
-        }
+        public override DirectoryInfoBase ParentDirectory => _parent;
 
         public override IEnumerable<FileSystemInfoBase> EnumerateFileSystemInfos()
         {

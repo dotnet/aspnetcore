@@ -100,8 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             for (var i = 0; i < filters.Count; i++)
             {
-                var callback = filters[i] as ISaveTempDataCallback;
-                if (callback != null)
+                if (filters[i] is ISaveTempDataCallback callback)
                 {
                     callback.OnTempDataSaving(tempData);
                 }

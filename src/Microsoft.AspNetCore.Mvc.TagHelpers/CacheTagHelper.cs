@@ -69,8 +69,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 var cacheKey = new CacheTagKey(this, context);
 
-                MemoryCacheEntryOptions options;
-
                 while (content == null)
                 {
                     Task<IHtmlContent> result;
@@ -82,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         // Create an entry link scope and flow it so that any tokens related to the cache entries
                         // created within this scope get copied to this scope.
 
-                        options = GetMemoryCacheEntryOptions();
+                        var options = GetMemoryCacheEntryOptions();
                         options.AddExpirationToken(new CancellationChangeToken(tokenSource.Token));
 
                         var tcs = new TaskCompletionSource<IHtmlContent>();

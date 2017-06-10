@@ -53,10 +53,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public Stream FileStream
         {
-            get
-            {
-                return _fileStream;
-            }
+            get => _fileStream;
             set
             {
                 if (value == null)

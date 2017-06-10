@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class FromFormAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider
     {
         /// <inheritdoc />
-        public BindingSource BindingSource { get { return BindingSource.Form; } }
+        public BindingSource BindingSource => BindingSource.Form;
 
         /// <inheritdoc />
         public string Name { get; set; }

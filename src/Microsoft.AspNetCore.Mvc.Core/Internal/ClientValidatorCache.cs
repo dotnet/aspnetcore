@@ -16,8 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public IReadOnlyList<IClientModelValidator> GetValidators(ModelMetadata metadata, IClientModelValidatorProvider validatorProvider)
         {
-            CacheEntry entry;
-            if (_cacheEntries.TryGetValue(metadata, out entry))
+            if (_cacheEntries.TryGetValue(metadata, out var entry))
             {
                 return GetValidatorsFromEntry(entry, metadata, validatorProvider);
             }

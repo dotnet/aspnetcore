@@ -16,13 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _source = source;
         }
 
-        protected IReadOnlyList<T> Readable
-        {
-            get
-            {
-                return _copy ?? _source;
-            }
-        }
+        protected IReadOnlyList<T> Readable => _copy ?? _source;
 
         protected List<T> Writable
         {
@@ -39,31 +33,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public T this[int index]
         {
-            get
-            {
-                return Readable[index];
-            }
-            set
-            {
-                Writable[index] = value;
-            }
+            get => Readable[index];
+            set => Writable[index] = value;
         }
 
-        public int Count
-        {
-            get
-            {
-                return Readable.Count;
-            }
-        }
+        public int Count => Readable.Count;
 
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool IsReadOnly => false;
 
         public void Add(T item)
         {

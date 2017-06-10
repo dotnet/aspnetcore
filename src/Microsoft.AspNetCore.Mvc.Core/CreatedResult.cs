@@ -63,10 +63,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public string Location
         {
-            get
-            {
-                return _location;
-            }
+            get => _location;
             set
             {
                 if (value == null)

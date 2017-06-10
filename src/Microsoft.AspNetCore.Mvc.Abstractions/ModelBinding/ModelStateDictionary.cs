@@ -112,10 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Returns <c>true</c> if a <see cref="TooManyModelErrorsException"/> has been recorded;
         /// otherwise <c>false</c>.
         /// </remarks>
-        public bool HasReachedMaxErrors
-        {
-            get { return ErrorCount >= MaxAllowedErrors; }
-        }
+        public bool HasReachedMaxErrors => ErrorCount >= MaxAllowedErrors;
 
         /// <summary>
         /// Gets the number of errors added to this instance of <see cref="ModelStateDictionary"/> via

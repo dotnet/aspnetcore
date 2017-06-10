@@ -37,8 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Internal
                 {
                     var startCharIndex = charIndex;
 
-                    MediaTypeSegmentWithQuality output;
-                    if (TryParseValue(value, ref charIndex, out output))
+                    if (TryParseValue(value, ref charIndex, out var output))
                     {
                         // The entry may not contain an actual value, like Accept: application/json, , */*
                         if (output.MediaType.HasValue)

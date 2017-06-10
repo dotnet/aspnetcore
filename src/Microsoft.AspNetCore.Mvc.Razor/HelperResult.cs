@@ -36,10 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// <summary>
         /// Gets the asynchronous delegate to invoke when <see cref="WriteTo(TextWriter, HtmlEncoder)"/> is called.
         /// </summary>
-        public Func<TextWriter, Task> WriteAction
-        {
-            get { return _asyncAction; }
-        }
+        public Func<TextWriter, Task> WriteAction => _asyncAction;
 
         /// <summary>
         /// Method invoked to produce content from the <see cref="HelperResult"/>.

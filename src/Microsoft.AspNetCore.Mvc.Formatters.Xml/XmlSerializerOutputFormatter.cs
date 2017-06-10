@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class XmlSerializerOutputFormatter : TextOutputFormatter
     {
-        private ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
+        private readonly ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
 
         /// <summary>
         /// Initializes a new instance of <see cref="XmlSerializerOutputFormatter"/>
@@ -203,8 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// <returns>The <see cref="XmlSerializer"/> instance.</returns>
         protected virtual XmlSerializer GetCachedSerializer(Type type)
         {
-            object serializer;
-            if (!_serializerCache.TryGetValue(type, out serializer))
+            if (!_serializerCache.TryGetValue(type, out var serializer))
             {
                 serializer = CreateSerializer(type);
                 if (serializer != null)

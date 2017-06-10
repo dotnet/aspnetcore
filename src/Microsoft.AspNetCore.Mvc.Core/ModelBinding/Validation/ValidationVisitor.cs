@@ -21,14 +21,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         private readonly ActionContext _actionContext;
         private readonly ModelStateDictionary _modelState;
         private readonly ValidationStateDictionary _validationState;
+        private readonly ValidationStack _currentPath;
 
         private object _container;
         private string _key;
         private object _model;
         private ModelMetadata _metadata;
         private IValidationStrategy _strategy;
-
-        private ValidationStack _currentPath;
 
         /// <summary>
         /// Creates a new <see cref="ValidationVisitor"/>.

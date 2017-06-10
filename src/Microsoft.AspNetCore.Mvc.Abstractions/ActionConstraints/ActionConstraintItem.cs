@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         /// <summary>
         /// The <see cref="IActionConstraintMetadata"/> instance.
         /// </summary>
-        public IActionConstraintMetadata Metadata { get; private set; }
+        public IActionConstraintMetadata Metadata { get; }
 
         /// <summary>
         /// Gets or sets a value indicating whether or not <see cref="Constraint"/> can be reused across requests.

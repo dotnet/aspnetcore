@@ -89,14 +89,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 tempData = _tempDataDictionaryFactory.GetTempData(context.HttpContext);
             }
 
-            string resolvedContentType;
-            Encoding resolvedContentTypeEncoding;
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
                 viewComponentResult.ContentType,
                 response.ContentType,
                 ViewExecutor.DefaultContentType,
-                out resolvedContentType,
-                out resolvedContentTypeEncoding);
+                out var resolvedContentType,
+                out var resolvedContentTypeEncoding);
 
             response.ContentType = resolvedContentType;
 

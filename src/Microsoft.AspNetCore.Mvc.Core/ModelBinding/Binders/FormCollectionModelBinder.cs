@@ -41,37 +41,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private class EmptyFormCollection : IFormCollection
         {
-            public StringValues this[string key]
-            {
-                get
-                {
-                    return StringValues.Empty;
-                }
-            }
+            public StringValues this[string key] => StringValues.Empty;
 
-            public int Count
-            {
-                get
-                {
-                    return 0;
-                }
-            }
+            public int Count => 0;
 
-            public IFormFileCollection Files
-            {
-                get
-                {
-                    return new EmptyFormFileCollection();
-                }
-            }
+            public IFormFileCollection Files => new EmptyFormFileCollection();
 
-            public ICollection<string> Keys
-            {
-                get
-                {
-                    return new List<string>();
-                }
-            }
+            public ICollection<string> Keys => new List<string>();
 
             public bool ContainsKey(string key)
             {
@@ -97,23 +73,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
         private class EmptyFormFileCollection : List<IFormFile>, IFormFileCollection
         {
-            public IFormFile this[string name]
-            {
-                get
-                {
-                    return null;
-                }
-            }
+            public IFormFile this[string name] => null;
 
-            public IFormFile GetFile(string name)
-            {
-                return null;
-            }
+            public IFormFile GetFile(string name) => null;
 
-            IReadOnlyList<IFormFile> IFormFileCollection.GetFiles(string name)
-            {
-                return null;
-            }
+            IReadOnlyList<IFormFile> IFormFileCollection.GetFiles(string name) => null;
         }
     }
 }

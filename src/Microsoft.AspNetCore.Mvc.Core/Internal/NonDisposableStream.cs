@@ -34,35 +34,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         /// <summary>
         /// The inner stream this object delegates to.
         /// </summary>
-        protected Stream InnerStream
-        {
-            get { return _innerStream; }
-        }
+        protected Stream InnerStream => _innerStream;
 
         /// <inheritdoc />
-        public override bool CanRead
-        {
-            get { return _innerStream.CanRead; }
-        }
+        public override bool CanRead => _innerStream.CanRead;
 
         /// <inheritdoc />
-        public override bool CanSeek
-        {
-            get { return _innerStream.CanSeek; }
-        }
+        public override bool CanSeek => _innerStream.CanSeek;
 
         /// <inheritdoc />
-        public override bool CanWrite
-        {
-            get { return _innerStream.CanWrite; }
-        }
+        public override bool CanWrite => _innerStream.CanWrite;
 
         /// <inheritdoc />
-        public override long Length
-        {
-            get { return _innerStream.Length; }
-        }
-
+        public override long Length => _innerStream.Length;
         /// <inheritdoc />
         public override long Position
         {
@@ -78,10 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         /// <inheritdoc />
-        public override bool CanTimeout
-        {
-            get { return _innerStream.CanTimeout; }
-        }
+        public override bool CanTimeout => _innerStream.CanTimeout;
 
         /// <inheritdoc />
         public override int WriteTimeout

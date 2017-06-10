@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// The <see cref="IFilterMetadata"/> instance.
         /// </summary>
-        public IFilterMetadata Filter { get; private set; }
+        public IFilterMetadata Filter { get; }
 
         /// <summary>
         /// The filter order.
@@ -64,6 +64,6 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// The filter scope.
         /// </summary>
-        public int Scope { get; private set; }
+        public int Scope { get; }
     }
 }

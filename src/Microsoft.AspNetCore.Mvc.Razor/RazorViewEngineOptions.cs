@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </remarks>
         public Action<RoslynCompilationContext> CompilationCallback
         {
-            get { return _compilationCallback; }
+            get => _compilationCallback;
             set
             {
                 if (value == null)
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         public CSharpParseOptions ParseOptions
         {
-            get { return _parseOptions; }
+            get => _parseOptions;
             set
             {
                 if (value == null)
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </summary>
         public CSharpCompilationOptions CompilationOptions
         {
-            get { return _compilationOptions; }
+            get => _compilationOptions;
             set
             {
                 if (value == null)

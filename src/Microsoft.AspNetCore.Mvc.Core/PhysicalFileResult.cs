@@ -54,10 +54,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public string FileName
         {
-            get
-            {
-                return _fileName;
-            }
+            get => _fileName;
             set
             {
                 if (value == null)

@@ -53,13 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
         }
 
         /// <inheritdoc />
-        object IEnumerator.Current
-        {
-            get
-            {
-                return Current;
-            }
-        }
+        object IEnumerator.Current => Current;
 
         /// <inheritdoc />
         public void Dispose()

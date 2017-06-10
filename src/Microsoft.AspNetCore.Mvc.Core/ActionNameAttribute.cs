@@ -23,6 +23,6 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the name of the action.
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
     }
 }

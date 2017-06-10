@@ -20,10 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewEngines
 
         public string ViewName { get; private set; }
 
-        public bool Success
-        {
-            get { return View != null; }
-        }
+        public bool Success => View != null;
 
         public static ViewEngineResult NotFound(
             string viewName,

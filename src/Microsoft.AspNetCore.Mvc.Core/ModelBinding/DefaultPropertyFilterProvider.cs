@@ -22,25 +22,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <summary>
         /// The prefix which is used while generating the property filter.
         /// </summary>
-        public virtual string Prefix
-        {
-            get
-            {
-                return string.Empty;
-            }
-        }
+        public virtual string Prefix => string.Empty;
 
         /// <summary>
         /// Expressions which can be used to generate property filter which can filter model 
         /// properties.
         /// </summary>
-        public virtual IEnumerable<Expression<Func<TModel, object>>> PropertyIncludeExpressions
-        {
-            get
-            {
-                return null;
-            }
-        }
+        public virtual IEnumerable<Expression<Func<TModel, object>>> PropertyIncludeExpressions => null;
 
         /// <inheritdoc />
         public virtual Func<ModelMetadata, bool> PropertyFilter

@@ -81,10 +81,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public string Url
         {
-            get
-            {
-                return _url;
-            }
+            get => _url;
             set
             {
                 if (string.IsNullOrEmpty(value))

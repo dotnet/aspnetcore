@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _policyProvider = policyProvider;
         }
 
-        public int Order { get { return -1000 + 10; } }
+        public int Order => -1000 + 10;
 
         public void OnProvidersExecuted(ApplicationModelProviderContext context)
         {

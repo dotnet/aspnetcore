@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
     {
         private readonly ILogger _logger;
 
-        private IEnumerable<ITagHelperComponent> _components;
+        private readonly IEnumerable<ITagHelperComponent> _components;
 
         /// <summary>
         /// Creates a new <see cref="TagHelperComponentTagHelper"/> and orders the 
@@ -31,7 +31,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.TagHelpers
         /// <remarks>The <see cref="ITagHelperComponentManager.Components"/> are ordered after the 
         /// creation of the <see cref="ITagHelperComponentManager"/> to position the <see cref="ITagHelperComponent"/>s
         /// added from controllers and views correctly.</remarks>
-        public TagHelperComponentTagHelper(ITagHelperComponentManager manager,
+        public TagHelperComponentTagHelper(
+            ITagHelperComponentManager manager,
             ILoggerFactory loggerFactory)
         {
             if (manager == null)

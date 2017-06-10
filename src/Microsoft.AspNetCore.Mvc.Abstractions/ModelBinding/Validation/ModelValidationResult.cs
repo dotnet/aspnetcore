@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             Message = message ?? string.Empty;
         }
 
-        public string MemberName { get; private set; }
+        public string MemberName { get; }
 
-        public string Message { get; private set; }
+        public string Message { get; }
     }
 }

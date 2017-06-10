@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         /// </remarks>
         public ApiExplorerModel ApiExplorer { get; set; }
 
-        public IList<ControllerModel> Controllers { get; private set; }
+        public IList<ControllerModel> Controllers { get; }
 
-        public IList<IFilterMetadata> Filters { get; private set; }
+        public IList<IFilterMetadata> Filters { get; }
 
         /// <summary>
         /// Gets a set of properties associated with all actions.

@@ -11,13 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
     public class SerializableErrorWrapperProvider : IWrapperProvider
     {
         /// <inheritdoc />
-        public Type WrappingType
-        {
-            get
-            {
-                return typeof(SerializableErrorWrapper);
-            }
-        }
+        public Type WrappingType => typeof(SerializableErrorWrapper);
 
         /// <inheritdoc />
         public object Wrap(object original)

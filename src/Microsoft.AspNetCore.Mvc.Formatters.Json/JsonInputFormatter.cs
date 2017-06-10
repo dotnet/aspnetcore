@@ -149,7 +149,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     jsonReader.CloseInput = false;
 
                     var successful = true;
-                    EventHandler<Newtonsoft.Json.Serialization.ErrorEventArgs> errorHandler = (sender, eventArgs) =>
+
+                    void ErrorHandler(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs eventArgs)
                     {
                         successful = false;
 
@@ -180,11 +181,11 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                         // Failure to do so can cause the exception to be rethrown at every recursive level and
                         // overflow the stack for x64 CLR processes
                         eventArgs.ErrorContext.Handled = true;
-                    };
+                    }
 
                     var type = context.ModelType;
                     var jsonSerializer = CreateJsonSerializer();
-                    jsonSerializer.Error += errorHandler;
+                    jsonSerializer.Error += ErrorHandler;
                     object model;
                     try
                     {
@@ -193,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     finally
                     {
                         // Clean up the error handler since CreateJsonSerializer() pools instances.
-                        jsonSerializer.Error -= errorHandler;
+                        jsonSerializer.Error -= ErrorHandler;
                         ReleaseJsonSerializer(jsonSerializer);
                     }
 

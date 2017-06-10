@@ -376,13 +376,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 }
             }
 
-            public int Version { get; set; }
+            public int Version { get; }
 
-            public string[] RouteKeys { get; set; }
+            public string[] RouteKeys { get; }
 
-            public Dictionary<string[], List<ActionDescriptor>> OrdinalEntries { get; set; }
+            public Dictionary<string[], List<ActionDescriptor>> OrdinalEntries { get; }
 
-            public Dictionary<string[], List<ActionDescriptor>> OrdinalIgnoreCaseEntries { get; set; }
+            public Dictionary<string[], List<ActionDescriptor>> OrdinalIgnoreCaseEntries { get; }
         }
 
         private class StringArrayComparer : IEqualityComparer<string[]>

@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     {
         private static readonly StringSegment QualityParameter = new StringSegment("q");
 
-        private MediaTypeParameterParser _parameterParser;
+        private readonly MediaTypeParameterParser _parameterParser;
 
         /// <summary>
         /// Initializes a <see cref="MediaType"/> instance.
@@ -70,8 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             
             _parameterParser = default(MediaTypeParameterParser);
 
-            StringSegment type;
-            var typeLength = GetTypeLength(mediaType, offset, out type);
+            var typeLength = GetTypeLength(mediaType, offset, out var type);
             if (typeLength == 0)
             {
                 Type = new StringSegment();
@@ -85,8 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 Type = type;
             }
 
-            StringSegment subType;
-            var subTypeLength = GetSubtypeLength(mediaType, offset + typeLength, out subType);
+            var subTypeLength = GetSubtypeLength(mediaType, offset + typeLength, out var subType);
             if (subTypeLength == 0)
             {
                 SubType = new StringSegment();
@@ -210,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// For the media type <c>"application/vnd.example+json"</c>, this property gives the value
         /// <c>"vnd.example+json"</c>.
         /// </example>
-        public StringSegment SubType { get; private set; }
+        public StringSegment SubType { get; }
 
         /// <summary>
         /// Gets the subtype of the <see cref="MediaType"/>, excluding any structured syntax suffix.
@@ -219,7 +217,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// For the media type <c>"application/vnd.example+json"</c>, this property gives the value
         /// <c>"vnd.example"</c>.
         /// </example>
-        public StringSegment SubTypeWithoutSuffix { get; private set; }
+        public StringSegment SubTypeWithoutSuffix { get; }
 
         /// <summary>
         /// Gets the structured syntax suffix of the <see cref="MediaType"/> if it has one.
@@ -228,7 +226,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// For the media type <c>"application/vnd.example+json"</c>, this property gives the value
         /// <c>"json"</c>.
         /// </example>
-        public StringSegment SubTypeSuffix { get; private set; }
+        public StringSegment SubTypeSuffix { get; }
 
         /// <summary>
         /// Gets whether this <see cref="MediaType"/> matches all subtypes.
@@ -318,8 +316,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         {
             var parametersParser = _parameterParser;
 
-            MediaTypeParameter parameter;
-            while (parametersParser.ParseNextParameter(out parameter))
+            while (parametersParser.ParseNextParameter(out var parameter))
             {
                 if (parameter.HasName(parameterName))
                 {
@@ -411,8 +408,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             var parser = parsedMediaType._parameterParser;
 
             var quality = 1.0d;
-            MediaTypeParameter parameter;
-            while (parser.ParseNextParameter(out parameter))
+            while (parser.ParseNextParameter(out var parameter))
             {
                 if (parameter.HasName(QualityParameter))
                 {
@@ -512,8 +508,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         private bool ContainsAllParameters(MediaTypeParameterParser setParameters)
         {
             var parameterFound = true;
-            MediaTypeParameter setParameter;
-            while (setParameters.ParseNextParameter(out setParameter) && parameterFound)
+            while (setParameters.ParseNextParameter(out var setParameter) && parameterFound)
             {
                 if (setParameter.HasName("q"))
                 {
@@ -533,8 +528,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // We can do this because it's a struct
                 var subSetParameters = _parameterParser;
                 parameterFound = false;
-                MediaTypeParameter subSetParameter;
-                while (subSetParameters.ParseNextParameter(out subSetParameter) && !parameterFound)
+                while (subSetParameters.ParseNextParameter(out var subSetParameter) && !parameterFound)
                 {
                     parameterFound = subSetParameter.Equals(setParameter);
                 }
@@ -545,8 +539,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
         private struct MediaTypeParameterParser
         {
-            private string _mediaTypeBuffer;
-            private int? _length;
+            private readonly string _mediaTypeBuffer;
+            private readonly int? _length;
 
             public MediaTypeParameterParser(string mediaTypeBuffer, int offset, int? length)
             {
@@ -589,8 +583,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     return 0;
                 }
 
-                StringSegment name;
-                var nameLength = GetNameLength(input, startIndex, out name);
+                var nameLength = GetNameLength(input, startIndex, out var name);
 
                 var current = startIndex + nameLength;
 
@@ -611,8 +604,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     }
                 }
 
-                StringSegment value;
-                var valueLength = GetValueLength(input, current, out value);
+                var valueLength = GetValueLength(input, current, out var value);
 
                 parsedValue = new MediaTypeParameter(name, value);
                 current +=  valueLength;

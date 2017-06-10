@@ -49,8 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             if (excludePropertyErrors)
             {
-                ModelStateEntry ms;
-                viewData.ModelState.TryGetValue(viewData.TemplateInfo.HtmlFieldPrefix, out ms);
+                viewData.ModelState.TryGetValue(viewData.TemplateInfo.HtmlFieldPrefix, out var ms);
 
                 if (ms != null)
                 {

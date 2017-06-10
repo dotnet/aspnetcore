@@ -258,8 +258,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
         private sealed class TempDataDictionaryEnumerator : IEnumerator<KeyValuePair<string, object>>
         {
-            private IEnumerator<KeyValuePair<string, object>> _enumerator;
-            private TempDataDictionary _tempData;
+            private readonly IEnumerator<KeyValuePair<string, object>> _enumerator;
+            private readonly TempDataDictionary _tempData;
 
             public TempDataDictionaryEnumerator(TempDataDictionary tempData)
             {
@@ -278,10 +278,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
             }
 
-            object IEnumerator.Current
-            {
-                get { return Current; }
-            }
+            object IEnumerator.Current => Current;
 
             public bool MoveNext()
             {

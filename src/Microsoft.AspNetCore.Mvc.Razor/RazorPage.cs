@@ -183,11 +183,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new InvalidOperationException(message);
             }
 
-            RenderAsyncDelegate renderDelegate;
-            if (PreviousSectionWriters.TryGetValue(sectionName, out renderDelegate))
+            if (PreviousSectionWriters.TryGetValue(sectionName, out var renderDelegate))
             {
                 _renderedSections.Add(sectionName);
-                
+
                 await renderDelegate();
 
                 // Return a token value that allows the Write call that wraps the RenderSection \ RenderSectionAsync

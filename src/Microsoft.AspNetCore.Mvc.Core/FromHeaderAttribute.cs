@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc
     public class FromHeaderAttribute : Attribute, IBindingSourceMetadata, IModelNameProvider
     {
         /// <inheritdoc />
-        public BindingSource BindingSource { get { return BindingSource.Header; } }
+        public BindingSource BindingSource => BindingSource.Header;
 
         /// <inheritdoc />
         public string Name { get; set; }

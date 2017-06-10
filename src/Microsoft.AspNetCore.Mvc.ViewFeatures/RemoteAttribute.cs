@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public string AdditionalFields
         {
-            get { return _additionalFields; }
+            get => _additionalFields;
             set
             {
                 _additionalFields = value ?? string.Empty;

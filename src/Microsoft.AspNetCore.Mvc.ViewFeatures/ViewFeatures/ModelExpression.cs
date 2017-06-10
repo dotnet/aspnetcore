@@ -39,18 +39,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <summary>
         /// String representation of the <see cref="System.Linq.Expressions.Expression"/> of interest.
         /// </summary>
-        public string Name { get; private set; }
+        public string Name { get; }
 
         /// <summary>
         /// Metadata about the <see cref="System.Linq.Expressions.Expression"/> of interest.
         /// </summary>
-        public ModelMetadata Metadata
-        {
-            get
-            {
-                return ModelExplorer.Metadata;
-            }
-        }
+        public ModelMetadata Metadata => ModelExplorer.Metadata;
 
         /// <summary>
         /// Gets the model object for the <see cref="System.Linq.Expressions.Expression"/> of interest.
@@ -59,13 +53,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// Getting <see cref="Model"/> will evaluate a compiled version of the original
         /// <see cref="System.Linq.Expressions.Expression"/>.
         /// </remarks>
-        public object Model
-        {
-            get
-            {
-                return ModelExplorer.Model;
-            }
-        }
+        public object Model => ModelExplorer.Model;
 
         /// <summary>
         /// Gets the model explorer for the <see cref="System.Linq.Expressions.Expression"/> of interest.

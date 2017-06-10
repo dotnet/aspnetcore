@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <inheritdoc />
-        public string Template { get; private set; }
+        public string Template { get; }
 
         /// <summary>
         /// Gets the route order. The order determines the order of route execution. Routes with a lower order
@@ -44,13 +44,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <inheritdoc />
-        int? IRouteTemplateProvider.Order
-        {
-            get
-            {
-                return _order;
-            }
-        }
+        int? IRouteTemplateProvider.Order => _order;
 
         /// <inheritdoc />
         public string Name { get; set; }

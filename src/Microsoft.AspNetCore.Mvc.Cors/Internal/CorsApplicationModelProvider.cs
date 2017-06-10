@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
 {
     public class CorsApplicationModelProvider : IApplicationModelProvider
     {
-        public int Order { get { return -1000 + 10; } }
+        public int Order => -1000 + 10;
 
         public void OnProvidersExecuted(ApplicationModelProviderContext context)
         {
@@ -28,18 +28,15 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            IEnableCorsAttribute enableCors;
-            IDisableCorsAttribute disableCors;
-
             foreach (var controllerModel in context.Result.Controllers)
             {
-                enableCors = controllerModel.Attributes.OfType<IEnableCorsAttribute>().FirstOrDefault();
+                var enableCors = controllerModel.Attributes.OfType<IEnableCorsAttribute>().FirstOrDefault();
                 if (enableCors != null)
                 {
                     controllerModel.Filters.Add(new CorsAuthorizationFilterFactory(enableCors.PolicyName));
                 }
 
-                disableCors = controllerModel.Attributes.OfType<IDisableCorsAttribute>().FirstOrDefault();
+                var disableCors = controllerModel.Attributes.OfType<IDisableCorsAttribute>().FirstOrDefault();
                 if (disableCors != null)
                 {
                     controllerModel.Filters.Add(new DisableCorsAuthorizationFilter());

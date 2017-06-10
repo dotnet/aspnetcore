@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             SelectedValue = selectedValue;
         }
 
-        public object SelectedValue { get; private set; }
+        public object SelectedValue { get; }
 
         private static IEnumerable ToEnumerable(object selectedValue)
         {

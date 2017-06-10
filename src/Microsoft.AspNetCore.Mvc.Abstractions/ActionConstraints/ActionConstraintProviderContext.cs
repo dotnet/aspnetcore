@@ -52,11 +52,11 @@ namespace Microsoft.AspNetCore.Mvc.ActionConstraints
         /// <summary>
         /// The <see cref="ActionDescriptor"/> for which constraints are being created.
         /// </summary>
-        public ActionDescriptor Action { get; private set; }
+        public ActionDescriptor Action { get; }
 
         /// <summary>
         /// The list of <see cref="ActionConstraintItem"/> objects.
         /// </summary>
-        public IList<ActionConstraintItem> Results { get; private set; }
+        public IList<ActionConstraintItem> Results { get; }
     }
 }

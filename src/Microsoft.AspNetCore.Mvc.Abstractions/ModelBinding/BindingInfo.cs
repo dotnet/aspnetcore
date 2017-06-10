@@ -125,13 +125,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 _providers = providers;
             }
 
-            public Func<ModelMetadata, bool> PropertyFilter
-            {
-                get
-                {
-                    return CreatePropertyFilter();
-                }
-            }
+            public Func<ModelMetadata, bool> PropertyFilter => CreatePropertyFilter();
 
             private Func<ModelMetadata, bool> CreatePropertyFilter()
             {

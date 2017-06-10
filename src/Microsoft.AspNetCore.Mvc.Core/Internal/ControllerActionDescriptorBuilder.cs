@@ -474,9 +474,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             string routeName,
             ControllerActionDescriptor actionDescriptor)
         {
-            IList<ActionDescriptor> namedActionGroup;
-
-            if (actionsByRouteName.TryGetValue(routeName, out namedActionGroup))
+            if (actionsByRouteName.TryGetValue(routeName, out var namedActionGroup))
             {
                 namedActionGroup.Add(actionDescriptor);
             }

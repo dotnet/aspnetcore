@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <param name="handlerMethod">The handler method to be invoked, may be null.</param>
         /// <param name="handlerInstance">The handler instance associated with the page.</param>
         public PageHandlerExecutedContext(
-            PageContext pageContext, 
+            PageContext pageContext,
             IList<IFilterMetadata> filters,
             HandlerMethodDescriptor handlerMethod,
             object handlerInstance)
@@ -45,13 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// Gets the descriptor associated with the current page.
         /// </summary>
-        public new virtual CompiledPageActionDescriptor ActionDescriptor
-        {
-            get
-            {
-                return (CompiledPageActionDescriptor)base.ActionDescriptor;
-            }
-        }
+        public new virtual CompiledPageActionDescriptor ActionDescriptor =>
+            (CompiledPageActionDescriptor)base.ActionDescriptor;
 
         /// <summary>
         /// Gets or sets an indication that an page filter short-circuited the action and the page filter pipeline.
@@ -99,10 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// </summary>
         public virtual ExceptionDispatchInfo ExceptionDispatchInfo
         {
-            get
-            {
-                return _exceptionDispatchInfo;
-            }
+            get => _exceptionDispatchInfo;
 
             set
             {

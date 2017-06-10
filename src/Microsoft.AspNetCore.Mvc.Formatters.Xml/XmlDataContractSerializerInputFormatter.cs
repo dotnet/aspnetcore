@@ -25,10 +25,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
     /// </summary>
     public class XmlDataContractSerializerInputFormatter : TextInputFormatter
     {
-        private DataContractSerializerSettings _serializerSettings;
-        private ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
+        private readonly ConcurrentDictionary<Type, object> _serializerCache = new ConcurrentDictionary<Type, object>();
         private readonly XmlDictionaryReaderQuotas _readerQuotas = FormattingUtilities.GetDefaultXmlReaderQuotas();
         private readonly bool _suppressInputFormatterBuffering;
+        private DataContractSerializerSettings _serializerSettings;
 
         /// <summary>
         /// Initializes a new instance of DataContractSerializerInputFormatter
@@ -78,10 +78,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// The quotas include - DefaultMaxDepth, DefaultMaxStringContentLength, DefaultMaxArrayLength,
         /// DefaultMaxBytesPerRead, DefaultMaxNameTableCharCount
         /// </summary>
-        public XmlDictionaryReaderQuotas XmlDictionaryReaderQuotas
-        {
-            get { return _readerQuotas; }
-        }
+        public XmlDictionaryReaderQuotas XmlDictionaryReaderQuotas => _readerQuotas;
 
         /// <summary>
         /// Gets or sets the <see cref="DataContractSerializerSettings"/> used to configure the
@@ -89,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         /// </summary>
         public DataContractSerializerSettings SerializerSettings
         {
-            get { return _serializerSettings; }
+            get => _serializerSettings;
             set
             {
                 if (value == null)
@@ -137,8 +134,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 // Unwrap only if the original type was wrapped.
                 if (type != context.ModelType)
                 {
-                    var unwrappable = deserializedObject as IUnwrappable;
-                    if (unwrappable != null)
+                    if (deserializedObject is IUnwrappable unwrappable)
                     {
                         deserializedObject = unwrappable.Unwrap(declaredType: context.ModelType);
                     }
@@ -234,8 +230,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                 throw new ArgumentNullException(nameof(type));
             }
 
-            object serializer;
-            if (!_serializerCache.TryGetValue(type, out serializer))
+            if (!_serializerCache.TryGetValue(type, out var serializer))
             {
                 serializer = CreateSerializer(type);
                 if (serializer != null)

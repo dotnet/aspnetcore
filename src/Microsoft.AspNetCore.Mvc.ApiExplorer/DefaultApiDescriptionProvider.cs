@@ -48,10 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         }
 
         /// <inheritdoc />
-        public int Order
-        {
-            get { return -1000; }
-        }
+        public int Order => -1000;
 
         /// <inheritdoc />
         public void OnProvidersExecuting(ApiDescriptionProviderContext context)
@@ -261,8 +258,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
         private RouteTemplate ParseTemplate(ControllerActionDescriptor action)
         {
-            if (action.AttributeRouteInfo != null &&
-                action.AttributeRouteInfo.Template != null)
+            if (action.AttributeRouteInfo?.Template != null)
             {
                 return TemplateParser.Parse(action.AttributeRouteInfo.Template);
             }

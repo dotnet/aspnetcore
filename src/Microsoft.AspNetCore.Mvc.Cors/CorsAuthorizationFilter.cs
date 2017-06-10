@@ -18,8 +18,8 @@ namespace Microsoft.AspNetCore.Mvc.Cors
     /// </summary>
     public class CorsAuthorizationFilter : ICorsAuthorizationFilter
     {
-        private ICorsService _corsService;
-        private ICorsPolicyProvider _corsPolicyProvider;
+        private readonly ICorsService _corsService;
+        private readonly ICorsPolicyProvider _corsPolicyProvider;
 
         /// <summary>
         /// Creates a new instance of <see cref="CorsAuthorizationFilter"/>.
@@ -38,16 +38,9 @@ namespace Microsoft.AspNetCore.Mvc.Cors
         public string PolicyName { get; set; }
 
         /// <inheritdoc />
-        public int Order
-        {
-            get
-            {
-                // Since clients' preflight requests would not have data to authenticate requests, this
-                // filter must run before any other authorization filters.
-                return int.MinValue + 100;
-            }
-        }
-
+        // Since clients' preflight requests would not have data to authenticate requests, this
+        // filter must run before any other authorization filters.
+        public int Order => int.MinValue + 100;
 
         /// <inheritdoc />
         public async Task OnAuthorizationAsync(Filters.AuthorizationFilterContext context)

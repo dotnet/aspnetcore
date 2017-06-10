@@ -181,8 +181,6 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     bindingContext.ValueProvider
                 };
 
-                object boundValue;
-
                 using (bindingContext.EnterNestedScope(
                     elementMetadata,
                     fieldName: bindingContext.FieldName,
@@ -193,7 +191,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
                     if (bindingContext.Result.IsModelSet)
                     {
-                        boundValue = bindingContext.Result.Model;
+                        var boundValue = bindingContext.Result.Model;
                         boundCollection.Add(ModelBindingHelper.CastOrDefault<TElement>(boundValue));
                     }
                 }

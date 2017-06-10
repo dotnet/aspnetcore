@@ -28,10 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// </summary>
         public string IdAttributeDotReplacement
         {
-            get
-            {
-                return _idAttributeDotReplacement;
-            }
+            get => _idAttributeDotReplacement;
             set
             {
                 if (value == null)

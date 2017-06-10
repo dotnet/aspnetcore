@@ -10,10 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class DefaultFilterProvider : IFilterProvider
     {
-        public int Order
-        {
-            get { return -1000; }
-        }
+        public int Order => -1000;
 
         /// <inheritdoc />
         public void OnProvidersExecuting(FilterProviderContext context)

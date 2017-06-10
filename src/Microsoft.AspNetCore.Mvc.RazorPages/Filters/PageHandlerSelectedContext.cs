@@ -38,13 +38,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <summary>
         /// Gets the descriptor associated with the current page.
         /// </summary>
-        public new virtual CompiledPageActionDescriptor ActionDescriptor
-        {
-            get
-            {
-                return (CompiledPageActionDescriptor)base.ActionDescriptor;
-            }
-        }
+        public new virtual CompiledPageActionDescriptor ActionDescriptor => 
+            (CompiledPageActionDescriptor)base.ActionDescriptor;
 
         /// <summary>
         /// Gets or sets the descriptor for the handler method about to be invoked.

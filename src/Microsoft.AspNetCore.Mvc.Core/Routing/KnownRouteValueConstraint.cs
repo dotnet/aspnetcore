@@ -116,9 +116,9 @@ namespace Microsoft.AspNetCore.Mvc.Routing
                 Items = items;
             }
 
-            public int Version { get; private set; }
+            public int Version { get; }
 
-            public string[] Items { get; private set; }
+            public string[] Items { get; }
         }
     }
 }

@@ -9,12 +9,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class FilterDescriptorOrderComparer : IComparer<FilterDescriptor>
     {
-        private static readonly FilterDescriptorOrderComparer _comparer = new FilterDescriptorOrderComparer();
-
-        public static FilterDescriptorOrderComparer Comparer
-        {
-            get { return _comparer; }
-        }
+        public static FilterDescriptorOrderComparer Comparer { get; } = new FilterDescriptorOrderComparer();
 
         public int Compare(FilterDescriptor x, FilterDescriptor y)
         {

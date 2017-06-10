@@ -31,11 +31,11 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         /// <summary>
         /// The list of actions.
         /// </summary>
-        public IReadOnlyList<ActionDescriptor> Actions { get; private set; }
+        public IReadOnlyList<ActionDescriptor> Actions { get; }
 
         /// <summary>
         /// The list of resulting <see cref="ApiDescription"/>.
         /// </summary>
-        public IList<ApiDescription> Results { get; private set; }
+        public IList<ApiDescription> Results { get; }
     }
 }

@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         string ICommonModel.Name => ParameterName;
 
-        public ParameterInfo ParameterInfo { get; private set; }
+        public ParameterInfo ParameterInfo { get; }
 
         public string ParameterName { get; set; }
 

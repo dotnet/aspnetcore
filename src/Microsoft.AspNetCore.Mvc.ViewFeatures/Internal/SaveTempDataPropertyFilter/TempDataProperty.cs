@@ -8,9 +8,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public struct TempDataProperty
     {
-        private Func<object, object> _getter;
+        private readonly Func<object, object> _getter;
 
-        private Action<object, object> _setter;
+        private readonly Action<object, object> _setter;
 
         public TempDataProperty(PropertyInfo propertyInfo, Func<object, object> getter, Action<object, object> setter)
         {

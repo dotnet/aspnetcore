@@ -29,14 +29,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public int Duration
         {
-            get
-            {
-                return _duration ?? 0;
-            }
-            set
-            {
-                _duration = value;
-            }
+            get => _duration ?? 0;
+            set => _duration = value;
         }
 
         /// <summary>
@@ -44,14 +38,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public ResponseCacheLocation Location
         {
-            get
-            {
-                return _location ?? ResponseCacheLocation.Any;
-            }
-            set
-            {
-                _location = value;
-            }
+            get => _location ?? ResponseCacheLocation.Any;
+            set => _location = value;
         }
 
         /// <summary>
@@ -62,14 +50,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         public bool NoStore
         {
-            get
-            {
-                return _noStore ?? false;
-            }
-            set
-            {
-                _noStore = value;
-            }
+            get => _noStore ?? false;
+            set => _noStore = value;
         }
 
         /// <summary>

@@ -53,9 +53,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             _valueAccessor = valueAccessor;
         }
 
-        public object Container { get; private set; }
+        public object Container { get; }
 
-        public PropertyInfo PropertyInfo { get; private set; }
+        public PropertyInfo PropertyInfo { get; }
 
         public object Value
         {

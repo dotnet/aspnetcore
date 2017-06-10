@@ -183,16 +183,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            object routeValue;
-            if (!context.RouteData.Values.TryGetValue(ActionNameKey, out routeValue))
+            if (!context.RouteData.Values.TryGetValue(ActionNameKey, out var routeValue))
             {
                 return null;
             }
 
             var actionDescriptor = context.ActionDescriptor;
             string normalizedValue = null;
-            string value;
-            if (actionDescriptor.RouteValues.TryGetValue(ActionNameKey, out value) &&
+            if (actionDescriptor.RouteValues.TryGetValue(ActionNameKey, out var value) &&
                 !string.IsNullOrEmpty(value))
             {
                 normalizedValue = value;
