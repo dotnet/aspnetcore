@@ -889,6 +889,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
+
+                FunctionsDirective.Register(builder);
+                InheritsDirective.Register(builder);
+                SectionDirective.Register(builder);
             });
 
             var document = CreateCodeDocument();
@@ -911,6 +915,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
+
+                FunctionsDirective.Register(builder);
+                InheritsDirective.Register(builder);
+                SectionDirective.Register(builder);
             });
 
             var document = CreateCodeDocument();
@@ -933,6 +941,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
+
+                FunctionsDirective.Register(builder);
+                InheritsDirective.Register(builder);
+                SectionDirective.Register(builder);
             });
 
             var document = CreateCodeDocument();
@@ -955,6 +967,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 // Some of these tests use templates
                 builder.AddTargetExtension(new TemplateTargetExtension());
+
+                FunctionsDirective.Register(builder);
+                InheritsDirective.Register(builder);
+                SectionDirective.Register(builder);
             });
 
             var document = CreateCodeDocument();

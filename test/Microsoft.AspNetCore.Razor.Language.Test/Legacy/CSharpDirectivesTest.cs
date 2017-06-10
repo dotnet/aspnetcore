@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -987,56 +988,66 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void InheritsDirective()
+        public void ParseBlock_InheritsDirective()
         {
-            ParseBlockTest("@inherits System.Web.WebPages.WebPage",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
+            ParseCodeBlockTest(
+                "@inherits System.Web.WebPages.WebPage",
+                new[] { InheritsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
                     Factory.CodeTransition(),
                     Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "System.Web.WebPages.WebPage", markup: false).AsDirectiveToken(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens.First())));
+                    Factory.Span(SpanKindInternal.Code, "System.Web.WebPages.WebPage", markup: false).AsDirectiveToken(InheritsDirective.Directive.Tokens.First())));
         }
 
         [Fact]
         public void InheritsDirectiveSupportsArrays()
         {
-            ParseBlockTest("@inherits string[[]][]",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
+            ParseCodeBlockTest(
+                "@inherits string[[]][]",
+                new[] { InheritsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
                     Factory.CodeTransition(),
                     Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "string[[]][]", markup: false).AsDirectiveToken(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens.First())));
+                    Factory.Span(SpanKindInternal.Code, "string[[]][]", markup: false).AsDirectiveToken(InheritsDirective.Directive.Tokens.First())));
         }
 
         [Fact]
         public void InheritsDirectiveSupportsNestedGenerics()
         {
-            ParseBlockTest("@inherits System.Web.Mvc.WebViewPage<IEnumerable<MvcApplication2.Models.RegisterModel>>",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
+            ParseCodeBlockTest(
+                "@inherits System.Web.Mvc.WebViewPage<IEnumerable<MvcApplication2.Models.RegisterModel>>",
+                new[] { InheritsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
                     Factory.CodeTransition(),
                     Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
                     Factory.Span(SpanKindInternal.Code, "System.Web.Mvc.WebViewPage<IEnumerable<MvcApplication2.Models.RegisterModel>>", markup: false)
-                        .AsDirectiveToken(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens.First())));
+                        .AsDirectiveToken(InheritsDirective.Directive.Tokens.First())));
         }
 
         [Fact]
         public void InheritsDirectiveSupportsTypeKeywords()
         {
-            ParseBlockTest("@inherits string",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
+            ParseCodeBlockTest(
+                "@inherits string",
+                new[] { InheritsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
                     Factory.CodeTransition(),
                     Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
                     Factory.Span(SpanKindInternal.Code, "string", markup: false)
-                        .AsDirectiveToken(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens.First())));
+                        .AsDirectiveToken(InheritsDirective.Directive.Tokens.First())));
         }
 
         [Fact]
-        public void FunctionsDirective()
+        public void Parse_FunctionsDirective()
         {
-            ParseBlockTest("@functions { foo(); bar(); }",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
+            ParseCodeBlockTest(
+                "@functions { foo(); bar(); }",
+                new[] { FunctionsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(FunctionsDirective.Directive),
                     Factory.CodeTransition(),
                     Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
@@ -1048,8 +1059,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void EmptyFunctionsDirective()
         {
-            ParseBlockTest("@functions { }",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
+            ParseCodeBlockTest(
+                "@functions { }",
+                new[] { FunctionsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(FunctionsDirective.Directive),
                     Factory.CodeTransition(),
                     Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
@@ -1059,15 +1072,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
-        public void SectionDirective()
+        public void Parse_SectionDirective()
         {
-            ParseBlockTest("@section Header { <p>F{o}o</p> }",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor),
+            ParseCodeBlockTest(
+                "@section Header { <p>F{o}o</p> }",
+                new[] { SectionDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(SectionDirective.Directive),
                     Factory.CodeTransition(),
                     Factory.MetaCode("section").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
                     Factory.Span(SpanKindInternal.Code, "Header", CSharpSymbolType.Identifier)
-                        .AsDirectiveToken(CSharpCodeParser.SectionDirectiveDescriptor.Tokens.First()),
+                        .AsDirectiveToken(SectionDirective.Directive.Tokens.First()),
                     Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
                     new MarkupBlock(

@@ -5,6 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
@@ -239,6 +240,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 // Notice we're not registering the ModelDirective.Pass here so we can run it on demand.
                 b.AddDirective(ModelDirective.Directive);
+
+                // There's some special interaction with the inherits directive
+                InheritsDirective.Register(b);
             });
         }
 

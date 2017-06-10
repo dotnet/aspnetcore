@@ -47,7 +47,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var other = obj as ImplicitExpressionEditHandler;
             return base.Equals(other) &&
-                _keywords.SetEquals(other._keywords) &&
                 AcceptTrailingDot == other.AcceptTrailingDot;
         }
 
@@ -55,7 +54,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             // Hash code should include only immutable properties and base has none.
             var hashCodeCombiner = HashCodeCombiner.Start();
-            hashCodeCombiner.Add(Keywords);
             hashCodeCombiner.Add(AcceptTrailingDot);
 
             return hashCodeCombiner;

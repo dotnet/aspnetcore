@@ -2,13 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 
+using System.Collections.Generic;
+
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public abstract class MarkupParserTestBase : CodeParserTestBase
     {
-        internal override RazorSyntaxTree ParseBlock(string document, bool designTime)
+        internal override RazorSyntaxTree ParseBlock(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime)
         {
-            return ParseHtmlBlock(document, designTime);
+            return ParseHtmlBlock(document, directives, designTime);
         }
 
         internal virtual void SingleSpanDocumentTest(string document, BlockKindInternal blockKind, SpanKindInternal spanType)

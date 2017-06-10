@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 if (_nestedLevel > 0)
                 {
                     var directiveStart = block.Children.First(child => !child.IsBlock && ((Span)child).Kind == SpanKindInternal.Transition).Start;
-                    var errorLength = /* @ */ 1 + CSharpCodeParser.SectionDirectiveDescriptor.Directive.Length;
+                    var errorLength = /* @ */ 1 + SectionDirective.Directive.Directive.Length;
                     _errorSink.OnError(
                         directiveStart,
                         LegacyResources.FormatParseError_Sections_Cannot_Be_Nested(LegacyResources.SectionExample_CS),

@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
+using static Microsoft.AspNetCore.Razor.Language.Intermediate.RazorIRAssert;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {

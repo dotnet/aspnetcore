@@ -13,20 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private static readonly Func<CSharpSymbol, bool> IsValidStatementSpacingSymbol =
             IsSpacingToken(includeNewLines: true, includeComments: true);
 
-        internal static readonly DirectiveDescriptor SectionDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
-            SyntaxConstants.CSharp.SectionKeyword,
-            DirectiveKind.RazorBlock,
-            builder => builder.AddMemberToken());
-
-        internal static readonly DirectiveDescriptor FunctionsDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
-            SyntaxConstants.CSharp.FunctionsKeyword,
-            DirectiveKind.CodeBlock);
-
-        internal static readonly DirectiveDescriptor InheritsDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
-            SyntaxConstants.CSharp.InheritsKeyword,
-            DirectiveKind.SingleLine,
-            builder => builder.AddTypeToken());
-
         internal static readonly DirectiveDescriptor AddTagHelperDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
             SyntaxConstants.CSharp.AddTagHelperKeyword,
             DirectiveKind.SingleLine,
@@ -42,11 +28,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             DirectiveKind.SingleLine,
             builder => builder.AddStringToken());
 
-        internal static readonly IEnumerable<DirectiveDescriptor> DefaultDirectiveDescriptors = new[]
+        internal static readonly IEnumerable<DirectiveDescriptor> DefaultDirectiveDescriptors = new DirectiveDescriptor[]
         {
-            SectionDirectiveDescriptor,
-            FunctionsDirectiveDescriptor,
-            InheritsDirectiveDescriptor,
         };
 
         internal static ISet<string> DefaultKeywords = new HashSet<string>()
@@ -63,9 +46,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             "switch",
             "lock",
             "using",
-            "section",
-            "inherits",
-            "functions",
             "namespace",
             "class",
         };
@@ -76,16 +56,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private Dictionary<CSharpKeyword, Action<bool>> _keywordParsers = new Dictionary<CSharpKeyword, Action<bool>>();
 
         public CSharpCodeParser(ParserContext context)
-            : this(directiveDescriptors: Enumerable.Empty<DirectiveDescriptor>(), context: context)
+            : this(directives: Enumerable.Empty<DirectiveDescriptor>(), context: context)
         {
         }
 
-        public CSharpCodeParser(IEnumerable<DirectiveDescriptor> directiveDescriptors, ParserContext context)
+        public CSharpCodeParser(IEnumerable<DirectiveDescriptor> directives, ParserContext context)
             : base(context.ParseOnlyLeadingDirectives ? FirstDirectiveCSharpLanguageCharacteristics.Instance : CSharpLanguageCharacteristics.Instance, context)
         {
+            if (directives == null)
+            {
+                throw new ArgumentNullException(nameof(directives));
+            }
+
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             Keywords = new HashSet<string>();
             SetUpKeywords();
-            SetupDirectives(directiveDescriptors);
+            SetupDirectives(directives);
             SetUpExpressions();
         }
 

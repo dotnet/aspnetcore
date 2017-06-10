@@ -30,15 +30,27 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal BlockFactory BlockFactory { get; private set; }
 
-        internal abstract RazorSyntaxTree ParseBlock(string document, bool designTime);
+        internal RazorSyntaxTree ParseBlock(string document, bool designTime)
+        {
+            return ParseBlock(document, null, designTime);
+        }
+
+        internal abstract RazorSyntaxTree ParseBlock(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime);
 
         internal virtual RazorSyntaxTree ParseDocument(string document, bool designTime = false)
         {
+            return ParseDocument(document, null, designTime);
+        }
+
+        internal virtual RazorSyntaxTree ParseDocument(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false)
+        {
+            directives = directives ?? Array.Empty<DirectiveDescriptor>();
+
             var source = TestRazorSourceDocument.Create(document, fileName: null);
-            var options = RazorParserOptions.Create(Array.Empty<DirectiveDescriptor>(), designTime);
+            var options = RazorParserOptions.Create(directives, designTime);
             var context = new ParserContext(source, options);
 
-            var codeParser = new CSharpCodeParser(context);
+            var codeParser = new CSharpCodeParser(directives, context);
             var markupParser = new HtmlMarkupParser(context);
 
             codeParser.HtmlParser = markupParser;
@@ -60,14 +72,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return syntaxTree;
         }
 
-        internal virtual RazorSyntaxTree ParseHtmlBlock(string document, bool designTime = false)
+        internal virtual RazorSyntaxTree ParseHtmlBlock(string document, IEnumerable<DirectiveDescriptor> directives, bool designTime = false)
         {
+            directives = directives ?? Array.Empty<DirectiveDescriptor>();
+
             var source = TestRazorSourceDocument.Create(document, fileName: null);
-            var options = RazorParserOptions.Create(Array.Empty<DirectiveDescriptor>(), designTime);
+            var options = RazorParserOptions.Create(directives, designTime);
             var context = new ParserContext(source, options);
 
             var parser = new HtmlMarkupParser(context);
-            parser.CodeParser = new CSharpCodeParser(context)
+            parser.CodeParser = new CSharpCodeParser(directives, context)
             {
                 HtmlParser = parser,
             };
@@ -87,14 +101,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal virtual RazorSyntaxTree ParseCodeBlock(
             string document,
-            IEnumerable<DirectiveDescriptor> descriptors,
+            IEnumerable<DirectiveDescriptor> directives,
             bool designTime)
         {
+            directives = directives ?? Array.Empty<DirectiveDescriptor>();
+
             var source = TestRazorSourceDocument.Create(document, fileName: null);
-            var options = RazorParserOptions.Create(descriptors, designTime);
+            var options = RazorParserOptions.Create(directives, designTime);
             var context = new ParserContext(source, options);
 
-            var parser = new CSharpCodeParser(descriptors, context);
+            var parser = new CSharpCodeParser(directives, context);
             parser.HtmlParser = new HtmlMarkupParser(context)
             {
                 CodeParser = parser,
@@ -140,6 +156,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest(document, expectedRoot, false, null);
         }
 
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expectedRoot)
+        {
+            ParseBlockTest(document, directives, expectedRoot, false, null);
+        }
+
         internal virtual void ParseBlockTest(string document, Block expectedRoot, bool designTime)
         {
             ParseBlockTest(document, expectedRoot, designTime, null);
@@ -150,9 +171,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest(document, expectedRoot, false, expectedErrors);
         }
 
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expectedRoot, params RazorError[] expectedErrors)
+        {
+            ParseBlockTest(document, directives, expectedRoot, false, expectedErrors);
+        }
+
         internal virtual void ParseBlockTest(string document, Block expected, bool designTime, params RazorError[] expectedErrors)
         {
-            var result = ParseBlock(document, designTime);
+            ParseBlockTest(document, null, expected, designTime, expectedErrors);
+        }
+
+        internal virtual void ParseBlockTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorError[] expectedErrors)
+        {
+            var result = ParseBlock(document, directives, designTime);
 
             if (FixupSpans)
             {
@@ -236,6 +267,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest(document, expectedRoot, false, expectedErrors);
         }
 
+        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, params RazorError[] expectedErrors)
+        {
+            ParseDocumentTest(document, directives, expected, false, expectedErrors);
+        }
+
         internal virtual void ParseDocumentTest(string document, bool designTime)
         {
             ParseDocumentTest(document, null, designTime);
@@ -248,7 +284,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         internal virtual void ParseDocumentTest(string document, Block expected, bool designTime, params RazorError[] expectedErrors)
         {
-            var result = ParseDocument(document, designTime);
+            ParseDocumentTest(document, null, expected, designTime, expectedErrors);
+        }
+
+        internal virtual void ParseDocumentTest(string document, IEnumerable<DirectiveDescriptor> directives, Block expected, bool designTime, params RazorError[] expectedErrors)
+        {
+            var result = ParseDocument(document, directives, designTime);
 
             if (FixupSpans)
             {

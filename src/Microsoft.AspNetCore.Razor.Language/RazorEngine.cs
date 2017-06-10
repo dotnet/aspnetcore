@@ -70,7 +70,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // IR Passes
             builder.Features.Add(new DefaultDocumentClassifierPass());
-            builder.Features.Add(new DefaultDirectiveIRPass());
             builder.Features.Add(new DirectiveRemovalIROptimizationPass());
 
             // Default Runtime Targets

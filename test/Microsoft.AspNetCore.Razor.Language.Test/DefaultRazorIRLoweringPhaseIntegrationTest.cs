@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Language.Intermediate.RazorIRAssert;
 using Moq;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -459,6 +460,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 builder?.Invoke(b);
 
+                FunctionsDirective.Register(b);
+                SectionDirective.Register(b);
                 b.AddTagHelpers(tagHelpers);
             });
 

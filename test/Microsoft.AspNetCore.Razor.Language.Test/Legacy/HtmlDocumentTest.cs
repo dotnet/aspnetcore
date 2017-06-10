@@ -3,6 +3,7 @@
 
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -107,13 +108,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseDocumentTest("@section Foo {" + Environment.NewLine
                             + "    <html></html>" + Environment.NewLine
                             + "}",
+                new[] { SectionDirective.Directive, },
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor),
+                    new DirectiveBlock(new DirectiveChunkGenerator(SectionDirective.Directive),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section").Accepts(AcceptedCharactersInternal.None),
                         Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "Foo", CSharpSymbolType.Identifier).AsDirectiveToken(CSharpCodeParser.SectionDirectiveDescriptor.Tokens[0]),
+                        Factory.Span(SpanKindInternal.Code, "Foo", CSharpSymbolType.Identifier).AsDirectiveToken(SectionDirective.Directive.Tokens[0]),
                         Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                         Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
                         new MarkupBlock(
@@ -469,14 +471,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseSectionIgnoresTagsInContentsOfScriptTag()
         {
-            ParseDocumentTest(@"@section Foo { <script>foo<bar baz='@boz'></script> }",
+            ParseDocumentTest(
+                @"@section Foo { <script>foo<bar baz='@boz'></script> }",
+                new[] { SectionDirective.Directive, },
                 new MarkupBlock(
                     Factory.EmptyHtml(),
-                    new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.SectionDirectiveDescriptor),
+                    new DirectiveBlock(new DirectiveChunkGenerator(SectionDirective.Directive),
                         Factory.CodeTransition(),
                         Factory.MetaCode("section").Accepts(AcceptedCharactersInternal.None),
                         Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                        Factory.Span(SpanKindInternal.Code, "Foo", CSharpSymbolType.Identifier).AsDirectiveToken(CSharpCodeParser.SectionDirectiveDescriptor.Tokens[0]),
+                        Factory.Span(SpanKindInternal.Code, "Foo", CSharpSymbolType.Identifier).AsDirectiveToken(SectionDirective.Directive.Tokens[0]),
                         Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                         Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
                         new MarkupBlock(

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -298,8 +299,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseBlockReportsErrorIfClassBlockUnterminatedAtEOF()
         {
-            ParseBlockTest("functions { var foo = bar; if(foo != null) { bar(); } ",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
+            ParseBlockTest(
+                "functions { var foo = bar; if(foo != null) { bar(); } ",
+                new[] { FunctionsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(FunctionsDirective.Directive),
                     Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),

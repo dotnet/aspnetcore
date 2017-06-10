@@ -150,7 +150,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                 feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
-                feature => Assert.IsType<DefaultDirectiveIRPass>(feature),
                 feature => Assert.IsType<DirectiveRemovalIROptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
                 feature => Assert.IsType<RazorPreallocatedTagHelperAttributeOptimizationPass>(feature));
@@ -179,7 +178,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                 feature => Assert.IsType<DefaultDirectiveSyntaxTreePass>(feature),
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
-                feature => Assert.IsType<DefaultDirectiveIRPass>(feature),
                 feature => Assert.IsType<DirectiveRemovalIROptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
                 feature => Assert.IsType<DesignTimeOptionsFeature>(feature),

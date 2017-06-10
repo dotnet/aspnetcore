@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -12,32 +12,38 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseInheritsStatementMarksInheritsSpanAsCanGrowIfMissingTrailingSpace()
         {
-            ParseBlockTest("inherits",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
+            ParseBlockTest(
+                "inherits",
+                new[] { InheritsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
                     Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None)),
                 new RazorError(
-                    LegacyResources.FormatUnexpectedEOFAfterDirective(CSharpCodeParser.InheritsDirectiveDescriptor.Directive, "type"),
+                    LegacyResources.FormatUnexpectedEOFAfterDirective(InheritsDirective.Directive.Directive, "type"),
                     new SourceLocation(8, 0, 8), 1));
         }
 
         [Fact]
         public void InheritsBlockAcceptsMultipleGenericArguments()
         {
-            ParseBlockTest("inherits Foo.Bar<Biz<Qux>, string, int>.Baz",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
+            ParseBlockTest(
+                "inherits Foo.Bar<Biz<Qux>, string, int>.Baz",
+                new[] { InheritsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
                     Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "Foo.Bar<Biz<Qux>, string, int>.Baz", markup: false).AsDirectiveToken(CSharpCodeParser.InheritsDirectiveDescriptor.Tokens[0])));
+                    Factory.Span(SpanKindInternal.Code, "Foo.Bar<Biz<Qux>, string, int>.Baz", markup: false).AsDirectiveToken(InheritsDirective.Directive.Tokens[0])));
         }
 
         [Fact]
         public void InheritsBlockOutputsErrorIfInheritsNotFollowedByTypeButAcceptsEntireLineAsCode()
         {
-            ParseBlockTest("inherits                " + Environment.NewLine + "foo",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.InheritsDirectiveDescriptor),
+            ParseBlockTest(
+                "inherits                " + Environment.NewLine + "foo",
+                new[] { InheritsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
                     Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Code, "                ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace)),
-                new RazorError(LegacyResources.FormatDirectiveExpectsTypeName(CSharpCodeParser.InheritsDirectiveDescriptor.Directive), 24, 0, 24, Environment.NewLine.Length));
+                new RazorError(LegacyResources.FormatDirectiveExpectsTypeName(InheritsDirective.Directive.Directive), 24, 0, 24, Environment.NewLine.Length));
         }
 
         [Fact]
@@ -138,8 +144,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void ParseBlockBalancesBracesAndOutputsContentAsClassLevelCodeSpanIfFirstIdentifierIsFunctionsKeyword()
         {
             const string code = " foo(); \"bar}baz\" ";
-            ParseBlockTest("functions {" + code + "} zoop",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
+            ParseBlockTest(
+                "functions {" + code + "} zoop",
+                new[] { FunctionsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(FunctionsDirective.Directive),
                     Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{").AutoCompleteWith(null, atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
@@ -150,8 +158,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseBlockDoesNoErrorRecoveryForFunctionsBlock()
         {
-            ParseBlockTest("functions { { { { { } zoop",
-                new DirectiveBlock(new DirectiveChunkGenerator(CSharpCodeParser.FunctionsDirectiveDescriptor),
+            ParseBlockTest(
+                "functions { { { { { } zoop",
+                new[] { FunctionsDirective.Directive, },
+                new DirectiveBlock(new DirectiveChunkGenerator(FunctionsDirective.Directive),
                     Factory.MetaCode("functions").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.AllWhiteSpace),
                     Factory.MetaCode("{").AutoCompleteWith("}", atEndOfSpan: true).Accepts(AcceptedCharactersInternal.None),
