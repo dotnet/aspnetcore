@@ -27,3 +27,4 @@ project.lock.json
 *.nupkg
 .build
 .vscode
+.vs

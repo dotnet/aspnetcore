@@ -14,23 +14,16 @@ namespace CreateTimestampFreePackages
 {
     class Program
     {
-        public static void Main(string[] args)
+        public static int Main(string[] args)
         {
             if (args.Length != 2)
             {
-                Console.Error.WriteLine("Usage CreateTimestampFreePackages <DROP_ROOT> <PackageDir>");
+                Console.Error.WriteLine("Usage CreateTimestampFreePackages <SourcePackagesDir> <TargetPackagesDir>");
+                return 1;
             }
 
-            var dropRoot = args[0];
-
-            if (string.IsNullOrEmpty(dropRoot))
-            {
-                throw new Exception("DROP_ROOT not specified");
-            }
-
-            var artifactsDir = Path.Combine(Directory.GetCurrentDirectory(), "artifacts");
-            var packagesDir = Path.Combine(artifactsDir, "Signed", args[1]);
-            var nonTimeStampedDir = Path.Combine(artifactsDir, "Signed", args[1] + "-NoTimeStamp");
+            var packagesDir = args[0];
+            var nonTimeStampedDir = args[1];
             Directory.CreateDirectory(nonTimeStampedDir);
             var packages = Directory.GetFiles(packagesDir, "*.nupkg");
             var packageIds = GetPackageIds(packages);
@@ -39,6 +32,8 @@ namespace CreateTimestampFreePackages
             {
                 CreateTimeStampFreePackage(packageIds, nonTimeStampedDir, file);
             }
+
+            return 0;
         }
 
         public static PackageIdentity GetPackageIdentity(string packagePath)
