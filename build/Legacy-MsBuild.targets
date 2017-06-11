@@ -29,11 +29,11 @@
     </ItemGroup>
 
     <MSBuild
-        Projects="build\vsdrop\drop.msbuild"
+        Projects="$(MSBuildProjectDirectory)\vsdrop\drop.msbuild"
         Targets="BuildAndPublishManifest"
         Properties="
                 SignedVsixPath=$([System.IO.Path]::GetDirectoryName(%(SignedRazorVSIX.FullPath)));
-                RepositoryRoot=$(MSBuildProjectDirectory)\;
+                RepositoryRoot=$(RepositoryRoot)\;
                 ManifestRepositoryName=AspNetCore/%(SignedRazorVSIX.FileName);
                 ManifestBuildBranch=$(BUILD_BRANCH);
                 ManifestBuildNumber=$(BUILD_NUMBER)" />
