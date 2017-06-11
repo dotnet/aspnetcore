@@ -21,7 +21,7 @@
         /flp:LogFile=&quot;$(ArtifactsDir)msbuild/Coherence-Signed.log;&quot;;
         /v:M;
         /m;
-        /p:Sign=Sign /p:VerifySignatures=true /t:Policheck /t:Build /t:PushPackages /p:Sign=Sign /p:VerifySignatures=true" />
+        /p:Sign=Sign /p:VerifySignatures=true /t:Policheck /t:Build /p:Sign=Sign /p:VerifySignatures=true" />
     </ItemGroup>
 
     <Exec Command="@(Arguments, ' ')" />
