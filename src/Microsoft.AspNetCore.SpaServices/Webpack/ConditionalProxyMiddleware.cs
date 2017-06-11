@@ -98,7 +98,15 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
 
                 using (var responseStream = await responseMessage.Content.ReadAsStreamAsync())
                 {
-                    await responseStream.CopyToAsync(context.Response.Body, DefaultHttpBufferSize, context.RequestAborted);
+                    try
+                    {
+                        await responseStream.CopyToAsync(context.Response.Body, DefaultHttpBufferSize, context.RequestAborted);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // The CopyToAsync task will be canceled if the client disconnects (e.g., user
+                        // closes or refreshes the browser tab). Don't treat this as an error.
+                    }
                 }
 
                 return true;

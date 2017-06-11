@@ -381,12 +381,6 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                     {
                         OutputLogger.LogWarning(evt.Data);
                     }
-                    else if (!initializationIsCompleted)
-                    {
-                        _connectionIsReadySource.SetException(
-                            new InvalidOperationException("The Node.js process failed to initialize: " + evt.Data));
-                        initializationIsCompleted = true;
-                    }
                     else
                     {
                         OnErrorDataReceived(UnencodeNewlines(evt.Data));
@@ -400,10 +394,11 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
         private static bool IsDebuggerMessage(string message)
         {
-            return message.StartsWith("Debugger attached", StringComparison.OrdinalIgnoreCase) ||
-                message.StartsWith("Debugger listening ", StringComparison.OrdinalIgnoreCase) ||
-                message.StartsWith("To start debugging", StringComparison.OrdinalIgnoreCase) ||
-                message.Equals("Warning: This is an experimental feature and could change at any time.", StringComparison.OrdinalIgnoreCase) ||
+            return message.StartsWith("Debugger attached", StringComparison.Ordinal) ||
+                message.StartsWith("Debugger listening ", StringComparison.Ordinal) ||
+                message.StartsWith("To start debugging", StringComparison.Ordinal) ||
+                message.Equals("Warning: This is an experimental feature and could change at any time.", StringComparison.Ordinal) ||
+                message.Equals("For help see https://nodejs.org/en/docs/inspector", StringComparison.Ordinal) ||
                 message.Contains("chrome-devtools:");
         }
 
