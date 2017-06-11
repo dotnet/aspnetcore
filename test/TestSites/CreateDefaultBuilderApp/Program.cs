@@ -36,6 +36,11 @@ namespace CreateDefaultBuilderApp
                     });
                 })
                 .Build().Run();
+
+            Console.ReadKey();
+            WebHost.CreateDefaultBuilder<Startup>(new[] { "--cliKey", "cliValue" })
+                .BuildAndRun();
+
         }
 
         private static string GetResponseMessage(WebHostBuilderContext context, IServiceCollection services)
