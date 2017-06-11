@@ -390,7 +390,7 @@
 
     <Copy SourceFiles="@(RuntimeStoreSymbols)" DestinationFolder="$(PackageCacheOutputPath)" />
 
-    <Exec Command="$(ToolsPath)NuGet.exe pack @(PackageCacheNuspec) -Version $(VersionNumber) -OutputDirectory $(PackageCacheOutputPath) -BasePath $(PackageCacheOutputPath)"/>
+    <Exec Command="&quot;$(ToolsPath)NuGet.exe&quot; pack &quot;@(PackageCacheNuspec)&quot; -Version $(VersionNumber) -OutputDirectory &quot;$(PackageCacheOutputPath) &quot; -BasePath &quot;$(PackageCacheOutputPath) &quot;"/>
   </Target>
 
   <Target Name="RebuildPackage">
@@ -399,7 +399,7 @@
       <PackageName>$([System.IO.Path]::GetFileName($(WorkingDir)))</PackageName>
     </PropertyGroup>
     <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
-    <Exec Command="$(ToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageName).nupkg * > nul" WorkingDirectory="$(WorkingDir)" />
+    <Exec Command="&quot;$(ToolsPath)7za.exe&quot; a -tzip -mx9 -r -y &quot;$(OutDir)$(PackageName).nupkg&quot; * > nul" WorkingDirectory="$(WorkingDir)" />
   </Target>
 
   <Target Name="RepackVSIX">
@@ -408,7 +408,7 @@
     </PropertyGroup>
 
     <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
-    <Exec Command="$(ToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(VSIXName).vsix" WorkingDirectory="$(VSIXDirectory)" />
+    <Exec Command="&quot;$(ToolsPath)7za.exe&quot; a -tzip -mx9 -r -y &quot;$(OutDir)$(VSIXName).vsix&quot;" WorkingDirectory="$(VSIXDirectory)" />
   </Target>
 
   <Target Name="RebuildPackageCache">
@@ -420,11 +420,11 @@
     <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
 
     <!-- see https://sevenzip.osdn.jp/chm/cmdline/ -->
-    <Exec Command="$(ToolsPath)7za.exe a -tzip -mx9 -r -y $(OutDir)$(PackageCacheName).zip * > nul"
+    <Exec Command="&quot;$(ToolsPath)7za.exe&quot; a -tzip -mx9 -r -y &quot;$(OutDir)$(PackageCacheName).zip&quot; * > nul"
       WorkingDirectory="$(WorkingDir)"
       Condition="'$(CreateTarGzip)' != 'true'" />
 
-    <Exec Command="$(ToolsPath)7za.exe a -ttar -r -y -so tmp.tar * | $(ToolsPath)7za.exe a -si $(OutDir)$(PackageCacheName).tar.gz"
+    <Exec Command="&quot;$(ToolsPath)7za.exe&quot; a -ttar -r -y -so tmp.tar * | &quot;$(ToolsPath)7za.exe&quot; a -si &quot;$(OutDir)$(PackageCacheName).tar.gz&quot;"
        WorkingDirectory="$(WorkingDir)"
        Condition="'$(CreateTarGzip)' == 'true'" />
   </Target>
