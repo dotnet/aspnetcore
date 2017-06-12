@@ -39,7 +39,7 @@
       <NuspecPath>$(RepositoryRoot)nuget\AspNetCore.nuspec</NuspecPath>
     </PropertyGroup>
 
-    <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;$(NuspecPath)&quot; -OutputDirectory &quot;$(ArtifactsDir)\build&quot; -prop Version=1.0.0-$(BuildNumber)" />
+    <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;$(NuspecPath)&quot; -OutputDirectory &quot;$(ArtifactsDir)\build&quot; -prop Version=1.0.0-pre-$(BuildNumber)" />
   </Target>
 
   <Target Name="PublishPackage" 
