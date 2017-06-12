@@ -16,7 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class FrameConnectionManagerTests
     {
-
+// This test causes MemoryPoolBlocks to be finalized which in turn causes an assert failure in debug builds.
+#if !DEBUG
         [ConditionalFact]
         [NoDebuggerCondition]
         public async Task CriticalErrorLoggedIfApplicationDoesntComplete()
@@ -65,6 +66,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 Assert.True(logWaitAttempts < 10);
             }
         }
+#endif
 
         private class NoDebuggerConditionAttribute : Attribute, ITestCondition
         {

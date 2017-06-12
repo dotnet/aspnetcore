@@ -163,13 +163,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                         TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutAction.SendTimeoutResponse);
                                         await messageBody.ConsumeAsync();
                                         TimeoutControl.CancelTimeout();
-
-                                        // At this point both the request body pipe reader and writer should be completed.
-                                        RequestBodyPipe.Reset();
                                     }
                                     else
                                     {
-                                        RequestBodyPipe.Reader.Complete();
                                         messageBody.Cancel();
                                         Input.CancelPendingRead();
                                     }
@@ -201,6 +197,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             // StopStreams should be called before the end of the "if (!_requestProcessingStopping)" block
                             // to ensure InitializeStreams has been called.
                             StopStreams();
+
+                            if (HasStartedConsumingRequestBody)
+                            {
+                                RequestBodyPipe.Reader.Complete();
+
+                                // At this point both the request body pipe reader and writer should be completed.
+                                RequestBodyPipe.Reset();
+                            }
                         }
                     }
 

@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task ConsumeAsyncCompletesPipeReader()
+        public async Task ConsumeAsyncConsumesAllRemainingInput()
         {
             using (var input = new TestInput())
             {
@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 await body.ConsumeAsync();
 
-                await Assert.ThrowsAsync<InvalidOperationException>(async () => await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
+                Assert.Equal(0, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
             }
         }
 

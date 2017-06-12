@@ -204,19 +204,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             TryInit();
 
-            try
+            ReadResult result;
+            do
             {
-                ReadResult result;
-                do
-                {
-                    result = await _context.RequestBodyPipe.Reader.ReadAsync();
-                    _context.RequestBodyPipe.Reader.Advance(result.Buffer.End);
-                } while (!result.IsCompleted);
-            }
-            finally
-            {
-                _context.RequestBodyPipe.Reader.Complete();
-            }
+                result = await _context.RequestBodyPipe.Reader.ReadAsync();
+                _context.RequestBodyPipe.Reader.Advance(result.Buffer.End);
+            } while (!result.IsCompleted);
         }
 
         protected void Copy(ReadableBuffer readableBuffer, WritableBuffer writableBuffer)
