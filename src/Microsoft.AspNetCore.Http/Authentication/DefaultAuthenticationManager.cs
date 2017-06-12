@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http.Features.Authentication;
 
 namespace Microsoft.AspNetCore.Http.Authentication.Internal
 {
+    [Obsolete("This is obsolete and will be removed in a future version. See https://go.microsoft.com/fwlink/?linkid=845470.")]
     public class DefaultAuthenticationManager : AuthenticationManager
     {
         // Lambda hoisted to static readonly field to improve inlining https://github.com/dotnet/roslyn/issues/13624

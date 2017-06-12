@@ -28,7 +28,11 @@ namespace Microsoft.AspNetCore.Http
 
         private HttpRequest _request;
         private HttpResponse _response;
+
+#pragma warning disable CS0618 // Type or member is obsolete
         private AuthenticationManager _authenticationManager;
+#pragma warning restore CS0618 // Type or member is obsolete
+
         private ConnectionInfo _connection;
         private WebSocketManager _websockets;
 
@@ -66,7 +70,9 @@ namespace Microsoft.AspNetCore.Http
             }
             if (_authenticationManager != null)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 UninitializeAuthenticationManager(_authenticationManager);
+#pragma warning restore CS0618 // Type or member is obsolete
                 _authenticationManager = null;
             }
             if (_connection != null)
@@ -196,7 +202,9 @@ namespace Microsoft.AspNetCore.Http
         protected virtual ConnectionInfo InitializeConnectionInfo() => new DefaultConnectionInfo(Features);
         protected virtual void UninitializeConnectionInfo(ConnectionInfo instance) { }
 
+        [Obsolete("This is obsolete and will be removed in a future version. See https://go.microsoft.com/fwlink/?linkid=845470.")]
         protected virtual AuthenticationManager InitializeAuthenticationManager() => new DefaultAuthenticationManager(this);
+        [Obsolete("This is obsolete and will be removed in a future version. See https://go.microsoft.com/fwlink/?linkid=845470.")]
         protected virtual void UninitializeAuthenticationManager(AuthenticationManager instance) { }
 
         protected virtual WebSocketManager InitializeWebSocketManager() => new DefaultWebSocketManager(Features);
