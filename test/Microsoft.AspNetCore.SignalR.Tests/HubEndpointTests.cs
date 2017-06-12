@@ -337,6 +337,80 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task CannotCallStaticHubMethods()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                var result = await client.InvokeAsync(nameof(MethodHub.StaticMethod)).OrTimeout();
+
+                Assert.Equal("Unknown hub method 'StaticMethod'", result.Error);
+
+                // kill the connection
+                client.Dispose();
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task CannotCallObjectMethodsOnHub()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                var result = await client.InvokeAsync(nameof(MethodHub.ToString)).OrTimeout();
+                Assert.Equal("Unknown hub method 'ToString'", result.Error);
+
+                result = await client.InvokeAsync(nameof(MethodHub.GetHashCode)).OrTimeout();
+                Assert.Equal("Unknown hub method 'GetHashCode'", result.Error);
+
+                result = await client.InvokeAsync(nameof(MethodHub.Equals)).OrTimeout();
+                Assert.Equal("Unknown hub method 'Equals'", result.Error);
+
+                result = await client.InvokeAsync(nameof(MethodHub.ReferenceEquals)).OrTimeout();
+                Assert.Equal("Unknown hub method 'ReferenceEquals'", result.Error);
+
+                // kill the connection
+                client.Dispose();
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task CannotCallDisposeMethodOnHub()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                var result = await client.InvokeAsync(nameof(MethodHub.Dispose)).OrTimeout();
+
+                Assert.Equal("Unknown hub method 'Dispose'", result.Error);
+
+                // kill the connection
+                client.Dispose();
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
         public async Task BroadcastHubMethod_SendsToAllClients()
         {
             var serviceProvider = CreateServiceProvider();
@@ -714,6 +788,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public Task MethodThatYieldsFailedTask()
             {
                 return Task.FromException(new InvalidOperationException("BOOM!"));
+            }
+
+            public static void StaticMethod()
+            {
             }
         }
 

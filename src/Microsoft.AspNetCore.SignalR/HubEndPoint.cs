@@ -2,18 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
@@ -386,7 +383,9 @@ namespace Microsoft.AspNetCore.SignalR
         private void DiscoverHubMethods()
         {
             var hubType = typeof(THub);
-            foreach (var methodInfo in hubType.GetMethods().Where(m => IsHubMethod(m)))
+            var hubTypeInfo = hubType.GetTypeInfo();
+
+            foreach (var methodInfo in HubReflectionHelper.GetHubMethods(hubType))
             {
                 var methodName = methodInfo.Name;
 
@@ -395,7 +394,7 @@ namespace Microsoft.AspNetCore.SignalR
                     throw new NotSupportedException($"Duplicate definitions of '{methodName}'. Overloading is not supported.");
                 }
 
-                var executor = ObjectMethodExecutor.Create(methodInfo, hubType.GetTypeInfo());
+                var executor = ObjectMethodExecutor.Create(methodInfo, hubTypeInfo);
                 _methods[methodName] = new HubMethodDescriptor(executor);
 
                 if (_logger.IsEnabled(LogLevel.Debug))
@@ -403,24 +402,6 @@ namespace Microsoft.AspNetCore.SignalR
                     _logger.LogDebug("Hub method '{methodName}' is bound", methodName);
                 }
             }
-        }
-
-        private static bool IsHubMethod(MethodInfo methodInfo)
-        {
-            // TODO: Add more checks
-            if (!methodInfo.IsPublic || methodInfo.IsSpecialName)
-            {
-                return false;
-            }
-
-            var baseDefinition = methodInfo.GetBaseDefinition().DeclaringType;
-            var baseType = baseDefinition.GetTypeInfo().IsGenericType ? baseDefinition.GetGenericTypeDefinition() : baseDefinition;
-            if (typeof(Hub<>) == baseType)
-            {
-                return false;
-            }
-
-            return true;
         }
 
         Type IInvocationBinder.GetReturnType(string invocationId)
