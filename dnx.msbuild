@@ -511,7 +511,7 @@
   <Target Name="NuGetVerify" DependsOnTargets="InstallNuGetPackageVerifier;NuGetVerifyTimestampPackages;NuGetVerifyTimestampFreePackages" />
 
   <Target Name="PushPackages" DependsOnTargets="NuGetVerifyTimestampFreePackages">
-    <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -pre PackagePublisher -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
+    <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -version 1.0.2-rc2-15275 -pre PackagePublisher -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
 
     <PropertyGroup>
       <PackagePublisherBinary>$(CommandsPath)\PackagePublisher\PackagePublisher.dll</PackagePublisherBinary>
