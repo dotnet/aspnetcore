@@ -22,8 +22,8 @@ namespace CreateTimestampFreePackages
                 return 1;
             }
 
-            var packagesDir = args[0];
-            var nonTimeStampedDir = args[1];
+            var packagesDir = args[0].Trim();
+            var nonTimeStampedDir = args[1].Trim();
             Directory.CreateDirectory(nonTimeStampedDir);
             var packages = Directory.GetFiles(packagesDir, "*.nupkg");
             var packageIds = GetPackageIds(packages);
