@@ -59,11 +59,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     return;
                 }
                 
-                if (TryComputeNamespace(codeDocument.Source.FileName, directive, out var computedNamespace))
+                if (TryComputeNamespace(codeDocument.Source.FilePath, directive, out var computedNamespace))
                 {
                     // Beautify the class name since we're using a hierarchy for namespaces.
                     var @class = visitor.FirstClass;
-                    var prefix = CSharpIdentifier.SanitizeClassName(Path.GetFileNameWithoutExtension(codeDocument.Source.FileName));
+                    var prefix = CSharpIdentifier.SanitizeClassName(Path.GetFileNameWithoutExtension(codeDocument.Source.FilePath));
                     if (@class != null && irDocument.DocumentKind == RazorPageDocumentClassifierPass.RazorPageDocumentKind)
                     {
                         @class.Name = prefix + "_Page";
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         // This code does a best-effort attempt to compute a namespace 'suffix' - the path difference between
         // where the @namespace directive appears and where the current document is on disk.
         //
-        // In the event that these two source either don't have filenames set or don't follow a coherent hierarchy,
+        // In the event that these two source either don't have FileNames set or don't follow a coherent hierarchy,
         // we will just use the namespace verbatim.
         internal static bool TryComputeNamespace(string source, DirectiveIRNode directive, out string @namespace)
         {
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var segments = source.Substring(directiveSource.Length).Split(Separators);
 
-            // Skip the last segment because it's the filename.
+            // Skip the last segment because it's the FileName.
             for (var i = 0; i < segments.Length - 1; i++)
             {
                 builder.Append('.');

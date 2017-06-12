@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     var import = imports[j];
 
-                    importsVisitor.FileName = import.Source.FileName;
+                    importsVisitor.FilePath = import.Source.FilePath;
                     importsVisitor.VisitBlock(import.Root);
                 }
             }
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var tagHelperPrefix = tagHelperContext?.Prefix;
             var visitor = new MainSourceVisitor(document, builder, namespaces, tagHelperPrefix)
             {
-                FileName = syntaxTree.Source.FileName,
+                FilePath = syntaxTree.Source.FilePath,
             };
 
             visitor.VisitBlock(syntaxTree.Root);
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _namespaces = namespaces;
             }
 
-            public string FileName { get; set; }
+            public string FilePath { get; set; }
 
             public override void VisitImportSpan(AddImportChunkGenerator chunkGenerator, Span span)
             {
@@ -178,7 +178,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
 
                 var span = new SourceSpan(
-                    node.Start.FilePath ?? FileName,
+                    node.Start.FilePath ?? FilePath,
                     node.Start.AbsoluteIndex,
                     node.Start.LineIndex,
                     node.Start.CharacterIndex,
@@ -331,7 +331,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 if (location != SourceLocation.Undefined)
                 {
                     valueSpan = new SourceSpan(
-                        location.FilePath ?? FileName,
+                        location.FilePath ?? FilePath,
                         location.AbsoluteIndex,
                         location.LineIndex,
                         location.CharacterIndex,
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         var contentLength = templateNode.Children.Sum(child => child.Source?.Length ?? 0);
 
                         templateNode.Source = new SourceSpan(
-                            sourceRangeStart.Value.FilePath ?? FileName,
+                            sourceRangeStart.Value.FilePath ?? FilePath,
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,
@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         var contentLength = expressionNode.Children.Sum(child => child.Source?.Length ?? 0);
 
                         expressionNode.Source = new SourceSpan(
-                            sourceRangeStart.Value.FilePath ?? FileName,
+                            sourceRangeStart.Value.FilePath ?? FilePath,
                             sourceRangeStart.Value.AbsoluteIndex,
                             sourceRangeStart.Value.LineIndex,
                             sourceRangeStart.Value.CharacterIndex,

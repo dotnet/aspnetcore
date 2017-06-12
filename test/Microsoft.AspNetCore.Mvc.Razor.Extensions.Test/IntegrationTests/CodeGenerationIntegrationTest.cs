@@ -614,7 +614,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             var text = new string(buffer);
             text = Regex.Replace(text, "(?<!\r)\n", "\r\n");
 
-            imports.Add(RazorSourceDocument.Create(text, DefaultImports.FileName, DefaultImports.Encoding));
+            imports.Add(RazorSourceDocument.Create(text, DefaultImports.FilePath, DefaultImports.Encoding));
         }
 
         private static MetadataReference BuildDynamicAssembly(

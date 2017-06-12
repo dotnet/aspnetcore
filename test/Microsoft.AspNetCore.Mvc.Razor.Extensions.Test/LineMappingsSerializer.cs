@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public static string Serialize(RazorCSharpDocument csharpDocument, RazorSourceDocument sourceDocument)
         {
             var builder = new StringBuilder();
-            var sourceFileName = sourceDocument.FileName;
+            var sourceFilePath = sourceDocument.FilePath;
             var charBuffer = new char[sourceDocument.Length];
             sourceDocument.CopyTo(0, charBuffer, 0, sourceDocument.Length);
             var sourceContent = new string(charBuffer);
@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             for (var i = 0; i < csharpDocument.LineMappings.Count; i++)
             {
                 var lineMapping = csharpDocument.LineMappings[i];
-                if (!string.Equals(lineMapping.OriginalSpan.FilePath, sourceFileName, StringComparison.Ordinal))
+                if (!string.Equals(lineMapping.OriginalSpan.FilePath, sourceFilePath, StringComparison.Ordinal))
                 {
                     continue;
                 }

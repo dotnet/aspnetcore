@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 context.Writer
                 .Write("#pragma checksum \"")
-                .Write(node.FileName)
+                .Write(node.FilePath)
                 .Write("\" \"")
                 .Write(node.Guid)
                 .Write("\" \"")

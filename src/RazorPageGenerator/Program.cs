@@ -46,7 +46,7 @@ namespace RazorPageGenerator
                     .SetBaseType("Microsoft.Extensions.RazorViews.BaseView")
                     .ConfigureClass((document, @class) =>
                     {
-                        @class.Name = Path.GetFileNameWithoutExtension(document.Source.FileName);
+                        @class.Name = Path.GetFileNameWithoutExtension(document.Source.FilePath);
                         @class.AccessModifier = "internal";
                     });
 

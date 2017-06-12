@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void GenerateCodeWithDefaults()
         {
             // Arrange
-            var filePath = Path.Combine(TestProjectRoot, $"{Filename}.cshtml");
+            var filePath = Path.Combine(TestProjectRoot, $"{FileName}.cshtml");
             var content = File.ReadAllText(filePath);
-            var projectItem = new TestRazorProjectItem($"{Filename}.cshtml", "")
+            var projectItem = new TestRazorProjectItem($"{FileName}.cshtml", "")
             {
                 Content = content,
             };
@@ -33,9 +33,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void GenerateCodeWithBaseType()
         {
             // Arrange
-            var filePath = Path.Combine(TestProjectRoot, $"{Filename}.cshtml");
+            var filePath = Path.Combine(TestProjectRoot, $"{FileName}.cshtml");
             var content = File.ReadAllText(filePath);
-            var projectItem = new TestRazorProjectItem($"{Filename}.cshtml", "")
+            var projectItem = new TestRazorProjectItem($"{FileName}.cshtml", "")
             {
                 Content = content,
             };
@@ -54,9 +54,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void GenerateCodeWithConfigureClass()
         {
             // Arrange
-            var filePath = Path.Combine(TestProjectRoot, $"{Filename}.cshtml");
+            var filePath = Path.Combine(TestProjectRoot, $"{FileName}.cshtml");
             var content = File.ReadAllText(filePath);
-            var projectItem = new TestRazorProjectItem($"{Filename}.cshtml", "")
+            var projectItem = new TestRazorProjectItem($"{FileName}.cshtml", "")
             {
                 Content = content,
             };
@@ -88,9 +88,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         public void GenerateCodeWithSetNamespace()
         {
             // Arrange
-            var filePath = Path.Combine(TestProjectRoot, $"{Filename}.cshtml");
+            var filePath = Path.Combine(TestProjectRoot, $"{FileName}.cshtml");
             var content = File.ReadAllText(filePath);
-            var projectItem = new TestRazorProjectItem($"{Filename}.cshtml", "")
+            var projectItem = new TestRazorProjectItem($"{FileName}.cshtml", "")
             {
                 Content = content,
             };

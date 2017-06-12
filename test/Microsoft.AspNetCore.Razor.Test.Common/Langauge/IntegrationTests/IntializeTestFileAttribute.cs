@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             if (typeof(IntegrationTestBase).GetTypeInfo().IsAssignableFrom(methodUnderTest.DeclaringType.GetTypeInfo()))
             {
                 var typeName = methodUnderTest.DeclaringType.Name;
-                IntegrationTestBase.Filename = $"TestFiles/IntegrationTests/{typeName}/{methodUnderTest.Name}";
+                IntegrationTestBase.FileName = $"TestFiles/IntegrationTests/{typeName}/{methodUnderTest.Name}";
             }
         }
 
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
             if (typeof(IntegrationTestBase).GetTypeInfo().IsAssignableFrom(methodUnderTest.DeclaringType.GetTypeInfo()))
             {
-                IntegrationTestBase.Filename = null;
+                IntegrationTestBase.FileName = null;
             }
         }
     }

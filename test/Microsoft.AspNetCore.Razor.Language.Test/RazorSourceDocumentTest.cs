@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.IsType<StreamSourceDocument>(document);
-            Assert.Equal("file.cshtml", document.FileName);
+            Assert.Equal("file.cshtml", document.FilePath);
             Assert.Same(Encoding.UTF8, document.Encoding);
         }
 
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = RazorSourceDocument.ReadFrom(content, "file.cshtml", Encoding.UTF32);
 
             // Assert
-            Assert.Equal("file.cshtml", document.FileName);
+            Assert.Equal("file.cshtml", document.FilePath);
             Assert.Same(Encoding.UTF32, Assert.IsType<StreamSourceDocument>(document).Encoding);
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = RazorSourceDocument.ReadFrom(content, "file.cshtml", Encoding.UTF32);
 
             // Assert
-            Assert.Equal("file.cshtml", document.FileName);
+            Assert.Equal("file.cshtml", document.FilePath);
             Assert.Same(Encoding.UTF32, Assert.IsType<StreamSourceDocument>(document).Encoding);
         }
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = RazorSourceDocument.ReadFrom(projectItem);
 
             // Assert
-            Assert.Equal(projectItem.PhysicalPath, document.FileName);
+            Assert.Equal(projectItem.PhysicalPath, document.FilePath);
             Assert.Equal(projectItem.Content, ReadContent(document));
         }
 
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = RazorSourceDocument.ReadFrom(projectItem);
 
             // Assert
-            Assert.Equal(projectItem.Path, document.FileName);
+            Assert.Equal(projectItem.Path, document.FilePath);
             Assert.Equal(projectItem.Content, ReadContent(document));
         }
 
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = RazorSourceDocument.Create(content, fileName);
 
             // Assert
-            Assert.Equal(fileName, document.FileName);
+            Assert.Equal(fileName, document.FilePath);
             Assert.Equal(content, ReadContent(document));
             Assert.Same(Encoding.UTF8, document.Encoding);
         }
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = RazorSourceDocument.Create(content, fileName, encoding);
 
             // Assert
-            Assert.Equal(fileName, document.FileName);
+            Assert.Equal(fileName, document.FilePath);
             Assert.Equal(content, ReadContent(document));
             Assert.Same(encoding, document.Encoding);
         }

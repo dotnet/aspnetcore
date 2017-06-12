@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.Create(@"@using System");
-            var expectedSourceLocation = new SourceSpan(codeDocument.Source.FileName, 1, 0, 1, 12);
+            var expectedSourceLocation = new SourceSpan(codeDocument.Source.FilePath, 1, 0, 1, 12);
 
             // Act
             var irDocument = Lower(codeDocument);

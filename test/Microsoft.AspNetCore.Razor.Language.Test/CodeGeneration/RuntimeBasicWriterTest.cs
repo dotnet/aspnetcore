@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var node = new ChecksumIRNode()
             {
-                FileName = "test.cshtml",
+                FilePath = "test.cshtml",
                 Guid = "SomeGuid",
                 Bytes = "SomeFileHash"
             };
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var node = new ChecksumIRNode()
             {
-                FileName = "test.cshtml",
+                FilePath = "test.cshtml",
                 Guid = "SomeGuid",
                 Bytes = string.Empty
             };

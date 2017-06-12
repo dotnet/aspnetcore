@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             ClassDeclarationIRNode @class, 
             MethodDeclarationIRNode method)
         {
-            var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.FileName;
+            var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.FilePath;
 
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
             @class.Name = CSharpIdentifier.GetClassNameFromPath(filePath);

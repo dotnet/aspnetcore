@@ -10,7 +10,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     internal interface IRazorEngineDocumentGenerator
     {
-        Task<RazorEngineDocument> GenerateDocumentAsync(Workspace workspace, Project project, string filename, string text, CancellationToken cancellationToken = default(CancellationToken));
+        Task<RazorEngineDocument> GenerateDocumentAsync(Workspace workspace, Project project, string filePath, string text, CancellationToken cancellationToken = default(CancellationToken));
     }
 }
 #endif

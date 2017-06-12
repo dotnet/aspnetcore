@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// Path of the file the content was read from.
         /// </summary>
-        public abstract string FileName { get; }
+        public abstract string FilePath { get; }
 
         /// <summary>
         /// Gets a character at given position.

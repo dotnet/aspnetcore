@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var chars = new char[source.Length];
             source.CopyTo(0, chars, 0, source.Length);
 
-            Source = new SeekableTextReader(chars, source.FileName);
+            Source = new SeekableTextReader(chars, source.FilePath);
             DesignTimeMode = options.DesignTime;
             ParseOnlyLeadingDirectives = options.ParseOnlyLeadingDirectives;
             Builder = new SyntaxTreeBuilder();

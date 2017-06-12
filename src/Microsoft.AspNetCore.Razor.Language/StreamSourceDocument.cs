@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override Encoding Encoding => _innerSourceDocument.Encoding;
 
-        public override string FileName => _innerSourceDocument.FileName;
+        public override string FilePath => _innerSourceDocument.FilePath;
 
         public override int Length => _innerSourceDocument.Length;
 

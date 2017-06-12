@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             ClassDeclarationIRNode @class,
             MethodDeclarationIRNode method)
         {
-            var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.FileName;
+            var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.FilePath;
 
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
             @class.BaseType = "global::Microsoft.AspNetCore.Mvc.RazorPages.Page";

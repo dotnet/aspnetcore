@@ -99,17 +99,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
         [Theory]
         [InlineData("test.cshtml")]
         [InlineData(null)]
-        public void Filename(string fileName)
+        public void FilePath(string filePath)
         {
             // Arrange
             var stream = TestRazorSourceDocument.CreateStreamContent("abc");
             var reader = new StreamReader(stream, true);
 
             // Act
-            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, fileName);
+            var document = new LargeTextSourceDocument(reader, ChunkTestLength, Encoding.UTF8, filePath);
 
             // Assert
-            Assert.Equal(fileName, document.FileName);
+            Assert.Equal(filePath, document.FilePath);
         }
 
         [Fact]

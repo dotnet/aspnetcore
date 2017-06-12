@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string Bytes { get; set; }
 
-        public string FileName { get; set; }
+        public string FilePath { get; set; }
 
         public string Guid { get; set; }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             var node = new ChecksumIRNode()
             {
-                FileName = sourceDocument.FileName,
+                FilePath = sourceDocument.FilePath,
                 Guid = Sha1AlgorithmId
             };
 

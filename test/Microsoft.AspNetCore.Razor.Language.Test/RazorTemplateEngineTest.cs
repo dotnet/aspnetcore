@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var import = Assert.Single(imports);
-            Assert.Equal(projectItem.Path, import.FileName);
+            Assert.Equal(projectItem.Path, import.FilePath);
         }
 
         [Fact]
@@ -207,8 +207,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.Collection(codeDocument.Imports,
-                import => Assert.Equal("/MyImport.cshtml", import.FileName),
-                import => Assert.Equal("/Views/Home/MyImport.cshtml", import.FileName));
+                import => Assert.Equal("/MyImport.cshtml", import.FilePath),
+                import => Assert.Equal("/Views/Home/MyImport.cshtml", import.FilePath));
         }
 
         [Fact]
@@ -236,8 +236,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Assert.Collection(codeDocument.Imports,
                 import => Assert.Same(defaultImport, import),
-                import => Assert.Equal("/MyImport.cshtml", import.FileName),
-                import => Assert.Equal("/Views/Home/MyImport.cshtml", import.FileName));
+                import => Assert.Equal("/MyImport.cshtml", import.FilePath),
+                import => Assert.Equal("/Views/Home/MyImport.cshtml", import.FilePath));
         }
 
         [Fact]

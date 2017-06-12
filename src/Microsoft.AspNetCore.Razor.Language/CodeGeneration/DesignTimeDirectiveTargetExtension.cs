@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var tokenKind = node.Descriptor.Kind;
             if (!node.Source.HasValue ||
                 !string.Equals(
-                    context.SourceDocument?.FileName,
+                    context.SourceDocument?.FilePath,
                     node.Source.Value.FilePath,
                     StringComparison.OrdinalIgnoreCase))
             {

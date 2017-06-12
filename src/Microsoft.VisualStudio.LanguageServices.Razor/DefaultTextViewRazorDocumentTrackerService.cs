@@ -142,7 +142,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 throw new ArgumentNullException(nameof(textBuffer));
             }
 
-            // If there's no document we can't find the filename, or look for a matching hierarchy.
+            // If there's no document we can't find the FileName, or look for a matching hierarchy.
             if (!_documentFactory.TryGetTextDocument(textBuffer, out var textDocument))
             {
                 return null;

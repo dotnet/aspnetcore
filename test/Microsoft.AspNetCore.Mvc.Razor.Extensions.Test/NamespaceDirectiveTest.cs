@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("AddUser_Page", @class.Name);
         }
 
-        // Handles cases where invalid characters appears in filenames. Note that we don't sanitize the part of
+        // Handles cases where invalid characters appears in FileNames. Note that we don't sanitize the part of
         // the namespace that you put in an import, just the file-based-suffix. Garbage in, garbage out.
         [Fact]
         public void Pass_SetsNamespaceAndClassName_SanitizesClassAndNamespace()

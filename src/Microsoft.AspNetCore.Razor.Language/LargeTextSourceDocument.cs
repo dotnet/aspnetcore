@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             _chunkMaxLength = chunkMaxLength;
             Encoding = encoding;
-            FileName = fileName;
+            FilePath = fileName;
 
             ReadChunks(reader, _chunkMaxLength, out _length, out _chunks);
             _lines = new DefaultRazorSourceLineCollection(this);
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override Encoding Encoding { get; }
 
-        public override string FileName { get; }
+        public override string FilePath { get; }
 
         public override int Length => _length;
 

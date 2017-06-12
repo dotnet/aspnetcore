@@ -31,13 +31,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 var span = spans[i];
                 result[i] = new ClassifiedSpan(
                     new SourceSpan(
-                        span.Start.FilePath ?? syntaxTree.Source.FileName,
+                        span.Start.FilePath ?? syntaxTree.Source.FilePath,
                         span.Start.AbsoluteIndex,
                         span.Start.LineIndex,
                         span.Start.CharacterIndex,
                         span.Length),
                     new SourceSpan(
-                        span.Parent.Start.FilePath ?? syntaxTree.Source.FileName,
+                        span.Parent.Start.FilePath ?? syntaxTree.Source.FilePath,
                         span.Parent.Start.AbsoluteIndex,
                         span.Parent.Start.LineIndex,
                         span.Parent.Start.CharacterIndex,
@@ -111,7 +111,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     results.Add(new TagHelperSpan(
                         new SourceSpan(
-                            tagHelperNode.Start.FilePath ?? syntaxTree.Source.FileName,
+                            tagHelperNode.Start.FilePath ?? syntaxTree.Source.FilePath,
                             tagHelperNode.Start.AbsoluteIndex,
                             tagHelperNode.Start.LineIndex,
                             tagHelperNode.Start.CharacterIndex,

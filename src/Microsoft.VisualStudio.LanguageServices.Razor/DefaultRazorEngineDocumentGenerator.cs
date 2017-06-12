@@ -13,7 +13,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     [Export(typeof(IRazorEngineDocumentGenerator))]
     internal class DefaultRazorEngineDocumentGenerator : IRazorEngineDocumentGenerator
     {
-        public async Task<RazorEngineDocument> GenerateDocumentAsync(Workspace workspace, Project project, string filename, string text, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<RazorEngineDocument> GenerateDocumentAsync(Workspace workspace, Project project, string filePath, string text, CancellationToken cancellationToken = default(CancellationToken))
         {
             try
             {
@@ -21,7 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
                 using (var session = await client.CreateSessionAsync(project.Solution))
                 {
-                    var document = await session.InvokeAsync<RazorEngineDocument>("GenerateDocumentAsync", new object[] { project.Id.Id, "Foo", filename, text }).ConfigureAwait(false);
+                    var document = await session.InvokeAsync<RazorEngineDocument>("GenerateDocumentAsync", new object[] { project.Id.Id, "Foo", filePath, text }).ConfigureAwait(false);
                     return document;
                 }
             }

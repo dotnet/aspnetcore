@@ -49,7 +49,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
             return Task.FromResult(directives ?? Enumerable.Empty<DirectiveDescriptor>());
         }
 
-        public Task<GeneratedDocument> GenerateDocumentAsync(Guid projectIdBytes, string projectDebugName, string filename, string text, CancellationToken cancellationToken = default(CancellationToken))
+        public Task<GeneratedDocument> GenerateDocumentAsync(Guid projectIdBytes, string projectDebugName, string filePath, string text, CancellationToken cancellationToken = default(CancellationToken))
         {
             var projectId = ProjectId.CreateFromSerialized(projectIdBytes, projectDebugName);
 
@@ -62,7 +62,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
                 stream.Write(bytes, 0, bytes.Length);
 
                 stream.Seek(0L, SeekOrigin.Begin);
-                source = RazorSourceDocument.ReadFrom(stream, filename, Encoding.UTF8);
+                source = RazorSourceDocument.ReadFrom(stream, filePath, Encoding.UTF8);
             }
 
             var code = RazorCodeDocument.Create(source);

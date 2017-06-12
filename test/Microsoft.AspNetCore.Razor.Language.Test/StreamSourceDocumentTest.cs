@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.IsType<StreamSourceDocument>(document);
-            Assert.Equal("file.cshtml", document.FileName);
+            Assert.Equal("file.cshtml", document.FilePath);
             Assert.Equal(Encoding.UTF32, document.Encoding);
         }
 
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.IsType<StreamSourceDocument>(document);
-            Assert.Equal("file.cshtml", document.FileName);
+            Assert.Equal("file.cshtml", document.FilePath);
             Assert.Equal(Encoding.UTF32, document.Encoding);
         }
 
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             var streamDocument = Assert.IsType<StreamSourceDocument>(document);
             Assert.IsType<LargeTextSourceDocument>(streamDocument._innerSourceDocument);
-            Assert.Equal("file.cshtml", document.FileName);
+            Assert.Equal("file.cshtml", document.FilePath);
             Assert.Same(Encoding.UTF8, document.Encoding);
             Assert.Equal(content, ReadContent(document));
         }

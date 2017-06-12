@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly RazorSourceLineCollection _lines;
         private byte[] _checksum;
 
-        public StringSourceDocument(string content, Encoding encoding, string fileName)
+        public StringSourceDocument(string content, Encoding encoding, string filePath)
         {
             if (content == null)
             {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             _content = content;
             Encoding = encoding;
-            FileName = fileName;
+            FilePath = filePath;
 
             _lines = new DefaultRazorSourceLineCollection(this);
         }
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override Encoding Encoding { get; }
 
-        public override string FileName { get; }
+        public override string FilePath { get; }
 
         public override int Length => _content.Length;
 
