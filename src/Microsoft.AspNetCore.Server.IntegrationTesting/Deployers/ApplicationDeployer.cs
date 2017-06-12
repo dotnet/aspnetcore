@@ -56,6 +56,11 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     + $" --framework {DeploymentParameters.TargetFramework}"
                     + $" --configuration {DeploymentParameters.Configuration}";
 
+                // Workaround for:
+                //   Publish fails on app with project reference to netstandard2.0 class library
+                //   https://github.com/dotnet/cli/issues/6843
+                parameters += " --no-restore";
+
                 if (DeploymentParameters.ApplicationType == ApplicationType.Standalone)
                 {
                     parameters += $" --runtime {GetRuntimeIdentifier()}";
