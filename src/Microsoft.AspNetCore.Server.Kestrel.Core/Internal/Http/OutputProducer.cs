@@ -95,6 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _log.ConnectionDisconnect(_connectionId);
                 _completed = true;
                 _pipe.Reader.CancelPendingRead();
+                _pipe.Writer.Complete();
             }
         }
 
