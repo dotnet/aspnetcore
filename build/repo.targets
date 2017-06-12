@@ -159,17 +159,16 @@
     <Delete Files="$(ZipFileName)" />
   </Target>
 
-  <Target Name="AddDiaSymReaderToPath" Condition="'$(OS)' == 'Windows_NT'">
+  <Target Name="AddDiaSymReaderToPath" Condition="'$(OS)' == 'Windows_NT'" DependsOnTargets="_AddDiaSymReaderFromCurrentSharedFramework;_AddDiaSymReaderFromDownloadedSharedFramework" />
+
+  <Target Name="_ResolveCurrentSharedFrameworkVersion">
+    <!-- Parse framework version -->
     <Exec Command="powershell.exe $(ToolsDir)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
     </Exec>
-
-    <MSBuild Projects="$(ProjectPath)" Targets="_AddDiaSymReaderFromCurrentSharedFramework" Properties="SharedFrameworkVersion=$(SharedFrameworkVersion)" Condition="'$(PACKAGE_CACHE_PLATFORM)' == 'x64'" />
-    <MSBuild Projects="$(ProjectPath)" Targets="_AddDiaSymReaderFromDownloadedSharedFramework" Properties="SharedFrameworkVersion=$(SharedFrameworkVersion)" Condition="'$(PACKAGE_CACHE_PLATFORM)' == 'x86'" />
   </Target>
 
-  <Target Name="_AddDiaSymReaderFromCurrentSharedFramework">
-    <!-- Parse framework version -->
+  <Target Name="_AddDiaSymReaderFromCurrentSharedFramework" DependsOnTargets="_ResolveCurrentSharedFrameworkVersion" Condition="'$(PACKAGE_CACHE_PLATFORM)' == 'x64'">
     <GetDotNetHost>
       <Output TaskParameter="DotNetDirectory" PropertyName="DotnetHomeDirectory" />
     </GetDotNetHost>
@@ -183,7 +182,7 @@
     <SetEnvironmentVariable Variable="PATH" Value="$(PATH);$(DiaSymReaderDirectory)" />
   </Target>
 
-  <Target Name="_AddDiaSymReaderFromDownloadedSharedFramework">
+  <Target Name="_AddDiaSymReaderFromDownloadedSharedFramework" DependsOnTargets="_ResolveCurrentSharedFrameworkVersion" Condition="'$(PACKAGE_CACHE_PLATFORM)' == 'x86'">
     <Exec Command="powershell.exe $(ToolsDir)InstallSharedFrameworkx86.ps1 $(SharedFrameworkVersion) $(BuildTempDirectory)"/>
 
     <PropertyGroup>
