@@ -67,8 +67,8 @@
       <OOBPackagesNoTimestampDir>$(ArtifactsDir)Signed\OobPackages-NoTimeStamp\</OOBPackagesNoTimestampDir>
     </PropertyGroup>
 
-    <Exec Command="$(DotNetPath) run $quot;$(PackagesDir) &quot; &quot;$(PackagesNoTimestampDir) &quot;" WorkingDirectory="$(RepositoryRoot)src/CreateTimestampFreePackages" />
-    <Exec Command="$(DotNetPath) run $quot;$(OOBPackagesDir) &quot; &quot;$(OOBPackagesNoTimestampDir) &quot;" WorkingDirectory="$(RepositoryRoot)src/CreateTimestampFreePackages" />
+    <Exec Command="$(DotNetPath) run &quot;$(PackagesDir) &quot; &quot;$(PackagesNoTimestampDir) &quot;" WorkingDirectory="$(RepositoryRoot)src/CreateTimestampFreePackages" />
+    <Exec Command="$(DotNetPath) run &quot;$(OOBPackagesDir) &quot; &quot;$(OOBPackagesNoTimestampDir) &quot;" WorkingDirectory="$(RepositoryRoot)src/CreateTimestampFreePackages" />
 
     <PropertyGroup>
       <ZipPath>$(RepositoryRoot)tools\7za.exe</ZipPath>
