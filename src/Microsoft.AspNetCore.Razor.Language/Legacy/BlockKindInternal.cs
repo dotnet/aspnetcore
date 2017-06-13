@@ -8,13 +8,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         // Code
         Statement,
         Directive,
-        Functions,
         Expression,
-        Helper,
 
         // Markup
         Markup,
-        Section,
         Template,
 
         // Special

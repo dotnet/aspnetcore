@@ -225,4 +225,10 @@
   <data name="IntermediateNodeReference_CollectionIsReadOnly" xml:space="preserve">
     <value>The node '{0}' has a read-only child collection and cannot be modified.</value>
   </data>
+  <data name="DuplicateDirective" xml:space="preserve">
+    <value>The '{0}' directive may only occur once per document.</value>
+  </data>
+  <data name="DirectiveMustExistBeforeMarkupOrCode" xml:space="preserve">
+    <value>The '{0}' directive must exist prior to markup or code.</value>
+  </data>
 </root>

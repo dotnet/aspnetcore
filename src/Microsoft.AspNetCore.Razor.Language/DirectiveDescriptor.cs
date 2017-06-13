@@ -39,6 +39,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract DirectiveKind Kind { get; }
 
         /// <summary>
+        /// Gets the way a directive can be used. The usage determines how many, and where directives can exist per document.
+        /// </summary>
+        public abstract DirectiveUsage Usage { get; }
+
+        /// <summary>
         /// Gets the list of directive tokens that can follow the directive keyword.
         /// </summary>
         public abstract IReadOnlyList<DirectiveTokenDescriptor> Tokens { get; }
@@ -189,6 +194,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public DirectiveKind Kind { get; }
 
+            public DirectiveUsage Usage { get; set; }
+
             public IList<DirectiveTokenDescriptor> Tokens { get; }
 
             public DirectiveDescriptor Build()
@@ -218,7 +225,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     }
                 }
 
-                return new DefaultDirectiveDescriptor(Directive, Kind, Tokens.ToArray(), DisplayName, Description);
+                return new DefaultDirectiveDescriptor(Directive, Kind, Usage, Tokens.ToArray(), DisplayName, Description);
             }
         }
 
@@ -227,12 +234,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             public DefaultDirectiveDescriptor(
                 string directive, 
                 DirectiveKind kind, 
+                DirectiveUsage usage,
                 DirectiveTokenDescriptor[] tokens,
                 string displayName,
                 string description)
             {
                 Directive = directive;
                 Kind = kind;
+                Usage = usage;
                 Tokens = tokens;
                 DisplayName = displayName;
                 Description = description;
@@ -245,6 +254,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             public override string DisplayName { get; }
 
             public override DirectiveKind Kind { get; }
+
+            public override DirectiveUsage Usage { get; }
 
             public override IReadOnlyList<DirectiveTokenDescriptor> Tokens { get; }
         }

@@ -514,6 +514,34 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatIntermediateNodeReference_CollectionIsReadOnly(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("IntermediateNodeReference_CollectionIsReadOnly"), p0);
 
+        /// <summary>
+        /// The '{0}' directive may only occur once per document.
+        /// </summary>
+        internal static string DuplicateDirective
+        {
+            get => GetString("DuplicateDirective");
+        }
+
+        /// <summary>
+        /// The '{0}' directive may only occur once per document.
+        /// </summary>
+        internal static string FormatDuplicateDirective(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DuplicateDirective"), p0);
+
+        /// <summary>
+        /// The '{0}' directive must exist prior to markup or code.
+        /// </summary>
+        internal static string DirectiveMustExistBeforeMarkupOrCode
+        {
+            get => GetString("DirectiveMustExistBeforeMarkupOrCode");
+        }
+
+        /// <summary>
+        /// The '{0}' directive must exist prior to markup or code.
+        /// </summary>
+        internal static string FormatDirectiveMustExistBeforeMarkupOrCode(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveMustExistBeforeMarkupOrCode"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

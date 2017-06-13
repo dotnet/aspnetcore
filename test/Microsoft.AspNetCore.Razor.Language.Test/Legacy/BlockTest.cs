@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var expected = new ExpressionChunkGenerator();
             var builder = new BlockBuilder()
             {
-                Type = BlockKindInternal.Helper,
+                Type = BlockKindInternal.Statement,
                 ChunkGenerator = expected
             };
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var expected = new SpanBuilder(SourceLocation.Undefined) { Kind = SpanKindInternal.Code }.Build();
             var builder = new BlockBuilder()
             {
-                Type = BlockKindInternal.Functions
+                Type = BlockKindInternal.Statement
             };
             builder.Children.Add(expected);
 

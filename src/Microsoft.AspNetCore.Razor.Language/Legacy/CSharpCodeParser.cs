@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private Dictionary<string, Action> _directiveParsers = new Dictionary<string, Action>(StringComparer.Ordinal);
         private Dictionary<CSharpKeyword, Action<bool>> _keywordParsers = new Dictionary<CSharpKeyword, Action<bool>>();
+        private HashSet<string> _seenDirectives = new HashSet<string>(StringComparer.Ordinal);
 
         public CSharpCodeParser(ParserContext context)
             : this(directives: Enumerable.Empty<DirectiveDescriptor>(), context: context)
@@ -91,7 +92,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             foreach (var directive in directives)
             {
-                _directiveParsers.Add(directive, handler);
+                _directiveParsers.Add(directive, () =>
+                {
+                    handler();
+                    _seenDirectives.Add(directive);
+                });
+
                 Keywords.Add(directive);
 
                 // These C# keywords are reserved for use in directives. It's an error to use them outside of
@@ -1589,10 +1595,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 AcceptAndMoveNext();
                 Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.None);
 
+                // Even if an error was logged do not bail out early. If a directive was used incorrectly it doesn't mean it can't be parsed.
+                ValidateDirectiveUsage(descriptor);
+
                 for (var i = 0; i < descriptor.Tokens.Count; i++)
                 {
                     if (!At(CSharpSymbolType.WhiteSpace) &&
-                        !At(CSharpSymbolType.NewLine) && 
+                        !At(CSharpSymbolType.NewLine) &&
                         !EndOfFile)
                     {
                         Context.ErrorSink.OnError(
@@ -1764,6 +1773,56 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
 
                 Context.ErrorSink = savedErrorSink;
+            }
+        }
+
+
+        private void ValidateDirectiveUsage(DirectiveDescriptor descriptor)
+        {
+            if (descriptor.Usage == DirectiveUsage.FileScopedSinglyOccurring)
+            {
+                if (_seenDirectives.Contains(descriptor.Directive))
+                {
+                    UsageError(Resources.FormatDuplicateDirective(descriptor.Directive));
+                    return;
+                }
+
+                var root = Context.Builder.ActiveBlocks.Last();
+                for (var i = 0; i < root.Children.Count; i++)
+                {
+                    // Directives, comments and whitespace are valid prior to an unnested directive.
+
+                    var child = root.Children[i];
+                    if (child is Legacy.Block block)
+                    {
+                        if (block.Type == BlockKindInternal.Directive || block.Type == BlockKindInternal.Comment)
+                        {
+                            continue;
+                        }
+                    }
+                    else if (child is Span span)
+                    {
+                        if (span.Length == 0 ||
+                            span.Kind == SpanKindInternal.Comment ||
+                            span.Symbols.All(symbol => string.IsNullOrWhiteSpace(symbol.Content)))
+                        {
+                            continue;
+                        }
+                    }
+
+                    UsageError(Resources.FormatDirectiveMustExistBeforeMarkupOrCode(descriptor.Directive));
+                    return;
+                }
+            }
+
+            return;
+
+            void UsageError(string message)
+            {
+                // There wil always be at least 1 child because of the `@` transition.
+                var directiveStart = Context.Builder.CurrentBlock.Children.First().Start;
+                var errorLength = /* @ */ 1 + descriptor.Directive.Length;
+                Context.ErrorSink.OnError(directiveStart, message, errorLength);
             }
         }
 

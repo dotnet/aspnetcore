@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             _endBlock = EndBlock;
         }
 
-        public IEnumerable<BlockBuilder> ActiveBlocks => _blockStack;
+        public IReadOnlyCollection<BlockBuilder> ActiveBlocks => _blockStack;
 
         public BlockBuilder CurrentBlock => _blockStack.Peek();
 
