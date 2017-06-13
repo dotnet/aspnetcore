@@ -167,15 +167,16 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
         /// <summary>
         /// The request path within the application's base path where the user agent will be returned after sign out from the identity provider.
+        /// See post_logout_redirect_uri from http://openid.net/specs/openid-connect-session-1_0.html#RedirectionAfterLogout.
         /// </summary>
         public PathString SignedOutCallbackPath { get; set; }
 
         /// <summary>
-        /// The uri where the user agent will be returned to after application is signed out from the identity provider.
+        /// The uri where the user agent will be redirected to after application is signed out from the identity provider.
         /// The redirect will happen after the SignedOutCallbackPath is invoked.
         /// </summary>
         /// <remarks>This URI can be out of the application's domain. By default it points to the root.</remarks>
-        public string PostLogoutRedirectUri { get; set; } = "/";
+        public string SignedOutRedirectUri { get; set; } = "/";
 
         /// <summary>
         /// Gets or sets if a metadata refresh should be attempted after a SecurityTokenSignatureKeyNotFoundException. This allows for automatic

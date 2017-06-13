@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             // Get the post redirect URI.
             if (string.IsNullOrEmpty(properties.RedirectUri))
             {
-                properties.RedirectUri = BuildRedirectUriIfRelative(Options.PostLogoutRedirectUri);
+                properties.RedirectUri = BuildRedirectUriIfRelative(Options.SignedOutRedirectUri);
                 if (string.IsNullOrWhiteSpace(properties.RedirectUri))
                 {
                     properties.RedirectUri = CurrentUri;

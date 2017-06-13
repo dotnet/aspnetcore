@@ -58,7 +58,7 @@ namespace OpenIdConnect.AzureAdSample
                 o.ClientSecret = ClientSecret; // for code flow
                 o.Authority = Authority;
                 o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
-                o.PostLogoutRedirectUri = "/signed-out";
+                o.SignedOutRedirectUri = "/signed-out";
                 // GetClaimsFromUserInfoEndpoint = true,
                 o.Events = new OpenIdConnectEvents()
                 {

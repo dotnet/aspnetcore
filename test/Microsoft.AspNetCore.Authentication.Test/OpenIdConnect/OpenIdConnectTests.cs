@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 o.Configuration = configuration;
                 o.StateDataFormat = stateFormat;
                 o.SignedOutCallbackPath = "/thelogout";
-                o.PostLogoutRedirectUri = "https://example.com/postlogout";
+                o.SignedOutRedirectUri = "https://example.com/postlogout";
             });
 
             var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Signout);
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 o.StateDataFormat = stateFormat;
                 o.ClientId = "Test Id";
                 o.Configuration = configuration;
-                o.PostLogoutRedirectUri = "https://example.com/postlogout";
+                o.SignedOutRedirectUri = "https://example.com/postlogout";
             });
 
             var transaction = await server.SendAsync("https://example.com/signout_with_specific_redirect_uri");
