@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
@@ -52,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var source = node.Source.Value;
 
-            var generatedLocation = new SourceSpan(Writer.GetCurrentSourceLocation(), source.Length);
+            var generatedLocation = new SourceSpan(Writer.Location, source.Length);
             var lineMapping = new LineMapping(source, generatedLocation);
 
             LineMappings.Add(lineMapping);

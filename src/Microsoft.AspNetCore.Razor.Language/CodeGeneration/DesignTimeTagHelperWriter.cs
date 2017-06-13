@@ -44,10 +44,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             context.Writer
                 .WriteStartAssignment(tagHelperVariableName)
-                .WriteStartMethodInvocation(
-                    CreateTagHelperMethodName,
-                    "global::" + node.TagHelperTypeName)
-                .WriteEndMethodInvocation();
+                .Write(CreateTagHelperMethodName)
+                .WriteLine($"<global::{node.TagHelperTypeName}>();");
         }
 
         public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIntermediateNode node)

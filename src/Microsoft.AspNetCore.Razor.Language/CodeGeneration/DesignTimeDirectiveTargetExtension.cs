@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void WriteDesignTimeDirective(CSharpRenderingContext context, DesignTimeDirectiveIntermediateNode node)
         {
             context.Writer
-                .WritePragma("warning disable 219")
+                .WriteLine("#pragma warning disable 219")
                 .WriteLine($"private void {DirectiveTokenHelperMethodName}() {{");
 
             for (var i = 0; i < node.Children.Count; i++)
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             context.Writer
                 .WriteLine("}")
-                .WritePragma("warning restore 219");
+                .WriteLine("#pragma warning restore 219");
         }
 
         private void WriteDesignTimeDirectiveToken(CSharpRenderingContext context, DirectiveTokenIntermediateNode node)
@@ -48,10 +48,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .Write("((")
                 .Write(typeof(Action).FullName)
                 .Write(")(");
-            using (context.Writer.BuildLambda(endLine: false))
+            using (context.Writer.BuildLambda())
             {
                 var originalIndent = context.Writer.CurrentIndent;
-                context.Writer.ResetIndent();
+                context.Writer.CurrentIndent = 0;
                 switch (tokenKind)
                 {
                     case DirectiveTokenKind.Type:
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                         context.Writer.WriteLine(";");
                         break;
                 }
-                context.Writer.SetIndent(originalIndent);
+                context.Writer.CurrentIndent = originalIndent;
             }
             context.Writer.WriteLine("))();");
         }

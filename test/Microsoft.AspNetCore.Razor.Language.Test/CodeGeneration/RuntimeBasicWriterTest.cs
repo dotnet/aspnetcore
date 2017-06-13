@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new RuntimeBasicWriter();
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter()
+                Writer = new CSharpCodeWriter()
             };
 
             var node = new UsingStatementIntermediateNode()
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new RuntimeBasicWriter();
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter()
+                Writer = new CSharpCodeWriter()
             };
 
             var node = new UsingStatementIntermediateNode()
@@ -81,7 +81,7 @@ using System;
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpExpressionIntermediateNode();
@@ -116,7 +116,7 @@ using System;
             var context = new CSharpRenderingContext()
             {
                 Options = RazorCodeGenerationOptions.CreateDefault(),
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpExpressionIntermediateNode()
@@ -157,7 +157,7 @@ Test(i++);
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpExpressionIntermediateNode();
@@ -202,7 +202,7 @@ Test(i++);
             {
                 Options = RazorCodeGenerationOptions.CreateDefault(),
                 CodeDocument = RazorCodeDocument.Create(sourceDocument),
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpExpressionIntermediateNode()
@@ -248,7 +248,7 @@ Test(i++);
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpCodeIntermediateNode();
@@ -275,7 +275,7 @@ Test(i++);
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpCodeIntermediateNode();
@@ -306,7 +306,7 @@ Test(i++);
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
@@ -345,7 +345,7 @@ if (true) { }
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
@@ -383,7 +383,7 @@ if (true) { }
             var writer = new RuntimeBasicWriter();
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
@@ -413,7 +413,7 @@ if (true) { }
             var writer = new RuntimeBasicWriter();
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
@@ -601,7 +601,7 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
         private static CSharpRenderingContext GetCSharpRenderingContext(BasicWriter writer)
         {
             var options = RazorCodeGenerationOptions.CreateDefault();
-            var codeWriter = new Legacy.CSharpCodeWriter();
+            var codeWriter = new CSharpCodeWriter();
             var context = new CSharpRenderingContext()
             {
                 Writer = codeWriter,

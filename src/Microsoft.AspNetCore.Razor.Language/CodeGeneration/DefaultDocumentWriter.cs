@@ -109,55 +109,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
             {
-                Context.Writer
-                    .Write("namespace ")
-                    .WriteLine(node.Content);
-
-                using (Context.Writer.BuildScope())
+                using (Context.Writer.BuildNamespace(node.Content))
                 {
-                    Context.Writer.WriteLineHiddenDirective();
+                    Context.Writer.WriteLine("#line hidden");
                     RenderChildren(node);
                 }
             }
 
             public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
-                Context.Writer
-                    .Write(node.AccessModifier)
-                    .Write(" class ")
-                    .Write(node.Name);
-
-                if (node.BaseType != null || node.Interfaces != null)
-                {
-                    Context.Writer.Write(" : ");
-                }
-
-                if (node.BaseType != null)
-                {
-                    Context.Writer.Write(node.BaseType);
-
-                    if (node.Interfaces != null)
-                    {
-                        Context.Writer.WriteParameterSeparator();
-                    }
-                }
-
-                if (node.Interfaces != null)
-                {
-                    for (var i = 0; i < node.Interfaces.Count; i++)
-                    {
-                        Context.Writer.Write(node.Interfaces[i]);
-
-                        if (i + 1 < node.Interfaces.Count)
-                        {
-                            Context.Writer.WriteParameterSeparator();
-                        }
-                    }
-                }
-
-                Context.Writer.WriteLine();
-
-                using (Context.Writer.BuildScope())
+                using (Context.Writer.BuildClassDeclaration(node.AccessModifier, node.Name, node.BaseType, node.Interfaces))
                 {
                     RenderChildren(node);
                 }

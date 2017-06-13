@@ -433,7 +433,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
         private static CSharpRenderingContext GetCSharpRenderingContext(TagHelperWriter writer, RazorCodeDocument codeDocument = null)
         {
             var options = RazorCodeGenerationOptions.CreateDefault();
-            var codeWriter = new Legacy.CSharpCodeWriter();
+            var codeWriter = new CSharpCodeWriter();
             var context = new CSharpRenderingContext()
             {
                 Writer = codeWriter,

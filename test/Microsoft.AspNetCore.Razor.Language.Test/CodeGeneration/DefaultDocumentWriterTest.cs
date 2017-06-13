@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var context = new CSharpRenderingContext()
             {
                 Options = options,
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 CodeDocument = codeDocument
             };
 
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var context = new CSharpRenderingContext()
             {
                 Options = options,
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 CodeDocument = codeDocument
             };
 
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var context = new CSharpRenderingContext()
             {
                 Options = options,
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 CodeDocument = codeDocument
             };
 
@@ -124,7 +124,7 @@ namespace TestNamespace
             var context = new CSharpRenderingContext()
             {
                 Options = options,
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 CodeDocument = codeDocument
             };
             var writer = new DefaultDocumentWriter(target, context);
@@ -165,7 +165,7 @@ internal class TestClass : TestBase, IFoo, IBar
             var context = new CSharpRenderingContext()
             {
                 Options = options,
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 CodeDocument = codeDocument
             };
             var writer = new DefaultDocumentWriter(target, context);
@@ -208,7 +208,7 @@ internal virtual async string TestMethod()
             var context = new CSharpRenderingContext()
             {
                 Options = options,
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 CodeDocument = codeDocument
             };
             var writer = new DefaultDocumentWriter(target, context);
@@ -247,7 +247,7 @@ internal readonly string _foo;
             var context = new CSharpRenderingContext()
             {
                 Options = options,
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 CodeDocument = codeDocument
             };
             var writer = new DefaultDocumentWriter(target, context);

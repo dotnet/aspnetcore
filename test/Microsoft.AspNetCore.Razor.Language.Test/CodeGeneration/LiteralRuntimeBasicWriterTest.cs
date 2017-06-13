@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var context = new CSharpRenderingContext()
             {
                 Options = RazorCodeGenerationOptions.CreateDefault(),
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpExpressionIntermediateNode()

@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             context.Writer.WriteStartNewObject(TemplateTypeName);
 
-            using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: ValueWriterName))
+            using (context.Writer.BuildAsyncLambda(ValueWriterName))
             {
                 BeginWriterScope(context, ValueWriterName);
 

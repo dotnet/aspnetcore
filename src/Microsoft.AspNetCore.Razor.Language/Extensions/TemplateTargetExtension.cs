@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .Write(ItemParameterName).Write(" => ")
                 .WriteStartNewObject(TemplateTypeName);
 
-            using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: TemplateWriterName))
+            using (context.Writer.BuildAsyncLambda(TemplateWriterName))
             {
                 context.BasicWriter.BeginWriterScope(context, TemplateWriterName);
 

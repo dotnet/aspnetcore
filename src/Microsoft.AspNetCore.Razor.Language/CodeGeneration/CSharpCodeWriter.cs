@@ -6,11 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using System.Text;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
+namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class CSharpCodeWriter : CodeWriter
+    public sealed class CSharpCodeWriter
     {
         private const string InstanceMethodFormat = "{0}.{1}";
 
@@ -26,44 +26,155 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             '\u2029',
         };
 
-        public new CSharpCodeWriter Write(string data)
+        private static readonly char[] NewLineCharacters = { '\r', '\n' };
+
+        private string _cache = string.Empty;
+        private bool _dirty;
+
+        private int _absoluteIndex;
+        private int _currentLineIndex;
+        private int _currentLineCharacterIndex;
+
+        internal StringBuilder Builder { get; } = new StringBuilder();
+
+        public int CurrentIndent { get; set; }
+
+        public bool IsAfterNewLine { get; private set; }
+
+        public string NewLine { get; set; } = Environment.NewLine;
+
+        public SourceLocation Location => new SourceLocation(_absoluteIndex, _currentLineIndex, _currentLineCharacterIndex);
+
+        // Internal for testing.
+        internal CSharpCodeWriter Indent(int size)
         {
-            return (CSharpCodeWriter)base.Write(data);
+            if (IsAfterNewLine)
+            {
+                Builder.Append(' ', size);
+
+                _currentLineCharacterIndex += size;
+                _absoluteIndex += size;
+
+                _dirty = true;
+                IsAfterNewLine = false;
+            }
+
+            return this;
         }
 
-        public new CSharpCodeWriter Indent(int size)
+        public CSharpCodeWriter Write(string data)
         {
-            return (CSharpCodeWriter)base.Indent(size);
+            if (data == null)
+            {
+                return this;
+            }
+
+            return Write(data, 0, data.Length);
         }
 
-        public new CSharpCodeWriter ResetIndent()
+        public CSharpCodeWriter Write(string data, int index, int count)
         {
-            return (CSharpCodeWriter)base.ResetIndent();
+            if (data == null || count == 0)
+            {
+                return this;
+            }
+
+            Indent(CurrentIndent);
+
+            Builder.Append(data, index, count);
+
+            _dirty = true;
+            IsAfterNewLine = false;
+
+            _absoluteIndex += count;
+
+            // The data string might contain a partial newline where the previously
+            // written string has part of the newline.
+            var i = index;
+            int? trailingPartStart = null;
+
+            if (
+                // Check the last character of the previous write operation.
+                Builder.Length - count - 1 >= 0 &&
+                Builder[Builder.Length - count - 1] == '\r' &&
+
+                // Check the first character of the current write operation.
+                Builder[Builder.Length - count] == '\n')
+            {
+                // This is newline that's spread across two writes. Skip the first character of the
+                // current write operation.
+                //
+                // We don't need to increment our newline counter because we already did that when we
+                // saw the \r.
+                i += 1;
+                trailingPartStart = 1;
+            }
+
+            // Iterate the string, stopping at each occurrence of a newline character. This lets us count the
+            // newline occurrences and keep the index of the last one.
+            while ((i = data.IndexOfAny(NewLineCharacters, i)) >= 0)
+            {
+                // Newline found.
+                _currentLineIndex++;
+                _currentLineCharacterIndex = 0;
+
+                i++;
+
+                // We might have stopped at a \r, so check if it's followed by \n and then advance the index to
+                // start the next search after it.
+                if (count > i &&
+                    data[i - 1] == '\r' &&
+                    data[i] == '\n')
+                {
+                    i++;
+                }
+
+                // The 'suffix' of the current line starts after this newline token.
+                trailingPartStart = i;
+            }
+
+            if (trailingPartStart == null)
+            {
+                // No newlines, just add the length of the data buffer
+                _currentLineCharacterIndex += count;
+            }
+            else
+            {
+                // Newlines found, add the trailing part of 'data'
+                _currentLineCharacterIndex += (count - trailingPartStart.Value);
+            }
+
+            return this;
         }
 
-        public new CSharpCodeWriter SetIndent(int size)
+        public CSharpCodeWriter WriteLine()
         {
-            return (CSharpCodeWriter)base.SetIndent(size);
+            Builder.Append(NewLine);
+
+            _currentLineIndex++;
+            _currentLineCharacterIndex = 0;
+            _absoluteIndex += NewLine.Length;
+
+            _dirty = true;
+            IsAfterNewLine = true;
+
+            return this;
         }
 
-        public new CSharpCodeWriter IncreaseIndent(int size)
+        public CSharpCodeWriter WriteLine(string data)
         {
-            return (CSharpCodeWriter)base.IncreaseIndent(size);
+            return Write(data).WriteLine();
         }
 
-        public new CSharpCodeWriter DecreaseIndent(int size)
+        public string GenerateCode()
         {
-            return (CSharpCodeWriter)base.DecreaseIndent(size);
-        }
+            if (_dirty)
+            {
+                _cache = Builder.ToString();
+                _dirty = false;
+            }
 
-        public new CSharpCodeWriter WriteLine(string data)
-        {
-            return (CSharpCodeWriter)base.WriteLine(data);
-        }
-
-        public new CSharpCodeWriter WriteLine()
-        {
-            return (CSharpCodeWriter)base.WriteLine();
+            return _cache;
         }
 
         public CSharpCodeWriter WritePadding(int offset, SourceSpan? span, CSharpRenderingContext context)
@@ -143,11 +254,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return this;
         }
 
-        public CSharpCodeWriter WriteComment(string comment)
-        {
-            return Write("// ").WriteLine(comment);
-        }
-
         public CSharpCodeWriter WriteBooleanLiteral(bool value)
         {
             return Write(value.ToString().ToLowerInvariant());
@@ -168,15 +274,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return Write("new ").Write(typeName).Write("(");
         }
 
-        public CSharpCodeWriter WriteLocationTaggedString(LocationTagged<string> value)
-        {
-            WriteStringLiteral(value.Value);
-            WriteParameterSeparator();
-            Write(value.Location.AbsoluteIndex.ToString(CultureInfo.InvariantCulture));
-
-            return this;
-        }
-
         public CSharpCodeWriter WriteStringLiteral(string literal)
         {
             if (literal.Length >= 256 && literal.Length <= 1500 && literal.IndexOf('\0') == -1)
@@ -189,16 +286,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             return this;
-        }
-
-        public CSharpCodeWriter WriteLineHiddenDirective()
-        {
-            return WriteLine("#line hidden");
-        }
-
-        public CSharpCodeWriter WritePragma(string value)
-        {
-            return Write("#pragma ").WriteLine(value);
         }
 
         public CSharpCodeWriter WriteUsing(string name)
@@ -217,33 +304,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
 
             return this;
-        }
-
-        public CSharpCodeWriter WriteLineDefaultDirective()
-        {
-            return WriteLine("#line default");
-        }
-
-        public CSharpCodeWriter WriteStartReturn()
-        {
-            return Write("return ");
-        }
-
-        public CSharpCodeWriter WriteReturn(string value)
-        {
-            return WriteReturn(value, endLine: true);
-        }
-
-        public CSharpCodeWriter WriteReturn(string value, bool endLine)
-        {
-            Write("return ").Write(value);
-
-            if (endLine)
-            {
-                Write(";");
-            }
-
-            return WriteLine();
         }
 
         /// <summary>
@@ -270,17 +330,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public CSharpCodeWriter WriteStartMethodInvocation(string methodName)
         {
-            return WriteStartMethodInvocation(methodName, new string[0]);
-        }
-
-        public CSharpCodeWriter WriteStartMethodInvocation(string methodName, params string[] genericArguments)
-        {
             Write(methodName);
-
-            if (genericArguments.Length > 0)
-            {
-                Write("<").Write(string.Join(", ", genericArguments)).Write(">");
-            }
 
             return Write("(");
         }
@@ -302,9 +352,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Writes a method invocation for the given instance name.
-        public CSharpCodeWriter WriteInstanceMethodInvocation(string instanceName,
-                                                              string methodName,
-                                                              params string[] parameters)
+        public CSharpCodeWriter WriteInstanceMethodInvocation(
+            string instanceName,
+            string methodName,
+            params string[] parameters)
         {
             if (instanceName == null)
             {
@@ -320,10 +371,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Writes a method invocation for the given instance name.
-        public CSharpCodeWriter WriteInstanceMethodInvocation(string instanceName,
-                                                              string methodName,
-                                                              bool endLine,
-                                                              params string[] parameters)
+        public CSharpCodeWriter WriteInstanceMethodInvocation(
+            string instanceName,
+            string methodName,
+            bool endLine,
+            params string[] parameters)
         {
             if (instanceName == null)
             {
@@ -341,8 +393,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 parameters);
         }
 
-        public CSharpCodeWriter WriteStartInstanceMethodInvocation(string instanceName,
-                                                                   string methodName)
+        public CSharpCodeWriter WriteStartInstanceMethodInvocation(string instanceName, string methodName)
         {
             if (instanceName == null)
             {
@@ -490,27 +541,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return this;
         }
 
-        public CSharpDisableWarningScope BuildDisableWarningScope(int warning)
-        {
-            return new CSharpDisableWarningScope(this, warning);
-        }
-
         public CSharpCodeWritingScope BuildScope()
         {
             return new CSharpCodeWritingScope(this);
         }
 
-        public CSharpCodeWritingScope BuildLambda(bool endLine, params string[] parameterNames)
+        public CSharpCodeWritingScope BuildLambda(params string[] parameterNames)
         {
-            return BuildLambda(endLine, async: false, parameterNames: parameterNames);
+            return BuildLambda(async: false, parameterNames: parameterNames);
         }
 
-        public CSharpCodeWritingScope BuildAsyncLambda(bool endLine, params string[] parameterNames)
+        public CSharpCodeWritingScope BuildAsyncLambda(params string[] parameterNames)
         {
-            return BuildLambda(endLine, async: true, parameterNames: parameterNames);
+            return BuildLambda(async: true, parameterNames: parameterNames);
         }
 
-        private CSharpCodeWritingScope BuildLambda(bool endLine, bool async, string[] parameterNames)
+        private CSharpCodeWritingScope BuildLambda(bool async, string[] parameterNames)
         {
             if (async)
             {
@@ -520,15 +566,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Write("(").Write(string.Join(", ", parameterNames)).Write(") => ");
 
             var scope = new CSharpCodeWritingScope(this);
-
-            if (endLine)
-            {
-                // End the lambda with a semicolon
-                scope.OnClose += () =>
-                {
-                    WriteLine(";");
-                };
-            }
 
             return scope;
         }
@@ -540,62 +577,40 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return new CSharpCodeWritingScope(this);
         }
 
-        public CSharpCodeWritingScope BuildClassDeclaration(string accessibility, string name)
-        {
-            return BuildClassDeclaration(accessibility, name, Enumerable.Empty<string>());
-        }
-
-        public CSharpCodeWritingScope BuildClassDeclaration(string accessibility, string name, string baseType)
-        {
-            return BuildClassDeclaration(accessibility, name, new string[] { baseType });
-        }
-
         public CSharpCodeWritingScope BuildClassDeclaration(
             string accessibility,
             string name,
-            IEnumerable<string> baseTypes)
+            string baseType,
+            IEnumerable<string> interfaces)
         {
             Write(accessibility).Write(" class ").Write(name);
 
-            if (baseTypes.Count() > 0)
+            var hasBaseType = !string.IsNullOrEmpty(baseType);
+            var hasInterfaces = interfaces != null && interfaces.Count() > 0;
+
+            if (hasBaseType || hasInterfaces)
             {
                 Write(" : ");
-                Write(string.Join(", ", baseTypes));
+
+                if (hasBaseType)
+                {
+                    Write(baseType);
+
+                    if (hasInterfaces)
+                    {
+                        WriteParameterSeparator();
+                    }
+                }
+
+                if (hasInterfaces)
+                {
+                    Write(string.Join(", ", interfaces));
+                }
             }
 
             WriteLine();
 
             return new CSharpCodeWritingScope(this);
-        }
-
-        public CSharpCodeWritingScope BuildConstructor(string name)
-        {
-            return BuildConstructor("public", name);
-        }
-
-        public CSharpCodeWritingScope BuildConstructor(string accessibility, string name)
-        {
-            return BuildConstructor(accessibility, name, Enumerable.Empty<KeyValuePair<string, string>>());
-        }
-
-        public CSharpCodeWritingScope BuildConstructor(
-            string accessibility,
-            string name,
-            IEnumerable<KeyValuePair<string, string>> parameters)
-        {
-            Write(accessibility)
-                .Write(" ")
-                .Write(name)
-                .Write("(")
-                .Write(string.Join(", ", parameters.Select(p => p.Key + " " + p.Value)))
-                .WriteLine(")");
-
-            return new CSharpCodeWritingScope(this);
-        }
-
-        public CSharpCodeWritingScope BuildMethodDeclaration(string accessibility, string returnType, string name)
-        {
-            return BuildMethodDeclaration(accessibility, returnType, name, Enumerable.Empty<KeyValuePair<string, string>>());
         }
 
         public CSharpCodeWritingScope BuildMethodDeclaration(
@@ -707,6 +722,61 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             Write("\"");
         }
 
+        public struct CSharpCodeWritingScope : IDisposable
+        {
+            private CSharpCodeWriter _writer;
+            private bool _autoSpace;
+            private int _tabSize;
+            private int _startIndent;
+
+            public CSharpCodeWritingScope(CSharpCodeWriter writer, int tabSize = 4, bool autoSpace = true)
+            {
+                _writer = writer;
+                _autoSpace = true;
+                _tabSize = tabSize;
+                _startIndent = -1; // Set in WriteStartScope
+
+                WriteStartScope();
+            }
+
+            public void Dispose()
+            {
+                WriteEndScope();
+            }
+
+            private void WriteStartScope()
+            {
+                TryAutoSpace(" ");
+
+                _writer.WriteLine("{");
+                _writer.CurrentIndent += _tabSize;
+                _startIndent = _writer.CurrentIndent;
+            }
+
+            private void WriteEndScope()
+            {
+                TryAutoSpace(_writer.NewLine);
+
+                // Ensure the scope hasn't been modified
+                if (_writer.CurrentIndent == _startIndent)
+                {
+                    _writer.CurrentIndent -= _tabSize;
+                }
+
+                _writer.WriteLine("}");
+            }
+
+            private void TryAutoSpace(string spaceCharacter)
+            {
+                if (_autoSpace &&
+                    _writer.Builder.Length > 0 &&
+                    !char.IsWhiteSpace(_writer.Builder[_writer.Builder.Length - 1]))
+                {
+                    _writer.Write(spaceCharacter);
+                }
+            }
+        }
+
         private class LinePragmaWriter : IDisposable
         {
             private readonly CSharpCodeWriter _writer;
@@ -721,7 +791,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                 _writer = writer;
                 _startIndent = _writer.CurrentIndent;
-                _writer.ResetIndent();
+                _writer.CurrentIndent = 0;
                 _writer.WriteLineNumberDirective(documentLocation, documentLocation.FilePath);
             }
 
@@ -742,9 +812,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
 
                 _writer
-                    .WriteLineDefaultDirective()
-                    .WriteLineHiddenDirective()
-                    .SetIndent(_startIndent);
+                    .WriteLine("#line default")
+                    .WriteLine("#line hidden");
+
+                _writer.CurrentIndent = _startIndent;
             }
         }
 

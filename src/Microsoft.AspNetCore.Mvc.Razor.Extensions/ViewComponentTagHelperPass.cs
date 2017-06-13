@@ -6,8 +6,8 @@ using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 .Add(new IntermediateToken()
                 {
                     Kind = IntermediateToken.TokenKind.CSharp,
-                    Content = writer.Builder.ToString()
+                    Content = writer.GenerateCode()
                 });
 
             @class.Children.Add(statement);
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var tagHelperTypeName = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelper";
             var className = GetVCTHClassName(descriptor);
 
-            using (writer.BuildClassDeclaration("public", className, new[] { tagHelperTypeName }))
+            using (writer.BuildClassDeclaration("public", className, tagHelperTypeName, interfaces: null))
             {
                 // Add view component helper.
                 writer.WriteVariableDeclaration(
@@ -122,11 +122,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private void BuildConstructorString(CSharpCodeWriter writer, string className)
         {
-            var helperPair = new KeyValuePair<string, string>(
-                $"global::Microsoft.AspNetCore.Mvc.IViewComponentHelper",
-                "helper");
-
-            using (writer.BuildConstructor("public", className, new[] { helperPair }))
+            writer.Write("public ")
+                .Write(className)
+                .Write("(")
+                .Write("global::Microsoft.AspNetCore.Mvc.IViewComponentHelper helper")
+                .WriteLine(")");
+            using (writer.BuildScope())
             {
                 writer.WriteStartAssignment("_helper")
                     .Write("helper")

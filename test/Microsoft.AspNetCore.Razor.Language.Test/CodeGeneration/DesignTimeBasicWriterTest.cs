@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new DesignTimeBasicWriter();
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter()
+                Writer = new CSharpCodeWriter()
             };
 
             var node = new UsingStatementIntermediateNode()
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var sourceDocument = TestRazorSourceDocument.Create("@using System;");
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 CodeDocument = RazorCodeDocument.Create(sourceDocument)
             };
 
@@ -85,7 +85,7 @@ using System;
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpExpressionIntermediateNode();
@@ -117,7 +117,7 @@ using System;
             var context = new CSharpRenderingContext()
             {
                 Options = RazorCodeGenerationOptions.CreateDefault(),
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpExpressionIntermediateNode()
@@ -155,7 +155,7 @@ __o = i++;
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpExpressionIntermediateNode();
@@ -197,7 +197,7 @@ __o = i++;
             {
                 Options = RazorCodeGenerationOptions.CreateDefault(),
                 CodeDocument = RazorCodeDocument.Create(sourceDocument),
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpExpressionIntermediateNode()
@@ -243,7 +243,7 @@ __o = i++;
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpCodeIntermediateNode();
@@ -270,7 +270,7 @@ __o = i++;
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
@@ -305,7 +305,7 @@ __o = i++;
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
             };
 
             var node = new CSharpCodeIntermediateNode();
@@ -336,7 +336,7 @@ __o = i++;
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
@@ -375,7 +375,7 @@ if (true) { }
 
             var context = new CSharpRenderingContext()
             {
-                Writer = new Legacy.CSharpCodeWriter(),
+                Writer = new CSharpCodeWriter(),
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
@@ -502,7 +502,7 @@ Render Node - CSharpExpressionIntermediateNode
         private static CSharpRenderingContext GetCSharpRenderingContext(BasicWriter writer)
         {
             var options = RazorCodeGenerationOptions.CreateDefault();
-            var codeWriter = new Legacy.CSharpCodeWriter();
+            var codeWriter = new CSharpCodeWriter();
             var context = new CSharpRenderingContext()
             {
                 Writer = codeWriter,

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .Write(node.Name)
                 .Write("\", ");
 
-            using (context.Writer.BuildAsyncLambda(endLine: false, parameterNames: writerName))
+            using (context.Writer.BuildAsyncLambda(writerName))
             {
                 context.RenderChildren(node);
             }
