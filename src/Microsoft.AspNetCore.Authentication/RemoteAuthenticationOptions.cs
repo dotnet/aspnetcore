@@ -87,5 +87,11 @@ namespace Microsoft.AspNetCore.Authentication
         /// the size of the final authentication cookie.
         /// </summary>
         public bool SaveTokens { get; set; }
+
+        /// <summary>
+        /// Gets or sets an action that can override the correlation id cookie options before the
+        /// cookie gets added to the response.
+        /// </summary>
+        public Action<HttpContext, CookieOptions> ConfigureCorrelationIdCookie { get; set; }
     }
 }

@@ -886,16 +886,21 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 throw new ArgumentNullException(nameof(nonce));
             }
 
+            var options = new CookieOptions
+            {
+                HttpOnly = true,
+                SameSite = Http.SameSiteMode.None,
+                Path = OriginalPathBase + Options.CallbackPath,
+                Secure = Request.IsHttps,
+                Expires = Clock.UtcNow.Add(Options.ProtocolValidator.NonceLifetime)
+            };
+
+            Options.ConfigureNonceCookie?.Invoke(Context, options);
+
             Response.Cookies.Append(
                 OpenIdConnectDefaults.CookieNoncePrefix + Options.StringDataFormat.Protect(nonce),
                 NonceProperty,
-                new CookieOptions
-                {
-                    HttpOnly = true,
-                    SameSite = Http.SameSiteMode.None,
-                    Secure = Request.IsHttps,
-                    Expires = Clock.UtcNow.Add(Options.ProtocolValidator.NonceLifetime)
-                });
+                options);
         }
 
         /// <summary>
@@ -924,9 +929,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                             var cookieOptions = new CookieOptions
                             {
                                 HttpOnly = true,
+                                Path = OriginalPathBase + Options.CallbackPath,
                                 SameSite = Http.SameSiteMode.None,
                                 Secure = Request.IsHttps
                             };
+
+                            Options.ConfigureNonceCookie?.Invoke(Context, cookieOptions);
 
                             Response.Cookies.Delete(nonceKey, cookieOptions);
                             return nonce;

@@ -4,6 +4,7 @@
 using System;
 using System.Net;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -165,6 +166,70 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
+        [Fact]
+        public async Task RedirectToIdentityProvider_SetsCorrelationIdCookiePath_ToCallBackPath()
+        {
+            var server = CreateServer(
+                app => { },
+                s => s.AddOAuthAuthentication(
+                    "Weblie",
+                    opt =>
+                    {
+                        opt.ClientId = "Test Id";
+                        opt.ClientSecret = "secret";
+                        opt.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        opt.AuthorizationEndpoint = "https://example.com/provider/login";
+                        opt.TokenEndpoint = "https://example.com/provider/token";
+                        opt.CallbackPath = "/oauth-callback";
+                    }),
+                ctx =>
+                {
+                    ctx.ChallengeAsync("Weblie").ConfigureAwait(false).GetAwaiter().GetResult();
+                    return true;
+                });
+
+            var transaction = await server.SendAsync("https://www.example.com/challenge");
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+            var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            Assert.Contains("path=/oauth-callback", correlation);
+        }
+
+        [Fact]
+        public async Task RedirectToAuthorizeEndpoint_CorrelationIdCookieOptions_CanBeOverriden()
+        {
+            var server = CreateServer(
+                app => { },
+                s => s.AddOAuthAuthentication(
+                    "Weblie",
+                    opt =>
+                    {
+                        opt.ClientId = "Test Id";
+                        opt.ClientSecret = "secret";
+                        opt.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        opt.AuthorizationEndpoint = "https://example.com/provider/login";
+                        opt.TokenEndpoint = "https://example.com/provider/token";
+                        opt.CallbackPath = "/oauth-callback";
+                        opt.ConfigureCorrelationIdCookie = (ctx, options) => options.Path = "/";
+                    }),
+                ctx =>
+                {
+                    ctx.ChallengeAsync("Weblie").ConfigureAwait(false).GetAwaiter().GetResult();
+                    return true;
+                });
+
+            var transaction = await server.SendAsync("https://www.example.com/challenge");
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+            var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            Assert.Contains("path=/", correlation);
+        }
 
         private static TestServer CreateServer(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, bool> handler)
         {

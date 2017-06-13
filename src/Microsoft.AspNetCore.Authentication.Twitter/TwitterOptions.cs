@@ -59,6 +59,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         public ISecureDataFormat<RequestToken> StateDataFormat { get; set; }
 
         /// <summary>
+        /// Gets or sets an action that can override the state cookie options before the
+        /// cookie gets added to the response.
+        /// </summary>
+        public Action<HttpContext, CookieOptions> ConfigureStateCookie { get; set; }
+
+        /// <summary>
         /// Gets or sets the <see cref="TwitterEvents"/> used to handle authentication events.
         /// </summary>
         public new TwitterEvents Events

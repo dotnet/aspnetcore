@@ -87,6 +87,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 Secure = Request.IsHttps
             };
 
+            Options.ConfigureStateCookie?.Invoke(Context, cookieOptions);
+
             Response.Cookies.Delete(StateCookie, cookieOptions);
 
             var accessToken = await ObtainAccessTokenAsync(requestToken, oauthVerifier);
@@ -158,6 +160,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 Secure = Request.IsHttps,
                 Expires = Clock.UtcNow.Add(Options.RemoteAuthenticationTimeout),
             };
+
+            Options.ConfigureStateCookie?.Invoke(Context, cookieOptions);
 
             Response.Cookies.Append(StateCookie, Options.StateDataFormat.Protect(requestToken), cookieOptions);
 

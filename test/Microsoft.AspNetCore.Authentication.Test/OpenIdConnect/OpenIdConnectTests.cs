@@ -61,6 +61,108 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
+        public async Task RedirectToIdentityProvider_SetsNonceCookiePath_ToCallBackPath()
+        {
+            var setting = new TestSettings(opt =>
+            {
+                opt.ClientId = "Test Id";
+                opt.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                opt.Configuration = new OpenIdConnectConfiguration
+                {
+                    AuthorizationEndpoint = "https://example.com/provider/login"
+                };
+            });
+
+            var server = setting.CreateTestServer();
+
+            var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Challenge);
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+            var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
+            var nonce = Assert.Single(setCookie.Value, v => v.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix));
+            Assert.Contains("path=/signin-oidc", nonce);
+        }
+
+        [Fact]
+        public async Task RedirectToIdentityProvider_NonceCookieOptions_CanBeOverriden()
+        {
+            var setting = new TestSettings(opt =>
+            {
+                opt.ClientId = "Test Id";
+                opt.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                opt.Configuration = new OpenIdConnectConfiguration
+                {
+                    AuthorizationEndpoint = "https://example.com/provider/login"
+                };
+                opt.ConfigureNonceCookie = (ctx, options) => options.Path = "/";
+            });
+
+            var server = setting.CreateTestServer();
+
+            var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Challenge);
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+            var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
+            var nonce = Assert.Single(setCookie.Value, v => v.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix));
+            Assert.Contains("path=/", nonce);
+        }
+
+        [Fact]
+        public async Task RedirectToIdentityProvider_SetsCorrelationIdCookiePath_ToCallBackPath()
+        {
+            var setting = new TestSettings(opt =>
+            {
+                opt.ClientId = "Test Id";
+                opt.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                opt.Configuration = new OpenIdConnectConfiguration
+                {
+                    AuthorizationEndpoint = "https://example.com/provider/login"
+                };
+            });
+
+            var server = setting.CreateTestServer();
+
+            var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Challenge);
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+            var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            Assert.Contains("path=/signin-oidc", correlation);
+        }
+
+        [Fact]
+        public async Task RedirectToIdentityProvider_CorrelationIdCookieOptions_CanBeOverriden()
+        {
+            var setting = new TestSettings(opt =>
+            {
+                opt.ClientId = "Test Id";
+                opt.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                opt.Configuration = new OpenIdConnectConfiguration
+                {
+                    AuthorizationEndpoint = "https://example.com/provider/login"
+                };
+                opt.ConfigureCorrelationIdCookie = (ctx, options) => options.Path = "/";
+            });
+
+            var server = setting.CreateTestServer();
+
+            var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Challenge);
+            var res = transaction.Response;
+
+            Assert.Equal(HttpStatusCode.Redirect, res.StatusCode);
+            Assert.NotNull(res.Headers.Location);
+            var setCookie = Assert.Single(res.Headers, h => h.Key == "Set-Cookie");
+            var correlation = Assert.Single(setCookie.Value, v => v.StartsWith(".AspNetCore.Correlation."));
+            Assert.Contains("path=/", correlation);
+        }
+
+        [Fact]
         public async Task EndSessionRequestDoesNotIncludeTelemetryParametersWhenDisabled()
         {
             var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
@@ -173,7 +275,8 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         [Fact]
         public async Task SignOut_WithMissingConfig_Throws()
         {
-            var setting = new TestSettings(opt => {
+            var setting = new TestSettings(opt =>
+            {
                 opt.ClientId = "Test Id";
                 opt.Configuration = new OpenIdConnectConfiguration();
             });

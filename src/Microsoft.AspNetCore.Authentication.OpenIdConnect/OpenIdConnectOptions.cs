@@ -262,5 +262,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// remote OpenID Connect provider as an authorization/logout request parameter.
         /// </summary>
         public bool DisableTelemetry { get; set; }
+
+        /// <summary>
+        /// Gets or sets an action that can override the nonce cookie options before the
+        /// cookie gets added to the response.
+        /// </summary>
+        public Action<HttpContext, CookieOptions> ConfigureNonceCookie { get; set; }
     }
 }
