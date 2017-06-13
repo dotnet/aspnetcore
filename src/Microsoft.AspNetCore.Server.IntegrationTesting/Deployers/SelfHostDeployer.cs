@@ -96,7 +96,14 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                     var targetFramework = DeploymentParameters.TargetFramework ?? (DeploymentParameters.RuntimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0");
 
                     executableName = DotnetCommandName;
-                    executableArgs = $"run --framework {targetFramework} {DotnetArgumentSeparator}";
+                    executableArgs = $"run --framework {targetFramework}";
+                    
+                    // Workaround for:
+                    //   Publish fails on app with project reference to netstandard2.0 class library
+                    //   https://github.com/dotnet/cli/issues/6843
+                    executableArgs += " --no-restore";
+
+                    executableArgs += $" {DotnetArgumentSeparator}";
                 }
 
                 executableArgs += $" --server.urls {hintUrl} "
