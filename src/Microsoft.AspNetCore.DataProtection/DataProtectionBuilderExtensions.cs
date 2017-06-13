@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Win32;
 
@@ -206,7 +207,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
             {
-                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
                 return new ConfigureOptions<KeyManagementOptions>(options =>
                 {
                     options.XmlRepository = new FileSystemXmlRepository(directory, loggerFactory);
@@ -236,7 +237,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
             {
-                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
                 return new ConfigureOptions<KeyManagementOptions>(options =>
                 {
                     options.XmlRepository = new RegistryXmlRepository(registryKey, loggerFactory);
@@ -266,7 +267,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
             {
-                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
                 return new ConfigureOptions<KeyManagementOptions>(options =>
                 {
                     options.XmlEncryptor = new CertificateXmlEncryptor(certificate, loggerFactory);
@@ -306,7 +307,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
             {
-                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
                 var certificateResolver = services.GetRequiredService<ICertificateResolver>();
                 return new ConfigureOptions<KeyManagementOptions>(options =>
                 {
@@ -357,7 +358,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
             {
-                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
                 return new ConfigureOptions<KeyManagementOptions>(options =>
                 {
                     CryptoUtil.AssertPlatformIsWindows();
@@ -419,7 +420,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
             builder.Services.AddSingleton<IConfigureOptions<KeyManagementOptions>>(services =>
             {
-                var loggerFactory = services.GetRequiredService<ILoggerFactory>();
+                var loggerFactory = services.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
                 return new ConfigureOptions<KeyManagementOptions>(options =>
                 {
                     CryptoUtil.AssertPlatformIsWindows8OrLater();

@@ -89,8 +89,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
 
                 var policyResolver = new RegistryPolicyResolver(
                     registryKey,
-                    activator: SimpleActivator.DefaultWithoutServices,
-                    loggerFactory: NullLoggerFactory.Instance);
+                    activator: SimpleActivator.DefaultWithoutServices);
 
                 var setup = new KeyManagementOptionsSetup(NullLoggerFactory.Instance, policyResolver);
 

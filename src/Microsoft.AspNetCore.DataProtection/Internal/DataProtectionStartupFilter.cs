@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.Internal
 {
@@ -13,6 +14,10 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
     {
         private readonly IKeyRingProvider _keyRingProvider;
         private readonly ILogger<DataProtectionStartupFilter> _logger;
+
+        public DataProtectionStartupFilter(IKeyRingProvider keyRingProvider)
+            : this(keyRingProvider, NullLoggerFactory.Instance)
+        { }
 
         public DataProtectionStartupFilter(IKeyRingProvider keyRingProvider, ILoggerFactory loggerFactory)
         {

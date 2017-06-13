@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.Internal;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
-using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 
 namespace Microsoft.AspNetCore.DataProtection
@@ -22,20 +21,17 @@ namespace Microsoft.AspNetCore.DataProtection
     {
         private readonly Func<RegistryKey> _getPolicyRegKey;
         private readonly IActivator _activator;
-        private readonly ILoggerFactory _loggerFactory;
 
-        public RegistryPolicyResolver(IActivator activator, ILoggerFactory loggerFactory)
+        public RegistryPolicyResolver(IActivator activator)
         {
             _getPolicyRegKey = () => Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\DotNetPackages\Microsoft.AspNetCore.DataProtection");
             _activator = activator;
-            _loggerFactory = loggerFactory;
         }
 
-        internal RegistryPolicyResolver(RegistryKey policyRegKey, IActivator activator, ILoggerFactory loggerFactory)
+        internal RegistryPolicyResolver(RegistryKey policyRegKey, IActivator activator)
         {
             _getPolicyRegKey = () => policyRegKey;
             _activator = activator;
-            _loggerFactory = loggerFactory;
         }
 
         // populates an options object from values stored in the registry
@@ -95,10 +91,8 @@ namespace Microsoft.AspNetCore.DataProtection
         /// <summary>
         /// Returns a <see cref="RegistryPolicy"/> from the default registry location.
         /// </summary>
-        public static RegistryPolicy ResolveDefaultPolicy(IActivator activator, ILoggerFactory loggerFactory)
-        {
-                return new RegistryPolicyResolver(activator, loggerFactory).ResolvePolicy();
-        }
+        public static RegistryPolicy ResolveDefaultPolicy(IActivator activator)
+            => new RegistryPolicyResolver(activator).ResolvePolicy();
 
         internal RegistryPolicy ResolvePolicy()
         {

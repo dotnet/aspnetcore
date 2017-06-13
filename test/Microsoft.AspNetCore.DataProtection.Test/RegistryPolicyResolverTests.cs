@@ -251,8 +251,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
                 var policyResolver = new RegistryPolicyResolver(
                     registryKey,
-                    activator: SimpleActivator.DefaultWithoutServices,
-                    loggerFactory: NullLoggerFactory.Instance);
+                    activator: SimpleActivator.DefaultWithoutServices);
 
                 return policyResolver.ResolvePolicy();
             });

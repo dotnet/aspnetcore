@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationM
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
@@ -24,11 +25,23 @@ namespace Microsoft.AspNetCore.DataProtection
         private readonly KeyRingBasedDataProtectionProvider _dataProtectionProvider;
 
         /// <summary>
-        /// Creates an ephemeral <see cref="IDataProtectionProvider"/>, optionally providing
-        /// services (such as logging) for consumption by the provider.
+        /// Creates an ephemeral <see cref="IDataProtectionProvider"/>.
         /// </summary>
+        public EphemeralDataProtectionProvider()
+            : this (NullLoggerFactory.Instance)
+        { }
+
+        /// <summary>
+        /// Creates an ephemeral <see cref="IDataProtectionProvider"/> with logging.
+        /// </summary>
+        /// <param name="loggerFactory">The <see cref="ILoggerFactory" />.</param>
         public EphemeralDataProtectionProvider(ILoggerFactory loggerFactory)
         {
+            if (loggerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(loggerFactory));
+            }
+
             IKeyRingProvider keyringProvider;
             if (OSVersionUtil.IsWindows())
             {

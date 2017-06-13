@@ -4,6 +4,7 @@
 using System;
 using System.Text.RegularExpressions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection
 {
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.DataProtection
         private static readonly Regex _versionPattern = new Regex(@",\s?Version=[0-9]+(\.[0-9]+){0,3}", RegexOptions.Compiled, TimeSpan.FromSeconds(2));
 
         public TypeForwardingActivator(IServiceProvider services)
-            : this(services, DataProtectionProviderFactory.GetDefaultLoggerFactory())
+            : this(services, NullLoggerFactory.Instance)
         {
         }
 

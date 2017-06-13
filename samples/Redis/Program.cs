@@ -17,19 +17,18 @@ namespace Redis
             var redis = ConnectionMultiplexer.Connect("localhost:6379");
 
             // Configure
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddLogging();
-            serviceCollection.AddDataProtection()
-                .PersistKeysToRedis(redis, "DataProtection-Keys");
-
-            var services = serviceCollection.BuildServiceProvider();
-            var loggerFactory = services.GetService<LoggerFactory>();
-            loggerFactory.AddConsole();
-
-            // Run a sample payload
-            var protector = services.GetDataProtector("sample-purpose");
-            var protectedData = protector.Protect("Hello world!");
-            Console.WriteLine(protectedData);
+            using (var services = new ServiceCollection()
+                .AddLogging(o => o.AddConsole().SetMinimumLevel(LogLevel.Debug))
+                .AddDataProtection()
+                .PersistKeysToRedis(redis, "DataProtection-Keys")
+                .Services
+                .BuildServiceProvider())
+            {
+                // Run a sample payload
+                var protector = services.GetDataProtector("sample-purpose");
+                var protectedData = protector.Protect("Hello world!");
+                Console.WriteLine(protectedData);
+            }
         }
     }
 }

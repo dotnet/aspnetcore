@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
@@ -39,6 +40,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// an activation date of less than 5 minutes in the future, we'll use it.
         /// </remarks>
         private readonly TimeSpan _maxServerToServerClockSkew;
+
+        public DefaultKeyResolver(IOptions<KeyManagementOptions> keyManagementOptions)
+            : this(keyManagementOptions, NullLoggerFactory.Instance)
+        { }
 
         public DefaultKeyResolver(IOptions<KeyManagementOptions> keyManagementOptions, ILoggerFactory loggerFactory)
         {

@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                             ShouldGenerateNewKey = false
                         })
                 });
-            
+
             // Act
             var cacheableKeyRing = keyRingProvider.GetCacheableKeyRing(now);
 
@@ -597,9 +597,11 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             return new KeyRingProvider(
                 keyManager: null,
                 keyManagementOptions: Options.Create(options),
-                cacheableKeyRingProvider: cacheableKeyRingProvider,
                 defaultKeyResolver: null,
-                loggerFactory: NullLoggerFactory.Instance);
+                loggerFactory: NullLoggerFactory.Instance)
+            {
+                CacheableKeyRingProvider = cacheableKeyRingProvider
+            };
         }
 
         private static ICacheableKeyRingProvider CreateKeyRingProvider(IKeyManager keyManager, IDefaultKeyResolver defaultKeyResolver, KeyManagementOptions keyManagementOptions= null)
@@ -612,7 +614,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             return new KeyRingProvider(
                 keyManager: keyManager,
                 keyManagementOptions: Options.Create(keyManagementOptions),
-                cacheableKeyRingProvider: null,
                 defaultKeyResolver: defaultKeyResolver,
                 loggerFactory: NullLoggerFactory.Instance);
         }

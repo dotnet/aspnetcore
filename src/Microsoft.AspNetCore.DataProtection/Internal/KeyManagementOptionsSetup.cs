@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption;
 using Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.DataProtection.Internal
@@ -15,7 +16,18 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
         private readonly RegistryPolicyResolver _registryPolicyResolver;
         private readonly ILoggerFactory _loggerFactory;
 
-        public KeyManagementOptionsSetup(ILoggerFactory loggerFactory) : this(loggerFactory, registryPolicyResolver: null)
+        public KeyManagementOptionsSetup()
+            : this(NullLoggerFactory.Instance, registryPolicyResolver: null)
+        {
+        }
+
+        public KeyManagementOptionsSetup(ILoggerFactory loggerFactory)
+            : this(loggerFactory, registryPolicyResolver: null)
+        {
+        }
+
+        public KeyManagementOptionsSetup(RegistryPolicyResolver registryPolicyResolver)
+            : this(NullLoggerFactory.Instance, registryPolicyResolver)
         {
         }
 

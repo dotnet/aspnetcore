@@ -8,6 +8,7 @@ using System.Threading;
 using Microsoft.AspNetCore.Cryptography;
 using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.DataProtection.KeyManagement
@@ -16,7 +17,6 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
     {
         private CacheableKeyRing _cacheableKeyRing;
         private readonly object _cacheableKeyRingLockObj = new object();
-        private readonly ICacheableKeyRingProvider _cacheableKeyRingProvider;
         private readonly IDefaultKeyResolver _defaultKeyResolver;
         private readonly KeyManagementOptions _keyManagementOptions;
         private readonly IKeyManager _keyManager;
@@ -25,30 +25,30 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         public KeyRingProvider(
             IKeyManager keyManager,
             IOptions<KeyManagementOptions> keyManagementOptions,
-            IDefaultKeyResolver defaultKeyResolver,
-            ILoggerFactory loggerFactory)
+            IDefaultKeyResolver defaultKeyResolver)
             : this(
                   keyManager,
                   keyManagementOptions,
-                  cacheableKeyRingProvider: null,
-                  defaultKeyResolver: defaultKeyResolver,
-                  loggerFactory: loggerFactory)
+                  defaultKeyResolver,
+                  NullLoggerFactory.Instance)
         {
         }
 
         public KeyRingProvider(
             IKeyManager keyManager,
             IOptions<KeyManagementOptions> keyManagementOptions,
-            ICacheableKeyRingProvider cacheableKeyRingProvider,
             IDefaultKeyResolver defaultKeyResolver,
             ILoggerFactory loggerFactory)
         {
             _keyManagementOptions = new KeyManagementOptions(keyManagementOptions.Value); // clone so new instance is immutable
             _keyManager = keyManager;
-            _cacheableKeyRingProvider = cacheableKeyRingProvider ?? this;
+            CacheableKeyRingProvider = this;
             _defaultKeyResolver = defaultKeyResolver;
             _logger = loggerFactory.CreateLogger<KeyRingProvider>();
         }
+
+        // for testing
+        internal ICacheableKeyRingProvider CacheableKeyRingProvider { get; set; }
 
         private CacheableKeyRing CreateCacheableKeyRingCore(DateTimeOffset now, IKey keyJustAdded)
         {
@@ -183,7 +183,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
                     try
                     {
-                        newCacheableKeyRing = _cacheableKeyRingProvider.GetCacheableKeyRing(utcNow);
+                        newCacheableKeyRing = CacheableKeyRingProvider.GetCacheableKeyRing(utcNow);
                     }
                     catch (Exception ex)
                     {

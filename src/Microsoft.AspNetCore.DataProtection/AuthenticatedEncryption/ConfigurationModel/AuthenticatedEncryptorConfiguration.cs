@@ -4,6 +4,7 @@
 using System;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -42,7 +43,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
 
         void IInternalAlgorithmConfiguration.Validate()
         {
-            var factory = new AuthenticatedEncryptorFactory(DataProtectionProviderFactory.GetDefaultLoggerFactory());
+            var factory = new AuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
             // Run a sample payload through an encrypt -> decrypt operation to make sure data round-trips properly.
             var encryptor = factory.CreateAuthenticatedEncryptorInstance(Secret.Random(512 / 8), this);
             try

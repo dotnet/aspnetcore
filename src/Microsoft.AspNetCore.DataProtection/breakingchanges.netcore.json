@@ -81,11 +81,6 @@
     },
     {
       "TypeId": "public sealed class Microsoft.AspNetCore.DataProtection.EphemeralDataProtectionProvider : Microsoft.AspNetCore.DataProtection.IDataProtectionProvider",
-      "MemberId": "public .ctor()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public sealed class Microsoft.AspNetCore.DataProtection.EphemeralDataProtectionProvider : Microsoft.AspNetCore.DataProtection.IDataProtectionProvider",
       "MemberId": "public .ctor(System.IServiceProvider services)",
       "Kind": "Removal"
     },

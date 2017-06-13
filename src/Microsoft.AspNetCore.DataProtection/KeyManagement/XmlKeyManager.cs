@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.DataProtection.KeyManagement.Internal;
 using Microsoft.AspNetCore.DataProtection.Repositories;
 using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Win32;
 
@@ -60,10 +61,19 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
         /// </summary>
         /// <param name="keyManagementOptions">The <see cref="IOptions{KeyManagementOptions}"/> instance that provides the configuration.</param>
         /// <param name="activator">The <see cref="IActivator"/>.</param>
+        public XmlKeyManager(IOptions<KeyManagementOptions> keyManagementOptions, IActivator activator)
+            : this (keyManagementOptions, activator, NullLoggerFactory.Instance)
+        { }
+
+        /// <summary>
+        /// Creates an <see cref="XmlKeyManager"/>.
+        /// </summary>
+        /// <param name="keyManagementOptions">The <see cref="IOptions{KeyManagementOptions}"/> instance that provides the configuration.</param>
+        /// <param name="activator">The <see cref="IActivator"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         public XmlKeyManager(IOptions<KeyManagementOptions> keyManagementOptions, IActivator activator, ILoggerFactory loggerFactory)
         {
-            _loggerFactory = loggerFactory;
+            _loggerFactory = loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory));
             _logger = _loggerFactory.CreateLogger<XmlKeyManager>();
 
             KeyRepository = keyManagementOptions.Value.XmlRepository;

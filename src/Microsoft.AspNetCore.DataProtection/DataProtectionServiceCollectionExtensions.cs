@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.DataProtection.XmlEncryption;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -64,8 +65,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static void AddDataProtectionServices(IServiceCollection services)
         {
-            services.TryAddSingleton<ILoggerFactory>(DataProtectionProviderFactory.GetDefaultLoggerFactory());
-
             if (OSVersionUtil.IsWindows())
             {
                 services.TryAddSingleton<RegistryPolicyResolver>();
@@ -88,10 +87,9 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 var dpOptions = s.GetRequiredService<IOptions<DataProtectionOptions>>();
                 var keyRingProvider = s.GetRequiredService<IKeyRingProvider>();
-                var loggerFactory = s.GetRequiredService<ILoggerFactory>();
+                var loggerFactory = s.GetService<ILoggerFactory>() ?? NullLoggerFactory.Instance;
 
-                IDataProtectionProvider dataProtectionProvider = null;
-                dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyRingProvider, loggerFactory);
+                IDataProtectionProvider dataProtectionProvider = new KeyRingBasedDataProtectionProvider(keyRingProvider, loggerFactory);
 
                 // Link the provider to the supplied discriminator
                 if (!string.IsNullOrEmpty(dpOptions.Value.ApplicationDiscriminator))

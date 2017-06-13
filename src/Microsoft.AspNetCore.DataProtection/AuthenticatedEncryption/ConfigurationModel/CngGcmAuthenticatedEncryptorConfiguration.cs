@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Cryptography;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.ConfigurationModel
 {
@@ -64,7 +65,7 @@ namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption.Configurat
         /// </summary>
         void IInternalAlgorithmConfiguration.Validate()
         {
-            var factory = new CngGcmAuthenticatedEncryptorFactory(DataProtectionProviderFactory.GetDefaultLoggerFactory());
+            var factory = new CngGcmAuthenticatedEncryptorFactory(NullLoggerFactory.Instance);
             // Run a sample payload through an encrypt -> decrypt operation to make sure data round-trips properly.
             using (var encryptor = factory.CreateAuthenticatedEncryptorInstance(Secret.Random(512 / 8), this))
             {
