@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             // If a SourceLocation does not specify a file path, assume it is produced from parsing the current file.
             var messageGroups = diagnostics.GroupBy(
-                razorError => razorError.Span.FilePath ?? codeDocument.Source.FileName,
+                razorError => razorError.Span.FilePath ?? codeDocument.Source.FilePath,
                 StringComparer.Ordinal);
 
             var failures = new List<CompilationFailure>();
@@ -98,13 +98,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private static string ReadContent(RazorCodeDocument codeDocument, string filePath)
         {
             RazorSourceDocument sourceDocument;
-            if (string.IsNullOrEmpty(filePath) || string.Equals(codeDocument.Source.FileName, filePath, StringComparison.Ordinal))
+            if (string.IsNullOrEmpty(filePath) || string.Equals(codeDocument.Source.FilePath, filePath, StringComparison.Ordinal))
             {
                 sourceDocument = codeDocument.Source;
             }
             else
             {
-                sourceDocument = codeDocument.Imports.FirstOrDefault(f => string.Equals(f.FileName, filePath, StringComparison.Ordinal));
+                sourceDocument = codeDocument.Imports.FirstOrDefault(f => string.Equals(f.FilePath, filePath, StringComparison.Ordinal));
             }
 
             if (sourceDocument != null)
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             if (diagnostic.Location == Location.None)
             {
-                return codeDocument.Source.FileName;
+                return codeDocument.Source.FilePath;
             }
 
             return diagnostic.Location.GetMappedLineSpan().Path;

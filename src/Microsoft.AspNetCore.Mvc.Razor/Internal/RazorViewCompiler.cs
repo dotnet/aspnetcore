@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
         internal Assembly CompileAndEmit(RazorCodeDocument codeDocument, string generatedCode)
         {
-            _logger.GeneratedCodeToAssemblyCompilationStart(codeDocument.Source.FileName);
+            _logger.GeneratedCodeToAssemblyCompilationStart(codeDocument.Source.FilePath);
 
             var startTimestamp = _logger.IsEnabled(LogLevel.Debug) ? Stopwatch.GetTimestamp() : 0;
 
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 pdbStream.Seek(0, SeekOrigin.Begin);
 
                 var assembly = Assembly.Load(assemblyStream.ToArray(), pdbStream.ToArray());
-                _logger.GeneratedCodeToAssemblyCompilationEnd(codeDocument.Source.FileName, startTimestamp);
+                _logger.GeneratedCodeToAssemblyCompilationEnd(codeDocument.Source.FilePath, startTimestamp);
 
                 return assembly;
             }
