@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <param name="services"></param>
         /// <param name="context"></param>
-        protected virtual void SetupIdentityServices(IServiceCollection services, object context)
+        protected virtual void SetupIdentityServices(IServiceCollection services, object context = null)
         {
             services.AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -191,31 +191,6 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// <param name="roleName">The role name to match.</param>
         /// <returns>The query to use.</returns>
         protected abstract Expression<Func<TRole, bool>> RoleNameStartsWithPredicate(string roleName);
-
-        /// <summary>
-        /// Test.
-        /// </summary>
-        /// <returns>Task</returns>
-        [Fact]
-        public async Task CreateUserWillSetCreateDateOnlyIfSupported()
-        {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
-            var manager = CreateManager();
-            var user = CreateTestUser();
-            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            var userId = await manager.GetUserIdAsync(user);
-            if (manager.SupportsUserActivity)
-            {
-                Assert.NotNull(await manager.GetCreateDateAsync(user));
-            }
-            else
-            {
-                await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetCreateDateAsync(user));
-            }
-        }
 
         /// <summary>
         /// Test.
@@ -515,17 +490,9 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             manager.PasswordValidators.Clear();
             manager.PasswordValidators.Add(new AlwaysBadValidator());
-            if (manager.SupportsUserActivity)
-            {
-                Assert.Null(await manager.GetLastPasswordChangeDateAsync(user));
-            }
             IdentityResultAssert.IsFailure(await manager.AddPasswordAsync(user, "password"),
                 AlwaysBadValidator.ErrorMessage);
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"User {await manager.GetUserIdAsync(user)} password validation failed: {AlwaysBadValidator.ErrorMessage.Code}.");
-            if (manager.SupportsUserActivity)
-            {
-                Assert.Null(await manager.GetLastPasswordChangeDateAsync(user));
-            }
         }
 
         /// <summary>
@@ -611,12 +578,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             var logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
             Assert.Equal(0, logins.Count());
-            if (manager.SupportsUserActivity)
-            {
-                Assert.NotNull(await manager.GetCreateDateAsync(user));
-                Assert.Null(await manager.GetLastPasswordChangeDateAsync(user));
-                Assert.Null(await manager.GetLastSignInDateAsync(user));
-            }
         }
 
         /// <summary>
@@ -643,12 +604,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(provider, logins.First().LoginProvider);
             Assert.Equal(providerKey, logins.First().ProviderKey);
             Assert.Equal(display, logins.First().ProviderDisplayName);
-            if (manager.SupportsUserActivity)
-            {
-                Assert.NotNull(await manager.GetCreateDateAsync(user));
-                Assert.Null(await manager.GetLastPasswordChangeDateAsync(user));
-                Assert.Null(await manager.GetLastSignInDateAsync(user));
-            }
         }
 
         /// <summary>
@@ -669,27 +624,13 @@ namespace Microsoft.AspNetCore.Identity.Test
             var login = new UserLoginInfo("Provider", userId, "display");
             IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, login));
             Assert.False(await manager.HasPasswordAsync(user));
-            if (manager.SupportsUserActivity)
-            {
-                Assert.Null(await manager.GetLastPasswordChangeDateAsync(user));
-            }
             IdentityResultAssert.IsSuccess(await manager.AddPasswordAsync(user, "password"));
-            if (manager.SupportsUserActivity)
-            {
-                Assert.NotNull(await manager.GetLastPasswordChangeDateAsync(user));
-            }
             Assert.True(await manager.HasPasswordAsync(user));
             var logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
             Assert.Equal(1, logins.Count());
             Assert.Equal(user, await manager.FindByLoginAsync(login.LoginProvider, login.ProviderKey));
             Assert.True(await manager.CheckPasswordAsync(user, "password"));
-
-            if (manager.SupportsUserActivity)
-            {
-                Assert.NotNull(await manager.GetCreateDateAsync(user));
-                Assert.Null(await manager.GetLastSignInDateAsync(user));
-            }
         }
 
         /// <summary>
@@ -787,57 +728,12 @@ namespace Microsoft.AspNetCore.Identity.Test
             const string password = "password";
             const string newPassword = "newpassword";
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, password));
-            DateTimeOffset? createChange = null;
-            if (manager.SupportsUserActivity)
-            {
-                createChange = await manager.GetLastPasswordChangeDateAsync(user);
-                Assert.NotNull(createChange);
-                Assert.Null(await manager.GetLastSignInDateAsync(user));
-            }
-            else
-            {
-                await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetLastPasswordChangeDateAsync(user));
-                await Assert.ThrowsAsync<NotSupportedException>(() => manager.GetLastSignInDateAsync(user));
-            }
             var stamp = await manager.GetSecurityStampAsync(user);
             Assert.NotNull(stamp);
             IdentityResultAssert.IsSuccess(await manager.ChangePasswordAsync(user, password, newPassword));
             Assert.False(await manager.CheckPasswordAsync(user, password));
             Assert.True(await manager.CheckPasswordAsync(user, newPassword));
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
-
-            if (manager.SupportsUserActivity)
-            {
-                var changeDate = await manager.GetLastPasswordChangeDateAsync(user);
-                Assert.NotNull(changeDate);
-                Assert.True(createChange < changeDate);
-            }
-        }
-
-        /// <summary>
-        /// Test.
-        /// </summary>
-        /// <returns>Task</returns>
-        [Fact]
-        public async Task CanUpdateLastSignInTime()
-        {
-            if (ShouldSkipDbTests())
-            {
-                return;
-            }
-            var manager = CreateManager();
-            var user = CreateTestUser();
-            if (manager.SupportsUserActivity)
-            {
-                IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-                Assert.Null(await manager.GetLastSignInDateAsync(user));
-                IdentityResultAssert.IsSuccess(await manager.UpdateLastSignInDateAsync(user));
-                Assert.NotNull(await manager.GetLastSignInDateAsync(user));
-            }
-            else
-            {
-                await Assert.ThrowsAsync<NotSupportedException>(() => manager.UpdateLastSignInDateAsync(user));
-            }
         }
 
         /// <summary>
@@ -988,20 +884,9 @@ namespace Microsoft.AspNetCore.Identity.Test
             var manager = CreateManager();
             var user = CreateTestUser();
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user, "password"));
-            DateTimeOffset? createChange = null;
-            if (manager.SupportsUserActivity)
-            {
-                createChange = await manager.GetLastPasswordChangeDateAsync(user);
-                Assert.NotNull(createChange);
-            }
             var result = await manager.ChangePasswordAsync(user, "bogus", "newpassword");
             IdentityResultAssert.IsFailure(result, "Incorrect password.");
             IdentityResultAssert.VerifyLogMessage(manager.Logger, $"Change password failed for user {await manager.GetUserIdAsync(user)}.");
-
-            if (manager.SupportsUserActivity)
-            {
-                Assert.Equal(createChange, await manager.GetLastPasswordChangeDateAsync(user));
-            }
         }
 
         /// <summary>

@@ -16,52 +16,6 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class IdentityEntityFrameworkBuilderExtensions
     {
         /// <summary>
-        /// Adds an Entity Framework implementation of identity information stores with the schema/features in
-        /// <see cref="IdentityStoreOptions.Version1_0"/>.
-        /// </summary>
-        /// <typeparam name="TContext">The Entity Framework database context to use.</typeparam>
-        /// <param name="builder">The <see cref="IdentityBuilder"/> instance this method extends.</param>
-        /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
-        public static IdentityBuilder AddEntityFrameworkStoresV1<TContext>(this IdentityBuilder builder)
-            where TContext : DbContext
-        {
-            builder.Services.Configure<IdentityStoreOptions>(o => o.Version = IdentityStoreOptions.Version1_0);
-            AddStores(builder.Services, typeof(UserStoreV1<,,,,,,,,>), typeof(RoleStoreV1<,,,,>), builder.UserType, builder.RoleType, typeof(TContext));
-            return builder;
-        }
-
-        /// <summary>
-        /// Adds an Entity Framework implementation of identity information stores with the schema/features in
-        /// <see cref="IdentityStoreOptions.Version2_0"/>.
-        /// </summary>
-        /// <typeparam name="TContext">The Entity Framework database context to use.</typeparam>
-        /// <param name="builder">The <see cref="IdentityBuilder"/> instance this method extends.</param>
-        /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
-        public static IdentityBuilder AddEntityFrameworkStoresV2<TContext>(this IdentityBuilder builder)
-            where TContext : DbContext
-        {
-            builder.Services.Configure<IdentityStoreOptions>(o => o.Version = IdentityStoreOptions.Version2_0);
-            // Note: RoleStore was not changed for V2.
-            AddStores(builder.Services, typeof(UserStoreV2<,,,,,,,,>), typeof(RoleStoreV1<,,,,>), builder.UserType, builder.RoleType, typeof(TContext));
-            return builder;
-        }
-
-        /// <summary>
-        /// Adds an Entity Framework implementation of identity information stores with the latest schema/features in
-        /// <see cref="IdentityStoreOptions.Version"/>.
-        /// </summary>
-        /// <typeparam name="TContext">The Entity Framework database context to use.</typeparam>
-        /// <param name="builder">The <see cref="IdentityBuilder"/> instance this method extends.</param>
-        /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
-        public static IdentityBuilder AddEntityFrameworkStoresLatest<TContext>(this IdentityBuilder builder)
-            where TContext : DbContext
-        {
-            builder.Services.Configure<IdentityStoreOptions>(o => o.Version = IdentityStoreOptions.Version_Latest);
-            AddStores(builder.Services, typeof(UserStore<,,,,,,,,>), typeof(RoleStore<,,,,>), builder.UserType, builder.RoleType, typeof(TContext));
-            return builder;
-        }
-
-        /// <summary>
         /// Adds an Entity Framework implementation of identity information stores.
         /// </summary>
         /// <typeparam name="TContext">The Entity Framework database context to use.</typeparam>
@@ -69,9 +23,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>The <see cref="IdentityBuilder"/> instance this method extends.</returns>
         public static IdentityBuilder AddEntityFrameworkStores<TContext>(this IdentityBuilder builder)
             where TContext : DbContext
-            => builder.AddEntityFrameworkStoresV1<TContext>();
+        {
+            AddStores(builder.Services, builder.UserType, builder.RoleType, typeof(TContext));
+            return builder;
+        }
 
-        private static void AddStores(IServiceCollection services, Type userStore, Type roleStore, Type userType, Type roleType, Type contextType)
+        private static void AddStores(IServiceCollection services, Type userType, Type roleType, Type contextType)
         {
             var identityUserType = FindGenericBaseType(userType, typeof(IdentityUser<,,,,>));
             if (identityUserType == null)
@@ -86,7 +43,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.TryAddScoped(
                 typeof(IUserStore<>).MakeGenericType(userType),
-                userStore.MakeGenericType(userType, roleType, contextType,
+                typeof(UserStore<,,,,,,,,>).MakeGenericType(userType, roleType, contextType,
                     identityUserType.GenericTypeArguments[0],
                     identityUserType.GenericTypeArguments[1],
                     identityUserType.GenericTypeArguments[2],
@@ -95,7 +52,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     identityRoleType.GenericTypeArguments[2]));
             services.TryAddScoped(
                 typeof(IRoleStore<>).MakeGenericType(roleType),
-                roleStore.MakeGenericType(roleType, contextType,
+                typeof(RoleStore<,,,,>).MakeGenericType(roleType, contextType,
                     identityRoleType.GenericTypeArguments[0],
                     identityRoleType.GenericTypeArguments[1],
                     identityRoleType.GenericTypeArguments[2]));

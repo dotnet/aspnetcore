@@ -14,11 +14,6 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
-    internal class UserStore : UserStore<IdentityUser, IdentityRole, IdentityDbContext, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, IdentityUserToken<string>, IdentityRoleClaim<string>>
-    {
-        public UserStore(IdentityDbContext context, IdentityErrorDescriber describer = null) : base(context, describer ?? new IdentityErrorDescriber()) { }
-    }
-
     public class UserStoreTest : IdentitySpecificationTestBase<IdentityUser, IdentityRole>, IClassFixture<ScratchDatabaseFixture>
     {
         private readonly ScratchDatabaseFixture _fixture;
@@ -30,6 +25,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected override bool ShouldSkipDbTests()
             => TestPlatformHelper.IsMono || !TestPlatformHelper.IsWindows;
+
+        public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+        {
+            public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
+            { }
+        }
 
         [ConditionalFact]
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
@@ -63,14 +64,21 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             return CreateContext();
         }
 
+        public ApplicationDbContext CreateAppContext()
+        {
+            var db = DbUtil.Create<ApplicationDbContext>(_fixture.ConnectionString);
+            db.Database.EnsureCreated();
+            return db;
+        }
+
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IUserStore<IdentityUser>>(new UserStore((IdentityDbContext)context));
+            services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, IdentityDbContext>((IdentityDbContext)context));
         }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole, IdentityDbContext, string, IdentityUserRole<string>, IdentityRoleClaim<string>>((IdentityDbContext)context));
+            services.AddSingleton<IRoleStore<IdentityRole>>(new RoleStore<IdentityRole, IdentityDbContext>((IdentityDbContext)context));
         }
 
         [Fact]
@@ -182,20 +190,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             var guid = Guid.NewGuid().ToString();
             var user = new IdentityUser { UserName = "New" + guid };
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            IdentityResultAssert.IsSuccess(await manager.DeleteAsync(user));
-        }
-
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public async Task CreateUserSetsCreateDate()
-        {
-            var manager = CreateManager();
-            var guid = Guid.NewGuid().ToString();
-            var user = new IdentityUser { UserName = "New" + guid };
-            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
-            Assert.NotNull(await manager.GetCreateDateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.DeleteAsync(user));
         }
 
@@ -428,4 +422,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected override Expression<Func<IdentityUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
     }
+
+    public class ApplicationUser : IdentityUser { }
 }

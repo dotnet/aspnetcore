@@ -3,25 +3,27 @@
 
 using System;
 using System.Linq.Expressions;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 {
     public class InMemoryEFUserStoreTest : IdentitySpecificationTestBase<IdentityUser, IdentityRole, string>
     {
         protected override object CreateTestContext()
-            => new InMemoryContext(new DbContextOptionsBuilder().Options);
+        {
+            return new InMemoryContext(new DbContextOptionsBuilder().Options);
+        }
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
-            => services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser, IdentityRole, DbContext, string, IdentityUserClaim<string>, IdentityUserRole<string>, IdentityUserLogin<string>, IdentityUserToken<string>, IdentityRoleClaim<string>>((InMemoryContext)context, new IdentityErrorDescriber()));
+        {
+            services.AddSingleton<IUserStore<IdentityUser>>(new UserStore<IdentityUser>((InMemoryContext)context));
+        }
 
         protected override void AddRoleStore(IServiceCollection services, object context = null)
         {
-            var store = new RoleStore<IdentityRole, InMemoryContext, string, IdentityUserRole<string>, IdentityRoleClaim<string>>((InMemoryContext)context);
+            var store = new RoleStore<IdentityRole, InMemoryContext>((InMemoryContext)context);
             services.AddSingleton<IRoleStore<IdentityRole>>(store);
         }
 
