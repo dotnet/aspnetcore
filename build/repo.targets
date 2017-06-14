@@ -22,6 +22,9 @@
     <NoTimestampVersion>$(VersionPrefix)-$(OriginalVersionSuffix)-$(NoTimestampSuffix)</NoTimestampVersion>
     <TimestampVersion>$(VersionPrefix)-$(OriginalVersionSuffix)-$(BuildNumber)</TimestampVersion>
 
+    <RuntimeStoreTimestampInstallerPackageName>aspnetcore-store-$(TimestampVersion)</RuntimeStoreTimestampInstallerPackageName>
+    <RuntimeStoreNoTimestampInstallerPackageName>aspnetcore-store-$(NoTimestampVersion)</RuntimeStoreNoTimestampInstallerPackageName>
+
     <RuntimeStoreWorkingDirectory>$(RepositoryRoot).rw\</RuntimeStoreWorkingDirectory>
     <RuntimeStoreOutputPath>$(RepositoryRoot).ro\</RuntimeStoreOutputPath>
     <ArtifactsDir>$(RepositoryRoot)artifacts\</ArtifactsDir>
@@ -46,11 +49,13 @@
     <RuntimeStoreReferenceDirectory>$(ToolsDir)Build.RuntimeStore.References\</RuntimeStoreReferenceDirectory>
     <RuntimeStoreReferencePackageDirectory>$(RuntimeStoreReferenceDirectory)bin\Release\</RuntimeStoreReferencePackageDirectory>
     <DebianConfigTemplateFile>$(ToolsDir)debian_config.json</DebianConfigTemplateFile>
+    <RPMChangelogTemplateFile>$(ToolsDir)changelog</RPMChangelogTemplateFile>
     <DotnetDebToolDirectory>$(ToolsDir)dotnet-deb-tool-consumer\</DotnetDebToolDirectory>
     <RestoreRuntimeStoreDirectory>$(ToolsDir)RestoreRuntimeStore\</RestoreRuntimeStoreDirectory>
     <BuildDirectory>$(RepositoryRoot).build\</BuildDirectory>
     <BuildTempDirectory>$(BuildDirectory)temp\</BuildTempDirectory>
     <BuildDotnetDirectory>$(BuildDirectory)dotnet\</BuildDotnetDirectory>
+    <DockerRootDirectory>/opt/code/</DockerRootDirectory>
 
     <PrepareDependsOn>
       $(PrepareDependsOn);
@@ -307,10 +312,9 @@
     <ZipArchive File="%(MetaPackageNupkg.FullPath)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="@(MetaPackageNupkg->'$(TempDir)%(Filename)')" Overwrite="true" />
   </Target>
 
-  <Target Name="BuildInstallers" DependsOnTargets="GenerateDebs" />
+  <Target Name="BuildInstallers" DependsOnTargets="GenerateDebs;GenerateRpms" />
 
-  <Target Name="GenerateDebs">
-
+  <Target Name="EnsureInstallerPrerequisites">
     <!-- Check Docker server OS -->
     <Exec Command="docker version -f &quot;{{.Server.Os}}&quot;" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="DockerHostOS" />
@@ -328,12 +332,146 @@
 
     <Error Text="@(RuntimeStoreTimestampArchive->Count()) timestamp linux archives found." Condition="'@(RuntimeStoreTimestampArchive->Count())' != 1" />
     <Error Text="@(RuntimeStoreNoTimestampArchive->Count()) no timestamp linux archives found." Condition="'@(RuntimeStoreNoTimestampArchive->Count())' != 1" />
+  </Target>
 
+  <Target Name="GenerateRpms" DependsOnTargets="EnsureInstallerPrerequisites">
     <!-- Create layout: Aspnet runtime store -->
-    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutPackageRootTimestampDirectory)" />
+    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutTimestampDirectory)" />
     <MakeDir Directories="$(RuntimeStoreInstallerLayoutPackageRootTimestampDirectory)" />
     <Exec Command="tar -xzf @(RuntimeStoreTimestampArchive) -C $(RuntimeStoreInstallerLayoutPackageRootTimestampDirectory)" />
-    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory)" />
+    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutNoTimestampDirectory)" />
+    <MakeDir Directories="$(RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory)" />
+    <Exec Command="tar -xzf @(RuntimeStoreNoTimestampArchive) -C $(RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory)" />
+
+    <!-- Create layout: Place changelog -->
+    <Copy
+      SourceFiles="$(RPMChangelogTemplateFile)"
+      DestinationFiles="$(RuntimeStoreInstallerLayoutTimestampDirectory)templates/changelog"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+    <Copy
+      SourceFiles="$(RPMChangelogTemplateFile)"
+      DestinationFiles="$(RuntimeStoreInstallerLayoutNoTimestampDirectory)templates/changelog"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <!-- Update Date and Version -->
+    <Exec Command="sed -i -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/' $(RuntimeStoreInstallerLayoutTimestampDirectory)templates/changelog" />
+    <Exec Command="sed -i -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/' $(RuntimeStoreInstallerLayoutNoTimestampDirectory)templates/changelog" />
+    <Exec Command="sed -i -e 's/PACKAGE_VERSION/$(TimestampVersion)/' $(RuntimeStoreInstallerLayoutTimestampDirectory)templates/changelog" />
+    <Exec Command="sed -i -e 's/PACKAGE_VERSION/$(NoTimestampVersion)/' $(RuntimeStoreInstallerLayoutNoTimestampDirectory)templates/changelog" />
+
+    <MSBuild Projects="$(ProjectPath)" Targets="BuildRuntimeStoreRPM" Properties="InstallerPlatform=rhel" />
+  </Target>
+
+  <Target Name="BuildRuntimeStoreRPM">
+    <ItemGroup>
+      <RPMDirectories Include="/usr/share/dotnet/store" />
+      <RPMDirectories Include="/usr/share/dotnet/additionalDeps" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <RuntimeStoreTimestampRPMFileName>$(RuntimeStoreTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).rpm</RuntimeStoreTimestampRPMFileName>
+      <RuntimeStoreNoTimestampRPMFileName>$(RuntimeStoreNoTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).rpm</RuntimeStoreNoTimestampRPMFileName>
+      <RPMDirectoriesArguments>@(RPMDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RPMDirectoriesArguments>
+      <InstallerSummary>Microsoft ASP.NET Core Runtime Package Store 2.0.0 - Preview 2</InstallerSummary>
+      <InstalerDescription>Runtime package store for Microsoft ASP.NET Core. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub (https://github.com/aspnet/home). We happily accept issues and PRs.</InstalerDescription>
+      <InstallerMaintainerName>Microsoft</InstallerMaintainerName>
+      <InstallerMaintainerEmail>nugetaspnet@microsoft.com</InstallerMaintainerEmail>
+      <InstallerVendor>.NET Foundation</InstallerVendor>
+      <InstallerLicense>Apache</InstallerLicense>
+      <InstallerPackageRevision>1</InstallerPackageRevision>
+      <InstallerHomepage>https://www.asp.net/</InstallerHomepage>
+      <InstallerInstallRoot>/usr/share/dotnet</InstallerInstallRoot>
+    </PropertyGroup>
+
+    <!-- Clear the output dir -->
+    <RemoveDir Directories="$(RuntimeStoreInstallerOutputTimeStampDirectory);$(RuntimeStoreInstallerOutputNoTimeStampDirectory)" />
+    <MakeDir Directories="$(RuntimeStoreInstallerOutputTimeStampDirectory);$(RuntimeStoreInstallerOutputNoTimeStampDirectory)" />
+
+    <!-- Build Docker Image -->
+    <Exec
+      Command="docker build --build-arg USER_ID=%24(id -u) -t docker-image-$(InstallerPlatform) $(InstallerPlatform)"
+      WorkingDirectory="$(DockerDir)" />
+
+    <!-- Build Runtime Store Deb package -->
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(DockerRootDirectory)
+      docker-image-$(InstallerPlatform)
+      fpm
+        --verbose
+        -s dir
+        -t rpm
+        -n $(RuntimeStoreTimestampInstallerPackageName)
+        -v $(TimestampVersion)
+        -a amd64
+        $(RPMDirectoriesArguments)
+        --rpm-changelog $(DockerRootDirectory)artifacts/itLayout/templates/changelog
+        --rpm-summary &quot;$(InstallerSummary)&quot;
+        --description &quot;$(InstalerDescription)&quot;
+        --maintainer &quot;$(InstallerMaintainerName) &lt;$(InstallerMaintainerEmail)&gt;&quot;
+        --vendor &quot;$(InstallerVendor)&quot;
+        -p $(DockerRootDirectory)artifacts/itOutput/$(RuntimeStoreTimestampRPMFileName)
+        --license &quot;$(InstallerLicense)&quot;
+        --iteration $(InstallerPackageRevision)
+        --url &quot;$(InstallerHomepage)&quot;
+        $(DockerRootDirectory)artifacts/itLayout/package_root/=$(InstallerInstallRoot)" />
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(DockerRootDirectory)
+      docker-image-$(InstallerPlatform)
+      fpm
+        --verbose
+        -s dir
+        -t rpm
+        -n $(RuntimeStoreNoTimestampInstallerPackageName)
+        -v $(NoTimestampVersion)
+        -a amd64
+        $(RPMDirectoriesArguments)
+        --rpm-changelog $(DockerRootDirectory)artifacts/inLayout/templates/changelog
+        --rpm-summary &quot;$(InstallerSummary)&quot;
+        --description &quot;$(InstalerDescription)&quot;
+        --maintainer &quot;$(InstallerMaintainerName) %3C$(InstallerMaintainerEmail)%3E&quot;
+        --vendor &quot;$(InstallerVendor)&quot;
+        -p $(DockerRootDirectory)artifacts/inOutput/$(RuntimeStoreNoTimestampRPMFileName)
+        --license &quot;$(InstallerLicense)&quot;
+        --iteration $(InstallerPackageRevision)
+        --url &quot;$(InstallerHomepage)&quot;
+        $(DockerRootDirectory)artifacts/inLayout/package_root/=$(InstallerInstallRoot)" />
+
+    <!-- Remove Docker Image to save disk space -->
+    <Exec Command="docker rmi docker-image-$(InstallerPlatform)" />
+
+    <!-- Copy Runtime Store package to output -->
+    <ItemGroup>
+      <GeneratedTimestampRPMFiles Include="$(RuntimeStoreInstallerOutputTimeStampDirectory)/*.rpm" />
+      <GeneratedNoTimestampRPMFiles Include="$(RuntimeStoreInstallerOutputNoTimeStampDirectory)/*.rpm" />
+    </ItemGroup>
+
+    <Error Text="@(GeneratedTimestampRPMFiles->Count()) timestamp .rpm files generated." Condition="'@(GeneratedTimestampRPMFiles->Count())' != 1" />
+    <Error Text="@(GeneratedNoTimestampRPMFiles->Count()) no timestamp .rpm files generated." Condition="'@(GeneratedNoTimestampRPMFiles->Count())' != 1" />
+
+    <Copy
+      DestinationFiles="$(RuntimeStoreInstallerDirectory)$(RuntimeStoreTimestampRPMFileName)"
+      SourceFiles="@(GeneratedTimestampRPMFiles)"
+      OverwriteReadOnlyFiles="true"
+      SkipUnchangedFiles="false" />
+    <Copy
+      DestinationFiles="$(RuntimeStoreInstallerDirectory)$(RuntimeStoreNoTimestampRPMFileName)"
+      SourceFiles="@(GeneratedNoTimestampRPMFiles)"
+      OverwriteReadOnlyFiles="true"
+      SkipUnchangedFiles="false" />
+  </Target>
+
+  <Target Name="GenerateDebs" DependsOnTargets="EnsureInstallerPrerequisites">
+    <!-- Create layout: Aspnet runtime store -->
+    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutTimestampDirectory)" />
+    <MakeDir Directories="$(RuntimeStoreInstallerLayoutPackageRootTimestampDirectory)" />
+    <Exec Command="tar -xzf @(RuntimeStoreTimestampArchive) -C $(RuntimeStoreInstallerLayoutPackageRootTimestampDirectory)" />
+    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutNoTimestampDirectory)" />
     <MakeDir Directories="$(RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory)" />
     <Exec Command="tar -xzf @(RuntimeStoreNoTimestampArchive) -C $(RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory)" />
 
@@ -357,12 +495,11 @@
     <MSBuild Projects="$(ProjectPath)" Targets="BuildRuntimeStoreDeb" Properties="InstallerPlatform=ubuntu.16.10" />
   </Target>
 
+
   <Target Name="BuildRuntimeStoreDeb">
     <PropertyGroup>
-      <RuntimeStoreTimestampDebianPackageName>aspnetcore-store-$(TimestampVersion)</RuntimeStoreTimestampDebianPackageName>
-      <RuntimeStoreNoTimestampDebianPackageName>aspnetcore-store-$(NoTimestampVersion)</RuntimeStoreNoTimestampDebianPackageName>
-      <RuntimeStoreTimestampDebianFileName>$(RuntimeStoreTimestampDebianPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).deb</RuntimeStoreTimestampDebianFileName>
-      <RuntimeStoreNoTimestampDebianFileName>$(RuntimeStoreNoTimestampDebianPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).deb</RuntimeStoreNoTimestampDebianFileName>
+      <RuntimeStoreTimestampDebianFileName>$(RuntimeStoreTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).deb</RuntimeStoreTimestampDebianFileName>
+      <RuntimeStoreNoTimestampDebianFileName>$(RuntimeStoreNoTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).deb</RuntimeStoreNoTimestampDebianFileName>
     </PropertyGroup>
 
     <!-- Clear the output dir -->
@@ -384,21 +521,20 @@
     <!-- Build Runtime Store Deb package -->
     <Exec Command="docker run
       --rm
-      -v %24(pwd):/opt/code
+      -v $(RepositoryRoot):$(DockerRootDirectory)
       -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
       -e KOREBUILD_SKIP_RUNTIME_INSTALL=true
       -e BuildNumber=$(BuildNumber)
-      -e RUNTIMESTORE_TIMESTAMP_INSTALLERNAME=$(RuntimeStoreTimestampDebianPackageName)
-      -e RUNTIMESTORE_NOTIMESTAMP_INSTALLERNAME=$(RuntimeStoreNoTimestampDebianPackageName)
+      -e RUNTIMESTORE_TIMESTAMP_INSTALLERNAME=$(RuntimeStoreTimestampInstallerPackageName)
+      -e RUNTIMESTORE_NOTIMESTAMP_INSTALLERNAME=$(RuntimeStoreNoTimestampInstallerPackageName)
       docker-image-$(InstallerPlatform)
       /bin/bash -c &quot;
-        /opt/code/.build/dotnet/dotnet-install.sh
+        $(DockerRootDirectory).build/dotnet/dotnet-install.sh
           --channel preview
           --version $(CLIVersionNumber) &amp;&amp;
         export PATH=$PATH:/home/code_executor/.dotnet &amp;&amp;
         ./build.sh /t:RunDebTool
       &quot;"
-      WorkingDirectory="$(RepositoryRoot)"
       ContinueOnError="WarnAndContinue" />
 
     <!-- Remove Docker Image to save disk space -->
