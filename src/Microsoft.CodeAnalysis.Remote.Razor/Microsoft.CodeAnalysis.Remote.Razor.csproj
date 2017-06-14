@@ -7,7 +7,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;cshtml;razor</PackageTags>
     <RootNamespace>Microsoft.CodeAnalysis.Remote.Razor</RootNamespace>
-    <PackageTargetFallback>$(PackageTargetFallback);portable-net45+win8+wp8+wpa81;</PackageTargetFallback>
+    <AssetTargetFallback>$(AssetTargetFallback);portable-net45+win8+wp8+wpa81;</AssetTargetFallback>
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="..\Microsoft.VisualStudio.LanguageServices.Razor\RazorDiagnosticJsonConverter.cs" />
