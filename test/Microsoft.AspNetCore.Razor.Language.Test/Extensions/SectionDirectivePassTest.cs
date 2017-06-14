@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         }
 
         [Fact]
-        public void Execute_WrapsStatementInDefineSection()
+        public void Execute_WrapsStatementInSectionNode()
         {
             // Arrange
             var engine = CreateEngine();
@@ -65,62 +65,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var @class = @namespace.Children[0];
             var method = SingleChild<MethodDeclarationIRNode>(@class);
-            Children(
-                method,
-                node => CSharpCode("DefineSection(\"Header\", async () => {", node),
-                node => Html(" <p>Hello World</p> ", node),
-                node => CSharpCode("});", node));
-        }
 
-        [Fact]
-        public void Execute_DesignTime_WrapsStatementInBackwardsCompatibleDefineSection()
-        {
-            // Arrange
-            var engine = CreateDesignTimeEngine();
-            var pass = new SectionDirectivePass()
-            {
-                Engine = engine,
-            };
-
-            var content = "@section Header { <p>Hello World</p> }";
-            var sourceDocument = TestRazorSourceDocument.Create(content);
-            var codeDocument = RazorCodeDocument.Create(sourceDocument);
-
-            var irDocument = Lower(codeDocument, engine);
-
-            // Act
-            pass.Execute(codeDocument, irDocument);
-
-            // Assert
-            Children(
-                irDocument,
-                node => Assert.IsType<NamespaceDeclarationIRNode>(node));
-
-            var @namespace = irDocument.Children[0];
-            Children(
-                @namespace,
-                node => Assert.IsType<ClassDeclarationIRNode>(node));
-
-            var @class = @namespace.Children[0];
-            var method = SingleChild<MethodDeclarationIRNode>(@class);
-            Children(
-                method,
-                node => CSharpCode("DefineSection(\"Header\", async (__razor_section_writer) => {", node),
-                node => Html(" <p>Hello World</p> ", node),
-                node => CSharpCode("});", node));
+            var section = SingleChild<SectionIRNode>(method);
+            Assert.Equal("Header", section.Name);
+            Children(section, c => Html(" <p>Hello World</p> ", c));
         }
 
         private static RazorEngine CreateEngine()
         {
             return RazorEngine.Create(b =>
-            {
-                SectionDirective.Register(b);
-            });
-        }
-
-        private static RazorEngine CreateDesignTimeEngine()
-        {
-            return RazorEngine.CreateDesignTime(b =>
             {
                 SectionDirective.Register(b);
             });

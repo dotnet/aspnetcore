@@ -16,6 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             builder.AddDirective(Directive);
             builder.Features.Add(new SectionDirectivePass());
+            builder.AddTargetExtension(new SectionTargetExtension());
         }
     }
 }

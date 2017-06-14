@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    public class SectionDirectivePass : RazorIRPassBase, IRazorDirectiveClassifierPass
+    public sealed class SectionDirectivePass : RazorIRPassBase, IRazorDirectiveClassifierPass
     {
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {
@@ -17,30 +17,30 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 return;
             }
 
-            foreach (var section in irDocument.FindDirectiveReferences(SectionDirective.Directive))
+            foreach (var directive in irDocument.FindDirectiveReferences(SectionDirective.Directive))
             {
-                var lambdaContent = irDocument.Options.DesignTime ? "__razor_section_writer" : string.Empty;
-                var sectionName = ((DirectiveIRNode)section.Node).Tokens.FirstOrDefault()?.Content;
+                var sectionName = ((DirectiveIRNode)directive.Node).Tokens.FirstOrDefault()?.Content;
 
-                var builder = RazorIRBuilder.Create(new CSharpCodeIRNode());
-                builder.Add(new RazorIRToken()
+                var section = new SectionIRNode()
                 {
-                    Kind = RazorIRToken.TokenKind.CSharp,
-                    Content = $"DefineSection(\"{sectionName}\", async ({lambdaContent}) => {{"
-                });
-                section.InsertBefore(builder.Build());
+                    Name = sectionName,
+                };
 
-                section.InsertBefore(section.Node.Children.Except(((DirectiveIRNode)section.Node).Tokens));
-
-                builder = RazorIRBuilder.Create(new CSharpCodeIRNode());
-                builder.Add(new RazorIRToken()
+                var i = 0;
+                for (; i < directive.Node.Children.Count; i++)
                 {
-                    Kind = RazorIRToken.TokenKind.CSharp,
-                    Content = "});"
-                });
-                section.InsertAfter(builder.Build());
+                    if (!(directive.Node.Children[i] is DirectiveTokenIRNode))
+                    {
+                        break;
+                    }
+                }
 
-                section.Remove();
+                for (; i < directive.Node.Children.Count; i++)
+                {
+                    section.Children.Add(directive.Node.Children[i]);
+                }
+
+                directive.Replace(section);
             }
         }
     }

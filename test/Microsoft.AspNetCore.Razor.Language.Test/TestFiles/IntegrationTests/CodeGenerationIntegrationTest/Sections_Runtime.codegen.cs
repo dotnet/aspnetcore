@@ -14,48 +14,51 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #line default
 #line hidden
             WriteLiteral("\r\n<div>This is in the Body>\r\n\r\n");
-            DefineSection("Section2", async () => {
-            WriteLiteral("\r\n    <div");
-            BeginWriteAttribute("class", " class=\"", 109, "\"", 128, 2);
-            WriteAttributeValue("", 117, "some", 117, 4, true);
+            DefineSection("Section2", async() => {
+                WriteLiteral("\r\n    <div");
+                BeginWriteAttribute("class", " class=\"", 109, "\"", 128, 2);
+                WriteAttributeValue("", 117, "some", 117, 4, true);
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 WriteAttributeValue(" ", 121, thing, 122, 6, false);
 
 #line default
 #line hidden
-            EndWriteAttribute();
-            WriteLiteral(">This is in Section 2</div>\r\n");
-            });
+                EndWriteAttribute();
+                WriteLiteral(">This is in Section 2</div>\r\n");
+            }
+            );
             WriteLiteral("\r\n");
-            DefineSection("Section1", async () => {
-            WriteLiteral("\r\n    <div>This is in Section 1</div>\r\n");
-            });
+            DefineSection("Section1", async() => {
+                WriteLiteral("\r\n    <div>This is in Section 1</div>\r\n");
+            }
+            );
             WriteLiteral("\r\n");
-            DefineSection("NestedDelegates", async () => {
-            WriteLiteral("\r\n");
+            DefineSection("NestedDelegates", async() => {
+                WriteLiteral("\r\n");
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
        Func<dynamic, object> f = 
 
 #line default
 #line hidden
-            item => new Template(async(__razor_template_writer) => {
-                PushWriter(__razor_template_writer);
-                WriteLiteral("<span>");
+                item => new Template(async(__razor_template_writer) => {
+                    PushWriter(__razor_template_writer);
+                    WriteLiteral("<span>");
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                                    Write(item);
 
 #line default
 #line hidden
-                WriteLiteral("</span>");
-                PopWriter();
-            }
-            )
+                    WriteLiteral("</span>");
+                    PopWriter();
+                }
+                )
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                                                     ; 
 
 #line default
 #line hidden
-            });
+            }
+            );
         }
         #pragma warning restore 1998
     }

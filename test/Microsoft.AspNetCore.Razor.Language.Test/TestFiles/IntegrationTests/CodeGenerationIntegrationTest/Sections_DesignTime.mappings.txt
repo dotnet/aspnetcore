@@ -24,21 +24,21 @@ Generated Location: (896:26,2 [44] )
 
 Source Location: (123:7,22 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml)
 |thing|
-Generated Location: (1152:33,22 [5] )
+Generated Location: (1151:33,22 [5] )
 |thing|
 
 Source Location: (260:15,6 [27] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml)
 | Func<dynamic, object> f = |
-Generated Location: (1473:42,6 [27] )
+Generated Location: (1498:44,6 [27] )
 | Func<dynamic, object> f = |
 
 Source Location: (295:15,41 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml)
 |item|
-Generated Location: (1729:48,41 [4] )
+Generated Location: (1758:50,41 [4] )
 |item|
 
 Source Location: (306:15,52 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml)
 |; |
-Generated Location: (1934:55,52 [2] )
+Generated Location: (1971:57,52 [2] )
 |; |
 

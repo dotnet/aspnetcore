@@ -44,6 +44,6 @@ Generated Location: (1508:47,1 [1] )
 
 Source Location: (204:13,5 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml)
 |bar|
-Generated Location: (1709:53,6 [3] )
+Generated Location: (1708:53,6 [3] )
 |bar|
 

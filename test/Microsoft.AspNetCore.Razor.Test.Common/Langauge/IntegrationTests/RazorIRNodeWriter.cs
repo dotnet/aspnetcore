@@ -6,13 +6,14 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     // Serializes single IR nodes (shallow).
-    public class RazorIRNodeWriter : RazorIRNodeVisitor
+    public class RazorIRNodeWriter : RazorIRNodeVisitor, IExtensionIRNodeVisitor<SectionIRNode>
     {
         private readonly TextWriter _writer;
 
@@ -128,6 +129,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     base.VisitExtension(node);
                     break;
             }
+        }
+
+        public void VisitExtension(SectionIRNode node)
+        {
+            WriteContentNode(node, node.Name);
         }
 
         protected void WriteBasicNode(RazorIRNode node)

@@ -29,35 +29,38 @@ global::System.Object NestedDelegates = null;
 
 #line default
 #line hidden
-            DefineSection("Section2", async (__razor_section_writer) => {
+            DefineSection("Section2", async(__razor_section_writer) => {
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                 __o = thing;
 
 #line default
 #line hidden
-            });
-            DefineSection("Section1", async (__razor_section_writer) => {
-            });
-            DefineSection("NestedDelegates", async (__razor_section_writer) => {
+            }
+            );
+            DefineSection("Section1", async(__razor_section_writer) => {
+            }
+            );
+            DefineSection("NestedDelegates", async(__razor_section_writer) => {
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
        Func<dynamic, object> f = 
 
 #line default
 #line hidden
-            item => new Template(async(__razor_template_writer) => {
+                item => new Template(async(__razor_template_writer) => {
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                                    __o = item;
 
 #line default
 #line hidden
-            }
-            )
+                }
+                )
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                                                     ; 
 
 #line default
 #line hidden
-            });
+            }
+            );
         }
         #pragma warning restore 1998
     }

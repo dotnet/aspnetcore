@@ -49,13 +49,14 @@ __o = Foo(item => new Template(async(__razor_template_writer) => {
 
 #line default
 #line hidden
-            DefineSection("Footer", async (__razor_section_writer) => {
+            DefineSection("Footer", async(__razor_section_writer) => {
 #line 14 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DesignTime.cshtml"
 __o = bar;
 
 #line default
 #line hidden
-            });
+            }
+            );
         }
         #pragma warning restore 1998
     }

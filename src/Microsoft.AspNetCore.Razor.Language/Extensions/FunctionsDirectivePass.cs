@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    public class FunctionsDirectivePass : RazorIRPassBase, IRazorDirectiveClassifierPass
+    public sealed class FunctionsDirectivePass : RazorIRPassBase, IRazorDirectiveClassifierPass
     {
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
         {

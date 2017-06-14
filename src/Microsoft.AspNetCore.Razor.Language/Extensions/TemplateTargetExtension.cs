@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    public class TemplateTargetExtension : ITemplateTargetExtension
+    public sealed class TemplateTargetExtension : ITemplateTargetExtension
     {
         public static readonly string DefaultTemplateTypeName = "Template";
 
