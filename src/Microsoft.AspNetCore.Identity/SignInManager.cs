@@ -670,8 +670,17 @@ namespace Microsoft.AspNetCore.Identity
             }
             return identity;
         }
-
-        private async Task<SignInResult> SignInOrTwoFactorAsync(TUser user, bool isPersistent, string loginProvider = null, bool bypassTwoFactor = false)
+        
+        /// <summary>
+        /// Signs in the specified <paramref name="user"/> if <paramref name="bypassTwoFactor"/> is set to false.
+        /// Otherwise stores the <paramref name="user"/> for use after a two factor check.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="isPersistent">Flag indicating whether the sign-in cookie should persist after the browser is closed.</param>
+        /// <param name="loginProvider">The login provider to use. Default is null</param>
+        /// <param name="bypassTwoFactor">Flag indicating whether to bypass two factor authentication. Default is false</param>
+        /// <returns>Returns a <see cref="SignInResult"/></returns>
+        protected virtual async Task<SignInResult> SignInOrTwoFactorAsync(TUser user, bool isPersistent, string loginProvider = null, bool bypassTwoFactor = false)
         {
             if (!bypassTwoFactor &&
                 UserManager.SupportsUserTwoFactor &&
