@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _serverFixture = serverFixture;
         }
 
-        [ConditionalFact]
+        [ConditionalFact(Skip = "WebsocketClient.CloseAsync never returns - investigating")]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public async Task WebSocketsTransportStopsSendAndReceiveLoopsWhenTransportIsStopped()
         {

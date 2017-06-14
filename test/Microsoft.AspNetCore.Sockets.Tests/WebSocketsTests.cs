@@ -186,14 +186,15 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var client = feature.Client.ExecuteAndCaptureFramesAsync();
 
                 // Fail in the app
-                Assert.True(applicationSide.Output.Out.TryComplete(new InvalidOperationException()));
+                Assert.True(applicationSide.Output.Out.TryComplete(new InvalidOperationException("Catastrophic failure.")));
                 var clientSummary = await client;
                 Assert.Equal(WebSocketCloseStatus.InternalServerError, clientSummary.CloseResult.CloseStatus);
 
                 // Close from the client
                 await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
 
-                await transport.OrTimeout();
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => transport.OrTimeout());
+                Assert.Equal("Catastrophic failure.", ex.Message);
             }
         }
 
