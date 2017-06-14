@@ -1,5 +1,4 @@
 Document - 
-    Checksum - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         UsingStatement - (31:1,1 [26] BasicImports_Imports0.cshtml) - System.Globalization
         UsingStatement - (80:3,1 [27] BasicImports_Imports0.cshtml) - System.ComponentModel

@@ -1,5 +1,4 @@
 Document - 
-    Checksum - 
     CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InjectWithSemicolon_cshtml))]
     NamespaceDeclaration -  - AspNetCore

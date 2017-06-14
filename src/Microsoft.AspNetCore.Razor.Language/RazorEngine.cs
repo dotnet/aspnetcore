@@ -102,6 +102,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static void AddRuntimeDefaults(IRazorEngineBuilder builder)
         {
             builder.Features.Add(new RazorPreallocatedTagHelperAttributeOptimizationPass());
+
+            // Configure options
+            builder.Features.Add(new RuntimeOptionsFeature());
         }
 
         internal static void AddDesignTimeDefaults(IRazorEngineBuilder builder)

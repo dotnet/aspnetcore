@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DesignTimeOptionsFeature : RazorEngineFeatureBase, IRazorParserOptionsFeature, IRazorCodeGenerationOptionsFeature
+    internal class RuntimeOptionsFeature : RazorEngineFeatureBase, IRazorParserOptionsFeature, IRazorCodeGenerationOptionsFeature
     {
         public int Order { get; set; }
 
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(options));
             }
 
-            options.DesignTime = true;
+            options.DesignTime = false;
         }
 
         public void Configure(RazorCodeGenerationOptionsBuilder options)
@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(options));
             }
 
-            options.DesignTime = true;
-            options.GenerateChecksum = false;
+            options.DesignTime = false;
+            options.GenerateChecksum = true;
         }
     }
 }

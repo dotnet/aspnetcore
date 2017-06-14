@@ -1,5 +1,4 @@
 Document - 
-    Checksum - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inherits_Runtime - foo.bar<baz<biz>>.boz - 
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync

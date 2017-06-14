@@ -50,8 +50,7 @@ namespace RazorPageGenerator
                         @class.AccessModifier = "internal";
                     });
 
-                builder.Features.Add(new RemovePragmaChecksumFeature());
-
+                builder.Features.Add(new DisableChecksumOptionsFeature());
             });
 
             var viewDirectories = Directory.EnumerateDirectories(targetProjectDirectory, "Views", SearchOption.AllDirectories);
@@ -106,6 +105,21 @@ namespace RazorPageGenerator
                 FilePath = generatedCodeFilePath,
                 GeneratedCode = cSharpDocument.GeneratedCode,
             };
+        }
+
+        private class DisableChecksumOptionsFeature : RazorEngineFeatureBase, IRazorCodeGenerationOptionsFeature
+        {
+            public int Order { get; set; }
+
+            public void Configure(RazorCodeGenerationOptionsBuilder options)
+            {
+                if (options == null)
+                {
+                    throw new ArgumentNullException(nameof(options));
+                }
+
+                options.GenerateChecksum = false;
+            }
         }
 
         private class FileSystemRazorProjectItemWrapper : RazorProjectItem

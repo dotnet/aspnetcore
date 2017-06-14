@@ -245,18 +245,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        public static void Checksum(RazorIRNode node)
-        {
-            try
-            {
-                Assert.IsType<ChecksumIRNode>(node);
-            }
-            catch (XunitException e)
-            {
-                throw new IRAssertException(node, node.Children, e.Message, e);
-            }
-        }
-
         public static void CSharpExpression(string expected, RazorIRNode node)
         {
             try

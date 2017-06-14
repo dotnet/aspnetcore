@@ -12,60 +12,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
     public class RuntimeBasicWriterTest
     {
         [Fact]
-        public void WriteChecksum_WritesPragmaChecksum()
-        {
-            // Arrange
-            var writer = new RuntimeBasicWriter();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new Legacy.CSharpCodeWriter()
-            };
-
-            var node = new ChecksumIRNode()
-            {
-                FilePath = "test.cshtml",
-                Guid = "SomeGuid",
-                Bytes = "SomeFileHash"
-            };
-
-            // Act
-            writer.WriteChecksum(context, node);
-
-            // Assert
-            var csharp = context.Writer.Builder.ToString();
-            Assert.Equal(
-@"#pragma checksum ""test.cshtml"" ""SomeGuid"" ""SomeFileHash""
-",
-                csharp,
-                ignoreLineEndingDifferences: true);
-        }
-
-        [Fact]
-        public void WriteChecksum_EmptyBytes_WritesNothing()
-        {
-            // Arrange
-            var writer = new RuntimeBasicWriter();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new Legacy.CSharpCodeWriter()
-            };
-
-            var node = new ChecksumIRNode()
-            {
-                FilePath = "test.cshtml",
-                Guid = "SomeGuid",
-                Bytes = string.Empty
-            };
-
-            // Act
-            writer.WriteChecksum(context, node);
-
-            // Assert
-            var csharp = context.Writer.Builder.ToString();
-            Assert.Empty(csharp);
-        }
-
-        [Fact]
         public void WriteUsingStatement_NoSource_WritesContent()
         {
             // Arrange

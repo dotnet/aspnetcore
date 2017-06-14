@@ -7,11 +7,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorCodeGenerationOptions : RazorCodeGenerationOptions
     {
-        public DefaultRazorCodeGenerationOptions(bool indentWithTabs, int indentSize, bool designTime)
+        public DefaultRazorCodeGenerationOptions(bool indentWithTabs, int indentSize, bool designTime, bool generateChecksum)
         {
             IndentWithTabs = indentWithTabs;
             IndentSize = indentSize;
             DesignTime = designTime;
+            GenerateChecksum = generateChecksum;
         }
 
         public override bool DesignTime { get; }
@@ -19,5 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override bool IndentWithTabs { get; }
 
         public override int IndentSize { get; }
+
+        public override bool GenerateChecksum { get; }
     }
 }

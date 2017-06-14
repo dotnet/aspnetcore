@@ -1,5 +1,4 @@
 Document - 
-    Checksum - 
     CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(Test.Namespace.ViewWithNamespace_View))]
     NamespaceDeclaration -  - Test.Namespace

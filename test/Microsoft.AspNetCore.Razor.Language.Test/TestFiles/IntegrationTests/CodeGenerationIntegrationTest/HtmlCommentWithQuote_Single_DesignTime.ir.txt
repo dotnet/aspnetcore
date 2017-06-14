@@ -1,5 +1,4 @@
 Document - 
-    Checksum - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_HtmlCommentWithQuote_Single_DesignTime -  - 
             DesignTimeDirective - 

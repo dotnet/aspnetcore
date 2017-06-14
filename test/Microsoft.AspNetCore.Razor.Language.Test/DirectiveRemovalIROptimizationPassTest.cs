@@ -32,9 +32,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Children(irDocument,
-                node => Assert.IsType<ChecksumIRNode>(node),
                 node => Assert.IsType<NamespaceDeclarationIRNode>(node));
-            var @namespace = irDocument.Children[1];
+            var @namespace = irDocument.Children[0];
             Children(@namespace,
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
             var @class = @namespace.Children[0];
@@ -64,9 +63,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Children(irDocument,
-                node => Assert.IsType<ChecksumIRNode>(node),
                 node => Assert.IsType<NamespaceDeclarationIRNode>(node));
-            var @namespace = irDocument.Children[1];
+            var @namespace = irDocument.Children[0];
             Children(@namespace,
                 node => Assert.IsType<ClassDeclarationIRNode>(node));
             var @class = @namespace.Children[0];

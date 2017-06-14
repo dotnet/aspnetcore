@@ -1,5 +1,4 @@
 Document - 
-    Checksum - 
     NamespaceDeclaration -  - Razor
         ClassDeclaration -  - public - Template -  - 
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - type - text - HtmlAttributeValueStyle.SingleQuotes

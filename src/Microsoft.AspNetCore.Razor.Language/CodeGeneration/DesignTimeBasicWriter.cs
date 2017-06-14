@@ -9,11 +9,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     public class DesignTimeBasicWriter : BasicWriter
     {
-        public override void WriteChecksum(CSharpRenderingContext context, ChecksumIRNode node)
-        {
-            // Do nothing
-        }
-
         public override void WriteUsingStatement(CSharpRenderingContext context, UsingStatementIRNode node)
         {
             if (node.Source.HasValue)

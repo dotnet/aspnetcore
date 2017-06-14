@@ -28,21 +28,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public string TemplateTypeName { get; set; } = "Microsoft.AspNetCore.Mvc.Razor.HelperResult";
 
-        public override void WriteChecksum(CSharpRenderingContext context, ChecksumIRNode node)
-        {
-            if (!string.IsNullOrEmpty(node.Bytes))
-            {
-                context.Writer
-                .Write("#pragma checksum \"")
-                .Write(node.FilePath)
-                .Write("\" \"")
-                .Write(node.Guid)
-                .Write("\" \"")
-                .Write(node.Bytes)
-                .WriteLine("\"");
-            }
-        }
-
         public override void WriteUsingStatement(CSharpRenderingContext context, UsingStatementIRNode node)
         {
             if (node.Source.HasValue)

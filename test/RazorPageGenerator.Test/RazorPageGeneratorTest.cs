@@ -36,7 +36,6 @@ namespace RazorPageGenerator.Test
             // Arrange
             var projectDirectory = TestProject.GetProjectDirectory(GetType());
 
-
             // Act
             var results = Program.MainCore("Microsoft.AspNetCore.TestGenerated", projectDirectory);
 

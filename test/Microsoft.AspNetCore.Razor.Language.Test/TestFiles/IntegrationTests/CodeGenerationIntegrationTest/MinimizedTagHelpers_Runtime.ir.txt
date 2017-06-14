@@ -1,5 +1,4 @@
 Document - 
-    Checksum - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MinimizedTagHelpers_Runtime -  - 
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - btn - HtmlAttributeValueStyle.DoubleQuotes

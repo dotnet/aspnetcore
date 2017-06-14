@@ -10,6 +10,70 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
     public class DefaultDocumentWriterTest
     {
         [Fact]
+        public void WriteDocument_Empty_WritesChecksumByDefault()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+
+            var target = CodeTarget.CreateDefault(codeDocument, options);
+            var context = new CSharpRenderingContext()
+            {
+                Options = options,
+                Writer = new Legacy.CSharpCodeWriter(),
+                CodeDocument = codeDocument
+            };
+
+            var writer = new DefaultDocumentWriter(target, context);
+
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
+
+            // Act
+            writer.WriteDocument(document);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Equal(
+@"#pragma checksum ""test.cshtml"" ""{ff1816ec-aa5e-4d10-87f7-6f4963833460}"" ""da39a3ee5e6b4b0d3255bfef95601890afd80709""
+", 
+                csharp, 
+                ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteDocument_Empty_GenerateChecksumFalse_WritesNothing()
+        {
+            // Arrange
+            var codeDocument = TestRazorCodeDocument.CreateEmpty();
+            var optionsBuilder = new DefaultRazorCodeGenerationOptionsBuilder()
+            {
+                GenerateChecksum = false
+            };
+            var options = optionsBuilder.Build();
+
+            var target = CodeTarget.CreateDefault(codeDocument, options);
+            var context = new CSharpRenderingContext()
+            {
+                Options = options,
+                Writer = new Legacy.CSharpCodeWriter(),
+                CodeDocument = codeDocument
+            };
+
+            var writer = new DefaultDocumentWriter(target, context);
+
+            var document = new DocumentIRNode();
+            var builder = RazorIRBuilder.Create(document);
+
+            // Act
+            writer.WriteDocument(document);
+
+            // Assert
+            var csharp = context.Writer.Builder.ToString();
+            Assert.Empty(csharp);
+        }
+
+        [Fact]
         public void WriteDocument_WritesNamespace()
         {
             // Arrange
@@ -21,6 +85,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 Options = options,
                 Writer = new Legacy.CSharpCodeWriter(),
+                CodeDocument = codeDocument
             };
 
             var writer = new DefaultDocumentWriter(target, context);
@@ -38,7 +103,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Assert
             var csharp = context.Writer.Builder.ToString();
             Assert.Equal(
-@"namespace TestNamespace
+@"#pragma checksum ""test.cshtml"" ""{ff1816ec-aa5e-4d10-87f7-6f4963833460}"" ""da39a3ee5e6b4b0d3255bfef95601890afd80709""
+namespace TestNamespace
 {
     #line hidden
 }
@@ -59,6 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 Options = options,
                 Writer = new Legacy.CSharpCodeWriter(),
+                CodeDocument = codeDocument
             };
             var writer = new DefaultDocumentWriter(target, context);
 
@@ -78,7 +145,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Assert
             var csharp = context.Writer.Builder.ToString();
             Assert.Equal(
-@"internal class TestClass : TestBase, IFoo, IBar
+@"#pragma checksum ""test.cshtml"" ""{ff1816ec-aa5e-4d10-87f7-6f4963833460}"" ""da39a3ee5e6b4b0d3255bfef95601890afd80709""
+internal class TestClass : TestBase, IFoo, IBar
 {
 }
 ",
@@ -98,6 +166,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 Options = options,
                 Writer = new Legacy.CSharpCodeWriter(),
+                CodeDocument = codeDocument
             };
             var writer = new DefaultDocumentWriter(target, context);
 
@@ -117,7 +186,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Assert
             var csharp = context.Writer.Builder.ToString();
             Assert.Equal(
-@"#pragma warning disable 1998
+@"#pragma checksum ""test.cshtml"" ""{ff1816ec-aa5e-4d10-87f7-6f4963833460}"" ""da39a3ee5e6b4b0d3255bfef95601890afd80709""
+#pragma warning disable 1998
 internal virtual async string TestMethod()
 {
 }
@@ -139,6 +209,7 @@ internal virtual async string TestMethod()
             {
                 Options = options,
                 Writer = new Legacy.CSharpCodeWriter(),
+                CodeDocument = codeDocument
             };
             var writer = new DefaultDocumentWriter(target, context);
 
@@ -158,7 +229,8 @@ internal virtual async string TestMethod()
             // Assert
             var csharp = context.Writer.Builder.ToString();
             Assert.Equal(
-@"internal readonly string _foo;
+@"#pragma checksum ""test.cshtml"" ""{ff1816ec-aa5e-4d10-87f7-6f4963833460}"" ""da39a3ee5e6b4b0d3255bfef95601890afd80709""
+internal readonly string _foo;
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
@@ -176,6 +248,7 @@ internal virtual async string TestMethod()
             {
                 Options = options,
                 Writer = new Legacy.CSharpCodeWriter(),
+                CodeDocument = codeDocument
             };
             var writer = new DefaultDocumentWriter(target, context);
 
@@ -195,7 +268,8 @@ internal virtual async string TestMethod()
             // Assert
             var csharp = context.Writer.Builder.ToString();
             Assert.Equal(
-@"internal virtual string Foo { get; set; }
+@"#pragma checksum ""test.cshtml"" ""{ff1816ec-aa5e-4d10-87f7-6f4963833460}"" ""da39a3ee5e6b4b0d3255bfef95601890afd80709""
+internal virtual string Foo { get; set; }
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);

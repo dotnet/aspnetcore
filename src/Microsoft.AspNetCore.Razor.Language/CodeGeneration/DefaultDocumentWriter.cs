@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
@@ -69,12 +70,36 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitDocument(DocumentIRNode node)
             {
-                RenderChildren(node);
-            }
+                if (Context.Options.GenerateChecksum)
+                {
+                    // See http://msdn.microsoft.com/en-us/library/system.codedom.codechecksumpragma.checksumalgorithmid.aspx
+                    const string Sha1AlgorithmId = "{ff1816ec-aa5e-4d10-87f7-6f4963833460}";
 
-            public override void VisitChecksum(ChecksumIRNode node)
-            {
-                Context.BasicWriter.WriteChecksum(Context, node);
+                    var sourceDocument = Context.SourceDocument;
+
+                    var checksum = sourceDocument.GetChecksum();
+                    var fileHashBuilder = new StringBuilder(checksum.Length * 2);
+                    foreach (var value in checksum)
+                    {
+                        fileHashBuilder.Append(value.ToString("x2"));
+                    }
+
+                    var bytes = fileHashBuilder.ToString();
+
+                    if (!string.IsNullOrEmpty(bytes))
+                    {
+                        Context.Writer
+                        .Write("#pragma checksum \"")
+                        .Write(sourceDocument.FilePath)
+                        .Write("\" \"")
+                        .Write(Sha1AlgorithmId)
+                        .Write("\" \"")
+                        .Write(bytes)
+                        .WriteLine("\"");
+                    }
+                }
+
+                RenderChildren(node);
             }
 
             public override void VisitUsingStatement(UsingStatementIRNode node)

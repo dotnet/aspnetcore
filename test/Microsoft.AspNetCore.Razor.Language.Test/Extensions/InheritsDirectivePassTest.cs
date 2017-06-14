@@ -56,10 +56,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             // Assert
             Children(
                 irDocument,
-                node => Assert.IsType<ChecksumIRNode>(node),
                 node => Assert.IsType<NamespaceDeclarationIRNode>(node));
 
-            var @namespace = irDocument.Children[1];
+            var @namespace = irDocument.Children[0];
             Children(
                 @namespace,
                 node => Assert.IsType<ClassDeclarationIRNode>(node));

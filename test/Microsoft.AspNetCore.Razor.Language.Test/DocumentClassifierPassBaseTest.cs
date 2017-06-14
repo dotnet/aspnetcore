@@ -118,31 +118,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void Execute_AddsCheckumFirstToDocument()
-        {
-            // Arrange
-            var irDocument = new DocumentIRNode()
-            {
-                Options = RazorCodeGenerationOptions.CreateDefault(),
-            };
-
-            var builder = RazorIRBuilder.Create(irDocument);
-            builder.Add(new ChecksumIRNode());
-
-            var pass = new TestDocumentClassifierPass();
-            pass.Engine = RazorEngine.CreateEmpty(b => { });
-
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
-
-            // Assert
-            Children(
-                irDocument,
-                n => Assert.IsType<ChecksumIRNode>(n),
-                n => Assert.IsType<NamespaceDeclarationIRNode>(n));
-        }
-
-        [Fact]
         public void Execute_AddsUsingsToNamespace()
         {
             // Arrange

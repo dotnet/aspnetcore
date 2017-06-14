@@ -33,9 +33,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             document.Options = CreateCodeGenerationOptions();
 
-            var checksum = ChecksumIRNode.Create(codeDocument.Source);
-            builder.Insert(0, checksum);
-
             var namespaces = new Dictionary<string, SourceSpan?>(StringComparer.Ordinal);
 
             // The import documents should be inserted logically before the main document.
@@ -64,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // In each lowering piece above, namespaces were tracked. We render them here to ensure every
             // lowering action has a chance to add a source location to a namespace. Ultimately, closest wins.
 
-            var i = builder.Current.Children.IndexOf(checksum) + 1;
+            var i = 0;
             foreach (var @namespace in namespaces)
             {
                 var @using = new UsingStatementIRNode()

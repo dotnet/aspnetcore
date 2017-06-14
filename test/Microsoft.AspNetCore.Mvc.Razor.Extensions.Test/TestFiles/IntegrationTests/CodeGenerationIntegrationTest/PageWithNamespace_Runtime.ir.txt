@@ -1,5 +1,4 @@
 Document - 
-    Checksum - 
     CSharpCode - 
         RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(Test.Namespace.PageWithNamespace_Page), null)]
     NamespaceDeclaration -  - Test.Namespace

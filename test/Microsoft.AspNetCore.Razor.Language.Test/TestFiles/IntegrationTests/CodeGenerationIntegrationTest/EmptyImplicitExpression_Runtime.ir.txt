@@ -1,5 +1,4 @@
 Document - 
-    Checksum - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EmptyImplicitExpression_Runtime -  - 
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync

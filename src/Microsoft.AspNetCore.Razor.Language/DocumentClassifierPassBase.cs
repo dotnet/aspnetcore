@@ -123,11 +123,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _method = method;
             }
 
-            public override void VisitChecksum(ChecksumIRNode node)
-            {
-                _document.Insert(0, node);
-            }
-
             public override void VisitUsingStatement(UsingStatementIRNode node)
             {
                 var children = _namespace.Current.Children;

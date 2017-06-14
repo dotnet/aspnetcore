@@ -1,5 +1,4 @@
 Document - 
-    Checksum - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         UsingStatement - (1:0,1 [15] Usings.cshtml) - System.IO
         UsingStatement - (19:1,1 [32] Usings.cshtml) - Foo = System.Text.Encoding

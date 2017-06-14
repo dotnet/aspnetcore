@@ -15,19 +15,6 @@ namespace Microsoft.AspNetCore.Razor.Language
     public class DefaultRazorIRLoweringPhaseIntegrationTest
     {
         [Fact]
-        public void Lower_EmptyDocument_AddsChecksum()
-        {
-            // Arrange
-            var codeDocument = TestRazorCodeDocument.CreateEmpty();
-
-            // Act
-            var irDocument = Lower(codeDocument);
-
-            // Assert
-            Children(irDocument, n => Checksum(n));
-        }
-
-        [Fact]
         public void Lower_SetsOptions_Defaults()
         {
             // Arrange
@@ -57,6 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     o.DesignTime = true;
                     o.IndentSize = 17;
                     o.IndentWithTabs = true;
+                    o.GenerateChecksum = true;
                 });
 
             // Act
@@ -70,6 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.True(irDocument.Options.DesignTime);
             Assert.Equal(17, irDocument.Options.IndentSize);
             Assert.True(irDocument.Options.IndentWithTabs);
+            Assert.True(irDocument.Options.GenerateChecksum);
         }
 
         [Fact]
@@ -83,7 +72,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Children(irDocument,
-                n => Checksum(n),
                 n => Html("Hello, World!", n));
         }
 
@@ -103,7 +91,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Children(irDocument,
-                n => Checksum(n),
                 n => Html(
 @"
 <html>
@@ -131,7 +118,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Children(irDocument,
-                n => Checksum(n),
                 n => Html(
 @"
 <html>
@@ -164,7 +150,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Children(irDocument,
-                n => Checksum(n),
                 n => Directive(
                     "functions",
                     n,
@@ -183,7 +168,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Children(irDocument,
-                n => Checksum(n),
                 n =>
                 {
                     Using("System", n);
@@ -210,7 +194,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Children(irDocument,
-                n => Checksum(n),
                 n => Directive(
                     SyntaxConstants.CSharp.AddTagHelperKeyword,
                     n,
@@ -250,7 +233,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Children(irDocument,
-                n => Checksum(n),
                 n => Directive(
                     SyntaxConstants.CSharp.AddTagHelperKeyword,
                     n,
@@ -296,7 +278,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(
                 irDocument,
-                n => Checksum(n),
                 n => Directive(
                     SyntaxConstants.CSharp.AddTagHelperKeyword,
                     n,
@@ -349,7 +330,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(
                 irDocument,
-                n => Checksum(n),
                 n => Directive(
                     SyntaxConstants.CSharp.AddTagHelperKeyword,
                     n,
@@ -389,7 +369,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(
                 irDocument,
-                n => Checksum(n),
                 n => Using("System.Globalization", n),
                 n => Using("System.Text", n),
                 n => Using("System.Threading.Tasks", n),
@@ -418,7 +397,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(
                 irDocument,
-                n => Checksum(n),
                 n => Directive("test", n, c => DirectiveToken(DirectiveTokenKind.Member, "value1", c)),
                 n => Directive("test", n, c => DirectiveToken(DirectiveTokenKind.Member, "value2", c)),
                 n => Html("<p>Hi!</p>", n));
@@ -445,7 +423,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Children(
                 irDocument,
-                n => Checksum(n),
                 n => Html("<p>Hi!</p>", n));
         }
 

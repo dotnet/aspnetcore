@@ -14,11 +14,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
         }
 
-        public virtual void VisitChecksum(ChecksumIRNode node)
-        {
-            VisitDefault(node);
-        }
-
         public virtual void VisitToken(RazorIRToken node)
         {
             VisitDefault(node);
