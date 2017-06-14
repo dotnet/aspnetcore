@@ -76,6 +76,21 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
+        /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.
+        /// This is typically specified via <see cref="AuthenticationOptions.DefaultForbidScheme"/>.
+        /// Otherwise, this will fallback to <see cref="GetDefaultChallengeSchemeAsync"/> .
+        /// </summary>
+        /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
+        public Task<AuthenticationScheme> GetDefaultForbidSchemeAsync()
+        {
+            if (_options.DefaultForbidScheme != null)
+            {
+                return GetSchemeAsync(_options.DefaultForbidScheme);
+            }
+            return GetDefaultChallengeSchemeAsync();
+        }
+
+        /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.
         /// This is typically specified via <see cref="AuthenticationOptions.DefaultSignInScheme"/>.
         /// Otherwise, if only a single scheme exists, that will be used, if more than one exists, null will be returned.
@@ -92,6 +107,21 @@ namespace Microsoft.AspNetCore.Authentication
                 return Task.FromResult(_map.Values.First());
             }
             return Task.FromResult<AuthenticationScheme>(null);
+        }
+
+        /// <summary>
+        /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.
+        /// This is typically specified via <see cref="AuthenticationOptions.DefaultSignOutScheme"/>.
+        /// Otherwise, this will fallback to <see cref="GetDefaultSignInSchemeAsync"/> .
+        /// </summary>
+        /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
+        public Task<AuthenticationScheme> GetDefaultSignOutSchemeAsync()
+        {
+            if (_options.DefaultSignOutScheme != null)
+            {
+                return GetSchemeAsync(_options.DefaultSignOutScheme);
+            }
+            return GetDefaultSignInSchemeAsync();
         }
 
         /// <summary>

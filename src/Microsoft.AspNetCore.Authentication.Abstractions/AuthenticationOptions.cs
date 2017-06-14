@@ -48,6 +48,19 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
+        /// Adds an <see cref="AuthenticationScheme"/>.
+        /// </summary>
+        /// <typeparam name="THandler">The <see cref="IAuthenticationHandler"/> responsible for the scheme.</typeparam>
+        /// <param name="name">The name of the scheme being added.</param>
+        /// <param name="displayName">The display name for the scheme.</param>
+        public void AddScheme<THandler>(string name, string displayName) where THandler : IAuthenticationHandler
+            => AddScheme(name, b =>
+            {
+                b.DisplayName = displayName;
+                b.HandlerType = typeof(THandler);
+            });
+
+        /// <summary>
         /// Used by as the default scheme by <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
         /// </summary>
         public string DefaultAuthenticateScheme { get; set; }
@@ -58,8 +71,18 @@ namespace Microsoft.AspNetCore.Authentication
         public string DefaultSignInScheme { get; set; }
 
         /// <summary>
+        /// Used by as the default scheme by <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.
+        /// </summary>
+        public string DefaultSignOutScheme { get; set; }
+
+        /// <summary>
         /// Used by as the default scheme by <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// </summary>
         public string DefaultChallengeScheme { get; set; }
+
+        /// <summary>
+        /// Used by as the default scheme by <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.
+        /// </summary>
+        public string DefaultForbidScheme { get; set; }
     }
 }

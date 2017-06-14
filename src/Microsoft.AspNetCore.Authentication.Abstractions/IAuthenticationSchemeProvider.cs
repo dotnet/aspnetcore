@@ -42,12 +42,28 @@ namespace Microsoft.AspNetCore.Authentication
         Task<AuthenticationScheme> GetDefaultChallengeSchemeAsync();
 
         /// <summary>
+        /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.
+        /// This is typically specified via <see cref="AuthenticationOptions.DefaultForbidScheme"/>.
+        /// Otherwise, this will fallback to <see cref="GetDefaultChallengeSchemeAsync"/> .
+        /// </summary>
+        /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
+        Task<AuthenticationScheme> GetDefaultForbidSchemeAsync();
+
+        /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.
         /// This is typically specified via <see cref="AuthenticationOptions.DefaultSignInScheme"/>.
         /// Otherwise, if only a single scheme exists, that will be used, if more than one exists, null will be returned.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.</returns>
         Task<AuthenticationScheme> GetDefaultSignInSchemeAsync();
+
+        /// <summary>
+        /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.
+        /// This is typically specified via <see cref="AuthenticationOptions.DefaultSignOutScheme"/>.
+        /// Otherwise, this will fallback to <see cref="GetDefaultSignInSchemeAsync"/> .
+        /// </summary>
+        /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
+        Task<AuthenticationScheme> GetDefaultSignOutSchemeAsync();
 
         /// <summary>
         /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
