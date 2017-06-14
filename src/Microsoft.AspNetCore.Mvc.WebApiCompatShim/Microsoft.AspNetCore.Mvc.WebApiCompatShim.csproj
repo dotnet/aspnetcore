@@ -10,7 +10,8 @@ System.Web.Http.ApiController</Description>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;aspnetwebapi</PackageTags>
-    <AssetTargetFallback>$(AssetTargetFallback);portable-net451+win8</AssetTargetFallback>
+    <PackageTargetFallback>$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
+    <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
