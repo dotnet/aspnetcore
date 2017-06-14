@@ -29,7 +29,7 @@
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
 
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="2.0.0-*" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynVersion)" />
 
     <!-- We need this to compile but don't want it referenced by the project.
       It is included dynamically in CodeGeneration tests. -->
