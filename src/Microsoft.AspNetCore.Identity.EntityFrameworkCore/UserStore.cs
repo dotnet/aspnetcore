@@ -411,7 +411,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
                         join role in Roles on userRole.RoleId equals role.Id
                         where userRole.UserId.Equals(userId)
                         select role.Name;
-            return await query.ToListAsync();
+            return await query.ToListAsync(cancellationToken);
         }
 
         /// <summary>
