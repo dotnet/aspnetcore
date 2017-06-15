@@ -236,7 +236,6 @@ export class LongPollingTransport implements ITransport {
 }
 
 const headers = new Map<string, string>();
-headers.set("Content-Type", "application/vnd.microsoft.aspnetcore.endpoint-messages.v1+text");
 
 async function send(httpClient: IHttpClient, url: string, data: any): Promise<void> {
     await httpClient.post(url, data, headers);
