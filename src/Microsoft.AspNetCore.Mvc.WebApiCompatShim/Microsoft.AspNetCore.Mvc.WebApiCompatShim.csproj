@@ -11,6 +11,7 @@ System.Web.Http.ApiController</Description>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;aspnetwebapi</PackageTags>
     <PackageTargetFallback>$(PackageTargetFallback);portable-net451+win8</PackageTargetFallback>
+    <DisableImplicitAssetTargetFallback>true</DisableImplicitAssetTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
