@@ -12,119 +12,74 @@ using Xunit.Abstractions;
 
 namespace E2ETests
 {
-    public class PublishAndRunTests_OnX64
+    [Trait("E2Etests", "PublishAndRun")]
+    public class PublishAndRunTests_X64 : LoggedTest
     {
-        private readonly ITestOutputHelper _output;
-
-        public PublishAndRunTests_OnX64(ITestOutputHelper output)
+        public PublishAndRunTests_X64(ITestOutputHelper output) : base(output)
         {
-            _output = output;
         }
 
-        [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable, false)]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Standalone, false)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable, false)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone, false)]
-        public async Task WindowsOS(
-            ServerType serverType,
-            RuntimeArchitecture architecture,
-            ApplicationType applicationType,
-            bool noSource)
+        public Task PublishAndRunTests_X64_WebListener_CoreCLR_Portable()
         {
-            var testRunner = new PublishAndRunTests(_output);
-            await testRunner.Publish_And_Run_Tests(
-                serverType, architecture, applicationType, noSource);
+            return RunTests(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Portable);
         }
 
-        [ConditionalTheory, Trait("E2Etests", "PublishAndRun")]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable, false)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone, false)]
-        public async Task NonWindowsOS(
-            ServerType serverType,
-            RuntimeArchitecture architecture,
-            ApplicationType applicationType,
-            bool noSource)
-        {
-            var testRunner = new PublishAndRunTests(_output);
-            await testRunner.Publish_And_Run_Tests(
-                serverType, architecture, applicationType, noSource);
-        }
-    }
-
-    public class PublishAndRunTests_OnX86
-    {
-        private const string SkipReason = "temporarily disabling x86 tests as dotnet xunit test runner currently does not support 32-bit";
-        private readonly ITestOutputHelper _output;
-
-        public PublishAndRunTests_OnX86(ITestOutputHelper output)
-        {
-            _output = output;
-        }
-
-        [ConditionalTheory(Skip = SkipReason)]
-        [Trait("E2Etests", "PublishAndRun")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x86, ApplicationType.Standalone, false)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Standalone, false)]
-        public async Task WindowsOS(
-            ServerType serverType,
-            RuntimeArchitecture architecture,
-            ApplicationType applicationType,
-            bool noSource)
+        public Task PublishAndRunTests_X64_WebListener_CoreCLR_Standalone()
         {
-            var testRunner = new PublishAndRunTests(_output);
-            await testRunner.Publish_And_Run_Tests(
-                serverType, architecture, applicationType, noSource);
+            return RunTests(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
         }
 
-        [ConditionalTheory(Skip = SkipReason)]
-        [Trait("E2Etests", "PublishAndRun")]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x86, ApplicationType.Portable, false)]
-        public async Task NonWindowsOS(
-            ServerType serverType,
-            RuntimeArchitecture architecture,
-            ApplicationType applicationType,
-            bool noSource)
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public Task PublishAndRunTests_X64_WebListener_Clr()
         {
-            var testRunner = new PublishAndRunTests(_output);
-            await testRunner.Publish_And_Run_Tests(
-                serverType, architecture, applicationType, noSource);
-        }
-    }
-
-    public class PublishAndRunTests : LoggedTest
-    {
-        public PublishAndRunTests(ITestOutputHelper output) : base(output)
-        {
+            return RunTests(ServerType.WebListener, RuntimeFlavor.Clr, ApplicationType.Portable);
         }
 
-        public async Task Publish_And_Run_Tests(
-            ServerType serverType,
-            RuntimeArchitecture architecture,
-            ApplicationType applicationType,
-            bool noSource)
+        [Fact]
+        public Task PublishAndRunTests_X64_Kestrel_CoreClr_Portable()
         {
-            var noSourceStr = noSource ? "NoSource" : "WithSource";
-            var testName = $"PublishAndRunTests_{serverType}_{architecture}_{applicationType}_{noSourceStr}";
+            return RunTests(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Portable);
+        }
+
+        [Fact]
+        public Task PublishAndRunTests_X64_Kestrel_CoreClr_Standalone()
+        {
+            return RunTests(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public Task PublishAndRunTests_X64_Kestrel_Clr()
+        {
+            return RunTests(ServerType.Kestrel, RuntimeFlavor.Clr, ApplicationType.Standalone);
+        }
+
+        private async Task RunTests(
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            ApplicationType applicationType)
+        {
+            var testName = $"PublishAndRunTests_{serverType}_{runtimeFlavor}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("Publish_And_Run_Tests");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(
-                    Helpers.GetApplicationPath(applicationType), serverType, RuntimeFlavor.CoreClr, architecture)
+                    Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, RuntimeArchitecture.x64)
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     Configuration = Helpers.GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     UserAdditionalCleanup = parameters =>
@@ -142,13 +97,13 @@ namespace E2ETests
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {
                     var deploymentResult = await deployer.DeployAsync();
-                    var httpClientHandler = new HttpClientHandler() { UseDefaultCredentials = true };
+                    var httpClientHandler = new HttpClientHandler { UseDefaultCredentials = true };
                     var httpClient = deploymentResult.CreateHttpClient(httpClientHandler);
 
                     // Request to base address and check if various parts of the body are rendered &
                     // measure the cold startup time.
                     // Add retry logic since tests are flaky on mono due to connection issues
-                    var response = await RetryHelper.RetryRequest(async () => await httpClient.GetAsync(string.Empty), logger: logger, cancellationToken: deploymentResult.HostShutdownToken);
+                    var response = await RetryHelper.RetryRequest(() => httpClient.GetAsync(string.Empty), logger, cancellationToken: deploymentResult.HostShutdownToken);
 
                     Assert.False(response == null, "Response object is null because the client could not " +
                         "connect to the server after multiple retries");

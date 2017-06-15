@@ -10,47 +10,47 @@ using Xunit.Abstractions;
 
 namespace E2ETests
 {
+    [Trait("E2Etests", "E2Etests")]
     public class OpenIdConnectTests : LoggedTest
     {
         public OpenIdConnectTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
+        [Fact]
+        public Task OpenIdConnect_Kestrel_CoreCLR_Portable()
+        {
+            return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Portable);
+        }
+
+        [Fact]
+        public Task OpenIdConnect_Kestrel_CoreCLR_Standalone()
+        {
+            return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
+        }
+
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public async Task OpenIdConnect_OnWindowsOS(
-            ServerType serverType,
-            RuntimeArchitecture architecture,
-            ApplicationType applicationType)
+        public Task OpenIdConnect_Kestrel_CLR()
         {
-            await OpenIdConnectTestSuite(serverType, architecture, applicationType);
+            return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.Clr, ApplicationType.Portable);
         }
 
-        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [OSSkipCondition(OperatingSystems.Windows)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.Kestrel, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public async Task OpenIdConnect_OnNonWindows(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        private async Task OpenIdConnectTestSuite(ServerType serverType, RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
         {
-            await OpenIdConnectTestSuite(serverType, architecture, applicationType);
-        }
-
-        private async Task OpenIdConnectTestSuite(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
-        {
-            var testName = $"OpenIdConnectTestSuite_{serverType}_{architecture}_{applicationType}";
+            var architecture = RuntimeArchitecture.x64;
+            var testName = $"OpenIdConnectTestSuite_{serverType}_{runtimeFlavor}_{architecture}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("OpenIdConnectTestSuite");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, RuntimeFlavor.CoreClr, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     Configuration = Helpers.GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     EnvironmentName = "OpenIdConnectTesting",

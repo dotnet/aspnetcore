@@ -1,14 +1,66 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace E2ETests
 {
-    public static class SmokeTestHelper
+    public class SmokeTestRunner : LoggedTest
     {
+        public SmokeTestRunner(ITestOutputHelper output) : base(output)
+        {
+        }
+
+        public async Task SmokeTestSuite(
+            ServerType serverType,
+            RuntimeFlavor runtimeFlavor,
+            RuntimeArchitecture architecture,
+            ApplicationType applicationType)
+        {
+            var testName = $"SmokeTestSuite_{serverType}_{applicationType}";
+            using (StartLog(out var loggerFactory, testName))
+            {
+                var logger = loggerFactory.CreateLogger("SmokeTestSuite");
+                var musicStoreDbName = DbUtils.GetUniqueName();
+
+                var deploymentParameters = new DeploymentParameters(
+                    Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
+                {
+                    EnvironmentName = "SocialTesting",
+                    ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
+                    SiteName = "MusicStoreTestSite",
+                    PublishApplicationBeforeDeployment = true,
+                    PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.CoreClr ? "netcoreapp2.0" : "net461",
+                    Configuration = Helpers.GetCurrentBuildConfiguration(),
+                    ApplicationType = applicationType,
+                    UserAdditionalCleanup = parameters =>
+                    {
+                        DbUtils.DropDatabase(musicStoreDbName, logger);
+                    }
+                };
+
+                // Override the connection strings using environment based configuration
+                deploymentParameters.EnvironmentVariables
+                    .Add(new KeyValuePair<string, string>(
+                        MusicStoreConfig.ConnectionStringKey,
+                        DbUtils.CreateConnectionString(musicStoreDbName)));
+
+                using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
+                {
+                    var deploymentResult = await deployer.DeployAsync();
+
+                    await RunTestsAsync(deploymentResult, logger);
+                }
+            }
+        }
+
         public static async Task RunTestsAsync(DeploymentResult deploymentResult, ILogger logger)
         {
             var httpClientHandler = new HttpClientHandler();
@@ -110,5 +162,6 @@ namespace E2ETests
 
             logger.LogInformation("Variation completed successfully.");
         }
+
     }
 }

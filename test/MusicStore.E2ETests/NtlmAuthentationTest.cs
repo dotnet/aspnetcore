@@ -12,32 +12,65 @@ using Xunit.Abstractions;
 
 namespace E2ETests
 {
+    [Trait("E2Etests", "E2Etests")]
+    [OSSkipCondition(OperatingSystems.Linux)]
+    [OSSkipCondition(OperatingSystems.MacOSX)]
     public class NtlmAuthenticationTests : LoggedTest
     {
         public NtlmAuthenticationTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        [ConditionalTheory, Trait("E2Etests", "E2Etests")]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.WebListener, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Portable)]
-        [InlineData(ServerType.IISExpress, RuntimeArchitecture.x64, ApplicationType.Standalone)]
-        public async Task NtlmAuthenticationTest(ServerType serverType, RuntimeArchitecture architecture, ApplicationType applicationType)
+        [ConditionalFact]
+        public Task NtlmAuthenticationTest_WebListener_CoreCLR_Portable()
         {
-            var testName = $"NtlmAuthentication_{serverType}_{architecture}_{applicationType}";
+            return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Portable);
+        }
+
+        [ConditionalFact]
+        public Task NtlmAuthenticationTest_WebListener_CoreCLR_Standalone()
+        {
+            return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
+        }
+
+        [ConditionalFact]
+        public Task NtlmAuthenticationTest_IISExpress_CoreCLR_Portable()
+        {
+            return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.CoreClr, ApplicationType.Portable);
+        }
+
+        [ConditionalFact]
+        public Task NtlmAuthenticationTest_IISExpress_CoreCLR_Standalone()
+        {
+            return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
+        }
+
+        [ConditionalFact]
+        public Task NtlmAuthenticationTest_WebListener_CLR()
+        {
+            return NtlmAuthenticationTest(ServerType.WebListener, RuntimeFlavor.Clr, ApplicationType.Portable);
+        }
+
+        [ConditionalFact]
+        public Task NtlmAuthenticationTest_IISExpress_CLR()
+        {
+            return NtlmAuthenticationTest(ServerType.IISExpress, RuntimeFlavor.Clr, ApplicationType.Standalone);
+        }
+
+        private async Task NtlmAuthenticationTest(ServerType serverType, RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
+        {
+            var architecture = RuntimeArchitecture.x64;
+            var testName = $"NtlmAuthentication_{serverType}_{runtimeFlavor}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
             {
                 var logger = loggerFactory.CreateLogger("NtlmAuthenticationTest");
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
-                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, RuntimeFlavor.CoreClr, architecture)
+                var deploymentParameters = new DeploymentParameters(Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, architecture)
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
-                    TargetFramework = "netcoreapp2.0",
+                    TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                     Configuration = Helpers.GetCurrentBuildConfiguration(),
                     ApplicationType = applicationType,
                     EnvironmentName = "NtlmAuthentication", //Will pick the Start class named 'StartupNtlmAuthentication'

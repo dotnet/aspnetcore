@@ -61,7 +61,7 @@ namespace E2ETests
                         File.Exists(mvcCoreDllPath),
                         $"The file '{fileInfo.Name}.{fileInfo.Extension}' was not expected to be present in the publish directory");
 
-                    await SmokeTestHelper.RunTestsAsync(deploymentResult, logger);
+                    await SmokeTestRunner.RunTestsAsync(deploymentResult, logger);
                 }
             }
         }

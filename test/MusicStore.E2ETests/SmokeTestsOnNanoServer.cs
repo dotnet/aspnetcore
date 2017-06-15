@@ -258,7 +258,7 @@ namespace E2ETests
                 {
                     var deploymentResult = await deployer.DeployAsync();
 
-                    await SmokeTestHelper.RunTestsAsync(deploymentResult, logger);
+                    await SmokeTestRunner.RunTestsAsync(deploymentResult, logger);
                 }
             }
         }

@@ -1,8 +1,7 @@
 using System;
 using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Testing;
 
 namespace E2ETests
 {
@@ -10,53 +9,17 @@ namespace E2ETests
     {
         public static string GetApplicationPath(ApplicationType applicationType)
         {
-            var current = new DirectoryInfo(AppContext.BaseDirectory);
-            while (current != null)
-            {
-                if (File.Exists(Path.Combine(current.FullName, "MusicStore.sln")))
-                {
-                    break;
-                }
-                current = current.Parent;
-            }
-
-            if (current == null)
-            {
-                throw new InvalidOperationException("Could not find the solution directory");
-            }
-
-            return Path.GetFullPath(Path.Combine(current.FullName, "samples", "MusicStore"));
-        }
-
-        public static void SetInMemoryStoreForIIS(DeploymentParameters deploymentParameters, ILogger logger)
-        {
-            if (deploymentParameters.ServerType == ServerType.IIS)
-            {
-                // Can't use localdb with IIS. Setting an override to use InMemoryStore.
-                logger.LogInformation("Creating configoverride.json file to override default config.");
-
-                var compileRoot = Path.GetFullPath(
-                    Path.Combine(
-                        deploymentParameters.ApplicationPath,
-                        "..", "approot", "packages", "MusicStore"));
-
-                // We don't know the exact version number with which sources are built.
-                string overrideConfig = Path.Combine(Directory.GetDirectories(compileRoot).First(), "root", "configoverride.json");
-
-
-                File.WriteAllText(overrideConfig, "{\"UseInMemoryDatabase\": \"true\"}");
-            }
+            var solutionDirectory = TestPathUtilities.GetSolutionRootDirectory("MusicStore");
+            return Path.GetFullPath(Path.Combine(solutionDirectory, "samples", "MusicStore"));
         }
 
         public static string GetCurrentBuildConfiguration()
         {
-            var configuration = "Debug";
-            if (string.Equals(Environment.GetEnvironmentVariable("Configuration"), "Release", StringComparison.OrdinalIgnoreCase))
-            {
-                configuration = "Release";
-            }
-
-            return configuration;
+#if DEBUG
+            return "Debug";
+#else
+            return "Release";
+#endif
         }
 
         public static bool PreservePublishedApplicationForDebugging
