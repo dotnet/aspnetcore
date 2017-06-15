@@ -5,7 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Sockets.Transports
+namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 {
     public interface IHttpTransport
     {

@@ -13,16 +13,18 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Sockets.Transports
+namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 {
     public class ServerSentEventsTransport : IHttpTransport
     {
         private readonly ReadableChannel<byte[]> _application;
+        private readonly string _connectionId;
         private readonly ILogger _logger;
 
-        public ServerSentEventsTransport(ReadableChannel<byte[]> application, ILoggerFactory loggerFactory)
+        public ServerSentEventsTransport(ReadableChannel<byte[]> application, string connectionId, ILoggerFactory loggerFactory)
         {
             _application = application;
+            _connectionId = connectionId;
             _logger = loggerFactory.CreateLogger<ServerSentEventsTransport>();
         }
 
@@ -51,6 +53,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 {
                     while (_application.TryRead(out var buffer))
                     {
+                        _logger.SSEWritingMessage(_connectionId, buffer.Length);
                         if (!ServerSentEventsMessageFormatter.TryWriteMessage(buffer, output))
                         {
                             // We ran out of space to write, even after trying to enlarge.

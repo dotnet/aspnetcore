@@ -1,15 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
-using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Sockets.Transports;
+using Microsoft.AspNetCore.Sockets.Internal.Transports;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -22,7 +20,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
-            var sse = new ServerSentEventsTransport(channel, new LoggerFactory());
+            var sse = new ServerSentEventsTransport(channel, connectionId: string.Empty, loggerFactory: new LoggerFactory());
 
             Assert.True(channel.Out.TryComplete());
 
@@ -39,7 +37,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var context = new DefaultHttpContext();
             var feature = new HttpBufferingFeature();
             context.Features.Set<IHttpBufferingFeature>(feature);
-            var sse = new ServerSentEventsTransport(channel, new LoggerFactory());
+            var sse = new ServerSentEventsTransport(channel, connectionId: string.Empty, loggerFactory: new LoggerFactory());
 
             Assert.True(channel.Out.TryComplete());
 
@@ -56,7 +54,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
-            var sse = new ServerSentEventsTransport(channel, new LoggerFactory());
+            var sse = new ServerSentEventsTransport(channel, connectionId: string.Empty, loggerFactory: new LoggerFactory());
             var ms = new MemoryStream();
             context.Response.Body = ms;
 

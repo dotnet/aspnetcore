@@ -9,18 +9,20 @@ using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Sockets.Transports
+namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 {
     public class LongPollingTransport : IHttpTransport
     {
         private readonly ReadableChannel<byte[]> _application;
         private readonly ILogger _logger;
         private readonly CancellationToken _timeoutToken;
+        private readonly string _connectionId;
 
-        public LongPollingTransport(CancellationToken timeoutToken, ReadableChannel<byte[]> application, ILoggerFactory loggerFactory)
+        public LongPollingTransport(CancellationToken timeoutToken, ReadableChannel<byte[]> application, string connectionId, ILoggerFactory loggerFactory)
         {
             _timeoutToken = timeoutToken;
             _application = application;
+            _connectionId = connectionId;
             _logger = loggerFactory.CreateLogger<LongPollingTransport>();
         }
 
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 if (!await _application.WaitToReadAsync(token))
                 {
                     await _application.Completion;
-                    _logger.LogInformation("Terminating Long Polling connection by sending 204 response.");
+                    _logger.LongPolling204(_connectionId, context.TraceIdentifier);
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                     return;
                 }
@@ -47,7 +49,7 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                     contentLength += buffer.Length;
                     buffers.Add(buffer);
 
-                    _logger.LogDebug("Writing {0} byte message to response", buffer.Length);
+                    _logger.LongPollingWritingMessage(_connectionId, context.TraceIdentifier, buffer.Length);
                 }
 
                 context.Response.ContentLength = contentLength;
@@ -69,12 +71,12 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 {
                     // Don't count this as cancellation, this is normal as the poll can end due to the browser closing.
                     // The background thread will eventually dispose this connection if it's inactive
-                    _logger.LogDebug("Client disconnected from Long Polling endpoint.");
+                    _logger.LongPollingDisconnected(_connectionId, context.TraceIdentifier);
                 }
                 // Case 2
                 else if (_timeoutToken.IsCancellationRequested)
                 {
-                    _logger.LogInformation("Poll request timed out. Sending 200 response.");
+                    _logger.PollTimedOut(_connectionId, context.TraceIdentifier);
 
                     context.Response.ContentLength = 0;
                     context.Response.StatusCode = StatusCodes.Status200OK;
@@ -82,13 +84,13 @@ namespace Microsoft.AspNetCore.Sockets.Transports
                 else
                 {
                     // Case 3
-                    _logger.LogInformation("Terminating Long Polling connection by sending 204 response.");
+                    _logger.LongPolling204(_connectionId, context.TraceIdentifier);
                     context.Response.StatusCode = StatusCodes.Status204NoContent;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Long Polling transport was terminated due to an error");
+                _logger.LongPollingTerminated(_connectionId, context.TraceIdentifier, ex);
                 throw;
             }
         }

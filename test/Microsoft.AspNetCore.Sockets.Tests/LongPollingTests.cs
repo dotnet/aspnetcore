@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -9,7 +8,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
-using Microsoft.AspNetCore.Sockets.Transports;
+using Microsoft.AspNetCore.Sockets.Internal.Transports;
 using Microsoft.Extensions.Logging;
 using Xunit;
 
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
-            var poll = new LongPollingTransport(CancellationToken.None, channel, new LoggerFactory());
+            var poll = new LongPollingTransport(CancellationToken.None, channel, connectionId: string.Empty, loggerFactory: new LoggerFactory());
 
             Assert.True(channel.Out.TryComplete());
 
@@ -37,7 +36,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
             var timeoutToken = new CancellationToken(true);
-            var poll = new LongPollingTransport(timeoutToken, channel, new LoggerFactory());
+            var poll = new LongPollingTransport(timeoutToken, channel, connectionId: string.Empty, loggerFactory: new LoggerFactory());
 
             using (var cts = CancellationTokenSource.CreateLinkedTokenSource(timeoutToken, context.RequestAborted))
             {
@@ -53,7 +52,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         {
             var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
-            var poll = new LongPollingTransport(CancellationToken.None, channel, new LoggerFactory());
+            var poll = new LongPollingTransport(CancellationToken.None, channel, connectionId: string.Empty, loggerFactory: new LoggerFactory());
             var ms = new MemoryStream();
             context.Response.Body = ms;
 
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var channel = Channel.CreateUnbounded<byte[]>();
             var context = new DefaultHttpContext();
 
-            var poll = new LongPollingTransport(CancellationToken.None, channel, new LoggerFactory());
+            var poll = new LongPollingTransport(CancellationToken.None, channel, connectionId: string.Empty, loggerFactory: new LoggerFactory());
             var ms = new MemoryStream();
             context.Response.Body = ms;
 
