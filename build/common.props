@@ -178,7 +178,6 @@
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Abstractions" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.AzureKeyVault" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Binder" />
-    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.DockerSecrets" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Ini" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Configuration.Xml" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.DependencyInjection" />
