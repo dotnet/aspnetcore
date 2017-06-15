@@ -140,12 +140,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 {
                     _logger.LogDebug("Raising Connected event");
 
-                    // Do not "simplify" - events can be removed from a different thread
-                    var connectedEventHandler = Connected;
-                    if (connectedEventHandler != null)
-                    {
-                        connectedEventHandler();
-                    }
+                    Connected?.Invoke();
 
                     return Task.CompletedTask;
                 });
@@ -171,12 +166,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                     _logger.LogDebug("Raising Closed event");
 
-                    // Do not "simplify" - event handlers can be removed from a different thread
-                    var closedEventHandler = Closed;
-                    if (closedEventHandler != null)
-                    {
-                        closedEventHandler(t.IsFaulted ? t.Exception.InnerException : null);
-                    }
+                    Closed?.Invoke(t.IsFaulted ? t.Exception.InnerException : null);
 
                     return Task.CompletedTask;
                 });
@@ -299,12 +289,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         {
                             _logger.LogDebug("Raising Received event.");
 
-                            // Do not "simplify" - event handlers can be removed from a different thread
-                            var receivedEventHandler = Received;
-                            if (receivedEventHandler != null)
-                            {
-                                receivedEventHandler(buffer);
-                            }
+                            Received?.Invoke(buffer);
 
                             return Task.CompletedTask;
                         });
