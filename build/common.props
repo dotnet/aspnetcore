@@ -47,11 +47,6 @@
     <FullMetaPackageProjectReference>
       <PrivateAssets>None</PrivateAssets>
     </FullMetaPackageProjectReference>
-    <!-- set PrivateAssets=All to ensure items are excluded from the runtime store -->
-    <FullMetaPackagePackageNoRuntimeStoreReference>
-      <Version>$(AspNetCoreVersion)</Version>
-      <PrivateAssets>All</PrivateAssets>
-    </FullMetaPackagePackageNoRuntimeStoreReference>
   </ItemDefinitionGroup>
 
   <ItemGroup>
@@ -204,17 +199,6 @@
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.WebEncoders" />
     <FullMetaPackagePackageReference Include="Microsoft.Net.Http.Headers" />
     <FullMetaPackagePackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Templating" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Utils" />
-    <FullMetaPackagePackageNoRuntimeStoreReference Include="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" />
   </ItemGroup>
 
   <ItemGroup>
