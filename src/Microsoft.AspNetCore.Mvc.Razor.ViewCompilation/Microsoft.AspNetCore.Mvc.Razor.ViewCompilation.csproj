@@ -11,31 +11,14 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <OutputType>exe</OutputType>
     <X86ProjectDirectory>..\..\tools\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86\</X86ProjectDirectory>
-
-    <!--
-      This prevents dotnet from automatically generating a lib/tfm/*.dll; in turn we're then able
-      to exclude the lib/net461 and manually construct only the necessary folders:
-      - lib/netcoreapp2.0/...
-      - runtimes/win7-x64/lib/...
-      - runtimes/win7-x86/lib/...
-    -->
     <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="build\common.targets" Pack="true" PackagePath="%(Identity)" />
-    <None Include="lib\net461\_._" Pack="true" PackagePath="%(Identity)" />
-    <None Include="lib\netcoreapp2.0\_._" Pack="true" PackagePath="runtimes\win7-x64\lib\netcoreapp2.0\_._" />
-    <None Include="lib\netcoreapp2.0\_._" Pack="true" PackagePath="runtimes\win7-x86\lib\netcoreapp2.0\_._" />
-    <None Include="build\netcoreapp2.0\*" Pack="true" PackagePath="%(Identity)" />
-    <None Include="bin\$(Configuration)\netcoreapp2.0\$(AssemblyName).dll" Pack="true" PackagePath="lib\netcoreapp2.0\$(AssemblyName).dll" />
-    <None Include="bin\$(Configuration)\netcoreapp2.0\$(AssemblyName).runtimeconfig.json" Pack="true" PackagePath="lib\netcoreapp2.0\$(AssemblyName).runtimeconfig.json" />
-  </ItemGroup>
-
-  <ItemGroup Condition=" '$(OS)' == 'Windows_NT' ">
-    <None Include="build\net461\*" Pack="true" PackagePath="%(Identity)" />
-    <None Include="bin\$(Configuration)\net461\win7-x64\$(AssemblyName).exe" Pack="true" PackagePath="runtimes\win7-x64\lib\net461\$(AssemblyName).exe" />
-    <None Include="$(X86ProjectDirectory)\bin\$(Configuration)\net461\win7-x86\$(AssemblyName)-x86.exe" Pack="true" PackagePath="runtimes\win7-x86\lib\net461\$(AssemblyName)-x86.exe" />
+    <None Include="build\**\*.*" Pack="true" PackagePath="%(Identity)" />
+    <None Include="$(OutputPath)netcoreapp2.0\$(AssemblyName).dll" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName).dll" />
+    <None Include="$(OutputPath)net461\win7-x64\$(AssemblyName).exe" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName)-x64.exe" />
+    <None Include="$(X86ProjectDirectory)\bin\$(Configuration)\net461\win7-x86\$(AssemblyName)-x86.exe" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName)-x86.exe" />
   </ItemGroup>
 
   <ItemGroup>

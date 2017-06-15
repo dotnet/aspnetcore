@@ -16,34 +16,111 @@
     </ItemGroup>
   </Target>
 
+  <Target
+    Name="MvcRazorPrecompile"
+    DependsOnTargets="_ResolveInputArguments"
+    Inputs="@(MvcRazorFilesToCompile);@(IntermediateAssembly);@(DocFileItem);@(_DebugSymbolsIntermediatePath);@(ReferencePath);$(MSBuildAllProjects)"
+    Outputs="$(_MvcRazorOutputFullPath)">
+
+    <CallTarget Targets="_MvcRazorPrecompile" />
+  </Target>
+
+  <Target
+    Name="_MvcRazorPrecompile"
+    DependsOnTargets="_RunForCore;_RunForDesktop">
+
+  </Target>
+
+  <Target
+    Name="_RunForCore"
+    DependsOnTargets="_CreateResponseFileForMvcRazorPrecompile"
+    Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp'">
+
+    <PropertyGroup>
+      <_MvcViewCompilationBinaryPath Condition="'$(_MvcViewCompilationBinaryPath)'==''">$(MSBuildThisFileDirectory)$(MSBuildThisFileName).dll</_MvcViewCompilationBinaryPath>
+
+      <ExecArgs>dotnet exec --runtimeconfig &quot;$(ProjectRuntimeConfigFilePath)&quot;</ExecArgs>
+      <ExecArgs>$(ExecArgs) --depsfile &quot;$(ProjectDepsFilePath)&quot;</ExecArgs>
+      <ExecArgs>$(ExecArgs) &quot;$(_MvcViewCompilationBinaryPath)&quot;</ExecArgs>
+      <ExecArgs>$(ExecArgs) @&quot;$(_MvcRazorResponseFilePath)&quot;</ExecArgs>
+    </PropertyGroup>
+
+    <Exec Command="$(ExecArgs)" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
+  <Target
+    Name="_AddDesktopReferences"
+    AfterTargets="ResolveLockFileReferences"
+    Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
+
+    <PropertyGroup Condition="'$(_MvcViewCompilationBinaryPath)'==''">
+      <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'=='x64'">$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x64.exe</_MvcViewCompilationBinaryPath>
+      <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'=='x86'">$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x86.exe</_MvcViewCompilationBinaryPath>
+    </PropertyGroup>
+
+    <ItemGroup Condition="'$(_DesktopViewCompilationBinary)'!=''">
+      <Reference Include="$(_DesktopViewCompilationBinary)" Private="true" />
+    </ItemGroup>
+  </Target>
+
+  <Target
+    Name="_RunForDesktop"
+    DependsOnTargets="_AddDesktopReferences;_CreateResponseFileForMvcRazorPrecompile"
+    Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
+
+    <ItemGroup>
+      <_PreCompilationFilesToCopy
+        Include="$(OutputPath)$(AssemblyName).exe.config"
+        Destination="$(OutputPath)$(MSBuildThisFileName)-$(PlatformTarget).exe.config" />
+
+      <_PreCompilationFilesToCopy
+        Include="$(_MvcViewCompilationBinaryPath)"
+        Destination="$(OutputPath)$(MSBuildThisFileName)-$(PlatformTarget).exe" />
+    </ItemGroup>
+
+    <PropertyGroup Condition="'$(MvcRazorRunCommand)'==''">
+      <MvcRazorRunCommand>$(_MvcViewCompilationBinaryPath)</MvcRazorRunCommand>
+    </PropertyGroup>
+
+    <Copy
+      SourceFiles="@(_PreCompilationFilesToCopy)"
+      DestinationFiles="%(Destination)" />
+
+    <Exec
+      Command="$(MvcRazorRunCommand) @&quot;$(_MvcRazorResponseFilePath)&quot;"
+      WorkingDirectory="$(MSBuildProjectDirectory)"/>
+
+    <Delete Files="%(_PreCompilationFilesToCopy.Destination)" />
+  </Target>
+
   <Target Name="_CreateResponseFileForMvcRazorPrecompile">
     <ItemGroup>
-      <ExecArgs Include="
+      <_ResponseFileLines Include="
         $(MSBuildProjectDirectory);
         --output-path=$(_MvcRazorOutputPath);
         --application-name=$(AssemblyName);
         --content-root=$(MvcRazorContentRoot);" />
 
-      <ExecArgs
+      <_ResponseFileLines
         Condition="'$(MvcRazorEmbedViewSources)'=='true'"
         Include="--embed-view-sources" />
 
-      <ExecArgs Include="--file=%(MvcRazorFilesToCompile.FullPath)" />
+      <_ResponseFileLines Include="--file=%(MvcRazorFilesToCompile.FullPath)" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(SignAssembly)'=='true'">
-      <ExecArgs
+      <_ResponseFileLines
         Condition="'$(DelaySign)'=='true'"
         Include="--delay-sign" />
-      <ExecArgs
+      <_ResponseFileLines
         Condition="'$(PublicSign)'=='true'"
         Include="--public-sign" />
-      <ExecArgs Include="--key-file=$(AssemblyOriginatorKeyFile)" />
+      <_ResponseFileLines Include="--key-file=$(AssemblyOriginatorKeyFile)" />
     </ItemGroup>
 
     <WriteLinesToFile
       File="$(_MvcRazorResponseFilePath)"
-      Lines="@(ExecArgs)"
+      Lines="@(_ResponseFileLines)"
       Overwrite="true"  />
   </Target>
 

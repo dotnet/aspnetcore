@@ -4,11 +4,8 @@
     <TestIncludeViewCompilationTargets Condition="'$(TestIncludeViewCompilationTargets)'==''">$(MvcRazorCompileOnPublish)</TestIncludeViewCompilationTargets>
   </PropertyGroup>
 
-  <Import Project="..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\build\netcoreapp2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets"
-    Condition="'$(TestIncludeViewCompilationTargets)'=='true' AND '$(TargetFramework)'=='netcoreapp2.0'"/>
-
-  <Import Project="..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\build\net461\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets"
-    Condition="'$(TestIncludeViewCompilationTargets)'=='true' AND '$(TargetFramework)'=='net461'"/>
+  <Import Project="..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets"
+    Condition="'$(TestIncludeViewCompilationTargets)'=='true'"/>
 
   <ItemGroup Condition="'$(TestIncludeViewCompilationTargets)'=='true'">
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj" />
