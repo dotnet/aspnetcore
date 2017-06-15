@@ -25,6 +25,8 @@
   <ItemGroup>
     <None Include="build\common.targets" Pack="true" PackagePath="%(Identity)" />
     <None Include="lib\net461\_._" Pack="true" PackagePath="%(Identity)" />
+    <None Include="lib\netcoreapp2.0\_._" Pack="true" PackagePath="runtimes\win7-x64\lib\netcoreapp2.0\_._" />
+    <None Include="lib\netcoreapp2.0\_._" Pack="true" PackagePath="runtimes\win7-x86\lib\netcoreapp2.0\_._" />
     <None Include="build\netcoreapp2.0\*" Pack="true" PackagePath="%(Identity)" />
     <None Include="bin\$(Configuration)\netcoreapp2.0\$(AssemblyName).dll" Pack="true" PackagePath="lib\netcoreapp2.0\$(AssemblyName).dll" />
     <None Include="bin\$(Configuration)\netcoreapp2.0\$(AssemblyName).runtimeconfig.json" Pack="true" PackagePath="lib\netcoreapp2.0\$(AssemblyName).runtimeconfig.json" />
