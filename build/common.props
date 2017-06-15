@@ -21,7 +21,7 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' AND '$(OutputType)'=='library'">
-    <PackageReference Include="NETStandard.Library" Version="$(BundledNETStandardPackageVersion)" />
+    <PackageReference Include="NETStandard.Library" Version="$(NETStandardLibraryImplicitPackageVersion)" />
   </ItemGroup>
 
 </Project>
