@@ -12,8 +12,6 @@ The SignalR Protocol is a protocol for two-way RPC over any Message-based transp
 
 The SignalR Protocol requires the following attributes from the underlying transport. The protocol was primarily designed for use with WebSockets, though it is relatively straightforward to build an adaptor layer for a different transport.
 
-* Message-based (aka Datagram, as opposed to Streaming)
-* A distinction between Text and Binary frames
 * Reliable, in-order, delivery of messages - Specifically, the SignalR protocol provides no facility for retransmission or reordering of messages. If that is important to an application scenario, the application must either use a transport that guarantees it (i.e. TCP) or provide their own system for managing message order.
 
 ## Overview
