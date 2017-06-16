@@ -15,17 +15,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="build\**\*.*" Pack="true" PackagePath="%(Identity)" />
-    <None Include="$(OutputPath)netcoreapp2.0\$(AssemblyName).dll" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName).dll" />
-    <None Include="$(OutputPath)net461\win7-x64\$(AssemblyName).exe" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName)-x64.exe" />
-    <None Include="$(X86ProjectDirectory)\bin\$(Configuration)\net461\win7-x86\$(AssemblyName)-x86.exe" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName)-x86.exe" />
-  </ItemGroup>
+    <ProjectReference Include="$(X86ProjectDirectory)$(MSBuildThisFileName)-x86.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='net461'" />
 
-  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <ProjectReference Include="$(X86ProjectDirectory)$(MSBuildThisFileName)-x86.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='net461'" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="build\**\*.*" Pack="true" PackagePath="%(Identity)" />
+    <None Include="$(OutputPath)netcoreapp2.0\$(AssemblyName).dll" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName).dll" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(OS)'=='Windows_NT'">
+    <None Include="$(OutputPath)net461\win7-x64\$(AssemblyName).exe" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName)-x64.exe" />
+    <None Include="$(X86ProjectDirectory)\bin\$(Configuration)\net461\win7-x86\$(AssemblyName)-x86.exe" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName)-x86.exe" />
   </ItemGroup>
 
 </Project>

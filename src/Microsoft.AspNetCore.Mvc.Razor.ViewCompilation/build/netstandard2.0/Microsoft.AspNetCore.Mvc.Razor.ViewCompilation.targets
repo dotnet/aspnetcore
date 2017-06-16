@@ -58,8 +58,8 @@
       <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'=='x86'">$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x86.exe</_MvcViewCompilationBinaryPath>
     </PropertyGroup>
 
-    <ItemGroup Condition="'$(_DesktopViewCompilationBinary)'!=''">
-      <Reference Include="$(_DesktopViewCompilationBinary)" Private="true" />
+    <ItemGroup Condition="'$(_MvcViewCompilationBinaryPath)'!=''">
+      <Reference Include="$(_MvcViewCompilationBinaryPath)" Private="true" />
     </ItemGroup>
   </Target>
 
@@ -79,7 +79,7 @@
     </ItemGroup>
 
     <PropertyGroup Condition="'$(MvcRazorRunCommand)'==''">
-      <MvcRazorRunCommand>$(_MvcViewCompilationBinaryPath)</MvcRazorRunCommand>
+      <MvcRazorRunCommand>$(OutputPath)$(MSBuildThisFileName)-$(PlatformTarget).exe</MvcRazorRunCommand>
     </PropertyGroup>
 
     <Copy
@@ -87,7 +87,7 @@
       DestinationFiles="%(Destination)" />
 
     <Exec
-      Command="$(MvcRazorRunCommand) @&quot;$(_MvcRazorResponseFilePath)&quot;"
+      Command="&quot;$(MvcRazorRunCommand)&quot; @&quot;$(_MvcRazorResponseFilePath)&quot;"
       WorkingDirectory="$(MSBuildProjectDirectory)"/>
 
     <Delete Files="%(_PreCompilationFilesToCopy.Destination)" />
