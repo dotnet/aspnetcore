@@ -17,7 +17,8 @@
 <script src="lib/signalr-client/signalr-client.js"></script>
 <script>
 let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
-let connection = new signalR.HubConnection(`http://${document.location.host}/chat`, 'formatType=json&format=text');
+let http = new signalR.HttpConnection(`http://${document.location.host}/chat`, { transport: transportType });
+let connection = new signalR.HubConnection(http);
 
 connection.onClosed = e => {
     if (e) {
@@ -59,7 +60,7 @@ connection.on('Send', (userName, message) => {
     document.getElementById('messages').appendChild(child);
 });
 
-connection.start(transportType).catch(err => appendLine(err, 'red'));
+connection.start().catch(err => appendLine(err, 'red'));
 
 document.getElementById('sendmessage').addEventListener('submit', event => {
     let data = document.getElementById('new-message').value;

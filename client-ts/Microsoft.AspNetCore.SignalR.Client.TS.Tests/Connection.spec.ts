@@ -1,6 +1,6 @@
 import { IHttpClient } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpClient"
-import { Connection } from "../Microsoft.AspNetCore.SignalR.Client.TS/Connection"
-import { ISignalROptions } from "../Microsoft.AspNetCore.SignalR.Client.TS/ISignalROptions"
+import { HttpConnection } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpConnection"
+import { IHttpConnectionOptions } from "../Microsoft.AspNetCore.SignalR.Client.TS/IHttpConnectionOptions"
 import { DataReceived, TransportClosed } from "../Microsoft.AspNetCore.SignalR.Client.TS/Common"
 import { ITransport, TransportType } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
 import { eachTransport } from "./Common";
@@ -8,7 +8,7 @@ import { eachTransport } from "./Common";
 describe("Connection", () => {
 
     it("starting connection fails if getting id fails", async (done) => {
-        let options: ISignalROptions = {
+        let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
                 options(url: string): Promise<string> {
                     return Promise.reject("error");
@@ -17,9 +17,9 @@ describe("Connection", () => {
                     return Promise.resolve("");
                 }
             }
-        } as ISignalROptions;
+        } as IHttpConnectionOptions;
 
-        let connection = new Connection("http://tempuri.org", options);
+        let connection = new HttpConnection("http://tempuri.org", options);
 
         try {
             await connection.start();
@@ -33,28 +33,28 @@ describe("Connection", () => {
     });
 
     it("cannot start a running connection", async (done) => {
-        let options: ISignalROptions = {
+        let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
                 options(url: string): Promise<string> {
                     connection.start()
-                            .then(() => {
-                                fail();
-                                done();
-                            })
-                            .catch((error: Error) => {
-                                expect(error.message).toBe("Cannot start a connection that is not in the 'Initial' state.");
-                                done();
-                            });
+                        .then(() => {
+                            fail();
+                            done();
+                        })
+                        .catch((error: Error) => {
+                            expect(error.message).toBe("Cannot start a connection that is not in the 'Initial' state.");
+                            done();
+                        });
 
-                        return Promise.reject("error");
+                    return Promise.reject("error");
                 },
                 get(url: string): Promise<string> {
                     return Promise.resolve("");
                 }
             }
-        } as ISignalROptions;
+        } as IHttpConnectionOptions;
 
-        let connection = new Connection("http://tempuri.org", options);
+        let connection = new HttpConnection("http://tempuri.org", options);
 
         try {
             await connection.start();
@@ -66,7 +66,7 @@ describe("Connection", () => {
     });
 
     it("cannot start a stopped connection", async (done) => {
-        let options: ISignalROptions = {
+        let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
                 options(url: string): Promise<string> {
                     return Promise.reject("error");
@@ -75,9 +75,9 @@ describe("Connection", () => {
                     return Promise.resolve("");
                 }
             }
-        } as ISignalROptions;
+        } as IHttpConnectionOptions;
 
-        let connection = new Connection("http://tempuri.org", options);
+        let connection = new HttpConnection("http://tempuri.org", options);
 
         try {
             // start will fail and transition the connection to the Disconnected state
@@ -99,7 +99,7 @@ describe("Connection", () => {
     });
 
     it("can stop a starting connection", async (done) => {
-        let options: ISignalROptions = {
+        let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
                 options(url: string): Promise<string> {
                     connection.stop();
@@ -110,9 +110,9 @@ describe("Connection", () => {
                     return Promise.resolve("");
                 }
             }
-        } as ISignalROptions;
+        } as IHttpConnectionOptions;
 
-        var connection = new Connection("http://tempuri.org", options);
+        var connection = new HttpConnection("http://tempuri.org", options);
 
         try {
             await connection.start();
@@ -125,23 +125,12 @@ describe("Connection", () => {
     });
 
     it("can stop a non-started connection", async (done) => {
-        var connection = new Connection("http://tempuri.org");
+        var connection = new HttpConnection("http://tempuri.org");
         await connection.stop();
         done();
     });
 
     it("preserves users connection string", async done => {
-        let options: ISignalROptions = {
-            httpClient: <IHttpClient>{
-                options(url: string): Promise<string> {
-                    return Promise.resolve("{ \"connectionId\": \"42\" }");
-                },
-                get(url: string): Promise<string> {
-                    return Promise.resolve("");
-                }
-            }
-        } as ISignalROptions;
-
         let connectUrl: string;
         let fakeTransport: ITransport = {
             connect(url: string): Promise<void> {
@@ -156,10 +145,23 @@ describe("Connection", () => {
             onClosed: undefined
         }
 
-        var connection = new Connection("http://tempuri.org?q=myData", options);
+        let options: IHttpConnectionOptions = {
+            httpClient: <IHttpClient>{
+                options(url: string): Promise<string> {
+                    return Promise.resolve("{ \"connectionId\": \"42\" }");
+                },
+                get(url: string): Promise<string> {
+                    return Promise.resolve("");
+                }
+            },
+            transport: fakeTransport
+        } as IHttpConnectionOptions;
+
+
+        var connection = new HttpConnection("http://tempuri.org?q=myData", options);
 
         try {
-            await connection.start(fakeTransport);
+            await connection.start();
             fail();
             done();
         }
@@ -172,7 +174,7 @@ describe("Connection", () => {
 
     eachTransport((requestedTransport: TransportType) => {
         it(`Connection cannot be started if requested ${TransportType[requestedTransport]} transport not available on server`, async done => {
-            let options: ISignalROptions = {
+            let options: IHttpConnectionOptions = {
                 httpClient: <IHttpClient>{
                     options(url: string): Promise<string> {
                         return Promise.resolve("{ \"connectionId\": \"42\", \"availableTransports\": [] }");
@@ -180,12 +182,13 @@ describe("Connection", () => {
                     get(url: string): Promise<string> {
                         return Promise.resolve("");
                     }
-                }
-            } as ISignalROptions;
+                },
+                transport: requestedTransport
+            } as IHttpConnectionOptions;
 
-            var connection = new Connection("http://tempuri.org", options);
+            var connection = new HttpConnection("http://tempuri.org", options);
             try {
-                await connection.start(requestedTransport);
+                await connection.start();
                 fail();
                 done();
             }
@@ -197,7 +200,7 @@ describe("Connection", () => {
     });
 
     it(`Connection cannot be started if no transport available on server and no transport requested`, async done => {
-        let options: ISignalROptions = {
+        let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
                 options(url: string): Promise<string> {
                     return Promise.resolve("{ \"connectionId\": \"42\", \"availableTransports\": [] }");
@@ -206,9 +209,9 @@ describe("Connection", () => {
                     return Promise.resolve("");
                 }
             }
-        } as ISignalROptions;
+        } as IHttpConnectionOptions;
 
-        var connection = new Connection("http://tempuri.org", options);
+        var connection = new HttpConnection("http://tempuri.org", options);
         try {
             await connection.start();
             fail();

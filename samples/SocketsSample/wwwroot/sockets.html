@@ -22,7 +22,7 @@
             document.getElementById('transportName').innerHTML = signalR.TransportType[transportType];
 
             let url = `http://${document.location.host}/chat`
-            let connection = new signalR.Connection(url);
+            let connection = new signalR.HttpConnection(url, { transport: transportType });
 
             connection.onDataReceived = data => {
                 let child = document.createElement('li');
@@ -36,7 +36,7 @@
                 event.preventDefault();
             });
 
-            connection.start(transportType).then(() => {
+            connection.start().then(() => {
                 console.log("Opened");
             }, () => {
                 console.log("Error opening connection");

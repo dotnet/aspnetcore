@@ -2,7 +2,7 @@ import { DataReceived, ConnectionClosed } from "./Common"
 import { IConnection } from "./IConnection"
 import { ITransport, TransportType, WebSocketTransport, ServerSentEventsTransport, LongPollingTransport } from "./Transports"
 import { IHttpClient, HttpClient } from "./HttpClient"
-import { ISignalROptions } from "./ISignalROptions"
+import { IHttpConnectionOptions } from "./IHttpConnectionOptions"
 
 enum ConnectionState {
     Initial,
@@ -16,32 +16,34 @@ interface INegotiateResponse {
     availableTransports: string[]
 }
 
-export class Connection implements IConnection {
+export class HttpConnection implements IConnection {
     private connectionState: ConnectionState;
     private url: string;
     private connectionId: string;
     private httpClient: IHttpClient;
     private transport: ITransport;
+    private options: IHttpConnectionOptions;
     private startPromise: Promise<void>;
 
-    constructor(url: string, options: ISignalROptions = {}) {
+    constructor(url: string, options: IHttpConnectionOptions = {}) {
         this.url = url;
         this.httpClient = options.httpClient || new HttpClient();
         this.connectionState = ConnectionState.Initial;
+        this.options = options;
     }
 
-    async start(transport?: TransportType | ITransport): Promise<void> {
+    async start(): Promise<void> {
         if (this.connectionState != ConnectionState.Initial) {
             return Promise.reject(new Error("Cannot start a connection that is not in the 'Initial' state."));
         }
 
         this.connectionState = ConnectionState.Connecting;
 
-        this.startPromise = this.startInternal(transport);
+        this.startPromise = this.startInternal();
         return this.startPromise;
     }
 
-    private async startInternal(transportType: TransportType | ITransport): Promise<void> {
+    private async startInternal(): Promise<void> {
         try {
             let negotiatePayload = await this.httpClient.options(this.url);  
             let negotiateResponse: INegotiateResponse = JSON.parse(negotiatePayload);
@@ -54,7 +56,7 @@ export class Connection implements IConnection {
 
             this.url += (this.url.indexOf("?") == -1 ? "?" : "&") + `id=${this.connectionId}`;
 
-            this.transport = this.createTransport(transportType, negotiateResponse.availableTransports);
+            this.transport = this.createTransport(this.options.transport, negotiateResponse.availableTransports);
             this.transport.onDataReceived = this.onDataReceived;
             this.transport.onClosed = e => this.stopConnection(true, e);
             await this.transport.connect(this.url);

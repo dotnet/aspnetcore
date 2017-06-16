@@ -81,7 +81,8 @@ let transportType = signalR.TransportType[getParameterByName('transport')] || si
 
 document.getElementById('head1').innerHTML = signalR.TransportType[transportType];
 
-let connection = new signalR.HubConnection(`http://${document.location.host}/hubs`, 'formatType=json&format=text');
+let http = new signalR.HttpConnection(`http://${document.location.host}/hubs`, { transport: transportType });
+let connection = new signalR.HubConnection(http);
 connection.on('Send', msg => {
     addLine('message-list', msg);
 });
@@ -96,7 +97,7 @@ connection.onClosed = e => {
 }
 
 click('connect', event => {
-    connection.start(transportType)
+    connection.start()
         .then(() => {
             isConnected = true;
             addLine('message-list', 'Connected successfully', 'green');

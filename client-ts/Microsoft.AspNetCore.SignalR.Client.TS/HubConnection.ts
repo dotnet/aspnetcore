@@ -1,10 +1,9 @@
 import { ConnectionClosed } from "./Common"
 import { IConnection } from "./IConnection"
-import { Connection } from "./Connection"
 import { TransportType } from "./Transports"
 import { Subject, Observable } from "./Observable"
-export { Connection } from "./Connection"
 export { TransportType } from "./Transports"
+export { HttpConnection } from "./HttpConnection"
 import { IHubProtocol, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage } from "./IHubProtocol";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 
@@ -16,14 +15,8 @@ export class HubConnection {
     private connectionClosedCallback: ConnectionClosed;
     private protocol: IHubProtocol;
 
-    static create(url: string, queryString?: string): HubConnection {
-        return new this(new Connection(url, queryString))
-    }
-
-    constructor(connection: IConnection);
-    constructor(url: string, queryString?: string);
-    constructor(connectionOrUrl: IConnection | string, queryString?: string) {
-        this.connection = typeof connectionOrUrl === "string" ? new Connection(connectionOrUrl, queryString) : connectionOrUrl;
+    constructor(connection: IConnection) {
+        this.connection = connection;
         this.connection.onDataReceived = data => {
             this.onDataReceived(data);
         };
@@ -96,8 +89,8 @@ export class HubConnection {
         }
     }
 
-    start(transportType?: TransportType): Promise<void> {
-        return this.connection.start(transportType);
+    start(): Promise<void> {
+        return this.connection.start();
     }
 
     stop(): void {

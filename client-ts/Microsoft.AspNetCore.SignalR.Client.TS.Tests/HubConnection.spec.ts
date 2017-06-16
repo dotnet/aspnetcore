@@ -211,7 +211,7 @@ describe("HubConnection", () => {
 });
 
 class TestConnection implements IConnection {
-    start(transportType: TransportType | ITransport): Promise<void> {
+    start(): Promise<void> {
         return Promise.resolve();
     };
 
