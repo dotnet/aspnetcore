@@ -12,6 +12,4 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
-  <Target Name="PrecompileRazorViews" AfterTargets="Build" DependsOnTargets="MvcRazorPrecompile" Condition="'$(TargetFramework)'!=''" />
-
 </Project>
