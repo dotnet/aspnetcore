@@ -471,7 +471,7 @@
   </Target>
 
   <Target Name="InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
-    <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -Version 2.0.0-rc2-15283 -pre NuGetPackageVerifier -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
+    <Exec Command="$(DNXToolsPath)NuGet.exe install -ExcludeVersion -Version 1.0.2-rc2-15263 -pre NuGetPackageVerifier -Source $(BuildToolsFeed) -out $(CommandsPath)"/>
   </Target>
 
   <Target Name="NuGetVerifyTimestampPackages" DependsOnTargets="Sign;InstallNuGetPackageVerifier" Condition="'$(VerifySignatures)' != 'false'">
