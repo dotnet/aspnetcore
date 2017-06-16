@@ -32,11 +32,7 @@
                 "Exclusions": {
                     "THIRDPARTY_DEPENDENCY_NOT_REGISTERED": {
                         "Microsoft.AspNetCore.All; .NETCoreApp,Version=v2.0": "Temporary exception while waiting for Coherence-Signed to get a new version of NugetPackageVerifier."
-                    }
-                }
-            },
-            "Microsoft.AspNetCore.All": {
-                "Exclusions": {
+                    },
                     "WRONG_THIRDPARTY_DEPENDENCY_VERSION": {
                         "Microsoft.AspNetCore.All; .NETCoreApp,Version=v2.0": "To unblock CI"
                     }
