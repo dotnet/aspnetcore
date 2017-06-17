@@ -19,7 +19,8 @@ Additional Info:
   This command will also handle piped input. Piped input is expected to be a valid JSON format.
 
 Examples:
-  dotnet user-secrets set ConnStr ""User ID=bob;Password=***""";
+  dotnet user-secrets set ConnStr ""User ID=bob;Password=***""
+";
 
             var catCmd = RuntimeInformation.IsOSPlatform(OSPlatform.Windows)
                 ? @"type .\secrets.json"
