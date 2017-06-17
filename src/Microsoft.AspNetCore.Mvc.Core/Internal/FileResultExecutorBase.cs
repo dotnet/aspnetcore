@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     {
                         if (IfRangeValid(context, httpRequestHeaders, lastModified, etag))
                         {
-                            return SetRangeHeaders(context, httpRequestHeaders, fileLength);
+                            return SetRangeHeaders(context, httpRequestHeaders, fileLength.Value);
                         }
                     }
                 }
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static (RangeItemHeaderValue range, long rangeLength, bool serveBody) SetRangeHeaders(
             ActionContext context,
             RequestHeaders httpRequestHeaders,
-            long? fileLength)
+            long fileLength)
         {
             var response = context.HttpContext.Response;
             var httpResponseHeaders = response.GetTypedHeaders();
@@ -270,7 +270,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var (isRangeRequest, range) = RangeHelper.ParseRange(
                 context.HttpContext,
                 httpRequestHeaders,
-                fileLength.Value);
+                fileLength);
 
             if (!isRangeRequest)
             {
@@ -283,10 +283,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 // SHOULD include a Content-Range field with a byte-range-resp-spec of "*". The instance-length specifies
                 // the current length of the selected resource.  e.g. */length
                 response.StatusCode = StatusCodes.Status416RangeNotSatisfiable;
-                if (fileLength.HasValue)
-                {
-                    httpResponseHeaders.ContentRange = new ContentRangeHeaderValue(fileLength.Value);
-                }
+                httpResponseHeaders.ContentRange = new ContentRangeHeaderValue(fileLength);
 
                 return (range: null, rangeLength: 0, serveBody: false);
             }
@@ -294,7 +291,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             httpResponseHeaders.ContentRange = new ContentRangeHeaderValue(
                 range.From.Value,
                 range.To.Value,
-                fileLength.Value);
+                fileLength);
 
             response.StatusCode = StatusCodes.Status206PartialContent;
             // Overwrite the Content-Length header for valid range requests with the range length.
