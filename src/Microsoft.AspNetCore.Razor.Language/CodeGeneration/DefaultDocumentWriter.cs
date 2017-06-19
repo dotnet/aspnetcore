@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitDocument(DocumentIRNode node)
             {
-                if (Context.Options.GenerateChecksum)
+                if (!Context.Options.SuppressChecksum)
                 {
                     // See http://msdn.microsoft.com/en-us/library/system.codedom.codechecksumpragma.checksumalgorithmid.aspx
                     const string Sha1AlgorithmId = "{ff1816ec-aa5e-4d10-87f7-6f4963833460}";

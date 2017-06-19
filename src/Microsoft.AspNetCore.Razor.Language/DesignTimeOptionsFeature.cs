@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             options.DesignTime = true;
-            options.GenerateChecksum = false;
+            options.SuppressChecksum = true;
         }
     }
 }

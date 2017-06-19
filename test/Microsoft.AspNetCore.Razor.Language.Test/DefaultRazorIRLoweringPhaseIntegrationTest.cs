@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     o.DesignTime = true;
                     o.IndentSize = 17;
                     o.IndentWithTabs = true;
-                    o.GenerateChecksum = true;
+                    o.SuppressChecksum = true;
                 });
 
             // Act
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.True(irDocument.Options.DesignTime);
             Assert.Equal(17, irDocument.Options.IndentSize);
             Assert.True(irDocument.Options.IndentWithTabs);
-            Assert.True(irDocument.Options.GenerateChecksum);
+            Assert.True(irDocument.Options.SuppressChecksum);
         }
 
         [Fact]

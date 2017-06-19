@@ -50,7 +50,7 @@ namespace RazorPageGenerator
                         @class.AccessModifier = "internal";
                     });
 
-                builder.Features.Add(new DisableChecksumOptionsFeature());
+                builder.Features.Add(new SuppressChecksumOptionsFeature());
             });
 
             var viewDirectories = Directory.EnumerateDirectories(targetProjectDirectory, "Views", SearchOption.AllDirectories);
@@ -107,7 +107,7 @@ namespace RazorPageGenerator
             };
         }
 
-        private class DisableChecksumOptionsFeature : RazorEngineFeatureBase, IRazorCodeGenerationOptionsFeature
+        private class SuppressChecksumOptionsFeature : RazorEngineFeatureBase, IRazorCodeGenerationOptionsFeature
         {
             public int Order { get; set; }
 
@@ -118,7 +118,7 @@ namespace RazorPageGenerator
                     throw new ArgumentNullException(nameof(options));
                 }
 
-                options.GenerateChecksum = false;
+                options.SuppressChecksum = true;
             }
         }
 

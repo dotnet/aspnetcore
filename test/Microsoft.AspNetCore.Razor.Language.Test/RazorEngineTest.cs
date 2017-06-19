@@ -152,8 +152,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DirectiveRemovalIROptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
-                feature => Assert.IsType<RazorPreallocatedTagHelperAttributeOptimizationPass>(feature),
-                feature => Assert.IsType<RuntimeOptionsFeature>(feature));
+                feature => Assert.IsType<RazorPreallocatedTagHelperAttributeOptimizationPass>(feature));
         }
 
         private static void AssertDefaultRuntimePhases(IReadOnlyList<IRazorEnginePhase> phases)

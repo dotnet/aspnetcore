@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract bool IndentWithTabs { get; set; }
 
-        public abstract bool GenerateChecksum { get; set; }
+        public abstract bool SuppressChecksum { get; set; }
 
         public abstract RazorCodeGenerationOptions Build();
     }

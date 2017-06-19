@@ -5,14 +5,14 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RazorCodeGenerationOptions
     {
-        public static RazorCodeGenerationOptions Create(bool indentWithTabs, int indentSize, bool designTime, bool generateChecksum)
+        public static RazorCodeGenerationOptions Create(bool indentWithTabs, int indentSize, bool designTime, bool suppressChecksum)
         {
-            return new DefaultRazorCodeGenerationOptions(indentWithTabs, indentSize, designTime, generateChecksum);
+            return new DefaultRazorCodeGenerationOptions(indentWithTabs, indentSize, designTime, suppressChecksum);
         }
 
         public static RazorCodeGenerationOptions CreateDefault()
         {
-            return new DefaultRazorCodeGenerationOptions(indentWithTabs: false, indentSize: 4, designTime: false, generateChecksum: true);
+            return new DefaultRazorCodeGenerationOptions(indentWithTabs: false, indentSize: 4, designTime: false, suppressChecksum: false);
         }
 
         public abstract bool DesignTime { get; }
@@ -21,6 +21,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract int IndentSize { get; }
 
-        public abstract bool GenerateChecksum { get; }
+        public abstract bool SuppressChecksum { get; }
     }
 }

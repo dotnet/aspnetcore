@@ -42,13 +42,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         [Fact]
-        public void WriteDocument_Empty_GenerateChecksumFalse_WritesNothing()
+        public void WriteDocument_Empty_SuppressChecksumTrue_WritesNothing()
         {
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var optionsBuilder = new DefaultRazorCodeGenerationOptionsBuilder()
             {
-                GenerateChecksum = false
+                SuppressChecksum = true
             };
             var options = optionsBuilder.Build();
 
