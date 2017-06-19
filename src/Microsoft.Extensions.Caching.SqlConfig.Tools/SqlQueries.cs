@@ -16,7 +16,7 @@ namespace Microsoft.Extensions.Caching.SqlConfig.Tools
             "ExpiresAtTime datetimeoffset NOT NULL, " +
             "SlidingExpirationInSeconds bigint NULL," +
             "AbsoluteExpiration datetimeoffset NULL, " +
-            "CONSTRAINT pk_Id PRIMARY KEY (Id))";
+            "PRIMARY KEY (Id))";
 
         private const string CreateNonClusteredIndexOnExpirationTimeFormat
             = "CREATE NONCLUSTERED INDEX Index_ExpiresAtTime ON {0}(ExpiresAtTime)";
