@@ -11,11 +11,13 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
     <OutputType>exe</OutputType>
     <X86ProjectDirectory>..\..\tools\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86\</X86ProjectDirectory>
+    <TasksProjectDirectory>..\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\</TasksProjectDirectory>
     <IncludeBuildOutput>false</IncludeBuildOutput>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="$(X86ProjectDirectory)$(MSBuildThisFileName)-x86.csproj" PrivateAssets="true" ReferenceOutputAssembly="false" Condition="'$(TargetFramework)'=='net461'" />
+    <ProjectReference Include="$(TasksProjectDirectory)Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.csproj"  PrivateAssets="true" ReferenceOutputAssembly="false" />
 
     <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.RazorPages" Version="$(AspNetCoreVersion)" />
@@ -25,6 +27,7 @@
   <ItemGroup>
     <None Include="build\**\*.*" Pack="true" PackagePath="%(Identity)" />
     <None Include="$(OutputPath)netcoreapp2.0\$(AssemblyName).dll" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName).dll" />
+    <None Include="$(TasksProjectDirectory)bin\$(Configuration)\netstandard2.0\$(AssemblyName).Tasks.dll" Pack="true" PackagePath="build\netstandard2.0\$(AssemblyName).Tasks.dll" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(OS)'=='Windows_NT'">

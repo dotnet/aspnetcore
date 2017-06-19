@@ -25,21 +25,28 @@
     <CallTarget Targets="_MvcRazorPrecompile" />
   </Target>
 
-  <Target
-    Name="_MvcRazorPrecompile"
-    DependsOnTargets="_RunForCore;_RunForDesktop">
+  <Target Name="_MvcRazorPrecompile" DependsOnTargets="_RunForCore;_RunForDesktop" />
 
-  </Target>
+  <PropertyGroup>
+    <_MvcViewCompilationTasksPath Condition="'$(_MvcViewCompilationTasksPath)'==''">$(MSBuildThisFileDirectory)$(MSBuildThisFileName).Tasks.dll</_MvcViewCompilationTasksPath>
+  </PropertyGroup>
+
+  <UsingTask TaskName="GetDotNetHost" AssemblyFile="$(_MvcViewCompilationTasksPath)" />
 
   <Target
     Name="_RunForCore"
     DependsOnTargets="_CreateResponseFileForMvcRazorPrecompile"
     Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp'">
 
+    <GetDotNetHost Condition="'$(MvcRazorRunCommand)'==''">
+      <Output TaskParameter="MuxerPath" PropertyName="MvcRazorRunCommand" />
+    </GetDotNetHost>
+
     <PropertyGroup>
       <_MvcViewCompilationBinaryPath Condition="'$(_MvcViewCompilationBinaryPath)'==''">$(MSBuildThisFileDirectory)$(MSBuildThisFileName).dll</_MvcViewCompilationBinaryPath>
 
-      <ExecArgs>dotnet exec --runtimeconfig &quot;$(ProjectRuntimeConfigFilePath)&quot;</ExecArgs>
+      <ExecArgs>&quot;$(MvcRazorRunCommand)&quot; exec</ExecArgs>
+      <ExecArgs>$(ExecArgs) --runtimeconfig &quot;$(ProjectRuntimeConfigFilePath)&quot;</ExecArgs>
       <ExecArgs>$(ExecArgs) --depsfile &quot;$(ProjectDepsFilePath)&quot;</ExecArgs>
       <ExecArgs>$(ExecArgs) &quot;$(_MvcViewCompilationBinaryPath)&quot;</ExecArgs>
       <ExecArgs>$(ExecArgs) @&quot;$(_MvcRazorResponseFilePath)&quot;</ExecArgs>

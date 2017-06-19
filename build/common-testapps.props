@@ -2,6 +2,7 @@
   <Import Project="dependencies.props" />
   <PropertyGroup>
     <TestIncludeViewCompilationTargets Condition="'$(TestIncludeViewCompilationTargets)'==''">$(MvcRazorCompileOnPublish)</TestIncludeViewCompilationTargets>
+    <_MvcViewCompilationTasksPath>$(MSBuildThisFileDirectory)..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.dll</_MvcViewCompilationTasksPath>
   </PropertyGroup>
 
   <Import Project="..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.targets"
