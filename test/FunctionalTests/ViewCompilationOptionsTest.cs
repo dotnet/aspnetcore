@@ -52,6 +52,20 @@ namespace FunctionalTests
             }
         }
 
+        [ConditionalTheory]
+        [MemberData(nameof(SupportedFlavorsTheoryData))]
+        public async Task Precompilation_PublishesPdbsToOutputDirectory(RuntimeFlavor flavor)
+        {
+            // Arrange
+            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            {
+                var pdbPath = Path.Combine(deployment.DeploymentResult.ContentRoot, Fixture.ApplicationName + ".PrecompiledViews.pdb");
+
+                // Act & Assert
+                Assert.True(File.Exists(pdbPath), $"PDB at {pdbPath} was not found.");
+            }
+        }
+
         public class TestFixture : ApplicationTestFixture
         {
             public TestFixture()

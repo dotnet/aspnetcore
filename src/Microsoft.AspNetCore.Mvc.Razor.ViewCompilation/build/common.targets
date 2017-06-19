@@ -57,6 +57,10 @@
     AfterTargets="ComputeRefAssembliesToPublish"
     Condition="'$(MvcRazorCompileOnPublish)'=='true'">
 
+    <PropertyGroup>
+      <_MvcRazorOutputPdbFullPath>$([System.IO.Path]::ChangeExtension('$(_MvcRazorOutputFullPath)', '.pdb'))</_MvcRazorOutputPdbFullPath>
+    </PropertyGroup>
+
     <ItemGroup>
       <ResolvedFileToPublish
           Remove="%(MvcRazorFilesToCompile.FullPath)"
@@ -64,6 +68,10 @@
 
       <ResolvedFileToPublish Include="$(_MvcRazorOutputFullPath)" CopyToPublishDirectory="Always">
         <RelativePath>$([System.IO.Path]::GetFileName('$(_MvcRazorOutputFullPath)'))</RelativePath>
+      </ResolvedFileToPublish>
+
+      <ResolvedFileToPublish Include="$(_MvcRazorOutputPdbFullPath)" CopyToPublishDirectory="Always">
+        <RelativePath>$([System.IO.Path]::GetFileName('$(_MvcRazorOutputPdbFullPath)'))</RelativePath>
       </ResolvedFileToPublish>
     </ItemGroup>
 
