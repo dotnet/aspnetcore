@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 return applicationServiceProvider ?? services.BuildServiceProvider();
             };
 
-            return new StartupMethods(configureMethod.Build(instance), configureServices);
+            return new StartupMethods(instance, configureMethod.Build(instance), configureServices);
         }
 
         public static Type FindStartupType(string startupAssemblyName, string environmentName)

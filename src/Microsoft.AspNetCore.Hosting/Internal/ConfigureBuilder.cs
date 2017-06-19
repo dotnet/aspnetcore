@@ -21,34 +21,39 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         private void Invoke(object instance, IApplicationBuilder builder)
         {
-            var serviceProvider = builder.ApplicationServices;
-            var parameterInfos = MethodInfo.GetParameters();
-            var parameters = new object[parameterInfos.Length];
-            for (var index = 0; index < parameterInfos.Length; index++)
+            // Create a scope for Configure, this allows creating scoped dependencies
+            // without the hassle of manually creating a scope.
+            using (var scope = builder.ApplicationServices.CreateScope())
             {
-                var parameterInfo = parameterInfos[index];
-                if (parameterInfo.ParameterType == typeof(IApplicationBuilder))
+                var serviceProvider = scope.ServiceProvider;
+                var parameterInfos = MethodInfo.GetParameters();
+                var parameters = new object[parameterInfos.Length];
+                for (var index = 0; index < parameterInfos.Length; index++)
                 {
-                    parameters[index] = builder;
-                }
-                else
-                {
-                    try
+                    var parameterInfo = parameterInfos[index];
+                    if (parameterInfo.ParameterType == typeof(IApplicationBuilder))
                     {
-                        parameters[index] = serviceProvider.GetRequiredService(parameterInfo.ParameterType);
+                        parameters[index] = builder;
                     }
-                    catch (Exception ex)
+                    else
                     {
-                        throw new Exception(string.Format(
-                            "Could not resolve a service of type '{0}' for the parameter '{1}' of method '{2}' on type '{3}'.",
-                            parameterInfo.ParameterType.FullName,
-                            parameterInfo.Name,
-                            MethodInfo.Name,
-                            MethodInfo.DeclaringType.FullName), ex);
+                        try
+                        {
+                            parameters[index] = serviceProvider.GetRequiredService(parameterInfo.ParameterType);
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception(string.Format(
+                                "Could not resolve a service of type '{0}' for the parameter '{1}' of method '{2}' on type '{3}'.",
+                                parameterInfo.ParameterType.FullName,
+                                parameterInfo.Name,
+                                MethodInfo.Name,
+                                MethodInfo.DeclaringType.FullName), ex);
+                        }
                     }
                 }
+                MethodInfo.Invoke(instance, parameters);
             }
-            MethodInfo.Invoke(instance, parameters);
         }
     }
 }
