@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
@@ -92,14 +93,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             {
                                 // Backpressure, stop controlling incoming data rate until data is read.
                                 backpressure = true;
-                                _context.TimeoutControl.PauseTimingReads();
+                                TryPauseTimingReads();
                             }
 
                             await writeAwaitable;
 
                             if (backpressure)
                             {
-                                _context.TimeoutControl.ResumeTimingReads();
+                                TryResumeTimingReads();
                             }
 
                             if (done)
@@ -270,6 +271,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 Log.RequestBodyStart(_context.ConnectionIdFeature, _context.TraceIdentifier);
                 _context.TimeoutControl.StartTimingReads();
+            }
+        }
+
+        private void TryPauseTimingReads()
+        {
+            if (!RequestUpgrade)
+            {
+                _context.TimeoutControl.PauseTimingReads();
+            }
+        }
+
+        private void TryResumeTimingReads()
+        {
+            if (!RequestUpgrade)
+            {
+                _context.TimeoutControl.ResumeTimingReads();
             }
         }
 

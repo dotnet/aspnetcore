@@ -17,7 +17,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -1412,6 +1414,68 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         $"Date: {server.Context.DateHeaderValue}",
                         "",
                         "goodbye");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task DoesNotEnforceRequestBodyMinimumDataRateOnUpgradedRequest()
+        {
+            var appEvent = new ManualResetEventSlim();
+            var delayEvent = new ManualResetEventSlim();
+            var serviceContext = new TestServiceContext
+            {
+                SystemClock = new SystemClock()
+            };
+
+            using (var server = new TestServer(async context =>
+            {
+                context.Features.Get<IHttpRequestBodyMinimumDataRateFeature>().MinimumDataRate = new MinimumDataRate(rate: double.MaxValue, gracePeriod: TimeSpan.Zero);
+
+                using (var stream = await context.Features.Get<IHttpUpgradeFeature>().UpgradeAsync())
+                {
+                    appEvent.Set();
+
+                    // Read once to go through one set of TryPauseTimingReads()/TryResumeTimingReads() calls
+                    await stream.ReadAsync(new byte[1], 0, 1);
+
+                    delayEvent.Wait();
+
+                    // Read again to check that the connection is still alive
+                    await stream.ReadAsync(new byte[1], 0, 1);
+
+                    // Send a response to distinguish from the timeout case where the 101 is still received, but without any content
+                    var response = Encoding.ASCII.GetBytes("hello");
+                    await stream.WriteAsync(response, 0, response.Length);
+                }
+            }, serviceContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "Connection: upgrade",
+                        "",
+                        "a");
+
+                    Assert.True(appEvent.Wait(TimeSpan.FromSeconds(10)));
+
+                    await Task.Delay(TimeSpan.FromSeconds(5));
+
+                    delayEvent.Set();
+
+                    await connection.Send("b");
+
+                    await connection.Receive(
+                        "HTTP/1.1 101 Switching Protocols",
+                        "Connection: Upgrade",
+                        "");
+                    await connection.ReceiveStartsWith(
+                        $"Date: ");
+                    await connection.ReceiveForcedEnd(
+                        "",
+                        "hello");
                 }
             }
         }

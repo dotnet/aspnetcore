@@ -649,6 +649,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task PausesAndResumesRequestBodyTimeoutOnBackpressure()
+        {
+            using (var input = new TestInput())
+            {
+                var mockTimeoutControl = new Mock<ITimeoutControl>();
+                input.FrameContext.TimeoutControl = mockTimeoutControl.Object;
+
+                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderContentLength = "12" }, input.Frame);
+
+                // Add some input and read it to start PumpAsync
+                input.Add("hello,");
+                Assert.Equal(6, await body.ReadAsync(new ArraySegment<byte>(new byte[6])));
+
+                input.Add(" world");
+                Assert.Equal(6, await body.ReadAsync(new ArraySegment<byte>(new byte[6])));
+
+                // Due to the limits set on Frame.RequestBodyPipe, backpressure should be triggered on every write to that pipe.
+                mockTimeoutControl.Verify(timeoutControl => timeoutControl.PauseTimingReads(), Times.Exactly(2));
+                mockTimeoutControl.Verify(timeoutControl => timeoutControl.ResumeTimingReads(), Times.Exactly(2));
+            }
+        }
+
+        [Fact]
         public async Task OnlyEnforcesRequestBodyTimeoutAfterSending100Continue()
         {
             using (var input = new TestInput())
@@ -701,6 +724,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingReads(), Times.Never);
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingReads(), Times.Never);
+
+                // Due to the limits set on Frame.RequestBodyPipe, backpressure should be triggered on every
+                // write to that pipe. Verify that read timing pause and resume are not called on upgrade
+                // requests.
+                mockTimeoutControl.Verify(timeoutControl => timeoutControl.PauseTimingReads(), Times.Never);
+                mockTimeoutControl.Verify(timeoutControl => timeoutControl.ResumeTimingReads(), Times.Never);
             }
         }
 
