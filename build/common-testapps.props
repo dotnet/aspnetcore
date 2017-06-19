@@ -1,6 +1,7 @@
 <Project>
   <Import Project="dependencies.props" />
   <PropertyGroup>
+    <_MvcViewCompilationAddDesktopReferences>false</_MvcViewCompilationAddDesktopReferences>
     <TestIncludeViewCompilationTargets Condition="'$(TestIncludeViewCompilationTargets)'==''">$(MvcRazorCompileOnPublish)</TestIncludeViewCompilationTargets>
     <_MvcViewCompilationTasksPath>$(MSBuildThisFileDirectory)..\src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\bin\$(Configuration)\netstandard2.0\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.dll</_MvcViewCompilationTasksPath>
   </PropertyGroup>

@@ -58,7 +58,7 @@
   <Target
     Name="_AddDesktopReferences"
     AfterTargets="ResolveLockFileReferences"
-    Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
+    Condition="'$(_MvcViewCompilationAddDesktopReferences)'!='false' AND '$(TargetFrameworkIdentifier)'=='.NETFramework'">
 
     <PropertyGroup Condition="'$(_MvcViewCompilationBinaryPath)'==''">
       <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'=='x64'">$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x64.exe</_MvcViewCompilationBinaryPath>
