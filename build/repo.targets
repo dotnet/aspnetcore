@@ -166,6 +166,9 @@
     <!--Drop a nuspec file in artifacts for packing zip files into a nupkg-->
     <Copy SourceFiles="$(RepositoryRoot)build\Build.RS.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)'=='Linux'" />
     <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionPrefix)-$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)'=='Linux'" />
+
+    <!-- Preview 2 Workaround: remove Microsoft.AspNetCore.Mvc.Razor.ViewCompilation from publish manifest -->
+    <Exec Command="sed -i -e '/microsoft.aspnetcore.mvc.razor.viewcompilation/d' $(ArtifactsDir)%(PackageStoreManifestFiles.TimestampDestinationFile)" Condition="'$(OS)' != 'Windows_NT'" />
   </Target>
 
   <Target Name="ConvertZipToTGZ">
