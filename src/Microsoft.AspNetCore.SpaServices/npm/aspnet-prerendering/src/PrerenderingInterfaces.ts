@@ -3,7 +3,7 @@ export interface RenderToStringFunc {
 }
 
 export interface RenderToStringCallback {
-    (error: any, result?: RenderToStringResult): void;
+    (error: any, result?: RenderResult): void;
 }
 
 export interface RenderToStringResult {
@@ -16,8 +16,10 @@ export interface RedirectResult {
     redirectUrl: string;
 }
 
+export type RenderResult = RenderToStringResult | RedirectResult;
+
 export interface BootFunc {
-    (params: BootFuncParams): Promise<RenderToStringResult>;
+    (params: BootFuncParams): Promise<RenderResult>;
 }
 
 export interface BootFuncParams {
