@@ -131,11 +131,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
             catch (OperationCanceledException)
             {
+                _logger.LogDebug("Receive loop canceled");
             }
             finally
             {
-                _transportCts.Cancel();
                 _logger.LogInformation("Receive loop stopped");
+                _transportCts.Cancel();
             }
         }
 
@@ -176,11 +177,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
             catch (OperationCanceledException)
             {
+                _logger.LogDebug("Send loop canceled");
             }
             finally
             {
-                _transportCts.Cancel();
                 _logger.LogInformation("Send loop stopped");
+                _transportCts.Cancel();
             }
         }
 
@@ -227,7 +229,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 if (_webSocket.State != WebSocketState.Closed)
                 {
                     _logger.LogInformation("Closing webSocket");
-                    await _webSocket.CloseAsync(WebSocketCloseStatus.Empty, null, CancellationToken.None);
+                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
                 }
             }
             catch (Exception ex)

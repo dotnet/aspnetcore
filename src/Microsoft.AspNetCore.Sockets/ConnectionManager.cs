@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Sockets
             var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
 
             var connection = new DefaultConnectionContext(id, applicationSide, transportSide);
-            
+
             _connections.TryAdd(id, connection);
             return connection;
         }

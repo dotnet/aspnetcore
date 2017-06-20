@@ -25,9 +25,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
-
+            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
@@ -69,9 +68,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
-
+            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var ws = new WebSocketsTransport(new WebSocketOptions() { WebSocketMessageType = webSocketMessageType }, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
@@ -98,60 +96,22 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
-        [Theory]
-        [InlineData(WebSocketMessageType.Text)]
-        [InlineData(WebSocketMessageType.Binary)]
-        public async Task FrameReceivedAfterServerCloseSent(WebSocketMessageType webSocketMessageType)
-        {
-            var transportToApplication = Channel.CreateUnbounded<byte[]>();
-            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
-
-            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
-
-            using (var feature = new TestWebSocketConnectionFeature())
-            {
-                var ws = new WebSocketsTransport(new WebSocketOptions() { WebSocketMessageType = webSocketMessageType }, transportSide,
-                    connectionId: string.Empty, loggerFactory: new LoggerFactory());
-
-                // Give the server socket to the transport and run it
-                var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
-
-                // Run the client socket
-                var client = feature.Client.ExecuteAndCaptureFramesAsync();
-
-                // Close the output and wait for the close frame
-                Assert.True(applicationSide.Output.Out.TryComplete());
-                await client;
-
-                // Send another frame. Then close
-                await feature.Client.SendAsync(
-                    buffer: new ArraySegment<byte>(Encoding.UTF8.GetBytes("Hello")),
-                    endOfMessage: true,
-                    messageType: webSocketMessageType,
-                    cancellationToken: CancellationToken.None);
-                await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
-
-                // Read that frame from the input
-                var buffer = await applicationSide.Input.In.ReadAsync();
-                Assert.Equal("Hello", Encoding.UTF8.GetString(buffer));
-
-                await transport;
-            }
-        }
-
         [Fact]
         public async Task TransportFailsWhenClientDisconnectsAbnormally()
         {
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
-
+            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
-                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+                var options = new WebSocketOptions()
+                {
+                    CloseTimeout = TimeSpan.FromSeconds(1)
+                };
+
+                var ws = new WebSocketsTransport(options, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -163,7 +123,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 feature.Client.Abort();
 
                 // Wait for the transport
-                await Assert.ThrowsAsync<OperationCanceledException>(() => transport);
+                await Assert.ThrowsAsync<OperationCanceledException>(() => transport).OrTimeout();
+
+                var summary = await client.OrTimeout();
+                Assert.Equal(WebSocketCloseStatus.InternalServerError, summary.CloseResult.CloseStatus);
             }
         }
 
@@ -173,9 +136,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
-
+            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
@@ -188,7 +150,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 // Fail in the app
                 Assert.True(applicationSide.Output.Out.TryComplete(new InvalidOperationException("Catastrophic failure.")));
-                var clientSummary = await client;
+                var clientSummary = await client.OrTimeout();
                 Assert.Equal(WebSocketCloseStatus.InternalServerError, clientSummary.CloseResult.CloseStatus);
 
                 // Close from the client
@@ -205,9 +167,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
-
+            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var options = new WebSocketOptions()
@@ -230,6 +191,113 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 Assert.Equal(WebSocketState.Aborted, serverSocket.State);
 
                 serverSocket.Dispose();
+            }
+        }
+
+        [Fact]
+        public async Task TransportFailsOnTimeoutWithErrorWhenApplicationFailsAndClientDoesNotSendCloseFrame()
+        {
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+
+            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
+            using (var feature = new TestWebSocketConnectionFeature())
+            {
+                var options = new WebSocketOptions()
+                {
+                    CloseTimeout = TimeSpan.FromSeconds(1)
+                };
+
+                var ws = new WebSocketsTransport(options, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+
+                var serverSocket = await feature.AcceptAsync();
+                // Give the server socket to the transport and run it
+                var transport = ws.ProcessSocketAsync(serverSocket);
+
+                // Run the client socket
+                var client = feature.Client.ExecuteAndCaptureFramesAsync();
+
+                // fail the client to server channel
+                applicationToTransport.Out.TryComplete(new Exception());
+
+                await Assert.ThrowsAsync<Exception>(() => transport).OrTimeout();
+
+                Assert.Equal(WebSocketState.Aborted, serverSocket.State);
+            }
+        }
+
+        [Fact]
+        public async Task ServerGracefullyClosesWhenApplicationEndsThenClientSendsCloseFrame()
+        {
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+
+            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
+            using (var feature = new TestWebSocketConnectionFeature())
+            {
+                var options = new WebSocketOptions()
+                {
+                    // We want to verify behavior without timeout affecting it
+                    CloseTimeout = TimeSpan.FromSeconds(20)
+                };
+                var ws = new WebSocketsTransport(options, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+
+                var serverSocket = await feature.AcceptAsync();
+                // Give the server socket to the transport and run it
+                var transport = ws.ProcessSocketAsync(serverSocket);
+
+                // Run the client socket
+                var client = feature.Client.ExecuteAndCaptureFramesAsync();
+
+                // close the client to server channel
+                applicationToTransport.Out.TryComplete();
+
+                _ = await client.OrTimeout();
+
+                await feature.Client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None).OrTimeout();
+
+                await transport.OrTimeout();
+
+                Assert.Equal(WebSocketCloseStatus.NormalClosure, serverSocket.CloseStatus);
+            }
+        }
+
+        [Fact]
+        public async Task ServerGracefullyClosesWhenClientSendsCloseFrameThenApplicationEnds()
+        {
+            var transportToApplication = Channel.CreateUnbounded<byte[]>();
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+
+            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
+            using (var feature = new TestWebSocketConnectionFeature())
+            {
+                var options = new WebSocketOptions()
+                {
+                    // We want to verify behavior without timeout affecting it
+                    CloseTimeout = TimeSpan.FromSeconds(20)
+                };
+                var ws = new WebSocketsTransport(options, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+
+                var serverSocket = await feature.AcceptAsync();
+                // Give the server socket to the transport and run it
+                var transport = ws.ProcessSocketAsync(serverSocket);
+
+                // Run the client socket
+                var client = feature.Client.ExecuteAndCaptureFramesAsync();
+
+                await feature.Client.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None).OrTimeout();
+
+                // close the client to server channel
+                applicationToTransport.Out.TryComplete();
+
+                _ = await client.OrTimeout();
+
+                await transport.OrTimeout();
+
+                Assert.Equal(WebSocketCloseStatus.NormalClosure, serverSocket.CloseStatus);
             }
         }
     }
