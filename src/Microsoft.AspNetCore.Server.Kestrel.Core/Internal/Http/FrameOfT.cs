@@ -155,20 +155,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                 }
 
                                 // ForZeroContentLength does not complete the reader nor the writer
-                                if (!messageBody.IsEmpty)
+                                if (!messageBody.IsEmpty && _keepAlive)
                                 {
-                                    if (_keepAlive)
-                                    {
-                                        // Finish reading the request body in case the app did not.
-                                        TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutAction.SendTimeoutResponse);
-                                        await messageBody.ConsumeAsync();
-                                        TimeoutControl.CancelTimeout();
-                                    }
-                                    else
-                                    {
-                                        messageBody.Cancel();
-                                        Input.CancelPendingRead();
-                                    }
+                                    // Finish reading the request body in case the app did not.
+                                    TimeoutControl.SetTimeout(Constants.RequestBodyDrainTimeout.Ticks, TimeoutAction.SendTimeoutResponse);
+                                    await messageBody.ConsumeAsync();
+                                    TimeoutControl.CancelTimeout();
                                 }
 
                                 if (!HasResponseStarted)
@@ -201,6 +193,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                             if (HasStartedConsumingRequestBody)
                             {
                                 RequestBodyPipe.Reader.Complete();
+
+                                // Wait for MessageBody.PumpAsync() to call RequestBodyPipe.Writer.Complete().
+                                await messageBody.StopAsync();
 
                                 // At this point both the request body pipe reader and writer should be completed.
                                 RequestBodyPipe.Reset();

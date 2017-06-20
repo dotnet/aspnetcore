@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private bool _send100Continue = true;
         private volatile bool _canceled;
+        private Task _pumpTask;
 
         protected MessageBody(Frame context)
         {
@@ -132,11 +133,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void Cancel()
-        {
-            _canceled = true;
-        }
-
         public virtual async Task<int> ReadAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken = default(CancellationToken))
         {
             TryInit();
@@ -213,6 +209,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             } while (!result.IsCompleted);
         }
 
+        public virtual Task StopAsync()
+        {
+            if (!_context.HasStartedConsumingRequestBody)
+            {
+                return Task.CompletedTask;
+            }
+
+            _canceled = true;
+            _context.Input.CancelPendingRead();
+            return _pumpTask;
+        }
+
         protected void Copy(ReadableBuffer readableBuffer, WritableBuffer writableBuffer)
         {
             _context.TimeoutControl.BytesRead(readableBuffer.Length);
@@ -245,7 +253,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 OnReadStart();
                 _context.HasStartedConsumingRequestBody = true;
-                _ = PumpAsync();
+                _pumpTask = PumpAsync();
             }
         }
 
@@ -408,6 +416,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             public override Task ConsumeAsync(CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.CompletedTask;
+            }
+
+            public override Task StopAsync()
             {
                 return Task.CompletedTask;
             }
