@@ -223,7 +223,7 @@ namespace E2ETests
             response = await DoPostAsync("Account/Register", content);
             await ThrowIfResponseStatusNotOk(response);
             responseContent = await response.Content.ReadAsStringAsync();
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
+            Assert.DoesNotContain(IdentityCookieName, GetCookieNames());
             Assert.Contains("<div class=\"text-danger validation-summary-errors\" data-valmsg-summary=\"true\"><ul><li>The password and confirmation password do not match.</li>", responseContent, StringComparison.OrdinalIgnoreCase);
             _logger.LogInformation("Server side model validator rejected the user '{email}''s registration as passwords do not match.", generatedEmail);
         }
@@ -307,7 +307,7 @@ namespace E2ETests
             Assert.Contains("www.github.com/aspnet/MusicStore", responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("/Images/home-showcase.png", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie cleared on logout
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
+            Assert.DoesNotContain(IdentityCookieName, GetCookieNames());
             _logger.LogInformation("Successfully signed out of '{email}''s session", email);
         }
 
@@ -329,7 +329,7 @@ namespace E2ETests
             responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains("<div class=\"text-danger validation-summary-errors\" data-valmsg-summary=\"true\"><ul><li>Invalid login attempt.</li>", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie not sent
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
+            Assert.DoesNotContain(IdentityCookieName, GetCookieNames());
             _logger.LogInformation("Identity successfully prevented an invalid user login.");
         }
 
@@ -352,7 +352,7 @@ namespace E2ETests
             Assert.Contains(string.Format("Hello {0}!", email), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
             //Verify cookie sent
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
+            Assert.Contains(IdentityCookieName, GetCookieNames());
             _logger.LogInformation("Successfully signed in with user '{email}'", email);
         }
 
@@ -373,7 +373,7 @@ namespace E2ETests
             response = await DoPostAsync("Manage/ChangePassword", content);
             responseContent = await response.Content.ReadAsStringAsync();
             Assert.Contains("Your password has been changed.", responseContent, StringComparison.OrdinalIgnoreCase);
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
+            Assert.Contains(IdentityCookieName, GetCookieNames());
             _logger.LogInformation("Successfully changed the password for user '{email}'", email);
         }
 
@@ -410,8 +410,7 @@ namespace E2ETests
             _httpClient.DefaultRequestHeaders.Add("Origin", "http://notpermitteddomain.com");
             var response = await DoGetAsync(string.Format("Admin/StoreManager/GetAlbumIdFromName?albumName={0}", albumName));
             await ThrowIfResponseStatusNotOk(response);
-            IEnumerable<string> values;
-            Assert.False(response.Headers.TryGetValues("Access-Control-Allow-Origin", out values));
+            Assert.False(response.Headers.TryGetValues("Access-Control-Allow-Origin", out var values));
 
             _httpClient.DefaultRequestHeaders.Remove("Origin");
             _httpClient.DefaultRequestHeaders.Add("Origin", "http://example.com");
@@ -526,6 +525,13 @@ namespace E2ETests
                 _logger.LogError("Content: Length={0}\n{1}", content.Length, content);
                 throw new Exception(string.Format("Received the above response with status code : {0}", response.StatusCode));
             }
+        }
+
+        private IEnumerable<string> GetCookieNames()
+        {
+            return _httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri))
+                .OfType<Cookie>()
+                .Select(c => c.Name);
         }
     }
 }

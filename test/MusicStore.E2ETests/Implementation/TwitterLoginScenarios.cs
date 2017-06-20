@@ -79,9 +79,9 @@ namespace E2ETests
 
             Assert.Contains(string.Format("Hello {0}!", "twitter@test.com"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
-            //Verify cookie sent
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(ExternalLoginCookieName));
+            // Verify cookie sent
+            Assert.Contains(IdentityCookieName, GetCookieNames());
+            Assert.DoesNotContain(ExternalLoginCookieName, GetCookieNames());
             _logger.LogInformation("Successfully signed in with user '{email}'", "twitter@test.com");
 
             _logger.LogInformation("Verifying if the middleware events were fired");

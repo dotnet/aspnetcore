@@ -68,7 +68,7 @@ namespace E2ETests
             responseContent = await response.Content.ReadAsStringAsync();
 
             //Correlation cookie not getting cleared after successful signin?
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(".AspNetCore.Correlation.Google"));
+            Assert.DoesNotContain(".AspNetCore.Correlation.Google", GetCookieNames());
             Assert.Equal(_deploymentResult.ApplicationBaseUri + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
             Assert.Contains("AspnetvnextTest@gmail.com", responseContent, StringComparison.OrdinalIgnoreCase);
 
@@ -85,9 +85,9 @@ namespace E2ETests
 
             Assert.Contains(string.Format("Hello {0}!", "AspnetvnextTest@gmail.com"), responseContent, StringComparison.OrdinalIgnoreCase);
             Assert.Contains("Log off", responseContent, StringComparison.OrdinalIgnoreCase);
-            //Verify cookie sent
-            Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(IdentityCookieName));
-            Assert.Null(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)).GetCookieWithName(ExternalLoginCookieName));
+            // Verify cookie sent
+            Assert.Contains(IdentityCookieName, GetCookieNames());
+            Assert.DoesNotContain(ExternalLoginCookieName, GetCookieNames());
             _logger.LogInformation("Successfully signed in with user '{email}'", "AspnetvnextTest@gmail.com");
 
             _logger.LogInformation("Verifying if the middleware events were fired");
