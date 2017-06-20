@@ -5,6 +5,7 @@ using System;
 using System.Runtime.CompilerServices;
 using System.Security.Cryptography;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.Extensions.Identity.Core;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity
@@ -53,12 +54,12 @@ namespace Microsoft.AspNetCore.Identity
                     _iterCount = options.IterationCount;
                     if (_iterCount < 1)
                     {
-                        throw new InvalidOperationException(AspNetIdentityResources.InvalidPasswordHasherIterationCount);
+                        throw new InvalidOperationException(Resources.InvalidPasswordHasherIterationCount);
                     }
                     break;
 
                 default:
-                    throw new InvalidOperationException(AspNetIdentityResources.InvalidPasswordHasherCompatibilityMode);
+                    throw new InvalidOperationException(Resources.InvalidPasswordHasherCompatibilityMode);
             }
 
             _rng = options.Rng;

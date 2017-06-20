@@ -8,24 +8,19 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Identity
 {
     /// <summary>
-    /// Represents a new instance of a persistence store for the specified user and role types.
+    /// Represents a new instance of a persistence store for the specified user type.
     /// </summary>
     /// <typeparam name="TUser">The type representing a user.</typeparam>
-    /// <typeparam name="TRole">The type representing a role.</typeparam>
-    /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key for a user.</typeparam>
     /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
-    /// <typeparam name="TUserRole">The type representing a user role.</typeparam>
     /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
     /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
-    /// <typeparam name="TRoleClaim">The type representing a role claim.</typeparam>
-    public abstract class UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
+    public abstract class UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken> :
         IUserLoginStore<TUser>,
-        IUserRoleStore<TUser>,
         IUserClaimStore<TUser>,
         IUserPasswordStore<TUser>,
         IUserSecurityStampStore<TUser>,
@@ -37,14 +32,11 @@ namespace Microsoft.AspNetCore.Identity
         IUserAuthenticationTokenStore<TUser>,
         IUserAuthenticatorKeyStore<TUser>,
         IUserTwoFactorRecoveryCodeStore<TUser>
-        where TUser : IdentityUser<TKey, TUserClaim, TUserRole, TUserLogin, TUserToken>
-        where TRole : IdentityRole<TKey, TUserRole, TRoleClaim>
+        where TUser : IdentityUser<TKey>
         where TKey : IEquatable<TKey>
         where TUserClaim : IdentityUserClaim<TKey>, new()
-        where TUserRole : IdentityUserRole<TKey>, new()
         where TUserLogin : IdentityUserLogin<TKey>, new()
         where TUserToken : IdentityUserToken<TKey>, new()
-        where TRoleClaim : IdentityRoleClaim<TKey>, new()
     {
         /// <summary>
         /// Creates a new instance.
@@ -66,21 +58,6 @@ namespace Microsoft.AspNetCore.Identity
         /// Gets or sets the <see cref="IdentityErrorDescriber"/> for any error that occurred with the current operation.
         /// </summary>
         public IdentityErrorDescriber ErrorDescriber { get; set; }
-
-        /// <summary>
-        /// Called to create a new instance of a <see cref="IdentityUserRole{TKey}"/>.
-        /// </summary>
-        /// <param name="user">The associated user.</param>
-        /// <param name="role">The associated role.</param>
-        /// <returns></returns>
-        protected virtual TUserRole CreateUserRole(TUser user, TRole role)
-        {
-            return new TUserRole()
-            {
-                UserId = user.Id,
-                RoleId = role.Id
-            };
-        }
 
         /// <summary>
         /// Called to create a new instance of a <see cref="IdentityUserClaim{TKey}"/>.
@@ -350,23 +327,6 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// Return a role with the normalized name if it exists.
-        /// </summary>
-        /// <param name="normalizedRoleName">The normalized role name.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-        /// <returns>The role if it exists.</returns>
-        protected abstract Task<TRole> FindRoleAsync(string normalizedRoleName, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Return a user role for the userId and roleId if it exists.
-        /// </summary>
-        /// <param name="userId">The user's id.</param>
-        /// <param name="roleId">The role's id.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-        /// <returns>The user role if it exists.</returns>
-        protected abstract Task<TUserRole> FindUserRoleAsync(TKey userId, TKey roleId, CancellationToken cancellationToken);
-
-        /// <summary>
         /// Return a user with the matching userId if it exists.
         /// </summary>
         /// <param name="userId">The user's id.</param>
@@ -392,42 +352,6 @@ namespace Microsoft.AspNetCore.Identity
         /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
         /// <returns>The user login if it exists.</returns>
         protected abstract Task<TUserLogin> FindUserLoginAsync(string loginProvider, string providerKey, CancellationToken cancellationToken);
-
-        /// <summary>
-        /// Adds the given <paramref name="normalizedRoleName"/> to the specified <paramref name="user"/>.
-        /// </summary>
-        /// <param name="user">The user to add the role to.</param>
-        /// <param name="normalizedRoleName">The role to add.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public abstract Task AddToRoleAsync(TUser user, string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// Removes the given <paramref name="normalizedRoleName"/> from the specified <paramref name="user"/>.
-        /// </summary>
-        /// <param name="user">The user to remove the role from.</param>
-        /// <param name="normalizedRoleName">The role to remove.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
-        public abstract Task RemoveFromRoleAsync(TUser user, string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// Retrieves the roles the specified <paramref name="user"/> is a member of.
-        /// </summary>
-        /// <param name="user">The user whose roles should be retrieved.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-        /// <returns>A <see cref="Task{TResult}"/> that contains the roles the user is a member of.</returns>
-        public abstract Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
-        /// Returns a flag indicating if the specified user is a member of the give <paramref name="normalizedRoleName"/>.
-        /// </summary>
-        /// <param name="user">The user whose role membership should be checked.</param>
-        /// <param name="normalizedRoleName">The role to check membership of</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-        /// <returns>A <see cref="Task{TResult}"/> containing a flag indicating if the specified user is a member of the given group. If the 
-        /// user is a member of the group the returned value with be true, otherwise it will be false.</returns>
-        public abstract Task<bool> IsInRoleAsync(TUser user, string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Throws if this class has been disposed.
@@ -958,16 +882,6 @@ namespace Microsoft.AspNetCore.Identity
         public abstract Task<IList<TUser>> GetUsersForClaimAsync(Claim claim, CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
-        /// Retrieves all users in the specified role.
-        /// </summary>
-        /// <param name="normalizedRoleName">The role whose users should be retrieved.</param>
-        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
-        /// <returns>
-        /// The <see cref="Task"/> contains a list of users, if any, that are in the specified role. 
-        /// </returns>
-        public abstract Task<IList<TUser>> GetUsersInRoleAsync(string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken));
-
-        /// <summary>
         /// Find a user token if it exists.
         /// </summary>
         /// <param name="user">The token owner.</param>
@@ -1138,5 +1052,114 @@ namespace Microsoft.AspNetCore.Identity
             }
             return false;
         }
+    }
+
+    /// <summary>
+    /// Represents a new instance of a persistence store for the specified user and role types.
+    /// </summary>
+    /// <typeparam name="TUser">The type representing a user.</typeparam>
+    /// <typeparam name="TRole">The type representing a role.</typeparam>
+    /// <typeparam name="TKey">The type of the primary key for a role.</typeparam>
+    /// <typeparam name="TUserClaim">The type representing a claim.</typeparam>
+    /// <typeparam name="TUserRole">The type representing a user role.</typeparam>
+    /// <typeparam name="TUserLogin">The type representing a user external login.</typeparam>
+    /// <typeparam name="TUserToken">The type representing a user token.</typeparam>
+    /// <typeparam name="TRoleClaim">The type representing a role claim.</typeparam>
+    public abstract class UserStoreBase<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TUserToken, TRoleClaim> :
+        UserStoreBase<TUser, TKey, TUserClaim, TUserLogin, TUserToken>,
+        IUserRoleStore<TUser>
+        where TUser : IdentityUser<TKey>
+        where TRole : IdentityRole<TKey> 
+        where TKey : IEquatable<TKey>
+        where TUserClaim : IdentityUserClaim<TKey>, new()
+        where TUserRole : IdentityUserRole<TKey>, new()
+        where TUserLogin : IdentityUserLogin<TKey>, new()
+        where TUserToken : IdentityUserToken<TKey>, new()
+        where TRoleClaim : IdentityRoleClaim<TKey>, new()
+    {
+        /// <summary>
+        /// Creates a new instance.
+        /// </summary>
+        /// <param name="describer">The <see cref="IdentityErrorDescriber"/> used to describe store errors.</param>
+        public UserStoreBase(IdentityErrorDescriber describer) : base(describer) { }
+
+        /// <summary>
+        /// Called to create a new instance of a <see cref="IdentityUserRole{TKey}"/>.
+        /// </summary>
+        /// <param name="user">The associated user.</param>
+        /// <param name="role">The associated role.</param>
+        /// <returns></returns>
+        protected virtual TUserRole CreateUserRole(TUser user, TRole role)
+        {
+            return new TUserRole()
+            {
+                UserId = user.Id,
+                RoleId = role.Id
+            };
+        }
+
+
+        /// <summary>
+        /// Retrieves all users in the specified role.
+        /// </summary>
+        /// <param name="normalizedRoleName">The role whose users should be retrieved.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>
+        /// The <see cref="Task"/> contains a list of users, if any, that are in the specified role. 
+        /// </returns>
+        public abstract Task<IList<TUser>> GetUsersInRoleAsync(string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Adds the given <paramref name="normalizedRoleName"/> to the specified <paramref name="user"/>.
+        /// </summary>
+        /// <param name="user">The user to add the role to.</param>
+        /// <param name="normalizedRoleName">The role to add.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
+        public abstract Task AddToRoleAsync(TUser user, string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Removes the given <paramref name="normalizedRoleName"/> from the specified <paramref name="user"/>.
+        /// </summary>
+        /// <param name="user">The user to remove the role from.</param>
+        /// <param name="normalizedRoleName">The role to remove.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous operation.</returns>
+        public abstract Task RemoveFromRoleAsync(TUser user, string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Retrieves the roles the specified <paramref name="user"/> is a member of.
+        /// </summary>
+        /// <param name="user">The user whose roles should be retrieved.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>A <see cref="Task{TResult}"/> that contains the roles the user is a member of.</returns>
+        public abstract Task<IList<string>> GetRolesAsync(TUser user, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Returns a flag indicating if the specified user is a member of the give <paramref name="normalizedRoleName"/>.
+        /// </summary>
+        /// <param name="user">The user whose role membership should be checked.</param>
+        /// <param name="normalizedRoleName">The role to check membership of</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>A <see cref="Task{TResult}"/> containing a flag indicating if the specified user is a member of the given group. If the 
+        /// user is a member of the group the returned value with be true, otherwise it will be false.</returns>
+        public abstract Task<bool> IsInRoleAsync(TUser user, string normalizedRoleName, CancellationToken cancellationToken = default(CancellationToken));
+
+        /// <summary>
+        /// Return a role with the normalized name if it exists.
+        /// </summary>
+        /// <param name="normalizedRoleName">The normalized role name.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The role if it exists.</returns>
+        protected abstract Task<TRole> FindRoleAsync(string normalizedRoleName, CancellationToken cancellationToken);
+
+        /// <summary>
+        /// Return a user role for the userId and roleId if it exists.
+        /// </summary>
+        /// <param name="userId">The user's id.</param>
+        /// <param name="roleId">The role's id.</param>
+        /// <param name="cancellationToken">The <see cref="CancellationToken"/> used to propagate notifications that the operation should be canceled.</param>
+        /// <returns>The user role if it exists.</returns>
+        protected abstract Task<TUserRole> FindUserRoleAsync(TKey userId, TKey roleId, CancellationToken cancellationToken);
     }
 }

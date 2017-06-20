@@ -160,9 +160,6 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
             var builder = services.AddIdentity<TestUser, TestRole>();
-            Assert.Throws<InvalidOperationException>(() => builder.AddUserManager<UserManager<TestUser>>());
-            Assert.Throws<InvalidOperationException>(() => builder.AddRoleManager<RoleManager<TestRole>>());
-            Assert.Throws<InvalidOperationException>(() => builder.AddSignInManager<SignInManager<TestRole>>());
             Assert.Throws<InvalidOperationException>(() => builder.AddUserManager<object>());
             Assert.Throws<InvalidOperationException>(() => builder.AddRoleManager<object>());
             Assert.Throws<InvalidOperationException>(() => builder.AddSignInManager<object>());

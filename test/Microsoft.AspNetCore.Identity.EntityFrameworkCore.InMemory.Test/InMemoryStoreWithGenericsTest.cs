@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
 
     #region Generic Type defintions
 
-    public class IdentityUserWithGenerics : IdentityUser<string, IdentityUserClaimWithIssuer, IdentityUserRoleWithDate, IdentityUserLoginWithContext, IdentityUserTokenWithStuff>
+    public class IdentityUserWithGenerics : IdentityUser<string>
     {
         public IdentityUserWithGenerics()
         {
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         public DateTime Created { get; set; }
     }
 
-    public class MyIdentityRole : IdentityRole<string, IdentityUserRoleWithDate, IdentityRoleClaimWithIssuer>
+    public class MyIdentityRole : IdentityRole<string>
     {
         public MyIdentityRole() : base()
         {

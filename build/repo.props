@@ -1,0 +1,5 @@
+<Project>
+  <ItemGroup>
+    <ExcludeSolutions Include="$(RepositoryRoot)IdentityCore.sln" />
+  </ItemGroup>
+</Project>

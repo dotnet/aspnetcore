@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Identity
 {
@@ -39,34 +38,7 @@ namespace Microsoft.AspNetCore.Identity
     /// Represents a role in the identity system
     /// </summary>
     /// <typeparam name="TKey">The type used for the primary key for the role.</typeparam>
-    public class IdentityRole<TKey> : IdentityRole<TKey, IdentityUserRole<TKey>, IdentityRoleClaim<TKey>>
-        where TKey : IEquatable<TKey>
-    {
-        /// <summary>
-        /// Initializes a new instance of <see cref="IdentityRole{TKey}"/>.
-        /// </summary>
-        public IdentityRole() { }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="IdentityRole{TKey}"/>.
-        /// </summary>
-        /// <param name="roleName">The role name.</param>
-        public IdentityRole(string roleName) : this()
-        {
-            Name = roleName;
-        }
-    }
-
-    /// <summary>
-    /// Represents a role in the identity system
-    /// </summary>
-    /// <typeparam name="TKey">The type used for the primary key for the role.</typeparam>
-    /// <typeparam name="TUserRole">The type used for user roles.</typeparam>
-    /// <typeparam name="TRoleClaim">The type used for role claims.</typeparam>
-    public class IdentityRole<TKey, TUserRole, TRoleClaim>
-        where TKey : IEquatable<TKey>
-        where TUserRole : IdentityUserRole<TKey>
-        where TRoleClaim : IdentityRoleClaim<TKey>
+    public class IdentityRole<TKey> where TKey : IEquatable<TKey>
     {
         /// <summary>
         /// Initializes a new instance of <see cref="IdentityRole{TKey}"/>.

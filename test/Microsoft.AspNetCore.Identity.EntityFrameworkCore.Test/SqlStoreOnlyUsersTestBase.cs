@@ -7,48 +7,24 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Test;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 {
-    // TODO: Add test variation with non IdentityDbContext
-
-    public abstract class SqlStoreTestBase<TUser, TRole, TKey> : IdentitySpecificationTestBase<TUser, TRole, TKey>, IClassFixture<ScratchDatabaseFixture>
+    public abstract class SqlStoreOnlyUsersTestBase<TUser, TKey> : UserManagerSpecificationTestBase<TUser, TKey>, IClassFixture<ScratchDatabaseFixture>
         where TUser : IdentityUser<TKey>, new()
-        where TRole : IdentityRole<TKey>, new()
         where TKey : IEquatable<TKey>
     {
         private readonly ScratchDatabaseFixture _fixture;
 
-        protected SqlStoreTestBase(ScratchDatabaseFixture fixture)
+        protected SqlStoreOnlyUsersTestBase(ScratchDatabaseFixture fixture)
         {
             _fixture = fixture;
-        }
-
-        protected override void SetupIdentityServices(IServiceCollection services, object context)
-        {
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-            services.AddSingleton<TestDbContext>((TestDbContext)context);
-            services.AddLogging();
-            services.AddSingleton<ILogger<UserManager<TUser>>>(new TestLogger<UserManager<TUser>>());
-            services.AddSingleton<ILogger<RoleManager<TRole>>>(new TestLogger<RoleManager<TRole>>());
-            services.AddIdentity<TUser, TRole>(options =>
-            {
-                options.Password.RequireDigit = false;
-                options.Password.RequireLowercase = false;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequireUppercase = false;
-                options.User.AllowedUserNameCharacters = null;
-            })
-            .AddDefaultTokenProviders()
-            .AddEntityFrameworkStores<TestDbContext>();
         }
 
         protected override bool ShouldSkipDbTests()
@@ -56,8 +32,9 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             return TestPlatformHelper.IsMono || !TestPlatformHelper.IsWindows;
         }
 
-        public class TestDbContext : IdentityDbContext<TUser, TRole, TKey> {
-            public TestDbContext(DbContextOptions options) : base(options) { }
+        public class TestUserDbContext : IdentityDbContext<TUser, TKey>
+        {
+            public TestUserDbContext(DbContextOptions options) : base(options) { }
         }
 
         protected override TUser CreateTestUser(string namePrefix = "", string email = "", string phoneNumber = "",
@@ -73,23 +50,13 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             };
         }
 
-        protected override TRole CreateTestRole(string roleNamePrefix = "", bool useRoleNamePrefixAsRoleName = false)
-        {
-            var roleName = useRoleNamePrefixAsRoleName ? roleNamePrefix : string.Format("{0}{1}", roleNamePrefix, Guid.NewGuid());
-            return new TRole() { Name = roleName };
-        }
-
-        protected override Expression<Func<TRole, bool>> RoleNameEqualsPredicate(string roleName) => r => r.Name == roleName;
-
         protected override Expression<Func<TUser, bool>> UserNameEqualsPredicate(string userName) => u => u.UserName == userName;
-
-        protected override Expression<Func<TRole, bool>> RoleNameStartsWithPredicate(string roleName) => r => r.Name.StartsWith(roleName);
 
         protected override Expression<Func<TUser, bool>> UserNameStartsWithPredicate(string userName) => u => u.UserName.StartsWith(userName);
 
-        public TestDbContext CreateContext()
+        public TestUserDbContext CreateContext()
         {
-            var db = DbUtil.Create<TestDbContext>(_fixture.ConnectionString);
+            var db = DbUtil.Create<TestUserDbContext>(_fixture.ConnectionString);
             db.Database.EnsureCreated();
             return db;
         }
@@ -101,12 +68,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected override void AddUserStore(IServiceCollection services, object context = null)
         {
-            services.AddSingleton<IUserStore<TUser>>(new UserStore<TUser, TRole, TestDbContext, TKey>((TestDbContext)context));
-        }
-
-        protected override void AddRoleStore(IServiceCollection services, object context = null)
-        {
-            services.AddSingleton<IRoleStore<TRole>>(new RoleStore<TRole, TestDbContext, TKey>((TestDbContext)context));
+            services.AddSingleton<IUserStore<TUser>>(new UserOnlyStore<TUser, TestUserDbContext, TKey>((TestUserDbContext)context));
         }
 
         protected override void SetUserPasswordHash(TUser user, string hashedPassword)
@@ -123,7 +85,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             VerifyDefaultSchema(CreateContext());
         }
 
-        internal static void VerifyDefaultSchema(TestDbContext dbContext)
+        internal static void VerifyDefaultSchema(TestUserDbContext dbContext)
         {
             var sqlConn = dbContext.Database.GetDbConnection();
 
@@ -133,13 +95,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
                 Assert.True(VerifyColumns(db, "AspNetUsers", "Id", "UserName", "Email", "PasswordHash", "SecurityStamp",
                     "EmailConfirmed", "PhoneNumber", "PhoneNumberConfirmed", "TwoFactorEnabled", "LockoutEnabled",
                     "LockoutEnd", "AccessFailedCount", "ConcurrencyStamp", "NormalizedUserName", "NormalizedEmail"));
-                Assert.True(VerifyColumns(db, "AspNetRoles", "Id", "Name", "NormalizedName", "ConcurrencyStamp"));
-                Assert.True(VerifyColumns(db, "AspNetUserRoles", "UserId", "RoleId"));
+                Assert.False(VerifyColumns(db, "AspNetRoles", "Id", "Name", "NormalizedName", "ConcurrencyStamp"));
+                Assert.False(VerifyColumns(db, "AspNetUserRoles", "UserId", "RoleId"));
                 Assert.True(VerifyColumns(db, "AspNetUserClaims", "Id", "UserId", "ClaimType", "ClaimValue"));
                 Assert.True(VerifyColumns(db, "AspNetUserLogins", "UserId", "ProviderKey", "LoginProvider", "ProviderDisplayName"));
                 Assert.True(VerifyColumns(db, "AspNetUserTokens", "UserId", "LoginProvider", "Name", "Value"));
 
-                VerifyIndex(db, "AspNetRoles", "RoleNameIndex", isUnique: true);
                 VerifyIndex(db, "AspNetUsers", "UserNameIndex", isUnique: true);
                 VerifyIndex(db, "AspNetUsers", "EmailIndex");
                 db.Close();
@@ -191,60 +152,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        public async Task DeleteRoleNonEmptySucceedsTest()
-        {
-            // Need fail if not empty?
-            var context = CreateTestContext();
-            var userMgr = CreateManager(context);
-            var roleMgr = CreateRoleManager(context);
-            var roleName = "delete" + Guid.NewGuid().ToString();
-            var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
-            Assert.False(await roleMgr.RoleExistsAsync(roleName));
-            IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
-            var user = CreateTestUser();
-            IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
-            IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, roleName));
-            var roles = await userMgr.GetRolesAsync(user);
-            Assert.Equal(1, roles.Count());
-            IdentityResultAssert.IsSuccess(await roleMgr.DeleteAsync(role));
-            Assert.Null(await roleMgr.FindByNameAsync(roleName));
-            Assert.False(await roleMgr.RoleExistsAsync(roleName));
-            // REVIEW: We should throw if deleteing a non empty role?
-            roles = await userMgr.GetRolesAsync(user);
-
-            Assert.Equal(0, roles.Count());
-        }
-
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public async Task DeleteUserRemovesFromRoleTest()
-        {
-            // Need fail if not empty?
-            var userMgr = CreateManager();
-            var roleMgr = CreateRoleManager();
-            var roleName = "deleteUserRemove" + Guid.NewGuid().ToString();
-            var role = CreateTestRole(roleName, useRoleNamePrefixAsRoleName: true);
-            Assert.False(await roleMgr.RoleExistsAsync(roleName));
-            IdentityResultAssert.IsSuccess(await roleMgr.CreateAsync(role));
-            var user = CreateTestUser();
-            IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
-            IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, roleName));
-
-            var roles = await userMgr.GetRolesAsync(user);
-            Assert.Equal(1, roles.Count());
-
-            IdentityResultAssert.IsSuccess(await userMgr.DeleteAsync(user));
-
-            roles = await userMgr.GetRolesAsync(user);
-            Assert.Equal(0, roles.Count());
-        }
-
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task DeleteUserRemovesTokensTest()
         {
             // Need fail if not empty?
@@ -289,19 +196,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             IdentityResultAssert.IsSuccess(await manager.DeleteAsync(user));
         }
 
-        private async Task LazyLoadTestSetup(TestDbContext db, TUser user)
+        private async Task LazyLoadTestSetup(TestUserDbContext db, TUser user)
         {
             var context = CreateContext();
             var manager = CreateManager(context);
-            var role = CreateRoleManager(context);
-            var admin = CreateTestRole("Admin" + Guid.NewGuid().ToString());
-            var local = CreateTestRole("Local" + Guid.NewGuid().ToString());
             IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, new UserLoginInfo("provider", user.Id.ToString(), "display")));
-            IdentityResultAssert.IsSuccess(await role.CreateAsync(admin));
-            IdentityResultAssert.IsSuccess(await role.CreateAsync(local));
-            IdentityResultAssert.IsSuccess(await manager.AddToRoleAsync(user, admin.Name));
-            IdentityResultAssert.IsSuccess(await manager.AddToRoleAsync(user, local.Name));
             Claim[] userClaims =
             {
                 new Claim("Whatever", "Value"),

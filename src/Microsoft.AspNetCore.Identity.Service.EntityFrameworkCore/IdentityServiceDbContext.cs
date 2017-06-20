@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore
         TRedirectUri,
         TApplicationKey> :
         IdentityDbContext<TUser, TRole, TUserKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken>
-        where TUser : IdentityUser<TUserKey, TUserClaim, TUserRole, TUserLogin, TUserToken>
-        where TRole : IdentityRole<TUserKey, TUserRole, TRoleClaim>
+        where TUser : IdentityUser<TUserKey>
+        where TRole : IdentityRole<TUserKey>
         where TUserKey : IEquatable<TUserKey>
         where TUserClaim : IdentityUserClaim<TUserKey>
         where TUserRole : IdentityUserRole<TUserKey>

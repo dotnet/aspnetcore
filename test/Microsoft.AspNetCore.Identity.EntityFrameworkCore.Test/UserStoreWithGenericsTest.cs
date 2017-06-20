@@ -102,15 +102,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         }
 
         [Fact]
-        public void AddEntityFrameworkStoresWithMismatchedUserRoleThrows()
-        {
-            var services = new ServiceCollection();
-            var builder = services.AddIdentity<IdentityUserWithGenerics, IdentityRole>();
-            var e = Assert.Throws<ArgumentException>(() => builder.AddEntityFrameworkStores<ContextWithGenerics>());
-            Assert.Contains("violates the constraint of type 'TRole'", e.Message);
-        }
-
-        [Fact]
         public async Task CanAddRemoveUserClaimWithIssuer()
         {
             if (ShouldSkipDbTests())
@@ -218,7 +209,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
     #region Generic Type defintions
 
-    public class IdentityUserWithGenerics : IdentityUser<string, IdentityUserClaimWithIssuer, IdentityUserRoleWithDate, IdentityUserLoginWithContext, IdentityUserTokenWithStuff>
+    public class IdentityUserWithGenerics : IdentityUser<string>
     {
         public IdentityUserWithGenerics()
         {
@@ -328,7 +319,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
         public DateTime Created { get; set; }
     }
 
-    public class MyIdentityRole : IdentityRole<string, IdentityUserRoleWithDate, IdentityRoleClaimWithIssuer>
+    public class MyIdentityRole : IdentityRole<string>
     {
         public MyIdentityRole() : base()
         {

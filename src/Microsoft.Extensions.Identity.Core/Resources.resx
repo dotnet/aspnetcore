@@ -305,4 +305,8 @@
     <value>Passwords must use at least {0} different characters.</value>
     <comment>Error message for passwords that are based on similar characters</comment>
   </data>
+  <data name="NoRoleType" xml:space="preserve">
+    <value>No RoleType was specified, try AddRoles&lt;TRole&gt;().</value>
+    <comment>Error when the IdentityBuilder.RoleType was not specified</comment>
+  </data>
 </root>

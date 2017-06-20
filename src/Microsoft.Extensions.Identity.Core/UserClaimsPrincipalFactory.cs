@@ -13,36 +13,27 @@ namespace Microsoft.AspNetCore.Identity
     /// Provides methods to create a claims principal for a given user.
     /// </summary>
     /// <typeparam name="TUser">The type used to represent a user.</typeparam>
-    /// <typeparam name="TRole">The type used to represent a role.</typeparam>
-    public class UserClaimsPrincipalFactory<TUser, TRole> : IUserClaimsPrincipalFactory<TUser>
+    public class UserClaimsPrincipalFactory<TUser> : IUserClaimsPrincipalFactory<TUser>
         where TUser : class
-        where TRole : class
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="UserClaimsPrincipalFactory{TUser, TRole}"/> class.
+        /// Initializes a new instance of the <see cref="UserClaimsPrincipalFactory{TUser}"/> class.
         /// </summary>
         /// <param name="userManager">The <see cref="UserManager{TUser}"/> to retrieve user information from.</param>
-        /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> to retrieve a user's roles from.</param>
         /// <param name="optionsAccessor">The configured <see cref="IdentityOptions"/>.</param>
         public UserClaimsPrincipalFactory(
-            UserManager<TUser> userManager, 
-            RoleManager<TRole> roleManager, 
+            UserManager<TUser> userManager,
             IOptions<IdentityOptions> optionsAccessor)
         {
             if (userManager == null)
             {
                 throw new ArgumentNullException(nameof(userManager));
             }
-            if (roleManager == null)
-            {
-                throw new ArgumentNullException(nameof(roleManager));
-            }
             if (optionsAccessor == null || optionsAccessor.Value == null)
             {
                 throw new ArgumentNullException(nameof(optionsAccessor));
             }
             UserManager = userManager;
-            RoleManager = roleManager;
             Options = optionsAccessor.Value;
         }
 
@@ -53,14 +44,6 @@ namespace Microsoft.AspNetCore.Identity
         /// The current <see cref="UserManager{TUser}"/> for this factory instance.
         /// </value>
         public UserManager<TUser> UserManager { get; private set; }
-
-        /// <summary>
-        /// Gets the <see cref="RoleManager{TRole}"/> for this factory.
-        /// </summary>
-        /// <value>
-        /// The current <see cref="RoleManager{TRole}"/> for this factory instance.
-        /// </value>
-        public RoleManager<TRole> RoleManager { get; private set; }
 
         /// <summary>
         /// Gets the <see cref="IdentityOptions"/> for this factory.
@@ -81,18 +64,78 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(user));
             }
+            var id = await GenerateClaimsAsync(user);
+            return new ClaimsPrincipal(id);
+        }
+
+        /// <summary>
+        /// Generate the claims for a user.
+        /// </summary>
+        /// <param name="user">The user to create a <see cref="ClaimsIdentity"/> from.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous creation operation, containing the created <see cref="ClaimsIdentity"/>.</returns>
+        protected virtual async Task<ClaimsIdentity> GenerateClaimsAsync(TUser user)
+        {
             var userId = await UserManager.GetUserIdAsync(user);
             var userName = await UserManager.GetUserNameAsync(user);
-            var id = new ClaimsIdentity(IdentityConstants.ApplicationScheme,
+            var id = new ClaimsIdentity("Identity.Application", // REVIEW: Used to match Application scheme
                 Options.ClaimsIdentity.UserNameClaimType,
                 Options.ClaimsIdentity.RoleClaimType);
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserIdClaimType, userId));
             id.AddClaim(new Claim(Options.ClaimsIdentity.UserNameClaimType, userName));
             if (UserManager.SupportsUserSecurityStamp)
             {
-                id.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType, 
+                id.AddClaim(new Claim(Options.ClaimsIdentity.SecurityStampClaimType,
                     await UserManager.GetSecurityStampAsync(user)));
             }
+            if (UserManager.SupportsUserClaim)
+            {
+                id.AddClaims(await UserManager.GetClaimsAsync(user));
+            }
+            return id;
+        }
+    }
+
+    /// <summary>
+    /// Provides methods to create a claims principal for a given user.
+    /// </summary>
+    /// <typeparam name="TUser">The type used to represent a user.</typeparam>
+    /// <typeparam name="TRole">The type used to represent a role.</typeparam>
+    public class UserClaimsPrincipalFactory<TUser, TRole> : UserClaimsPrincipalFactory<TUser>
+        where TUser : class
+        where TRole : class
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UserClaimsPrincipalFactory{TUser, TRole}"/> class.
+        /// </summary>
+        /// <param name="userManager">The <see cref="UserManager{TUser}"/> to retrieve user information from.</param>
+        /// <param name="roleManager">The <see cref="RoleManager{TRole}"/> to retrieve a user's roles from.</param>
+        /// <param name="options">The configured <see cref="IdentityOptions"/>.</param>
+        public UserClaimsPrincipalFactory(UserManager<TUser> userManager, RoleManager<TRole> roleManager, IOptions<IdentityOptions> options)
+            : base(userManager, options)
+        {
+            if (roleManager == null)
+            {
+                throw new ArgumentNullException(nameof(roleManager));
+            }
+            RoleManager = roleManager;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="RoleManager{TRole}"/> for this factory.
+        /// </summary>
+        /// <value>
+        /// The current <see cref="RoleManager{TRole}"/> for this factory instance.
+        /// </value>
+        public RoleManager<TRole> RoleManager { get; private set; }
+
+        /// <summary>
+        /// Generate the claims for a user.
+        /// </summary>
+        /// <param name="user">The user to create a <see cref="ClaimsIdentity"/> from.</param>
+        /// <returns>The <see cref="Task"/> that represents the asynchronous creation operation, containing the created <see cref="ClaimsIdentity"/>.</returns>
+        protected override async Task<ClaimsIdentity> GenerateClaimsAsync(TUser user)
+        {
+            var id = await base.GenerateClaimsAsync(user);
             if (UserManager.SupportsUserRole)
             {
                 var roles = await UserManager.GetRolesAsync(user);
@@ -109,21 +152,7 @@ namespace Microsoft.AspNetCore.Identity
                     }
                 }
             }
-            if (UserManager.SupportsUserClaim)
-            {
-                id.AddClaims(await UserManager.GetClaimsAsync(user));
-            }
-            return await CreatePrincipalAsync(id);
-        }
-
-        /// <summary>
-        /// Creates a <see cref="ClaimsPrincipal"/> from a <see cref="ClaimsIdentity"/>.
-        /// </summary>
-        /// <param name="id">The <see cref="ClaimsIdentity"/> with claims.</param>
-        /// <returns>The <see cref="Task"/> that represents the asynchronous creation operation, containing the <see cref="ClaimsPrincipal"/> with the <see cref="ClaimsIdentity"/>.</returns>
-        protected virtual Task<ClaimsPrincipal> CreatePrincipalAsync(ClaimsIdentity id)
-        {
-            return Task.FromResult(new ClaimsPrincipal(id));
+            return id;
         }
     }
 }

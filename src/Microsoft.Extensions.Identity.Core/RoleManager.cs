@@ -7,6 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Identity.Core;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Identity

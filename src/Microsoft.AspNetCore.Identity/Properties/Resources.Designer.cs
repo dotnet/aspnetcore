@@ -5,58 +5,52 @@ namespace Microsoft.AspNetCore.Identity
     using System.Reflection;
     using System.Resources;
 
-    internal static class AspNetIdentityResources
+    internal static class Resources
     {
         private static readonly ResourceManager _resourceManager
-            = new ResourceManager("Microsoft.AspNetCore.Identity.Resources", typeof(AspNetIdentityResources).GetTypeInfo().Assembly);
+            = new ResourceManager("Microsoft.AspNetCore.Identity.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
         /// Type {0} must derive from {1}&lt;{2}&gt;.
         /// </summary>
         internal static string InvalidManagerType
         {
-            get { return GetString("InvalidManagerType"); }
+            get => GetString("InvalidManagerType");
         }
 
         /// <summary>
         /// Type {0} must derive from {1}&lt;{2}&gt;.
         /// </summary>
         internal static string FormatInvalidManagerType(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidManagerType"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidManagerType"), p0, p1, p2);
 
         /// <summary>
         /// The provided PasswordHasherCompatibilityMode is invalid.
         /// </summary>
         internal static string InvalidPasswordHasherCompatibilityMode
         {
-            get { return GetString("InvalidPasswordHasherCompatibilityMode"); }
+            get => GetString("InvalidPasswordHasherCompatibilityMode");
         }
 
         /// <summary>
         /// The provided PasswordHasherCompatibilityMode is invalid.
         /// </summary>
         internal static string FormatInvalidPasswordHasherCompatibilityMode()
-        {
-            return GetString("InvalidPasswordHasherCompatibilityMode");
-        }
+            => GetString("InvalidPasswordHasherCompatibilityMode");
 
         /// <summary>
         /// The iteration count must be a positive integer.
         /// </summary>
         internal static string InvalidPasswordHasherIterationCount
         {
-            get { return GetString("InvalidPasswordHasherIterationCount"); }
+            get => GetString("InvalidPasswordHasherIterationCount");
         }
 
         /// <summary>
         /// The iteration count must be a positive integer.
         /// </summary>
         internal static string FormatInvalidPasswordHasherIterationCount()
-        {
-            return GetString("InvalidPasswordHasherIterationCount");
-        }
+            => GetString("InvalidPasswordHasherIterationCount");
 
         private static string GetString(string name, params string[] formatterNames)
         {
