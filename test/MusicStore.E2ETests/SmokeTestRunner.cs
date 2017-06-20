@@ -148,20 +148,7 @@ namespace E2ETests
             logger.LogInformation("Verifying administrator log out");
             await validator.SignOutUser("Administrator");
 
-            logger.LogInformation("Verifying Google login scenarios");
-            await validator.LoginWithGoogle();
-
-            logger.LogInformation("Verifying Facebook login scenarios");
-            await validator.LoginWithFacebook();
-
-            logger.LogInformation("Verifying Twitter login scenarios");
-            await validator.LoginWithTwitter();
-
-            logger.LogInformation("Verifying Microsoft login scenarios");
-            await validator.LoginWithMicrosoftAccount();
-
             logger.LogInformation("Variation completed successfully.");
         }
-
     }
 }
