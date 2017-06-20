@@ -6,8 +6,8 @@
         "packages": {
             "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation": {
                 "exclusions": {
-                    "DOC_MISSING": {
-                        "lib/netcoreapp2.0/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll": "Not a class library. Docs not required for CLI tools"
+                    "BUILD_ITEMS_FRAMEWORK": {
+                        "*": "Purposefully creating a netstandard2.0 build item so our targets can be injected for desktop and non-desktop based projects."
                     }
                 }
             },
@@ -25,13 +25,6 @@
                 "Exclusions": {
                     "NUSPEC_TAGS": {
                         "*": "No package verification performed on the repo"
-                    }
-                }
-            },
-            "Microsoft.AspNetCore.All": {
-                "Exclusions": {
-                    "THIRDPARTY_DEPENDENCY_NOT_REGISTERED": {
-                        "Microsoft.AspNetCore.All; .NETCoreApp,Version=v2.0": "Temporary exception while waiting for Coherence-Signed to get a new version of NugetPackageVerifier."
                     }
                 }
             }
