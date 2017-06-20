@@ -1,5 +1,0 @@
-<Project>
-  <ItemGroup>
-    <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Tasks.csproj" />
-  </ItemGroup>
-</Project>
