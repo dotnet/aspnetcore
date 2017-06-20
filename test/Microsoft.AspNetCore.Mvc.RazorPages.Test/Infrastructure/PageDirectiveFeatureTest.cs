@@ -58,7 +58,7 @@ The rest of the thing");
             var projectItem = new TestRazorProjectItem($@"@page {inTemplate}");
 
             // Act & Assert
-            Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.False(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
             Assert.Null(template);
         }
 
@@ -70,7 +70,7 @@ The rest of the thing");
             var projectItem = new TestRazorProjectItem(@"@page Some/Path/{value}");
 
             // Act & Assert
-            Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.False(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
             Assert.Null(template);
         }
 
@@ -122,8 +122,8 @@ The rest of the thing");
 a new line");
 
             // Act & Assert
-            Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
-            Assert.Equal("Some/Path/{value}", template);
+            Assert.False(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.Null(template);
         }
 
         [Fact]
