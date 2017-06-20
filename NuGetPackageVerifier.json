@@ -10,7 +10,7 @@
                         "lib/netcoreapp2.0/Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.dll": "Not a class library. Docs not required for CLI tools"
                     },
                     "BUILD_ITEMS_FRAMEWORK": {
-                        "*": "Doesn't matter"
+                        "*": "Purposefully creating a netstandard2.0 build item so our targets can be injected for desktop and non-desktop based projects."
                     }
                 }
             }
