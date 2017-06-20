@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -208,11 +208,27 @@ namespace Microsoft.AspNetCore.Http
         }
 
         [Fact]
-        public void PathStringConvertsFromString()
+        public void PathStringConvertsOnlyToAndFromString()
         {
             var converter = TypeDescriptor.GetConverter(typeof(PathString));
             PathString result = (PathString)converter.ConvertFromInvariantString("/foo");
             Assert.Equal("/foo", result.ToString());
+            Assert.Equal("/foo", converter.ConvertTo(result, typeof(string)));
+            Assert.True(converter.CanConvertFrom(typeof(string)));
+            Assert.False(converter.CanConvertFrom(typeof(int)));
+            Assert.False(converter.CanConvertFrom(typeof(bool)));
+            Assert.True(converter.CanConvertTo(typeof(string)));
+            Assert.False(converter.CanConvertTo(typeof(int)));
+            Assert.False(converter.CanConvertTo(typeof(bool)));
+        }
+
+        [Fact]
+        public void PathStringStaysEqualAfterAssignments()
+        {
+            PathString p1 = "/?";
+            string s1 = p1;
+            PathString p2 = s1;
+            Assert.Equal(p1, p2);
         }
     }
 }

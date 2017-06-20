@@ -443,25 +443,35 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="s"></param>
         public static implicit operator PathString(string s)
-        {
-            return new PathString(s);
-        }
+            => ConvertFromString(s);
 
         /// <summary>
         /// Implicitly calls ToString().
         /// </summary>
         /// <param name="path"></param>
         public static implicit operator string(PathString path)
-        {
-            return path.ToString();
-        }
+            => path.ToString();
+
+        internal static PathString ConvertFromString(string s)
+            => string.IsNullOrEmpty(s) ? new PathString(s) : FromUriComponent(s);
     }
 
     internal class PathStringConverter : TypeConverter
     {
+        public override bool CanConvertFrom(ITypeDescriptorContext context, Type sourceType)
+            => sourceType == typeof(string) 
+            ? true 
+            : base.CanConvertFrom(context, sourceType);
+
         public override object ConvertFrom(ITypeDescriptorContext context, CultureInfo culture, object value)
-        {
-            return new PathString((string)value);
-        }
+            => value is string 
+            ? PathString.ConvertFromString((string)value) 
+            : base.ConvertFrom(context, culture, value);
+
+        public override object ConvertTo(ITypeDescriptorContext context,
+           CultureInfo culture, object value, Type destinationType)
+            => destinationType == typeof(string) 
+            ? value.ToString() 
+            : base.ConvertTo(context, culture, value, destinationType);
     }
 }
