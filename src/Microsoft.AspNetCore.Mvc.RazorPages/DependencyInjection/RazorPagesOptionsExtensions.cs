@@ -193,9 +193,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(pageName));
             }
 
-            if (string.IsNullOrEmpty(route))
+            if (route == null)
             {
-                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(route));
+                throw new ArgumentNullException(nameof(route));
             }
 
             options.Conventions.Add(new PageConvention(pageName, model =>

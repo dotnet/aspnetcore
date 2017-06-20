@@ -20,6 +20,7 @@ namespace RazorPagesWebSite
                     options.AuthorizeFolder("/Pages/Admin");
                     options.AllowAnonymousToPage("/Pages/Admin/Login");
                     options.AddPageRoute("/HelloWorldWithRoute", "Different-Route/{text}");
+                    options.AddPageRoute("/Pages/NotTheRoot", string.Empty);
                 })
                 .WithRazorPagesAtContentRoot();
         }

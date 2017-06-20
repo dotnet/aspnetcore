@@ -1037,6 +1037,19 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             Assert.StartsWith(expected, response.Trim());
         }
 
+        [Fact]
+        public async Task PagesCanByRoutedToApplicationRoot_ViaAddPageRoute()
+        {
+            // Arrange
+            var expected = "Hello from NotTheRoot";
+
+            // Act
+            var response = await Client.GetStringAsync("");
+
+            // Assert
+            Assert.StartsWith(expected, response.Trim());
+        }
+
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
         {
             var getResponse = await Client.GetAsync(request.RequestUri);
