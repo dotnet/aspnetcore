@@ -1,8 +1,8 @@
-/// <reference path="./PrerenderingInterfaces.d.ts" />
 import * as url from 'url';
 import * as path from 'path';
 import * as domain from 'domain';
 import { run as domainTaskRun, baseUrl as domainTaskBaseUrl } from 'domain-task/main';
+import { BootFunc, BootFuncParams, BootModuleInfo, RenderToStringCallback, RenderToStringFunc } from './PrerenderingInterfaces';
 
 const defaultTimeoutMilliseconds = 30 * 1000;
 
