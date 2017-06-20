@@ -9,29 +9,29 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
-    public class RazorProjectPageApplicationModelProvider : IPageApplicationModelProvider
+    public class RazorProjectPageRouteModelProvider : IPageRouteModelProvider
     {
         private readonly RazorProject _project;
         private readonly RazorPagesOptions _pagesOptions;
         private readonly ILogger _logger;
 
-        public RazorProjectPageApplicationModelProvider(
+        public RazorProjectPageRouteModelProvider(
             RazorProject razorProject,
             IOptions<RazorPagesOptions> pagesOptionsAccessor,
             ILoggerFactory loggerFactory)
         {
             _project = razorProject;
             _pagesOptions = pagesOptionsAccessor.Value;
-            _logger = loggerFactory.CreateLogger<RazorProjectPageApplicationModelProvider>();
+            _logger = loggerFactory.CreateLogger<RazorProjectPageRouteModelProvider>();
         }
 
         public int Order => -1000;
 
-        public void OnProvidersExecuted(PageApplicationModelProviderContext context)
+        public void OnProvidersExecuted(PageRouteModelProviderContext context)
         {
         }
 
-        public void OnProvidersExecuting(PageApplicationModelProviderContext context)
+        public void OnProvidersExecuting(PageRouteModelProviderContext context)
         {
             foreach (var item in _project.EnumerateItems(_pagesOptions.RootDirectory))
             {
@@ -47,12 +47,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     continue;
                 }
 
-                var pageApplicationModel = new PageApplicationModel(
+                var routeModel = new PageRouteModel(
                     relativePath: item.CombinedPath,
                     viewEnginePath: item.PathWithoutExtension);
-                PageSelectorModel.PopulateDefaults(pageApplicationModel, routeTemplate);
+                PageSelectorModel.PopulateDefaults(routeModel, routeTemplate);
 
-                context.Results.Add(pageApplicationModel);
+                context.RouteModels.Add(routeModel);
             }
         }
     }

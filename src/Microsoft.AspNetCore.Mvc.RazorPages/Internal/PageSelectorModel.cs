@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     {
         private const string IndexFileName = "Index.cshtml";
 
-        public static void PopulateDefaults(PageApplicationModel model, string routeTemplate)
+        public static void PopulateDefaults(PageRouteModel model, string routeTemplate)
         {
             if (AttributeRouteModel.IsOverridePattern(routeTemplate))
             {

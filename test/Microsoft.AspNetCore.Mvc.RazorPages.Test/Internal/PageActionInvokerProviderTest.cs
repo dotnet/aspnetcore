@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
@@ -18,11 +17,9 @@ using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
@@ -235,7 +232,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 loader.Object,
                 CreateActionDescriptorCollection(descriptor));
 
-            var context = new ActionInvokerProviderContext(new ActionContext()
+            var context = new ActionInvokerProviderContext(new ActionContext
             {
                 ActionDescriptor = descriptor,
                 HttpContext = new DefaultHttpContext(),
@@ -251,6 +248,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var entry1 = actionInvoker.CacheEntry;
 
             // Act - 2
+            context = new ActionInvokerProviderContext(new ActionContext
+            {
+                ActionDescriptor = descriptor,
+                HttpContext = new DefaultHttpContext(),
+                RouteData = new RouteData(),
+            });
             invokerProvider.OnProvidersExecuting(context);
 
             // Assert - 2
@@ -445,6 +448,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 HandlerTypeInfo = modelTypeInfo ?? pageTypeInfo,
                 ModelTypeInfo = modelTypeInfo ?? pageTypeInfo,
                 PageTypeInfo = pageTypeInfo,
+                FilterDescriptors = Array.Empty<FilterDescriptor>(),
             };
         }
 

@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
-    public class CompiledPageApplicationModelProviderTest
+    public class CompiledPageRouteModelProviderTest
     {
         [Fact]
         public void OnProvidersExecuting_AddsModelsForCompiledViews()
@@ -22,14 +22,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 GetDescriptor("/Pages/About.cshtml"),
                 GetDescriptor("/Pages/Home.cshtml", "some-prefix"),
             };
-            var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions());
-            var context = new PageApplicationModelProviderContext();
+            var provider = new TestCompiledPageRouteModelProvider(descriptors, new RazorPagesOptions());
+            var context = new PageRouteModelProviderContext();
 
             // Act
             provider.OnProvidersExecuting(context);
 
             // Assert
-            Assert.Collection(context.Results,
+            Assert.Collection(context.RouteModels,
                 result =>
                 {
                     Assert.Equal("/Pages/About.cshtml", result.RelativePath);
@@ -55,14 +55,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 GetDescriptor("/Pages/Index.cshtml"),
                 GetDescriptor("/Pages/Admin/Index.cshtml", "some-template"),
             };
-            var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions { RootDirectory = "/" });
-            var context = new PageApplicationModelProviderContext();
+            var provider = new TestCompiledPageRouteModelProvider(descriptors, new RazorPagesOptions { RootDirectory = "/" });
+            var context = new PageRouteModelProviderContext();
 
             // Act
             provider.OnProvidersExecuting(context);
 
             // Assert
-            Assert.Collection(context.Results,
+            Assert.Collection(context.RouteModels,
                 result =>
                 {
                     Assert.Equal("/Pages/Index.cshtml", result.RelativePath);
@@ -90,14 +90,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 GetDescriptor("/Pages/Index.cshtml"),
                 GetDescriptor("/Pages/Admin/Index.cshtml", "some-template"),
             };
-            var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions());
-            var context = new PageApplicationModelProviderContext();
+            var provider = new TestCompiledPageRouteModelProvider(descriptors, new RazorPagesOptions());
+            var context = new PageRouteModelProviderContext();
 
             // Act
             provider.OnProvidersExecuting(context);
 
             // Assert
-            Assert.Collection(context.Results,
+            Assert.Collection(context.RouteModels,
                 result =>
                 {
                     Assert.Equal("/Pages/Index.cshtml", result.RelativePath);
@@ -125,8 +125,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 GetDescriptor("/Pages/Index.cshtml"),
                 GetDescriptor("/Pages/Home.cshtml", "/some-prefix"),
             };
-            var provider = new TestCompiledPageApplicationModelProvider(descriptors, new RazorPagesOptions());
-            var context = new PageApplicationModelProviderContext();
+            var provider = new TestCompiledPageRouteModelProvider(descriptors, new RazorPagesOptions());
+            var context = new PageRouteModelProviderContext();
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
@@ -143,11 +143,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             };
         }
 
-        public class TestCompiledPageApplicationModelProvider : CompiledPageApplicationModelProvider
+        public class TestCompiledPageRouteModelProvider : CompiledPageRouteModelProvider
         {
             private readonly IEnumerable<CompiledViewDescriptor> _descriptors;
 
-            public TestCompiledPageApplicationModelProvider(IEnumerable<CompiledViewDescriptor> descriptors, RazorPagesOptions options)
+            public TestCompiledPageRouteModelProvider(IEnumerable<CompiledViewDescriptor> descriptors, RazorPagesOptions options)
                 : base(new ApplicationPartManager(), new TestOptionsManager<RazorPagesOptions>(options))
             {
                 _descriptors = descriptors;

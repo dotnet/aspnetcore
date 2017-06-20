@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(factory));
             }
 
-            options.Conventions.Add(new FolderConvention("/", model => model.Filters.Add(factory(model))));
+            options.ApplicationModelConventions.Add(new FolderApplicationModelConvention("/", model => model.Filters.Add(factory(model))));
             return options;
         }
 
@@ -54,7 +54,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(filter));
             }
 
-            options.Conventions.Add(new FolderConvention("/", model => model.Filters.Add(filter)));
+            options.ApplicationModelConventions.Add(new FolderApplicationModelConvention("/", model => model.Filters.Add(filter)));
             return options;
         }
 
@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             var anonymousFilter = new AllowAnonymousFilter();
-            options.Conventions.Add(new PageConvention(pageName, model => model.Filters.Add(anonymousFilter)));
+            options.ApplicationModelConventions.Add(new PageApplicationModelConvention(pageName, model => model.Filters.Add(anonymousFilter)));
             return options;
         }
 
@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             var anonymousFilter = new AllowAnonymousFilter();
-            options.Conventions.Add(new FolderConvention(folderPath, model => model.Filters.Add(anonymousFilter)));
+            options.ApplicationModelConventions.Add(new FolderApplicationModelConvention(folderPath, model => model.Filters.Add(anonymousFilter)));
             return options;
         }
 
@@ -124,7 +124,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             var authorizeFilter = new AuthorizeFilter(policy);
-            options.Conventions.Add(new PageConvention(pageName, model => model.Filters.Add(authorizeFilter)));
+            options.ApplicationModelConventions.Add(new PageApplicationModelConvention(pageName, model => model.Filters.Add(authorizeFilter)));
             return options;
         }
 
@@ -157,7 +157,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
 
             var authorizeFilter = new AuthorizeFilter(policy);
-            options.Conventions.Add(new FolderConvention(folderPath, model => model.Filters.Add(authorizeFilter)));
+            options.ApplicationModelConventions.Add(new FolderApplicationModelConvention(folderPath, model => model.Filters.Add(authorizeFilter)));
             return options;
         }
 
@@ -198,7 +198,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(route));
             }
 
-            options.Conventions.Add(new PageConvention(pageName, model =>
+            options.RouteModelConventions.Add(new PageRouteModelConvention(pageName, model =>
             {
                 // Use the route specified in MapPageRoute for outbound routing.
                 foreach (var selector in model.Selectors)
@@ -218,12 +218,54 @@ namespace Microsoft.Extensions.DependencyInjection
             return options;
         }
 
-        private class PageConvention : IPageApplicationModelConvention
+        private class PageRouteModelConvention : IPageRouteModelConvention
+        {
+            private readonly string _path;
+            private readonly Action<PageRouteModel> _action;
+
+            public PageRouteModelConvention(string path, Action<PageRouteModel> action)
+            {
+                _path = path;
+                _action = action;
+            }
+
+            public void Apply(PageRouteModel model)
+            {
+                if (string.Equals(model.ViewEnginePath, _path, StringComparison.OrdinalIgnoreCase))
+                {
+                    _action(model);
+                }
+            }
+        }
+
+        private class FolderRouteModelConvention : IPageRouteModelConvention
+        {
+            private readonly string _folderPath;
+            private readonly Action<PageRouteModel> _action;
+
+            public FolderRouteModelConvention(string folderPath, Action<PageRouteModel> action)
+            {
+                _folderPath = folderPath.TrimEnd('/');
+                _action = action;
+            }
+
+            public void Apply(PageRouteModel model)
+            {
+                var viewEnginePath = model.ViewEnginePath;
+
+                if (PathBelongsToFolder(_folderPath, viewEnginePath))
+                {
+                    _action(model);
+                }
+            }
+        }
+
+        private class PageApplicationModelConvention : IPageApplicationModelConvention
         {
             private readonly string _path;
             private readonly Action<PageApplicationModel> _action;
 
-            public PageConvention(string path, Action<PageApplicationModel> action)
+            public PageApplicationModelConvention(string path, Action<PageApplicationModel> action)
             {
                 _path = path;
                 _action = action;
@@ -238,12 +280,12 @@ namespace Microsoft.Extensions.DependencyInjection
             }
         }
 
-        private class FolderConvention : IPageApplicationModelConvention
+        private class FolderApplicationModelConvention : IPageApplicationModelConvention
         {
             private readonly string _folderPath;
             private readonly Action<PageApplicationModel> _action;
 
-            public FolderConvention(string folderPath, Action<PageApplicationModel> action)
+            public FolderApplicationModelConvention(string folderPath, Action<PageApplicationModel> action)
             {
                 _folderPath = folderPath.TrimEnd('/');
                 _action = action;
@@ -253,16 +295,24 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 var viewEnginePath = model.ViewEnginePath;
 
-                var applyConvention = _folderPath == "/" ||
-                    (viewEnginePath.Length > _folderPath.Length &&
-                    viewEnginePath.StartsWith(_folderPath, StringComparison.OrdinalIgnoreCase) &&
-                    viewEnginePath[_folderPath.Length] == '/');
-
-                if (applyConvention)
+                if (PathBelongsToFolder(_folderPath, viewEnginePath))
                 {
                     _action(model);
                 }
             }
+        }
+
+        private static bool PathBelongsToFolder(string folderPath, string viewEnginePath)
+        {
+            if (folderPath == "/")
+            {
+                // Root directory covers everything.
+                return true;
+            }
+
+            return viewEnginePath.Length > folderPath.Length &&
+                viewEnginePath.StartsWith(folderPath, StringComparison.OrdinalIgnoreCase) &&
+                viewEnginePath[folderPath.Length] == '/';
         }
     }
 }

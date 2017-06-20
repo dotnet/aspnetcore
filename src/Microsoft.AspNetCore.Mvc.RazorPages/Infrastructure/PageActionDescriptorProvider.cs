@@ -14,16 +14,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     public class PageActionDescriptorProvider : IActionDescriptorProvider
     {
-        private readonly List<IPageApplicationModelProvider> _applicationModelProviders;
+        private readonly IPageRouteModelProvider[] _routeModelProviders;
         private readonly MvcOptions _mvcOptions;
         private readonly RazorPagesOptions _pagesOptions;
 
         public PageActionDescriptorProvider(
-            IEnumerable<IPageApplicationModelProvider> pageMetadataProviders,
+            IEnumerable<IPageRouteModelProvider> pageRouteModelProviders,
             IOptions<MvcOptions> mvcOptionsAccessor,
             IOptions<RazorPagesOptions> pagesOptionsAccessor)
         {
-            _applicationModelProviders = pageMetadataProviders.OrderBy(p => p.Order).ToList();
+            _routeModelProviders = pageRouteModelProviders.OrderBy(p => p.Order).ToArray();
             _mvcOptions = mvcOptionsAccessor.Value;
             _pagesOptions = pagesOptionsAccessor.Value;
         }
@@ -32,51 +32,40 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         public void OnProvidersExecuting(ActionDescriptorProviderContext context)
         {
-            var pageApplicationModels = BuildModel();
+            var pageRouteModels = BuildModel();
 
-            for (var i = 0; i < pageApplicationModels.Count; i++)
+            for (var i = 0; i < pageRouteModels.Count; i++)
             {
-                AddActionDescriptors(context.Results, pageApplicationModels[i]);
+                AddActionDescriptors(context.Results, pageRouteModels[i]);
             }
         }
 
-        protected IList<PageApplicationModel> BuildModel()
+        protected IList<PageRouteModel> BuildModel()
         {
-            var context = new PageApplicationModelProviderContext();
+            var context = new PageRouteModelProviderContext();
 
-            for (var i = 0; i < _applicationModelProviders.Count; i++)
+            for (var i = 0; i < _routeModelProviders.Length; i++)
             {
-                _applicationModelProviders[i].OnProvidersExecuting(context);
+                _routeModelProviders[i].OnProvidersExecuting(context);
             }
 
-            for (var i = _applicationModelProviders.Count - 1; i >= 0; i--)
+            for (var i = _routeModelProviders.Length - 1; i >= 0; i--)
             {
-                _applicationModelProviders[i].OnProvidersExecuted(context);
+                _routeModelProviders[i].OnProvidersExecuted(context);
             }
 
-            return context.Results;
+            return context.RouteModels;
         }
 
         public void OnProvidersExecuted(ActionDescriptorProviderContext context)
         {
         }
 
-        private void AddActionDescriptors(IList<ActionDescriptor> actions, PageApplicationModel model)
+        private void AddActionDescriptors(IList<ActionDescriptor> actions, PageRouteModel model)
         {
-            for (var i = 0; i < _pagesOptions.Conventions.Count; i++)
+            for (var i = 0; i < _pagesOptions.RouteModelConventions.Count; i++)
             {
-                _pagesOptions.Conventions[i].Apply(model);
-            }
-
-            var filters = new List<FilterDescriptor>(_mvcOptions.Filters.Count + model.Filters.Count);
-            for (var i = 0; i < _mvcOptions.Filters.Count; i++)
-            {
-                filters.Add(new FilterDescriptor(_mvcOptions.Filters[i], FilterScope.Global));
-            }
-
-            for (var i = 0; i < model.Filters.Count; i++)
-            {
-                filters.Add(new FilterDescriptor(model.Filters[i], FilterScope.Action));
+                _pagesOptions.RouteModelConventions[i].Apply(model);
             }
 
             foreach (var selector in model.Selectors)
@@ -92,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                         SuppressPathMatching = selector.AttributeRouteModel.SuppressPathMatching,
                     },
                     DisplayName = $"Page: {model.ViewEnginePath}",
-                    FilterDescriptors = filters,
+                    FilterDescriptors = Array.Empty<FilterDescriptor>(),
                     Properties = new Dictionary<object, object>(model.Properties),
                     RelativePath = model.RelativePath,
                     RouteValues = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)

@@ -94,11 +94,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             var cache = CurrentCache;
-            PageActionInvokerCacheEntry cacheEntry;
-
             IFilterMetadata[] filters;
-            if (!cache.Entries.TryGetValue(actionDescriptor, out cacheEntry))
+            if (!cache.Entries.TryGetValue(actionDescriptor, out var cacheEntry))
             {
+                actionContext.ActionDescriptor = _loader.Load(actionDescriptor);
+
                 var filterFactoryResult = FilterFactory.GetAllFilters(_filterProviders, actionContext);
                 filters = filterFactoryResult.Filters;
                 cacheEntry = CreateCacheEntry(context, filterFactoryResult.CacheableFilters);
@@ -166,8 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             ActionInvokerProviderContext context,
             FilterItem[] cachedFilters)
         {
-            var actionDescriptor = (PageActionDescriptor)context.ActionContext.ActionDescriptor;
-            var compiledActionDescriptor = _loader.Load(actionDescriptor);
+            var compiledActionDescriptor = (CompiledPageActionDescriptor)context.ActionContext.ActionDescriptor;
 
             var viewDataFactory = ViewDataDictionaryFactory.CreateFactory(compiledActionDescriptor.ModelTypeInfo);
 

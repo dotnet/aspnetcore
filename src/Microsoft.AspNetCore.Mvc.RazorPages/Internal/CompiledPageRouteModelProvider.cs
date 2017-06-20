@@ -12,14 +12,14 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
-    public class CompiledPageApplicationModelProvider : IPageApplicationModelProvider
+    public class CompiledPageRouteModelProvider : IPageRouteModelProvider
     {
         private readonly object _cacheLock = new object();
         private readonly ApplicationPartManager _applicationManager;
         private readonly RazorPagesOptions _pagesOptions;
-        private List<PageApplicationModel> _cachedApplicationModels;
+        private List<PageRouteModel> _cachedModels;
 
-        public CompiledPageApplicationModelProvider(
+        public CompiledPageRouteModelProvider(
             ApplicationPartManager applicationManager,
             IOptions<RazorPagesOptions> pagesOptionsAccessor)
         {
@@ -29,17 +29,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         public int Order => -1000;
 
-        public void OnProvidersExecuting(PageApplicationModelProviderContext context)
+        public void OnProvidersExecuting(PageRouteModelProviderContext context)
         {
             EnsureCache();
-            for (var i = 0; i < _cachedApplicationModels.Count; i++)
+            for (var i = 0; i < _cachedModels.Count; i++)
             {
-                var pageModel = _cachedApplicationModels[i];
-                context.Results.Add(new PageApplicationModel(pageModel));
+                var pageModel = _cachedModels[i];
+                context.RouteModels.Add(new PageRouteModel(pageModel));
             }
         }
 
-        public void OnProvidersExecuted(PageApplicationModelProviderContext context)
+        public void OnProvidersExecuted(PageRouteModelProviderContext context)
         {
         }
 
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             lock (_cacheLock)
             {
-                if (_cachedApplicationModels != null)
+                if (_cachedModels != null)
                 {
                     return;
                 }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     rootDirectory = rootDirectory + "/";
                 }
 
-                var cachedApplicationModels = new List<PageApplicationModel>();
+                var cachedApplicationModels = new List<PageRouteModel>();
                 foreach (var viewDescriptor in GetViewDescriptors(_applicationManager))
                 {
                     if (!viewDescriptor.RelativePath.StartsWith(rootDirectory, StringComparison.OrdinalIgnoreCase))
@@ -67,14 +67,14 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     }
 
                     var viewEnginePath = GetViewEnginePath(rootDirectory, viewDescriptor.RelativePath);
-                    var model = new PageApplicationModel(viewDescriptor.RelativePath, viewEnginePath);
+                    var model = new PageRouteModel(viewDescriptor.RelativePath, viewEnginePath);
                     var pageAttribute = (RazorPageAttribute)viewDescriptor.ViewAttribute;
                     PageSelectorModel.PopulateDefaults(model, pageAttribute.RouteTemplate);
 
                     cachedApplicationModels.Add(model);
                 }
 
-                _cachedApplicationModels = cachedApplicationModels;
+                _cachedModels = cachedApplicationModels;
             }
         }
 

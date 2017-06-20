@@ -18,21 +18,23 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             // Arrange
             var services = new ServiceCollection().AddOptions();
-            var expected = Mock.Of<IPageApplicationModelConvention>();
+            var applicationModelConvention = Mock.Of<IPageApplicationModelConvention>();
+            var routeModelConvention = Mock.Of<IPageRouteModelConvention>();
             var builder = new MvcBuilder(services, new ApplicationPartManager());
             builder.AddRazorPagesOptions(options =>
             {
-                options.Conventions.Add(expected);
+                options.ApplicationModelConventions.Add(applicationModelConvention);
+                options.RouteModelConventions.Add(routeModelConvention);
             });
             var serviceProvider = services.BuildServiceProvider();
             var accessor = serviceProvider.GetRequiredService<IOptions<RazorPagesOptions>>();
 
-            // Act
-            var conventions = accessor.Value.Conventions;
+            // Act & Assert
+            var conventions = accessor.Value.ApplicationModelConventions;
 
             // Assert
             Assert.Collection(conventions,
-                convention => Assert.Same(expected, convention));
+                convention => Assert.Same(applicationModelConvention, convention));
         }
     }
 }

@@ -4,6 +4,8 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
@@ -15,10 +17,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         private string _root = "/Pages";
 
         /// <summary>
-        /// Gets a list of <see cref="IPageApplicationModelConvention"/> instances that will be applied to
+        /// Gets a list of <see cref="IPageRouteModelConvention"/> instances that will be applied to
         /// the <see cref="PageModel"/> when discovering Razor Pages.
         /// </summary>
-        public IList<IPageApplicationModelConvention> Conventions { get; } = new List<IPageApplicationModelConvention>();
+        public IList<IPageRouteModelConvention> RouteModelConventions { get; } = new List<IPageRouteModelConvention>();
+
+        /// <summary>
+        /// Gets a list of <see cref="IPageRouteModelConvention"/> instances that will be applied to
+        /// the <see cref="PageModel"/> when discovering Razor Pages.
+        /// </summary>
+        public IList<IPageApplicationModelConvention> ApplicationModelConventions { get; } = new List<IPageApplicationModelConvention>();
 
         /// <summary>
         /// Application relative path used as the root of discovery for Razor Page files.

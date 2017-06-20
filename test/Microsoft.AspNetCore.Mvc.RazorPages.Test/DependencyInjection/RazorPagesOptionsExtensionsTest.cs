@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Reflection;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
@@ -21,9 +22,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var options = new RazorPagesOptions();
             var models = new[]
             {
-                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
-                new PageApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
-                new PageApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
+                CreateApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
+                CreateApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
+                CreateApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
             };
 
             // Act
@@ -44,9 +45,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var options = new RazorPagesOptions();
             var models = new[]
             {
-                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
-                new PageApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
-                new PageApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
+                CreateApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
+                CreateApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
+                CreateApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
             };
 
             // Act
@@ -79,9 +80,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var options = new RazorPagesOptions();
             var models = new[]
             {
-                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
-                new PageApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
-                new PageApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
+                CreateApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
+                CreateApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
+                CreateApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
             };
 
             // Act
@@ -117,9 +118,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var options = new RazorPagesOptions();
             var models = new[]
             {
-                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
-                new PageApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
-                new PageApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
+                CreateApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
+                CreateApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
+                CreateApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
             };
 
             // Act
@@ -146,9 +147,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var options = new RazorPagesOptions();
             var models = new[]
             {
-                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
-                new PageApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
-                new PageApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
+                CreateApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
+                CreateApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
+                CreateApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
             };
 
             // Act
@@ -177,9 +178,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var options = new RazorPagesOptions();
             var models = new[]
             {
-                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
-                new PageApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
-                new PageApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
+                CreateApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
+                CreateApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
+                CreateApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
             };
 
             // Act
@@ -214,9 +215,9 @@ namespace Microsoft.Extensions.DependencyInjection
             var options = new RazorPagesOptions();
             var models = new[]
             {
-                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
-                new PageApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
-                new PageApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
+                CreateApplicationModel("/Pages/Index.cshtml", "/Index.cshtml"),
+                CreateApplicationModel("/Pages/Users/Account.cshtml", "/Users/Account.cshtml"),
+                CreateApplicationModel("/Pages/Users/Contact.cshtml", "/Users/Contact.cshtml"),
             };
 
             // Act
@@ -249,7 +250,7 @@ namespace Microsoft.Extensions.DependencyInjection
             var options = new RazorPagesOptions();
             var models = new[]
             {
-                new PageApplicationModel("/Pages/Index.cshtml", "/Index.cshtml")
+                new PageRouteModel("/Pages/Index.cshtml", "/Index.cshtml")
                 {
                     Selectors =
                     {
@@ -257,7 +258,7 @@ namespace Microsoft.Extensions.DependencyInjection
                         CreateSelectorModel(""),
                     }
                 },
-                new PageApplicationModel("/Pages/About.cshtml", "/About.cshtml")
+                new PageRouteModel("/Pages/About.cshtml", "/About.cshtml")
                 {
                     Selectors =
                     {
@@ -316,15 +317,36 @@ namespace Microsoft.Extensions.DependencyInjection
             };
         }
 
-        private static void ApplyConventions(RazorPagesOptions options, PageApplicationModel[] models)
+        private static void ApplyConventions(RazorPagesOptions options, PageRouteModel[] models)
         {
-            foreach (var convention in options.Conventions)
+            foreach (var convention in options.RouteModelConventions)
             {
                 foreach (var model in models)
                 {
                     convention.Apply(model);
                 }
             }
+        }
+        private static void ApplyConventions(RazorPagesOptions options, PageApplicationModel[] models)
+        {
+            foreach (var convention in options.ApplicationModelConventions)
+            {
+                foreach (var model in models)
+                {
+                    convention.Apply(model);
+                }
+            }
+        }
+
+        private PageApplicationModel CreateApplicationModel(string relativePath, string viewEnginePath)
+        {
+            var descriptor = new PageActionDescriptor
+            {
+                ViewEnginePath = viewEnginePath,
+                RelativePath = relativePath,
+            };
+
+            return new PageApplicationModel(descriptor, typeof(object).GetTypeInfo(), new object[0]);
         }
     }
 }
