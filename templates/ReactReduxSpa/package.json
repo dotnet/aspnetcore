@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "dependencies": {
     "@types/history": "4.5.1",
-    "@types/react": "15.0.24",
+    "@types/react": "15.0.29",
     "@types/react-dom": "15.5.0",
     "@types/react-redux": "4.4.40",
     "@types/react-router-dom": "4.0.4",
