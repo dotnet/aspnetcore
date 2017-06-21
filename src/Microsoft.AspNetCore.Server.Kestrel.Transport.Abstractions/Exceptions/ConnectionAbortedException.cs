@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
     public class ConnectionAbortedException : OperationCanceledException
     {

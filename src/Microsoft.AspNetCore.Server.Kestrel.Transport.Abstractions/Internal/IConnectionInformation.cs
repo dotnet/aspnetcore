@@ -4,7 +4,7 @@
 using System.Net;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions
+namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
     public interface IConnectionInformation
     {

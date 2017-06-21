@@ -29,3 +29,4 @@ before_install:
 script:
   - ./build.sh
   - if test "$TRAVIS_OS_NAME" != "osx"; then bash test/Microsoft.AspNetCore.Server.Kestrel.FunctionalTests/SystemdActivation/docker.sh; fi
+group: deprecated-2017Q2
