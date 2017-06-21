@@ -75,6 +75,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations
                     break;
                 case OperationType.Test:
                     throw new JsonPatchException(new JsonPatchError(objectToApplyTo, this, Resources.TestOperationNotSupported));
+                case OperationType.Invalid:
+                    throw new JsonPatchException(
+                        Resources.FormatInvalidJsonPatchOperation(op), innerException: null);
                 default:
                     break;
             }

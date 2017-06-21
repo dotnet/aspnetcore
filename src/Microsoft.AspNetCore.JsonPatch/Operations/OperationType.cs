@@ -10,6 +10,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations
         Replace,
         Move,
         Copy,
-        Test
+        Test,
+        Invalid
     }
 }

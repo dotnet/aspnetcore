@@ -2,26 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.JsonPatch.Operations
 {
     public class OperationBase
     {
+        private string _op;
+        private OperationType _operationType;
+
         [JsonIgnore]
         public OperationType OperationType
         {
             get
             {
-                OperationType result;
-                if (!Enum.TryParse(op, ignoreCase: true, result: out result))
-                {
-                    throw new JsonPatchException(
-                        Resources.FormatInvalidJsonPatchOperation(op),
-                        innerException: null);
-                }
-                return result;
+                return _operationType;
             }
         }
 
@@ -29,7 +24,23 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations
         public string path { get; set; }
 
         [JsonProperty("op")]
-        public string op { get; set; }
+        public string op
+        {
+            get
+            {
+                return _op;
+            }
+            set
+            {
+                OperationType result;
+                if (!Enum.TryParse(value, ignoreCase: true, result: out result))
+                {
+                    result = OperationType.Invalid;
+                }
+                _operationType = result;
+                _op = value;
+            }
+        }
 
         [JsonProperty("from")]
         public string from { get; set; }
