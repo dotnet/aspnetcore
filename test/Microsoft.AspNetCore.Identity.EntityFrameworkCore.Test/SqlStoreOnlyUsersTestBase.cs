@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             return TestPlatformHelper.IsMono || !TestPlatformHelper.IsWindows;
         }
 
-        public class TestUserDbContext : IdentityDbContext<TUser, TKey>
+        public class TestUserDbContext : IdentityUserContext<TUser, TKey>
         {
             public TestUserDbContext(DbContextOptions options) : base(options) { }
         }

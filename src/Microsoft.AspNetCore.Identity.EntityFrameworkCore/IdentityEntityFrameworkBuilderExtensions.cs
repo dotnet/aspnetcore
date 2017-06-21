@@ -75,7 +75,7 @@ namespace Microsoft.Extensions.DependencyInjection
             else
             {   // No Roles
                 Type userStoreType = null;
-                var identityContext = FindGenericBaseType(contextType, typeof(IdentityDbContext<,,,,>));
+                var identityContext = FindGenericBaseType(contextType, typeof(IdentityUserContext<,,,,>));
                 if (identityContext == null)
                 {
                     // If its a custom DbContext, we can only add the default POCOs

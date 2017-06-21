@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
     }
 
     public class InMemoryContext<TUser> :
-        IdentityDbContext<TUser, string>
+        IdentityUserContext<TUser, string>
         where TUser : IdentityUser
     {
         public InMemoryContext(DbContextOptions options) : base(options)

@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// Base class for the Entity Framework database context used for identity.
     /// </summary>
     /// <typeparam name="TUser">The type of the user objects.</typeparam>
-    public class IdentityDbContext<TUser> : IdentityDbContext<TUser, string> where TUser : IdentityUser
+    public class IdentityDbContext<TUser> : IdentityDbContext<TUser, IdentityRole, string> where TUser : IdentityUser
     {
         /// <summary>
         /// Initializes a new instance of <see cref="IdentityDbContext"/>.
@@ -37,27 +37,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
 
         /// <summary>
         /// Initializes a new instance of the <see cref="IdentityDbContext" /> class.
-        /// </summary>
-        protected IdentityDbContext() { }
-    }
-
-    /// <summary>
-    /// Base class for the Entity Framework database context used for identity.
-    /// </summary>
-    /// <typeparam name="TUser">The type of user objects.</typeparam>
-    /// <typeparam name="TKey">The type of the primary key for users and roles.</typeparam>
-    public class IdentityDbContext<TUser, TKey> : IdentityDbContext<TUser, TKey, IdentityUserClaim<TKey>, IdentityUserLogin<TKey>, IdentityUserToken<TKey>>
-        where TUser : IdentityUser<TKey>
-        where TKey : IEquatable<TKey>
-    {
-        /// <summary>
-        /// Initializes a new instance of the db context.
-        /// </summary>
-        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
-        public IdentityDbContext(DbContextOptions options) : base(options) { }
-
-        /// <summary>
-        /// Initializes a new instance of the class.
         /// </summary>
         protected IdentityDbContext() { }
     }
@@ -89,99 +68,6 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// Base class for the Entity Framework database context used for identity.
     /// </summary>
     /// <typeparam name="TUser">The type of user objects.</typeparam>
-    /// <typeparam name="TKey">The type of the primary key for users and roles.</typeparam>
-    /// <typeparam name="TUserClaim">The type of the user claim object.</typeparam>
-    /// <typeparam name="TUserLogin">The type of the user login object.</typeparam>
-    /// <typeparam name="TUserToken">The type of the user token object.</typeparam>
-    public abstract class IdentityDbContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken> : DbContext
-        where TUser : IdentityUser<TKey>
-        where TKey : IEquatable<TKey>
-        where TUserClaim : IdentityUserClaim<TKey>
-        where TUserLogin : IdentityUserLogin<TKey>
-        where TUserToken : IdentityUserToken<TKey>
-    {
-        /// <summary>
-        /// Initializes a new instance of the class.
-        /// </summary>
-        /// <param name="options">The options to be used by a <see cref="DbContext"/>.</param>
-        public IdentityDbContext(DbContextOptions options) : base(options) { }
-
-        /// <summary>
-        /// Initializes a new instance of the class.
-        /// </summary>
-        protected IdentityDbContext() { }
-
-        /// <summary>
-        /// Gets or sets the <see cref="DbSet{TEntity}"/> of Users.
-        /// </summary>
-        public DbSet<TUser> Users { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="DbSet{TEntity}"/> of User claims.
-        /// </summary>
-        public DbSet<TUserClaim> UserClaims { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="DbSet{TEntity}"/> of User logins.
-        /// </summary>
-        public DbSet<TUserLogin> UserLogins { get; set; }
-
-        /// <summary>
-        /// Gets or sets the <see cref="DbSet{TEntity}"/> of User tokens.
-        /// </summary>
-        public DbSet<TUserToken> UserTokens { get; set; }
-
-        /// <summary>
-        /// Configures the schema needed for the identity framework.
-        /// </summary>
-        /// <param name="builder">
-        /// The builder being used to construct the model for this context.
-        /// </param>
-        protected override void OnModelCreating(ModelBuilder builder)
-        {
-            builder.Entity<TUser>(b =>
-            {
-                b.HasKey(u => u.Id);
-                b.HasIndex(u => u.NormalizedUserName).HasName("UserNameIndex").IsUnique();
-                b.HasIndex(u => u.NormalizedEmail).HasName("EmailIndex");
-                b.ToTable("AspNetUsers");
-                b.Property(u => u.ConcurrencyStamp).IsConcurrencyToken();
-
-                b.Property(u => u.UserName).HasMaxLength(256);
-                b.Property(u => u.NormalizedUserName).HasMaxLength(256);
-                b.Property(u => u.Email).HasMaxLength(256);
-                b.Property(u => u.NormalizedEmail).HasMaxLength(256);
-
-                // Replace with b.HasMany<IdentityUserClaim>().
-                b.HasMany<TUserClaim>().WithOne().HasForeignKey(uc => uc.UserId).IsRequired();
-                b.HasMany<TUserLogin>().WithOne().HasForeignKey(ul => ul.UserId).IsRequired();
-                b.HasMany<TUserToken>().WithOne().HasForeignKey(ut => ut.UserId).IsRequired();
-            });
-
-            builder.Entity<TUserClaim>(b =>
-            {
-                b.HasKey(uc => uc.Id);
-                b.ToTable("AspNetUserClaims");
-            });
-
-            builder.Entity<TUserLogin>(b =>
-            {
-                b.HasKey(l => new { l.LoginProvider, l.ProviderKey });
-                b.ToTable("AspNetUserLogins");
-            });
-
-            builder.Entity<TUserToken>(b => 
-            {
-                b.HasKey(l => new { l.UserId, l.LoginProvider, l.Name });
-                b.ToTable("AspNetUserTokens");
-            });
-        }
-    }
-
-    /// <summary>
-    /// Base class for the Entity Framework database context used for identity.
-    /// </summary>
-    /// <typeparam name="TUser">The type of user objects.</typeparam>
     /// <typeparam name="TRole">The type of role objects.</typeparam>
     /// <typeparam name="TKey">The type of the primary key for users and roles.</typeparam>
     /// <typeparam name="TUserClaim">The type of the user claim object.</typeparam>
@@ -189,7 +75,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore
     /// <typeparam name="TUserLogin">The type of the user login object.</typeparam>
     /// <typeparam name="TRoleClaim">The type of the role claim object.</typeparam>
     /// <typeparam name="TUserToken">The type of the user token object.</typeparam>
-    public abstract class IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> : IdentityDbContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>
+    public abstract class IdentityDbContext<TUser, TRole, TKey, TUserClaim, TUserRole, TUserLogin, TRoleClaim, TUserToken> : IdentityUserContext<TUser, TKey, TUserClaim, TUserLogin, TUserToken>
         where TUser : IdentityUser<TKey>
         where TRole : IdentityRole<TKey>
         where TKey : IEquatable<TKey>
