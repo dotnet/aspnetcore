@@ -642,12 +642,19 @@ namespace Microsoft.AspNetCore.Razor.Language
                     tagName = tagName.Substring(_tagHelperPrefix.Length);
                 }
 
-                _builder.Push(new TagHelperIRNode()
+                var tagHelperNode = new TagHelperIRNode()
                 {
                     TagName = tagName,
                     TagMode = tagHelperBlock.TagMode,
                     Source = BuildSourceSpanFromNode(block)
-                });
+                };
+
+                foreach (var tagHelper in tagHelperBlock.Binding.Descriptors)
+                {
+                    tagHelperNode.TagHelpers.Add(tagHelper);
+                }
+
+                _builder.Push(tagHelperNode);
 
                 _builder.Push(new TagHelperBodyIRNode());
 

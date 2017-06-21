@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        internal static void TagHelper(string tagName, TagMode tagMode, RazorIRNode node, params Action<RazorIRNode>[] childValidators)
+        internal static void TagHelper(string tagName, TagMode tagMode, IEnumerable<TagHelperDescriptor> tagHelpers, RazorIRNode node, params Action<RazorIRNode>[] childValidators)
         {
             var tagHelperNode = Assert.IsType<TagHelperIRNode>(node);
 
@@ -350,6 +350,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             {
                 Assert.Equal(tagName, tagHelperNode.TagName);
                 Assert.Equal(tagMode, tagHelperNode.TagMode);
+
+                Assert.Equal(tagHelpers, tagHelperNode.TagHelpers);
             }
             catch (XunitException e)
             {

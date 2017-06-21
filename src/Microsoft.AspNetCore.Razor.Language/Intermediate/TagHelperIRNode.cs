@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
@@ -45,6 +46,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public string TagName { get; set; }
 
         public TagMode TagMode { get; set; }
+
+        public ICollection<TagHelperDescriptor> TagHelpers { get; } = new List<TagHelperDescriptor>();
 
         public override void Accept(RazorIRNodeVisitor visitor)
         {

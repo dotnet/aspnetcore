@@ -202,6 +202,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 n => TagHelper(
                     "span",
                     TagMode.StartTagAndEndTag,
+                    tagHelpers,
                     n,
                     c => Assert.IsType<TagHelperBodyIRNode>(c),
                     c => Assert.IsType<CreateTagHelperIRNode>(c),
@@ -245,6 +246,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 n => TagHelper(
                     "span",  // Note: this is span not cool:span
                     TagMode.StartTagAndEndTag,
+                    tagHelpers,
                     n,
                     c => Assert.IsType<TagHelperBodyIRNode>(c),
                     c => Assert.IsType<CreateTagHelperIRNode>(c),
@@ -290,6 +292,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     c1 => TagHelper(
                         "span",
                         TagMode.StartTagAndEndTag,
+                        tagHelpers,
                         c1,
                         c2 => Assert.IsType<TagHelperBodyIRNode>(c2),
                         c2 => Assert.IsType<CreateTagHelperIRNode>(c2),
@@ -338,6 +341,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 n => TagHelper(
                     "input",
                     TagMode.SelfClosing,
+                    tagHelpers,
                     n,
                     c => Assert.IsType<TagHelperBodyIRNode>(c),
                     c => Assert.IsType<CreateTagHelperIRNode>(c),
