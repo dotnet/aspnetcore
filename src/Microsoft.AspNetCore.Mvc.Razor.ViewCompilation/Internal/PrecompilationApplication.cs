@@ -37,6 +37,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.Internal
             {
                 return base.Execute(ExpandResponseFiles(args));
             }
+            catch (AggregateException ex) when (ex.InnerException != null)
+            {
+                Error.WriteLine(ex.InnerException.Message);
+                Error.WriteLine(ex.InnerException.StackTrace);
+                return 1;
+            }
             catch (Exception ex)
             {
                 Error.WriteLine(ex.Message);
