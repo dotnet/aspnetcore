@@ -11,6 +11,7 @@ PROTOCOL_CONFIG::Initialize()
 
     m_fKeepAlive = TRUE;
     m_msTimeout = 120000;
+    m_fPreserveHostHeader = TRUE;
     m_fReverseRewriteHeaders = FALSE;
 
     if (FAILED(hr = m_strXForwardedForName.CopyW(L"X-Forwarded-For")))

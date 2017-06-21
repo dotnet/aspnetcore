@@ -34,6 +34,12 @@ class PROTOCOL_CONFIG
     }
 
     BOOL
+    QueryPreserveHostHeader() const
+    {
+        return m_fPreserveHostHeader;
+    }
+
+    BOOL
     QueryReverseRewriteHeaders() const
     {
         return m_fReverseRewriteHeaders;
@@ -84,6 +90,7 @@ class PROTOCOL_CONFIG
  private:
     
     BOOL            m_fKeepAlive;
+    BOOL            m_fPreserveHostHeader;
     BOOL            m_fReverseRewriteHeaders;
     BOOL            m_fIncludePortInXForwardedFor;
 
