@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Writer = new CSharpCodeWriter()
             };
 
-            var node = new DesignTimeDirectiveIRNode();
+            var node = new DesignTimeDirectiveIntermediateNode();
 
             // Act
             extension.WriteDesignTimeDirective(context, node);
@@ -47,8 +47,8 @@ private void __RazorDirectiveTokenHelpers__() {
                 CodeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("test content", "test.cshtml"))
             };
 
-            var node = new DesignTimeDirectiveIRNode();
-            var token = new DirectiveTokenIRNode()
+            var node = new DesignTimeDirectiveIntermediateNode();
+            var token = new DirectiveTokenIntermediateNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 5),
                 Content = "System.String",
@@ -86,8 +86,8 @@ System.String __typeHelper = default(System.String);
                 CodeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("test content", "test.cshtml"))
             };
 
-            var node = new DesignTimeDirectiveIRNode();
-            var token = new DirectiveTokenIRNode()
+            var node = new DesignTimeDirectiveIntermediateNode();
+            var token = new DirectiveTokenIntermediateNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 5),
                 Content = "System.Collections.Generic",
@@ -125,8 +125,8 @@ global::System.Object __typeHelper = nameof(System.Collections.Generic);
                 CodeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("test content", "test.cshtml"))
             };
 
-            var node = new DesignTimeDirectiveIRNode();
-            var token = new DirectiveTokenIRNode()
+            var node = new DesignTimeDirectiveIntermediateNode();
+            var token = new DirectiveTokenIntermediateNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 5),
                 Content = "Foo",
@@ -164,14 +164,14 @@ global::System.Object Foo = null;
                 CodeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("test content", "test.cshtml"))
             };
 
-            var node = new DesignTimeDirectiveIRNode();
-            var token = new DirectiveTokenIRNode()
+            var node = new DesignTimeDirectiveIntermediateNode();
+            var token = new DirectiveTokenIntermediateNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 5),
                 Content = "Value",
                 Descriptor = DirectiveTokenDescriptor.CreateToken(DirectiveTokenKind.String),
             };
-            var tokenWithQuotedContent = new DirectiveTokenIRNode()
+            var tokenWithQuotedContent = new DirectiveTokenIntermediateNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 5),
                 Content = "\"Value\"",
@@ -214,8 +214,8 @@ global::System.Object __typeHelper = ""Value"";
                 CodeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("test content", "test.cshtml"))
             };
 
-            var node = new DesignTimeDirectiveIRNode();
-            var token = new DirectiveTokenIRNode()
+            var node = new DesignTimeDirectiveIntermediateNode();
+            var token = new DirectiveTokenIntermediateNode()
             {
                 Content = "Value",
                 Descriptor = DirectiveTokenDescriptor.CreateToken(DirectiveTokenKind.String),

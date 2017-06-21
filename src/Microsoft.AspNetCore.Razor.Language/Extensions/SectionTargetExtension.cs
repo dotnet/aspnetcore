@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public string SectionMethodName { get; set; } = DefaultSectionMethodName;
 
-        public void WriteSection(CSharpRenderingContext context, SectionIRNode node)
+        public void WriteSection(CSharpRenderingContext context, SectionIntermediateNode node)
         {
             // Quirk Alert!
             //

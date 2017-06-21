@@ -129,7 +129,7 @@
   <data name="InvalidTagHelperPrefixValue" xml:space="preserve">
     <value>Invalid tag helper directive '{0}' value. '{1}' is not allowed in prefix '{2}'.</value>
   </data>
-  <data name="IRBuilder_PopInvalid" xml:space="preserve">
+  <data name="IntermediateNodeBuilder_PopInvalid" xml:space="preserve">
     <value>The '{0}' operation is not valid when the builder is empty.</value>
   </data>
   <data name="MismatchedContentEncoding" xml:space="preserve">
@@ -216,13 +216,13 @@
   <data name="KeyMustNotBeNull" xml:space="preserve">
     <value>The key must not be null.</value>
   </data>
-  <data name="IRNodeReference_NodeNotFound" xml:space="preserve">
+  <data name="IntermediateNodeReference_NodeNotFound" xml:space="preserve">
     <value>The reference is invalid. The node '{0}' could not be found as a child of '{1}'.</value>
   </data>
-  <data name="IRNodeReference_NotInitialized" xml:space="preserve">
+  <data name="IntermediateNodeReference_NotInitialized" xml:space="preserve">
     <value>The reference is invalid. References initialized with the default constructor cannot modify nodes.</value>
   </data>
-  <data name="IRNodeReference_CollectionIsReadOnly" xml:space="preserve">
+  <data name="IntermediateNodeReference_CollectionIsReadOnly" xml:space="preserve">
     <value>The node '{0}' has a read-only child collection and cannot be modified.</value>
   </data>
 </root>

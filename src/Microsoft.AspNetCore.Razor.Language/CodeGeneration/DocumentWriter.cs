@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     public abstract class DocumentWriter
     {
-        public abstract void WriteDocument(DocumentIRNode node);
+        public abstract void WriteDocument(DocumentIntermediateNode node);
     }
 }

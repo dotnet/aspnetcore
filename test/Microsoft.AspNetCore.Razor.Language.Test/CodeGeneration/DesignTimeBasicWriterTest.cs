@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Writer = new Legacy.CSharpCodeWriter()
             };
 
-            var node = new UsingStatementIRNode()
+            var node = new UsingStatementIntermediateNode()
             {
                 Content = "System",
             };
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var originalSpan = new SourceSpan("test.cshtml", 0, 0, 0, 6);
             var generatedSpan = new SourceSpan(null, 21 + Environment.NewLine.Length, 1, 0, 6);
             var expectedLineMapping = new LineMapping(originalSpan, generatedSpan);
-            var node = new UsingStatementIRNode()
+            var node = new UsingStatementIntermediateNode()
             {
                 Content = "System",
                 Source = originalSpan,
@@ -88,12 +88,12 @@ using System;
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 
-            var node = new CSharpExpressionIRNode();
-            var builder = RazorIRBuilder.Create(node);
-            builder.Add(new RazorIRToken()
+            var node = new CSharpExpressionIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(node);
+            builder.Add(new IntermediateToken()
             {
                 Content = "i++",
-                Kind = RazorIRToken.TokenKind.CSharp,
+                Kind = IntermediateToken.TokenKind.CSharp,
             });
 
             // Act
@@ -120,15 +120,15 @@ using System;
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 
-            var node = new CSharpExpressionIRNode()
+            var node = new CSharpExpressionIntermediateNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 3),
             };
-            var builder = RazorIRBuilder.Create(node);
-            builder.Add(new RazorIRToken()
+            var builder = IntermediateNodeBuilder.Create(node);
+            builder.Add(new IntermediateToken()
             {
                 Content = "i++",
-                Kind = RazorIRToken.TokenKind.CSharp,
+                Kind = IntermediateToken.TokenKind.CSharp,
             });
 
             // Act
@@ -158,21 +158,21 @@ __o = i++;
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 
-            var node = new CSharpExpressionIRNode();
-            var builder = RazorIRBuilder.Create(node);
-            builder.Add(new RazorIRToken()
+            var node = new CSharpExpressionIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(node);
+            builder.Add(new IntermediateToken()
             {
                 Content = "i",
-                Kind = RazorIRToken.TokenKind.CSharp,
+                Kind = IntermediateToken.TokenKind.CSharp,
             });
-            builder.Add(new MyExtensionIRNode());
-            builder.Add(new RazorIRToken()
+            builder.Add(new MyExtensionIntermediateNode());
+            builder.Add(new IntermediateToken()
             {
                 Content = "++",
-                Kind = RazorIRToken.TokenKind.CSharp,
+                Kind = IntermediateToken.TokenKind.CSharp,
             });
 
-            context.RenderNode = (n) => Assert.IsType<MyExtensionIRNode>(n);
+            context.RenderNode = (n) => Assert.IsType<MyExtensionIntermediateNode>(n);
 
             // Act
             writer.WriteCSharpExpression(context, node);
@@ -200,24 +200,24 @@ __o = i++;
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 
-            var node = new CSharpExpressionIRNode()
+            var node = new CSharpExpressionIntermediateNode()
             {
                 Source = new SourceSpan("test.cshtml", 8, 0, 8, 3),
             };
-            var builder = RazorIRBuilder.Create(node);
-            builder.Add(new RazorIRToken()
+            var builder = IntermediateNodeBuilder.Create(node);
+            builder.Add(new IntermediateToken()
             {
                 Content = "i",
-                Kind = RazorIRToken.TokenKind.CSharp,
+                Kind = IntermediateToken.TokenKind.CSharp,
             });
-            builder.Add(new MyExtensionIRNode());
-            builder.Add(new RazorIRToken()
+            builder.Add(new MyExtensionIntermediateNode());
+            builder.Add(new IntermediateToken()
             {
                 Content = "++",
-                Kind = RazorIRToken.TokenKind.CSharp,
+                Kind = IntermediateToken.TokenKind.CSharp,
             });
 
-            context.RenderNode = (n) => Assert.IsType<MyExtensionIRNode>(n);
+            context.RenderNode = (n) => Assert.IsType<MyExtensionIntermediateNode>(n);
 
             // Act
             writer.WriteCSharpExpression(context, node);
@@ -246,11 +246,11 @@ __o = i++;
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 
-            var node = new CSharpCodeIRNode();
-            RazorIRBuilder.Create(node)
-                .Add(new RazorIRToken()
+            var node = new CSharpCodeIntermediateNode();
+            IntermediateNodeBuilder.Create(node)
+                .Add(new IntermediateToken()
                 {
-                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Kind = IntermediateToken.TokenKind.CSharp,
                     Content = "  \t"
                 });
 
@@ -274,14 +274,14 @@ __o = i++;
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
-            var node = new CSharpCodeIRNode()
+            var node = new CSharpCodeIntermediateNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 3),
             };
-            RazorIRBuilder.Create(node)
-                .Add(new RazorIRToken()
+            IntermediateNodeBuilder.Create(node)
+                .Add(new IntermediateToken()
                 {
-                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Kind = IntermediateToken.TokenKind.CSharp,
                     Content = "    "
                 });
 
@@ -308,11 +308,11 @@ __o = i++;
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 
-            var node = new CSharpCodeIRNode();
-            RazorIRBuilder.Create(node)
-                .Add(new RazorIRToken()
+            var node = new CSharpCodeIntermediateNode();
+            IntermediateNodeBuilder.Create(node)
+                .Add(new IntermediateToken()
                 {
-                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Kind = IntermediateToken.TokenKind.CSharp,
                     Content = "if (true) { }"
                 });
 
@@ -340,14 +340,14 @@ __o = i++;
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
-            var node = new CSharpCodeIRNode()
+            var node = new CSharpCodeIntermediateNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 13),
             };
-            RazorIRBuilder.Create(node)
-                .Add(new RazorIRToken()
+            IntermediateNodeBuilder.Create(node)
+                .Add(new IntermediateToken()
                 {
-                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Kind = IntermediateToken.TokenKind.CSharp,
                     Content = "if (true) { }",
                 });
 
@@ -379,14 +379,14 @@ if (true) { }
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
-            var node = new CSharpCodeIRNode()
+            var node = new CSharpCodeIntermediateNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 17),
             };
-            RazorIRBuilder.Create(node)
-                .Add(new RazorIRToken()
+            IntermediateNodeBuilder.Create(node)
+                .Add(new IntermediateToken()
                 {
-                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Kind = IntermediateToken.TokenKind.CSharp,
                     Content = "    if (true) { }",
                 });
 
@@ -417,7 +417,7 @@ if (true) { }
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             context.CodeDocument = codeDocument;
             var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpExpressionAttributeValueIRNode;
+            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpExpressionAttributeValueIntermediateNode;
 
             // Act
             writer.WriteCSharpExpressionAttributeValue(context, node);
@@ -446,7 +446,7 @@ if (true) { }
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             context.CodeDocument = codeDocument;
             var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpCodeAttributeValueIRNode;
+            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpCodeAttributeValueIntermediateNode;
 
             // Act
             writer.WriteCSharpCodeAttributeValue(context, node);
@@ -475,7 +475,7 @@ if (true) { }
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             context.CodeDocument = codeDocument;
             var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpCodeAttributeValueIRNode;
+            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpCodeAttributeValueIntermediateNode;
 
             // Act
             writer.WriteCSharpCodeAttributeValue(context, node);
@@ -488,7 +488,7 @@ if (true) { }
 
 #line default
 #line hidden
-Render Node - CSharpExpressionIRNode
+Render Node - CSharpExpressionIntermediateNode
 #line 1 ""test.cshtml""
                                                }
 
@@ -521,37 +521,37 @@ Render Node - CSharpExpressionIRNode
             return context;
         }
 
-        private static DocumentIRNode Lower(RazorCodeDocument codeDocument)
+        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
         {
             var engine = RazorEngine.Create();
 
             return Lower(codeDocument, engine);
         }
 
-        private static DocumentIRNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {
                 var phase = engine.Phases[i];
                 phase.Execute(codeDocument);
 
-                if (phase is IRazorIRLoweringPhase)
+                if (phase is IRazorIntermediateNodeLoweringPhase)
                 {
                     break;
                 }
             }
 
-            var irDocument = codeDocument.GetIRDocument();
+            var irDocument = codeDocument.GetDocumentIntermediateNode();
             Assert.NotNull(irDocument);
 
             return irDocument;
         }
 
-        private class MyExtensionIRNode : ExtensionIRNode
+        private class MyExtensionIntermediateNode : ExtensionIntermediateNode
         {
-            public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
+            public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
 
-            public override void Accept(RazorIRNodeVisitor visitor)
+            public override void Accept(IntermediateNodeVisitor visitor)
             {
                 throw new NotImplementedException();
             }

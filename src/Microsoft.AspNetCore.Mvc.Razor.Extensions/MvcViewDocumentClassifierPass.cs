@@ -12,13 +12,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         protected override string DocumentKind => MvcViewDocumentKind;
 
-        protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIRNode irDocument) => true;
+        protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode) => true;
 
         protected override void OnDocumentStructureCreated(
             RazorCodeDocument codeDocument, 
-            NamespaceDeclarationIRNode @namespace, 
-            ClassDeclarationIRNode @class, 
-            MethodDeclarationIRNode method)
+            NamespaceDeclarationIntermediateNode @namespace, 
+            ClassDeclarationIntermediateNode @class, 
+            MethodDeclarationIntermediateNode method)
         {
             var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.FilePath;
 

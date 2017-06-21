@@ -26,8 +26,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var writer = new DefaultDocumentWriter(target, context);
 
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
 
             // Act
             writer.WriteDocument(document);
@@ -62,8 +62,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var writer = new DefaultDocumentWriter(target, context);
 
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
 
             // Act
             writer.WriteDocument(document);
@@ -90,9 +90,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var writer = new DefaultDocumentWriter(target, context);
 
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Add(new NamespaceDeclarationIRNode()
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Add(new NamespaceDeclarationIntermediateNode()
             {
                 Content = "TestNamespace",
             });
@@ -129,9 +129,9 @@ namespace TestNamespace
             };
             var writer = new DefaultDocumentWriter(target, context);
 
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Add(new ClassDeclarationIRNode()
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Add(new ClassDeclarationIntermediateNode()
             {
                 AccessModifier = "internal",
                 BaseType = "TestBase",
@@ -170,9 +170,9 @@ internal class TestClass : TestBase, IFoo, IBar
             };
             var writer = new DefaultDocumentWriter(target, context);
 
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Add(new MethodDeclarationIRNode()
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Add(new MethodDeclarationIntermediateNode()
             {
                 AccessModifier = "internal",
                 Modifiers = new List<string> { "virtual", "async", },
@@ -213,9 +213,9 @@ internal virtual async string TestMethod()
             };
             var writer = new DefaultDocumentWriter(target, context);
 
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Add(new FieldDeclarationIRNode()
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Add(new FieldDeclarationIntermediateNode()
             {
                 AccessModifier = "internal",
                 Modifiers = new List<string> { "readonly", },
@@ -252,9 +252,9 @@ internal readonly string _foo;
             };
             var writer = new DefaultDocumentWriter(target, context);
 
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Add(new PropertyDeclarationIRNode()
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Add(new PropertyDeclarationIntermediateNode()
             {
                 AccessModifier = "internal",
                 Modifiers = new List<string> { "virtual", },

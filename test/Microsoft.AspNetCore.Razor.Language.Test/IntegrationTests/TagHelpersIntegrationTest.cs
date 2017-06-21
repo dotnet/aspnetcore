@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             engine.Process(document);
 
             // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
         }
 
         [Fact]
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             engine.Process(document);
 
             // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
         }
 
         [Fact]
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             engine.Process(document);
 
             // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
         }
 
         private static TagHelperDescriptor CreateTagHelperDescriptor(

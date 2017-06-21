@@ -4,22 +4,22 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [17] DuplicateTargetTagHelper.cshtml) - "*, TestAssembly"
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.CatchAllTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] DuplicateTargetTagHelper.cshtml)
-                    RazorIRToken - (31:0,31 [4] DuplicateTargetTagHelper.cshtml) - Html - \n\n
+                    IntermediateToken - (31:0,31 [4] DuplicateTargetTagHelper.cshtml) - Html - \n\n
                 TagHelper - (35:2,0 [40] DuplicateTargetTagHelper.cshtml) - input - TagMode.SelfClosing
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     SetTagHelperProperty - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (48:2,13 [8] DuplicateTargetTagHelper.cshtml)
-                            RazorIRToken - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - Html - checkbox
+                            IntermediateToken - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - Html - checkbox
                     SetTagHelperProperty - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (48:2,13 [8] DuplicateTargetTagHelper.cshtml)
-                            RazorIRToken - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - Html - checkbox
+                            IntermediateToken - (48:2,13 [8] DuplicateTargetTagHelper.cshtml) - Html - checkbox
                     SetTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        RazorIRToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
+                        IntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
                     SetTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        RazorIRToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
+                        IntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true

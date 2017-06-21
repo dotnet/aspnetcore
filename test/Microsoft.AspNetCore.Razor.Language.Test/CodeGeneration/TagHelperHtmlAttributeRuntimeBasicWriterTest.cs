@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[0] as HtmlAttributeValueIRNode;
+            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[0] as HtmlAttributeValueIntermediateNode;
 
             // Act
             writer.WriteHtmlAttributeValue(context, node);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpExpressionAttributeValueIRNode;
+            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpExpressionAttributeValueIntermediateNode;
 
             // Act
             writer.WriteCSharpExpressionAttributeValue(context, node);
@@ -72,7 +72,7 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             context.CodeDocument = codeDocument;
             var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIRNode>().Single().Children[1] as CSharpCodeAttributeValueIRNode;
+            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpCodeAttributeValueIntermediateNode;
 
             // Act
             writer.WriteCSharpCodeAttributeValue(context, node);
@@ -113,27 +113,27 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
             return context;
         }
 
-        private static DocumentIRNode Lower(RazorCodeDocument codeDocument)
+        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
         {
             var engine = RazorEngine.Create();
 
             return Lower(codeDocument, engine);
         }
 
-        private static DocumentIRNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {
                 var phase = engine.Phases[i];
                 phase.Execute(codeDocument);
 
-                if (phase is IRazorIRLoweringPhase)
+                if (phase is IRazorIntermediateNodeLoweringPhase)
                 {
                     break;
                 }
             }
 
-            var irDocument = codeDocument.GetIRDocument();
+            var irDocument = codeDocument.GetDocumentIntermediateNode();
             Assert.NotNull(irDocument);
 
             return irDocument;

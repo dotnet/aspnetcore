@@ -1,6 +1,6 @@
 Document - 
     CSharpCode - 
-        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml))]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml))]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
         UsingStatement - (1:0,1 [12] ) - System
@@ -26,20 +26,20 @@ Document -
                 DirectiveToken - (729:13,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 MalformedDirective - (0:0,0 [6] MalformedPageDirective.cshtml)
                 HtmlContent - (6:0,6 [49] MalformedPageDirective.cshtml)
-                    RazorIRToken - (6:0,6 [8] MalformedPageDirective.cshtml) - Html - "foo\n\n
-                    RazorIRToken - (14:2,0 [4] MalformedPageDirective.cshtml) - Html - <h1>
-                    RazorIRToken - (18:2,4 [8] MalformedPageDirective.cshtml) - Html - About Us
-                    RazorIRToken - (26:2,12 [5] MalformedPageDirective.cshtml) - Html - </h1>
-                    RazorIRToken - (31:2,17 [2] MalformedPageDirective.cshtml) - Html - \n
-                    RazorIRToken - (33:3,0 [3] MalformedPageDirective.cshtml) - Html - <p>
-                    RazorIRToken - (36:3,3 [15] MalformedPageDirective.cshtml) - Html - We are awesome.
-                    RazorIRToken - (51:3,18 [4] MalformedPageDirective.cshtml) - Html - </p>
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
+                    IntermediateToken - (6:0,6 [8] MalformedPageDirective.cshtml) - Html - "foo\n\n
+                    IntermediateToken - (14:2,0 [4] MalformedPageDirective.cshtml) - Html - <h1>
+                    IntermediateToken - (18:2,4 [8] MalformedPageDirective.cshtml) - Html - About Us
+                    IntermediateToken - (26:2,12 [5] MalformedPageDirective.cshtml) - Html - </h1>
+                    IntermediateToken - (31:2,17 [2] MalformedPageDirective.cshtml) - Html - \n
+                    IntermediateToken - (33:3,0 [3] MalformedPageDirective.cshtml) - Html - <p>
+                    IntermediateToken - (36:3,3 [15] MalformedPageDirective.cshtml) - Html - We are awesome.
+                    IntermediateToken - (51:3,18 [4] MalformedPageDirective.cshtml) - Html - </p>
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 

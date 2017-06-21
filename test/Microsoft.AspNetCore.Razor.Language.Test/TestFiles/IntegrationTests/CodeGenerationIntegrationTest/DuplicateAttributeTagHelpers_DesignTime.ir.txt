@@ -4,82 +4,82 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [17] DuplicateAttributeTagHelpers.cshtml) - "*, TestAssembly"
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] DuplicateAttributeTagHelpers.cshtml)
-                    RazorIRToken - (31:0,31 [4] DuplicateAttributeTagHelpers.cshtml) - Html - \n\n
+                    IntermediateToken - (31:0,31 [4] DuplicateAttributeTagHelpers.cshtml) - Html - \n\n
                 TagHelper - (35:2,0 [259] DuplicateAttributeTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         HtmlContent - (65:2,30 [6] DuplicateAttributeTagHelpers.cshtml)
-                            RazorIRToken - (65:2,30 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (65:2,30 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
                         TagHelper - (71:3,4 [39] DuplicateAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
                             SetTagHelperProperty - (84:3,17 [6] DuplicateAttributeTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (84:3,17 [6] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (84:3,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
+                                    IntermediateToken - (84:3,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
                             SetTagHelperProperty - (84:3,17 [6] DuplicateAttributeTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (84:3,17 [6] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (84:3,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
+                                    IntermediateToken - (84:3,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
                             AddTagHelperHtmlAttribute -  - TYPE - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (98:3,31 [8] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (98:3,31 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
+                                    IntermediateToken - (98:3,31 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
                         HtmlContent - (110:3,43 [6] DuplicateAttributeTagHelpers.cshtml)
-                            RazorIRToken - (110:3,43 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (110:3,43 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
                         TagHelper - (116:4,4 [70] DuplicateAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
                             SetTagHelperProperty - (129:4,17 [6] DuplicateAttributeTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (129:4,17 [6] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (129:4,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
+                                    IntermediateToken - (129:4,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
                             SetTagHelperProperty - (129:4,17 [6] DuplicateAttributeTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (129:4,17 [6] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (129:4,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
+                                    IntermediateToken - (129:4,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
                             SetTagHelperProperty - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                RazorIRToken - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
+                                IntermediateToken - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
                             AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (158:4,46 [8] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (158:4,46 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
+                                    IntermediateToken - (158:4,46 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
                             AddTagHelperHtmlAttribute -  - checked - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (177:4,65 [5] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (177:4,65 [5] DuplicateAttributeTagHelpers.cshtml) - Html - false
+                                    IntermediateToken - (177:4,65 [5] DuplicateAttributeTagHelpers.cshtml) - Html - false
                         HtmlContent - (186:4,74 [6] DuplicateAttributeTagHelpers.cshtml)
-                            RazorIRToken - (186:4,74 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (186:4,74 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
                         TagHelper - (192:5,4 [96] DuplicateAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
                             SetTagHelperProperty - (205:5,17 [6] DuplicateAttributeTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.SingleQuotes
                                 HtmlContent - (205:5,17 [6] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (205:5,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
+                                    IntermediateToken - (205:5,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
                             SetTagHelperProperty - (205:5,17 [6] DuplicateAttributeTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.SingleQuotes
                                 HtmlContent - (205:5,17 [6] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (205:5,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
+                                    IntermediateToken - (205:5,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
                             SetTagHelperProperty - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                RazorIRToken - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
+                                IntermediateToken - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
                             AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (233:5,45 [8] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (233:5,45 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
+                                    IntermediateToken - (233:5,45 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
                             AddTagHelperHtmlAttribute -  - checked - HtmlAttributeValueStyle.SingleQuotes
                                 HtmlContent - (251:5,63 [4] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (251:5,63 [4] DuplicateAttributeTagHelpers.cshtml) - Html - true
+                                    IntermediateToken - (251:5,63 [4] DuplicateAttributeTagHelpers.cshtml) - Html - true
                             AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (263:5,75 [8] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (263:5,75 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
+                                    IntermediateToken - (263:5,75 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
                             AddTagHelperHtmlAttribute -  - checked - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (281:5,93 [4] DuplicateAttributeTagHelpers.cshtml)
-                                    RazorIRToken - (281:5,93 [4] DuplicateAttributeTagHelpers.cshtml) - Html - true
+                                    IntermediateToken - (281:5,93 [4] DuplicateAttributeTagHelpers.cshtml) - Html - true
                         HtmlContent - (288:5,100 [2] DuplicateAttributeTagHelpers.cshtml)
-                            RazorIRToken - (288:5,100 [2] DuplicateAttributeTagHelpers.cshtml) - Html - \n
+                            IntermediateToken - (288:5,100 [2] DuplicateAttributeTagHelpers.cshtml) - Html - \n
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     SetTagHelperProperty - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        RazorIRToken - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml) - CSharp - 3
+                        IntermediateToken - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml) - CSharp - 3
                     AddTagHelperHtmlAttribute -  - AGE - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (51:2,16 [2] DuplicateAttributeTagHelpers.cshtml)
-                            RazorIRToken - (51:2,16 [2] DuplicateAttributeTagHelpers.cshtml) - Html - 40
+                            IntermediateToken - (51:2,16 [2] DuplicateAttributeTagHelpers.cshtml) - Html - 40
                     AddTagHelperHtmlAttribute -  - Age - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (60:2,25 [3] DuplicateAttributeTagHelpers.cshtml)
-                            RazorIRToken - (60:2,25 [3] DuplicateAttributeTagHelpers.cshtml) - Html - 500
+                            IntermediateToken - (60:2,25 [3] DuplicateAttributeTagHelpers.cshtml) - Html - 500

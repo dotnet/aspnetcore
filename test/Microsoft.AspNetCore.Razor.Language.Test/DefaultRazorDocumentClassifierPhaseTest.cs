@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(
                 () => phase.Execute(codeDocument),
-                $"The '{nameof(DefaultRazorDocumentClassifierPhase)}' phase requires a '{nameof(DocumentIRNode)}' " + 
+                $"The '{nameof(DefaultRazorDocumentClassifierPhase)}' phase requires a '{nameof(DocumentIntermediateNode)}' " + 
                 $"provided by the '{nameof(RazorCodeDocument)}'.");
         }
 
@@ -60,10 +60,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // We're going to set up mocks to simulate a sequence of passes. We don't care about
             // what's in the nodes, we're just going to look at the identity via strict mocks.
-            var originalNode = new DocumentIRNode();
-            var firstPassNode = new DocumentIRNode();
-            var secondPassNode = new DocumentIRNode();
-            codeDocument.SetIRDocument(originalNode);
+            var originalNode = new DocumentIntermediateNode();
+            var firstPassNode = new DocumentIntermediateNode();
+            var secondPassNode = new DocumentIntermediateNode();
+            codeDocument.SetDocumentIntermediateNode(originalNode);
 
             var firstPass = new Mock<IRazorDocumentClassifierPass>(MockBehavior.Strict);
             firstPass.SetupGet(m => m.Order).Returns(0);
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             phase.Execute(codeDocument);
 
             // Assert
-            Assert.Same(secondPassNode, codeDocument.GetIRDocument().Children[0].Children[0]);
+            Assert.Same(secondPassNode, codeDocument.GetDocumentIntermediateNode().Children[0].Children[0]);
         }
     }
 }

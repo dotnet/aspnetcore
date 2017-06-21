@@ -1,6 +1,6 @@
 Document - 
     CSharpCode - 
-        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InheritsWithViewImports_cshtml), null)]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InheritsWithViewImports_cshtml), null)]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement - (1:0,1 [14] ) - System
         UsingStatement - (16:1,1 [34] ) - System.Collections.Generic
@@ -11,12 +11,12 @@ Document -
         UsingStatement - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_InheritsWithViewImports_cshtml - MyPageModel<MyModel> - 
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<MyModel> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<MyModel>)PageContext?.ViewData;
+                IntermediateToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<MyModel> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<MyModel>)PageContext?.ViewData;
             CSharpCode - 
-                RazorIRToken -  - CSharp - public MyModel Model => ViewData.Model;
+                IntermediateToken -  - CSharp - public MyModel Model => ViewData.Model;

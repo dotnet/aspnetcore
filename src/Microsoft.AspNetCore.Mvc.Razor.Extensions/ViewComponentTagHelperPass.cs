@@ -11,12 +11,12 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class ViewComponentTagHelperPass : RazorIRPassBase, IRazorIROptimizationPass
+    public class ViewComponentTagHelperPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
-        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             var visitor = new Visitor();
-            visitor.Visit(irDocument);
+            visitor.Visit(documentNode);
 
             if (visitor.Class == null || visitor.TagHelpers.Count == 0)
             {
@@ -37,20 +37,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             foreach (var (parent, node) in visitor.CreateTagHelpers)
             {
-                RewriteCreateNode(visitor.Namespace, visitor.Class, (CreateTagHelperIRNode)node, parent);
+                RewriteCreateNode(visitor.Namespace, visitor.Class, (CreateTagHelperIntermediateNode)node, parent);
             }
         }
 
-        private void GenerateVCTHClass(ClassDeclarationIRNode @class, TagHelperDescriptor tagHelper)
+        private void GenerateVCTHClass(ClassDeclarationIntermediateNode @class, TagHelperDescriptor tagHelper)
         {
             var writer = new CSharpCodeWriter();
             WriteClass(writer, tagHelper);
 
-            var statement = new CSharpCodeIRNode();
-            RazorIRBuilder.Create(statement)
-                .Add(new RazorIRToken()
+            var statement = new CSharpCodeIntermediateNode();
+            IntermediateNodeBuilder.Create(statement)
+                .Add(new IntermediateToken()
                 {
-                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Kind = IntermediateToken.TokenKind.CSharp,
                     Content = writer.Builder.ToString()
                 });
 
@@ -58,15 +58,15 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         private void RewriteCreateNode(
-            NamespaceDeclarationIRNode @namespace,
-            ClassDeclarationIRNode @class,
-            CreateTagHelperIRNode node,
-            RazorIRNode parent)
+            NamespaceDeclarationIntermediateNode @namespace,
+            ClassDeclarationIntermediateNode @class,
+            CreateTagHelperIntermediateNode node,
+            IntermediateNode parent)
         {
             var newTypeName = GetVCTHFullName(@namespace, @class, node.Descriptor);
             for (var i = 0; i < parent.Children.Count; i++)
             {
-                if (parent.Children[i] is SetTagHelperPropertyIRNode setProperty &&
+                if (parent.Children[i] is SetTagHelperPropertyIntermediateNode setProperty &&
                     node.Descriptor.BoundAttributes.Contains(setProperty.Descriptor))
                 {
                     setProperty.TagHelperTypeName = newTypeName;
@@ -77,8 +77,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         private static string GetVCTHFullName(
-            NamespaceDeclarationIRNode @namespace,
-            ClassDeclarationIRNode @class,
+            NamespaceDeclarationIntermediateNode @namespace,
+            ClassDeclarationIntermediateNode @class,
             TagHelperDescriptor tagHelper)
         {
             var vcName = tagHelper.Metadata[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
@@ -220,19 +220,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 .WriteLine(")]");
         }
 
-        private class Visitor : RazorIRNodeWalker
+        private class Visitor : IntermediateNodeWalker
         {
-            public ClassDeclarationIRNode Class { get; private set; }
+            public ClassDeclarationIntermediateNode Class { get; private set; }
 
-            public DeclareTagHelperFieldsIRNode Fields { get; private set; }
+            public DeclareTagHelperFieldsIntermediateNode Fields { get; private set; }
 
-            public NamespaceDeclarationIRNode Namespace { get; private set; }
+            public NamespaceDeclarationIntermediateNode Namespace { get; private set; }
 
-            public List<RazorIRNodeReference> CreateTagHelpers { get; } = new List<RazorIRNodeReference>();
+            public List<IntermediateNodeReference> CreateTagHelpers { get; } = new List<IntermediateNodeReference>();
 
             public Dictionary<string, TagHelperDescriptor> TagHelpers { get; } = new Dictionary<string, TagHelperDescriptor>();
 
-            public override void VisitCreateTagHelper(CreateTagHelperIRNode node)
+            public override void VisitCreateTagHelper(CreateTagHelperIntermediateNode node)
             {
                 var tagHelper = node.Descriptor;
                 if (ViewComponentTagHelperDescriptorConventions.IsViewComponentDescriptor(tagHelper))
@@ -241,11 +241,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     var vcName = tagHelper.Metadata[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
                     TagHelpers[vcName] = tagHelper;
 
-                    CreateTagHelpers.Add(new RazorIRNodeReference(Parent, node));
+                    CreateTagHelpers.Add(new IntermediateNodeReference(Parent, node));
                 }
             }
 
-            public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
+            public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
             {
                 if (Namespace == null)
                 {
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 base.VisitNamespaceDeclaration(node);
             }
 
-            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
                 if (Class == null)
                 {
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 base.VisitClassDeclaration(node);
             }
 
-            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIntermediateNode node)
             {
                 if (Fields == null)
                 {

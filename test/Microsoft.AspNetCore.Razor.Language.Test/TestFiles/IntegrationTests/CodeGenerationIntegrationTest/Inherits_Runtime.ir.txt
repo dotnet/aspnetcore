@@ -3,6 +3,6 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inherits_Runtime - foo.bar<baz<biz>>.boz - 
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpExpression - (1:0,1 [5] Inherits.cshtml)
-                    RazorIRToken - (1:0,1 [5] Inherits.cshtml) - CSharp - foo()
+                    IntermediateToken - (1:0,1 [5] Inherits.cshtml) - CSharp - foo()
                 HtmlContent - (6:0,6 [4] Inherits.cshtml)
-                    RazorIRToken - (6:0,6 [4] Inherits.cshtml) - Html - \n\n
+                    IntermediateToken - (6:0,6 [4] Inherits.cshtml) - Html - \n\n

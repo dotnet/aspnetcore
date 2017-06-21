@@ -3,7 +3,7 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CodeBlock_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [115] CodeBlock.cshtml)
-                    RazorIRToken - (2:0,2 [115] CodeBlock.cshtml) - CSharp - \n    for(int i = 1; i <= 10; i++) {\n        Output.Write("<p>Hello from C#, #" + i.ToString() + "</p>");\n    }\n
+                    IntermediateToken - (2:0,2 [115] CodeBlock.cshtml) - CSharp - \n    for(int i = 1; i <= 10; i++) {\n        Output.Write("<p>Hello from C#, #" + i.ToString() + "</p>");\n    }\n

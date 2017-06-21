@@ -69,16 +69,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// The '{0}' operation is not valid when the builder is empty.
         /// </summary>
-        internal static string IRBuilder_PopInvalid
+        internal static string IntermediateNodeBuilder_PopInvalid
         {
-            get => GetString("IRBuilder_PopInvalid");
+            get => GetString("IntermediateNodeBuilder_PopInvalid");
         }
 
         /// <summary>
         /// The '{0}' operation is not valid when the builder is empty.
         /// </summary>
-        internal static string FormatIRBuilder_PopInvalid(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("IRBuilder_PopInvalid"), p0);
+        internal static string FormatIntermediateNodeBuilder_PopInvalid(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("IntermediateNodeBuilder_PopInvalid"), p0);
 
         /// <summary>
         /// The specified encoding '{0}' does not match the content's encoding '{1}'.
@@ -475,44 +475,44 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <summary>
         /// The reference is invalid. The node '{0}' could not be found as a child of '{1}'.
         /// </summary>
-        internal static string IRNodeReference_NodeNotFound
+        internal static string IntermediateNodeReference_NodeNotFound
         {
-            get => GetString("IRNodeReference_NodeNotFound");
+            get => GetString("IntermediateNodeReference_NodeNotFound");
         }
 
         /// <summary>
         /// The reference is invalid. The node '{0}' could not be found as a child of '{1}'.
         /// </summary>
-        internal static string FormatIRNodeReference_NodeNotFound(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("IRNodeReference_NodeNotFound"), p0, p1);
+        internal static string FormatIntermediateNodeReference_NodeNotFound(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("IntermediateNodeReference_NodeNotFound"), p0, p1);
 
         /// <summary>
         /// The reference is invalid. References initialized with the default constructor cannot modify nodes.
         /// </summary>
-        internal static string IRNodeReference_NotInitialized
+        internal static string IntermediateNodeReference_NotInitialized
         {
-            get => GetString("IRNodeReference_NotInitialized");
+            get => GetString("IntermediateNodeReference_NotInitialized");
         }
 
         /// <summary>
         /// The reference is invalid. References initialized with the default constructor cannot modify nodes.
         /// </summary>
-        internal static string FormatIRNodeReference_NotInitialized()
-            => GetString("IRNodeReference_NotInitialized");
+        internal static string FormatIntermediateNodeReference_NotInitialized()
+            => GetString("IntermediateNodeReference_NotInitialized");
 
         /// <summary>
         /// The node '{0}' has a read-only child collection and cannot be modified.
         /// </summary>
-        internal static string IRNodeReference_CollectionIsReadOnly
+        internal static string IntermediateNodeReference_CollectionIsReadOnly
         {
-            get => GetString("IRNodeReference_CollectionIsReadOnly");
+            get => GetString("IntermediateNodeReference_CollectionIsReadOnly");
         }
 
         /// <summary>
         /// The node '{0}' has a read-only child collection and cannot be modified.
         /// </summary>
-        internal static string FormatIRNodeReference_CollectionIsReadOnly(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("IRNodeReference_CollectionIsReadOnly"), p0);
+        internal static string FormatIntermediateNodeReference_CollectionIsReadOnly(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("IntermediateNodeReference_CollectionIsReadOnly"), p0);
 
         private static string GetString(string name, params string[] formatterNames)
         {

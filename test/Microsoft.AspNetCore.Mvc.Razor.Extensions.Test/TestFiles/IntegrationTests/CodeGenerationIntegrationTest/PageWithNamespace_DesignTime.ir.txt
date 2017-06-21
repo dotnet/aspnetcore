@@ -1,6 +1,6 @@
 Document - 
     CSharpCode - 
-        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(Test.Namespace.PageWithNamespace_Page), null)]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(Test.Namespace.PageWithNamespace_Page), null)]
     NamespaceDeclaration -  - Test.Namespace
         UsingStatement -  - TModel = global::System.Object
         UsingStatement - (1:0,1 [12] ) - System
@@ -27,19 +27,19 @@ Document -
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (18:1,11 [14] PageWithNamespace.cshtml) - Test.Namespace
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (34:2,0 [20] PageWithNamespace.cshtml)
-                    RazorIRToken - (34:2,0 [4] PageWithNamespace.cshtml) - Html - <h1>
-                    RazorIRToken - (38:2,4 [9] PageWithNamespace.cshtml) - Html - Hi There!
-                    RazorIRToken - (47:2,13 [5] PageWithNamespace.cshtml) - Html - </h1>
-                    RazorIRToken - (52:2,18 [2] PageWithNamespace.cshtml) - Html - \n
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
+                    IntermediateToken - (34:2,0 [4] PageWithNamespace.cshtml) - Html - <h1>
+                    IntermediateToken - (38:2,4 [9] PageWithNamespace.cshtml) - Html - Hi There!
+                    IntermediateToken - (47:2,13 [5] PageWithNamespace.cshtml) - Html - </h1>
+                    IntermediateToken - (52:2,18 [2] PageWithNamespace.cshtml) - Html - \n
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<PageWithNamespace_Page> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<PageWithNamespace_Page>)PageContext?.ViewData;
+                IntermediateToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<PageWithNamespace_Page> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<PageWithNamespace_Page>)PageContext?.ViewData;
             CSharpCode - 
-                RazorIRToken -  - CSharp - public PageWithNamespace_Page Model => ViewData.Model;
+                IntermediateToken -  - CSharp - public PageWithNamespace_Page Model => ViewData.Model;

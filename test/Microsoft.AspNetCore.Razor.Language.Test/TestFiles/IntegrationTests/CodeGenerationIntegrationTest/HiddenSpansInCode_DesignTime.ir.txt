@@ -3,9 +3,9 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_HiddenSpansInCode_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [6] HiddenSpansInCode.cshtml)
-                    RazorIRToken - (2:0,2 [6] HiddenSpansInCode.cshtml) - CSharp - \n    
+                    IntermediateToken - (2:0,2 [6] HiddenSpansInCode.cshtml) - CSharp - \n    
                 CSharpCode - (9:1,5 [5] HiddenSpansInCode.cshtml)
-                    RazorIRToken - (9:1,5 [5] HiddenSpansInCode.cshtml) - CSharp - @Da\n
+                    IntermediateToken - (9:1,5 [5] HiddenSpansInCode.cshtml) - CSharp - @Da\n

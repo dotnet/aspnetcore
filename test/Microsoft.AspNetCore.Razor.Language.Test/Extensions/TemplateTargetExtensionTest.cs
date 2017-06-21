@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
-using static Microsoft.AspNetCore.Razor.Language.Intermediate.RazorIRAssert;
+using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAssert;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         public void WriteTemplate_WritesTemplateCode()
         {
             // Arrange
-            var node = new TemplateIRNode();
+            var node = new TemplateIntermediateNode();
 
             var extension = new TemplateTargetExtension()
             {

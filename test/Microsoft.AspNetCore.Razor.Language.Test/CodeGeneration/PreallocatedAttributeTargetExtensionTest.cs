@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Writer = new CSharpCodeWriter()
             };
 
-            var node = new DeclarePreallocatedTagHelperHtmlAttributeIRNode()
+            var node = new DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode()
             {
                 Name = "Foo",
                 Value = "Bar",
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Writer = new CSharpCodeWriter()
             };
 
-            var node = new DeclarePreallocatedTagHelperHtmlAttributeIRNode()
+            var node = new DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode()
             {
                 Name = "Foo",
                 Value = "Bar",
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Writer = new CSharpCodeWriter()
             };
 
-            var node = new AddPreallocatedTagHelperHtmlAttributeIRNode()
+            var node = new AddPreallocatedTagHelperHtmlAttributeIntermediateNode()
             {
                 VariableName = "_tagHelper1"
             };
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Writer = new CSharpCodeWriter()
             };
 
-            var node = new DeclarePreallocatedTagHelperAttributeIRNode()
+            var node = new DeclarePreallocatedTagHelperAttributeIntermediateNode()
             {
                 Name = "Foo",
                 Value = "Bar",
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .PropertyName("FooProp")
                 .Build();
 
-            var node = new SetPreallocatedTagHelperPropertyIRNode()
+            var node = new SetPreallocatedTagHelperPropertyIntermediateNode()
             {
                 AttributeName = descriptor.Name,
                 TagHelperTypeName = "FooTagHelper",
@@ -183,7 +183,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
                 .PropertyName("FooProp")
                 .Build();
 
-            var node = new SetPreallocatedTagHelperPropertyIRNode()
+            var node = new SetPreallocatedTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "pre-Foo",
                 TagHelperTypeName = "FooTagHelper",

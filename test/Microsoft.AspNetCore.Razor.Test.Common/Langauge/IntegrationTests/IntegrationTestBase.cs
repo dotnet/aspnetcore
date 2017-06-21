@@ -112,11 +112,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
         {
         }
 
-        protected void AssertIRMatchesBaseline(DocumentIRNode document)
+        protected void AssertDocumentNodeMatchesBaseline(DocumentIntermediateNode document)
         {
             if (FileName == null)
             {
-                var message = $"{nameof(AssertIRMatchesBaseline)} should only be called from an integration test ({nameof(FileName)} is null).";
+                var message = $"{nameof(AssertDocumentNodeMatchesBaseline)} should only be called from an integration test ({nameof(FileName)} is null).";
                 throw new InvalidOperationException(message);
             }
 
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             if (GenerateBaselines)
             {
                 var baselineFullPath = Path.Combine(TestProjectRoot, baselineFileName);
-                File.WriteAllText(baselineFullPath, RazorIRNodeSerializer.Serialize(document));
+                File.WriteAllText(baselineFullPath, IntermediateNodeSerializer.Serialize(document));
                 return;
             }
 
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
 
             var baseline = irFile.ReadAllText().Split(new char[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries);
-            RazorIRNodeVerifier.Verify(document, baseline);
+            IntermediateNodeVerifier.Verify(document, baseline);
         }
 
         protected void AssertCSharpDocumentMatchesBaseline(RazorCSharpDocument document)
@@ -227,17 +227,17 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Equal(baseline, actual);
         }
 
-        protected class ApiSetsIRTestAdapter : RazorIRPassBase, IRazorIROptimizationPass
+        protected class ApiSetsIRTestAdapter : IntermediateNodePassBase, IRazorOptimizationPass
         {
-            protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
             {
                 var walker = new ApiSetsIRWalker();
-                walker.Visit(irDocument);
+                walker.Visit(documentNode);
             }
 
-            private class ApiSetsIRWalker : RazorIRNodeWalker
+            private class ApiSetsIRWalker : IntermediateNodeWalker
             {
-                public override void VisitClassDeclaration(ClassDeclarationIRNode node)
+                public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
                 {
                     node.Name = FileName.Replace('/', '_');
                     node.AccessModifier = "public";
@@ -245,14 +245,14 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     VisitDefault(node);
                 }
 
-                public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
+                public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
                 {
                     node.Content = "Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles";
 
                     VisitDefault(node);
                 }
 
-                public override void VisitMethodDeclaration(MethodDeclarationIRNode node)
+                public override void VisitMethodDeclaration(MethodDeclarationIntermediateNode node)
                 {
                     node.AccessModifier = "public";
                     node.Modifiers = new[] { "async" };

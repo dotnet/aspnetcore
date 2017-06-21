@@ -3,17 +3,17 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CodeBlockWithTextElement_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [17] CodeBlockWithTextElement.cshtml)
-                    RazorIRToken - (2:0,2 [17] CodeBlockWithTextElement.cshtml) - CSharp - \n    var a = 1; 
+                    IntermediateToken - (2:0,2 [17] CodeBlockWithTextElement.cshtml) - CSharp - \n    var a = 1; 
                 HtmlContent - (25:1,21 [3] CodeBlockWithTextElement.cshtml)
-                    RazorIRToken - (25:1,21 [3] CodeBlockWithTextElement.cshtml) - Html - foo
+                    IntermediateToken - (25:1,21 [3] CodeBlockWithTextElement.cshtml) - Html - foo
                 CSharpCode - (35:1,31 [22] CodeBlockWithTextElement.cshtml)
-                    RazorIRToken - (35:1,31 [22] CodeBlockWithTextElement.cshtml) - CSharp -  		\n    var b = 1;			
+                    IntermediateToken - (35:1,31 [22] CodeBlockWithTextElement.cshtml) - CSharp -  		\n    var b = 1;			
                 HtmlContent - (63:2,23 [4] CodeBlockWithTextElement.cshtml)
-                    RazorIRToken - (63:2,23 [4] CodeBlockWithTextElement.cshtml) - Html - bar 
+                    IntermediateToken - (63:2,23 [4] CodeBlockWithTextElement.cshtml) - Html - bar 
                 CSharpExpression - (69:2,29 [3] CodeBlockWithTextElement.cshtml)
-                    RazorIRToken - (69:2,29 [3] CodeBlockWithTextElement.cshtml) - CSharp - a+b
+                    IntermediateToken - (69:2,29 [3] CodeBlockWithTextElement.cshtml) - CSharp - a+b
                 CSharpCode - (80:2,40 [2] CodeBlockWithTextElement.cshtml)
-                    RazorIRToken - (80:2,40 [2] CodeBlockWithTextElement.cshtml) - CSharp - \n
+                    IntermediateToken - (80:2,40 [2] CodeBlockWithTextElement.cshtml) - CSharp - \n

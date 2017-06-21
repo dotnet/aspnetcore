@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.NotNull(@class);
             Assert.Equal(2, @class.Children.Count);
 
-            var node = Assert.IsType<InjectDirectiveIRNode>(@class.Children[1]);
+            var node = Assert.IsType<InjectIntermediateNode>(@class.Children[1]);
             Assert.Equal("PropertyType", node.TypeName);
             Assert.Equal("PropertyName", node.MemberName);
         }
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.NotNull(@class);
             Assert.Equal(2, @class.Children.Count);
 
-            var node = Assert.IsType<InjectDirectiveIRNode>(@class.Children[1]);
+            var node = Assert.IsType<InjectIntermediateNode>(@class.Children[1]);
             Assert.Equal("PropertyType2", node.TypeName);
             Assert.Equal("PropertyName", node.MemberName);
         }
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.NotNull(@class);
             Assert.Equal(2, @class.Children.Count);
 
-            var node = Assert.IsType<InjectDirectiveIRNode>(@class.Children[1]);
+            var node = Assert.IsType<InjectIntermediateNode>(@class.Children[1]);
             Assert.Equal("PropertyType<dynamic>", node.TypeName);
             Assert.Equal("PropertyName", node.MemberName);
         }
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.NotNull(@class);
             Assert.Equal(2, @class.Children.Count);
 
-            var node = Assert.IsType<InjectDirectiveIRNode>(@class.Children[1]);
+            var node = Assert.IsType<InjectIntermediateNode>(@class.Children[1]);
             Assert.Equal("PropertyType<ModelType>", node.TypeName);
             Assert.Equal("PropertyName", node.MemberName);
         }
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.NotNull(@class);
             Assert.Equal(2, @class.Children.Count);
 
-            var node = Assert.IsType<InjectDirectiveIRNode>(@class.Children[1]);
+            var node = Assert.IsType<InjectIntermediateNode>(@class.Children[1]);
             Assert.Equal("PropertyType<ModelType>", node.TypeName);
             Assert.Equal("PropertyName", node.MemberName);
         }
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return RazorCodeDocument.Create(source);
         }
 
-        private ClassDeclarationIRNode FindClassNode(RazorIRNode node)
+        private ClassDeclarationIntermediateNode FindClassNode(IntermediateNode node)
         {
             var visitor = new ClassNodeVisitor();
             visitor.Visit(node);
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             });
         }
 
-        private DocumentIRNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
+        private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {
@@ -194,16 +194,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
             }
 
-            return codeDocument.GetIRDocument();
+            return codeDocument.GetDocumentIntermediateNode();
         }
 
-        private string GetCSharpContent(RazorIRNode node)
+        private string GetCSharpContent(IntermediateNode node)
         {
             var builder = new StringBuilder();
             for (var i = 0; i < node.Children.Count; i++)
             {
-                var child = node.Children[i] as RazorIRToken;
-                if (child.Kind == RazorIRToken.TokenKind.CSharp)
+                var child = node.Children[i] as IntermediateToken;
+                if (child.Kind == IntermediateToken.TokenKind.CSharp)
                 {
                     builder.Append(child.Content);
                 }
@@ -212,11 +212,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return builder.ToString();
         }
 
-        private class ClassNodeVisitor : RazorIRNodeWalker
+        private class ClassNodeVisitor : IntermediateNodeWalker
         {
-            public ClassDeclarationIRNode Node { get; set; }
+            public ClassDeclarationIntermediateNode Node { get; set; }
 
-            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
                 Node = node;
             }

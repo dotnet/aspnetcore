@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             _context = context;
         }
 
-        public override void WriteDocument(DocumentIRNode node)
+        public override void WriteDocument(DocumentIntermediateNode node)
         {
             if (node == null)
             {
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             _context.RenderChildren = null;
         }
 
-        private class Visitor : RazorIRNodeVisitor
+        private class Visitor : IntermediateNodeVisitor
         {
             private readonly CSharpRenderingContext _context;
             private readonly CodeTarget _target;
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             private CSharpRenderingContext Context => _context;
 
-            public void RenderChildren(RazorIRNode node)
+            public void RenderChildren(IntermediateNode node)
             {
                 for (var i = 0; i < node.Children.Count; i++)
                 {
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
             }
 
-            public override void VisitDocument(DocumentIRNode node)
+            public override void VisitDocument(DocumentIntermediateNode node)
             {
                 if (!Context.Options.SuppressChecksum)
                 {
@@ -102,12 +102,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 RenderChildren(node);
             }
 
-            public override void VisitUsingStatement(UsingStatementIRNode node)
+            public override void VisitUsingStatement(UsingStatementIntermediateNode node)
             {
                 Context.BasicWriter.WriteUsingStatement(Context, node);
             }
 
-            public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
+            public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
             {
                 Context.Writer
                     .Write("namespace ")
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
             }
 
-            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
                 Context.Writer
                     .Write(node.AccessModifier)
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
             }
 
-            public override void VisitMethodDeclaration(MethodDeclarationIRNode node)
+            public override void VisitMethodDeclaration(MethodDeclarationIntermediateNode node)
             {
                 Context.Writer.WriteLine("#pragma warning disable 1998");
 
@@ -199,62 +199,62 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.Writer.WriteLine("#pragma warning restore 1998");
             }
 
-            public override void VisitFieldDeclaration(FieldDeclarationIRNode node)
+            public override void VisitFieldDeclaration(FieldDeclarationIntermediateNode node)
             {
                 Context.Writer.WriteField(node.AccessModifier, node.Modifiers, node.Type, node.Name);
             }
 
-            public override void VisitPropertyDeclaration(PropertyDeclarationIRNode node)
+            public override void VisitPropertyDeclaration(PropertyDeclarationIntermediateNode node)
             {
                 Context.Writer.WriteAutoPropertyDeclaration(node.AccessModifier, node.Modifiers, node.Type, node.Name);
             }
 
-            public override void VisitExtension(ExtensionIRNode node)
+            public override void VisitExtension(ExtensionIntermediateNode node)
             {
                 node.WriteNode(_target, Context);
             }
 
-            public override void VisitCSharpExpression(CSharpExpressionIRNode node)
+            public override void VisitCSharpExpression(CSharpExpressionIntermediateNode node)
             {
                 Context.BasicWriter.WriteCSharpExpression(Context, node);
             }
 
-            public override void VisitCSharpCode(CSharpCodeIRNode node)
+            public override void VisitCSharpCode(CSharpCodeIntermediateNode node)
             {
                 Context.BasicWriter.WriteCSharpCode(Context, node);
             }
 
-            public override void VisitHtmlAttribute(HtmlAttributeIRNode node)
+            public override void VisitHtmlAttribute(HtmlAttributeIntermediateNode node)
             {
                 Context.BasicWriter.WriteHtmlAttribute(Context, node);
             }
 
-            public override void VisitHtmlAttributeValue(HtmlAttributeValueIRNode node)
+            public override void VisitHtmlAttributeValue(HtmlAttributeValueIntermediateNode node)
             {
                 Context.BasicWriter.WriteHtmlAttributeValue(Context, node);
             }
 
-            public override void VisitCSharpExpressionAttributeValue(CSharpExpressionAttributeValueIRNode node)
+            public override void VisitCSharpExpressionAttributeValue(CSharpExpressionAttributeValueIntermediateNode node)
             {
                 Context.BasicWriter.WriteCSharpExpressionAttributeValue(Context, node);
             }
 
-            public override void VisitCSharpCodeAttributeValue(CSharpCodeAttributeValueIRNode node)
+            public override void VisitCSharpCodeAttributeValue(CSharpCodeAttributeValueIntermediateNode node)
             {
                 Context.BasicWriter.WriteCSharpCodeAttributeValue(Context, node);
             }
 
-            public override void VisitHtml(HtmlContentIRNode node)
+            public override void VisitHtml(HtmlContentIntermediateNode node)
             {
                 Context.BasicWriter.WriteHtmlContent(Context, node);
             }
 
-            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIntermediateNode node)
             {
                 Context.TagHelperWriter.WriteDeclareTagHelperFields(Context, node);
             }
 
-            public override void VisitTagHelper(TagHelperIRNode node)
+            public override void VisitTagHelper(TagHelperIntermediateNode node)
             {
                 var tagHelperRenderingContext = new TagHelperRenderingContext()
                 {
@@ -268,27 +268,27 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 }
             }
 
-            public override void VisitTagHelperBody(TagHelperBodyIRNode node)
+            public override void VisitTagHelperBody(TagHelperBodyIntermediateNode node)
             {
                 Context.TagHelperWriter.WriteTagHelperBody(Context, node);
             }
 
-            public override void VisitCreateTagHelper(CreateTagHelperIRNode node)
+            public override void VisitCreateTagHelper(CreateTagHelperIntermediateNode node)
             {
                 Context.TagHelperWriter.WriteCreateTagHelper(Context, node);
             }
 
-            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
+            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIntermediateNode node)
             {
                 Context.TagHelperWriter.WriteAddTagHelperHtmlAttribute(Context, node);
             }
 
-            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIntermediateNode node)
             {
                 Context.TagHelperWriter.WriteSetTagHelperProperty(Context, node);
             }
 
-            public override void VisitDefault(RazorIRNode node)
+            public override void VisitDefault(IntermediateNode node)
             {
                 Context.RenderChildren(node);
             }

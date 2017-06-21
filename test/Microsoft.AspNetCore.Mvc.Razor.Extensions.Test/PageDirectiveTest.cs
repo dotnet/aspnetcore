@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             });
         }
 
-        private DocumentIRNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
+        private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
             }
 
-            return codeDocument.GetIRDocument();
+            return codeDocument.GetDocumentIntermediateNode();
         }
     }
 }

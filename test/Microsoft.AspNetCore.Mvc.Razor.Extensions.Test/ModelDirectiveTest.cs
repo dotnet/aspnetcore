@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("BaseType<dynamic>", @class.BaseType);
 
             var @namespace = FindNamespaceNode(irDocument);
-            var usingNode = Assert.IsType<UsingStatementIRNode>(@namespace.Children[0]);
+            var usingNode = Assert.IsType<UsingStatementIntermediateNode>(@namespace.Children[0]);
             Assert.Equal($"TModel = global::{typeof(object).FullName}", usingNode.Content);
         }
 
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("BaseType<SomeType>", @class.BaseType);
 
             var @namespace = FindNamespaceNode(irDocument);
-            var usingNode = Assert.IsType<UsingStatementIRNode>(@namespace.Children[0]);
+            var usingNode = Assert.IsType<UsingStatementIntermediateNode>(@namespace.Children[0]);
             Assert.Equal($"TModel = global::System.Object", usingNode.Content);
         }
 
@@ -220,14 +220,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return RazorCodeDocument.Create(source);
         }
 
-        private ClassDeclarationIRNode FindClassNode(RazorIRNode node)
+        private ClassDeclarationIntermediateNode FindClassNode(IntermediateNode node)
         {
             var visitor = new ClassNodeVisitor();
             visitor.Visit(node);
             return visitor.Node;
         }
 
-        private NamespaceDeclarationIRNode FindNamespaceNode(RazorIRNode node)
+        private NamespaceDeclarationIntermediateNode FindNamespaceNode(IntermediateNode node)
         {
             var visitor = new NamespaceNodeVisitor();
             visitor.Visit(node);
@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             });
         }
 
-        private DocumentIRNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
+        private DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {
@@ -259,16 +259,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
             }
 
-            return codeDocument.GetIRDocument();
+            return codeDocument.GetDocumentIntermediateNode();
         }
 
-        private string GetCSharpContent(RazorIRNode node)
+        private string GetCSharpContent(IntermediateNode node)
         {
             var builder = new StringBuilder();
             for (var i = 0; i < node.Children.Count; i++)
             {
-                var child = node.Children[i] as RazorIRToken;
-                if (child.Kind == RazorIRToken.TokenKind.CSharp)
+                var child = node.Children[i] as IntermediateToken;
+                if (child.Kind == IntermediateToken.TokenKind.CSharp)
                 {
                     builder.Append(child.Content);
                 }
@@ -277,21 +277,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return builder.ToString();
         }
 
-        private class ClassNodeVisitor : RazorIRNodeWalker
+        private class ClassNodeVisitor : IntermediateNodeWalker
         {
-            public ClassDeclarationIRNode Node { get; set; }
+            public ClassDeclarationIntermediateNode Node { get; set; }
 
-            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
                 Node = node;
             }
         }
 
-        private class NamespaceNodeVisitor : RazorIRNodeWalker
+        private class NamespaceNodeVisitor : IntermediateNodeWalker
         {
-            public NamespaceDeclarationIRNode Node { get; set; }
+            public NamespaceDeclarationIntermediateNode Node { get; set; }
 
-            public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
+            public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
             {
                 Node = node;
             }

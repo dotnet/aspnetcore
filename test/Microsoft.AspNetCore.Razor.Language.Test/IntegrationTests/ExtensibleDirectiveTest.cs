@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             engine.Process(document);
 
             // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
             AssertLineMappingsMatchBaseline(document);
         }

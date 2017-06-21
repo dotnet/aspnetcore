@@ -1,6 +1,6 @@
 Document - 
     CSharpCode - 
-        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest__ViewImports_cshtml))]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest__ViewImports_cshtml))]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
         UsingStatement - (1:0,1 [12] ) - System
@@ -28,11 +28,11 @@ Document -
                 DirectiveToken - (8:0,8 [19] _ViewImports.cshtml) - IHtmlHelper<TModel>
                 DirectiveToken - (28:0,28 [5] _ViewImports.cshtml) - Model
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 

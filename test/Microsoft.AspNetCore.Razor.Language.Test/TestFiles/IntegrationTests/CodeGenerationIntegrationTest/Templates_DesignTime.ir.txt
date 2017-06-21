@@ -3,143 +3,143 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Templates_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (278:8,1 [4] Templates.cshtml)
-                    RazorIRToken - (278:8,1 [4] Templates.cshtml) - Html - \n\n
+                    IntermediateToken - (278:8,1 [4] Templates.cshtml) - Html - \n\n
                 CSharpCode - (284:10,2 [34] Templates.cshtml)
-                    RazorIRToken - (284:10,2 [34] Templates.cshtml) - CSharp - \n    Func<dynamic, object> foo = 
+                    IntermediateToken - (284:10,2 [34] Templates.cshtml) - CSharp - \n    Func<dynamic, object> foo = 
                 Template - (325:11,39 [16] Templates.cshtml)
                     HtmlContent - (325:11,39 [11] Templates.cshtml)
-                        RazorIRToken - (325:11,39 [11] Templates.cshtml) - Html - This works 
+                        IntermediateToken - (325:11,39 [11] Templates.cshtml) - Html - This works 
                     CSharpExpression - (337:11,51 [4] Templates.cshtml)
-                        RazorIRToken - (337:11,51 [4] Templates.cshtml) - CSharp - item
+                        IntermediateToken - (337:11,51 [4] Templates.cshtml) - CSharp - item
                     HtmlContent - (341:11,55 [1] Templates.cshtml)
-                        RazorIRToken - (341:11,55 [1] Templates.cshtml) - Html - !
+                        IntermediateToken - (341:11,55 [1] Templates.cshtml) - Html - !
                 CSharpCode - (349:11,63 [7] Templates.cshtml)
-                    RazorIRToken - (349:11,63 [7] Templates.cshtml) - CSharp - ;\n    
+                    IntermediateToken - (349:11,63 [7] Templates.cshtml) - CSharp - ;\n    
                 CSharpExpression - (357:12,5 [7] Templates.cshtml)
-                    RazorIRToken - (357:12,5 [7] Templates.cshtml) - CSharp - foo("")
+                    IntermediateToken - (357:12,5 [7] Templates.cshtml) - CSharp - foo("")
                 CSharpCode - (364:12,12 [2] Templates.cshtml)
-                    RazorIRToken - (364:12,12 [2] Templates.cshtml) - CSharp - \n
+                    IntermediateToken - (364:12,12 [2] Templates.cshtml) - CSharp - \n
                 HtmlContent - (369:14,0 [2] Templates.cshtml)
-                    RazorIRToken - (369:14,0 [2] Templates.cshtml) - Html - \n
+                    IntermediateToken - (369:14,0 [2] Templates.cshtml) - Html - \n
                 CSharpCode - (373:15,2 [35] Templates.cshtml)
-                    RazorIRToken - (373:15,2 [35] Templates.cshtml) - CSharp -  \n    Func<dynamic, object> bar = 
+                    IntermediateToken - (373:15,2 [35] Templates.cshtml) - CSharp -  \n    Func<dynamic, object> bar = 
                 Template - (409:16,33 [26] Templates.cshtml)
                     HtmlContent - (409:16,33 [2] Templates.cshtml)
-                        RazorIRToken - (409:16,33 [2] Templates.cshtml) - Html - <p
+                        IntermediateToken - (409:16,33 [2] Templates.cshtml) - Html - <p
                     HtmlAttribute - (411:16,35 [14] Templates.cshtml) -  class=" - "
                         CSharpExpressionAttributeValue - (419:16,43 [5] Templates.cshtml) - 
-                            RazorIRToken - (420:16,44 [4] Templates.cshtml) - CSharp - item
+                            IntermediateToken - (420:16,44 [4] Templates.cshtml) - CSharp - item
                     HtmlContent - (425:16,49 [10] Templates.cshtml)
-                        RazorIRToken - (425:16,49 [1] Templates.cshtml) - Html - >
-                        RazorIRToken - (426:16,50 [5] Templates.cshtml) - Html - Hello
-                        RazorIRToken - (431:16,55 [4] Templates.cshtml) - Html - </p>
+                        IntermediateToken - (425:16,49 [1] Templates.cshtml) - Html - >
+                        IntermediateToken - (426:16,50 [5] Templates.cshtml) - Html - Hello
+                        IntermediateToken - (431:16,55 [4] Templates.cshtml) - Html - </p>
                 CSharpCode - (435:16,59 [7] Templates.cshtml)
-                    RazorIRToken - (435:16,59 [7] Templates.cshtml) - CSharp - ;\n    
+                    IntermediateToken - (435:16,59 [7] Templates.cshtml) - CSharp - ;\n    
                 CSharpExpression - (443:17,5 [14] Templates.cshtml)
-                    RazorIRToken - (443:17,5 [14] Templates.cshtml) - CSharp - bar("myclass")
+                    IntermediateToken - (443:17,5 [14] Templates.cshtml) - CSharp - bar("myclass")
                 CSharpCode - (457:17,19 [2] Templates.cshtml)
-                    RazorIRToken - (457:17,19 [2] Templates.cshtml) - CSharp - \n
+                    IntermediateToken - (457:17,19 [2] Templates.cshtml) - CSharp - \n
                 HtmlContent - (462:19,0 [8] Templates.cshtml)
-                    RazorIRToken - (462:19,0 [2] Templates.cshtml) - Html - \n
-                    RazorIRToken - (464:20,0 [4] Templates.cshtml) - Html - <ul>
-                    RazorIRToken - (468:20,4 [2] Templates.cshtml) - Html - \n
+                    IntermediateToken - (462:19,0 [2] Templates.cshtml) - Html - \n
+                    IntermediateToken - (464:20,0 [4] Templates.cshtml) - Html - <ul>
+                    IntermediateToken - (468:20,4 [2] Templates.cshtml) - Html - \n
                 CSharpExpression - (472:21,2 [31] Templates.cshtml)
-                    RazorIRToken - (472:21,2 [11] Templates.cshtml) - CSharp - Repeat(10, 
+                    IntermediateToken - (472:21,2 [11] Templates.cshtml) - CSharp - Repeat(10, 
                     Template - (484:21,14 [19] Templates.cshtml)
                         HtmlContent - (484:21,14 [10] Templates.cshtml)
-                            RazorIRToken - (484:21,14 [4] Templates.cshtml) - Html - <li>
-                            RazorIRToken - (488:21,18 [6] Templates.cshtml) - Html - Item #
+                            IntermediateToken - (484:21,14 [4] Templates.cshtml) - Html - <li>
+                            IntermediateToken - (488:21,18 [6] Templates.cshtml) - Html - Item #
                         CSharpExpression - (495:21,25 [4] Templates.cshtml)
-                            RazorIRToken - (495:21,25 [4] Templates.cshtml) - CSharp - item
+                            IntermediateToken - (495:21,25 [4] Templates.cshtml) - CSharp - item
                         HtmlContent - (499:21,29 [5] Templates.cshtml)
-                            RazorIRToken - (499:21,29 [5] Templates.cshtml) - Html - </li>
-                    RazorIRToken - (504:21,34 [1] Templates.cshtml) - CSharp - )
+                            IntermediateToken - (499:21,29 [5] Templates.cshtml) - Html - </li>
+                    IntermediateToken - (504:21,34 [1] Templates.cshtml) - CSharp - )
                 HtmlContent - (506:21,36 [16] Templates.cshtml)
-                    RazorIRToken - (506:21,36 [2] Templates.cshtml) - Html - \n
-                    RazorIRToken - (508:22,0 [5] Templates.cshtml) - Html - </ul>
-                    RazorIRToken - (513:22,5 [4] Templates.cshtml) - Html - \n\n
-                    RazorIRToken - (517:24,0 [3] Templates.cshtml) - Html - <p>
-                    RazorIRToken - (520:24,3 [2] Templates.cshtml) - Html - \n
+                    IntermediateToken - (506:21,36 [2] Templates.cshtml) - Html - \n
+                    IntermediateToken - (508:22,0 [5] Templates.cshtml) - Html - </ul>
+                    IntermediateToken - (513:22,5 [4] Templates.cshtml) - Html - \n\n
+                    IntermediateToken - (517:24,0 [3] Templates.cshtml) - Html - <p>
+                    IntermediateToken - (520:24,3 [2] Templates.cshtml) - Html - \n
                 CSharpExpression - (523:25,1 [52] Templates.cshtml)
-                    RazorIRToken - (523:25,1 [16] Templates.cshtml) - CSharp - Repeat(10,\n    
+                    IntermediateToken - (523:25,1 [16] Templates.cshtml) - CSharp - Repeat(10,\n    
                     Template - (541:26,6 [35] Templates.cshtml)
                         HtmlContent - (541:26,6 [14] Templates.cshtml)
-                            RazorIRToken - (541:26,6 [14] Templates.cshtml) - Html -  This is line#
+                            IntermediateToken - (541:26,6 [14] Templates.cshtml) - Html -  This is line#
                         CSharpExpression - (556:26,21 [4] Templates.cshtml)
-                            RazorIRToken - (556:26,21 [4] Templates.cshtml) - CSharp - item
+                            IntermediateToken - (556:26,21 [4] Templates.cshtml) - CSharp - item
                         HtmlContent - (560:26,25 [17] Templates.cshtml)
-                            RazorIRToken - (560:26,25 [17] Templates.cshtml) - Html -  of markup<br/>\n
-                    RazorIRToken - (577:27,0 [1] Templates.cshtml) - CSharp - )
+                            IntermediateToken - (560:26,25 [17] Templates.cshtml) - Html -  of markup<br/>\n
+                    IntermediateToken - (577:27,0 [1] Templates.cshtml) - CSharp - )
                 HtmlContent - (578:27,1 [15] Templates.cshtml)
-                    RazorIRToken - (578:27,1 [2] Templates.cshtml) - Html - \n
-                    RazorIRToken - (580:28,0 [4] Templates.cshtml) - Html - </p>
-                    RazorIRToken - (584:28,4 [4] Templates.cshtml) - Html - \n\n
-                    RazorIRToken - (588:30,0 [3] Templates.cshtml) - Html - <p>
-                    RazorIRToken - (591:30,3 [2] Templates.cshtml) - Html - \n
+                    IntermediateToken - (578:27,1 [2] Templates.cshtml) - Html - \n
+                    IntermediateToken - (580:28,0 [4] Templates.cshtml) - Html - </p>
+                    IntermediateToken - (584:28,4 [4] Templates.cshtml) - Html - \n\n
+                    IntermediateToken - (588:30,0 [3] Templates.cshtml) - Html - <p>
+                    IntermediateToken - (591:30,3 [2] Templates.cshtml) - Html - \n
                 CSharpExpression - (594:31,1 [54] Templates.cshtml)
-                    RazorIRToken - (594:31,1 [16] Templates.cshtml) - CSharp - Repeat(10,\n    
+                    IntermediateToken - (594:31,1 [16] Templates.cshtml) - CSharp - Repeat(10,\n    
                     Template - (612:32,6 [37] Templates.cshtml)
                         HtmlContent - (612:32,6 [15] Templates.cshtml)
-                            RazorIRToken - (612:32,6 [15] Templates.cshtml) - Html - : This is line#
+                            IntermediateToken - (612:32,6 [15] Templates.cshtml) - Html - : This is line#
                         CSharpExpression - (628:32,22 [4] Templates.cshtml)
-                            RazorIRToken - (628:32,22 [4] Templates.cshtml) - CSharp - item
+                            IntermediateToken - (628:32,22 [4] Templates.cshtml) - CSharp - item
                         HtmlContent - (632:32,26 [18] Templates.cshtml)
-                            RazorIRToken - (632:32,26 [18] Templates.cshtml) - Html -  of markup<br />\n
-                    RazorIRToken - (650:33,0 [1] Templates.cshtml) - CSharp - )
+                            IntermediateToken - (632:32,26 [18] Templates.cshtml) - Html -  of markup<br />\n
+                    IntermediateToken - (650:33,0 [1] Templates.cshtml) - CSharp - )
                 HtmlContent - (651:33,1 [15] Templates.cshtml)
-                    RazorIRToken - (651:33,1 [2] Templates.cshtml) - Html - \n
-                    RazorIRToken - (653:34,0 [4] Templates.cshtml) - Html - </p>
-                    RazorIRToken - (657:34,4 [4] Templates.cshtml) - Html - \n\n
-                    RazorIRToken - (661:36,0 [3] Templates.cshtml) - Html - <p>
-                    RazorIRToken - (664:36,3 [2] Templates.cshtml) - Html - \n
+                    IntermediateToken - (651:33,1 [2] Templates.cshtml) - Html - \n
+                    IntermediateToken - (653:34,0 [4] Templates.cshtml) - Html - </p>
+                    IntermediateToken - (657:34,4 [4] Templates.cshtml) - Html - \n\n
+                    IntermediateToken - (661:36,0 [3] Templates.cshtml) - Html - <p>
+                    IntermediateToken - (664:36,3 [2] Templates.cshtml) - Html - \n
                 CSharpExpression - (667:37,1 [55] Templates.cshtml)
-                    RazorIRToken - (667:37,1 [16] Templates.cshtml) - CSharp - Repeat(10,\n    
+                    IntermediateToken - (667:37,1 [16] Templates.cshtml) - CSharp - Repeat(10,\n    
                     Template - (685:38,6 [38] Templates.cshtml)
                         HtmlContent - (685:38,6 [16] Templates.cshtml)
-                            RazorIRToken - (685:38,6 [16] Templates.cshtml) - Html - :: This is line#
+                            IntermediateToken - (685:38,6 [16] Templates.cshtml) - Html - :: This is line#
                         CSharpExpression - (702:38,23 [4] Templates.cshtml)
-                            RazorIRToken - (702:38,23 [4] Templates.cshtml) - CSharp - item
+                            IntermediateToken - (702:38,23 [4] Templates.cshtml) - CSharp - item
                         HtmlContent - (706:38,27 [18] Templates.cshtml)
-                            RazorIRToken - (706:38,27 [18] Templates.cshtml) - Html -  of markup<br />\n
-                    RazorIRToken - (724:39,0 [1] Templates.cshtml) - CSharp - )
+                            IntermediateToken - (706:38,27 [18] Templates.cshtml) - Html -  of markup<br />\n
+                    IntermediateToken - (724:39,0 [1] Templates.cshtml) - CSharp - )
                 HtmlContent - (725:39,1 [22] Templates.cshtml)
-                    RazorIRToken - (725:39,1 [2] Templates.cshtml) - Html - \n
-                    RazorIRToken - (727:40,0 [4] Templates.cshtml) - Html - </p>
-                    RazorIRToken - (731:40,4 [6] Templates.cshtml) - Html - \n\n\n
-                    RazorIRToken - (737:43,0 [4] Templates.cshtml) - Html - <ul>
-                    RazorIRToken - (741:43,4 [6] Templates.cshtml) - Html - \n    
+                    IntermediateToken - (725:39,1 [2] Templates.cshtml) - Html - \n
+                    IntermediateToken - (727:40,0 [4] Templates.cshtml) - Html - </p>
+                    IntermediateToken - (731:40,4 [6] Templates.cshtml) - Html - \n\n\n
+                    IntermediateToken - (737:43,0 [4] Templates.cshtml) - Html - <ul>
+                    IntermediateToken - (741:43,4 [6] Templates.cshtml) - Html - \n    
                 CSharpExpression - (748:44,5 [141] Templates.cshtml)
-                    RazorIRToken - (748:44,5 [11] Templates.cshtml) - CSharp - Repeat(10, 
+                    IntermediateToken - (748:44,5 [11] Templates.cshtml) - CSharp - Repeat(10, 
                     Template - (760:44,17 [129] Templates.cshtml)
                         HtmlContent - (760:44,17 [20] Templates.cshtml)
-                            RazorIRToken - (760:44,17 [4] Templates.cshtml) - Html - <li>
-                            RazorIRToken - (764:44,21 [16] Templates.cshtml) - Html - \n        Item #
+                            IntermediateToken - (760:44,17 [4] Templates.cshtml) - Html - <li>
+                            IntermediateToken - (764:44,21 [16] Templates.cshtml) - Html - \n        Item #
                         CSharpExpression - (781:45,15 [4] Templates.cshtml)
-                            RazorIRToken - (781:45,15 [4] Templates.cshtml) - CSharp - item
+                            IntermediateToken - (781:45,15 [4] Templates.cshtml) - CSharp - item
                         HtmlContent - (785:45,19 [10] Templates.cshtml)
-                            RazorIRToken - (785:45,19 [10] Templates.cshtml) - Html - \n        
+                            IntermediateToken - (785:45,19 [10] Templates.cshtml) - Html - \n        
                         CSharpCode - (797:46,10 [18] Templates.cshtml)
-                            RazorIRToken - (797:46,10 [18] Templates.cshtml) - CSharp - var parent = item;
+                            IntermediateToken - (797:46,10 [18] Templates.cshtml) - CSharp - var parent = item;
                         HtmlContent - (818:47,0 [53] Templates.cshtml)
-                            RazorIRToken - (818:47,0 [8] Templates.cshtml) - Html -         
-                            RazorIRToken - (826:47,8 [4] Templates.cshtml) - Html - <ul>
-                            RazorIRToken - (830:47,12 [14] Templates.cshtml) - Html - \n            
-                            RazorIRToken - (844:48,12 [4] Templates.cshtml) - Html - <li>
-                            RazorIRToken - (848:48,16 [16] Templates.cshtml) - Html - Child Items... ?
-                            RazorIRToken - (864:48,32 [5] Templates.cshtml) - Html - </li>
-                            RazorIRToken - (869:48,37 [2] Templates.cshtml) - Html - \n
+                            IntermediateToken - (818:47,0 [8] Templates.cshtml) - Html -         
+                            IntermediateToken - (826:47,8 [4] Templates.cshtml) - Html - <ul>
+                            IntermediateToken - (830:47,12 [14] Templates.cshtml) - Html - \n            
+                            IntermediateToken - (844:48,12 [4] Templates.cshtml) - Html - <li>
+                            IntermediateToken - (848:48,16 [16] Templates.cshtml) - Html - Child Items... ?
+                            IntermediateToken - (864:48,32 [5] Templates.cshtml) - Html - </li>
+                            IntermediateToken - (869:48,37 [2] Templates.cshtml) - Html - \n
                         HtmlContent - (932:50,0 [24] Templates.cshtml)
-                            RazorIRToken - (932:50,0 [8] Templates.cshtml) - Html -         
-                            RazorIRToken - (940:50,8 [5] Templates.cshtml) - Html - </ul>
-                            RazorIRToken - (945:50,13 [6] Templates.cshtml) - Html - \n    
-                            RazorIRToken - (951:51,4 [5] Templates.cshtml) - Html - </li>
-                    RazorIRToken - (956:51,9 [1] Templates.cshtml) - CSharp - )
+                            IntermediateToken - (932:50,0 [8] Templates.cshtml) - Html -         
+                            IntermediateToken - (940:50,8 [5] Templates.cshtml) - Html - </ul>
+                            IntermediateToken - (945:50,13 [6] Templates.cshtml) - Html - \n    
+                            IntermediateToken - (951:51,4 [5] Templates.cshtml) - Html - </li>
+                    IntermediateToken - (956:51,9 [1] Templates.cshtml) - CSharp - )
                 HtmlContent - (957:51,10 [8] Templates.cshtml)
-                    RazorIRToken - (957:51,10 [2] Templates.cshtml) - Html - \n
-                    RazorIRToken - (959:52,0 [5] Templates.cshtml) - Html - </ul>
-                    RazorIRToken - (964:52,5 [1] Templates.cshtml) - Html -  
+                    IntermediateToken - (957:51,10 [2] Templates.cshtml) - Html - \n
+                    IntermediateToken - (959:52,0 [5] Templates.cshtml) - Html - </ul>
+                    IntermediateToken - (964:52,5 [1] Templates.cshtml) - Html -  
             CSharpCode - (12:0,12 [265] Templates.cshtml)
-                RazorIRToken - (12:0,12 [265] Templates.cshtml) - CSharp - \n    public HelperResult Repeat(int times, Func<int, object> template) {\n        return new HelperResult((writer) => {\n            for(int i = 0; i < times; i++) {\n                ((HelperResult)template(i)).WriteTo(writer);\n            }\n        });\n    }\n
+                IntermediateToken - (12:0,12 [265] Templates.cshtml) - CSharp - \n    public HelperResult Repeat(int times, Func<int, object> template) {\n        return new HelperResult((writer) => {\n            for(int i = 0; i < times; i++) {\n                ((HelperResult)template(i)).WriteTo(writer);\n            }\n        });\n    }\n

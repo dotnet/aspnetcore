@@ -7,26 +7,26 @@ Document -
             DeclareTagHelperFields -  - DivTagHelper - InputTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] TagHelpersWithTemplate.cshtml)
-                    RazorIRToken - (33:1,0 [2] TagHelpersWithTemplate.cshtml) - Html - \n
+                    IntermediateToken - (33:1,0 [2] TagHelpersWithTemplate.cshtml) - Html - \n
                 HtmlContent - (318:10,0 [2] TagHelpersWithTemplate.cshtml)
-                    RazorIRToken - (318:10,0 [2] TagHelpersWithTemplate.cshtml) - Html - \n
+                    IntermediateToken - (318:10,0 [2] TagHelpersWithTemplate.cshtml) - Html - \n
                 TagHelper - (320:11,0 [179] TagHelpersWithTemplate.cshtml) - div - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         HtmlContent - (325:11,5 [2] TagHelpersWithTemplate.cshtml)
-                            RazorIRToken - (325:11,5 [2] TagHelpersWithTemplate.cshtml) - Html - \n
+                            IntermediateToken - (325:11,5 [2] TagHelpersWithTemplate.cshtml) - Html - \n
                         CSharpCode - (327:12,0 [4] TagHelpersWithTemplate.cshtml)
-                            RazorIRToken - (327:12,0 [4] TagHelpersWithTemplate.cshtml) - CSharp -     
+                            IntermediateToken - (327:12,0 [4] TagHelpersWithTemplate.cshtml) - CSharp -     
                         CSharpCode - (333:12,6 [66] TagHelpersWithTemplate.cshtml)
-                            RazorIRToken - (333:12,6 [66] TagHelpersWithTemplate.cshtml) - CSharp - \n        RenderTemplate(\n            "Template: ",\n            
+                            IntermediateToken - (333:12,6 [66] TagHelpersWithTemplate.cshtml) - CSharp - \n        RenderTemplate(\n            "Template: ",\n            
                         Template - (400:15,13 [82] TagHelpersWithTemplate.cshtml)
                             TagHelper - (400:15,13 [82] TagHelpersWithTemplate.cshtml) - div - TagMode.StartTagAndEndTag
                                 TagHelperBody - 
                                     HtmlContent - (422:15,35 [4] TagHelpersWithTemplate.cshtml)
-                                        RazorIRToken - (422:15,35 [4] TagHelpersWithTemplate.cshtml) - Html - <h3>
+                                        IntermediateToken - (422:15,35 [4] TagHelpersWithTemplate.cshtml) - Html - <h3>
                                     CSharpExpression - (427:15,40 [4] TagHelpersWithTemplate.cshtml)
-                                        RazorIRToken - (427:15,40 [4] TagHelpersWithTemplate.cshtml) - CSharp - item
+                                        IntermediateToken - (427:15,40 [4] TagHelpersWithTemplate.cshtml) - CSharp - item
                                     HtmlContent - (431:15,44 [5] TagHelpersWithTemplate.cshtml)
-                                        RazorIRToken - (431:15,44 [5] TagHelpersWithTemplate.cshtml) - Html - </h3>
+                                        IntermediateToken - (431:15,44 [5] TagHelpersWithTemplate.cshtml) - Html - </h3>
                                     TagHelper - (436:15,49 [40] TagHelpersWithTemplate.cshtml) - input - TagMode.SelfClosing
                                         TagHelperBody - 
                                         CreateTagHelper -  - InputTagHelper
@@ -35,9 +35,9 @@ Document -
                                 CreateTagHelper -  - DivTagHelper
                                 AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                         CSharpCode - (482:15,95 [8] TagHelpersWithTemplate.cshtml)
-                            RazorIRToken - (482:15,95 [8] TagHelpersWithTemplate.cshtml) - CSharp - );\n    
+                            IntermediateToken - (482:15,95 [8] TagHelpersWithTemplate.cshtml) - CSharp - );\n    
                     CreateTagHelper -  - DivTagHelper
                 HtmlContent - (499:17,6 [4] TagHelpersWithTemplate.cshtml)
-                    RazorIRToken - (499:17,6 [4] TagHelpersWithTemplate.cshtml) - Html - \n\n
+                    IntermediateToken - (499:17,6 [4] TagHelpersWithTemplate.cshtml) - Html - \n\n
             CSharpCode - (47:2,12 [268] TagHelpersWithTemplate.cshtml)
-                RazorIRToken - (47:2,12 [268] TagHelpersWithTemplate.cshtml) - CSharp - \n    public void RenderTemplate(string title, Func<string, HelperResult> template)\n    {\n        Output.WriteLine("<br /><p><em>Rendering Template:</em></p>");\n        var helperResult = template(title);\n        helperResult.WriteTo(Output, HtmlEncoder);\n    }\n
+                IntermediateToken - (47:2,12 [268] TagHelpersWithTemplate.cshtml) - CSharp - \n    public void RenderTemplate(string title, Func<string, HelperResult> template)\n    {\n        Output.WriteLine("<br /><p><em>Rendering Template:</em></p>");\n        var helperResult = template(title);\n        helperResult.WriteTo(Output, HtmlEncoder);\n    }\n

@@ -7,16 +7,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     public abstract class TagHelperWriter
     {
-        public abstract void WriteDeclareTagHelperFields(CSharpRenderingContext context, DeclareTagHelperFieldsIRNode node);
+        public abstract void WriteDeclareTagHelperFields(CSharpRenderingContext context, DeclareTagHelperFieldsIntermediateNode node);
 
-        public abstract void WriteTagHelper(CSharpRenderingContext context, TagHelperIRNode node);
+        public abstract void WriteTagHelper(CSharpRenderingContext context, TagHelperIntermediateNode node);
 
-        public abstract void WriteTagHelperBody(CSharpRenderingContext context, TagHelperBodyIRNode node);
+        public abstract void WriteTagHelperBody(CSharpRenderingContext context, TagHelperBodyIntermediateNode node);
 
-        public abstract void WriteCreateTagHelper(CSharpRenderingContext context, CreateTagHelperIRNode node);
+        public abstract void WriteCreateTagHelper(CSharpRenderingContext context, CreateTagHelperIntermediateNode node);
 
-        public abstract void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIRNode node);
+        public abstract void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIntermediateNode node);
 
-        public abstract void WriteSetTagHelperProperty(CSharpRenderingContext context, SetTagHelperPropertyIRNode node);
+        public abstract void WriteSetTagHelperProperty(CSharpRenderingContext context, SetTagHelperPropertyIntermediateNode node);
     }
 }

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
-            var irDocument = codeDocument.GetIRDocument();
+            var irDocument = codeDocument.GetDocumentIntermediateNode();
             ThrowForMissingDocumentDependency(irDocument);
 
             foreach (var pass in Passes)
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 pass.Execute(codeDocument, irDocument);
             }
 
-            codeDocument.SetIRDocument(irDocument);
+            codeDocument.SetDocumentIntermediateNode(irDocument);
         }
     }
 }

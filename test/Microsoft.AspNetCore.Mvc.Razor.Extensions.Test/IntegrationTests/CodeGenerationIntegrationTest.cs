@@ -513,7 +513,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             engine.Process(document);
 
             // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
             AssertDocumentCompiles(document, compilationReferences, expectedErrors);
         }
@@ -530,7 +530,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             engine.Process(document);
 
             // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
             AssertLineMappingsMatchBaseline(document);
             AssertDocumentCompiles(document, compilationReferences, expectedErrors);

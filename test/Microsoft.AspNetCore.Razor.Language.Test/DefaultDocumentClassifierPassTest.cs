@@ -4,7 +4,7 @@
 
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
-using static Microsoft.AspNetCore.Razor.Language.Intermediate.RazorIRAssert;
+using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAssert;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Execute_IgnoresDocumentsWithDocumentKind()
         {
             // Arrange
-            var irDocument = new DocumentIRNode()
+            var documentNode = new DocumentIntermediateNode()
             {
                 DocumentKind = "ignore",
                 Options = RazorCodeGenerationOptions.CreateDefault(),
@@ -26,18 +26,18 @@ namespace Microsoft.AspNetCore.Razor.Language
             pass.Engine = RazorEngine.CreateEmpty(b => { });
 
             // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), documentNode);
 
             // Assert
-            Assert.Equal("ignore", irDocument.DocumentKind);
-            NoChildren(irDocument);
+            Assert.Equal("ignore", documentNode.DocumentKind);
+            NoChildren(documentNode);
         }
 
         [Fact]
         public void Execute_CreatesClassStructure()
         {
             // Arrange
-            var irDocument = new DocumentIRNode()
+            var documentNode = new DocumentIntermediateNode()
             {
                 Options = RazorCodeGenerationOptions.CreateDefault(),
             };
@@ -46,14 +46,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             pass.Engine = RazorEngine.CreateEmpty(b =>{ });
 
             // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), irDocument);
+            pass.Execute(TestRazorCodeDocument.CreateEmpty(), documentNode);
 
             // Assert
-            Assert.Equal("default", irDocument.DocumentKind);
+            Assert.Equal("default", documentNode.DocumentKind);
 
-            var @namespace = SingleChild<NamespaceDeclarationIRNode>(irDocument);
-            var @class = SingleChild<ClassDeclarationIRNode>(@namespace);
-            var method = SingleChild<MethodDeclarationIRNode>(@class);
+            var @namespace = SingleChild<NamespaceDeclarationIntermediateNode>(documentNode);
+            var @class = SingleChild<ClassDeclarationIntermediateNode>(@namespace);
+            var method = SingleChild<MethodDeclarationIntermediateNode>(@class);
             NoChildren(method);
         }
     }

@@ -54,10 +54,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Phases.Add(new DefaultRazorParsingPhase());
             builder.Phases.Add(new DefaultRazorSyntaxTreePhase());
             builder.Phases.Add(new DefaultRazorTagHelperBinderPhase());
-            builder.Phases.Add(new DefaultRazorIRLoweringPhase());
+            builder.Phases.Add(new DefaultRazorIntermediateNodeLoweringPhase());
             builder.Phases.Add(new DefaultRazorDocumentClassifierPhase());
             builder.Phases.Add(new DefaultRazorDirectiveClassifierPhase());
-            builder.Phases.Add(new DefaultRazorIROptimizationPhase());
+            builder.Phases.Add(new DefaultRazorOptimizationPhase());
             builder.Phases.Add(new DefaultRazorCSharpLoweringPhase());
 
             // General extensibility
@@ -68,9 +68,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             builder.Features.Add(new DefaultDirectiveSyntaxTreePass());
             builder.Features.Add(new HtmlNodeOptimizationPass());
 
-            // IR Passes
+            // Intermediate Node Passes
             builder.Features.Add(new DefaultDocumentClassifierPass());
-            builder.Features.Add(new DirectiveRemovalIROptimizationPass());
+            builder.Features.Add(new DirectiveRemovalOptimizationPass());
 
             // Default Runtime Targets
             builder.AddTargetExtension(new PreallocatedAttributeTargetExtension());
@@ -109,8 +109,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Configure options
             builder.Features.Add(new DesignTimeOptionsFeature());
 
-            // IR Passes
-            builder.Features.Add(new RazorDesignTimeIRPass());
+            // Intermediate Node Passes
+            builder.Features.Add(new DesignTimeDirectivePass());
 
             // DesignTime Runtime Targets
             builder.AddTargetExtension(new DesignTimeDirectiveTargetExtension());

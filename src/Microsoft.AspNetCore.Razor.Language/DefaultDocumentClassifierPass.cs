@@ -12,16 +12,16 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected override string DocumentKind => "default";
 
-        protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             return true;
         }
 
         protected override void OnDocumentStructureCreated(
             RazorCodeDocument codeDocument,
-            NamespaceDeclarationIRNode @namespace,
-            ClassDeclarationIRNode @class,
-            MethodDeclarationIRNode method)
+            NamespaceDeclarationIntermediateNode @namespace,
+            ClassDeclarationIntermediateNode @class,
+            MethodDeclarationIntermediateNode method)
         {
             var configuration = Engine.Features.OfType<DefaultDocumentClassifierPassFeature>().FirstOrDefault();
             if (configuration != null)

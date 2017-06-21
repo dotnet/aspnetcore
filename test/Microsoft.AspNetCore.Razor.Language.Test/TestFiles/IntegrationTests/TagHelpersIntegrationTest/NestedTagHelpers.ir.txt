@@ -9,21 +9,21 @@ Document -
                 TagHelper - (31:1,0 [20] NestedTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         HtmlContent - (43:1,12 [4] NestedTagHelpers.cshtml)
-                            RazorIRToken - (43:1,12 [4] NestedTagHelpers.cshtml) - Html - Hola
+                            IntermediateToken - (43:1,12 [4] NestedTagHelpers.cshtml) - Html - Hola
                     CreateTagHelper -  - PTagHelper
                     AddTagHelperHtmlAttribute -  - someattr - HtmlAttributeValueStyle.Minimized
                 HtmlContent - (51:1,20 [2] NestedTagHelpers.cshtml)
-                    RazorIRToken - (51:1,20 [2] NestedTagHelpers.cshtml) - Html - \n
+                    IntermediateToken - (51:1,20 [2] NestedTagHelpers.cshtml) - Html - \n
                 TagHelper - (53:2,0 [68] NestedTagHelpers.cshtml) - form - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         HtmlContent - (73:2,20 [6] NestedTagHelpers.cshtml)
-                            RazorIRToken - (73:2,20 [6] NestedTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (73:2,20 [6] NestedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (79:3,4 [33] NestedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - InputTagHelper
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - value - FooProp
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                         HtmlContent - (112:3,37 [2] NestedTagHelpers.cshtml)
-                            RazorIRToken - (112:3,37 [2] NestedTagHelpers.cshtml) - Html - \n
+                            IntermediateToken - (112:3,37 [2] NestedTagHelpers.cshtml) - Html - \n
                     CreateTagHelper -  - FormTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2

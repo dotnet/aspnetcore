@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public string TemplateTypeName { get; set; } = DefaultTemplateTypeName;
 
-        public void WriteTemplate(CSharpRenderingContext context, TemplateIRNode node)
+        public void WriteTemplate(CSharpRenderingContext context, TemplateIntermediateNode node)
         {
             const string ItemParameterName = "item";
             const string TemplateWriterName = "__razor_template_writer";

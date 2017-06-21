@@ -3,11 +3,11 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_UnfinishedExpressionInCode_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [2] UnfinishedExpressionInCode.cshtml)
-                    RazorIRToken - (2:0,2 [2] UnfinishedExpressionInCode.cshtml) - CSharp - \n
+                    IntermediateToken - (2:0,2 [2] UnfinishedExpressionInCode.cshtml) - CSharp - \n
                 CSharpExpression - (5:1,1 [9] UnfinishedExpressionInCode.cshtml)
-                    RazorIRToken - (5:1,1 [9] UnfinishedExpressionInCode.cshtml) - CSharp - DateTime.
+                    IntermediateToken - (5:1,1 [9] UnfinishedExpressionInCode.cshtml) - CSharp - DateTime.
                 CSharpCode - (14:1,10 [2] UnfinishedExpressionInCode.cshtml)
-                    RazorIRToken - (14:1,10 [2] UnfinishedExpressionInCode.cshtml) - CSharp - \n
+                    IntermediateToken - (14:1,10 [2] UnfinishedExpressionInCode.cshtml) - CSharp - \n

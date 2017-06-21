@@ -20,19 +20,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             builder.AddDirective(Directive);
             builder.Features.Add(new Pass());
+            builder.AddTargetExtension(new InjectTargetExtension());
             return builder;
         }
 
-        internal class Pass : RazorIRPassBase, IRazorDirectiveClassifierPass
+        internal class Pass : IntermediateNodePassBase, IRazorDirectiveClassifierPass
         {
             // Runs after the @model and @namespace directives
             public override int Order => 10;
             
-            protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
             {
                 var visitor = new Visitor();
-                visitor.Visit(irDocument);
-                var modelType = ModelDirective.GetModelType(irDocument);
+                visitor.Visit(documentNode);
+                var modelType = ModelDirective.GetModelType(documentNode);
 
                 var properties = new HashSet<string>(StringComparer.Ordinal);
 
@@ -55,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
                     typeName = typeName.Replace("<TModel>", "<" + modelType + ">");
 
-                    var injectNode = new InjectDirectiveIRNode()
+                    var injectNode = new InjectIntermediateNode()
                     {
                         TypeName = typeName,
                         MemberName = memberName,
@@ -66,13 +67,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
-        private class Visitor : RazorIRNodeWalker
+        private class Visitor : IntermediateNodeWalker
         {
-            public ClassDeclarationIRNode Class { get; private set; }
+            public ClassDeclarationIntermediateNode Class { get; private set; }
 
-            public IList<DirectiveIRNode> Directives { get; } = new List<DirectiveIRNode>();
+            public IList<DirectiveIntermediateNode> Directives { get; } = new List<DirectiveIntermediateNode>();
 
-            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
                 if (Class == null)
                 {
@@ -82,7 +83,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 base.VisitClassDeclaration(node);
             }
 
-            public override void VisitDirective(DirectiveIRNode node)
+            public override void VisitDirective(DirectiveIntermediateNode node)
             {
                 if (node.Descriptor == Directive)
                 {

@@ -13,11 +13,11 @@ Document -
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] DuplicateAttributeTagHelpers.cshtml)
-                    RazorIRToken - (33:1,0 [2] DuplicateAttributeTagHelpers.cshtml) - Html - \n
+                    IntermediateToken - (33:1,0 [2] DuplicateAttributeTagHelpers.cshtml) - Html - \n
                 TagHelper - (35:2,0 [259] DuplicateAttributeTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         HtmlContent - (65:2,30 [6] DuplicateAttributeTagHelpers.cshtml)
-                            RazorIRToken - (65:2,30 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (65:2,30 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
                         TagHelper - (71:3,4 [39] DuplicateAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -26,7 +26,7 @@ Document -
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                         HtmlContent - (110:3,43 [6] DuplicateAttributeTagHelpers.cshtml)
-                            RazorIRToken - (110:3,43 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (110:3,43 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
                         TagHelper - (116:4,4 [70] DuplicateAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -34,11 +34,11 @@ Document -
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             SetTagHelperProperty - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                RazorIRToken - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
+                                IntermediateToken - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3
                         HtmlContent - (186:4,74 [6] DuplicateAttributeTagHelpers.cshtml)
-                            RazorIRToken - (186:4,74 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (186:4,74 [6] DuplicateAttributeTagHelpers.cshtml) - Html - \n    
                         TagHelper - (192:5,4 [96] DuplicateAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -46,15 +46,15 @@ Document -
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_4 - type - Type
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_4 - type - Type
                             SetTagHelperProperty - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                RazorIRToken - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
+                                IntermediateToken - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_6
                         HtmlContent - (288:5,100 [2] DuplicateAttributeTagHelpers.cshtml)
-                            RazorIRToken - (288:5,100 [2] DuplicateAttributeTagHelpers.cshtml) - Html - \n
+                            IntermediateToken - (288:5,100 [2] DuplicateAttributeTagHelpers.cshtml) - Html - \n
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     SetTagHelperProperty - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        RazorIRToken - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml) - CSharp - 3
+                        IntermediateToken - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml) - CSharp - 3
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_7
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_8

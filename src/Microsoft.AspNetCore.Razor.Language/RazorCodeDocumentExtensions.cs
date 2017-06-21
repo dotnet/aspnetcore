@@ -71,24 +71,24 @@ namespace Microsoft.AspNetCore.Razor.Language
             document.Items[typeof(ImportSyntaxTreesHolder)] = new ImportSyntaxTreesHolder(syntaxTrees);
         }
 
-        public static DocumentIRNode GetIRDocument(this RazorCodeDocument document)
+        public static DocumentIntermediateNode GetDocumentIntermediateNode(this RazorCodeDocument document)
         {
             if (document == null)
             {
                 throw new ArgumentNullException(nameof(document));
             }
 
-            return document.Items[typeof(DocumentIRNode)] as DocumentIRNode;
+            return document.Items[typeof(DocumentIntermediateNode)] as DocumentIntermediateNode;
         }
 
-        public static void SetIRDocument(this RazorCodeDocument document, DocumentIRNode irDocument)
+        public static void SetDocumentIntermediateNode(this RazorCodeDocument document, DocumentIntermediateNode documentNode)
         {
             if (document == null)
             {
                 throw new ArgumentNullException(nameof(document));
             }
 
-            document.Items[typeof(DocumentIRNode)] = irDocument;
+            document.Items[typeof(DocumentIntermediateNode)] = documentNode;
         }
 
         public static RazorCSharpDocument GetCSharpDocument(this RazorCodeDocument document)

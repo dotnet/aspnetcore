@@ -3,7 +3,7 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CodeBlockAtEOF_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [0] CodeBlockAtEOF.cshtml)
-                    RazorIRToken - (2:0,2 [0] CodeBlockAtEOF.cshtml) - CSharp - 
+                    IntermediateToken - (2:0,2 [0] CodeBlockAtEOF.cshtml) - CSharp - 

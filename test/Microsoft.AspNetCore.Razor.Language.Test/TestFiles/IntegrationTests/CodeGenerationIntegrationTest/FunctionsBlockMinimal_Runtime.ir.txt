@@ -3,8 +3,8 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_FunctionsBlockMinimal_Runtime -  - 
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [4] FunctionsBlockMinimal.cshtml)
-                    RazorIRToken - (0:0,0 [4] FunctionsBlockMinimal.cshtml) - Html - \n\n
+                    IntermediateToken - (0:0,0 [4] FunctionsBlockMinimal.cshtml) - Html - \n\n
             CSharpCode - (4:2,0 [1] FunctionsBlockMinimal.cshtml)
-                RazorIRToken - (4:2,0 [1] FunctionsBlockMinimal.cshtml) - CSharp - 	
+                IntermediateToken - (4:2,0 [1] FunctionsBlockMinimal.cshtml) - CSharp - 	
             CSharpCode - (16:2,12 [55] FunctionsBlockMinimal.cshtml)
-                RazorIRToken - (16:2,12 [55] FunctionsBlockMinimal.cshtml) - CSharp - \nstring foo(string input) {\n	return input + "!";\n}\n
+                IntermediateToken - (16:2,12 [55] FunctionsBlockMinimal.cshtml) - CSharp - \nstring foo(string input) {\n	return input + "!";\n}\n

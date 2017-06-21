@@ -6,22 +6,22 @@ Document -
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (57:2,0 [52] BasicTagHelpers_Prefixed.cshtml)
-                    RazorIRToken - (57:2,0 [2] BasicTagHelpers_Prefixed.cshtml) - Html - \n
-                    RazorIRToken - (59:3,0 [7] BasicTagHelpers_Prefixed.cshtml) - Html - <THSdiv
-                    RazorIRToken - (66:3,7 [36] BasicTagHelpers_Prefixed.cshtml) - Html -  class="randomNonTagHelperAttribute"
-                    RazorIRToken - (102:3,43 [1] BasicTagHelpers_Prefixed.cshtml) - Html - >
-                    RazorIRToken - (103:3,44 [6] BasicTagHelpers_Prefixed.cshtml) - Html - \n    
+                    IntermediateToken - (57:2,0 [2] BasicTagHelpers_Prefixed.cshtml) - Html - \n
+                    IntermediateToken - (59:3,0 [7] BasicTagHelpers_Prefixed.cshtml) - Html - <THSdiv
+                    IntermediateToken - (66:3,7 [36] BasicTagHelpers_Prefixed.cshtml) - Html -  class="randomNonTagHelperAttribute"
+                    IntermediateToken - (102:3,43 [1] BasicTagHelpers_Prefixed.cshtml) - Html - >
+                    IntermediateToken - (103:3,44 [6] BasicTagHelpers_Prefixed.cshtml) - Html - \n    
                 TagHelper - (109:4,4 [136] BasicTagHelpers_Prefixed.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         HtmlContent - (135:4,30 [56] BasicTagHelpers_Prefixed.cshtml)
-                            RazorIRToken - (135:4,30 [10] BasicTagHelpers_Prefixed.cshtml) - Html - \n        
-                            RazorIRToken - (145:5,8 [3] BasicTagHelpers_Prefixed.cshtml) - Html - <p>
-                            RazorIRToken - (148:5,11 [4] BasicTagHelpers_Prefixed.cshtml) - Html - </p>
-                            RazorIRToken - (152:5,15 [10] BasicTagHelpers_Prefixed.cshtml) - Html - \n        
-                            RazorIRToken - (162:6,8 [6] BasicTagHelpers_Prefixed.cshtml) - Html - <input
-                            RazorIRToken - (168:6,14 [12] BasicTagHelpers_Prefixed.cshtml) - Html -  type="text"
-                            RazorIRToken - (180:6,26 [1] BasicTagHelpers_Prefixed.cshtml) - Html - >
-                            RazorIRToken - (181:6,27 [10] BasicTagHelpers_Prefixed.cshtml) - Html - \n        
+                            IntermediateToken - (135:4,30 [10] BasicTagHelpers_Prefixed.cshtml) - Html - \n        
+                            IntermediateToken - (145:5,8 [3] BasicTagHelpers_Prefixed.cshtml) - Html - <p>
+                            IntermediateToken - (148:5,11 [4] BasicTagHelpers_Prefixed.cshtml) - Html - </p>
+                            IntermediateToken - (152:5,15 [10] BasicTagHelpers_Prefixed.cshtml) - Html - \n        
+                            IntermediateToken - (162:6,8 [6] BasicTagHelpers_Prefixed.cshtml) - Html - <input
+                            IntermediateToken - (168:6,14 [12] BasicTagHelpers_Prefixed.cshtml) - Html -  type="text"
+                            IntermediateToken - (180:6,26 [1] BasicTagHelpers_Prefixed.cshtml) - Html - >
+                            IntermediateToken - (181:6,27 [10] BasicTagHelpers_Prefixed.cshtml) - Html - \n        
                         TagHelper - (191:7,8 [41] BasicTagHelpers_Prefixed.cshtml) - input - TagMode.StartTagOnly
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -29,11 +29,11 @@ Document -
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             SetTagHelperProperty - (226:7,43 [4] BasicTagHelpers_Prefixed.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                RazorIRToken - (226:7,43 [4] BasicTagHelpers_Prefixed.cshtml) - CSharp - true
+                                IntermediateToken - (226:7,43 [4] BasicTagHelpers_Prefixed.cshtml) - CSharp - true
                         HtmlContent - (232:7,49 [6] BasicTagHelpers_Prefixed.cshtml)
-                            RazorIRToken - (232:7,49 [6] BasicTagHelpers_Prefixed.cshtml) - Html - \n    
+                            IntermediateToken - (232:7,49 [6] BasicTagHelpers_Prefixed.cshtml) - Html - \n    
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                 HtmlContent - (245:8,11 [11] BasicTagHelpers_Prefixed.cshtml)
-                    RazorIRToken - (245:8,11 [2] BasicTagHelpers_Prefixed.cshtml) - Html - \n
-                    RazorIRToken - (247:9,0 [9] BasicTagHelpers_Prefixed.cshtml) - Html - </THSdiv>
+                    IntermediateToken - (245:8,11 [2] BasicTagHelpers_Prefixed.cshtml) - Html - \n
+                    IntermediateToken - (247:9,0 [9] BasicTagHelpers_Prefixed.cshtml) - Html - </THSdiv>

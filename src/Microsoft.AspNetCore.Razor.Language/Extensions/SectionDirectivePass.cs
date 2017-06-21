@@ -7,21 +7,21 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    public sealed class SectionDirectivePass : RazorIRPassBase, IRazorDirectiveClassifierPass
+    public sealed class SectionDirectivePass : IntermediateNodePassBase, IRazorDirectiveClassifierPass
     {
-        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
-            var @class = irDocument.FindPrimaryClass();
+            var @class = documentNode.FindPrimaryClass();
             if (@class == null)
             {
                 return;
             }
 
-            foreach (var directive in irDocument.FindDirectiveReferences(SectionDirective.Directive))
+            foreach (var directive in documentNode.FindDirectiveReferences(SectionDirective.Directive))
             {
-                var sectionName = ((DirectiveIRNode)directive.Node).Tokens.FirstOrDefault()?.Content;
+                var sectionName = ((DirectiveIntermediateNode)directive.Node).Tokens.FirstOrDefault()?.Content;
 
-                var section = new SectionIRNode()
+                var section = new SectionIntermediateNode()
                 {
                     Name = sectionName,
                 };
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 var i = 0;
                 for (; i < directive.Node.Children.Count; i++)
                 {
-                    if (!(directive.Node.Children[i] is DirectiveTokenIRNode))
+                    if (!(directive.Node.Children[i] is DirectiveTokenIntermediateNode))
                     {
                         break;
                     }

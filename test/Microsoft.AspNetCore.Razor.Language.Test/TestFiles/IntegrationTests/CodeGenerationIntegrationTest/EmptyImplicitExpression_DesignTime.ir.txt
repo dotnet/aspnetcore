@@ -3,11 +3,11 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EmptyImplicitExpression_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [18] EmptyImplicitExpression.cshtml)
-                    RazorIRToken - (0:0,0 [18] EmptyImplicitExpression.cshtml) - Html - This is markup\n\n
+                    IntermediateToken - (0:0,0 [18] EmptyImplicitExpression.cshtml) - Html - This is markup\n\n
                 CSharpExpression - (19:2,1 [0] EmptyImplicitExpression.cshtml)
-                    RazorIRToken - (19:2,1 [0] EmptyImplicitExpression.cshtml) - CSharp - 
+                    IntermediateToken - (19:2,1 [0] EmptyImplicitExpression.cshtml) - CSharp - 
                 HtmlContent - (19:2,1 [1] EmptyImplicitExpression.cshtml)
-                    RazorIRToken - (19:2,1 [1] EmptyImplicitExpression.cshtml) - Html - !
+                    IntermediateToken - (19:2,1 [1] EmptyImplicitExpression.cshtml) - Html - !

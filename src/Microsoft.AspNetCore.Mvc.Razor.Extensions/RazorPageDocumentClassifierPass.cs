@@ -12,16 +12,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         protected override string DocumentKind => RazorPageDocumentKind;
 
-        protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
-            return PageDirective.TryGetPageDirective(irDocument, out var directive);
+            return PageDirective.TryGetPageDirective(documentNode, out var directive);
         }
 
         protected override void OnDocumentStructureCreated(
             RazorCodeDocument codeDocument,
-            NamespaceDeclarationIRNode @namespace,
-            ClassDeclarationIRNode @class,
-            MethodDeclarationIRNode method)
+            NamespaceDeclarationIntermediateNode @namespace,
+            ClassDeclarationIntermediateNode @class,
+            MethodDeclarationIntermediateNode method)
         {
             var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.FilePath;
 

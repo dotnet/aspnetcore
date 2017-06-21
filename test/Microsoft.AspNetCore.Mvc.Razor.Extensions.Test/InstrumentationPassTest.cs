@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
-using static Microsoft.AspNetCore.Razor.Language.Intermediate.RazorIRAssert;
+using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAssert;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
@@ -14,17 +14,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_InstrumentsHtml()
         {
             // Arrange
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
 
-            builder.Push(new HtmlContentIRNode()
+            builder.Push(new HtmlContentIntermediateNode()
             {
                 Source = CreateSource(1),
             });
-            builder.Add(new RazorIRToken()
+            builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = RazorIRToken.TokenKind.Html,
+                Kind = IntermediateToken.TokenKind.Html,
                 Source = CreateSource(1)
             });
             builder.Pop();
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Children(
                 document,
                 n => BeginInstrumentation("1, 1, true", n),
-                n => RazorIRAssert.Html("Hi", n),
+                n => IntermediateNodeAssert.Html("Hi", n),
                 n => EndInstrumentation(n));
         }
 
@@ -49,13 +49,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsHtml_WithoutLocation()
         {
             // Arrange
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Push(new HtmlContentIRNode());
-            builder.Add(new RazorIRToken()
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Push(new HtmlContentIntermediateNode());
+            builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = RazorIRToken.TokenKind.Html,
+                Kind = IntermediateToken.TokenKind.Html,
             });
             builder.Pop();
 
@@ -70,23 +70,23 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Assert
             Children(
                 document,
-                n => RazorIRAssert.Html("Hi", n));
+                n => IntermediateNodeAssert.Html("Hi", n));
         }
 
         [Fact]
         public void InstrumentationPass_InstrumentsCSharpExpression()
         {
             // Arrange
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Push(new CSharpExpressionIRNode()
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Push(new CSharpExpressionIntermediateNode()
             {
                 Source = CreateSource(2),
             });
-            builder.Add(new RazorIRToken()
+            builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = RazorIRToken.TokenKind.CSharp,
+                Kind = IntermediateToken.TokenKind.CSharp,
             });
 
             var pass = new InstrumentationPass()
@@ -109,13 +109,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsCSharpExpression_WithoutLocation()
         {
             // Arrange
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Push(new CSharpExpressionIRNode());
-            builder.Add(new RazorIRToken()
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Push(new CSharpExpressionIntermediateNode());
+            builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = RazorIRToken.TokenKind.CSharp,
+                Kind = IntermediateToken.TokenKind.CSharp,
             });
 
             var pass = new InstrumentationPass()
@@ -136,21 +136,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperAttribute()
         {
             // Arrange
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Push(new TagHelperIRNode());
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Push(new TagHelperIntermediateNode());
 
-            builder.Push(new AddTagHelperHtmlAttributeIRNode());
+            builder.Push(new AddTagHelperHtmlAttributeIntermediateNode());
 
-            builder.Push(new CSharpExpressionIRNode()
+            builder.Push(new CSharpExpressionIntermediateNode()
             {
                 Source = CreateSource(5)
             });
 
-            builder.Add(new RazorIRToken()
+            builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = RazorIRToken.TokenKind.CSharp,
+                Kind = IntermediateToken.TokenKind.CSharp,
             });
 
             var pass = new InstrumentationPass()
@@ -166,12 +166,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 document,
                 n =>
                 {
-                    Assert.IsType<TagHelperIRNode>(n);
+                    Assert.IsType<TagHelperIntermediateNode>(n);
                     Children(
                         n,
                         c =>
                         {
-                            Assert.IsType<AddTagHelperHtmlAttributeIRNode>(c);
+                            Assert.IsType<AddTagHelperHtmlAttributeIntermediateNode>(c);
                             Children(
                                 c,
                                 s => CSharpExpression("Hi", s));
@@ -183,21 +183,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsCSharpExpression_InsideTagHelperProperty()
         {
             // Arrange
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Push(new TagHelperIRNode());
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Push(new TagHelperIntermediateNode());
 
-            builder.Push(new SetTagHelperPropertyIRNode());
+            builder.Push(new SetTagHelperPropertyIntermediateNode());
 
-            builder.Push(new CSharpExpressionIRNode()
+            builder.Push(new CSharpExpressionIntermediateNode()
             {
                 Source = CreateSource(5)
             });
 
-            builder.Add(new RazorIRToken()
+            builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = RazorIRToken.TokenKind.CSharp,
+                Kind = IntermediateToken.TokenKind.CSharp,
             });
 
             var pass = new InstrumentationPass()
@@ -213,12 +213,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 document,
                 n =>
                 {
-                    Assert.IsType<TagHelperIRNode>(n);
+                    Assert.IsType<TagHelperIntermediateNode>(n);
                     Children(
                         n,
                         c =>
                         {
-                            Assert.IsType<SetTagHelperPropertyIRNode>(c);
+                            Assert.IsType<SetTagHelperPropertyIntermediateNode>(c);
                             Children(
                                 c,
                                 s => CSharpExpression("Hi", s));
@@ -230,9 +230,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_InstrumentsTagHelper()
         {
             // Arrange
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Add(new TagHelperIRNode()
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Add(new TagHelperIntermediateNode()
             {
                 Source = CreateSource(3),
             });
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Children(
                 document,
                 n => BeginInstrumentation("3, 3, false", n),
-                n => Assert.IsType<TagHelperIRNode>(n),
+                n => Assert.IsType<TagHelperIntermediateNode>(n),
                 n => EndInstrumentation(n));
         }
 
@@ -257,9 +257,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InstrumentationPass_SkipsTagHelper_WithoutLocation()
         {
             // Arrange
-            var document = new DocumentIRNode();
-            var builder = RazorIRBuilder.Create(document);
-            builder.Push(new TagHelperIRNode());
+            var document = new DocumentIntermediateNode();
+            var builder = IntermediateNodeBuilder.Create(document);
+            builder.Push(new TagHelperIntermediateNode());
 
             var pass = new InstrumentationPass()
             {
@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Assert
             Children(
                 document,
-                n => Assert.IsType<TagHelperIRNode>(n));
+                n => Assert.IsType<TagHelperIntermediateNode>(n));
         }
 
         private SourceSpan CreateSource(int number)

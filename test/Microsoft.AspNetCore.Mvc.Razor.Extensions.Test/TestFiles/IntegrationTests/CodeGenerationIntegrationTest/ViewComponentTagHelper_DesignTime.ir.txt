@@ -1,6 +1,6 @@
 Document - 
     CSharpCode - 
-        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml))]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml))]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement -  - TModel = global::System.Object
         UsingStatement - (1:0,1 [12] ) - System
@@ -27,29 +27,29 @@ Document -
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (14:0,14 [12] ViewComponentTagHelper.cshtml) - "*, AppCode"
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml.__Generated__TestViewComponentTagHelper - AllTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (26:0,26 [2] ViewComponentTagHelper.cshtml)
-                    RazorIRToken - (26:0,26 [2] ViewComponentTagHelper.cshtml) - Html - \n
+                    IntermediateToken - (26:0,26 [2] ViewComponentTagHelper.cshtml) - Html - \n
                 CSharpCode - (30:1,2 [26] ViewComponentTagHelper.cshtml)
-                    RazorIRToken - (30:1,2 [26] ViewComponentTagHelper.cshtml) - CSharp - \n    var foo = "Hello";\n
+                    IntermediateToken - (30:1,2 [26] ViewComponentTagHelper.cshtml) - CSharp - \n    var foo = "Hello";\n
                 HtmlContent - (59:4,0 [2] ViewComponentTagHelper.cshtml)
-                    RazorIRToken - (59:4,0 [2] ViewComponentTagHelper.cshtml) - Html - \n
+                    IntermediateToken - (59:4,0 [2] ViewComponentTagHelper.cshtml) - Html - \n
                 TagHelper - (61:5,0 [50] ViewComponentTagHelper.cshtml) - vc:test - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                     CreateTagHelper -  - AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml.__Generated__TestViewComponentTagHelper
                     CreateTagHelper -  - AllTagHelper
                     SetTagHelperProperty - (82:5,21 [4] ViewComponentTagHelper.cshtml) - first-name - firstName - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (83:5,22 [3] ViewComponentTagHelper.cshtml)
-                            RazorIRToken - (83:5,22 [3] ViewComponentTagHelper.cshtml) - CSharp - foo
+                            IntermediateToken - (83:5,22 [3] ViewComponentTagHelper.cshtml) - CSharp - foo
                     SetTagHelperProperty - (93:5,32 [6] ViewComponentTagHelper.cshtml) - bar - Bar - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (93:5,32 [6] ViewComponentTagHelper.cshtml)
-                            RazorIRToken - (93:5,32 [6] ViewComponentTagHelper.cshtml) - Html -  World
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
+                            IntermediateToken - (93:5,32 [6] ViewComponentTagHelper.cshtml) - Html -  World
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("vc:test")]\npublic class __Generated__TestViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper\n{\n    private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;\n    public __Generated__TestViewComponentTagHelper(global::Microsoft.AspNetCore.Mvc.IViewComponentHelper helper)\n    {\n        _helper = helper;\n    }\n    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute, global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute]\n    public global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { get; set; }\n    public System.String firstName { get; set; }\n    public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output)\n    {\n        (_helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);\n        var content = await _helper.InvokeAsync("Test", new { firstName });\n        output.TagName = null;\n        output.Content.SetHtmlContent(content);\n    }\n}\n
+                IntermediateToken -  - CSharp - [Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute("vc:test")]\npublic class __Generated__TestViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper\n{\n    private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;\n    public __Generated__TestViewComponentTagHelper(global::Microsoft.AspNetCore.Mvc.IViewComponentHelper helper)\n    {\n        _helper = helper;\n    }\n    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute, global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute]\n    public global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { get; set; }\n    public System.String firstName { get; set; }\n    public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output)\n    {\n        (_helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);\n        var content = await _helper.InvokeAsync("Test", new { firstName });\n        output.TagName = null;\n        output.Content.SetHtmlContent(content);\n    }\n}\n

@@ -4,5 +4,5 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (8:0,8 [20] NamespaceToken.cshtml) - System.Globalization
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync

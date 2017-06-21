@@ -84,11 +84,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// </summary>
         /// <param name="builder">The <see cref="IRazorEngineBuilder"/>.</param>
         /// <param name="configureClass"><see cref="Action"/> invoked to configure 
-        /// <see cref="ClassDeclarationIRNode"/> during code generation.</param>
+        /// <see cref="ClassDeclarationIntermediateNode"/> during code generation.</param>
         /// <returns>The <see cref="IRazorEngineBuilder"/>.</returns>
         public static IRazorEngineBuilder ConfigureClass(
             this IRazorEngineBuilder builder, 
-            Action<RazorCodeDocument, ClassDeclarationIRNode> configureClass)
+            Action<RazorCodeDocument, ClassDeclarationIntermediateNode> configureClass)
         {
             if (builder == null)
             {

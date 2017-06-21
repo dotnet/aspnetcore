@@ -5,17 +5,17 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    public sealed class FunctionsDirectivePass : RazorIRPassBase, IRazorDirectiveClassifierPass
+    public sealed class FunctionsDirectivePass : IntermediateNodePassBase, IRazorDirectiveClassifierPass
     {
-        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
-            var @class = irDocument.FindPrimaryClass();
+            var @class = documentNode.FindPrimaryClass();
             if (@class == null)
             {
                 return;
             }
 
-            foreach (var functions in irDocument.FindDirectiveReferences(FunctionsDirective.Directive))
+            foreach (var functions in documentNode.FindDirectiveReferences(FunctionsDirective.Directive))
             {
                 functions.Remove();
 

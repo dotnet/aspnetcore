@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(
                 () => phase.Execute(codeDocument),
-                $"The '{nameof(DefaultRazorCSharpLoweringPhase)}' phase requires a '{nameof(DocumentIRNode)}' " +
+                $"The '{nameof(DefaultRazorCSharpLoweringPhase)}' phase requires a '{nameof(DocumentIntermediateNode)}' " +
                 $"provided by the '{nameof(RazorCodeDocument)}'.");
         }
 
@@ -42,17 +42,17 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source));
 
-            var irDocument = new DocumentIRNode()
+            var irDocument = new DocumentIntermediateNode()
             {
                 DocumentKind = "test",
             };
-            codeDocument.SetIRDocument(irDocument);
+            codeDocument.SetDocumentIntermediateNode(irDocument);
 
             // Act & Assert
             ExceptionAssert.Throws<InvalidOperationException>(
                 () => phase.Execute(codeDocument),
                 $"The document of kind 'test' does not have a '{nameof(CodeTarget)}'. " +
-                $"The document classifier must set a value for '{nameof(DocumentIRNode.Target)}'.");
+                $"The document classifier must set a value for '{nameof(DocumentIntermediateNode.Target)}'.");
         }
 
         [Fact]
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
             var codeDocument = TestRazorCodeDocument.Create("<p class=@(");
             var options = RazorCodeGenerationOptions.CreateDefault();
-            var irDocument = new DocumentIRNode()
+            var irDocument = new DocumentIntermediateNode()
             {
                 DocumentKind = "test",
                 Target = CodeTarget.CreateDefault(codeDocument, options),
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     new RazorDiagnosticDescriptor("1234", () => "I am an error.", RazorDiagnosticSeverity.Error),
                     new SourceSpan("SomeFile.cshtml", 11, 0, 11, 1));
             irDocument.Diagnostics.Add(expectedDiagnostic);
-            codeDocument.SetIRDocument(irDocument);
+            codeDocument.SetDocumentIntermediateNode(irDocument);
 
             // Act
             phase.Execute(codeDocument);

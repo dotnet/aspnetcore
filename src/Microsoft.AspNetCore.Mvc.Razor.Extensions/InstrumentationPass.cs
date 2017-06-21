@@ -8,14 +8,14 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class InstrumentationPass : RazorIRPassBase, IRazorIROptimizationPass
+    public class InstrumentationPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
         public override int Order => DefaultFeatureOrder;
 
-        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             var walker = new Visitor();
-            walker.VisitDocument(irDocument);
+            walker.VisitDocument(documentNode);
 
             for (var i = 0; i < walker.Items.Count; i++)
             {
@@ -30,11 +30,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var beginContextMethodName = "BeginContext"; /* ORIGINAL: BeginContextMethodName */
             var endContextMethodName = "EndContext"; /* ORIGINAL: EndContextMethodName */
 
-            var beginNode = new CSharpCodeIRNode();
-            RazorIRBuilder.Create(beginNode)
-                .Add(new RazorIRToken()
+            var beginNode = new CSharpCodeIntermediateNode();
+            IntermediateNodeBuilder.Create(beginNode)
+                .Add(new IntermediateToken()
                 {
-                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Kind = IntermediateToken.TokenKind.CSharp,
                     Content = string.Format("{0}({1}, {2}, {3});",
                         beginContextMethodName,
                         item.Source.AbsoluteIndex.ToString(CultureInfo.InvariantCulture),
@@ -42,11 +42,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                         item.IsLiteral ? "true" : "false")
                 });
 
-            var endNode = new CSharpCodeIRNode();
-            RazorIRBuilder.Create(endNode)
-                .Add(new RazorIRToken()
+            var endNode = new CSharpCodeIntermediateNode();
+            IntermediateNodeBuilder.Create(endNode)
+                .Add(new IntermediateToken()
                 {
-                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Kind = IntermediateToken.TokenKind.CSharp,
                     Content = string.Format("{0}();", endContextMethodName)
                 });
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private struct InstrumentationItem
         {
-            public InstrumentationItem(RazorIRNode node, RazorIRNode parent, bool isLiteral, SourceSpan source)
+            public InstrumentationItem(IntermediateNode node, IntermediateNode parent, bool isLiteral, SourceSpan source)
             {
                 Node = node;
                 Parent = parent;
@@ -65,20 +65,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 Source = source;
             }
 
-            public RazorIRNode Node { get; }
+            public IntermediateNode Node { get; }
 
-            public RazorIRNode Parent { get; }
+            public IntermediateNode Parent { get; }
 
             public bool IsLiteral { get; }
 
             public SourceSpan Source { get; }
         }
 
-        private class Visitor : RazorIRNodeWalker
+        private class Visitor : IntermediateNodeWalker
         {
             public List<InstrumentationItem> Items { get; } = new List<InstrumentationItem>();
 
-            public override void VisitHtml(HtmlContentIRNode node)
+            public override void VisitHtml(HtmlContentIntermediateNode node)
             {
                 if (node.Source != null)
                 {
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 VisitDefault(node);
             }
 
-            public override void VisitCSharpExpression(CSharpExpressionIRNode node)
+            public override void VisitCSharpExpression(CSharpExpressionIntermediateNode node)
             {
                 if (node.Source != null)
                 {
@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 VisitDefault(node);
             }
 
-            public override void VisitTagHelper(TagHelperIRNode node)
+            public override void VisitTagHelper(TagHelperIntermediateNode node)
             {
                 if (node.Source != null)
                 {
@@ -108,12 +108,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 VisitDefault(node);
             }
 
-            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
+            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIntermediateNode node)
             {
                 // We don't want to instrument TagHelper attributes. Do nothing.
             }
 
-            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIntermediateNode node)
             {
                 // We don't want to instrument TagHelper attributes. Do nothing.
             }

@@ -8,25 +8,25 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class RazorPreallocatedTagHelperAttributeOptimizationPass : RazorIRPassBase, IRazorIROptimizationPass
+    internal class RazorPreallocatedTagHelperAttributeOptimizationPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
         public override int Order => DefaultFeatureOrder;
 
-        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             var walker = new PreallocatedTagHelperWalker();
-            walker.VisitDocument(irDocument);
+            walker.VisitDocument(documentNode);
         }
 
-        internal class PreallocatedTagHelperWalker : RazorIRNodeWalker
+        internal class PreallocatedTagHelperWalker : IntermediateNodeWalker
         {
             private const string PreAllocatedAttributeVariablePrefix = "__tagHelperAttribute_";
 
-            private ClassDeclarationIRNode _classDeclaration;
+            private ClassDeclarationIntermediateNode _classDeclaration;
             private int _variableCountOffset;
             private int _preallocatedDeclarationCount = 0;
 
-            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
                 _classDeclaration = node;
                 _variableCountOffset = node.Children.Count;
@@ -34,23 +34,23 @@ namespace Microsoft.AspNetCore.Razor.Language
                 VisitDefault(node);
             }
 
-            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIRNode node)
+            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIntermediateNode node)
             {
-                if (node.Children.Count != 1 || !(node.Children.First() is HtmlContentIRNode))
+                if (node.Children.Count != 1 || !(node.Children.First() is HtmlContentIntermediateNode))
                 {
                     return;
                 }
 
-                var htmlContentNode = node.Children.First() as HtmlContentIRNode;
+                var htmlContentNode = node.Children.First() as HtmlContentIntermediateNode;
                 var plainTextValue = GetContent(htmlContentNode);
 
-                DeclarePreallocatedTagHelperHtmlAttributeIRNode declaration = null;
+                DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode declaration = null;
 
                 for (var i = 0; i < _classDeclaration.Children.Count; i++)
                 {
                     var current = _classDeclaration.Children[i];
 
-                    if (current is DeclarePreallocatedTagHelperHtmlAttributeIRNode existingDeclaration)
+                    if (current is DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode existingDeclaration)
                     {
                         if (string.Equals(existingDeclaration.Name, node.Name, StringComparison.Ordinal) &&
                             string.Equals(existingDeclaration.Value, plainTextValue, StringComparison.Ordinal) &&
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     var variableCount = _classDeclaration.Children.Count - _variableCountOffset;
                     var preAllocatedAttributeVariableName = PreAllocatedAttributeVariablePrefix + variableCount;
-                    declaration = new DeclarePreallocatedTagHelperHtmlAttributeIRNode
+                    declaration = new DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode
                     {
                         VariableName = preAllocatedAttributeVariableName,
                         Name = node.Name,
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     _classDeclaration.Children.Insert(_preallocatedDeclarationCount++, declaration);
                 }
 
-                var addPreAllocatedAttribute = new AddPreallocatedTagHelperHtmlAttributeIRNode
+                var addPreAllocatedAttribute = new AddPreallocatedTagHelperHtmlAttributeIntermediateNode
                 {
                     VariableName = declaration.VariableName,
                 };
@@ -85,25 +85,25 @@ namespace Microsoft.AspNetCore.Razor.Language
                 Parent.Children[nodeIndex] = addPreAllocatedAttribute;
             }
 
-            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIntermediateNode node)
             {
                 if (!(node.Descriptor.IsStringProperty || (node.IsIndexerNameMatch && node.Descriptor.IsIndexerStringProperty)) ||
                     node.Children.Count != 1 ||
-                    !(node.Children.First() is HtmlContentIRNode))
+                    !(node.Children.First() is HtmlContentIntermediateNode))
                 {
                     return;
                 }
 
-                var htmlContentNode = node.Children.First() as HtmlContentIRNode;
+                var htmlContentNode = node.Children.First() as HtmlContentIntermediateNode;
                 var plainTextValue = GetContent(htmlContentNode);
 
-                DeclarePreallocatedTagHelperAttributeIRNode declaration = null;
+                DeclarePreallocatedTagHelperAttributeIntermediateNode declaration = null;
 
                 for (var i = 0; i < _classDeclaration.Children.Count; i++)
                 {
                     var current = _classDeclaration.Children[i];
 
-                    if (current is DeclarePreallocatedTagHelperAttributeIRNode existingDeclaration)
+                    if (current is DeclarePreallocatedTagHelperAttributeIntermediateNode existingDeclaration)
                     {
                         if (string.Equals(existingDeclaration.Name, node.AttributeName, StringComparison.Ordinal) &&
                             string.Equals(existingDeclaration.Value, plainTextValue, StringComparison.Ordinal) &&
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     var variableCount = _classDeclaration.Children.Count - _variableCountOffset;
                     var preAllocatedAttributeVariableName = PreAllocatedAttributeVariablePrefix + variableCount;
-                    declaration = new DeclarePreallocatedTagHelperAttributeIRNode
+                    declaration = new DeclarePreallocatedTagHelperAttributeIntermediateNode
                     {
                         VariableName = preAllocatedAttributeVariableName,
                         Name = node.AttributeName,
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     _classDeclaration.Children.Insert(_preallocatedDeclarationCount++, declaration);
                 }
 
-                var setPreallocatedProperty = new SetPreallocatedTagHelperPropertyIRNode
+                var setPreallocatedProperty = new SetPreallocatedTagHelperPropertyIntermediateNode
                 {
                     VariableName = declaration.VariableName,
                     AttributeName = node.AttributeName,
@@ -144,12 +144,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 Parent.Children[nodeIndex] = setPreallocatedProperty;
             }
 
-            private string GetContent(HtmlContentIRNode node)
+            private string GetContent(HtmlContentIntermediateNode node)
             {
                 var builder = new StringBuilder();
                 for (var i = 0; i < node.Children.Count; i++)
                 {
-                    if (node.Children[i] is RazorIRToken token && token.IsHtml)
+                    if (node.Children[i] is IntermediateToken token && token.IsHtml)
                     {
                         builder.Append(token.Content);
                     }

@@ -4,14 +4,14 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [17] IncompleteTagHelper.cshtml) - "*, TestAssembly"
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.PTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] IncompleteTagHelper.cshtml)
-                    RazorIRToken - (31:0,31 [4] IncompleteTagHelper.cshtml) - Html - \n\n
+                    IntermediateToken - (31:0,31 [4] IncompleteTagHelper.cshtml) - Html - \n\n
                 TagHelper - (35:2,0 [10] IncompleteTagHelper.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (45:2,10 [0] IncompleteTagHelper.cshtml)
-                            RazorIRToken - (45:2,10 [0] IncompleteTagHelper.cshtml) - Html - 
+                            IntermediateToken - (45:2,10 [0] IncompleteTagHelper.cshtml) - Html - 

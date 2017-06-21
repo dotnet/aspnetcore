@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public abstract class DocumentClassifierPassBase : RazorIRPassBase, IRazorDocumentClassifierPass
+    public abstract class DocumentClassifierPassBase : IntermediateNodePassBase, IRazorDocumentClassifierPass
     {
         private static readonly ICodeTargetExtension[] EmptyExtensionArray = new ICodeTargetExtension[0];
 
@@ -22,49 +22,49 @@ namespace Microsoft.AspNetCore.Razor.Language
             TargetExtensions = feature.FirstOrDefault()?.TargetExtensions.ToArray() ?? EmptyExtensionArray;
         }
 
-        protected sealed override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected sealed override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
-            if (irDocument.DocumentKind != null)
+            if (documentNode.DocumentKind != null)
             {
                 return;
             }
 
-            if (!IsMatch(codeDocument, irDocument))
+            if (!IsMatch(codeDocument, documentNode))
             {
                 return;
             }
 
-            irDocument.DocumentKind = DocumentKind;
-            irDocument.Target = CreateTarget(codeDocument, irDocument.Options);
+            documentNode.DocumentKind = DocumentKind;
+            documentNode.Target = CreateTarget(codeDocument, documentNode.Options);
 
-            Rewrite(codeDocument, irDocument);
+            Rewrite(codeDocument, documentNode);
         }
 
-        private void Rewrite(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        private void Rewrite(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             // Rewrite the document from a flat structure to use a sensible default structure,
             // a namespace and class declaration with a single 'razor' method.
-            var children = new List<RazorIRNode>(irDocument.Children);
-            irDocument.Children.Clear();
+            var children = new List<IntermediateNode>(documentNode.Children);
+            documentNode.Children.Clear();
 
-            var @namespace = new NamespaceDeclarationIRNode();
+            var @namespace = new NamespaceDeclarationIntermediateNode();
             @namespace.Annotations[CommonAnnotations.PrimaryNamespace] = CommonAnnotations.PrimaryNamespace;
 
-            var @class = new ClassDeclarationIRNode();
+            var @class = new ClassDeclarationIntermediateNode();
             @class.Annotations[CommonAnnotations.PrimaryClass] = CommonAnnotations.PrimaryClass;
 
-            var method = new MethodDeclarationIRNode();
+            var method = new MethodDeclarationIntermediateNode();
             method.Annotations[CommonAnnotations.PrimaryMethod] = CommonAnnotations.PrimaryMethod;
 
-            var documentBuilder = RazorIRBuilder.Create(irDocument);
+            var documentBuilder = IntermediateNodeBuilder.Create(documentNode);
 
-            var namespaceBuilder = RazorIRBuilder.Create(documentBuilder.Current);
+            var namespaceBuilder = IntermediateNodeBuilder.Create(documentBuilder.Current);
             namespaceBuilder.Push(@namespace);
 
-            var classBuilder = RazorIRBuilder.Create(namespaceBuilder.Current);
+            var classBuilder = IntermediateNodeBuilder.Create(namespaceBuilder.Current);
             classBuilder.Push(@class);
 
-            var methodBuilder = RazorIRBuilder.Create(classBuilder.Current);
+            var methodBuilder = IntermediateNodeBuilder.Create(classBuilder.Current);
             methodBuilder.Push(method);
 
             var visitor = new Visitor(documentBuilder, namespaceBuilder, classBuilder, methodBuilder);
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
         }
 
-        protected abstract bool IsMatch(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
+        protected abstract bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode);
 
         private CodeTarget CreateTarget(RazorCodeDocument codeDocument, RazorCodeGenerationOptions options)
         {
@@ -101,21 +101,21 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected virtual void OnDocumentStructureCreated(
             RazorCodeDocument codeDocument,
-            NamespaceDeclarationIRNode @namespace,
-            ClassDeclarationIRNode @class,
-            MethodDeclarationIRNode @method)
+            NamespaceDeclarationIntermediateNode @namespace,
+            ClassDeclarationIntermediateNode @class,
+            MethodDeclarationIntermediateNode @method)
         {
             // Intentionally empty.
         }
 
-        private class Visitor : RazorIRNodeVisitor
+        private class Visitor : IntermediateNodeVisitor
         {
-            private readonly RazorIRBuilder _document;
-            private readonly RazorIRBuilder _namespace;
-            private readonly RazorIRBuilder _class;
-            private readonly RazorIRBuilder _method;
+            private readonly IntermediateNodeBuilder _document;
+            private readonly IntermediateNodeBuilder _namespace;
+            private readonly IntermediateNodeBuilder _class;
+            private readonly IntermediateNodeBuilder _method;
 
-            public Visitor(RazorIRBuilder document, RazorIRBuilder @namespace, RazorIRBuilder @class, RazorIRBuilder method)
+            public Visitor(IntermediateNodeBuilder document, IntermediateNodeBuilder @namespace, IntermediateNodeBuilder @class, IntermediateNodeBuilder method)
             {
                 _document = document;
                 _namespace = @namespace;
@@ -123,14 +123,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _method = method;
             }
 
-            public override void VisitUsingStatement(UsingStatementIRNode node)
+            public override void VisitUsingStatement(UsingStatementIntermediateNode node)
             {
                 var children = _namespace.Current.Children;
                 var i = children.Count - 1;
                 for (; i >= 0; i--)
                 {
                     var child = children[i];
-                    if (child is UsingStatementIRNode)
+                    if (child is UsingStatementIntermediateNode)
                     {
                         break;
                     }
@@ -139,14 +139,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _namespace.Insert(i + 1, node);
             }
 
-            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIRNode node)
+            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIntermediateNode node)
             {
                 _class.Insert(0, node);
             }
 
-            public override void VisitDefault(RazorIRNode node)
+            public override void VisitDefault(IntermediateNode node)
             {
-                if (node is MemberDeclarationIRNode)
+                if (node is MemberDeclarationIntermediateNode)
                 {
                     _class.Add(node);
                     return;

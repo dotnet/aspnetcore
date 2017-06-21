@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     internal interface IDesignTimeDirectiveTargetExtension : ICodeTargetExtension
     {
-        void WriteDesignTimeDirective(CSharpRenderingContext context, DesignTimeDirectiveIRNode node);
+        void WriteDesignTimeDirective(CSharpRenderingContext context, DesignTimeDirectiveIntermediateNode node);
     }
 }

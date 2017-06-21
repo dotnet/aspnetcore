@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.IntegrationTests
             engine.Process(document);
 
             // Assert
-            AssertIRMatchesBaseline(document.GetIRDocument());
+            AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
 
             var csharpDocument = document.GetCSharpDocument();
             AssertCSharpDocumentMatchesBaseline(csharpDocument);

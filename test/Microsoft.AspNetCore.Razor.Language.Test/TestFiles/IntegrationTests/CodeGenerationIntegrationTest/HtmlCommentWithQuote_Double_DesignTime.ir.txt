@@ -3,10 +3,10 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_HtmlCommentWithQuote_Double_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [45] HtmlCommentWithQuote_Double.cshtml)
-                    RazorIRToken - (0:0,0 [12] HtmlCommentWithQuote_Double.cshtml) - Html - <!-- " -->\n
-                    RazorIRToken - (12:1,0 [4] HtmlCommentWithQuote_Double.cshtml) - Html - <img
-                    RazorIRToken - (16:1,4 [26] HtmlCommentWithQuote_Double.cshtml) - Html -  src="~/images/submit.png"
-                    RazorIRToken - (42:1,30 [3] HtmlCommentWithQuote_Double.cshtml) - Html -  />
+                    IntermediateToken - (0:0,0 [12] HtmlCommentWithQuote_Double.cshtml) - Html - <!-- " -->\n
+                    IntermediateToken - (12:1,0 [4] HtmlCommentWithQuote_Double.cshtml) - Html - <img
+                    IntermediateToken - (16:1,4 [26] HtmlCommentWithQuote_Double.cshtml) - Html -  src="~/images/submit.png"
+                    IntermediateToken - (42:1,30 [3] HtmlCommentWithQuote_Double.cshtml) - Html -  />

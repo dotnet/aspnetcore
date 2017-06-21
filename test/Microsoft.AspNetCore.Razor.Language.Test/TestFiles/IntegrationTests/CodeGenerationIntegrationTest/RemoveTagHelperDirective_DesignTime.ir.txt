@@ -4,7 +4,7 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (17:0,17 [15] RemoveTagHelperDirective.cshtml) - *, TestAssembly
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (32:0,32 [2] RemoveTagHelperDirective.cshtml)
-                    RazorIRToken - (32:0,32 [2] RemoveTagHelperDirective.cshtml) - Html - \n
+                    IntermediateToken - (32:0,32 [2] RemoveTagHelperDirective.cshtml) - Html - \n

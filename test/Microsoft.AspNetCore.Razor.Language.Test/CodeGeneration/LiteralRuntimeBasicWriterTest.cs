@@ -20,15 +20,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Writer = new Legacy.CSharpCodeWriter(),
             };
 
-            var node = new CSharpExpressionIRNode()
+            var node = new CSharpExpressionIntermediateNode()
             {
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 3),
             };
-            var builder = RazorIRBuilder.Create(node);
-            builder.Add(new RazorIRToken()
+            var builder = IntermediateNodeBuilder.Create(node);
+            builder.Add(new IntermediateToken()
             {
                 Content = "i++",
-                Kind = RazorIRToken.TokenKind.CSharp,
+                Kind = IntermediateToken.TokenKind.CSharp,
             });
 
             // Act

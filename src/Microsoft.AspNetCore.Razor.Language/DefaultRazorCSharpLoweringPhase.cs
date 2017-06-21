@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
-            var irDocument = codeDocument.GetIRDocument();
+            var irDocument = codeDocument.GetDocumentIntermediateNode();
             ThrowForMissingDocumentDependency(irDocument);
 
             var target = irDocument.Target;
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 var message = Resources.FormatDocumentMissingTarget(
                     irDocument.DocumentKind,
                     nameof(CodeTarget),
-                    nameof(DocumentIRNode.Target));
+                    nameof(DocumentIntermediateNode.Target));
                 throw new InvalidOperationException(message);
             }
 

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public string TemplateTypeName { get; set; } = "Microsoft.AspNetCore.Mvc.Razor.HelperResult";
 
-        public override void WriteUsingStatement(CSharpRenderingContext context, UsingStatementIRNode node)
+        public override void WriteUsingStatement(CSharpRenderingContext context, UsingStatementIntermediateNode node)
         {
             if (node.Source.HasValue)
             {
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIRNode node)
+        public override void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIntermediateNode node)
         {
             if (context == null)
             {
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             for (var i = 0; i < node.Children.Count; i++)
             {
-                if (node.Children[i] is RazorIRToken token && token.IsCSharp)
+                if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                 {
                     context.Writer.Write(token.Content);
                 }
@@ -82,12 +82,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             linePragmaScope?.Dispose();
         }
 
-        public override void WriteCSharpCode(CSharpRenderingContext context, CSharpCodeIRNode node)
+        public override void WriteCSharpCode(CSharpRenderingContext context, CSharpCodeIntermediateNode node)
         {
             var isWhitespaceStatement = true;
             for (var i = 0; i < node.Children.Count; i++)
             {
-                var token = node.Children[i] as RazorIRToken;
+                var token = node.Children[i] as IntermediateToken;
                 if (token == null || !string.IsNullOrWhiteSpace(token.Content))
                 {
                     isWhitespaceStatement = false;
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             for (var i = 0; i < node.Children.Count; i++)
             {
-                if (node.Children[i] is RazorIRToken token && token.IsCSharp)
+                if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                 {
                     context.Writer.Write(token.Content);
                 }
@@ -128,15 +128,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             linePragmaScope?.Dispose();
         }
 
-        public override void WriteHtmlAttribute(CSharpRenderingContext context, HtmlAttributeIRNode node)
+        public override void WriteHtmlAttribute(CSharpRenderingContext context, HtmlAttributeIntermediateNode node)
         {
             var valuePieceCount = node
                 .Children
                 .Count(child =>
-                    child is HtmlAttributeValueIRNode ||
-                    child is CSharpExpressionAttributeValueIRNode ||
-                    child is CSharpCodeAttributeValueIRNode ||
-                    child is ExtensionIRNode);
+                    child is HtmlAttributeValueIntermediateNode ||
+                    child is CSharpExpressionAttributeValueIntermediateNode ||
+                    child is CSharpCodeAttributeValueIntermediateNode ||
+                    child is ExtensionIntermediateNode);
 
             var prefixLocation = node.Source.Value.AbsoluteIndex;
             var suffixLocation = node.Source.Value.AbsoluteIndex + node.Source.Value.Length - node.Suffix.Length;
@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .WriteEndMethodInvocation();
         }
 
-        public override void WriteHtmlAttributeValue(CSharpRenderingContext context, HtmlAttributeValueIRNode node)
+        public override void WriteHtmlAttributeValue(CSharpRenderingContext context, HtmlAttributeValueIntermediateNode node)
         {
             var prefixLocation = node.Source.Value.AbsoluteIndex;
             var valueLocation = node.Source.Value.AbsoluteIndex + node.Prefix.Length;
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Write content
             for (var i = 0; i < node.Children.Count; i++)
             {
-                if (node.Children[i] is RazorIRToken token && token.IsHtml)
+                if (node.Children[i] is IntermediateToken token && token.IsHtml)
                 {
                     context.Writer.WriteStringLiteral(token.Content);
                 }
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .WriteEndMethodInvocation();
         }
 
-        public override void WriteCSharpExpressionAttributeValue(CSharpRenderingContext context, CSharpExpressionAttributeValueIRNode node)
+        public override void WriteCSharpExpressionAttributeValue(CSharpRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
         {
             using (context.Writer.BuildLinePragma(node.Source.Value))
             {
@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
                 for (var i = 0; i < node.Children.Count; i++)
                 {
-                    if (node.Children[i] is RazorIRToken token && token.IsCSharp)
+                    if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                     {
                         context.Writer.Write(token.Content);
                     }
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteCSharpCodeAttributeValue(CSharpRenderingContext context, CSharpCodeAttributeValueIRNode node)
+        public override void WriteCSharpCodeAttributeValue(CSharpRenderingContext context, CSharpCodeAttributeValueIntermediateNode node)
         {
             const string ValueWriterName = "__razor_attribute_value_writer";
 
@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
                 for (var i = 0; i < node.Children.Count; i++)
                 {
-                    if (node.Children[i] is RazorIRToken token && token.IsCSharp)
+                    if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                     {
                         var isWhitespaceStatement = string.IsNullOrWhiteSpace(token.Content);
                         IDisposable linePragmaScope = null;
@@ -310,14 +310,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .WriteEndMethodInvocation();
         }
 
-        public override void WriteHtmlContent(CSharpRenderingContext context, HtmlContentIRNode node)
+        public override void WriteHtmlContent(CSharpRenderingContext context, HtmlContentIntermediateNode node)
         {
             const int MaxStringLiteralLength = 1024;
 
             var builder = new StringBuilder();
             for (var i = 0; i < node.Children.Count; i++)
             {
-                if (node.Children[i] is RazorIRToken token && token.IsHtml)
+                if (node.Children[i] is IntermediateToken token && token.IsHtml)
                 {
                     builder.Append(token.Content);
                 }

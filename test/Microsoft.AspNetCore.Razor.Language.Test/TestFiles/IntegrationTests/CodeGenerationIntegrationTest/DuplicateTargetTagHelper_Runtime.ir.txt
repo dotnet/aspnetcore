@@ -5,7 +5,7 @@ Document -
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.CatchAllTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] DuplicateTargetTagHelper.cshtml)
-                    RazorIRToken - (33:1,0 [2] DuplicateTargetTagHelper.cshtml) - Html - \n
+                    IntermediateToken - (33:1,0 [2] DuplicateTargetTagHelper.cshtml) - Html - \n
                 TagHelper - (35:2,0 [40] DuplicateTargetTagHelper.cshtml) - input - TagMode.SelfClosing
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -13,6 +13,6 @@ Document -
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                     SetTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        RazorIRToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
+                        IntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
                     SetTagHelperProperty - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        RazorIRToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true
+                        IntermediateToken - (67:2,32 [4] DuplicateTargetTagHelper.cshtml) - CSharp - true

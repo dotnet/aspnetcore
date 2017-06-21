@@ -1,6 +1,6 @@
 Document - 
     CSharpCode - 
-        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(Test.Namespace.ViewWithNamespace_View))]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(Test.Namespace.ViewWithNamespace_View))]
     NamespaceDeclaration -  - Test.Namespace
         UsingStatement -  - TModel = global::System.Object
         UsingStatement - (1:0,1 [12] ) - System
@@ -27,15 +27,15 @@ Document -
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (11:0,11 [14] ViewWithNamespace.cshtml) - Test.Namespace
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (27:1,0 [20] ViewWithNamespace.cshtml)
-                    RazorIRToken - (27:1,0 [4] ViewWithNamespace.cshtml) - Html - <h1>
-                    RazorIRToken - (31:1,4 [9] ViewWithNamespace.cshtml) - Html - Hi There!
-                    RazorIRToken - (40:1,13 [5] ViewWithNamespace.cshtml) - Html - </h1>
-                    RazorIRToken - (45:1,18 [2] ViewWithNamespace.cshtml) - Html - \n
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
+                    IntermediateToken - (27:1,0 [4] ViewWithNamespace.cshtml) - Html - <h1>
+                    IntermediateToken - (31:1,4 [9] ViewWithNamespace.cshtml) - Html - Hi There!
+                    IntermediateToken - (40:1,13 [5] ViewWithNamespace.cshtml) - Html - </h1>
+                    IntermediateToken - (45:1,18 [2] ViewWithNamespace.cshtml) - Html - \n
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 

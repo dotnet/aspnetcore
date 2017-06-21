@@ -3,12 +3,12 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SimpleUnspacedIf_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (1:0,1 [15] SimpleUnspacedIf.cshtml)
-                    RazorIRToken - (1:0,1 [15] SimpleUnspacedIf.cshtml) - CSharp - if (true)\n{\n	
+                    IntermediateToken - (1:0,1 [15] SimpleUnspacedIf.cshtml) - CSharp - if (true)\n{\n	
                 HtmlContent - (16:2,1 [11] SimpleUnspacedIf.cshtml)
-                    RazorIRToken - (16:2,1 [5] SimpleUnspacedIf.cshtml) - Html - <div>
-                    RazorIRToken - (21:2,6 [6] SimpleUnspacedIf.cshtml) - Html - </div>
+                    IntermediateToken - (16:2,1 [5] SimpleUnspacedIf.cshtml) - Html - <div>
+                    IntermediateToken - (21:2,6 [6] SimpleUnspacedIf.cshtml) - Html - </div>
                 CSharpCode - (27:2,12 [3] SimpleUnspacedIf.cshtml)
-                    RazorIRToken - (27:2,12 [3] SimpleUnspacedIf.cshtml) - CSharp - \n}
+                    IntermediateToken - (27:2,12 [3] SimpleUnspacedIf.cshtml) - CSharp - \n}

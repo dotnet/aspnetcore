@@ -224,42 +224,42 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             });
         }
 
-        private static DocumentIRNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
+        private static DocumentIntermediateNode CreateIRDocument(RazorEngine engine, RazorCodeDocument codeDocument)
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {
                 var phase = engine.Phases[i];
                 phase.Execute(codeDocument);
 
-                if (phase is IRazorIRLoweringPhase)
+                if (phase is IRazorIntermediateNodeLoweringPhase)
                 {
                     break;
                 }
             }
 
-            return codeDocument.GetIRDocument();
+            return codeDocument.GetDocumentIntermediateNode();
         }
 
-        private class Visitor : RazorIRNodeWalker
+        private class Visitor : IntermediateNodeWalker
         {
-            public NamespaceDeclarationIRNode Namespace { get; private set; }
+            public NamespaceDeclarationIntermediateNode Namespace { get; private set; }
 
-            public ClassDeclarationIRNode Class { get; private set; }
+            public ClassDeclarationIntermediateNode Class { get; private set; }
 
-            public MethodDeclarationIRNode Method { get; private set; }
+            public MethodDeclarationIntermediateNode Method { get; private set; }
 
-            public override void VisitMethodDeclaration(MethodDeclarationIRNode node)
+            public override void VisitMethodDeclaration(MethodDeclarationIntermediateNode node)
             {
                 Method = node;
             }
 
-            public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
+            public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
             {
                 Namespace = node;
                 base.VisitNamespaceDeclaration(node);
             }
 
-            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
                 Class = node;
                 base.VisitClassDeclaration(node);

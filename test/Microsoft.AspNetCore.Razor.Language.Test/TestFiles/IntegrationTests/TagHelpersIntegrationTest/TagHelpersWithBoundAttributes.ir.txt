@@ -5,15 +5,15 @@ Document -
             DeclareTagHelperFields -  - InputTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [12] TagHelpersWithBoundAttributes.cshtml)
-                    RazorIRToken - (31:1,0 [6] TagHelpersWithBoundAttributes.cshtml) - Html - <form>
-                    RazorIRToken - (37:1,6 [6] TagHelpersWithBoundAttributes.cshtml) - Html - \n    
+                    IntermediateToken - (31:1,0 [6] TagHelpersWithBoundAttributes.cshtml) - Html - <form>
+                    IntermediateToken - (37:1,6 [6] TagHelpersWithBoundAttributes.cshtml) - Html - \n    
                 TagHelper - (43:2,4 [34] TagHelpersWithBoundAttributes.cshtml) - input - TagMode.SelfClosing
                     TagHelperBody - 
                     CreateTagHelper -  - InputTagHelper
                     SetTagHelperProperty - (56:2,17 [6] TagHelpersWithBoundAttributes.cshtml) - bound - FooProp - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml)
-                            RazorIRToken - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml) - CSharp - Hello
+                            IntermediateToken - (57:2,18 [5] TagHelpersWithBoundAttributes.cshtml) - CSharp - Hello
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
                 HtmlContent - (77:2,38 [9] TagHelpersWithBoundAttributes.cshtml)
-                    RazorIRToken - (77:2,38 [2] TagHelpersWithBoundAttributes.cshtml) - Html - \n
-                    RazorIRToken - (79:3,0 [7] TagHelpersWithBoundAttributes.cshtml) - Html - </form>
+                    IntermediateToken - (77:2,38 [2] TagHelpersWithBoundAttributes.cshtml) - Html - \n
+                    IntermediateToken - (79:3,0 [7] TagHelpersWithBoundAttributes.cshtml) - Html - </form>

@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         private const string DirectiveTokenHelperMethodName = "__RazorDirectiveTokenHelpers__";
         private const string TypeHelper = "__typeHelper";
 
-        public void WriteDesignTimeDirective(CSharpRenderingContext context, DesignTimeDirectiveIRNode node)
+        public void WriteDesignTimeDirective(CSharpRenderingContext context, DesignTimeDirectiveIntermediateNode node)
         {
             context.Writer
                 .WritePragma("warning disable 219")
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             for (var i = 0; i < node.Children.Count; i++)
             {
-                if (node.Children[i] is DirectiveTokenIRNode n)
+                if (node.Children[i] is DirectiveTokenIntermediateNode n)
                 {
                     WriteDesignTimeDirectiveToken(context, n);
                 }
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .WritePragma("warning restore 219");
         }
 
-        private void WriteDesignTimeDirectiveToken(CSharpRenderingContext context, DirectiveTokenIRNode node)
+        private void WriteDesignTimeDirectiveToken(CSharpRenderingContext context, DirectiveTokenIntermediateNode node)
         {
             var tokenKind = node.Descriptor.Kind;
             if (!node.Source.HasValue ||

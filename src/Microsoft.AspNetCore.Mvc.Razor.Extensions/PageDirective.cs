@@ -29,12 +29,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return builder;
         }
 
-        public static bool TryGetPageDirective(DocumentIRNode irDocument, out PageDirective pageDirective)
+        public static bool TryGetPageDirective(DocumentIntermediateNode documentNode, out PageDirective pageDirective)
         {
             var visitor = new Visitor();
-            for (var i = 0; i < irDocument.Children.Count; i++)
+            for (var i = 0; i < documentNode.Children.Count; i++)
             {
-                visitor.Visit(irDocument.Children[i]);
+                visitor.Visit(documentNode.Children[i]);
             }
 
             if (visitor.DirectiveNode == null)
@@ -63,11 +63,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return content.Substring(1, content.Length - 2);
         }
 
-        private class Visitor : RazorIRNodeWalker
+        private class Visitor : IntermediateNodeWalker
         {
-            public DirectiveIRNode DirectiveNode { get; private set; }
+            public DirectiveIntermediateNode DirectiveNode { get; private set; }
 
-            public override void VisitDirective(DirectiveIRNode node)
+            public override void VisitDirective(DirectiveIntermediateNode node)
             {
                 if (node.Descriptor == Directive)
                 {

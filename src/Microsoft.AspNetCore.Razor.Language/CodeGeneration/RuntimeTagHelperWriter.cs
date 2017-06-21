@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public string FormatInvalidIndexerAssignmentMethodName { get; set; } = "InvalidTagHelperIndexerAssignment";
 
-        public override void WriteDeclareTagHelperFields(CSharpRenderingContext context, DeclareTagHelperFieldsIRNode node)
+        public override void WriteDeclareTagHelperFields(CSharpRenderingContext context, DeclareTagHelperFieldsIntermediateNode node)
         {
             context.Writer.WriteLineHiddenDirective();
 
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteTagHelper(CSharpRenderingContext context, TagHelperIRNode node)
+        public override void WriteTagHelper(CSharpRenderingContext context, TagHelperIntermediateNode node)
         {
             context.RenderChildren(node);
 
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     ScopeManagerEndMethodName);
         }
 
-        public override void WriteTagHelperBody(CSharpRenderingContext context, TagHelperBodyIRNode node)
+        public override void WriteTagHelperBody(CSharpRenderingContext context, TagHelperBodyIntermediateNode node)
         {
             // Call into the tag helper scope manager to start a new tag helper scope.
             // Also capture the value as the current execution context.
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             context.Writer.WriteEndMethodInvocation();
         }
 
-        public override void WriteCreateTagHelper(CSharpRenderingContext context, CreateTagHelperIRNode node)
+        public override void WriteCreateTagHelper(CSharpRenderingContext context, CreateTagHelperIntermediateNode node)
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
 
@@ -239,11 +239,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 tagHelperVariableName);
         }
 
-        public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIRNode node)
+        public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIntermediateNode node)
         {
             var attributeValueStyleParameter = $"{HtmlAttributeValueStyleTypeName}.{node.ValueStyle}";
             var isConditionalAttributeValue = node.Children.Any(
-                child => child is CSharpExpressionAttributeValueIRNode || child is CSharpCodeAttributeValueIRNode);
+                child => child is CSharpExpressionAttributeValueIntermediateNode || child is CSharpCodeAttributeValueIntermediateNode);
 
             // All simple text and minimized attributes will be pre-allocated.
             if (isConditionalAttributeValue)
@@ -255,10 +255,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 // writer.
                 var valuePieceCount = node.Children.Count(
                     child =>
-                        child is HtmlAttributeValueIRNode ||
-                        child is CSharpExpressionAttributeValueIRNode ||
-                        child is CSharpCodeAttributeValueIRNode ||
-                        child is ExtensionIRNode);
+                        child is HtmlAttributeValueIntermediateNode ||
+                        child is CSharpExpressionAttributeValueIntermediateNode ||
+                        child is CSharpCodeAttributeValueIntermediateNode ||
+                        child is ExtensionIntermediateNode);
 
                 context.Writer
                     .WriteStartMethodInvocation(BeginAddHtmlAttributeValuesMethodName)
@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteSetTagHelperProperty(CSharpRenderingContext context, SetTagHelperPropertyIRNode node)
+        public override void WriteSetTagHelperProperty(CSharpRenderingContext context, SetTagHelperPropertyIntermediateNode node)
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
             var tagHelperRenderingContext = context.TagHelperRenderingContext;
@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
                     if (node.Descriptor.IsEnum &&
                         node.Children.Count == 1 &&
-                        node.Children.First() is RazorIRToken token &&
+                        node.Children.First() is IntermediateToken token &&
                         token.IsCSharp)
                     {
                         context.Writer
@@ -421,7 +421,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         private void RenderTagHelperAttributeInline(
             CSharpRenderingContext context,
-            SetTagHelperPropertyIRNode property,
+            SetTagHelperPropertyIntermediateNode property,
             SourceSpan documentLocation)
         {
             for (var i = 0; i < property.Children.Count; i++)
@@ -432,22 +432,22 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         private void RenderTagHelperAttributeInline(
             CSharpRenderingContext context,
-            SetTagHelperPropertyIRNode property,
-            RazorIRNode node,
+            SetTagHelperPropertyIntermediateNode property,
+            IntermediateNode node,
             SourceSpan documentLocation)
         {
-            if (node is CSharpExpressionIRNode || node is HtmlContentIRNode)
+            if (node is CSharpExpressionIntermediateNode || node is HtmlContentIntermediateNode)
             {
                 for (var i = 0; i < node.Children.Count; i++)
                 {
                     RenderTagHelperAttributeInline(context, property, node.Children[i], documentLocation);
                 }
             }
-            else if (node is RazorIRToken token)
+            else if (node is IntermediateToken token)
             {
                 context.Writer.Write(token.Content);
             }
-            else if (node is CSharpCodeIRNode)
+            else if (node is CSharpCodeIntermediateNode)
             {
                 var error = new RazorError(
                     LegacyResources.TagHelpers_CodeBlocks_NotSupported_InAttributes,
@@ -455,7 +455,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     documentLocation.Length);
                 context.Diagnostics.Add(RazorDiagnostic.Create(error));
             }
-            else if (node is TemplateIRNode)
+            else if (node is TemplateIntermediateNode)
             {
                 var expectedTypeName = property.IsIndexerNameMatch ? property.Descriptor.IndexerTypeName : property.Descriptor.TypeName;
                 var error = new RazorError(

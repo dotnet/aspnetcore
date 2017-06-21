@@ -4,18 +4,18 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [17] SingleTagHelper.cshtml) - "*, TestAssembly"
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.PTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] SingleTagHelper.cshtml)
-                    RazorIRToken - (31:0,31 [4] SingleTagHelper.cshtml) - Html - \n\n
+                    IntermediateToken - (31:0,31 [4] SingleTagHelper.cshtml) - Html - \n\n
                 TagHelper - (35:2,0 [49] SingleTagHelper.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         HtmlContent - (69:2,34 [11] SingleTagHelper.cshtml)
-                            RazorIRToken - (69:2,34 [11] SingleTagHelper.cshtml) - Html - Body of Tag
+                            IntermediateToken - (69:2,34 [11] SingleTagHelper.cshtml) - Html - Body of Tag
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (45:2,10 [11] SingleTagHelper.cshtml)
-                            RazorIRToken - (45:2,10 [11] SingleTagHelper.cshtml) - Html - Hello World
+                            IntermediateToken - (45:2,10 [11] SingleTagHelper.cshtml) - Html - Hello World
                     SetTagHelperProperty - (63:2,28 [4] SingleTagHelper.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
-                        RazorIRToken - (63:2,28 [4] SingleTagHelper.cshtml) - CSharp - 1337
+                        IntermediateToken - (63:2,28 [4] SingleTagHelper.cshtml) - CSharp - 1337

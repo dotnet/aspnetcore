@@ -4,77 +4,77 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [17] MinimizedTagHelpers.cshtml) - "*, TestAssembly"
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - TestNamespace.CatchAllTagHelper - TestNamespace.InputTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] MinimizedTagHelpers.cshtml)
-                    RazorIRToken - (31:0,31 [4] MinimizedTagHelpers.cshtml) - Html - \n\n
+                    IntermediateToken - (31:0,31 [4] MinimizedTagHelpers.cshtml) - Html - \n\n
                 TagHelper - (35:2,0 [647] MinimizedTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         HtmlContent - (64:2,29 [34] MinimizedTagHelpers.cshtml)
-                            RazorIRToken - (64:2,29 [6] MinimizedTagHelpers.cshtml) - Html - \n    
-                            RazorIRToken - (70:3,4 [6] MinimizedTagHelpers.cshtml) - Html - <input
-                            RazorIRToken - (76:3,10 [13] MinimizedTagHelpers.cshtml) - Html -  nottaghelper
-                            RazorIRToken - (89:3,23 [3] MinimizedTagHelpers.cshtml) - Html -  />
-                            RazorIRToken - (92:3,26 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (64:2,29 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (70:3,4 [6] MinimizedTagHelpers.cshtml) - Html - <input
+                            IntermediateToken - (76:3,10 [13] MinimizedTagHelpers.cshtml) - Html -  nottaghelper
+                            IntermediateToken - (89:3,23 [3] MinimizedTagHelpers.cshtml) - Html -  />
+                            IntermediateToken - (92:3,26 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (98:4,4 [59] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                             AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (112:4,18 [3] MinimizedTagHelpers.cshtml)
-                                    RazorIRToken - (112:4,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
+                                    IntermediateToken - (112:4,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
                             AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
                         HtmlContent - (157:5,39 [6] MinimizedTagHelpers.cshtml)
-                            RazorIRToken - (157:5,39 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (157:5,39 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (163:6,4 [119] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                             AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (190:7,18 [3] MinimizedTagHelpers.cshtml)
-                                    RazorIRToken - (190:7,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
+                                    IntermediateToken - (190:7,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
                             AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
                             AddTagHelperHtmlAttribute -  - input-unbound-required - HtmlAttributeValueStyle.Minimized
                             SetTagHelperProperty - (273:7,101 [5] MinimizedTagHelpers.cshtml) - input-bound-required-string - BoundRequiredString - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (273:7,101 [5] MinimizedTagHelpers.cshtml)
-                                    RazorIRToken - (273:7,101 [5] MinimizedTagHelpers.cshtml) - Html - hello
+                                    IntermediateToken - (273:7,101 [5] MinimizedTagHelpers.cshtml) - Html - hello
                         HtmlContent - (282:7,110 [6] MinimizedTagHelpers.cshtml)
-                            RazorIRToken - (282:7,110 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (282:7,110 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (288:8,4 [176] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                             AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (315:9,18 [3] MinimizedTagHelpers.cshtml)
-                                    RazorIRToken - (315:9,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
+                                    IntermediateToken - (315:9,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
                             AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
                             AddTagHelperHtmlAttribute -  - input-unbound-required - HtmlAttributeValueStyle.Minimized
                             SetTagHelperProperty - (418:11,57 [5] MinimizedTagHelpers.cshtml) - catchall-bound-string - BoundRequiredString - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (418:11,57 [5] MinimizedTagHelpers.cshtml)
-                                    RazorIRToken - (418:11,57 [5] MinimizedTagHelpers.cshtml) - Html - world
+                                    IntermediateToken - (418:11,57 [5] MinimizedTagHelpers.cshtml) - Html - world
                             SetTagHelperProperty - (454:11,93 [6] MinimizedTagHelpers.cshtml) - input-bound-required-string - BoundRequiredString - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (454:11,93 [6] MinimizedTagHelpers.cshtml)
-                                    RazorIRToken - (454:11,93 [6] MinimizedTagHelpers.cshtml) - Html - hello2
+                                    IntermediateToken - (454:11,93 [6] MinimizedTagHelpers.cshtml) - Html - hello2
                         HtmlContent - (464:11,103 [6] MinimizedTagHelpers.cshtml)
-                            RazorIRToken - (464:11,103 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (464:11,103 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (470:12,4 [206] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                             AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (484:12,18 [3] MinimizedTagHelpers.cshtml)
-                                    RazorIRToken - (484:12,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
+                                    IntermediateToken - (484:12,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
                             AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (529:13,38 [5] MinimizedTagHelpers.cshtml)
-                                    RazorIRToken - (529:13,38 [5] MinimizedTagHelpers.cshtml) - Html - hello
+                                    IntermediateToken - (529:13,38 [5] MinimizedTagHelpers.cshtml) - Html - hello
                             AddTagHelperHtmlAttribute -  - input-unbound-required - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (578:14,40 [6] MinimizedTagHelpers.cshtml)
-                                    RazorIRToken - (578:14,40 [6] MinimizedTagHelpers.cshtml) - Html - hello2
+                                    IntermediateToken - (578:14,40 [6] MinimizedTagHelpers.cshtml) - Html - hello2
                             AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
                             SetTagHelperProperty - (667:16,40 [5] MinimizedTagHelpers.cshtml) - input-bound-required-string - BoundRequiredString - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (667:16,40 [5] MinimizedTagHelpers.cshtml)
-                                    RazorIRToken - (667:16,40 [5] MinimizedTagHelpers.cshtml) - Html - world
+                                    IntermediateToken - (667:16,40 [5] MinimizedTagHelpers.cshtml) - Html - world
                         HtmlContent - (676:16,49 [2] MinimizedTagHelpers.cshtml)
-                            RazorIRToken - (676:16,49 [2] MinimizedTagHelpers.cshtml) - Html - \n
+                            IntermediateToken - (676:16,49 [2] MinimizedTagHelpers.cshtml) - Html - \n
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
                     AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized

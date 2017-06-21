@@ -28,15 +28,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         internal TagHelperRenderingContext TagHelperRenderingContext { get; set; }
 
-        internal Action<RazorIRNode> RenderChildren { get; set; }
+        internal Action<IntermediateNode> RenderChildren { get; set; }
 
-        internal Action<RazorIRNode> RenderNode { get; set; }
+        internal Action<IntermediateNode> RenderNode { get; set; }
 
         public BasicWriter BasicWriter { get; set; }
 
         public TagHelperWriter TagHelperWriter { get; set; }
 
-        public void AddLineMappingFor(RazorIRNode node)
+        public void AddLineMappingFor(IntermediateNode node)
         {
             if (node.Source == null)
             {
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public void ReportMissingExtension<TExtension>() where TExtension : ICodeTargetExtension
         {
-            var documentKind = CodeDocument.GetIRDocument()?.DocumentKind ?? string.Empty;
+            var documentKind = CodeDocument.GetDocumentIntermediateNode()?.DocumentKind ?? string.Empty;
             Diagnostics.Add(RazorDiagnosticFactory.CreateCodeTarget_UnsupportedExtension(documentKind, typeof(TExtension)));
         }
 

@@ -9,13 +9,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultDocumentClassifierPassFeature : RazorEngineFeatureBase
     {
-        public IList<Action<RazorCodeDocument, ClassDeclarationIRNode>> ConfigureClass { get; } =
-            new List<Action<RazorCodeDocument, ClassDeclarationIRNode>>();
+        public IList<Action<RazorCodeDocument, ClassDeclarationIntermediateNode>> ConfigureClass { get; } =
+            new List<Action<RazorCodeDocument, ClassDeclarationIntermediateNode>>();
 
-        public IList<Action<RazorCodeDocument, NamespaceDeclarationIRNode>> ConfigureNamespace { get; } =
-            new List<Action<RazorCodeDocument, NamespaceDeclarationIRNode>>();
+        public IList<Action<RazorCodeDocument, NamespaceDeclarationIntermediateNode>> ConfigureNamespace { get; } =
+            new List<Action<RazorCodeDocument, NamespaceDeclarationIntermediateNode>>();
 
-        public IList<Action<RazorCodeDocument, MethodDeclarationIRNode>> ConfigureMethod { get; } =
-            new List<Action<RazorCodeDocument, MethodDeclarationIRNode>>();
+        public IList<Action<RazorCodeDocument, MethodDeclarationIntermediateNode>> ConfigureMethod { get; } =
+            new List<Action<RazorCodeDocument, MethodDeclarationIntermediateNode>>();
     }
 }

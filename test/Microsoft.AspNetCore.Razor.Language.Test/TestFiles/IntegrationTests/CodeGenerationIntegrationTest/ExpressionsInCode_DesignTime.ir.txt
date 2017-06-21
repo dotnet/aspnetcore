@@ -3,34 +3,34 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ExpressionsInCode_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [51] ExpressionsInCode.cshtml)
-                    RazorIRToken - (2:0,2 [51] ExpressionsInCode.cshtml) - CSharp - \n    object foo = null;\n    string bar = "Foo";\n
+                    IntermediateToken - (2:0,2 [51] ExpressionsInCode.cshtml) - CSharp - \n    object foo = null;\n    string bar = "Foo";\n
                 HtmlContent - (56:4,0 [2] ExpressionsInCode.cshtml)
-                    RazorIRToken - (56:4,0 [2] ExpressionsInCode.cshtml) - Html - \n
+                    IntermediateToken - (56:4,0 [2] ExpressionsInCode.cshtml) - Html - \n
                 CSharpCode - (59:5,1 [23] ExpressionsInCode.cshtml)
-                    RazorIRToken - (59:5,1 [23] ExpressionsInCode.cshtml) - CSharp - if(foo != null) {\n    
+                    IntermediateToken - (59:5,1 [23] ExpressionsInCode.cshtml) - CSharp - if(foo != null) {\n    
                 CSharpExpression - (83:6,5 [3] ExpressionsInCode.cshtml)
-                    RazorIRToken - (83:6,5 [3] ExpressionsInCode.cshtml) - CSharp - foo
+                    IntermediateToken - (83:6,5 [3] ExpressionsInCode.cshtml) - CSharp - foo
                 CSharpCode - (86:6,8 [16] ExpressionsInCode.cshtml)
-                    RazorIRToken - (86:6,8 [16] ExpressionsInCode.cshtml) - CSharp - \n} else {\n    
+                    IntermediateToken - (86:6,8 [16] ExpressionsInCode.cshtml) - CSharp - \n} else {\n    
                 HtmlContent - (102:8,4 [19] ExpressionsInCode.cshtml)
-                    RazorIRToken - (102:8,4 [3] ExpressionsInCode.cshtml) - Html - <p>
-                    RazorIRToken - (105:8,7 [12] ExpressionsInCode.cshtml) - Html - Foo is Null!
-                    RazorIRToken - (117:8,19 [4] ExpressionsInCode.cshtml) - Html - </p>
+                    IntermediateToken - (102:8,4 [3] ExpressionsInCode.cshtml) - Html - <p>
+                    IntermediateToken - (105:8,7 [12] ExpressionsInCode.cshtml) - Html - Foo is Null!
+                    IntermediateToken - (117:8,19 [4] ExpressionsInCode.cshtml) - Html - </p>
                 CSharpCode - (121:8,23 [3] ExpressionsInCode.cshtml)
-                    RazorIRToken - (121:8,23 [3] ExpressionsInCode.cshtml) - CSharp - \n}
+                    IntermediateToken - (121:8,23 [3] ExpressionsInCode.cshtml) - CSharp - \n}
                 HtmlContent - (124:9,1 [9] ExpressionsInCode.cshtml)
-                    RazorIRToken - (124:9,1 [4] ExpressionsInCode.cshtml) - Html - \n\n
-                    RazorIRToken - (128:11,0 [3] ExpressionsInCode.cshtml) - Html - <p>
-                    RazorIRToken - (131:11,3 [2] ExpressionsInCode.cshtml) - Html - \n
+                    IntermediateToken - (124:9,1 [4] ExpressionsInCode.cshtml) - Html - \n\n
+                    IntermediateToken - (128:11,0 [3] ExpressionsInCode.cshtml) - Html - <p>
+                    IntermediateToken - (131:11,3 [2] ExpressionsInCode.cshtml) - Html - \n
                 CSharpCode - (134:12,1 [38] ExpressionsInCode.cshtml)
-                    RazorIRToken - (134:12,1 [38] ExpressionsInCode.cshtml) - CSharp - if(!String.IsNullOrEmpty(bar)) {\n    
+                    IntermediateToken - (134:12,1 [38] ExpressionsInCode.cshtml) - CSharp - if(!String.IsNullOrEmpty(bar)) {\n    
                 CSharpExpression - (174:13,6 [21] ExpressionsInCode.cshtml)
-                    RazorIRToken - (174:13,6 [21] ExpressionsInCode.cshtml) - CSharp - bar.Replace("F", "B")
+                    IntermediateToken - (174:13,6 [21] ExpressionsInCode.cshtml) - CSharp - bar.Replace("F", "B")
                 CSharpCode - (196:13,28 [3] ExpressionsInCode.cshtml)
-                    RazorIRToken - (196:13,28 [3] ExpressionsInCode.cshtml) - CSharp - \n}
+                    IntermediateToken - (196:13,28 [3] ExpressionsInCode.cshtml) - CSharp - \n}
                 HtmlContent - (199:14,1 [6] ExpressionsInCode.cshtml)
-                    RazorIRToken - (199:14,1 [2] ExpressionsInCode.cshtml) - Html - \n
-                    RazorIRToken - (201:15,0 [4] ExpressionsInCode.cshtml) - Html - </p>
+                    IntermediateToken - (199:14,1 [2] ExpressionsInCode.cshtml) - Html - \n
+                    IntermediateToken - (201:15,0 [4] ExpressionsInCode.cshtml) - Html - </p>

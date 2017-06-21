@@ -7,21 +7,21 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class AssemblyAttributeInjectionPass : RazorIRPassBase, IRazorIROptimizationPass
+    public class AssemblyAttributeInjectionPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
         private const string RazorViewAttribute = "global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute";
         private const string RazorPageAttribute = "global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute";
 
-        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
-            var @namespace = irDocument.FindPrimaryNamespace();
+            var @namespace = documentNode.FindPrimaryNamespace();
             if (@namespace == null || string.IsNullOrEmpty(@namespace.Content))
             {
                 // No namespace node or it's incomplete. Skip.
                 return;
             }
 
-            var @class = irDocument.FindPrimaryClass();
+            var @class = documentNode.FindPrimaryClass();
             if (@class == null || string.IsNullOrEmpty(@class.Name))
             {
                 // No class node or it's incomplete. Skip.
@@ -33,12 +33,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var escapedPath = EscapeAsVerbatimLiteral(path);
 
             string attribute;
-            if (irDocument.DocumentKind == MvcViewDocumentClassifierPass.MvcViewDocumentKind)
+            if (documentNode.DocumentKind == MvcViewDocumentClassifierPass.MvcViewDocumentKind)
             {
                 attribute = $"[assembly:{RazorViewAttribute}({escapedPath}, typeof({generatedTypeName}))]";
             }
-            else if (irDocument.DocumentKind == RazorPageDocumentClassifierPass.RazorPageDocumentKind &&
-                PageDirective.TryGetPageDirective(irDocument, out var pageDirective))
+            else if (documentNode.DocumentKind == RazorPageDocumentClassifierPass.RazorPageDocumentKind &&
+                PageDirective.TryGetPageDirective(documentNode, out var pageDirective))
             {
                 var escapedRoutePrefix = EscapeAsVerbatimLiteral(pageDirective.RouteTemplate);
                 attribute = $"[assembly:{RazorPageAttribute}({escapedPath}, typeof({generatedTypeName}), {escapedRoutePrefix})]";
@@ -48,18 +48,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 return;
             }
 
-            var index = irDocument.Children.IndexOf(@namespace);
+            var index = documentNode.Children.IndexOf(@namespace);
             Debug.Assert(index >= 0);
 
-            var pageAttribute = new CSharpCodeIRNode();
-            RazorIRBuilder.Create(pageAttribute)
-                .Add(new RazorIRToken()
+            var pageAttribute = new CSharpCodeIntermediateNode();
+            IntermediateNodeBuilder.Create(pageAttribute)
+                .Add(new IntermediateToken()
                 {
-                    Kind = RazorIRToken.TokenKind.CSharp,
+                    Kind = IntermediateToken.TokenKind.CSharp,
                     Content = attribute,
                 });
 
-            irDocument.Children.Insert(index, pageAttribute);
+            documentNode.Children.Insert(index, pageAttribute);
         }
 
         private static string EscapeAsVerbatimLiteral(string value)

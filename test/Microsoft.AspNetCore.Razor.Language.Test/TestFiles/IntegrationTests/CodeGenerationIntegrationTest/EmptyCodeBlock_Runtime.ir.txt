@@ -3,6 +3,6 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EmptyCodeBlock_Runtime -  - 
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [18] EmptyCodeBlock.cshtml)
-                    RazorIRToken - (0:0,0 [18] EmptyCodeBlock.cshtml) - Html - This is markup\n\n
+                    IntermediateToken - (0:0,0 [18] EmptyCodeBlock.cshtml) - Html - This is markup\n\n
                 CSharpCode - (20:2,2 [0] EmptyCodeBlock.cshtml)
-                    RazorIRToken - (20:2,2 [0] EmptyCodeBlock.cshtml) - CSharp - 
+                    IntermediateToken - (20:2,2 [0] EmptyCodeBlock.cshtml) - CSharp - 

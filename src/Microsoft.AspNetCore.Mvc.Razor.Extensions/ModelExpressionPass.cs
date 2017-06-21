@@ -9,42 +9,42 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class ModelExpressionPass : RazorIRPassBase, IRazorIROptimizationPass
+    public class ModelExpressionPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
         private const string ModelExpressionTypeName = "Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression";
 
-        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+        protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             var visitor = new Visitor();
-            visitor.Visit(irDocument);
+            visitor.Visit(documentNode);
         }
 
-        private class Visitor : RazorIRNodeWalker
+        private class Visitor : IntermediateNodeWalker
         {
-            public List<TagHelperIRNode> TagHelpers { get; } = new List<TagHelperIRNode>();
+            public List<TagHelperIntermediateNode> TagHelpers { get; } = new List<TagHelperIntermediateNode>();
 
-            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIRNode node)
+            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIntermediateNode node)
             {
                 if (string.Equals(node.Descriptor.TypeName, ModelExpressionTypeName, StringComparison.Ordinal) ||
                     (node.IsIndexerNameMatch &&
                      string.Equals(node.Descriptor.IndexerTypeName, ModelExpressionTypeName, StringComparison.Ordinal)))
                 {
-                    var expression = new CSharpExpressionIRNode();
-                    var builder = RazorIRBuilder.Create(expression);
+                    var expression = new CSharpExpressionIntermediateNode();
+                    var builder = IntermediateNodeBuilder.Create(expression);
 
-                    builder.Add(new RazorIRToken()
+                    builder.Add(new IntermediateToken()
                     {
-                        Kind = RazorIRToken.TokenKind.CSharp,
+                        Kind = IntermediateToken.TokenKind.CSharp,
                         Content = "ModelExpressionProvider.CreateModelExpression(ViewData, __model => ",
                     });
 
-                    if (node.Children.Count == 1 && node.Children[0] is RazorIRToken token && token.IsCSharp)
+                    if (node.Children.Count == 1 && node.Children[0] is IntermediateToken token && token.IsCSharp)
                     {
                         // A 'simple' expression will look like __model => __model.Foo
 
-                        builder.Add(new RazorIRToken()
+                        builder.Add(new IntermediateToken()
                         {
-                            Kind = RazorIRToken.TokenKind.CSharp,
+                            Kind = IntermediateToken.TokenKind.CSharp,
                             Content = "__model."
                         });
 
@@ -54,11 +54,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     {
                         for (var i = 0; i < node.Children.Count; i++)
                         {
-                            if (node.Children[i] is CSharpExpressionIRNode nestedExpression)
+                            if (node.Children[i] is CSharpExpressionIntermediateNode nestedExpression)
                             {
                                 for (var j = 0; j < nestedExpression.Children.Count; j++)
                                 {
-                                    if (nestedExpression.Children[j] is RazorIRToken cSharpToken &&
+                                    if (nestedExpression.Children[j] is IntermediateToken cSharpToken &&
                                         cSharpToken.IsCSharp)
                                     {
                                         builder.Add(cSharpToken);
@@ -70,9 +70,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                         }
                     }
 
-                    builder.Add(new RazorIRToken()
+                    builder.Add(new IntermediateToken()
                     {
-                        Kind = RazorIRToken.TokenKind.CSharp,
+                        Kind = IntermediateToken.TokenKind.CSharp,
                         Content = ")",
                     });
 

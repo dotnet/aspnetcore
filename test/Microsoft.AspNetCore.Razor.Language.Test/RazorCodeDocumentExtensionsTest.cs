@@ -62,11 +62,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
-            var expected = new DocumentIRNode();
-            codeDocument.Items[typeof(DocumentIRNode)] = expected;
+            var expected = new DocumentIntermediateNode();
+            codeDocument.Items[typeof(DocumentIntermediateNode)] = expected;
 
             // Act
-            var actual = codeDocument.GetIRDocument();
+            var actual = codeDocument.GetDocumentIntermediateNode();
 
             // Assert
             Assert.Same(expected, actual);
@@ -78,13 +78,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
-            var expected = new DocumentIRNode();
+            var expected = new DocumentIntermediateNode();
 
             // Act
-            codeDocument.SetIRDocument((DocumentIRNode)expected);
+            codeDocument.SetDocumentIntermediateNode((DocumentIntermediateNode)expected);
 
             // Assert
-            Assert.Same(expected, codeDocument.Items[typeof(DocumentIRNode)]);
+            Assert.Same(expected, codeDocument.Items[typeof(DocumentIntermediateNode)]);
         }
 
         [Fact]

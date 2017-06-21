@@ -1,6 +1,6 @@
 Document - 
     CSharpCode - 
-        RazorIRToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper_cshtml))]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper_cshtml))]
     NamespaceDeclaration -  - AspNetCore
         UsingStatement - (1:0,1 [14] ) - System
         UsingStatement - (16:1,1 [34] ) - System.Collections.Generic
@@ -13,56 +13,56 @@ Document -
             DeclareTagHelperFields -  - InputTestTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(17, 2, true);
+                    IntermediateToken -  - CSharp - BeginContext(17, 2, true);
                 HtmlContent - (17:1,0 [2] ModelExpressionTagHelper.cshtml)
-                    RazorIRToken - (17:1,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
+                    IntermediateToken - (17:1,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(64, 2, true);
+                    IntermediateToken -  - CSharp - BeginContext(64, 2, true);
                 HtmlContent - (64:3,0 [2] ModelExpressionTagHelper.cshtml)
-                    RazorIRToken - (64:3,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
+                    IntermediateToken - (64:3,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(66, 25, false);
+                    IntermediateToken -  - CSharp - BeginContext(66, 25, false);
                 TagHelper - (66:4,0 [25] ModelExpressionTagHelper.cshtml) - input-test - TagMode.SelfClosing
                     TagHelperBody - 
                     CreateTagHelper -  - InputTestTagHelper
                     SetTagHelperProperty - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - for - For - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - 
-                            RazorIRToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
-                            RazorIRToken -  - CSharp - __model.
-                            RazorIRToken - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - CSharp - Date
-                            RazorIRToken -  - CSharp - )
+                            IntermediateToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
+                            IntermediateToken -  - CSharp - __model.
+                            IntermediateToken - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - CSharp - Date
+                            IntermediateToken -  - CSharp - )
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(91, 2, true);
+                    IntermediateToken -  - CSharp - BeginContext(91, 2, true);
                 HtmlContent - (91:4,25 [2] ModelExpressionTagHelper.cshtml)
-                    RazorIRToken - (91:4,25 [2] ModelExpressionTagHelper.cshtml) - Html - \n
+                    IntermediateToken - (91:4,25 [2] ModelExpressionTagHelper.cshtml) - Html - \n
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(93, 27, false);
+                    IntermediateToken -  - CSharp - BeginContext(93, 27, false);
                 TagHelper - (93:5,0 [27] ModelExpressionTagHelper.cshtml) - input-test - TagMode.SelfClosing
                     TagHelperBody - 
                     CreateTagHelper -  - InputTestTagHelper
                     SetTagHelperProperty - (110:5,17 [6] ModelExpressionTagHelper.cshtml) - for - For - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - 
-                            RazorIRToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
-                            RazorIRToken - (111:5,18 [5] ModelExpressionTagHelper.cshtml) - CSharp - Model
-                            RazorIRToken -  - CSharp - )
+                            IntermediateToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
+                            IntermediateToken - (111:5,18 [5] ModelExpressionTagHelper.cshtml) - CSharp - Model
+                            IntermediateToken -  - CSharp - )
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(120, 2, true);
+                    IntermediateToken -  - CSharp - BeginContext(120, 2, true);
                 HtmlContent - (120:5,27 [2] ModelExpressionTagHelper.cshtml)
-                    RazorIRToken - (120:5,27 [2] ModelExpressionTagHelper.cshtml) - Html - \n
+                    IntermediateToken - (120:5,27 [2] ModelExpressionTagHelper.cshtml) - Html - \n
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
-            InjectDirective - 
+                    IntermediateToken -  - CSharp - EndContext();
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 
+            Inject - 

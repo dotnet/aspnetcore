@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void WriteDeclareTagHelperFields_DeclaresRequiredFields()
         {
             // Arrange
-            var node = new DeclareTagHelperFieldsIRNode();
+            var node = new DeclareTagHelperFieldsIntermediateNode();
             var writer = new RuntimeTagHelperWriter();
             var context = GetCSharpRenderingContext(writer);
 
@@ -52,7 +52,7 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeMana
         public void WriteDeclareTagHelperFields_DeclaresUsedTagHelperTypes()
         {
             // Arrange
-            var node = new DeclareTagHelperFieldsIRNode();
+            var node = new DeclareTagHelperFieldsIntermediateNode();
             node.UsedTagHelperTypeNames.Add("PTagHelper");
             node.UsedTagHelperTypeNames.Add("MyTagHelper");
 
@@ -94,7 +94,7 @@ private global::MyTagHelper __MyTagHelper = null;
         public void WriteTagHelperBody_RendersCorrectly_UsesTagNameAndModeFromContext()
         {
             // Arrange
-            var node = new TagHelperBodyIRNode();
+            var node = new TagHelperBodyIntermediateNode();
             var writer = new RuntimeTagHelperWriter();
             var context = GetCSharpRenderingContext(writer);
             context.IdGenerator = () => "test";
@@ -123,7 +123,7 @@ private global::MyTagHelper __MyTagHelper = null;
         public void WriteCreateTagHelper_RendersCorrectly_UsesSpecifiedTagHelperType()
         {
             // Arrange
-            var node = new CreateTagHelperIRNode()
+            var node = new CreateTagHelperIntermediateNode()
             {
                 TagHelperTypeName = "TestNamespace.MyTagHelper"
             };
@@ -147,7 +147,7 @@ __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
         public void WriteTagHelper_RendersCorrectly_SetsTagNameAndModeInContext()
         {
             // Arrange
-            var node = new TagHelperIRNode();
+            var node = new TagHelperIntermediateNode();
             var writer = new RuntimeTagHelperWriter();
             var context = GetCSharpRenderingContext(writer);
 
@@ -188,7 +188,7 @@ __tagHelperExecutionContext = __tagHelperScopeManager.End();
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var irDocument = Lower(codeDocument, engine);
-            var node = irDocument.Children.Last().Children[2] as AddTagHelperHtmlAttributeIRNode;
+            var node = irDocument.Children.Last().Children[2] as AddTagHelperHtmlAttributeIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
             var context = GetCSharpRenderingContext(writer, codeDocument);
@@ -226,7 +226,7 @@ __tagHelperExecutionContext.AddHtmlAttribute(""name"", Html.Raw(__tagHelperStrin
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var irDocument = Lower(codeDocument, engine);
-            var node = irDocument.Children.Last().Children[2] as AddTagHelperHtmlAttributeIRNode;
+            var node = irDocument.Children.Last().Children[2] as AddTagHelperHtmlAttributeIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
             var context = GetCSharpRenderingContext(writer, codeDocument);
@@ -264,7 +264,7 @@ __tagHelperExecutionContext.AddHtmlAttribute(""data-test"", Html.Raw(__tagHelper
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var irDocument = Lower(codeDocument, engine);
-            var node = irDocument.Children.Last().Children[2] as AddTagHelperHtmlAttributeIRNode;
+            var node = irDocument.Children.Last().Children[2] as AddTagHelperHtmlAttributeIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
             var context = GetCSharpRenderingContext(writer, codeDocument);
@@ -308,7 +308,7 @@ EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var irDocument = Lower(codeDocument, engine);
-            var node = irDocument.Children.Last().Children[2] as SetTagHelperPropertyIRNode;
+            var node = irDocument.Children.Last().Children[2] as SetTagHelperPropertyIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
             var context = GetCSharpRenderingContext(writer, codeDocument);
@@ -356,7 +356,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.Fo
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var irDocument = Lower(codeDocument, engine);
-            var node = irDocument.Children.Last().Children[2] as SetTagHelperPropertyIRNode;
+            var node = irDocument.Children.Last().Children[2] as SetTagHelperPropertyIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
             var context = GetCSharpRenderingContext(writer, codeDocument);
@@ -404,7 +404,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.Fo
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var irDocument = Lower(codeDocument, engine);
-            var node = irDocument.Children.Last().Children[2] as SetTagHelperPropertyIRNode;
+            var node = irDocument.Children.Last().Children[2] as SetTagHelperPropertyIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
             var context = GetCSharpRenderingContext(writer, codeDocument);
@@ -450,27 +450,27 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             return context;
         }
 
-        private static DocumentIRNode Lower(RazorCodeDocument codeDocument)
+        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
         {
             var engine = RazorEngine.Create();
 
             return Lower(codeDocument, engine);
         }
 
-        private static DocumentIRNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
+        private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument, RazorEngine engine)
         {
             for (var i = 0; i < engine.Phases.Count; i++)
             {
                 var phase = engine.Phases[i];
                 phase.Execute(codeDocument);
 
-                if (phase is IRazorIRLoweringPhase)
+                if (phase is IRazorIntermediateNodeLoweringPhase)
                 {
                     break;
                 }
             }
 
-            var irDocument = codeDocument.GetIRDocument();
+            var irDocument = codeDocument.GetDocumentIntermediateNode();
             Assert.NotNull(irDocument);
 
             return irDocument;

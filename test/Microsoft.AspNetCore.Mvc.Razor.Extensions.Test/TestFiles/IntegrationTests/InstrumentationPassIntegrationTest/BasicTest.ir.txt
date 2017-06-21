@@ -7,88 +7,88 @@ Document -
             DeclareTagHelperFields -  - FormTagHelper - InputTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(31, 28, true);
+                    IntermediateToken -  - CSharp - BeginContext(31, 28, true);
                 HtmlContent - (31:1,0 [28] BasicTest.cshtml)
-                    RazorIRToken - (31:1,0 [5] BasicTest.cshtml) - Html - <span
-                    RazorIRToken - (36:1,5 [9] BasicTest.cshtml) - Html -  someattr
-                    RazorIRToken - (45:1,14 [1] BasicTest.cshtml) - Html - >
-                    RazorIRToken - (46:1,15 [4] BasicTest.cshtml) - Html - Hola
-                    RazorIRToken - (50:1,19 [7] BasicTest.cshtml) - Html - </span>
-                    RazorIRToken - (57:1,26 [2] BasicTest.cshtml) - Html - \n
+                    IntermediateToken - (31:1,0 [5] BasicTest.cshtml) - Html - <span
+                    IntermediateToken - (36:1,5 [9] BasicTest.cshtml) - Html -  someattr
+                    IntermediateToken - (45:1,14 [1] BasicTest.cshtml) - Html - >
+                    IntermediateToken - (46:1,15 [4] BasicTest.cshtml) - Html - Hola
+                    IntermediateToken - (50:1,19 [7] BasicTest.cshtml) - Html - </span>
+                    IntermediateToken - (57:1,26 [2] BasicTest.cshtml) - Html - \n
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(61, 7, false);
+                    IntermediateToken -  - CSharp - BeginContext(61, 7, false);
                 CSharpExpression - (61:2,2 [7] BasicTest.cshtml)
-                    RazorIRToken - (61:2,2 [7] BasicTest.cshtml) - CSharp - "Hello"
+                    IntermediateToken - (61:2,2 [7] BasicTest.cshtml) - CSharp - "Hello"
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(69, 2, true);
+                    IntermediateToken -  - CSharp - BeginContext(69, 2, true);
                 HtmlContent - (69:2,10 [2] BasicTest.cshtml)
-                    RazorIRToken - (69:2,10 [2] BasicTest.cshtml) - Html - \n
+                    IntermediateToken - (69:2,10 [2] BasicTest.cshtml) - Html - \n
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(71, 87, false);
+                    IntermediateToken -  - CSharp - BeginContext(71, 87, false);
                 TagHelper - (71:3,0 [87] BasicTest.cshtml) - form - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         CSharpCode - 
-                            RazorIRToken -  - CSharp - BeginContext(91, 6, true);
+                            IntermediateToken -  - CSharp - BeginContext(91, 6, true);
                         HtmlContent - (91:3,20 [6] BasicTest.cshtml)
-                            RazorIRToken - (91:3,20 [6] BasicTest.cshtml) - Html - \n    
+                            IntermediateToken - (91:3,20 [6] BasicTest.cshtml) - Html - \n    
                         CSharpCode - 
-                            RazorIRToken -  - CSharp - EndContext();
+                            IntermediateToken -  - CSharp - EndContext();
                         CSharpCode - 
-                            RazorIRToken -  - CSharp - BeginContext(97, 52, false);
+                            IntermediateToken -  - CSharp - BeginContext(97, 52, false);
                         TagHelper - (97:4,4 [52] BasicTest.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - InputTagHelper
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - value - FooProp
                             SetTagHelperProperty - (121:4,28 [13] BasicTest.cshtml) - date - BarProp - HtmlAttributeValueStyle.DoubleQuotes
                                 CSharpExpression - (122:4,29 [12] BasicTest.cshtml)
-                                    RazorIRToken - (122:4,29 [12] BasicTest.cshtml) - CSharp - DateTime.Now
+                                    IntermediateToken - (122:4,29 [12] BasicTest.cshtml) - CSharp - DateTime.Now
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                         CSharpCode - 
-                            RazorIRToken -  - CSharp - EndContext();
+                            IntermediateToken -  - CSharp - EndContext();
                         CSharpCode - 
-                            RazorIRToken -  - CSharp - BeginContext(149, 2, true);
+                            IntermediateToken -  - CSharp - BeginContext(149, 2, true);
                         HtmlContent - (149:4,56 [2] BasicTest.cshtml)
-                            RazorIRToken - (149:4,56 [2] BasicTest.cshtml) - Html - \n
+                            IntermediateToken - (149:4,56 [2] BasicTest.cshtml) - Html - \n
                         CSharpCode - 
-                            RazorIRToken -  - CSharp - EndContext();
+                            IntermediateToken -  - CSharp - EndContext();
                     CreateTagHelper -  - FormTagHelper
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(158, 31, true);
+                    IntermediateToken -  - CSharp - BeginContext(158, 31, true);
                 HtmlContent - (158:5,7 [31] BasicTest.cshtml)
-                    RazorIRToken - (158:5,7 [4] BasicTest.cshtml) - Html - \n\n
-                    RazorIRToken - (162:7,0 [6] BasicTest.cshtml) - Html - <span>
-                    RazorIRToken - (168:7,6 [21] BasicTest.cshtml) - Html - Here is some content 
+                    IntermediateToken - (158:5,7 [4] BasicTest.cshtml) - Html - \n\n
+                    IntermediateToken - (162:7,0 [6] BasicTest.cshtml) - Html - <span>
+                    IntermediateToken - (168:7,6 [21] BasicTest.cshtml) - Html - Here is some content 
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(207, 9, true);
+                    IntermediateToken -  - CSharp - BeginContext(207, 9, true);
                 HtmlContent - (207:7,45 [9] BasicTest.cshtml)
-                    RazorIRToken - (207:7,45 [7] BasicTest.cshtml) - Html - </span>
-                    RazorIRToken - (214:7,52 [2] BasicTest.cshtml) - Html - \n
+                    IntermediateToken - (207:7,45 [7] BasicTest.cshtml) - Html - </span>
+                    IntermediateToken - (214:7,52 [2] BasicTest.cshtml) - Html - \n
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - BeginContext(217, 29, false);
+                    IntermediateToken -  - CSharp - BeginContext(217, 29, false);
                 CSharpExpression - (217:8,1 [29] BasicTest.cshtml)
-                    RazorIRToken - (217:8,1 [4] BasicTest.cshtml) - CSharp - Foo(
+                    IntermediateToken - (217:8,1 [4] BasicTest.cshtml) - CSharp - Foo(
                     Template - (222:8,6 [24] BasicTest.cshtml)
                         CSharpCode - 
-                            RazorIRToken -  - CSharp - BeginContext(222, 24, true);
+                            IntermediateToken -  - CSharp - BeginContext(222, 24, true);
                         HtmlContent - (222:8,6 [24] BasicTest.cshtml)
-                            RazorIRToken - (222:8,6 [6] BasicTest.cshtml) - Html - <span>
-                            RazorIRToken - (228:8,12 [11] BasicTest.cshtml) - Html - Hello world
-                            RazorIRToken - (239:8,23 [7] BasicTest.cshtml) - Html - </span>
+                            IntermediateToken - (222:8,6 [6] BasicTest.cshtml) - Html - <span>
+                            IntermediateToken - (228:8,12 [11] BasicTest.cshtml) - Html - Hello world
+                            IntermediateToken - (239:8,23 [7] BasicTest.cshtml) - Html - </span>
                         CSharpCode - 
-                            RazorIRToken -  - CSharp - EndContext();
-                    RazorIRToken - (246:8,30 [1] BasicTest.cshtml) - CSharp - )
+                            IntermediateToken -  - CSharp - EndContext();
+                    IntermediateToken - (246:8,30 [1] BasicTest.cshtml) - CSharp - )
                 CSharpCode - 
-                    RazorIRToken -  - CSharp - EndContext();
+                    IntermediateToken -  - CSharp - EndContext();

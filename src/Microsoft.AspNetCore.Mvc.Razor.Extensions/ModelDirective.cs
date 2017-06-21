@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return builder;
         }
 
-        public static string GetModelType(DocumentIRNode document)
+        public static string GetModelType(DocumentIntermediateNode document)
         {
             if (document == null)
             {
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return GetModelType(document, visitor);
         }
 
-        private static string GetModelType(DocumentIRNode document, Visitor visitor)
+        private static string GetModelType(DocumentIntermediateNode document, Visitor visitor)
         {
             visitor.Visit(document);
 
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
-        internal class Pass : RazorIRPassBase, IRazorDirectiveClassifierPass
+        internal class Pass : IntermediateNodePassBase, IRazorDirectiveClassifierPass
         {
             private readonly bool _designTime;
 
@@ -71,17 +71,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Runs after the @inherits directive
             public override int Order => 5;
 
-            protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIRNode irDocument)
+            protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
             {
                 var visitor = new Visitor();
-                var modelType = GetModelType(irDocument, visitor);
+                var modelType = GetModelType(documentNode, visitor);
 
                 if (_designTime)
                 {
                     // Alias the TModel token to a known type.
                     // This allows design time compilation to succeed for Razor files where the token isn't replaced.
                     var typeName = $"global::{typeof(object).FullName}";
-                    var usingNode = new UsingStatementIRNode()
+                    var usingNode = new UsingStatementIntermediateNode()
                     {
                         Content = $"TModel = {typeName}"
                     };
@@ -106,17 +106,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
-        private class Visitor : RazorIRNodeWalker
+        private class Visitor : IntermediateNodeWalker
         {
-            public NamespaceDeclarationIRNode Namespace { get; private set; }
+            public NamespaceDeclarationIntermediateNode Namespace { get; private set; }
 
-            public ClassDeclarationIRNode Class { get; private set; }
+            public ClassDeclarationIntermediateNode Class { get; private set; }
 
-            public IList<DirectiveIRNode> InheritsDirectives { get; } = new List<DirectiveIRNode>();
+            public IList<DirectiveIntermediateNode> InheritsDirectives { get; } = new List<DirectiveIntermediateNode>();
 
-            public IList<DirectiveIRNode> ModelDirectives { get; } = new List<DirectiveIRNode>();
+            public IList<DirectiveIntermediateNode> ModelDirectives { get; } = new List<DirectiveIntermediateNode>();
 
-            public override void VisitNamespaceDeclaration(NamespaceDeclarationIRNode node)
+            public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
             {
                 if (Namespace == null)
                 {
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 base.VisitNamespaceDeclaration(node);
             }
 
-            public override void VisitClassDeclaration(ClassDeclarationIRNode node)
+            public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
                 if (Class == null)
                 {
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 base.VisitClassDeclaration(node);
             }
 
-            public override void VisitDirective(DirectiveIRNode node)
+            public override void VisitDirective(DirectiveIntermediateNode node)
             {
                 if (node.Descriptor == Directive)
                 {

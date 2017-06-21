@@ -9,6 +9,6 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         int Order { get; }
 
-        void Execute(RazorCodeDocument codeDocument, DocumentIRNode irDocument);
+        void Execute(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode);
     }
 }

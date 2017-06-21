@@ -5,7 +5,7 @@ Document -
             DeclareTagHelperFields -  - TestNamespace.PTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] IncompleteTagHelper.cshtml)
-                    RazorIRToken - (33:1,0 [2] IncompleteTagHelper.cshtml) - Html - \n
+                    IntermediateToken - (33:1,0 [2] IncompleteTagHelper.cshtml) - Html - \n
                 TagHelper - (35:2,0 [10] IncompleteTagHelper.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.PTagHelper

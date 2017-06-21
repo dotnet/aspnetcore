@@ -19,7 +19,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             InheritsDirective.Register(builder);
             SectionDirective.Register(builder);
 
-            builder.AddTargetExtension(new InjectDirectiveTargetExtension());
             builder.AddTargetExtension(new TemplateTargetExtension()
             {
                 TemplateTypeName = "global::Microsoft.AspNetCore.Mvc.Razor.HelperResult",

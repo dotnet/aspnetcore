@@ -6,9 +6,9 @@ Document -
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2 - TestNamespace.PTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [13] EmptyAttributeTagHelpers.cshtml)
-                    RazorIRToken - (31:1,0 [2] EmptyAttributeTagHelpers.cshtml) - Html - \n
-                    RazorIRToken - (33:2,0 [5] EmptyAttributeTagHelpers.cshtml) - Html - <div>
-                    RazorIRToken - (38:2,5 [6] EmptyAttributeTagHelpers.cshtml) - Html - \n    
+                    IntermediateToken - (31:1,0 [2] EmptyAttributeTagHelpers.cshtml) - Html - \n
+                    IntermediateToken - (33:2,0 [5] EmptyAttributeTagHelpers.cshtml) - Html - <div>
+                    IntermediateToken - (38:2,5 [6] EmptyAttributeTagHelpers.cshtml) - Html - \n    
                 TagHelper - (44:3,4 [34] EmptyAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -16,14 +16,14 @@ Document -
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                     SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                     SetTagHelperProperty - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                        RazorIRToken - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - CSharp - 
+                        IntermediateToken - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - CSharp - 
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                 HtmlContent - (78:3,38 [6] EmptyAttributeTagHelpers.cshtml)
-                    RazorIRToken - (78:3,38 [6] EmptyAttributeTagHelpers.cshtml) - Html - \n    
+                    IntermediateToken - (78:3,38 [6] EmptyAttributeTagHelpers.cshtml) - Html - \n    
                 TagHelper - (84:4,4 [64] EmptyAttributeTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         HtmlContent - (94:4,14 [10] EmptyAttributeTagHelpers.cshtml)
-                            RazorIRToken - (94:4,14 [10] EmptyAttributeTagHelpers.cshtml) - Html - \n        
+                            IntermediateToken - (94:4,14 [10] EmptyAttributeTagHelpers.cshtml) - Html - \n        
                         TagHelper - (104:5,8 [34] EmptyAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
@@ -31,13 +31,13 @@ Document -
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
                             SetTagHelperProperty - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
-                                RazorIRToken - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - CSharp - 
+                                IntermediateToken - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - CSharp - 
                             AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
                         HtmlContent - (138:5,42 [6] EmptyAttributeTagHelpers.cshtml)
-                            RazorIRToken - (138:5,42 [6] EmptyAttributeTagHelpers.cshtml) - Html - \n    
+                            IntermediateToken - (138:5,42 [6] EmptyAttributeTagHelpers.cshtml) - Html - \n    
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     SetTagHelperProperty - (92:4,12 [0] EmptyAttributeTagHelpers.cshtml) - age - Age - HtmlAttributeValueStyle.SingleQuotes
-                        RazorIRToken - (92:4,12 [0] EmptyAttributeTagHelpers.cshtml) - CSharp - 
+                        IntermediateToken - (92:4,12 [0] EmptyAttributeTagHelpers.cshtml) - CSharp - 
                 HtmlContent - (148:6,8 [8] EmptyAttributeTagHelpers.cshtml)
-                    RazorIRToken - (148:6,8 [2] EmptyAttributeTagHelpers.cshtml) - Html - \n
-                    RazorIRToken - (150:7,0 [6] EmptyAttributeTagHelpers.cshtml) - Html - </div>
+                    IntermediateToken - (148:6,8 [2] EmptyAttributeTagHelpers.cshtml) - Html - \n
+                    IntermediateToken - (150:7,0 [6] EmptyAttributeTagHelpers.cshtml) - Html - </div>

@@ -7,21 +7,21 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     public abstract class BasicWriter
     {
-        public abstract void WriteUsingStatement(CSharpRenderingContext context, UsingStatementIRNode node);
+        public abstract void WriteUsingStatement(CSharpRenderingContext context, UsingStatementIntermediateNode node);
 
-        public abstract void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIRNode node);
+        public abstract void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIntermediateNode node);
 
-        public abstract void WriteCSharpCode(CSharpRenderingContext context, CSharpCodeIRNode node);
+        public abstract void WriteCSharpCode(CSharpRenderingContext context, CSharpCodeIntermediateNode node);
 
-        public abstract void WriteHtmlContent(CSharpRenderingContext context, HtmlContentIRNode node);
+        public abstract void WriteHtmlContent(CSharpRenderingContext context, HtmlContentIntermediateNode node);
 
-        public abstract void WriteHtmlAttribute(CSharpRenderingContext context, HtmlAttributeIRNode node);
+        public abstract void WriteHtmlAttribute(CSharpRenderingContext context, HtmlAttributeIntermediateNode node);
 
-        public abstract void WriteHtmlAttributeValue(CSharpRenderingContext context, HtmlAttributeValueIRNode node);
+        public abstract void WriteHtmlAttributeValue(CSharpRenderingContext context, HtmlAttributeValueIntermediateNode node);
 
-        public abstract void WriteCSharpExpressionAttributeValue(CSharpRenderingContext context, CSharpExpressionAttributeValueIRNode node);
+        public abstract void WriteCSharpExpressionAttributeValue(CSharpRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node);
 
-        public abstract void WriteCSharpCodeAttributeValue(CSharpRenderingContext context, CSharpCodeAttributeValueIRNode node);
+        public abstract void WriteCSharpCodeAttributeValue(CSharpRenderingContext context, CSharpCodeAttributeValueIntermediateNode node);
 
         public abstract void BeginWriterScope(CSharpRenderingContext context, string writer);
 

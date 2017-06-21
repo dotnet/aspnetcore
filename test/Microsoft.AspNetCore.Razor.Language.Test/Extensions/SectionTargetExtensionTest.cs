@@ -4,7 +4,7 @@
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
-using static Microsoft.AspNetCore.Razor.Language.Intermediate.RazorIRAssert;
+using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAssert;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         public void WriteSection_WritesSectionCode()
         {
             // Arrange
-            var node = new SectionIRNode()
+            var node = new SectionIntermediateNode()
             {
                 Name = "MySection"
             };
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         public void WriteSection_WritesSectionCode_DesignTime()
         {
             // Arrange
-            var node = new SectionIRNode()
+            var node = new SectionIntermediateNode()
             {
                 Name = "MySection"
             };

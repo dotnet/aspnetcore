@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     public interface ISectionTargetExtension : ICodeTargetExtension
     {
-        void WriteSection(CSharpRenderingContext context, SectionIRNode node);
+        void WriteSection(CSharpRenderingContext context, SectionIntermediateNode node);
     }
 }

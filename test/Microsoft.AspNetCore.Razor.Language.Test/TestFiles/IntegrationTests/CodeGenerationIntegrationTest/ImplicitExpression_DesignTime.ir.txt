@@ -3,16 +3,16 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ImplicitExpression_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
-                RazorIRToken -  - CSharp - private static System.Object __o = null;
+                IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (1:0,1 [36] ImplicitExpression.cshtml)
-                    RazorIRToken - (1:0,1 [36] ImplicitExpression.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n    
+                    IntermediateToken - (1:0,1 [36] ImplicitExpression.cshtml) - CSharp - for(int i = 1; i <= 10; i++) {\n    
                 HtmlContent - (37:1,4 [17] ImplicitExpression.cshtml)
-                    RazorIRToken - (37:1,4 [3] ImplicitExpression.cshtml) - Html - <p>
-                    RazorIRToken - (40:1,7 [14] ImplicitExpression.cshtml) - Html - This is item #
+                    IntermediateToken - (37:1,4 [3] ImplicitExpression.cshtml) - Html - <p>
+                    IntermediateToken - (40:1,7 [14] ImplicitExpression.cshtml) - Html - This is item #
                 CSharpExpression - (55:1,22 [1] ImplicitExpression.cshtml)
-                    RazorIRToken - (55:1,22 [1] ImplicitExpression.cshtml) - CSharp - i
+                    IntermediateToken - (55:1,22 [1] ImplicitExpression.cshtml) - CSharp - i
                 HtmlContent - (56:1,23 [4] ImplicitExpression.cshtml)
-                    RazorIRToken - (56:1,23 [4] ImplicitExpression.cshtml) - Html - </p>
+                    IntermediateToken - (56:1,23 [4] ImplicitExpression.cshtml) - Html - </p>
                 CSharpCode - (60:1,27 [3] ImplicitExpression.cshtml)
-                    RazorIRToken - (60:1,27 [3] ImplicitExpression.cshtml) - CSharp - \n}
+                    IntermediateToken - (60:1,27 [3] ImplicitExpression.cshtml) - CSharp - \n}
