@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             PageDirectiveEngine.Process(codeDocument);
 
-            if (PageDirective.TryGetPageDirective(codeDocument.GetIRDocument(), out var pageDirective))
+            if (PageDirective.TryGetPageDirective(codeDocument.GetDocumentIntermediateNode(), out var pageDirective))
             {
                 template = pageDirective.RouteTemplate;
                 return true;
