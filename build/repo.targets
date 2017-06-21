@@ -1,6 +1,6 @@
 <Project>
   <Import Project="Legacy-MsBuild.targets" />
-    
+
   <!-- packages required to implement the targets in this file-->
   <PropertyGroup>
     <PublishDependsOn>VerifyPackages;PushPackages</PublishDependsOn>
@@ -47,12 +47,12 @@
       <NoTimestampPackagesDir>$(ArtifactsDir)Signed\Packages-NoTimeStamp\</NoTimestampPackagesDir>
     </PropertyGroup>
 
-     <VerifyPackages 
+     <VerifyPackages
        ArtifactDirectory="$(SignedPackagesDir)"
        RuleFile="$(RepositoryRoot)NuGetPackageVerifier.json"
        Condition="Exists('$(SignedPackagesDir)')" />
-      
-     <VerifyPackages 
+
+     <VerifyPackages
        ArtifactDirectory="$(NoTimestampPackagesDir)"
        RuleFile="$(RepositoryRoot)NuGetPackageVerifier.json"
        Condition="Exists('$(NoTimestampPackagesDir)')" />
@@ -86,7 +86,7 @@
     <Exec Command="powershell.exe -command &quot;(Get-Content %(TimeStampedManifestFiles.FullPath)).replace('-$(BuildNumber)','-final') | Set-Content %(TimeStampedManifestFiles.FullPath)&quot;"/>
     <Move SourceFiles="%(TimeStampedManifestFiles.FullPath)" DestinationFiles="$([System.String]::new('%(TimeStampedManifestFiles.FullPath)').Replace('-$(BuildNumber)', '-final'))" />
 
-    <Exec Command="$(ZipPath) a -tzip -mx9 -r -y $(TimestampFreePackagesOutputPath)%(TimeStampFreeMetaPackage.FileName).nupkg * > nul" WorkingDirectory="$(SignedAllMetapackagePath)%(TimeStampFreeMetaPackage.FileName)" />
+    <Exec Command="$(ZipPath) a -tzip -mx9 -r -y -uq0 $(TimestampFreePackagesOutputPath)%(TimeStampFreeMetaPackage.FileName).nupkg * > nul" WorkingDirectory="$(SignedAllMetapackagePath)%(TimeStampFreeMetaPackage.FileName)" />
   </Target>
 
   <Target Name="PushPackages" DependsOnTargets="_FindDotNetPath">
