@@ -19,26 +19,34 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 RazorDiagnostic.Create(
                     new RazorError(
                         LegacyResources.FormatUnexpectedEOFAfterDirective(InheritsDirective.Directive.Directive, "type"),
-                        new SourceLocation(8, 0, 8), 1)));
+                        new SourceLocation(9, 0, 9), 1)));
 
             // Act & Assert
-            ParseBlockTest(
-                "inherits",
+            ParseDocumentTest(
+                "@inherits",
                 new[] { InheritsDirective.Directive },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None)));
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new DirectiveBlock(chunkGenerator,
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None)),
+                    Factory.EmptyHtml()));
         }
 
         [Fact]
         public void InheritsBlockAcceptsMultipleGenericArguments()
         {
-            ParseBlockTest(
-                "inherits Foo.Bar<Biz<Qux>, string, int>.Baz",
+            ParseDocumentTest(
+                "@inherits Foo.Bar<Biz<Qux>, string, int>.Baz",
                 new[] { InheritsDirective.Directive },
-                new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
-                    Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
-                    Factory.Span(SpanKindInternal.Code, "Foo.Bar<Biz<Qux>, string, int>.Baz", markup: false).AsDirectiveToken(InheritsDirective.Directive.Tokens[0])));
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new DirectiveBlock(new DirectiveChunkGenerator(InheritsDirective.Directive),
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Code, " ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                        Factory.Span(SpanKindInternal.Code, "Foo.Bar<Biz<Qux>, string, int>.Baz", markup: false).AsDirectiveToken(InheritsDirective.Directive.Tokens[0])),
+                    Factory.EmptyHtml()));
         }
 
         [Fact]
@@ -50,15 +58,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 RazorDiagnostic.Create(
                     new RazorError(
                         LegacyResources.FormatDirectiveExpectsTypeName(InheritsDirective.Directive.Directive),
-                        24, 0, 24, Environment.NewLine.Length)));
+                        25, 0, 25, Environment.NewLine.Length)));
 
             // Act & Assert
-            ParseBlockTest(
-                "inherits                " + Environment.NewLine + "foo",
+            ParseDocumentTest(
+                "@inherits                " + Environment.NewLine + "foo",
                 new[] { InheritsDirective.Directive },
-                new DirectiveBlock(chunkGenerator,
-                    Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, "                ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new DirectiveBlock(chunkGenerator,
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Code, "                ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                    Factory.Markup(Environment.NewLine + "foo")));
         }
 
         [Fact]

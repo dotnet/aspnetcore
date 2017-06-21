@@ -1,9 +1,9 @@
-Source Location: (20:2,10 [21] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml)
+Source Location: (10:0,10 [21] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml)
 |foo.bar<baz<biz>>.boz|
 Generated Location: (349:8,0 [21] )
 |foo.bar<baz<biz>>.boz|
 
-Source Location: (1:0,1 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml)
+Source Location: (36:2,1 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml)
 |foo()|
 Generated Location: (747:18,6 [5] )
 |foo()|

@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     public class ModelDirectiveTest
     {
         [Fact]
-        public void ModelDirective_GetModelType_GetsTypeFromLastWellFormedDirective()
+        public void ModelDirective_GetModelType_GetsTypeFromFirstWellFormedDirective()
         {
             // Arrange
             var codeDocument = CreateDocument(@"
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var result = ModelDirective.GetModelType(irDocument);
 
             // Assert
-            Assert.Equal("Type2", result);
+            Assert.Equal("Type1", result);
         }
 
         [Fact]
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Assert
             var @class = FindClassNode(irDocument);
             Assert.NotNull(@class);
-            Assert.Equal("BaseType<Type2>", @class.BaseType);
+            Assert.Equal("BaseType<Type1>", @class.BaseType);
         }
 
         [Fact]

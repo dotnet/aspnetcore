@@ -2,12 +2,12 @@
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
-#line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicImports_Imports0.cshtml"
+#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicImports_Imports0.cshtml"
 using System.Globalization;
 
 #line default
 #line hidden
-#line 4 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicImports_Imports0.cshtml"
+#line 2 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicImports_Imports0.cshtml"
 using System.ComponentModel;
 
 #line default

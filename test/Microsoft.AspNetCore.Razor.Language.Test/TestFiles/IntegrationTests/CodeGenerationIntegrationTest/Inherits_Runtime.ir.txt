@@ -2,7 +2,7 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Inherits_Runtime - foo.bar<baz<biz>>.boz - 
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
-                CSharpExpression - (1:0,1 [5] Inherits.cshtml)
-                    IntermediateToken - (1:0,1 [5] Inherits.cshtml) - CSharp - foo()
-                HtmlContent - (6:0,6 [4] Inherits.cshtml)
-                    IntermediateToken - (6:0,6 [4] Inherits.cshtml) - Html - \n\n
+                HtmlContent - (33:1,0 [2] Inherits.cshtml)
+                    IntermediateToken - (33:1,0 [2] Inherits.cshtml) - Html - \n
+                CSharpExpression - (36:2,1 [5] Inherits.cshtml)
+                    IntermediateToken - (36:2,1 [5] Inherits.cshtml) - CSharp - foo()

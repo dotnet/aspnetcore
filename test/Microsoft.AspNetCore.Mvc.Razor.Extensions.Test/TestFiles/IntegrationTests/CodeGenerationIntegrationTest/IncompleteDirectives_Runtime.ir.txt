@@ -17,6 +17,7 @@ Document -
                     IntermediateToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
+                MalformedDirective - (94:3,0 [8] IncompleteDirectives.cshtml)
                 MalformedDirective - (102:4,0 [6] IncompleteDirectives.cshtml)
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(108, 5, true);

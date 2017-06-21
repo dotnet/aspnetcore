@@ -10,7 +10,7 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MultipleModels_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<System.Collections.IEnumerable>
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MultipleModels_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<ThisShouldBeGenerated>
     {
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
@@ -39,6 +39,6 @@ System.Collections.IEnumerable __typeHelper = default(System.Collections.IEnumer
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json { get; private set; }
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
-        public global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<System.Collections.IEnumerable> Html { get; private set; }
+        public global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<ThisShouldBeGenerated> Html { get; private set; }
     }
 }

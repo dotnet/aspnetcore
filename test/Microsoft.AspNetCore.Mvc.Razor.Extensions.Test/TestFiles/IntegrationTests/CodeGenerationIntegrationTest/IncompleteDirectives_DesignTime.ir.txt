@@ -31,6 +31,7 @@ Document -
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
+                MalformedDirective - (94:3,0 [8] IncompleteDirectives.cshtml)
                 MalformedDirective - (102:4,0 [6] IncompleteDirectives.cshtml)
                 HtmlContent - (108:4,6 [5] IncompleteDirectives.cshtml)
                     IntermediateToken - (108:4,6 [5] IncompleteDirectives.cshtml) - Html - "\n\n

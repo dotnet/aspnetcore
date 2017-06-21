@@ -1,11 +1,11 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
-        UsingDirective - (31:1,1 [26] BasicImports_Imports0.cshtml) - System.Globalization
-        UsingDirective - (80:3,1 [27] BasicImports_Imports0.cshtml) - System.ComponentModel
+        UsingDirective - (1:0,1 [26] BasicImports_Imports0.cshtml) - System.Globalization
+        UsingDirective - (30:1,1 [27] BasicImports_Imports0.cshtml) - System.ComponentModel
         UsingDirective - (23:1,1 [18] BasicImports_Imports1.cshtml) - System.Text
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicImports_DesignTime - Hello - 
             DesignTimeDirective - 
-                DirectiveToken - (119:4,10 [5] BasicImports_Imports0.cshtml) - Hello
+                DirectiveToken - (69:2,10 [5] BasicImports_Imports0.cshtml) - Hello
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync

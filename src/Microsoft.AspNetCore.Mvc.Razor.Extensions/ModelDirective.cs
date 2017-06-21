@@ -14,7 +14,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             "model",
             DirectiveKind.SingleLine,
-            builder => builder.AddTypeToken());
+            builder =>
+            {
+                builder.AddTypeToken();
+                builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+            });
 
         public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
         {
@@ -55,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
             else
             {
-                return  "dynamic";
+                return "dynamic";
             }
         }
 

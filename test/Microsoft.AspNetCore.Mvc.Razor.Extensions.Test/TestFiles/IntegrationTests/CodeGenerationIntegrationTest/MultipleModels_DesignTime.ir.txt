@@ -10,7 +10,7 @@ Document -
         UsingDirective - (102:4,1 [30] ) - Microsoft.AspNetCore.Mvc
         UsingDirective - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MultipleModels_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<System.Collections.IEnumerable> - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MultipleModels_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<ThisShouldBeGenerated> - 
             DesignTimeDirective - 
                 DirectiveToken - (231:7,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
                 DirectiveToken - (294:7,71 [4] ) - Html
@@ -30,6 +30,8 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
+                MalformedDirective - (30:1,0 [39] MultipleModels.cshtml)
+                    DirectiveToken - (37:1,7 [30] MultipleModels.cshtml) - System.Collections.IEnumerable
             Inject - 
             Inject - 
             Inject - 

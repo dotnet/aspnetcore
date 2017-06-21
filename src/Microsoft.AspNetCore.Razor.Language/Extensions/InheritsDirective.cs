@@ -10,7 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             SyntaxConstants.CSharp.InheritsKeyword,
             DirectiveKind.SingleLine,
-            builder => builder.AddTypeToken());
+            builder =>
+            {
+                builder.AddTypeToken();
+                builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+            });
 
         public static void Register(IRazorEngineBuilder builder)
         {

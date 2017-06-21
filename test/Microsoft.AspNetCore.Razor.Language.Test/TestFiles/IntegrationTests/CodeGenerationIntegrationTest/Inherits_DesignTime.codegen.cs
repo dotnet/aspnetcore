@@ -15,7 +15,7 @@ foo.bar<baz<biz>>.boz __typeHelper = default(foo.bar<baz<biz>>.boz);
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml"
+#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml"
 __o = foo();
 
 #line default

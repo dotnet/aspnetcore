@@ -17,7 +17,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             "namespace",
             DirectiveKind.SingleLine,
-            builder => builder.AddNamespaceToken());
+            builder =>
+            {
+                builder.AddNamespaceToken();
+                builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+            });
 
         public static void Register(IRazorEngineBuilder builder)
         {
@@ -58,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     // No namespace node. Skip.
                     return;
                 }
-                
+
                 if (TryComputeNamespace(codeDocument.Source.FilePath, directive, out var computedNamespace))
                 {
                     // Beautify the class name since we're using a hierarchy for namespaces.

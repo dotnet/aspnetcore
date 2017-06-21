@@ -1,7 +1,7 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
-        UsingDirective - (31:1,1 [28] BasicImports_Imports0.cshtml) - System.Globalization
-        UsingDirective - (80:3,1 [29] BasicImports_Imports0.cshtml) - System.ComponentModel
+        UsingDirective - (1:0,1 [28] BasicImports_Imports0.cshtml) - System.Globalization
+        UsingDirective - (30:1,1 [29] BasicImports_Imports0.cshtml) - System.ComponentModel
         UsingDirective - (23:1,1 [20] BasicImports_Imports1.cshtml) - System.Text
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicImports_Runtime - Hello - 
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync

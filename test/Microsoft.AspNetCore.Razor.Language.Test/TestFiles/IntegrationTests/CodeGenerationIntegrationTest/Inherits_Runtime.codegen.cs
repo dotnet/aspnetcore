@@ -1,4 +1,4 @@
-#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "081d0c0715ffeacf3f97a2f3a8443e1e47346419"
+#pragma checksum "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml" "{ff1816ec-aa5e-4d10-87f7-6f4963833460}" "d5c565b0bb468550fca15010c0addc84e79c5297"
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 {
     #line hidden
@@ -7,12 +7,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml"
+            WriteLiteral("\r\n");
+#line 3 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml"
 Write(foo());
 
 #line default
 #line hidden
-            WriteLiteral("\r\n\r\n");
         }
         #pragma warning restore 1998
     }

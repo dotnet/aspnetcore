@@ -14,7 +14,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             "page",
             DirectiveKind.SingleLine,
-            builder => builder.AddOptionalStringToken());
+            builder =>
+            {
+                builder.AddOptionalStringToken();
+                builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+            });
 
         private PageDirective(string routeTemplate)
         {
