@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
-    public enum BlockKindInternal
+    internal enum BlockKindInternal
     {
         // Code
         Statement,

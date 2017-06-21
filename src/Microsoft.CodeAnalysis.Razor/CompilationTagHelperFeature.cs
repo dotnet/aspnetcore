@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.CSharp;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public class CompilationTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
+    public sealed class CompilationTagHelperFeature : RazorEngineFeatureBase, ITagHelperFeature
     {
         private ITagHelperDescriptorProvider[] _providers;
         private IMetadataReferenceFeature _referenceFeature;
