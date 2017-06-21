@@ -551,8 +551,6 @@ Render Node - CSharpExpressionIRNode
         {
             public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
 
-            public override SourceSpan? Source { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
             public override void Accept(RazorIRNodeVisitor visitor)
             {
                 throw new NotImplementedException();

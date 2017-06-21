@@ -13,8 +13,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public string Name { get; set; }
 
-        public override SourceSpan? Source { get; set; }
-
         public override void Accept(RazorIRNodeVisitor visitor)
         {
             if (visitor == null)

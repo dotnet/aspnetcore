@@ -46,8 +46,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             public override RazorIRNodeCollection Children => ReadOnlyIRNodeCollection.Instance;
 
-            public override SourceSpan? Source { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
             public override void Accept(RazorIRNodeVisitor visitor)
             {
                 // This is the standard visitor boilerplate for an extension node.
