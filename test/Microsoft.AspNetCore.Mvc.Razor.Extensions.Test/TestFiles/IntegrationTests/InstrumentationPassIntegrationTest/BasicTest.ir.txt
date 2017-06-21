@@ -5,7 +5,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - AttributeStructure.SingleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - FormTagHelper - InputTagHelper
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(31, 28, true);
                 HtmlContent - (31:1,0 [28] BasicTest.cshtml)

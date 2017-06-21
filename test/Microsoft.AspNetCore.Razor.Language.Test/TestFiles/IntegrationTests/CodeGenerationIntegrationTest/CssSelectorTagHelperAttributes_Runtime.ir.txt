@@ -11,7 +11,7 @@ Document -
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_7 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_8 - value - 2 TagHelper - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.ATagHelper - TestNamespace.CatchAllTagHelper - TestNamespace.ATagHelperMultipleSelectors - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2 - TestNamespace.CatchAllTagHelper2
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] CssSelectorTagHelperAttributes.cshtml)
                     IntermediateToken - (33:1,0 [2] CssSelectorTagHelperAttributes.cshtml) - Html - \n
                 TagHelper - (35:2,0 [30] CssSelectorTagHelperAttributes.cshtml) - a - TagMode.StartTagAndEndTag

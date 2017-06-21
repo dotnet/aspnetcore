@@ -4,7 +4,7 @@ Document -
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - type -  - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - class -  - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2 - TestNamespace.PTagHelper
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [13] EmptyAttributeTagHelpers.cshtml)
                     IntermediateToken - (31:1,0 [2] EmptyAttributeTagHelpers.cshtml) - Html - \n
                     IntermediateToken - (33:2,0 [5] EmptyAttributeTagHelpers.cshtml) - Html - <div>

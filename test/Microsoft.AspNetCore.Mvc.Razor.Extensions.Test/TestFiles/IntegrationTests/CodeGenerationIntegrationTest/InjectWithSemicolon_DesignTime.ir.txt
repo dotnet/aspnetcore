@@ -36,7 +36,7 @@ Document -
                 DirectiveToken - (147:4,26 [5] InjectWithSemicolon.cshtml) - Html2
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
             Inject - 
             Inject - 
             Inject - 

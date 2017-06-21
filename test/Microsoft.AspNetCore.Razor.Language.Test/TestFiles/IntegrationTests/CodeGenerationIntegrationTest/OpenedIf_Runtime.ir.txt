@@ -1,7 +1,7 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_OpenedIf_Runtime -  - 
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [16] OpenedIf.cshtml)
                     IntermediateToken - (0:0,0 [6] OpenedIf.cshtml) - Html - <html>
                     IntermediateToken - (6:0,6 [2] OpenedIf.cshtml) - Html - \n

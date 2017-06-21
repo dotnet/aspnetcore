@@ -10,7 +10,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_6 - unbound - world - AttributeStructure.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_7 - class - hello - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] ComplexTagHelpers.cshtml)
                     IntermediateToken - (33:1,0 [2] ComplexTagHelpers.cshtml) - Html - \n
                 CSharpCode - (36:2,1 [48] ComplexTagHelpers.cshtml)

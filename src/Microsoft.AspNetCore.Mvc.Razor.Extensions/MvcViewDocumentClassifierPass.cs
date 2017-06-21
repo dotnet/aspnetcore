@@ -23,13 +23,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var filePath = codeDocument.GetRelativePath() ?? codeDocument.Source.FilePath;
 
             base.OnDocumentStructureCreated(codeDocument, @namespace, @class, method);
+
+            @namespace.Content = "AspNetCore";
+
             @class.Name = CSharpIdentifier.GetClassNameFromPath(filePath);
             @class.BaseType = "global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>";
-            @class.AccessModifier = "public";
-            @namespace.Content = "AspNetCore";
+            @class.Modifiers.Clear();
+            @class.Modifiers.Add("public");
+
             method.Name = "ExecuteAsync";
-            method.Modifiers = new[] { "async", "override" };
-            method.AccessModifier = "public";
+            method.Modifiers.Clear();
+            method.Modifiers.Add("public");
+            method.Modifiers.Add("async");
+            method.Modifiers.Add("override");
             method.ReturnType = $"global::{typeof(System.Threading.Tasks.Task).FullName}";
         }
     }

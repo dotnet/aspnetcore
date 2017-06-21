@@ -9,7 +9,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5 - input-unbound-required - hello2 - AttributeStructure.DoubleQuotes
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_6 - input-bound-required-string - world - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.CatchAllTagHelper - TestNamespace.InputTagHelper
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] MinimizedTagHelpers.cshtml)
                     IntermediateToken - (33:1,0 [2] MinimizedTagHelpers.cshtml) - Html - \n
                 TagHelper - (35:2,0 [647] MinimizedTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag

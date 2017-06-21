@@ -30,7 +30,7 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - InputTestTagHelper
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (17:1,0 [2] ModelExpressionTagHelper.cshtml)
                     IntermediateToken - (17:1,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
                 HtmlContent - (62:2,43 [4] ModelExpressionTagHelper.cshtml)

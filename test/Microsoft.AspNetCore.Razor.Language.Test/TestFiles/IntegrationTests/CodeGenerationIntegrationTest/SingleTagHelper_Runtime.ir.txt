@@ -3,7 +3,7 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SingleTagHelper_Runtime -  - 
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - Hello World - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] SingleTagHelper.cshtml)
                     IntermediateToken - (33:1,0 [2] SingleTagHelper.cshtml) - Html - \n
                 TagHelper - (35:2,0 [49] SingleTagHelper.cshtml) - p - TagMode.StartTagAndEndTag

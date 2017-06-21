@@ -7,7 +7,7 @@ Document -
         UsingStatement - (93:5,1 [29] Usings.cshtml) - static System.Console
         UsingStatement - (123:6,1 [43] Usings.cshtml) - static global::System.Text.Encoding
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Usings_Runtime -  - 
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (68:3,0 [2] Usings.cshtml)
                     IntermediateToken - (68:3,0 [2] Usings.cshtml) - Html - \n
                 HtmlContent - (166:7,0 [30] Usings.cshtml)

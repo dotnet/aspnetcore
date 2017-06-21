@@ -5,6 +5,6 @@ Document -
                 DirectiveToken - (17:0,17 [15] RemoveTagHelperDirective.cshtml) - *, TestAssembly
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (32:0,32 [2] RemoveTagHelperDirective.cshtml)
                     IntermediateToken - (32:0,32 [2] RemoveTagHelperDirective.cshtml) - Html - \n

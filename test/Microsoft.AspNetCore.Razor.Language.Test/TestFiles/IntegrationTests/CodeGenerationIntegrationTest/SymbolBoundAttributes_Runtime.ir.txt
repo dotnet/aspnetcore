@@ -10,7 +10,7 @@ Document -
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_6 - #local - value - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_7 - #local - value - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.CatchAllTagHelper
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [253] SymbolBoundAttributes.cshtml)
                     IntermediateToken - (31:1,0 [2] SymbolBoundAttributes.cshtml) - Html - \n
                     IntermediateToken - (33:2,0 [3] SymbolBoundAttributes.cshtml) - Html - <ul

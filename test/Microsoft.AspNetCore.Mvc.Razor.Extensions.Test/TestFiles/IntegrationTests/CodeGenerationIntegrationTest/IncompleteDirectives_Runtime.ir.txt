@@ -10,7 +10,7 @@ Document -
         UsingStatement - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingStatement - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteDirectives_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(83, 4, true);
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)

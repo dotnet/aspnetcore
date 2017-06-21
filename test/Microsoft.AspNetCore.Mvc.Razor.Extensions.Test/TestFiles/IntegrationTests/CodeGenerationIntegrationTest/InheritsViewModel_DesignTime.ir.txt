@@ -29,7 +29,7 @@ Document -
                 DirectiveToken - (45:1,7 [7] InheritsViewModel.cshtml) - MyModel
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
             Inject - 
             Inject - 
             Inject - 

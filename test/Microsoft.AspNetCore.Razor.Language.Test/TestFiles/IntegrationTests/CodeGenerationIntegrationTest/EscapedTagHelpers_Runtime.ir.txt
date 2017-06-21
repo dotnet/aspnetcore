@@ -2,7 +2,7 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EscapedTagHelpers_Runtime -  - 
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [3] EscapedTagHelpers.cshtml)
                     IntermediateToken - (31:1,0 [2] EscapedTagHelpers.cshtml) - Html - \n
                     IntermediateToken - (33:2,0 [1] EscapedTagHelpers.cshtml) - Html - <

@@ -240,7 +240,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
                 {
                     node.Name = FileName.Replace('/', '_');
-                    node.AccessModifier = "public";
+
+                    node.Modifiers.Clear();
+                    node.Modifiers.Add("public");
 
                     VisitDefault(node);
                 }
@@ -254,10 +256,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
                 public override void VisitMethodDeclaration(MethodDeclarationIntermediateNode node)
                 {
-                    node.AccessModifier = "public";
-                    node.Modifiers = new[] { "async" };
-                    node.ReturnType = typeof(Task).FullName;
+                    node.Modifiers.Clear();
+                    node.Modifiers.Add("public");
+                    node.Modifiers.Add("async");
                     node.Name = "ExecuteAsync";
+                    node.ReturnType = typeof(Task).FullName;
 
                     VisitDefault(node);
                 }

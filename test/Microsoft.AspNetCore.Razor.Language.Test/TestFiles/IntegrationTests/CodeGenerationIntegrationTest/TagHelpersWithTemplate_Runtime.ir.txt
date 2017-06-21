@@ -5,7 +5,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - checked - true - AttributeStructure.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - condition - true - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - DivTagHelper - InputTagHelper
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] TagHelpersWithTemplate.cshtml)
                     IntermediateToken - (33:1,0 [2] TagHelpersWithTemplate.cshtml) - Html - \n
                 HtmlContent - (318:10,0 [2] TagHelpersWithTemplate.cshtml)

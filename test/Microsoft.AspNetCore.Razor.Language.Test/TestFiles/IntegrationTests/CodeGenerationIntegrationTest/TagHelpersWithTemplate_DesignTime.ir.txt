@@ -6,7 +6,7 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - DivTagHelper - InputTagHelper
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] TagHelpersWithTemplate.cshtml)
                     IntermediateToken - (31:0,31 [4] TagHelpersWithTemplate.cshtml) - Html - \n\n
                 HtmlContent - (316:9,1 [4] TagHelpersWithTemplate.cshtml)

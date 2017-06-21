@@ -409,33 +409,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 string.Format(CultureInfo.InvariantCulture, InstanceMethodFormat, instanceName, methodName));
         }
 
-        public CSharpCodeWriter WriteField(string accessibility, string typeName, string fieldName)
+        public CSharpCodeWriter WriteField(IList<string> modifiers, string typeName, string fieldName)
         {
-            if (accessibility == null)
-            {
-                throw new ArgumentNullException(nameof(accessibility));
-            }
-
-            if (typeName == null)
-            {
-                throw new ArgumentNullException(nameof(typeName));
-            }
-
-            if (fieldName == null)
-            {
-                throw new ArgumentNullException(nameof(fieldName));
-            }
-
-            return WriteField(accessibility, Array.Empty<string>(), typeName, fieldName);
-        }
-
-        public CSharpCodeWriter WriteField(string accessibility, IList<string> modifiers, string typeName, string fieldName)
-        {
-            if (accessibility == null)
-            {
-                throw new ArgumentNullException(nameof(accessibility));
-            }
-
             if (modifiers == null)
             {
                 throw new ArgumentNullException(nameof(modifiers));
@@ -450,9 +425,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 throw new ArgumentNullException(nameof(fieldName));
             }
-
-            Write(accessibility);
-            Write(" ");
 
             for (var i = 0; i < modifiers.Count; i++)
             {
@@ -481,33 +453,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .WriteEndMethodInvocation(endLine);
         }
 
-        public CSharpCodeWriter WriteAutoPropertyDeclaration(string accessibility, string typeName, string propertyName)
+        public CSharpCodeWriter WriteAutoPropertyDeclaration(IList<string> modifiers, string typeName, string propertyName)
         {
-            if (accessibility == null)
-            {
-                throw new ArgumentNullException(nameof(accessibility));
-            }
-
-            if (typeName == null)
-            {
-                throw new ArgumentNullException(nameof(typeName));
-            }
-
-            if (propertyName == null)
-            {
-                throw new ArgumentNullException(nameof(propertyName));
-            }
-
-            return WriteAutoPropertyDeclaration(accessibility, Array.Empty<string>(), typeName, propertyName);
-        }
-
-        public CSharpCodeWriter WriteAutoPropertyDeclaration(string accessibility, IList<string> modifiers, string typeName, string propertyName)
-        {
-            if (accessibility == null)
-            {
-                throw new ArgumentNullException(nameof(accessibility));
-            }
-
             if (modifiers == null)
             {
                 throw new ArgumentNullException(nameof(modifiers));
@@ -522,9 +469,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 throw new ArgumentNullException(nameof(propertyName));
             }
-
-            Write(accessibility);
-            Write(" ");
 
             for (var i = 0; i < modifiers.Count; i++)
             {
@@ -578,12 +522,19 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         public CSharpCodeWritingScope BuildClassDeclaration(
-            string accessibility,
+            IList<string> modifiers,
             string name,
             string baseType,
             IEnumerable<string> interfaces)
         {
-            Write(accessibility).Write(" class ").Write(name);
+            for (var i = 0; i < modifiers.Count; i++)
+            {
+                Write(modifiers[i]);
+                Write(" ");
+            }
+
+            Write("class ");
+            Write(name);
 
             var hasBaseType = !string.IsNullOrEmpty(baseType);
             var hasInterfaces = interfaces != null && interfaces.Count() > 0;

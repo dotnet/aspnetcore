@@ -3,7 +3,7 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TagHelpersWithPrefix_Runtime -  - 
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - type - text - AttributeStructure.SingleQuotes
             DeclareTagHelperFields -  - InputTagHelper
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (55:2,0 [12] TagHelpersWithPrefix.cshtml)
                     IntermediateToken - (55:2,0 [6] TagHelpersWithPrefix.cshtml) - Html - <form>
                     IntermediateToken - (61:2,6 [6] TagHelpersWithPrefix.cshtml) - Html - \n    

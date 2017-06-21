@@ -11,7 +11,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_7 - AGE - 40 - AttributeStructure.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_8 - Age - 500 - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] DuplicateAttributeTagHelpers.cshtml)
                     IntermediateToken - (33:1,0 [2] DuplicateAttributeTagHelpers.cshtml) - Html - \n
                 TagHelper - (35:2,0 [259] DuplicateAttributeTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag

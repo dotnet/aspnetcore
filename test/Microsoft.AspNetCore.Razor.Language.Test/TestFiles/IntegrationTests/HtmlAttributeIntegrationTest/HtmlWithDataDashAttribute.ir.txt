@@ -1,7 +1,7 @@
 Document - 
     NamespaceDeclaration -  - Razor
         ClassDeclaration -  - public - Template -  - 
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [36] HtmlWithDataDashAttribute.cshtml)
                     IntermediateToken - (0:0,0 [6] HtmlWithDataDashAttribute.cshtml) - Html - <html>
                     IntermediateToken - (6:0,6 [2] HtmlWithDataDashAttribute.cshtml) - Html - \n

@@ -5,7 +5,7 @@ Document -
                 DirectiveToken - (20:2,10 [21] Inherits.cshtml) - foo.bar<baz<biz>>.boz
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpExpression - (1:0,1 [5] Inherits.cshtml)
                     IntermediateToken - (1:0,1 [5] Inherits.cshtml) - CSharp - foo()
                 HtmlContent - (6:0,6 [4] Inherits.cshtml)

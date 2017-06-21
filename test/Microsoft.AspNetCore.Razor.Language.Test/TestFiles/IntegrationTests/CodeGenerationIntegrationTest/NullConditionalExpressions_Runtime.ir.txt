@@ -1,7 +1,7 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NullConditionalExpressions_Runtime -  - 
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [6] NullConditionalExpressions.cshtml)
                     IntermediateToken - (2:0,2 [6] NullConditionalExpressions.cshtml) - CSharp - \n    
                 CSharpExpression - (9:1,5 [13] NullConditionalExpressions.cshtml)

@@ -5,7 +5,7 @@ Document -
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_1 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - class - btn - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.CatchAllTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [2] AttributeTargetingTagHelpers.cshtml)
                     IntermediateToken - (31:1,0 [2] AttributeTargetingTagHelpers.cshtml) - Html - \n
                 TagHelper - (33:2,0 [228] AttributeTargetingTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag

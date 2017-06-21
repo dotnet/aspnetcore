@@ -9,7 +9,7 @@ Document -
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_5 - string-prefix-paprika - another string - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_6 - string-prefix-thyme - string - HtmlAttributeValueStyle.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.InputTagHelper1 - TestNamespace.InputTagHelper2
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] PrefixedAttributeTagHelpers.cshtml)
                     IntermediateToken - (33:1,0 [2] PrefixedAttributeTagHelpers.cshtml) - Html - \n
                 CSharpCode - (37:2,2 [242] PrefixedAttributeTagHelpers.cshtml)

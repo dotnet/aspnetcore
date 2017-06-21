@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class ViewComponentTagHelperPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
+        private static readonly string[] PublicModifiers = new[] { "public" };
+
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
             var visitor = new Visitor();
@@ -101,7 +103,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var tagHelperTypeName = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelper";
             var className = GetVCTHClassName(descriptor);
 
-            using (writer.BuildClassDeclaration("public", className, tagHelperTypeName, interfaces: null))
+            using (writer.BuildClassDeclaration(PublicModifiers, className, tagHelperTypeName, interfaces: null))
             {
                 // Add view component helper.
                 writer.WriteVariableDeclaration(
@@ -144,14 +146,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
               .WriteLine("]");
 
             writer.WriteAutoPropertyDeclaration(
-                "public",
+                PublicModifiers,
                 $"global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext",
                 "ViewContext");
 
             foreach (var attribute in descriptor.BoundAttributes)
             {
                 writer.WriteAutoPropertyDeclaration(
-                    "public", attribute.TypeName, attribute.GetPropertyName());
+                    PublicModifiers,
+                    attribute.TypeName,
+                    attribute.GetPropertyName());
 
                 if (attribute.IndexerTypeName != null)
                 {

@@ -66,7 +66,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                 engine.ConfigureClass((document, @class) =>
                 {
                     @class.Name = "MyClass";
-                    @class.AccessModifier = "protected internal";
+
+                    @class.Modifiers.Clear();
+                    @class.Modifiers.Add("protected");
+                    @class.Modifiers.Add("internal");
                 });
 
                 engine.ConfigureClass((document, @class) =>

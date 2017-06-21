@@ -1,7 +1,7 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SimpleUnspacedIf_Runtime -  - 
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (1:0,1 [14] SimpleUnspacedIf.cshtml)
                     IntermediateToken - (1:0,1 [14] SimpleUnspacedIf.cshtml) - CSharp - if (true)\n{\n
                 HtmlContent - (15:2,0 [14] SimpleUnspacedIf.cshtml)

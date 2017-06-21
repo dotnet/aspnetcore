@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
         {
-            WriteContentNode(node, node.AccessModifier, node.Name, node.BaseType, string.Join(", ", node.Interfaces ?? new List<string>()));
+            WriteContentNode(node, string.Join(" ", node.Modifiers), node.Name, node.BaseType, string.Join(", ", node.Interfaces ?? new List<string>()));
         }
 
         public override void VisitCSharpExpressionAttributeValue(CSharpExpressionAttributeValueIntermediateNode node)
@@ -76,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitMethodDeclaration(MethodDeclarationIntermediateNode node)
         {
-            WriteContentNode(node, node.AccessModifier, string.Join(", ", node.Modifiers ?? new List<string>()), node.ReturnType, node.Name);
+            WriteContentNode(node, string.Join(" ", node.Modifiers), node.ReturnType, node.Name);
         }
 
         public override void VisitUsingStatement(UsingStatementIntermediateNode node)

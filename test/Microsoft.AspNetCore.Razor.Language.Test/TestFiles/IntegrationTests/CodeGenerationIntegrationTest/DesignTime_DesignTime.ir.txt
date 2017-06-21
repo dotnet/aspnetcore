@@ -5,7 +5,7 @@ Document -
                 DirectiveToken - (173:11,9 [6] DesignTime.cshtml) - Footer
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [19] DesignTime.cshtml)
                     IntermediateToken - (0:0,0 [5] DesignTime.cshtml) - Html - <div>
                     IntermediateToken - (5:0,5 [14] DesignTime.cshtml) - Html - \n            

@@ -29,7 +29,7 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml.__Generated__TestViewComponentTagHelper - AllTagHelper
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (26:0,26 [2] ViewComponentTagHelper.cshtml)
                     IntermediateToken - (26:0,26 [2] ViewComponentTagHelper.cshtml) - Html - \n
                 CSharpCode - (30:1,2 [26] ViewComponentTagHelper.cshtml)

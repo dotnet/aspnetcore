@@ -47,7 +47,8 @@ namespace RazorPageGenerator
                     .ConfigureClass((document, @class) =>
                     {
                         @class.Name = Path.GetFileNameWithoutExtension(document.Source.FilePath);
-                        @class.AccessModifier = "internal";
+                        @class.Modifiers.Clear();
+                        @class.Modifiers.Add("internal");
                     });
 
                 builder.Features.Add(new SuppressChecksumOptionsFeature());

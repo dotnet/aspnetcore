@@ -5,7 +5,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - class - Hello World - AttributeStructure.DoubleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - data-delay - 1000 - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [106] NestedScriptTagTagHelpers.cshtml)
                     IntermediateToken - (33:1,0 [2] NestedScriptTagTagHelpers.cshtml) - Html - \n
                     IntermediateToken - (35:2,0 [7] NestedScriptTagTagHelpers.cshtml) - Html - <script

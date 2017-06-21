@@ -5,7 +5,7 @@ Document -
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - AttributeStructure.SingleQuotes
             DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - PTagHelper - FormTagHelper - InputTagHelper
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 TagHelper - (31:1,0 [20] NestedTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                         HtmlContent - (43:1,12 [4] NestedTagHelpers.cshtml)

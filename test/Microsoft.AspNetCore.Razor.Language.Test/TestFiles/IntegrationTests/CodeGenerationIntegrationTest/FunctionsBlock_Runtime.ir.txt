@@ -1,7 +1,7 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_FunctionsBlock_Runtime -  - 
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (19:3,0 [2] FunctionsBlock.cshtml)
                     IntermediateToken - (19:3,0 [2] FunctionsBlock.cshtml) - Html - \n
                 HtmlContent - (140:10,0 [26] FunctionsBlock.cshtml)

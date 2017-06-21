@@ -30,7 +30,7 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
             DeclareTagHelperFields -  - DivTagHelper
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (7:1,0 [2] RazorPagesWithoutModel.cshtml)
                     IntermediateToken - (7:1,0 [2] RazorPagesWithoutModel.cshtml) - Html - \n
                 HtmlContent - (35:2,26 [2] RazorPagesWithoutModel.cshtml)

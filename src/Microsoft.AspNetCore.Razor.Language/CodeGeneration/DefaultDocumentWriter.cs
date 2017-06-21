@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
-                using (Context.Writer.BuildClassDeclaration(node.AccessModifier, node.Name, node.BaseType, node.Interfaces))
+                using (Context.Writer.BuildClassDeclaration(node.Modifiers, node.Name, node.BaseType, node.Interfaces))
                 {
                     RenderChildren(node);
                 }
@@ -128,25 +128,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 Context.Writer.WriteLine("#pragma warning disable 1998");
 
-                Context.Writer
-                    .Write(node.AccessModifier)
-                    .Write(" ");
-
-                if (node.Modifiers != null)
+                for (var i = 0; i < node.Modifiers.Count; i++)
                 {
-                    for (var i = 0; i < node.Modifiers.Count; i++)
-                    {
-                        Context.Writer.Write(node.Modifiers[i]);
-
-                        if (i + 1 < node.Modifiers.Count)
-                        {
-                            Context.Writer.Write(" ");
-                        }
-                    }
+                    Context.Writer.Write(node.Modifiers[i]);
+                    Context.Writer.Write(" ");
                 }
 
                 Context.Writer
-                    .Write(" ")
                     .Write(node.ReturnType)
                     .Write(" ")
                     .Write(node.Name)
@@ -162,12 +150,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitFieldDeclaration(FieldDeclarationIntermediateNode node)
             {
-                Context.Writer.WriteField(node.AccessModifier, node.Modifiers, node.Type, node.Name);
+                Context.Writer.WriteField(node.Modifiers, node.Type, node.Name);
             }
 
             public override void VisitPropertyDeclaration(PropertyDeclarationIntermediateNode node)
             {
-                Context.Writer.WriteAutoPropertyDeclaration(node.AccessModifier, node.Modifiers, node.Type, node.Name);
+                Context.Writer.WriteAutoPropertyDeclaration(node.Modifiers, node.Type, node.Name);
             }
 
             public override void VisitExtension(ExtensionIntermediateNode node)

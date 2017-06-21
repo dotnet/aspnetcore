@@ -6,7 +6,7 @@ Document -
                 DirectiveToken - (5701:205,9 [25] StringLiterals.cshtml) - WriteLiteralsToInHereAlso
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [2013] StringLiterals.cshtml)
                     IntermediateToken - (0:0,0 [3] StringLiterals.cshtml) - Html - <p>
                     IntermediateToken - (3:0,3 [14] StringLiterals.cshtml) - Html - This is line 1

@@ -7,7 +7,7 @@ Document -
                 DirectiveToken - (235:14,9 [15] Sections.cshtml) - NestedDelegates
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [44] Sections.cshtml)
                     IntermediateToken - (2:0,2 [44] Sections.cshtml) - CSharp - \n    Layout = "_SectionTestLayout.cshtml"\n
                 HtmlContent - (49:3,0 [31] Sections.cshtml)

@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<TModel>", visitor.Class.BaseType);
-            Assert.Equal("public", visitor.Class.AccessModifier);
+            Assert.Equal(new[] { "public" }, visitor.Class.Modifiers);
             Assert.Equal("Test_cshtml", visitor.Class.Name);
         }
 
@@ -183,9 +183,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("ExecuteAsync", visitor.Method.Name);
-            Assert.Equal("public", visitor.Method.AccessModifier);
             Assert.Equal("global::System.Threading.Tasks.Task", visitor.Method.ReturnType);
-            Assert.Equal(new[] { "async", "override" }, visitor.Method.Modifiers);
+            Assert.Equal(new[] { "public", "async", "override" }, visitor.Method.Modifiers);
         }
 
         private static RazorCodeDocument CreateDocument(string content, string filePath = null)

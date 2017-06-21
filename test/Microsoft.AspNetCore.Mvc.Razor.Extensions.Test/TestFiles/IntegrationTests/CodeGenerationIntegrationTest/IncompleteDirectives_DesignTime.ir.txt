@@ -28,7 +28,7 @@ Document -
                 DirectiveToken - (159:11,8 [17] IncompleteDirectives.cshtml) - MyService<TModel>
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
                 MalformedDirective - (102:4,0 [6] IncompleteDirectives.cshtml)

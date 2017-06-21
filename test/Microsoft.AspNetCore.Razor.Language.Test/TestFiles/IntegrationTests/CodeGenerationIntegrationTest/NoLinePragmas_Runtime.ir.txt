@@ -1,7 +1,7 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NoLinePragmas_Runtime -  - 
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [18] NoLinePragmas.cshtml)
                     IntermediateToken - (2:0,2 [18] NoLinePragmas.cshtml) - CSharp - \n    int i = 1;\n
                 HtmlContent - (23:3,0 [2] NoLinePragmas.cshtml)

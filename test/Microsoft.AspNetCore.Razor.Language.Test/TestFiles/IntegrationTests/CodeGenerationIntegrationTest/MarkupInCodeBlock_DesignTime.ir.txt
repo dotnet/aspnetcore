@@ -4,7 +4,7 @@ Document -
             DesignTimeDirective - 
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [46] MarkupInCodeBlock.cshtml)
                     IntermediateToken - (2:0,2 [46] MarkupInCodeBlock.cshtml) - CSharp - \n    for(int i = 1; i <= 10; i++) {\n        
                 HtmlContent - (48:2,8 [19] MarkupInCodeBlock.cshtml)

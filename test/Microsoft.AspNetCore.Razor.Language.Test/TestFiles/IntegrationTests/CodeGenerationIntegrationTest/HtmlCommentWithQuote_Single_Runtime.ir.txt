@@ -1,7 +1,7 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_HtmlCommentWithQuote_Single_Runtime -  - 
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [45] HtmlCommentWithQuote_Single.cshtml)
                     IntermediateToken - (0:0,0 [12] HtmlCommentWithQuote_Single.cshtml) - Html - <!-- ' -->\n
                     IntermediateToken - (12:1,0 [4] HtmlCommentWithQuote_Single.cshtml) - Html - <img

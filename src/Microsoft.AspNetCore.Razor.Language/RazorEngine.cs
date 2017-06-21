@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             configurationFeature.ConfigureClass.Add((document, @class) =>
             {
                 @class.Name = "Template";
-                @class.AccessModifier = "public";
+                @class.Modifiers.Add("public");
             });
 
             configurationFeature.ConfigureNamespace.Add((document, @namespace) =>
@@ -88,12 +88,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                 @namespace.Content = "Razor";
             });
 
-            configurationFeature.ConfigureMethod.Add((document, @method) =>
+            configurationFeature.ConfigureMethod.Add((document, method) =>
             {
-                @method.Name = "ExecuteAsync";
-                @method.ReturnType = $"global::{typeof(Task).FullName}";
-                @method.AccessModifier = "public";
-                method.Modifiers = new[] { "async", "override" };
+                method.Name = "ExecuteAsync";
+                method.ReturnType = $"global::{typeof(Task).FullName}";
+
+                method.Modifiers.Add("public");
+                method.Modifiers.Add("async");
+                method.Modifiers.Add("override");
             });
 
             builder.Features.Add(configurationFeature);

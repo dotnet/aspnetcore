@@ -133,7 +133,10 @@ namespace TestNamespace
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Add(new ClassDeclarationIntermediateNode()
             {
-                AccessModifier = "internal",
+                Modifiers =
+                {
+                    "internal"
+                },
                 BaseType = "TestBase",
                 Interfaces = new List<string> { "IFoo", "IBar", },
                 Name = "TestClass",
@@ -174,8 +177,12 @@ internal class TestClass : TestBase, IFoo, IBar
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Add(new MethodDeclarationIntermediateNode()
             {
-                AccessModifier = "internal",
-                Modifiers = new List<string> { "virtual", "async", },
+                Modifiers =
+                {
+                    "internal",
+                    "virtual",
+                    "async",
+                },
                 Name = "TestMethod",
                 ReturnType = "string",
             });
@@ -217,8 +224,11 @@ internal virtual async string TestMethod()
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Add(new FieldDeclarationIntermediateNode()
             {
-                AccessModifier = "internal",
-                Modifiers = new List<string> { "readonly", },
+                Modifiers =
+                {
+                    "internal",
+                    "readonly",
+                },
                 Name = "_foo",
                 Type = "string",
             });
@@ -256,8 +266,11 @@ internal readonly string _foo;
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Add(new PropertyDeclarationIntermediateNode()
             {
-                AccessModifier = "internal",
-                Modifiers = new List<string> { "virtual", },
+                Modifiers =
+                {
+                    "internal",
+                    "virtual",
+                },
                 Name = "Foo",
                 Type = "string",
             });

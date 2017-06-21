@@ -38,14 +38,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         }
 
         public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
-
-        public IList<string> Modifiers { get; set; } = new List<string>();
-
+        
         public override SourceSpan? Source { get; set; }
 
         public override bool HasDiagnostics => _diagnostics != null && _diagnostics.Count > 0;
 
-        public string AccessModifier { get; set; }
+        public IList<string> Modifiers { get; } = new List<string>();
 
         public string Name { get; set; }
 

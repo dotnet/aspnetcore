@@ -27,7 +27,7 @@ Document -
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [4] Basic.cshtml)
                     IntermediateToken - (0:0,0 [4] Basic.cshtml) - Html - <div
                 HtmlAttribute - (4:0,4 [25] Basic.cshtml) -  class=" - "

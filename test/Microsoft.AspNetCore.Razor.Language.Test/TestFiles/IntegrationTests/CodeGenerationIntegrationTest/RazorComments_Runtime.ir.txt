@@ -1,7 +1,7 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorComments_Runtime -  - 
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (36:0,36 [17] RazorComments.cshtml)
                     IntermediateToken - (36:0,36 [2] RazorComments.cshtml) - Html - \n
                     IntermediateToken - (38:1,0 [3] RazorComments.cshtml) - Html - <p>

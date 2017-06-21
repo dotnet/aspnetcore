@@ -4,7 +4,7 @@ Document -
             DesignTimeDirective - 
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (17:2,1 [4] FunctionsBlock.cshtml)
                     IntermediateToken - (17:2,1 [4] FunctionsBlock.cshtml) - Html - \n\n
                 HtmlContent - (138:9,1 [28] FunctionsBlock.cshtml)

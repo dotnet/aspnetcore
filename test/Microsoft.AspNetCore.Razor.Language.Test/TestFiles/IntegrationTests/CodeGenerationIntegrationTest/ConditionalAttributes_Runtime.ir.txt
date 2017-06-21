@@ -1,7 +1,7 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ConditionalAttributes_Runtime -  - 
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [44] ConditionalAttributes.cshtml)
                     IntermediateToken - (2:0,2 [44] ConditionalAttributes.cshtml) - CSharp - \n    var ch = true;\n    var cls = "bar";\n
                 HtmlContent - (46:3,0 [28] ConditionalAttributes.cshtml)

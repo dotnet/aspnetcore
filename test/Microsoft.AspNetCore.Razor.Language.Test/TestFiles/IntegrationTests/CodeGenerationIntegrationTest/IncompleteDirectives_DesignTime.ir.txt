@@ -13,7 +13,7 @@ Document -
                 DirectiveToken - (250:12,17 [1] IncompleteDirectives.cshtml) - "
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
                 MalformedDirective - (100:2,13 [0] IncompleteDirectives.cshtml)

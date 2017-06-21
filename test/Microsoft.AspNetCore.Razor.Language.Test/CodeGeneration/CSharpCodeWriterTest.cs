@@ -308,7 +308,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new CSharpCodeWriter();
 
             // Act
-            writer.WriteField("private", "global::System.String", "_myString");
+            writer.WriteField(new[] { "private" }, "global::System.String", "_myString");
 
             // Assert
             var output = writer.GenerateCode();
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new CSharpCodeWriter();
 
             // Act
-            writer.WriteField("private", new[] { "readonly", "static" }, "global::System.String", "_myString");
+            writer.WriteField(new[] { "private", "readonly", "static" }, "global::System.String", "_myString");
 
             // Assert
             var output = writer.GenerateCode();
@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new CSharpCodeWriter();
 
             // Act
-            writer.WriteAutoPropertyDeclaration("public", "global::System.String", "MyString");
+            writer.WriteAutoPropertyDeclaration(new[] { "public" }, "global::System.String", "MyString");
 
             // Assert
             var output = writer.GenerateCode();
@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var writer = new CSharpCodeWriter();
 
             // Act
-            writer.WriteAutoPropertyDeclaration("public", new[] { "static" }, "global::System.String", "MyString");
+            writer.WriteAutoPropertyDeclaration(new[] { "public", "static" }, "global::System.String", "MyString");
 
             // Assert
             var output = writer.GenerateCode();

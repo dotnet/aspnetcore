@@ -29,7 +29,7 @@ Document -
                 DirectiveToken - (14:0,14 [14] Inject.cshtml) - MyPropertyName
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
+            MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
             Inject - 
             Inject - 
             Inject - 
