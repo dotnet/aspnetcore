@@ -381,7 +381,7 @@
       <InstallerMaintainerName>Microsoft</InstallerMaintainerName>
       <InstallerMaintainerEmail>nugetaspnet@microsoft.com</InstallerMaintainerEmail>
       <InstallerVendor>.NET Foundation</InstallerVendor>
-      <InstallerLicense>Apache</InstallerLicense>
+      <InstallerLicense>Apache-2.0</InstallerLicense>
       <InstallerPackageRevision>1</InstallerPackageRevision>
       <InstallerHomepage>https://www.asp.net/</InstallerHomepage>
       <InstallerInstallRoot>/usr/share/dotnet</InstallerInstallRoot>
