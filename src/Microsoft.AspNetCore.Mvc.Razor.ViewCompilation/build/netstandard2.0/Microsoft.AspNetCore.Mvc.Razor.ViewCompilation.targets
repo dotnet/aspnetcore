@@ -58,7 +58,7 @@
   <Target
     Name="_AddDesktopReferences"
     AfterTargets="ResolveLockFileReferences"
-    Condition="'$(_MvcViewCompilationAddDesktopReferences)'!='false' AND '$(TargetFrameworkIdentifier)'=='.NETFramework'">
+    Condition="'$(MvcRazorCompileOnPublish)'=='true' AND '$(_MvcViewCompilationAddDesktopReferences)'!='false' AND '$(TargetFrameworkIdentifier)'=='.NETFramework'">
 
     <PropertyGroup Condition="'$(_MvcViewCompilationBinaryPath)'==''">
       <_MvcViewCompilationBinaryPath Condition="'$(PlatformTarget)'=='x64'">$(MSBuildThisFileDirectory)$(MSBuildThisFileName)-x64.exe</_MvcViewCompilationBinaryPath>
@@ -66,7 +66,7 @@
     </PropertyGroup>
 
     <ItemGroup Condition="'$(_MvcViewCompilationBinaryPath)'!=''">
-      <Reference Include="$(_MvcViewCompilationBinaryPath)" Private="true" />
+      <Reference Include="$(_MvcViewCompilationBinaryPath)" Private="false" Visible="false" />
     </ItemGroup>
   </Target>
 
