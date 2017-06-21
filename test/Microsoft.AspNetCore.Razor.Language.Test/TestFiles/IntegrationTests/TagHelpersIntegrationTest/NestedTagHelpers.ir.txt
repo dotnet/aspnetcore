@@ -1,29 +1,35 @@
 Document - 
     NamespaceDeclaration -  - Razor
         ClassDeclaration -  - public - Template -  - 
-            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - AttributeStructure.SingleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - AttributeStructure.DoubleQuotes
-            DeclareTagHelperFields -  - PTagHelper - FormTagHelper - InputTagHelper
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_2 - unbound - foo - HtmlAttributeValueStyle.DoubleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::PTagHelper - __PTagHelper
+            FieldDeclaration -  - private - global::FormTagHelper - __FormTagHelper
+            FieldDeclaration -  - private - global::InputTagHelper - __InputTagHelper
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 TagHelper - (31:1,0 [20] NestedTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (43:1,12 [4] NestedTagHelpers.cshtml)
                             IntermediateToken - (43:1,12 [4] NestedTagHelpers.cshtml) - Html - Hola
-                    CreateTagHelper -  - PTagHelper
-                    AddTagHelperHtmlAttribute -  - someattr - AttributeStructure.Minimized
+                    DefaultTagHelperCreate -  - PTagHelper
+                    DefaultTagHelperHtmlAttribute -  - someattr - HtmlAttributeValueStyle.Minimized
+                    DefaultTagHelperExecute - 
                 HtmlContent - (51:1,20 [2] NestedTagHelpers.cshtml)
                     IntermediateToken - (51:1,20 [2] NestedTagHelpers.cshtml) - Html - \n
                 TagHelper - (53:2,0 [68] NestedTagHelpers.cshtml) - form - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (73:2,20 [6] NestedTagHelpers.cshtml)
                             IntermediateToken - (73:2,20 [6] NestedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (79:3,4 [33] NestedTagHelpers.cshtml) - input - TagMode.SelfClosing
-                            TagHelperBody - 
-                            CreateTagHelper -  - InputTagHelper
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - value - FooProp
-                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - InputTagHelper
+                            PreallocatedTagHelperProperty - (92:3,17 [5] NestedTagHelpers.cshtml) - __tagHelperAttribute_0 - value - FooProp
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                            DefaultTagHelperExecute - 
                         HtmlContent - (112:3,37 [2] NestedTagHelpers.cshtml)
                             IntermediateToken - (112:3,37 [2] NestedTagHelpers.cshtml) - Html - \n
-                    CreateTagHelper -  - FormTagHelper
-                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperCreate -  - FormTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperExecute - 

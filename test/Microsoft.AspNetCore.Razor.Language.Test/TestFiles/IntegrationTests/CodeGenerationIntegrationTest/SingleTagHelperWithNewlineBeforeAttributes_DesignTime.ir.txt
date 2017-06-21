@@ -1,21 +1,23 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SingleTagHelperWithNewlineBeforeAttributes_DesignTime -  - 
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::TestNamespace.PTagHelper - __TestNamespace_PTagHelper
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [17] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - "*, TestAssembly"
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            DeclareTagHelperFields -  - TestNamespace.PTagHelper
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] SingleTagHelperWithNewlineBeforeAttributes.cshtml)
                     IntermediateToken - (31:0,31 [4] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - Html - \n\n
                 TagHelper - (35:2,0 [53] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - p - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (73:3,34 [11] SingleTagHelperWithNewlineBeforeAttributes.cshtml)
                             IntermediateToken - (73:3,34 [11] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - Html - Body of Tag
-                    CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
+                    DefaultTagHelperCreate -  - TestNamespace.PTagHelper
+                    DefaultTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (49:3,10 [11] SingleTagHelperWithNewlineBeforeAttributes.cshtml)
                             IntermediateToken - (49:3,10 [11] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - Html - Hello World
-                    SetTagHelperProperty - (67:3,28 [4] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperProperty - (67:3,28 [4] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - age - int TestNamespace.PTagHelper.Age - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (67:3,28 [4] SingleTagHelperWithNewlineBeforeAttributes.cshtml) - CSharp - 1337
+                    DefaultTagHelperExecute - 

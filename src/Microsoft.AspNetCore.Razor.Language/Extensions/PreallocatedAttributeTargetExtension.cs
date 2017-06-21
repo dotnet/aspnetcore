@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public string FormatInvalidIndexerAssignmentMethodName { get; set; } = "InvalidTagHelperIndexerAssignment";
 
-        public void WriteDeclarePreallocatedTagHelperHtmlAttribute(CodeRenderingContext context, DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode node)
+        public void WriteTagHelperHtmlAttributeValue(CodeRenderingContext context, PreallocatedTagHelperHtmlAttributeValueIntermediateNode node)
         {
             context.CodeWriter
                 .Write("private static readonly global::")
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .Write(node.VariableName)
                 .Write(" = ")
                 .WriteStartNewObject("global::" + TagHelperAttributeTypeName)
-                .WriteStringLiteral(node.Name);
+                .WriteStringLiteral(node.AttributeName);
 
             if (node.AttributeStructure == AttributeStructure.Minimized)
             {
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
         }
 
-        public void WriteAddPreallocatedTagHelperHtmlAttribute(CodeRenderingContext context, AddPreallocatedTagHelperHtmlAttributeIntermediateNode node)
+        public void WriteTagHelperHtmlAttribute(CodeRenderingContext context, PreallocatedTagHelperHtmlAttributeIntermediateNode node)
         {
             context.CodeWriter
                 .WriteStartInstanceMethodInvocation(ExecutionContextVariableName, ExecutionContextAddHtmlAttributeMethodName)
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .WriteEndMethodInvocation();
         }
 
-        public void WriteDeclarePreallocatedTagHelperAttribute(CodeRenderingContext context, DeclarePreallocatedTagHelperAttributeIntermediateNode node)
+        public void WriteTagHelperPropertyValue(CodeRenderingContext context, PreallocatedTagHelperPropertyValueIntermediateNode node)
         {
             context.CodeWriter
                 .Write("private static readonly global::")
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .Write(node.VariableName)
                 .Write(" = ")
                 .WriteStartNewObject("global::" + TagHelperAttributeTypeName)
-                .WriteStringLiteral(node.Name)
+                .WriteStringLiteral(node.AttributeName)
                 .WriteParameterSeparator()
                 .WriteStringLiteral(node.Value)
                 .WriteParameterSeparator()
@@ -73,21 +73,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .WriteEndMethodInvocation();
         }
 
-        public void WriteSetPreallocatedTagHelperProperty(CodeRenderingContext context, SetPreallocatedTagHelperPropertyIntermediateNode node)
+        public void WriteTagHelperProperty(CodeRenderingContext context, PreallocatedTagHelperPropertyIntermediateNode node)
         {
-            var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
-            var propertyName = node.Descriptor.GetPropertyName();
-            var propertyValueAccessor = GetTagHelperPropertyAccessor(node.IsIndexerNameMatch, tagHelperVariableName, node.AttributeName, node.Descriptor);
+            var propertyName = node.BoundAttribute.GetPropertyName();
+            var propertyValueAccessor = GetTagHelperPropertyAccessor(node.IsIndexerNameMatch, node.Field, node.AttributeName, node.BoundAttribute);
             var attributeValueAccessor = $"{node.VariableName}.Value" /* ORIGINAL: TagHelperAttributeValuePropertyName */;
 
             // Ensure that the property we're trying to set has initialized its dictionary bound properties.
             if (node.IsIndexerNameMatch &&
-                context.TagHelperRenderingContext.VerifiedPropertyDictionaries.Add($"{node.TagHelperTypeName}.{propertyName}"))
+                context.TagHelperRenderingContext.VerifiedPropertyDictionaries.Add($"{node.TagHelper.GetTypeName()}.{propertyName}"))
             {
                 // Throw a reasonable Exception at runtime if the dictionary property is null.
                 context.CodeWriter
                     .Write("if (")
-                    .Write(tagHelperVariableName)
+                    .Write(node.Field)
                     .Write(".")
                     .Write(propertyName)
                     .WriteLine(" == null)");
@@ -101,7 +100,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         .WriteStartMethodInvocation(FormatInvalidIndexerAssignmentMethodName)
                         .WriteStringLiteral(node.AttributeName)
                         .WriteParameterSeparator()
-                        .WriteStringLiteral(node.TagHelperTypeName)
+                        .WriteStringLiteral(node.TagHelper.GetTypeName())
                         .WriteParameterSeparator()
                         .WriteStringLiteral(propertyName)
                         .WriteEndMethodInvocation(endLine: false)   // End of method call
@@ -118,8 +117,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .Write(node.VariableName)
                 .WriteEndMethodInvocation();
         }
-
-        private static string GetTagHelperVariableName(string tagHelperTypeName) => "__" + tagHelperTypeName.Replace('.', '_');
 
         private static string GetTagHelperPropertyAccessor(
             bool isIndexerNameMatch,

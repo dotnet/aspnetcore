@@ -109,11 +109,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             VisitDefault(node);
         }
 
-        public virtual void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIntermediateNode node)
-        {
-            VisitDefault(node);
-        }
-
         public virtual void VisitTagHelper(TagHelperIntermediateNode node)
         {
             VisitDefault(node);
@@ -124,17 +119,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             VisitDefault(node);
         }
 
-        public virtual void VisitCreateTagHelper(CreateTagHelperIntermediateNode node)
+        public virtual void VisitTagHelperProperty(TagHelperPropertyIntermediateNode node)
         {
             VisitDefault(node);
         }
 
-        public virtual void VisitSetTagHelperProperty(SetTagHelperPropertyIntermediateNode node)
-        {
-            VisitDefault(node);
-        }
-
-        public virtual void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIntermediateNode node)
+        public virtual void VisitTagHelperHtmlAttribute(TagHelperHtmlAttributeIntermediateNode node)
         {
             VisitDefault(node);
         }

@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             var tagHelper = FindTagHelperNode(irDocument);
-            var setProperty = tagHelper.Children.OfType<SetTagHelperPropertyIntermediateNode>().Single();
+            var setProperty = tagHelper.Children.OfType<TagHelperPropertyIntermediateNode>().Single();
 
             var token = Assert.IsType<IntermediateToken>(Assert.Single(setProperty.Children));
             Assert.True(token.IsCSharp);
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             var tagHelper = FindTagHelperNode(irDocument);
-            var setProperty = tagHelper.Children.OfType<SetTagHelperPropertyIntermediateNode>().Single();
+            var setProperty = tagHelper.Children.OfType<TagHelperPropertyIntermediateNode>().Single();
 
             var expression = Assert.IsType<CSharpExpressionIntermediateNode>(Assert.Single(setProperty.Children));
             Assert.Equal("ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Bar)", GetCSharpContent(expression));
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             var tagHelper = FindTagHelperNode(irDocument);
-            var setProperty = tagHelper.Children.OfType<SetTagHelperPropertyIntermediateNode>().Single();
+            var setProperty = tagHelper.Children.OfType<TagHelperPropertyIntermediateNode>().Single();
 
             var expression = Assert.IsType<CSharpExpressionIntermediateNode>(Assert.Single(setProperty.Children));
             Assert.Equal("ModelExpressionProvider.CreateModelExpression(ViewData, __model => Bar)", GetCSharpContent(expression));

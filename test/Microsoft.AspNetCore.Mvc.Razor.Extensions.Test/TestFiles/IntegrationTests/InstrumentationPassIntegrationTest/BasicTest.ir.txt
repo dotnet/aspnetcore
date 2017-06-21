@@ -1,10 +1,12 @@
 Document - 
     NamespaceDeclaration -  - Razor
         ClassDeclaration -  - public - Template -  - 
-            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - AttributeStructure.SingleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - AttributeStructure.DoubleQuotes
-            DeclareTagHelperFields -  - FormTagHelper - InputTagHelper
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_2 - unbound - foo - HtmlAttributeValueStyle.DoubleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::FormTagHelper - __FormTagHelper
+            FieldDeclaration -  - private - global::InputTagHelper - __InputTagHelper
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(31, 28, true);
@@ -32,7 +34,7 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(71, 87, false);
                 TagHelper - (71:3,0 [87] BasicTest.cshtml) - form - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         CSharpCode - 
                             IntermediateToken -  - CSharp - BeginContext(91, 6, true);
                         HtmlContent - (91:3,20 [6] BasicTest.cshtml)
@@ -42,13 +44,14 @@ Document -
                         CSharpCode - 
                             IntermediateToken -  - CSharp - BeginContext(97, 52, false);
                         TagHelper - (97:4,4 [52] BasicTest.cshtml) - input - TagMode.SelfClosing
-                            TagHelperBody - 
-                            CreateTagHelper -  - InputTagHelper
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - value - FooProp
-                            SetTagHelperProperty - (121:4,28 [13] BasicTest.cshtml) - date - BarProp - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - InputTagHelper
+                            PreallocatedTagHelperProperty - (110:4,17 [5] BasicTest.cshtml) - __tagHelperAttribute_0 - value - FooProp
+                            DefaultTagHelperProperty - (121:4,28 [13] BasicTest.cshtml) - date - System.DateTime InputTagHelper.BarProp - HtmlAttributeValueStyle.DoubleQuotes
                                 CSharpExpression - (122:4,29 [12] BasicTest.cshtml)
                                     IntermediateToken - (122:4,29 [12] BasicTest.cshtml) - CSharp - DateTime.Now
-                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                            DefaultTagHelperExecute - 
                         CSharpCode - 
                             IntermediateToken -  - CSharp - EndContext();
                         CSharpCode - 
@@ -57,8 +60,9 @@ Document -
                             IntermediateToken - (149:4,56 [2] BasicTest.cshtml) - Html - \n
                         CSharpCode - 
                             IntermediateToken -  - CSharp - EndContext();
-                    CreateTagHelper -  - FormTagHelper
-                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperCreate -  - FormTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperExecute - 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 

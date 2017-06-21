@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var suffixLocation = node.Source.Value.AbsoluteIndex + node.Source.Value.Length - node.Suffix.Length;
             context.CodeWriter
                 .WriteStartMethodInvocation(BeginWriteAttributeMethod)
-                .WriteStringLiteral(node.Name)
+                .WriteStringLiteral(node.AttributeName)
                 .WriteParameterSeparator()
                 .WriteStringLiteral(node.Prefix)
                 .WriteParameterSeparator()

@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public override bool HasDiagnostics => _diagnostics != null && _diagnostics.Count > 0;
 
-        public string Name { get; set; }
+        public string AttributeName { get; set; }
 
         public string Prefix { get; set; }
 

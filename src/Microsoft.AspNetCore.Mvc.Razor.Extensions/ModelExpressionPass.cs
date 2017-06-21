@@ -23,11 +23,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             public List<TagHelperIntermediateNode> TagHelpers { get; } = new List<TagHelperIntermediateNode>();
 
-            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIntermediateNode node)
+            public override void VisitTagHelperProperty(TagHelperPropertyIntermediateNode node)
             {
-                if (string.Equals(node.Descriptor.TypeName, ModelExpressionTypeName, StringComparison.Ordinal) ||
+                if (string.Equals(node.BoundAttribute.TypeName, ModelExpressionTypeName, StringComparison.Ordinal) ||
                     (node.IsIndexerNameMatch &&
-                     string.Equals(node.Descriptor.IndexerTypeName, ModelExpressionTypeName, StringComparison.Ordinal)))
+                     string.Equals(node.BoundAttribute.IndexerTypeName, ModelExpressionTypeName, StringComparison.Ordinal)))
                 {
                     var expression = new CSharpExpressionIntermediateNode();
 

@@ -87,6 +87,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             {
                 WasSpecificMethodCalled = true;
             }
-        }       
+        }
     }
 }

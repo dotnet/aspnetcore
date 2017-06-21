@@ -1,11 +1,12 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SymbolBoundAttributes_DesignTime -  - 
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::TestNamespace.CatchAllTagHelper - __TestNamespace_CatchAllTagHelper
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [15] SymbolBoundAttributes.cshtml) - *, TestAssembly
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            DeclareTagHelperFields -  - TestNamespace.CatchAllTagHelper
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (29:0,29 [255] SymbolBoundAttributes.cshtml)
                     IntermediateToken - (29:0,29 [4] SymbolBoundAttributes.cshtml) - Html - \n\n
@@ -48,81 +49,88 @@ Document -
                     IntermediateToken - (274:9,20 [6] SymbolBoundAttributes.cshtml) - Html - </div>
                     IntermediateToken - (280:9,26 [4] SymbolBoundAttributes.cshtml) - Html - \n\n
                 TagHelper - (284:11,0 [45] SymbolBoundAttributes.cshtml) - ul - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
-                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - bound - AttributeStructure.Minimized
-                    SetTagHelperProperty - (302:11,18 [5] SymbolBoundAttributes.cshtml) - [item] - ListItems - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                    DefaultTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    DefaultTagHelperProperty - (302:11,18 [5] SymbolBoundAttributes.cshtml) - [item] - System.Collections.Generic.List<string> TestNamespace.CatchAllTagHelper.ListItems - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (302:11,18 [5] SymbolBoundAttributes.cshtml) - CSharp - items
-                    AddTagHelperHtmlAttribute -  - [item] - AttributeStructure.DoubleQuotes
+                    DefaultTagHelperHtmlAttribute -  - [item] - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (317:11,33 [5] SymbolBoundAttributes.cshtml)
                             IntermediateToken - (317:11,33 [5] SymbolBoundAttributes.cshtml) - Html - items
+                    DefaultTagHelperExecute - 
                 HtmlContent - (329:11,45 [2] SymbolBoundAttributes.cshtml)
                     IntermediateToken - (329:11,45 [2] SymbolBoundAttributes.cshtml) - Html - \n
                 TagHelper - (331:12,0 [49] SymbolBoundAttributes.cshtml) - ul - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
-                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - bound - AttributeStructure.Minimized
-                    SetTagHelperProperty - (351:12,20 [5] SymbolBoundAttributes.cshtml) - [(item)] - ArrayItems - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                    DefaultTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    DefaultTagHelperProperty - (351:12,20 [5] SymbolBoundAttributes.cshtml) - [(item)] - System.String[] TestNamespace.CatchAllTagHelper.ArrayItems - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (351:12,20 [5] SymbolBoundAttributes.cshtml) - CSharp - items
-                    AddTagHelperHtmlAttribute -  - [(item)] - AttributeStructure.DoubleQuotes
+                    DefaultTagHelperHtmlAttribute -  - [(item)] - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (368:12,37 [5] SymbolBoundAttributes.cshtml)
                             IntermediateToken - (368:12,37 [5] SymbolBoundAttributes.cshtml) - Html - items
+                    DefaultTagHelperExecute - 
                 HtmlContent - (380:12,49 [2] SymbolBoundAttributes.cshtml)
                     IntermediateToken - (380:12,49 [2] SymbolBoundAttributes.cshtml) - Html - \n
                 TagHelper - (382:13,0 [79] SymbolBoundAttributes.cshtml) - button - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (444:13,62 [8] SymbolBoundAttributes.cshtml)
                             IntermediateToken - (444:13,62 [8] SymbolBoundAttributes.cshtml) - Html - Click Me
-                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - bound - AttributeStructure.Minimized
-                    SetTagHelperProperty - (405:13,23 [13] SymbolBoundAttributes.cshtml) - (click) - Event1 - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                    DefaultTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    DefaultTagHelperProperty - (405:13,23 [13] SymbolBoundAttributes.cshtml) - (click) - System.Action TestNamespace.CatchAllTagHelper.Event1 - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (405:13,23 [13] SymbolBoundAttributes.cshtml) - CSharp - doSomething()
-                    AddTagHelperHtmlAttribute -  - (click) - AttributeStructure.DoubleQuotes
+                    DefaultTagHelperHtmlAttribute -  - (click) - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (429:13,47 [13] SymbolBoundAttributes.cshtml)
                             IntermediateToken - (429:13,47 [13] SymbolBoundAttributes.cshtml) - Html - doSomething()
+                    DefaultTagHelperExecute - 
                 HtmlContent - (461:13,79 [2] SymbolBoundAttributes.cshtml)
                     IntermediateToken - (461:13,79 [2] SymbolBoundAttributes.cshtml) - Html - \n
                 TagHelper - (463:14,0 [81] SymbolBoundAttributes.cshtml) - button - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (527:14,64 [8] SymbolBoundAttributes.cshtml)
                             IntermediateToken - (527:14,64 [8] SymbolBoundAttributes.cshtml) - Html - Click Me
-                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - bound - AttributeStructure.Minimized
-                    SetTagHelperProperty - (487:14,24 [13] SymbolBoundAttributes.cshtml) - (^click) - Event2 - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                    DefaultTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    DefaultTagHelperProperty - (487:14,24 [13] SymbolBoundAttributes.cshtml) - (^click) - System.Action TestNamespace.CatchAllTagHelper.Event2 - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (487:14,24 [13] SymbolBoundAttributes.cshtml) - CSharp - doSomething()
-                    AddTagHelperHtmlAttribute -  - (^click) - AttributeStructure.DoubleQuotes
+                    DefaultTagHelperHtmlAttribute -  - (^click) - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (512:14,49 [13] SymbolBoundAttributes.cshtml)
                             IntermediateToken - (512:14,49 [13] SymbolBoundAttributes.cshtml) - Html - doSomething()
+                    DefaultTagHelperExecute - 
                 HtmlContent - (544:14,81 [2] SymbolBoundAttributes.cshtml)
                     IntermediateToken - (544:14,81 [2] SymbolBoundAttributes.cshtml) - Html - \n
                 TagHelper - (546:15,0 [67] SymbolBoundAttributes.cshtml) - template - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (600:15,54 [2] SymbolBoundAttributes.cshtml)
                             IntermediateToken - (600:15,54 [2] SymbolBoundAttributes.cshtml) - Html - \n
-                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - bound - AttributeStructure.Minimized
-                    SetTagHelperProperty - (574:15,28 [5] SymbolBoundAttributes.cshtml) - *something - StringProperty1 - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                    DefaultTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    DefaultTagHelperProperty - (574:15,28 [5] SymbolBoundAttributes.cshtml) - *something - string TestNamespace.CatchAllTagHelper.StringProperty1 - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (574:15,28 [5] SymbolBoundAttributes.cshtml)
                             IntermediateToken - (574:15,28 [5] SymbolBoundAttributes.cshtml) - Html - value
-                    AddTagHelperHtmlAttribute -  - *something - AttributeStructure.DoubleQuotes
+                    DefaultTagHelperHtmlAttribute -  - *something - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (593:15,47 [5] SymbolBoundAttributes.cshtml)
                             IntermediateToken - (593:15,47 [5] SymbolBoundAttributes.cshtml) - Html - value
+                    DefaultTagHelperExecute - 
                 HtmlContent - (613:16,11 [2] SymbolBoundAttributes.cshtml)
                     IntermediateToken - (613:16,11 [2] SymbolBoundAttributes.cshtml) - Html - \n
                 TagHelper - (615:17,0 [33] SymbolBoundAttributes.cshtml) - div - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
-                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - bound - AttributeStructure.Minimized
-                    AddTagHelperHtmlAttribute -  - #localminimized - AttributeStructure.Minimized
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                    DefaultTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    DefaultTagHelperHtmlAttribute -  - #localminimized - HtmlAttributeValueStyle.Minimized
+                    DefaultTagHelperExecute - 
                 HtmlContent - (648:17,33 [2] SymbolBoundAttributes.cshtml)
                     IntermediateToken - (648:17,33 [2] SymbolBoundAttributes.cshtml) - Html - \n
                 TagHelper - (650:18,0 [47] SymbolBoundAttributes.cshtml) - div - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
-                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - bound - AttributeStructure.Minimized
-                    SetTagHelperProperty - (669:18,19 [5] SymbolBoundAttributes.cshtml) - #local - StringProperty2 - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                    DefaultTagHelperHtmlAttribute -  - bound - HtmlAttributeValueStyle.Minimized
+                    DefaultTagHelperProperty - (669:18,19 [5] SymbolBoundAttributes.cshtml) - #local - string TestNamespace.CatchAllTagHelper.StringProperty2 - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (669:18,19 [5] SymbolBoundAttributes.cshtml)
                             IntermediateToken - (669:18,19 [5] SymbolBoundAttributes.cshtml) - Html - value
-                    AddTagHelperHtmlAttribute -  - #local - AttributeStructure.DoubleQuotes
+                    DefaultTagHelperHtmlAttribute -  - #local - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (684:18,34 [5] SymbolBoundAttributes.cshtml)
                             IntermediateToken - (684:18,34 [5] SymbolBoundAttributes.cshtml) - Html - value
+                    DefaultTagHelperExecute - 

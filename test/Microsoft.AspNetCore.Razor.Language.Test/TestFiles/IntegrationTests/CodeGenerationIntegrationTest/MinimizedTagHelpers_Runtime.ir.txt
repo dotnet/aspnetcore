@@ -1,19 +1,21 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MinimizedTagHelpers_Runtime -  - 
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - btn - AttributeStructure.DoubleQuotes
-            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_1 - input-bound-required-string - hello - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_2 - catchall-bound-string - world - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_3 - input-bound-required-string - hello2 - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_4 - catchall-unbound-required - hello - AttributeStructure.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5 - input-unbound-required - hello2 - AttributeStructure.DoubleQuotes
-            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_6 - input-bound-required-string - world - HtmlAttributeValueStyle.DoubleQuotes
-            DeclareTagHelperFields -  - TestNamespace.CatchAllTagHelper - TestNamespace.InputTagHelper
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_0 - class - btn - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_1 - input-bound-required-string - hello - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_2 - catchall-bound-string - world - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_3 - input-bound-required-string - hello2 - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_4 - catchall-unbound-required - hello - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_5 - input-unbound-required - hello2 - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_6 - input-bound-required-string - world - HtmlAttributeValueStyle.DoubleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::TestNamespace.CatchAllTagHelper - __TestNamespace_CatchAllTagHelper
+            FieldDeclaration -  - private - global::TestNamespace.InputTagHelper - __TestNamespace_InputTagHelper
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] MinimizedTagHelpers.cshtml)
                     IntermediateToken - (33:1,0 [2] MinimizedTagHelpers.cshtml) - Html - \n
                 TagHelper - (35:2,0 [647] MinimizedTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (64:2,29 [34] MinimizedTagHelpers.cshtml)
                             IntermediateToken - (64:2,29 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                             IntermediateToken - (70:3,4 [6] MinimizedTagHelpers.cshtml) - Html - <input
@@ -21,43 +23,48 @@ Document -
                             IntermediateToken - (89:3,23 [3] MinimizedTagHelpers.cshtml) - Html -  />
                             IntermediateToken - (92:3,26 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (98:4,4 [59] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
-                            TagHelperBody - 
-                            CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
-                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - AttributeStructure.Minimized
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                            DefaultTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
+                            DefaultTagHelperExecute - 
                         HtmlContent - (157:5,39 [6] MinimizedTagHelpers.cshtml)
                             IntermediateToken - (157:5,39 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (163:6,4 [119] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
-                            TagHelperBody - 
-                            CreateTagHelper -  - TestNamespace.InputTagHelper
-                            CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
-                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - AttributeStructure.Minimized
-                            AddTagHelperHtmlAttribute -  - input-unbound-required - AttributeStructure.Minimized
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_1 - input-bound-required-string - BoundRequiredString
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
+                            DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                            DefaultTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
+                            DefaultTagHelperHtmlAttribute -  - input-unbound-required - HtmlAttributeValueStyle.Minimized
+                            PreallocatedTagHelperProperty - (273:7,101 [5] MinimizedTagHelpers.cshtml) - __tagHelperAttribute_1 - input-bound-required-string - BoundRequiredString
+                            DefaultTagHelperExecute - 
                         HtmlContent - (282:7,110 [6] MinimizedTagHelpers.cshtml)
                             IntermediateToken - (282:7,110 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (288:8,4 [176] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
-                            TagHelperBody - 
-                            CreateTagHelper -  - TestNamespace.InputTagHelper
-                            CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
-                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - AttributeStructure.Minimized
-                            AddTagHelperHtmlAttribute -  - input-unbound-required - AttributeStructure.Minimized
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_2 - catchall-bound-string - BoundRequiredString
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_3 - input-bound-required-string - BoundRequiredString
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
+                            DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                            DefaultTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
+                            DefaultTagHelperHtmlAttribute -  - input-unbound-required - HtmlAttributeValueStyle.Minimized
+                            PreallocatedTagHelperProperty - (418:11,57 [5] MinimizedTagHelpers.cshtml) - __tagHelperAttribute_2 - catchall-bound-string - BoundRequiredString
+                            PreallocatedTagHelperProperty - (454:11,93 [6] MinimizedTagHelpers.cshtml) - __tagHelperAttribute_3 - input-bound-required-string - BoundRequiredString
+                            DefaultTagHelperExecute - 
                         HtmlContent - (464:11,103 [6] MinimizedTagHelpers.cshtml)
                             IntermediateToken - (464:11,103 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (470:12,4 [206] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
-                            TagHelperBody - 
-                            CreateTagHelper -  - TestNamespace.InputTagHelper
-                            CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
-                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_4
-                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5
-                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - AttributeStructure.Minimized
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_6 - input-bound-required-string - BoundRequiredString
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
+                            DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_4
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5
+                            DefaultTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
+                            PreallocatedTagHelperProperty - (667:16,40 [5] MinimizedTagHelpers.cshtml) - __tagHelperAttribute_6 - input-bound-required-string - BoundRequiredString
+                            DefaultTagHelperExecute - 
                         HtmlContent - (676:16,49 [2] MinimizedTagHelpers.cshtml)
                             IntermediateToken - (676:16,49 [2] MinimizedTagHelpers.cshtml) - Html - \n
-                    CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - catchall-unbound-required - AttributeStructure.Minimized
+                    DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                    DefaultTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
+                    DefaultTagHelperExecute - 

@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public sealed class CreateTagHelperIntermediateNode : IntermediateNode
+    public sealed class TagHelperPropertyIntermediateNode : IntermediateNode
     {
         private RazorDiagnosticCollection _diagnostics;
         private ItemCollection _annotations;
@@ -36,15 +36,21 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
+        public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
 
         public override SourceSpan? Source { get; set; }
 
         public override bool HasDiagnostics => _diagnostics != null && _diagnostics.Count > 0;
 
-        public string TagHelperTypeName { get; set; }
+        public string AttributeName { get; set; }
 
-        public TagHelperDescriptor Descriptor { get; set; }
+        public AttributeStructure AttributeStructure { get; set; }
+
+        public BoundAttributeDescriptor BoundAttribute { get; set; }
+
+        public TagHelperDescriptor TagHelper { get; set; }
+
+        public bool IsIndexerNameMatch { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {
@@ -53,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            visitor.VisitCreateTagHelper(this);
+            visitor.VisitTagHelperProperty(this);
         }
     }
 }

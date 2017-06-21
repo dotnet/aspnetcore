@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.IsType<DefaultRazorEngine>(engine);
             AssertDefaultRuntimeFeatures(engine.Features);
             AssertDefaultRuntimePhases(engine.Phases);
+            AssertDefaultRuntimeTargetExtensions(engine);
         }
 
         [Fact]
@@ -35,6 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.IsType<DefaultRazorEngine>(engine);
             AssertDefaultDesignTimeFeatures(engine.Features);
             AssertDefaultDesignTimePhases(engine.Phases);
+            AssertDefaultDesignTimeTargetExtensions(engine);
         }
 
         [Fact]
@@ -48,6 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.IsType<DefaultRazorEngine>(engine);
             AssertDefaultRuntimeFeatures(engine.Features);
             AssertDefaultRuntimePhases(engine.Phases);
+            AssertDefaultRuntimeTargetExtensions(engine);
         }
 
         [Fact]
@@ -61,6 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.IsType<DefaultRazorEngine>(engine);
             AssertDefaultDesignTimeFeatures(engine.Features);
             AssertDefaultDesignTimePhases(engine.Phases);
+            AssertDefaultDesignTimeTargetExtensions(engine);
         }
 
         [Fact]
@@ -133,12 +137,15 @@ namespace Microsoft.AspNetCore.Razor.Language
                 p => Assert.Same(phases[1], p));
         }
 
-        private static void AssertDefaultTargetExtensions(RazorEngine engine)
+        private static void AssertDefaultRuntimeTargetExtensions(RazorEngine engine)
         {
             var feature = engine.Features.OfType<IRazorTargetExtensionFeature>().FirstOrDefault();
             Assert.NotNull(feature);
 
-            Assert.Empty(feature.TargetExtensions);
+            Assert.Collection(
+                feature.TargetExtensions,
+                extension => Assert.False(Assert.IsType<DefaultTagHelperTargetExtension>(extension).DesignTime),
+                extension => Assert.IsType<PreallocatedAttributeTargetExtension>(extension));
         }
 
         private static void AssertDefaultRuntimeFeatures(IEnumerable<IRazorEngineFeature> features)
@@ -151,6 +158,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DirectiveRemovalOptimizationPass>(feature),
+                feature => Assert.IsType<DefaultTagHelperOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
                 feature => Assert.IsType<PreallocatedTagHelperAttributeOptimizationPass>(feature));
         }
@@ -169,6 +177,17 @@ namespace Microsoft.AspNetCore.Razor.Language
                 phase => Assert.IsType<DefaultRazorCSharpLoweringPhase>(phase));
         }
 
+        private static void AssertDefaultDesignTimeTargetExtensions(RazorEngine engine)
+        {
+            var feature = engine.Features.OfType<IRazorTargetExtensionFeature>().FirstOrDefault();
+            Assert.NotNull(feature);
+
+            Assert.Collection(
+                feature.TargetExtensions,
+                extension => Assert.True(Assert.IsType<DefaultTagHelperTargetExtension>(extension).DesignTime),
+                extension => Assert.IsType<DesignTimeDirectiveTargetExtension>(extension));
+        }
+
         private static void AssertDefaultDesignTimeFeatures(IEnumerable<IRazorEngineFeature> features)
         {
             Assert.Collection(
@@ -179,6 +198,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 feature => Assert.IsType<HtmlNodeOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DirectiveRemovalOptimizationPass>(feature),
+                feature => Assert.IsType<DefaultTagHelperOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
                 feature => Assert.IsType<DesignTimeOptionsFeature>(feature),
                 feature => Assert.IsType<DesignTimeDirectivePass>(feature));

@@ -7,27 +7,50 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    internal sealed class SetPreallocatedTagHelperPropertyIntermediateNode : ExtensionIntermediateNode
+    internal sealed class PreallocatedTagHelperPropertyIntermediateNode : ExtensionIntermediateNode
     {
+        public PreallocatedTagHelperPropertyIntermediateNode()
+        {
+        }
+
+        public PreallocatedTagHelperPropertyIntermediateNode(DefaultTagHelperPropertyIntermediateNode propertyNode)
+        {
+            if (propertyNode == null)
+            {
+                throw new ArgumentNullException(nameof(propertyNode));
+            }
+
+            AttributeName = propertyNode.AttributeName;
+            AttributeStructure = propertyNode.AttributeStructure;
+            BoundAttribute = propertyNode.BoundAttribute;
+            Field = propertyNode.Field;
+            IsIndexerNameMatch = propertyNode.IsIndexerNameMatch;
+            Property = propertyNode.Property;
+            Source = propertyNode.Source;
+            TagHelper = propertyNode.TagHelper;
+        }
+
         public override RazorDiagnosticCollection Diagnostics => ReadOnlyDiagnosticCollection.Instance;
-        
+
         public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
 
         public override bool HasDiagnostics => false;
 
-        public string VariableName { get; set; }
-
         public string AttributeName { get; set; }
 
-        public string TagHelperTypeName { get; set; }
+        public AttributeStructure AttributeStructure { get; set; }
 
-        public string PropertyName { get; set; }
+        public BoundAttributeDescriptor BoundAttribute { get; set; }
 
-        public BoundAttributeDescriptor Descriptor { get; set; }
-
-        public TagHelperBinding Binding { get; set; }
+        public string Field { get; set; }
 
         public bool IsIndexerNameMatch { get; set; }
+
+        public string Property { get; set; }
+
+        public TagHelperDescriptor TagHelper { get; set; }
+
+        public string VariableName { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {
@@ -36,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<SetPreallocatedTagHelperPropertyIntermediateNode>(this, visitor);
+            AcceptExtensionNode<PreallocatedTagHelperPropertyIntermediateNode>(this, visitor);
         }
 
         public override void WriteNode(CodeTarget target, CodeRenderingContext context)
@@ -58,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 return;
             }
 
-            extension.WriteSetPreallocatedTagHelperProperty(context, this);
+            extension.WriteTagHelperProperty(context, this);
         }
     }
 }

@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
@@ -103,17 +104,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     Items.Add(new InstrumentationItem(node, Parent, isLiteral: false, source: node.Source.Value));
                 }
 
-                VisitDefault(node);
-            }
-
-            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIntermediateNode node)
-            {
-                // We don't want to instrument TagHelper attributes. Do nothing.
-            }
-
-            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIntermediateNode node)
-            {
-                // We don't want to instrument TagHelper attributes. Do nothing.
+                // Inside a tag helper we only want to visit inside of the body (skip all of the attributes and properties).
+                for (var i = 0; i < node.Children.Count; i++)
+                {
+                    var child = node.Children[i];
+                    if (child is TagHelperBodyIntermediateNode || 
+                        child is DefaultTagHelperBodyIntermediateNode)
+                    {
+                        VisitDefault(child);
+                    }
+                }
             }
         }
     }

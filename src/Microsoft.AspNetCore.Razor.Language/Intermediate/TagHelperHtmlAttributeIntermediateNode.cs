@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public sealed class DeclareTagHelperFieldsIntermediateNode : IntermediateNode
+    public sealed class TagHelperHtmlAttributeIntermediateNode : IntermediateNode
     {
         private RazorDiagnosticCollection _diagnostics;
         private ItemCollection _annotations;
@@ -37,13 +36,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
+        public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
 
         public override SourceSpan? Source { get; set; }
 
         public override bool HasDiagnostics => _diagnostics != null && _diagnostics.Count > 0;
 
-        public ISet<string> UsedTagHelperTypeNames { get; set; } = new HashSet<string>(StringComparer.Ordinal);
+        public string AttributeName { get; set; }
+
+        public AttributeStructure AttributeStructure { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            visitor.VisitDeclareTagHelperFields(this);
+            visitor.VisitTagHelperHtmlAttribute(this);
         }
     }
 }

@@ -14,6 +14,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract bool IsReadOnly { get; }
 
+        public abstract void Add(object key, object value);
+
         public abstract void Add(KeyValuePair<object, object> item);
 
         public abstract void Clear();

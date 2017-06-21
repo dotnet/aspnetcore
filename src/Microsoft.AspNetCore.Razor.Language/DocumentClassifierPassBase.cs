@@ -139,11 +139,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _namespace.Insert(i + 1, node);
             }
 
-            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIntermediateNode node)
-            {
-                _class.Insert(0, node);
-            }
-
             public override void VisitDefault(IntermediateNode node)
             {
                 if (node is MemberDeclarationIntermediateNode)

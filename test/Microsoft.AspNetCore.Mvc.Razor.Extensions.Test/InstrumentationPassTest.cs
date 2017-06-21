@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Push(new TagHelperIntermediateNode());
 
-            builder.Push(new AddTagHelperHtmlAttributeIntermediateNode());
+            builder.Push(new TagHelperHtmlAttributeIntermediateNode());
 
             builder.Push(new CSharpExpressionIntermediateNode()
             {
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                         n,
                         c =>
                         {
-                            Assert.IsType<AddTagHelperHtmlAttributeIntermediateNode>(c);
+                            Assert.IsType<TagHelperHtmlAttributeIntermediateNode>(c);
                             Children(
                                 c,
                                 s => CSharpExpression("Hi", s));
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var builder = IntermediateNodeBuilder.Create(document);
             builder.Push(new TagHelperIntermediateNode());
 
-            builder.Push(new SetTagHelperPropertyIntermediateNode());
+            builder.Push(new TagHelperPropertyIntermediateNode());
 
             builder.Push(new CSharpExpressionIntermediateNode()
             {
@@ -218,7 +218,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                         n,
                         c =>
                         {
-                            Assert.IsType<SetTagHelperPropertyIntermediateNode>(c);
+                            Assert.IsType<TagHelperPropertyIntermediateNode>(c);
                             Children(
                                 c,
                                 s => CSharpExpression("Hi", s));

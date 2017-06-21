@@ -1,11 +1,12 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_SimpleTagHelpers_DesignTime -  - 
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::InputTagHelper - __InputTagHelper
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [15] SimpleTagHelpers.cshtml) - *, TestAssembly
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            DeclareTagHelperFields -  - InputTagHelper
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (29:0,29 [27] SimpleTagHelpers.cshtml)
                     IntermediateToken - (29:0,29 [2] SimpleTagHelpers.cshtml) - Html - \n
@@ -16,14 +17,15 @@ Document -
                     IntermediateToken - (44:2,0 [6] SimpleTagHelpers.cshtml) - Html - <form>
                     IntermediateToken - (50:2,6 [6] SimpleTagHelpers.cshtml) - Html - \n    
                 TagHelper - (56:3,4 [35] SimpleTagHelpers.cshtml) - input - TagMode.SelfClosing
-                    TagHelperBody - 
-                    CreateTagHelper -  - InputTagHelper
-                    SetTagHelperProperty - (70:3,18 [5] SimpleTagHelpers.cshtml) - value - FooProp - HtmlAttributeValueStyle.SingleQuotes
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - InputTagHelper
+                    DefaultTagHelperProperty - (70:3,18 [5] SimpleTagHelpers.cshtml) - value - string InputTagHelper.FooProp - HtmlAttributeValueStyle.SingleQuotes
                         HtmlContent - (70:3,18 [5] SimpleTagHelpers.cshtml)
                             IntermediateToken - (70:3,18 [5] SimpleTagHelpers.cshtml) - Html - Hello
-                    AddTagHelperHtmlAttribute -  - type - AttributeStructure.SingleQuotes
+                    DefaultTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes
                         HtmlContent - (83:3,31 [4] SimpleTagHelpers.cshtml)
                             IntermediateToken - (83:3,31 [4] SimpleTagHelpers.cshtml) - Html - text
+                    DefaultTagHelperExecute - 
                 HtmlContent - (91:3,39 [9] SimpleTagHelpers.cshtml)
                     IntermediateToken - (91:3,39 [2] SimpleTagHelpers.cshtml) - Html - \n
                     IntermediateToken - (93:4,0 [7] SimpleTagHelpers.cshtml) - Html - </form>

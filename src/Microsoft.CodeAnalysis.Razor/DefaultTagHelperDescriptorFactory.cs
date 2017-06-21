@@ -57,6 +57,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var typeName = GetFullName(type);
             var assemblyName = type.ContainingAssembly.Identity.Name;
+
             var descriptorBuilder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
             descriptorBuilder.SetTypeName(typeName);
 

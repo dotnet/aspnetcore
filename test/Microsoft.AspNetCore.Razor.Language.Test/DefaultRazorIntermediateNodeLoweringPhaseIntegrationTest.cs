@@ -198,14 +198,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                     SyntaxConstants.CSharp.AddTagHelperKeyword,
                     n,
                     v => DirectiveToken(DirectiveTokenKind.String, "*, TestAssembly", v)),
-                n => TagHelperFieldDeclaration(n, "SpanTagHelper"),
                 n => TagHelper(
                     "span",
                     TagMode.StartTagAndEndTag,
                     tagHelpers,
                     n,
                     c => Assert.IsType<TagHelperBodyIntermediateNode>(c),
-                    c => Assert.IsType<CreateTagHelperIntermediateNode>(c),
                     c => TagHelperHtmlAttribute(
                         "val",
                         AttributeStructure.DoubleQuotes,
@@ -242,14 +240,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                     SyntaxConstants.CSharp.TagHelperPrefixKeyword,
                     n,
                     v => DirectiveToken(DirectiveTokenKind.String, "cool:", v)),
-                n => TagHelperFieldDeclaration(n, "SpanTagHelper"),
                 n => TagHelper(
                     "span",  // Note: this is span not cool:span
                     TagMode.StartTagAndEndTag,
                     tagHelpers,
                     n,
                     c => Assert.IsType<TagHelperBodyIntermediateNode>(c),
-                    c => Assert.IsType<CreateTagHelperIntermediateNode>(c),
                     c => TagHelperHtmlAttribute(
                         "val",
                         AttributeStructure.DoubleQuotes,
@@ -272,7 +268,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                             tagName: "span",
                             typeName: "SpanTagHelper",
                             assemblyName: "TestAssembly")
-                    };
+            };
 
             // Act
             var documentNode = Lower(codeDocument, tagHelpers: tagHelpers);
@@ -295,15 +291,13 @@ namespace Microsoft.AspNetCore.Razor.Language
                         tagHelpers,
                         c1,
                         c2 => Assert.IsType<TagHelperBodyIntermediateNode>(c2),
-                        c2 => Assert.IsType<CreateTagHelperIntermediateNode>(c2),
                         c2 => TagHelperHtmlAttribute(
                             "val",
                             AttributeStructure.DoubleQuotes,
                             c2,
                             v => CSharpExpressionAttributeValue(string.Empty, "Hello", v),
                             v => LiteralAttributeValue(" ", "World", v))),
-                    c1 => Html(Environment.NewLine, c1)),
-                n => TagHelperFieldDeclaration(n, "SpanTagHelper"));
+                    c1 => Html(Environment.NewLine, c1)));
         }
 
         [Fact]
@@ -314,18 +308,18 @@ namespace Microsoft.AspNetCore.Razor.Language
 <input bound='foo' />");
             var tagHelpers = new[]
             {
-                        CreateTagHelperDescriptor(
-                            tagName: "input",
-                            typeName: "InputTagHelper",
-                            assemblyName: "TestAssembly",
-                            attributes: new Action<BoundAttributeDescriptorBuilder>[]
-                            {
-                                builder => builder
-                                    .Name("bound")
-                                    .PropertyName("FooProp")
-                                    .TypeName("System.String"),
+                CreateTagHelperDescriptor(
+                    tagName: "input",
+                    typeName: "InputTagHelper",
+                    assemblyName: "TestAssembly",
+                    attributes: new Action<BoundAttributeDescriptorBuilder>[]
+                    {
+                        builder => builder
+                            .Name("bound")
+                            .PropertyName("FooProp")
+                            .TypeName("System.String"),
                             })
-                    };
+            };
 
             // Act
             var documentNode = Lower(codeDocument, tagHelpers: tagHelpers);
@@ -337,14 +331,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                     SyntaxConstants.CSharp.AddTagHelperKeyword,
                     n,
                     v => DirectiveToken(DirectiveTokenKind.String, "*, TestAssembly", v)),
-                n => TagHelperFieldDeclaration(n, "InputTagHelper"),
                 n => TagHelper(
                     "input",
                     TagMode.SelfClosing,
                     tagHelpers,
                     n,
                     c => Assert.IsType<TagHelperBodyIntermediateNode>(c),
-                    c => Assert.IsType<CreateTagHelperIntermediateNode>(c),
                     c => SetTagHelperProperty(
                         "bound",
                         "FooProp",

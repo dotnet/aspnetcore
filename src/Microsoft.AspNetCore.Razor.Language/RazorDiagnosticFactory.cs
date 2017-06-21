@@ -66,6 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 $"{DiagnosticPrefix}3000",
                 () => Resources.TagHelper_InvalidRestrictedChildNullOrWhitespace,
                 RazorDiagnosticSeverity.Error);
+
         public static RazorDiagnostic CreateTagHelper_InvalidRestrictedChildNullOrWhitespace(string tagHelperDisplayName)
         {
             var diagnostic = RazorDiagnostic.Create(

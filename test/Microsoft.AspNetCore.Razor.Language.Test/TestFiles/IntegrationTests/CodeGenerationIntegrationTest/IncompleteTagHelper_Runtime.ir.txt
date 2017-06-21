@@ -1,12 +1,14 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_IncompleteTagHelper_Runtime -  - 
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class -  - AttributeStructure.DoubleQuotes
-            DeclareTagHelperFields -  - TestNamespace.PTagHelper
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_0 - class -  - HtmlAttributeValueStyle.DoubleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::TestNamespace.PTagHelper - __TestNamespace_PTagHelper
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] IncompleteTagHelper.cshtml)
                     IntermediateToken - (33:1,0 [2] IncompleteTagHelper.cshtml) - Html - \n
                 TagHelper - (35:2,0 [10] IncompleteTagHelper.cshtml) - p - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
-                    CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - TestNamespace.PTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                    DefaultTagHelperExecute - 

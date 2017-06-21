@@ -11,6 +11,8 @@ Document -
         UsingDirective - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime> - 
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::InputTestTagHelper - __InputTestTagHelper
             DesignTimeDirective - 
                 DirectiveToken - (231:7,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
                 DirectiveToken - (294:7,71 [4] ) - Html
@@ -29,31 +31,32 @@ Document -
                 DirectiveToken - (33:2,14 [29] ModelExpressionTagHelper.cshtml) - "InputTestTagHelper, AppCode"
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            DeclareTagHelperFields -  - InputTestTagHelper
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (17:1,0 [2] ModelExpressionTagHelper.cshtml)
                     IntermediateToken - (17:1,0 [2] ModelExpressionTagHelper.cshtml) - Html - \n
                 HtmlContent - (62:2,43 [4] ModelExpressionTagHelper.cshtml)
                     IntermediateToken - (62:2,43 [4] ModelExpressionTagHelper.cshtml) - Html - \n\n
                 TagHelper - (66:4,0 [25] ModelExpressionTagHelper.cshtml) - input-test - TagMode.SelfClosing
-                    TagHelperBody - 
-                    CreateTagHelper -  - InputTestTagHelper
-                    SetTagHelperProperty - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - for - For - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - InputTestTagHelper
+                    DefaultTagHelperProperty - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - for - Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression InputTestTagHelper.For - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
                             IntermediateToken -  - CSharp - __model.
                             IntermediateToken - (83:4,17 [4] ModelExpressionTagHelper.cshtml) - CSharp - Date
                             IntermediateToken -  - CSharp - )
+                    DefaultTagHelperExecute - 
                 HtmlContent - (91:4,25 [2] ModelExpressionTagHelper.cshtml)
                     IntermediateToken - (91:4,25 [2] ModelExpressionTagHelper.cshtml) - Html - \n
                 TagHelper - (93:5,0 [27] ModelExpressionTagHelper.cshtml) - input-test - TagMode.SelfClosing
-                    TagHelperBody - 
-                    CreateTagHelper -  - InputTestTagHelper
-                    SetTagHelperProperty - (110:5,17 [6] ModelExpressionTagHelper.cshtml) - for - For - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - InputTestTagHelper
+                    DefaultTagHelperProperty - (110:5,17 [6] ModelExpressionTagHelper.cshtml) - for - Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression InputTestTagHelper.For - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - 
                             IntermediateToken -  - CSharp - ModelExpressionProvider.CreateModelExpression(ViewData, __model => 
                             IntermediateToken - (111:5,18 [5] ModelExpressionTagHelper.cshtml) - CSharp - Model
                             IntermediateToken -  - CSharp - )
+                    DefaultTagHelperExecute - 
                 HtmlContent - (120:5,27 [2] ModelExpressionTagHelper.cshtml)
                     IntermediateToken - (120:5,27 [2] ModelExpressionTagHelper.cshtml) - Html - \n
             Inject - 

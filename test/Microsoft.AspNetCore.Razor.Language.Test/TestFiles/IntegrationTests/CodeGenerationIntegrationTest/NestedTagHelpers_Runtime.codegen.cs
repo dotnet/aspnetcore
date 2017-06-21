@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_2 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("unbound", new global::Microsoft.AspNetCore.Html.HtmlString("foo"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
         #line hidden
         #pragma warning disable 0414
-        private string __tagHelperStringValueBuffer = null;
+        private string __tagHelperStringValueBuffer;
         #pragma warning restore 0414
-        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext = null;
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager __backed__tagHelperScopeManager = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager __tagHelperScopeManager
@@ -27,9 +27,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
                 return __backed__tagHelperScopeManager;
             }
         }
-        private global::SpanTagHelper __SpanTagHelper = null;
-        private global::DivTagHelper __DivTagHelper = null;
-        private global::InputTagHelper __InputTagHelper = null;
+        private global::SpanTagHelper __SpanTagHelper;
+        private global::DivTagHelper __DivTagHelper;
+        private global::InputTagHelper __InputTagHelper;
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {

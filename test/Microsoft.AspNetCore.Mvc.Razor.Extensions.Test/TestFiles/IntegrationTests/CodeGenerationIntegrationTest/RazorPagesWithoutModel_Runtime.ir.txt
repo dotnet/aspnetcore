@@ -11,11 +11,12 @@ Document -
         UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         UsingDirective - (38:3,1 [43] RazorPagesWithoutModel.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPagesWithoutModel_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - text-danger - AttributeStructure.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - class - col-md-10 - AttributeStructure.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - class - form-group - AttributeStructure.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - class - col-md-offset-2 col-md-10 - AttributeStructure.DoubleQuotes
-            DeclareTagHelperFields -  - DivTagHelper
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_0 - class - text-danger - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - class - col-md-10 - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_2 - class - form-group - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_3 - class - col-md-offset-2 col-md-10 - HtmlAttributeValueStyle.DoubleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::DivTagHelper - __DivTagHelper
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(7, 2, true);
@@ -47,9 +48,10 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(456, 31, false);
                 TagHelper - (456:22,4 [31] RazorPagesWithoutModel.cshtml) - div - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
-                    CreateTagHelper -  - DivTagHelper
-                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - DivTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
+                    DefaultTagHelperExecute - 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
@@ -61,7 +63,7 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(493, 237, false);
                 TagHelper - (493:23,4 [237] RazorPagesWithoutModel.cshtml) - div - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         CSharpCode - 
                             IntermediateToken -  - CSharp - BeginContext(517, 48, true);
                         HtmlContent - (517:23,28 [48] RazorPagesWithoutModel.cshtml)
@@ -87,7 +89,7 @@ Document -
                         CSharpCode - 
                             IntermediateToken -  - CSharp - BeginContext(588, 130, false);
                         TagHelper - (588:25,8 [130] RazorPagesWithoutModel.cshtml) - div - TagMode.StartTagAndEndTag
-                            TagHelperBody - 
+                            DefaultTagHelperBody - 
                                 CSharpCode - 
                                     IntermediateToken -  - CSharp - BeginContext(611, 101, true);
                                 HtmlContent - (611:25,31 [101] RazorPagesWithoutModel.cshtml)
@@ -103,8 +105,9 @@ Document -
                                     IntermediateToken - (702:27,45 [10] RazorPagesWithoutModel.cshtml) - Html - \n        
                                 CSharpCode - 
                                     IntermediateToken -  - CSharp - EndContext();
-                            CreateTagHelper -  - DivTagHelper
-                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                            DefaultTagHelperCreate -  - DivTagHelper
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                            DefaultTagHelperExecute - 
                         CSharpCode - 
                             IntermediateToken -  - CSharp - EndContext();
                         CSharpCode - 
@@ -113,8 +116,9 @@ Document -
                             IntermediateToken - (718:28,14 [6] RazorPagesWithoutModel.cshtml) - Html - \n    
                         CSharpCode - 
                             IntermediateToken -  - CSharp - EndContext();
-                    CreateTagHelper -  - DivTagHelper
-                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperCreate -  - DivTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperExecute - 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 
@@ -126,7 +130,7 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(736, 174, false);
                 TagHelper - (736:30,4 [174] RazorPagesWithoutModel.cshtml) - div - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         CSharpCode - 
                             IntermediateToken -  - CSharp - BeginContext(760, 10, true);
                         HtmlContent - (760:30,28 [10] RazorPagesWithoutModel.cshtml)
@@ -136,7 +140,7 @@ Document -
                         CSharpCode - 
                             IntermediateToken -  - CSharp - BeginContext(770, 128, false);
                         TagHelper - (770:31,8 [128] RazorPagesWithoutModel.cshtml) - div - TagMode.StartTagAndEndTag
-                            TagHelperBody - 
+                            DefaultTagHelperBody - 
                                 CSharpCode - 
                                     IntermediateToken -  - CSharp - BeginContext(809, 83, true);
                                 HtmlContent - (809:31,47 [83] RazorPagesWithoutModel.cshtml)
@@ -150,8 +154,9 @@ Document -
                                     IntermediateToken - (882:32,71 [10] RazorPagesWithoutModel.cshtml) - Html - \n        
                                 CSharpCode - 
                                     IntermediateToken -  - CSharp - EndContext();
-                            CreateTagHelper -  - DivTagHelper
-                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3
+                            DefaultTagHelperCreate -  - DivTagHelper
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3
+                            DefaultTagHelperExecute - 
                         CSharpCode - 
                             IntermediateToken -  - CSharp - EndContext();
                         CSharpCode - 
@@ -160,8 +165,9 @@ Document -
                             IntermediateToken - (898:33,14 [6] RazorPagesWithoutModel.cshtml) - Html - \n    
                         CSharpCode - 
                             IntermediateToken -  - CSharp - EndContext();
-                    CreateTagHelper -  - DivTagHelper
-                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperCreate -  - DivTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperExecute - 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
                 CSharpCode - 

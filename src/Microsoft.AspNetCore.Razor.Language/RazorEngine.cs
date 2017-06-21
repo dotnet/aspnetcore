@@ -72,9 +72,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Intermediate Node Passes
             builder.Features.Add(new DefaultDocumentClassifierPass());
             builder.Features.Add(new DirectiveRemovalOptimizationPass());
+            builder.Features.Add(new DefaultTagHelperOptimizationPass());
 
-            // Default Runtime Targets
-            builder.AddTargetExtension(new PreallocatedAttributeTargetExtension());
+            // Default Code Target Extensions
+            // (currently none)
 
             // Default configuration
             var configurationFeature = new DefaultDocumentClassifierPassFeature();
@@ -104,7 +105,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         internal static void AddRuntimeDefaults(IRazorEngineBuilder builder)
         {
+            // Intermediate Node Passes
             builder.Features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
+
+            // Code Target Extensions
+            builder.AddTargetExtension(new DefaultTagHelperTargetExtension() { DesignTime = false });
+            builder.AddTargetExtension(new PreallocatedAttributeTargetExtension());
         }
 
         internal static void AddDesignTimeDefaults(IRazorEngineBuilder builder)
@@ -115,7 +121,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Intermediate Node Passes
             builder.Features.Add(new DesignTimeDirectivePass());
 
-            // DesignTime Runtime Targets
+            // Code Target Extensions
+            builder.AddTargetExtension(new DefaultTagHelperTargetExtension() { DesignTime = true });
             builder.AddTargetExtension(new DesignTimeDirectiveTargetExtension());
         }
 

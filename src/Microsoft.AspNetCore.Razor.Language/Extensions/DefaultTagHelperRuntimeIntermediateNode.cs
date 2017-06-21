@@ -7,21 +7,9 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    internal sealed class DeclarePreallocatedTagHelperAttributeIntermediateNode : ExtensionIntermediateNode
+    public sealed class DefaultTagHelperRuntimeIntermediateNode : ExtensionIntermediateNode
     {
-        public override RazorDiagnosticCollection Diagnostics { get; } = ReadOnlyDiagnosticCollection.Instance;
-        
-        public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
-
-        public override bool HasDiagnostics => false;
-
-        public string VariableName { get; set; }
-
-        public string Name { get; set; }
-
-        public string Value { get; set; }
-
-        public AttributeStructure AttributeStructure { get; set; }
+        public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {
@@ -30,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<DeclarePreallocatedTagHelperAttributeIntermediateNode>(this, visitor);
+            AcceptExtensionNode<DefaultTagHelperRuntimeIntermediateNode>(this, visitor);
         }
 
         public override void WriteNode(CodeTarget target, CodeRenderingContext context)
@@ -45,14 +33,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var extension = target.GetExtension<IPreallocatedAttributeTargetExtension>();
+            var extension = target.GetExtension<IDefaultTagHelperTargetExtension>();
             if (extension == null)
             {
-                ReportMissingCodeTargetExtension<IPreallocatedAttributeTargetExtension>(context);
+                ReportMissingCodeTargetExtension<IDefaultTagHelperTargetExtension>(context);
                 return;
             }
 
-            extension.WriteDeclarePreallocatedTagHelperAttribute(context, this);
+            extension.WriteTagHelperRuntime(context, this);
         }
     }
 }

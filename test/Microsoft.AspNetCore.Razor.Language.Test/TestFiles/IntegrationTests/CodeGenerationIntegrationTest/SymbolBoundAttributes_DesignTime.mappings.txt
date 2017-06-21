@@ -1,25 +1,25 @@
 Source Location: (14:0,14 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SymbolBoundAttributes.cshtml)
 |*, TestAssembly|
-Generated Location: (428:10,38 [15] )
+Generated Location: (520:11,38 [15] )
 |*, TestAssembly|
 
 Source Location: (302:11,18 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SymbolBoundAttributes.cshtml)
 |items|
-Generated Location: (1037:22,46 [5] )
+Generated Location: (1030:22,46 [5] )
 |items|
 
 Source Location: (351:12,20 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SymbolBoundAttributes.cshtml)
 |items|
-Generated Location: (1330:28,47 [5] )
+Generated Location: (1323:28,47 [5] )
 |items|
 
 Source Location: (405:13,23 [13] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SymbolBoundAttributes.cshtml)
 |doSomething()|
-Generated Location: (1619:34,43 [13] )
+Generated Location: (1612:34,43 [13] )
 |doSomething()|
 
 Source Location: (487:14,24 [13] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SymbolBoundAttributes.cshtml)
 |doSomething()|
-Generated Location: (1916:40,43 [13] )
+Generated Location: (1909:40,43 [13] )
 |doSomething()|
 

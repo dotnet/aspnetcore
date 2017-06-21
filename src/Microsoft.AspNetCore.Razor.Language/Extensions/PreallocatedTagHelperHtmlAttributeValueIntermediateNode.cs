@@ -7,15 +7,45 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    internal sealed class AddPreallocatedTagHelperHtmlAttributeIntermediateNode : ExtensionIntermediateNode
+    internal sealed class PreallocatedTagHelperHtmlAttributeValueIntermediateNode : ExtensionIntermediateNode
     {
+        public PreallocatedTagHelperHtmlAttributeValueIntermediateNode()
+        {
+        }
+
+        public PreallocatedTagHelperHtmlAttributeValueIntermediateNode(DefaultTagHelperHtmlAttributeIntermediateNode htmlAttributeNode)
+        {
+            if (htmlAttributeNode == null)
+            {
+                throw new ArgumentNullException(nameof(htmlAttributeNode));
+            }
+
+            Source = htmlAttributeNode.Source;
+
+            for (var i = 0; i < htmlAttributeNode.Children.Count; i++)
+            {
+                Children.Add(htmlAttributeNode.Children[i]);
+            }
+
+            for (var i = 0; i < htmlAttributeNode.Diagnostics.Count; i++)
+            {
+                Diagnostics.Add(htmlAttributeNode.Diagnostics[i]);
+            }
+        }
+
         public override RazorDiagnosticCollection Diagnostics { get; } = ReadOnlyDiagnosticCollection.Instance;
-        
+
         public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
 
         public override bool HasDiagnostics => false;
 
         public string VariableName { get; set; }
+
+        public string AttributeName { get; set; }
+
+        public string Value { get; set; }
+
+        public AttributeStructure AttributeStructure { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {
@@ -24,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<AddPreallocatedTagHelperHtmlAttributeIntermediateNode>(this, visitor);
+            AcceptExtensionNode<PreallocatedTagHelperHtmlAttributeValueIntermediateNode>(this, visitor);
         }
 
         public override void WriteNode(CodeTarget target, CodeRenderingContext context)
@@ -46,7 +76,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 return;
             }
 
-            extension.WriteAddPreallocatedTagHelperHtmlAttribute(context, this);
+            extension.WriteTagHelperHtmlAttributeValue(context, this);
         }
     }
 }

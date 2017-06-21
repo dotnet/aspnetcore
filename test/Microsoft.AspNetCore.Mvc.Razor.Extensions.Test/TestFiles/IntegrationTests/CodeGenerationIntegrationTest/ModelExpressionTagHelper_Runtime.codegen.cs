@@ -16,9 +16,9 @@ namespace AspNetCore
     {
         #line hidden
         #pragma warning disable 0414
-        private string __tagHelperStringValueBuffer = null;
+        private string __tagHelperStringValueBuffer;
         #pragma warning restore 0414
-        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext = null;
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager __backed__tagHelperScopeManager = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager __tagHelperScopeManager
@@ -32,7 +32,7 @@ namespace AspNetCore
                 return __backed__tagHelperScopeManager;
             }
         }
-        private global::InputTestTagHelper __InputTestTagHelper = null;
+        private global::InputTestTagHelper __InputTestTagHelper;
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {

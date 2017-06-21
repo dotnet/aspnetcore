@@ -3,8 +3,8 @@
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal static class TagHelperConventions
+    public static class TagHelperConventions
     {
-        internal const string DefaultKind = "ITagHelper";
+        public static readonly string DefaultKind = "ITagHelper";
     }
 }

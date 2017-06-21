@@ -547,9 +547,10 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             IEnumerable<MetadataReference> compilationReferences,
             IEnumerable<string> expectedErrors = null)
         {
-            var syntaxTree = CSharpSyntaxTree.ParseText(document.GetCSharpDocument().GeneratedCode);
-            var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
+            var cSharp = document.GetCSharpDocument().GeneratedCode;
 
+            var syntaxTree = CSharpSyntaxTree.ParseText(cSharp);
+            var options = new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary);
             var compilation = CSharpCompilation.Create("CodeGenerationTestAssembly", new[] { syntaxTree }, compilationReferences, options);
 
             var diagnostics = compilation.GetDiagnostics();

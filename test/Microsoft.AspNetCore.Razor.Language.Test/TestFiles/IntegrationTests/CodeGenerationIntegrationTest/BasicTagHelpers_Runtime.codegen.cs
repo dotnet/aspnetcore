@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute __tagHelperAttribute_4 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute("data-delay", new global::Microsoft.AspNetCore.Html.HtmlString("1000"), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
         #line hidden
         #pragma warning disable 0414
-        private string __tagHelperStringValueBuffer = null;
+        private string __tagHelperStringValueBuffer;
         #pragma warning restore 0414
-        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext = null;
+        private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperExecutionContext __tagHelperExecutionContext;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner __tagHelperRunner = new global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperRunner();
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager __backed__tagHelperScopeManager = null;
         private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeManager __tagHelperScopeManager
@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
                 return __backed__tagHelperScopeManager;
             }
         }
-        private global::TestNamespace.PTagHelper __TestNamespace_PTagHelper = null;
-        private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper = null;
-        private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2 = null;
+        private global::TestNamespace.PTagHelper __TestNamespace_PTagHelper;
+        private global::TestNamespace.InputTagHelper __TestNamespace_InputTagHelper;
+        private global::TestNamespace.InputTagHelper2 __TestNamespace_InputTagHelper2;
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {

@@ -1,106 +1,168 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public class ViewComponentTagHelperPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
+        // Run after the default taghelper pass
+        public override int Order => IntermediateNodePassBase.DefaultFeatureOrder + 2000;
+
         private static readonly string[] PublicModifiers = new[] { "public" };
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
-            var visitor = new Visitor();
-            visitor.Visit(documentNode);
-
-            if (visitor.Class == null || visitor.TagHelpers.Count == 0)
+            var @namespace = documentNode.FindPrimaryNamespace();
+            var @class = documentNode.FindPrimaryClass();
+            if (@namespace == null || @class == null)
             {
-                // Nothing to do, bail.
+                // Nothing to do, bail. We can't function without the standard structure.
                 return;
             }
 
-            foreach (var tagHelper in visitor.TagHelpers)
-            {
-                GenerateVCTHClass(visitor.Class, tagHelper.Value);
+            var context = new Context(@namespace, @class);
 
-                var tagHelperTypeName = tagHelper.Value.GetTypeName();
-                if (visitor.Fields.UsedTagHelperTypeNames.Remove(tagHelperTypeName))
+            // For each VCTH *usage* we need to rewrite the tag helper node to use the tag helper runtime to construct
+            // and set properties on the the correct field, and using the name of the type we will generate.
+            var nodes = documentNode.FindDescendantNodes<TagHelperIntermediateNode>();
+            for (var i = 0; i < nodes.Count; i++)
+            {
+                var node = nodes[i];
+                foreach (var tagHelper in node.TagHelpers)
                 {
-                    visitor.Fields.UsedTagHelperTypeNames.Add(GetVCTHFullName(visitor.Namespace, visitor.Class, tagHelper.Value));
+                    RewriteUsage(context, node, tagHelper);
                 }
             }
 
-            foreach (var (parent, node) in visitor.CreateTagHelpers)
+            // Then for each VCTH *definition* that we've seen we need to generate the class that implements
+            // ITagHelper and the field that will hold it.
+            foreach (var tagHelper in context.TagHelpers)
             {
-                RewriteCreateNode(visitor.Namespace, visitor.Class, (CreateTagHelperIntermediateNode)node, parent);
+                AddField(context, tagHelper);
+                AddTagHelperClass(context, tagHelper);
             }
         }
 
-        private void GenerateVCTHClass(ClassDeclarationIntermediateNode @class, TagHelperDescriptor tagHelper)
+        private void RewriteUsage(Context context, TagHelperIntermediateNode node, TagHelperDescriptor tagHelper)
+        {
+            if (!tagHelper.IsViewComponentKind())
+            {
+                return;
+            }
+
+            context.Add(tagHelper);
+
+            // Now we need to insert a create node using the default tag helper runtime. This is similar to
+            // code in DefaultTagHelperOptimizationPass.
+            //
+            // Find the body node.
+            var i = 0;
+            while (i < node.Children.Count && node.Children[i] is TagHelperBodyIntermediateNode)
+            {
+                i++;
+            }
+            while (i < node.Children.Count && node.Children[i] is DefaultTagHelperBodyIntermediateNode)
+            {
+                i++;
+            }
+
+            // Now find the last create node.
+            while (i < node.Children.Count && node.Children[i] is DefaultTagHelperCreateIntermediateNode)
+            {
+                i++;
+            }
+
+            // Now i has the right insertion point.
+            node.Children.Insert(i, new DefaultTagHelperCreateIntermediateNode()
+            {
+                Field = context.GetFieldName(tagHelper),
+                TagHelper = tagHelper,
+                Type = context.GetFullyQualifiedName(tagHelper),
+            });
+
+            // Now we need to rewrite any set property nodes to use the default runtime.
+            for (i = 0; i < node.Children.Count; i++)
+            {
+                if (node.Children[i] is TagHelperPropertyIntermediateNode propertyNode &&
+                    propertyNode.TagHelper == tagHelper)
+                {
+                    // This is a set property for this VCTH - we need to replace it with a node
+                    // that will use our field and property name.
+                    node.Children[i] = new DefaultTagHelperPropertyIntermediateNode(propertyNode)
+                    {
+                        Field = context.GetFieldName(tagHelper),
+                        Property = propertyNode.BoundAttribute.GetPropertyName(),
+                    };
+                }
+            }
+        }
+
+        private void AddField(Context context, TagHelperDescriptor tagHelper)
+        {
+            // We need to insert a node for the field that will hold the tag helper. We've already generated a field name
+            // at this time and use it for all uses of the same tag helper type.
+            //
+            // We also want to preserve the ordering of the nodes for testability. So insert at the end of any existing
+            // field nodes.
+            var i = 0;
+            while (i < context.Class.Children.Count && context.Class.Children[i] is DefaultTagHelperRuntimeIntermediateNode)
+            {
+                i++;
+            }
+
+            while (i < context.Class.Children.Count && context.Class.Children[i] is FieldDeclarationIntermediateNode)
+            {
+                i++;
+            }
+
+            context.Class.Children.Insert(i, new FieldDeclarationIntermediateNode()
+            {
+                Annotations =
+                {
+                    { CommonAnnotations.DefaultTagHelperExtension.TagHelperField, bool.TrueString },
+                },
+                Modifiers =
+                {
+                    "private",
+                },
+                Name = context.GetFieldName(tagHelper),
+                Type = "global::" + context.GetFullyQualifiedName(tagHelper),
+            });
+        }
+
+        private void AddTagHelperClass(Context context, TagHelperDescriptor tagHelper)
         {
             var writer = new CodeWriter();
-            WriteClass(writer, tagHelper);
+            WriteClass(context, writer, tagHelper);
 
-            var statement = new CSharpCodeIntermediateNode();
-            statement.Children.Add(new IntermediateToken()
+            var code = new CSharpCodeIntermediateNode();
+            code.Children.Add(new IntermediateToken()
             {
                 Kind = IntermediateToken.TokenKind.CSharp,
                 Content = writer.GenerateCode()
             });
 
-            @class.Children.Add(statement);
+            context.Class.Children.Add(code);
         }
 
-        private void RewriteCreateNode(
-            NamespaceDeclarationIntermediateNode @namespace,
-            ClassDeclarationIntermediateNode @class,
-            CreateTagHelperIntermediateNode node,
-            IntermediateNode parent)
-        {
-            var newTypeName = GetVCTHFullName(@namespace, @class, node.Descriptor);
-            for (var i = 0; i < parent.Children.Count; i++)
-            {
-                if (parent.Children[i] is SetTagHelperPropertyIntermediateNode setProperty &&
-                    node.Descriptor.BoundAttributes.Contains(setProperty.Descriptor))
-                {
-                    setProperty.TagHelperTypeName = newTypeName;
-                }
-            }
-
-            node.TagHelperTypeName = newTypeName;
-        }
-
-        private static string GetVCTHFullName(
-            NamespaceDeclarationIntermediateNode @namespace,
-            ClassDeclarationIntermediateNode @class,
-            TagHelperDescriptor tagHelper)
-        {
-            var vcName = tagHelper.GetViewComponentName();
-            return $"{@namespace.Content}.{@class.Name}.__Generated__{vcName}ViewComponentTagHelper";
-        }
-
-        private static string GetVCTHClassName(
-            TagHelperDescriptor tagHelper)
-        {
-            var vcName = tagHelper.GetViewComponentName();
-            return $"__Generated__{vcName}ViewComponentTagHelper";
-        }
-
-        private void WriteClass(CodeWriter writer, TagHelperDescriptor descriptor)
+        private void WriteClass(Context context, CodeWriter writer, TagHelperDescriptor tagHelper)
         {
             // Add target element.
-            BuildTargetElementString(writer, descriptor);
+            BuildTargetElementString(writer, tagHelper);
 
             // Initialize declaration.
             var tagHelperTypeName = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelper";
-            var className = GetVCTHClassName(descriptor);
+            var className = context.GetClassName(tagHelper);
 
             using (writer.BuildClassDeclaration(PublicModifiers, className, tagHelperTypeName, interfaces: null))
             {
@@ -114,10 +176,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 BuildConstructorString(writer, className);
 
                 // Add attributes.
-                BuildAttributeDeclarations(writer, descriptor);
+                BuildAttributeDeclarations(writer, tagHelper);
 
                 // Add process method.
-                BuildProcessMethodString(writer, descriptor);
+                BuildProcessMethodString(writer, tagHelper);
             }
         }
 
@@ -136,7 +198,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
-        private void BuildAttributeDeclarations(CodeWriter writer, TagHelperDescriptor descriptor)
+        private void BuildAttributeDeclarations(CodeWriter writer, TagHelperDescriptor tagHelper)
         {
             writer.Write("[")
               .Write("Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute")
@@ -149,7 +211,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 $"global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext",
                 "ViewContext");
 
-            foreach (var attribute in descriptor.BoundAttributes)
+            foreach (var attribute in tagHelper.BoundAttributes)
             {
                 writer.WriteAutoPropertyDeclaration(
                     PublicModifiers,
@@ -165,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
-        private void BuildProcessMethodString(CodeWriter writer, TagHelperDescriptor descriptor)
+        private void BuildProcessMethodString(CodeWriter writer, TagHelperDescriptor tagHelper)
         {
             var contextVariable = "context";
             var outputVariable = "output";
@@ -185,7 +247,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     "Contextualize",
                     new[] { "ViewContext" });
 
-                var methodParameters = GetMethodParameters(descriptor);
+                var methodParameters = GetMethodParameters(tagHelper);
                 var contentVariable = "content";
                 writer.Write("var ")
                     .WriteStartAssignment(contentVariable)
@@ -199,22 +261,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
-        private string[] GetMethodParameters(TagHelperDescriptor descriptor)
+        private string[] GetMethodParameters(TagHelperDescriptor tagHelper)
         {
-            var propertyNames = descriptor.BoundAttributes.Select(attribute => attribute.GetPropertyName());
+            var propertyNames = tagHelper.BoundAttributes.Select(attribute => attribute.GetPropertyName());
             var joinedPropertyNames = string.Join(", ", propertyNames);
             var parametersString = $"new {{ { joinedPropertyNames } }}";
-
-            var viewComponentName = descriptor.GetViewComponentName();
+            var viewComponentName = tagHelper.GetViewComponentName();
             var methodParameters = new[] { $"\"{viewComponentName}\"", parametersString };
             return methodParameters;
         }
 
-        private void BuildTargetElementString(CodeWriter writer, TagHelperDescriptor descriptor)
+        private void BuildTargetElementString(CodeWriter writer, TagHelperDescriptor tagHelper)
         {
-            Debug.Assert(descriptor.TagMatchingRules.Count() == 1);
+            Debug.Assert(tagHelper.TagMatchingRules.Count() == 1);
 
-            var rule = descriptor.TagMatchingRules.First();
+            var rule = tagHelper.TagMatchingRules.First();
 
             writer.Write("[")
                 .WriteStartMethodInvocation("Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute")
@@ -222,59 +283,59 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 .WriteLine(")]");
         }
 
-        private class Visitor : IntermediateNodeWalker
+        private struct Context
         {
-            public ClassDeclarationIntermediateNode Class { get; private set; }
+            private Dictionary<TagHelperDescriptor, (string className, string fullyQualifiedName, string fieldName)> _tagHelpers;
 
-            public DeclareTagHelperFieldsIntermediateNode Fields { get; private set; }
-
-            public NamespaceDeclarationIntermediateNode Namespace { get; private set; }
-
-            public List<IntermediateNodeReference> CreateTagHelpers { get; } = new List<IntermediateNodeReference>();
-
-            public Dictionary<string, TagHelperDescriptor> TagHelpers { get; } = new Dictionary<string, TagHelperDescriptor>();
-
-            public override void VisitCreateTagHelper(CreateTagHelperIntermediateNode node)
+            public Context(NamespaceDeclarationIntermediateNode @namespace, ClassDeclarationIntermediateNode @class)
             {
-                var tagHelper = node.Descriptor;
-                if (tagHelper.IsViewComponentKind())
-                {
-                    // Capture all the VCTagHelpers (unique by type name) so we can generate a class for each one.
-                    var vcName = tagHelper.GetViewComponentName();
-                    TagHelpers[vcName] = tagHelper;
+                Namespace = @namespace;
+                Class = @class;
 
-                    CreateTagHelpers.Add(new IntermediateNodeReference(Parent, node));
-                }
+                _tagHelpers = new Dictionary<TagHelperDescriptor, (string, string, string)>();
             }
 
-            public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)
+            public ClassDeclarationIntermediateNode Class { get; }
+
+            public NamespaceDeclarationIntermediateNode Namespace { get; }
+
+
+            public IEnumerable<TagHelperDescriptor> TagHelpers => _tagHelpers.Keys;
+
+            public bool Add(TagHelperDescriptor tagHelper)
             {
-                if (Namespace == null)
+                if (_tagHelpers.ContainsKey(tagHelper))
                 {
-                    Namespace = node;
+                    return false;
                 }
 
-                base.VisitNamespaceDeclaration(node);
+                var className = $"__Generated__{tagHelper.GetViewComponentName()}ViewComponentTagHelper";
+                var fullyQualifiedName = $"{Namespace.Content}.{Class.Name}.{className}";
+                var fieldName = GenerateFieldName(tagHelper);
+
+                _tagHelpers.Add(tagHelper, (className, fullyQualifiedName, fieldName));
+
+                return true;
             }
 
-            public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
+            public string GetClassName(TagHelperDescriptor taghelper)
             {
-                if (Class == null)
-                {
-                    Class = node;
-                }
-
-                base.VisitClassDeclaration(node);
+                return _tagHelpers[taghelper].className;
             }
 
-            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIntermediateNode node)
+            public string GetFullyQualifiedName(TagHelperDescriptor taghelper)
             {
-                if (Fields == null)
-                {
-                    Fields = node;
-                }
+                return _tagHelpers[taghelper].fullyQualifiedName;
+            }
 
-                base.VisitDeclareTagHelperFields(node);
+            public string GetFieldName(TagHelperDescriptor taghelper)
+            {
+                return _tagHelpers[taghelper].fieldName;
+            }
+
+            private static string GenerateFieldName(TagHelperDescriptor tagHelper)
+            {
+                return $"__{tagHelper.GetViewComponentName()}ViewComponentTagHelper";
             }
         }
     }

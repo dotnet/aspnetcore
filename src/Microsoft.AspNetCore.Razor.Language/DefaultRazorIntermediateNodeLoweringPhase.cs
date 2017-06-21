@@ -362,7 +362,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private class MainSourceVisitor : LoweringVisitor
         {
-            private DeclareTagHelperFieldsIntermediateNode _tagHelperFields;
             private readonly string _tagHelperPrefix;
 
             public MainSourceVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces, string tagHelperPrefix)
@@ -380,7 +379,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 _builder.Push(new HtmlAttributeIntermediateNode()
                 {
-                    Name = chunkGenerator.Name,
+                    AttributeName = chunkGenerator.Name,
                     Prefix = chunkGenerator.Prefix,
                     Suffix = chunkGenerator.Suffix,
                     Source = BuildSourceSpanFromNode(block),
@@ -619,8 +618,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                     return;
                 }
 
-                DeclareTagHelperFields(tagHelperBlock);
-
                 var tagName = tagHelperBlock.TagName;
                 if (_tagHelperPrefix != null)
                 {
@@ -647,7 +644,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 _builder.Pop(); // Pop InitializeTagHelperStructureIntermediateNode
 
-                AddTagHelperCreation(tagHelperBlock.Binding);
                 AddTagHelperAttributes(tagHelperBlock.Attributes, tagHelperBlock.Binding);
 
                 _builder.Pop(); // Pop TagHelperIntermediateNode
@@ -675,37 +671,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            private void DeclareTagHelperFields(TagHelperBlock block)
-            {
-                if (_tagHelperFields == null)
-                {
-                    _tagHelperFields = new DeclareTagHelperFieldsIntermediateNode();
-                    _document.Children.Add(_tagHelperFields);
-                }
-
-                foreach (var descriptor in block.Binding.Descriptors)
-                {
-                    var typeName = descriptor.GetTypeName();
-                    _tagHelperFields.UsedTagHelperTypeNames.Add(typeName);
-                }
-            }
-
-            private void AddTagHelperCreation(TagHelperBinding tagHelperBinding)
-            {
-                var descriptors = tagHelperBinding.Descriptors;
-                foreach (var descriptor in descriptors)
-                {
-                    var typeName = descriptor.GetTypeName();
-                    var createTagHelper = new CreateTagHelperIntermediateNode()
-                    {
-                        TagHelperTypeName = typeName,
-                        Descriptor = descriptor
-                    };
-
-                    _builder.Add(createTagHelper);
-                }
-            }
-
             private void AddTagHelperAttributes(IList<TagHelperAttributeNode> attributes, TagHelperBinding tagHelperBinding)
             {
                 var descriptors = tagHelperBinding.Descriptors;
@@ -727,18 +692,16 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                         foreach (var associatedDescriptor in associatedDescriptors)
                         {
-                            var associatedAttributeDescriptor = associatedDescriptor.BoundAttributes.First(
-                                attributeDescriptor => TagHelperMatchingConventions.CanSatisfyBoundAttribute(attribute.Name, attributeDescriptor));
-                            var tagHelperTypeName = associatedDescriptor.GetTypeName();
-                            var attributePropertyName = associatedAttributeDescriptor.GetPropertyName();
-
-                            var setTagHelperProperty = new SetTagHelperPropertyIntermediateNode()
+                            var associatedAttributeDescriptor = associatedDescriptor.BoundAttributes.First(a =>
                             {
-                                PropertyName = attributePropertyName,
+                                return TagHelperMatchingConventions.CanSatisfyBoundAttribute(attribute.Name, a);
+                            });
+
+                            var setTagHelperProperty = new TagHelperPropertyIntermediateNode()
+                            {
                                 AttributeName = attribute.Name,
-                                TagHelperTypeName = tagHelperTypeName,
-                                Descriptor = associatedAttributeDescriptor,
-                                Binding = tagHelperBinding,
+                                BoundAttribute = associatedAttributeDescriptor,
+                                TagHelper = associatedDescriptor,
                                 AttributeStructure = attribute.AttributeStructure,
                                 Source = BuildSourceSpanFromNode(attributeValueNode),
                                 IsIndexerNameMatch = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(attribute.Name, associatedAttributeDescriptor),
@@ -751,9 +714,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                     }
                     else
                     {
-                        var addHtmlAttribute = new AddTagHelperHtmlAttributeIntermediateNode()
+                        var addHtmlAttribute = new TagHelperHtmlAttributeIntermediateNode()
                         {
-                            Name = attribute.Name,
+                            AttributeName = attribute.Name,
                             AttributeStructure = attribute.AttributeStructure
                         };
 

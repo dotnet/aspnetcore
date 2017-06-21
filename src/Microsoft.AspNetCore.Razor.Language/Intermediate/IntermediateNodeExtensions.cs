@@ -42,5 +42,35 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 }
             }
         }
+
+        public static IReadOnlyList<TNode> FindDescendantNodes<TNode>(this IntermediateNode node)
+            where TNode : IntermediateNode
+        {
+            var visitor = new Visitor<TNode>();
+            visitor.Visit(node);
+
+            if (visitor.Results.Count > 0 && visitor.Results[0] == node)
+            {
+                // Don't put the node itself in the results
+                visitor.Results.Remove((TNode)node);
+            }
+
+            return visitor.Results;
+        }
+
+        private class Visitor<TNode> : IntermediateNodeWalker where TNode : IntermediateNode
+        {
+            public List<TNode> Results { get; } = new List<TNode>();
+
+            public override void VisitDefault(IntermediateNode node)
+            {
+                if (node is TNode match)
+                {
+                    Results.Add(match);
+                }
+
+                base.VisitDefault(node);
+            }
+        }
     }
 }

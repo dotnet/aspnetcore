@@ -10,7 +10,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     internal class PreallocatedTagHelperAttributeOptimizationPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
-        public override int Order => DefaultFeatureOrder;
+        // We want to run after the passes that 'lower' tag helpers.
+        public override int Order => DefaultFeatureOrder + 1000;
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
@@ -18,7 +19,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             walker.VisitDocument(documentNode);
         }
 
-        internal class PreallocatedTagHelperWalker : IntermediateNodeWalker
+        internal class PreallocatedTagHelperWalker : 
+            IntermediateNodeWalker,
+            IExtensionIntermediateNodeVisitor<DefaultTagHelperHtmlAttributeIntermediateNode>,
+            IExtensionIntermediateNodeVisitor<DefaultTagHelperPropertyIntermediateNode>
         {
             private const string PreAllocatedAttributeVariablePrefix = "__tagHelperAttribute_";
 
@@ -34,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 VisitDefault(node);
             }
 
-            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIntermediateNode node)
+            public void VisitExtension(DefaultTagHelperHtmlAttributeIntermediateNode node)
             {
                 if (node.Children.Count != 1 || !(node.Children.First() is HtmlContentIntermediateNode))
                 {
@@ -44,15 +48,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 var htmlContentNode = node.Children.First() as HtmlContentIntermediateNode;
                 var plainTextValue = GetContent(htmlContentNode);
 
-                DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode declaration = null;
+                PreallocatedTagHelperHtmlAttributeValueIntermediateNode declaration = null;
 
                 for (var i = 0; i < _classDeclaration.Children.Count; i++)
                 {
                     var current = _classDeclaration.Children[i];
 
-                    if (current is DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode existingDeclaration)
+                    if (current is PreallocatedTagHelperHtmlAttributeValueIntermediateNode existingDeclaration)
                     {
-                        if (string.Equals(existingDeclaration.Name, node.Name, StringComparison.Ordinal) &&
+                        if (string.Equals(existingDeclaration.AttributeName, node.AttributeName, StringComparison.Ordinal) &&
                             string.Equals(existingDeclaration.Value, plainTextValue, StringComparison.Ordinal) &&
                             existingDeclaration.AttributeStructure == node.AttributeStructure)
                         {
@@ -66,17 +70,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 {
                     var variableCount = _classDeclaration.Children.Count - _variableCountOffset;
                     var preAllocatedAttributeVariableName = PreAllocatedAttributeVariablePrefix + variableCount;
-                    declaration = new DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode
+                    declaration = new PreallocatedTagHelperHtmlAttributeValueIntermediateNode
                     {
                         VariableName = preAllocatedAttributeVariableName,
-                        Name = node.Name,
+                        AttributeName = node.AttributeName,
                         Value = plainTextValue,
                         AttributeStructure = node.AttributeStructure,
                     };
                     _classDeclaration.Children.Insert(_preallocatedDeclarationCount++, declaration);
                 }
 
-                var addPreAllocatedAttribute = new AddPreallocatedTagHelperHtmlAttributeIntermediateNode
+                var addPreAllocatedAttribute = new PreallocatedTagHelperHtmlAttributeIntermediateNode
                 {
                     VariableName = declaration.VariableName,
                 };
@@ -85,9 +89,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 Parent.Children[nodeIndex] = addPreAllocatedAttribute;
             }
 
-            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIntermediateNode node)
+            public void VisitExtension(DefaultTagHelperPropertyIntermediateNode node)
             {
-                if (!(node.Descriptor.IsStringProperty || (node.IsIndexerNameMatch && node.Descriptor.IsIndexerStringProperty)) ||
+                if (!(node.BoundAttribute.IsStringProperty || (node.IsIndexerNameMatch && node.BoundAttribute.IsIndexerStringProperty)) ||
                     node.Children.Count != 1 ||
                     !(node.Children.First() is HtmlContentIntermediateNode))
                 {
@@ -97,15 +101,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 var htmlContentNode = node.Children.First() as HtmlContentIntermediateNode;
                 var plainTextValue = GetContent(htmlContentNode);
 
-                DeclarePreallocatedTagHelperAttributeIntermediateNode declaration = null;
+                PreallocatedTagHelperPropertyValueIntermediateNode declaration = null;
 
                 for (var i = 0; i < _classDeclaration.Children.Count; i++)
                 {
                     var current = _classDeclaration.Children[i];
 
-                    if (current is DeclarePreallocatedTagHelperAttributeIntermediateNode existingDeclaration)
+                    if (current is PreallocatedTagHelperPropertyValueIntermediateNode existingDeclaration)
                     {
-                        if (string.Equals(existingDeclaration.Name, node.AttributeName, StringComparison.Ordinal) &&
+                        if (string.Equals(existingDeclaration.AttributeName, node.AttributeName, StringComparison.Ordinal) &&
                             string.Equals(existingDeclaration.Value, plainTextValue, StringComparison.Ordinal) &&
                             existingDeclaration.AttributeStructure == node.AttributeStructure)
                         {
@@ -119,25 +123,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 {
                     var variableCount = _classDeclaration.Children.Count - _variableCountOffset;
                     var preAllocatedAttributeVariableName = PreAllocatedAttributeVariablePrefix + variableCount;
-                    declaration = new DeclarePreallocatedTagHelperAttributeIntermediateNode
+                    declaration = new PreallocatedTagHelperPropertyValueIntermediateNode()
                     {
                         VariableName = preAllocatedAttributeVariableName,
-                        Name = node.AttributeName,
+                        AttributeName = node.AttributeName,
                         Value = plainTextValue,
                         AttributeStructure = node.AttributeStructure,
                     };
                     _classDeclaration.Children.Insert(_preallocatedDeclarationCount++, declaration);
                 }
 
-                var setPreallocatedProperty = new SetPreallocatedTagHelperPropertyIntermediateNode
+                var setPreallocatedProperty = new PreallocatedTagHelperPropertyIntermediateNode(node)
                 {
                     VariableName = declaration.VariableName,
-                    AttributeName = node.AttributeName,
-                    TagHelperTypeName = node.TagHelperTypeName,
-                    PropertyName = node.PropertyName,
-                    Descriptor = node.Descriptor,
-                    Binding = node.Binding,
-                    IsIndexerNameMatch = node.IsIndexerNameMatch,
                 };
 
                 var nodeIndex = Parent.Children.IndexOf(node);

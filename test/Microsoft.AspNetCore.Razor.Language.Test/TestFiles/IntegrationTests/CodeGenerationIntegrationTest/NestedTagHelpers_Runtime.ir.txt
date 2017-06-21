@@ -1,29 +1,35 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NestedTagHelpers_Runtime -  - 
-            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - AttributeStructure.SingleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - AttributeStructure.DoubleQuotes
-            DeclareTagHelperFields -  - SpanTagHelper - DivTagHelper - InputTagHelper
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_2 - unbound - foo - HtmlAttributeValueStyle.DoubleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::SpanTagHelper - __SpanTagHelper
+            FieldDeclaration -  - private - global::DivTagHelper - __DivTagHelper
+            FieldDeclaration -  - private - global::InputTagHelper - __InputTagHelper
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 TagHelper - (31:1,0 [26] NestedTagHelpers.cshtml) - span - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (46:1,15 [4] NestedTagHelpers.cshtml)
                             IntermediateToken - (46:1,15 [4] NestedTagHelpers.cshtml) - Html - Hola
-                    CreateTagHelper -  - SpanTagHelper
-                    AddTagHelperHtmlAttribute -  - someattr - AttributeStructure.Minimized
+                    DefaultTagHelperCreate -  - SpanTagHelper
+                    DefaultTagHelperHtmlAttribute -  - someattr - HtmlAttributeValueStyle.Minimized
+                    DefaultTagHelperExecute - 
                 HtmlContent - (57:1,26 [2] NestedTagHelpers.cshtml)
                     IntermediateToken - (57:1,26 [2] NestedTagHelpers.cshtml) - Html - \n
                 TagHelper - (59:2,0 [66] NestedTagHelpers.cshtml) - div - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (78:2,19 [6] NestedTagHelpers.cshtml)
                             IntermediateToken - (78:2,19 [6] NestedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (84:3,4 [33] NestedTagHelpers.cshtml) - input - TagMode.SelfClosing
-                            TagHelperBody - 
-                            CreateTagHelper -  - InputTagHelper
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - value - FooProp
-                            AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - InputTagHelper
+                            PreallocatedTagHelperProperty - (97:3,17 [5] NestedTagHelpers.cshtml) - __tagHelperAttribute_0 - value - FooProp
+                            PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                            DefaultTagHelperExecute - 
                         HtmlContent - (117:3,37 [2] NestedTagHelpers.cshtml)
                             IntermediateToken - (117:3,37 [2] NestedTagHelpers.cshtml) - Html - \n
-                    CreateTagHelper -  - DivTagHelper
-                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperCreate -  - DivTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperExecute - 

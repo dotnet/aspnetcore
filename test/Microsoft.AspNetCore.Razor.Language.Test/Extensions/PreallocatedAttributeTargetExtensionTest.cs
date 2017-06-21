@@ -18,16 +18,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var options = RazorCodeGenerationOptions.CreateDefault();
             var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
 
-            var node = new DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode()
+            var node = new PreallocatedTagHelperHtmlAttributeValueIntermediateNode()
             {
-                Name = "Foo",
+                AttributeName = "Foo",
                 Value = "Bar",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 VariableName = "MyProp"
             };
 
             // Act
-            extension.WriteDeclarePreallocatedTagHelperHtmlAttribute(context, node);
+            extension.WriteTagHelperHtmlAttributeValue(context, node);
 
             // Assert
             var csharp = context.CodeWriter.Builder.ToString();
@@ -48,16 +48,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var options = RazorCodeGenerationOptions.CreateDefault();
             var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
 
-            var node = new DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode()
+            var node = new PreallocatedTagHelperHtmlAttributeValueIntermediateNode()
             {
-                Name = "Foo",
+                AttributeName = "Foo",
                 Value = "Bar",
                 AttributeStructure = AttributeStructure.Minimized,
                 VariableName = "_tagHelper1"
             };
 
             // Act
-            extension.WriteDeclarePreallocatedTagHelperHtmlAttribute(context, node);
+            extension.WriteTagHelperHtmlAttributeValue(context, node);
 
             // Assert
             var csharp = context.CodeWriter.Builder.ToString();
@@ -78,13 +78,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var options = RazorCodeGenerationOptions.CreateDefault();
             var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
 
-            var node = new AddPreallocatedTagHelperHtmlAttributeIntermediateNode()
+            var node = new PreallocatedTagHelperHtmlAttributeIntermediateNode()
             {
                 VariableName = "_tagHelper1"
             };
 
             // Act
-            extension.WriteAddPreallocatedTagHelperHtmlAttribute(context, node);
+            extension.WriteTagHelperHtmlAttribute(context, node);
 
             // Assert
             var csharp = context.CodeWriter.Builder.ToString();
@@ -105,16 +105,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var options = RazorCodeGenerationOptions.CreateDefault();
             var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
 
-            var node = new DeclarePreallocatedTagHelperAttributeIntermediateNode()
+            var node = new PreallocatedTagHelperPropertyValueIntermediateNode()
             {
-                Name = "Foo",
+                AttributeName = "Foo",
                 Value = "Bar",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 VariableName = "_tagHelper1",
             };
 
             // Act
-            extension.WriteDeclarePreallocatedTagHelperAttribute(context, node);
+            extension.WriteTagHelperPropertyValue(context, node);
 
             // Assert
             var csharp = context.CodeWriter.Builder.ToString();
@@ -147,16 +147,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var descriptor = builder.Build();
 
-            var node = new SetPreallocatedTagHelperPropertyIntermediateNode()
+            var node = new PreallocatedTagHelperPropertyIntermediateNode()
             {
                 AttributeName = descriptor.Name,
-                TagHelperTypeName = "FooTagHelper",
+                Field = "__FooTagHelper",
                 VariableName = "_tagHelper1",
-                Descriptor = descriptor,
+                BoundAttribute = descriptor,
             };
 
             // Act
-            extension.WriteSetPreallocatedTagHelperProperty(context, node);
+            extension.WriteTagHelperProperty(context, node);
 
             // Assert
             var csharp = context.CodeWriter.Builder.ToString();
@@ -194,17 +194,18 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
 
             var descriptor = builder.Build();
 
-            var node = new SetPreallocatedTagHelperPropertyIntermediateNode()
+            var node = new PreallocatedTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "pre-Foo",
-                TagHelperTypeName = "FooTagHelper",
+                Field = "__FooTagHelper",
                 VariableName = "_tagHelper1",
-                Descriptor = descriptor,
-                IsIndexerNameMatch = true
+                BoundAttribute = descriptor,
+                IsIndexerNameMatch = true,
+                TagHelper = tagHelperBuilder.Build(),
             };
 
             // Act
-            extension.WriteSetPreallocatedTagHelperProperty(context, node);
+            extension.WriteTagHelperProperty(context, node);
 
             // Assert
             var csharp = context.CodeWriter.Builder.ToString();

@@ -406,7 +406,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                             builder => builder
                                 .Name("int-dictionary")
                                 .PropertyName("IntDictionaryProperty")
-                                .TypeName(typeof(IDictionary<string, int>).FullName)
+                                .TypeName("System.Collections.Generic.IDictionary<string, int>")
                                 .AsDictionaryAttribute("int-prefix-", typeof(int).FullName),
                             builder => builder
                                 .Name("string-prefix-grabber")

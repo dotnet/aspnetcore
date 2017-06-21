@@ -15,6 +15,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             return new DefaultRazorCodeGenerationOptions(indentWithTabs: false, indentSize: 4, designTime: false, suppressChecksum: false);
         }
 
+        public static RazorCodeGenerationOptions CreateDesignTimeDefault()
+        {
+            return new DefaultRazorCodeGenerationOptions(indentWithTabs: false, indentSize: 4, designTime: true, suppressChecksum: false);
+        }
+
         public abstract bool DesignTime { get; }
 
         public abstract bool IndentWithTabs { get; }

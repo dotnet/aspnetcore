@@ -1,9 +1,12 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicTagHelpers_Prefixed_Runtime -  - 
-            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - class - Hello World - AttributeStructure.DoubleQuotes
-            DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_0 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_1 - class - Hello World - HtmlAttributeValueStyle.DoubleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::TestNamespace.PTagHelper - __TestNamespace_PTagHelper
+            FieldDeclaration -  - private - global::TestNamespace.InputTagHelper - __TestNamespace_InputTagHelper
+            FieldDeclaration -  - private - global::TestNamespace.InputTagHelper2 - __TestNamespace_InputTagHelper2
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (57:2,0 [52] BasicTagHelpers_Prefixed.cshtml)
                     IntermediateToken - (57:2,0 [2] BasicTagHelpers_Prefixed.cshtml) - Html - \n
@@ -12,7 +15,7 @@ Document -
                     IntermediateToken - (102:3,43 [1] BasicTagHelpers_Prefixed.cshtml) - Html - >
                     IntermediateToken - (103:3,44 [6] BasicTagHelpers_Prefixed.cshtml) - Html - \n    
                 TagHelper - (109:4,4 [136] BasicTagHelpers_Prefixed.cshtml) - p - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (135:4,30 [56] BasicTagHelpers_Prefixed.cshtml)
                             IntermediateToken - (135:4,30 [10] BasicTagHelpers_Prefixed.cshtml) - Html - \n        
                             IntermediateToken - (145:5,8 [3] BasicTagHelpers_Prefixed.cshtml) - Html - <p>
@@ -23,17 +26,19 @@ Document -
                             IntermediateToken - (180:6,26 [1] BasicTagHelpers_Prefixed.cshtml) - Html - >
                             IntermediateToken - (181:6,27 [10] BasicTagHelpers_Prefixed.cshtml) - Html - \n        
                         TagHelper - (191:7,8 [41] BasicTagHelpers_Prefixed.cshtml) - input - TagMode.StartTagOnly
-                            TagHelperBody - 
-                            CreateTagHelper -  - TestNamespace.InputTagHelper
-                            CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
-                            SetTagHelperProperty - (226:7,43 [4] BasicTagHelpers_Prefixed.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper2
+                            PreallocatedTagHelperProperty - (207:7,24 [8] BasicTagHelpers_Prefixed.cshtml) - __tagHelperAttribute_0 - type - Type
+                            PreallocatedTagHelperProperty - (207:7,24 [8] BasicTagHelpers_Prefixed.cshtml) - __tagHelperAttribute_0 - type - Type
+                            DefaultTagHelperProperty - (226:7,43 [4] BasicTagHelpers_Prefixed.cshtml) - checked - bool TestNamespace.InputTagHelper2.Checked - HtmlAttributeValueStyle.DoubleQuotes
                                 IntermediateToken - (226:7,43 [4] BasicTagHelpers_Prefixed.cshtml) - CSharp - true
+                            DefaultTagHelperExecute - 
                         HtmlContent - (232:7,49 [6] BasicTagHelpers_Prefixed.cshtml)
                             IntermediateToken - (232:7,49 [6] BasicTagHelpers_Prefixed.cshtml) - Html - \n    
-                    CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                    DefaultTagHelperCreate -  - TestNamespace.PTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1
+                    DefaultTagHelperExecute - 
                 HtmlContent - (245:8,11 [11] BasicTagHelpers_Prefixed.cshtml)
                     IntermediateToken - (245:8,11 [2] BasicTagHelpers_Prefixed.cshtml) - Html - \n
                     IntermediateToken - (247:9,0 [9] BasicTagHelpers_Prefixed.cshtml) - Html - </THSdiv>

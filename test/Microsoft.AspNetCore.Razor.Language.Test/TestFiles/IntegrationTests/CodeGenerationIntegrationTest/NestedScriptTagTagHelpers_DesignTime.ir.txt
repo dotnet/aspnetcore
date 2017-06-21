@@ -1,11 +1,14 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NestedScriptTagTagHelpers_DesignTime -  - 
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::TestNamespace.PTagHelper - __TestNamespace_PTagHelper
+            FieldDeclaration -  - private - global::TestNamespace.InputTagHelper - __TestNamespace_InputTagHelper
+            FieldDeclaration -  - private - global::TestNamespace.InputTagHelper2 - __TestNamespace_InputTagHelper2
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [17] NestedScriptTagTagHelpers.cshtml) - "*, TestAssembly"
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [108] NestedScriptTagTagHelpers.cshtml)
                     IntermediateToken - (31:0,31 [4] NestedScriptTagTagHelpers.cshtml) - Html - \n\n
@@ -21,7 +24,7 @@ Document -
                     IntermediateToken - (128:3,66 [1] NestedScriptTagTagHelpers.cshtml) - Html - >
                     IntermediateToken - (129:3,67 [10] NestedScriptTagTagHelpers.cshtml) - Html - \n        
                 TagHelper - (139:4,8 [433] NestedScriptTagTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (180:4,49 [14] NestedScriptTagTagHelpers.cshtml)
                             IntermediateToken - (180:4,49 [14] NestedScriptTagTagHelpers.cshtml) - Html - \n            
                         CSharpCode - (195:5,13 [46] NestedScriptTagTagHelpers.cshtml)
@@ -33,24 +36,25 @@ Document -
                             IntermediateToken - (286:6,61 [1] NestedScriptTagTagHelpers.cshtml) - Html - >
                             IntermediateToken - (287:6,62 [22] NestedScriptTagTagHelpers.cshtml) - Html - \n                    
                         TagHelper - (309:7,20 [86] NestedScriptTagTagHelpers.cshtml) - input - TagMode.StartTagOnly
-                            TagHelperBody - 
-                            CreateTagHelper -  - TestNamespace.InputTagHelper
-                            CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            AddTagHelperHtmlAttribute -  - data-interval - AttributeStructure.DoubleQuotes
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper2
+                            DefaultTagHelperHtmlAttribute -  - data-interval - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (331:7,42 [7] NestedScriptTagTagHelpers.cshtml)
                                     IntermediateToken - (331:7,42 [7] NestedScriptTagTagHelpers.cshtml) - Html - 2000 + 
                                 CSharpExpression - (339:7,50 [23] NestedScriptTagTagHelpers.cshtml)
                                     IntermediateToken - (339:7,50 [23] NestedScriptTagTagHelpers.cshtml) - CSharp - ViewBag.DefaultInterval
                                 HtmlContent - (362:7,73 [4] NestedScriptTagTagHelpers.cshtml)
                                     IntermediateToken - (362:7,73 [4] NestedScriptTagTagHelpers.cshtml) - Html -  + 1
-                            SetTagHelperProperty - (374:7,85 [4] NestedScriptTagTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperProperty - (374:7,85 [4] NestedScriptTagTagHelpers.cshtml) - type - string TestNamespace.InputTagHelper.Type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (374:7,85 [4] NestedScriptTagTagHelpers.cshtml)
                                     IntermediateToken - (374:7,85 [4] NestedScriptTagTagHelpers.cshtml) - Html - text
-                            SetTagHelperProperty - (374:7,85 [4] NestedScriptTagTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperProperty - (374:7,85 [4] NestedScriptTagTagHelpers.cshtml) - type - string TestNamespace.InputTagHelper2.Type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (374:7,85 [4] NestedScriptTagTagHelpers.cshtml)
                                     IntermediateToken - (374:7,85 [4] NestedScriptTagTagHelpers.cshtml) - Html - text
-                            SetTagHelperProperty - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperProperty - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml) - checked - bool TestNamespace.InputTagHelper2.Checked - HtmlAttributeValueStyle.DoubleQuotes
                                 IntermediateToken - (389:7,100 [4] NestedScriptTagTagHelpers.cshtml) - CSharp - true
+                            DefaultTagHelperExecute - 
                         HtmlContent - (395:7,106 [27] NestedScriptTagTagHelpers.cshtml)
                             IntermediateToken - (395:7,106 [18] NestedScriptTagTagHelpers.cshtml) - Html - \n                
                             IntermediateToken - (413:8,16 [9] NestedScriptTagTagHelpers.cshtml) - Html - </script>
@@ -64,13 +68,14 @@ Document -
                             IntermediateToken - (482:10,43 [67] NestedScriptTagTagHelpers.cshtml) - Html - \n                var tag = '<input checked="true">';\n            
                             IntermediateToken - (549:12,12 [9] NestedScriptTagTagHelpers.cshtml) - Html - </script>
                             IntermediateToken - (558:12,21 [10] NestedScriptTagTagHelpers.cshtml) - Html - \n        
-                    CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
+                    DefaultTagHelperCreate -  - TestNamespace.PTagHelper
+                    DefaultTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (149:4,18 [11] NestedScriptTagTagHelpers.cshtml)
                             IntermediateToken - (149:4,18 [11] NestedScriptTagTagHelpers.cshtml) - Html - Hello World
-                    AddTagHelperHtmlAttribute -  - data-delay - AttributeStructure.DoubleQuotes
+                    DefaultTagHelperHtmlAttribute -  - data-delay - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (174:4,43 [4] NestedScriptTagTagHelpers.cshtml)
                             IntermediateToken - (174:4,43 [4] NestedScriptTagTagHelpers.cshtml) - Html - 1000
+                    DefaultTagHelperExecute - 
                 HtmlContent - (572:13,12 [23] NestedScriptTagTagHelpers.cshtml)
                     IntermediateToken - (572:13,12 [6] NestedScriptTagTagHelpers.cshtml) - Html - \n    
                     IntermediateToken - (578:14,4 [6] NestedScriptTagTagHelpers.cshtml) - Html - </div>

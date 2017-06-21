@@ -14,6 +14,7 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ModelExpressionTagHelper_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
     {
+        private global::InputTestTagHelper __InputTestTagHelper;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
@@ -27,7 +28,6 @@ global::System.Object __typeHelper = "InputTestTagHelper, AppCode";
         }
         #pragma warning restore 219
         private static System.Object __o = null;
-        private global::InputTestTagHelper __InputTestTagHelper = null;
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {

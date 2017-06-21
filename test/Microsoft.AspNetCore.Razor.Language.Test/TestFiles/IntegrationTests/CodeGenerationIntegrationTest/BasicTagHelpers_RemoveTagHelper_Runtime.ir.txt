@@ -1,10 +1,13 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicTagHelpers_RemoveTagHelper_Runtime -  - 
-            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - type - text - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_1 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - class - Hello World - AttributeStructure.DoubleQuotes
-            DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_0 - type - text - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperPropertyValue -  - __tagHelperAttribute_1 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
+            PreallocatedTagHelperHtmlAttributeValue -  - __tagHelperAttribute_2 - class - Hello World - HtmlAttributeValueStyle.DoubleQuotes
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::TestNamespace.PTagHelper - __TestNamespace_PTagHelper
+            FieldDeclaration -  - private - global::TestNamespace.InputTagHelper - __TestNamespace_InputTagHelper
+            FieldDeclaration -  - private - global::TestNamespace.InputTagHelper2 - __TestNamespace_InputTagHelper2
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (72:2,0 [49] BasicTagHelpers_RemoveTagHelper.cshtml)
                     IntermediateToken - (72:2,0 [2] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n
@@ -13,34 +16,38 @@ Document -
                     IntermediateToken - (114:3,40 [1] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - >
                     IntermediateToken - (115:3,41 [6] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n    
                 TagHelper - (121:4,4 [130] BasicTagHelpers_RemoveTagHelper.cshtml) - p - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (144:4,27 [10] BasicTagHelpers_RemoveTagHelper.cshtml)
                             IntermediateToken - (144:4,27 [10] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n        
                         TagHelper - (154:5,8 [7] BasicTagHelpers_RemoveTagHelper.cshtml) - p - TagMode.StartTagAndEndTag
-                            TagHelperBody - 
-                            CreateTagHelper -  - TestNamespace.PTagHelper
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - TestNamespace.PTagHelper
+                            DefaultTagHelperExecute - 
                         HtmlContent - (161:5,15 [10] BasicTagHelpers_RemoveTagHelper.cshtml)
                             IntermediateToken - (161:5,15 [10] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n        
                         TagHelper - (171:6,8 [21] BasicTagHelpers_RemoveTagHelper.cshtml) - input - TagMode.SelfClosing
-                            TagHelperBody - 
-                            CreateTagHelper -  - TestNamespace.InputTagHelper
-                            CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_0 - type - Type
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper2
+                            PreallocatedTagHelperProperty - (184:6,21 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - __tagHelperAttribute_0 - type - Type
+                            PreallocatedTagHelperProperty - (184:6,21 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - __tagHelperAttribute_0 - type - Type
+                            DefaultTagHelperExecute - 
                         HtmlContent - (192:6,29 [10] BasicTagHelpers_RemoveTagHelper.cshtml)
                             IntermediateToken - (192:6,29 [10] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n        
                         TagHelper - (202:7,8 [39] BasicTagHelpers_RemoveTagHelper.cshtml) - input - TagMode.SelfClosing
-                            TagHelperBody - 
-                            CreateTagHelper -  - TestNamespace.InputTagHelper
-                            CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_1 - type - Type
-                            SetPreallocatedTagHelperProperty -  - __tagHelperAttribute_1 - type - Type
-                            SetTagHelperProperty - (234:7,40 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper2
+                            PreallocatedTagHelperProperty - (215:7,21 [8] BasicTagHelpers_RemoveTagHelper.cshtml) - __tagHelperAttribute_1 - type - Type
+                            PreallocatedTagHelperProperty - (215:7,21 [8] BasicTagHelpers_RemoveTagHelper.cshtml) - __tagHelperAttribute_1 - type - Type
+                            DefaultTagHelperProperty - (234:7,40 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - checked - bool TestNamespace.InputTagHelper2.Checked - HtmlAttributeValueStyle.DoubleQuotes
                                 IntermediateToken - (234:7,40 [4] BasicTagHelpers_RemoveTagHelper.cshtml) - CSharp - true
+                            DefaultTagHelperExecute - 
                         HtmlContent - (241:7,47 [6] BasicTagHelpers_RemoveTagHelper.cshtml)
                             IntermediateToken - (241:7,47 [6] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n    
-                    CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperCreate -  - TestNamespace.PTagHelper
+                    PreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2
+                    DefaultTagHelperExecute - 
                 HtmlContent - (251:8,8 [8] BasicTagHelpers_RemoveTagHelper.cshtml)
                     IntermediateToken - (251:8,8 [2] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - \n
                     IntermediateToken - (253:9,0 [6] BasicTagHelpers_RemoveTagHelper.cshtml) - Html - </div>

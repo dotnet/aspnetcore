@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             try
             {
                 Assert.Equal(prefix, attribute.Prefix);
-                Assert.Equal(name, attribute.Name);
+                Assert.Equal(name, attribute.AttributeName);
                 Assert.Equal(suffix, attribute.Suffix);
 
                 Children(attribute, valueValidators);
@@ -309,40 +309,39 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
         }
 
-        internal static void TagHelperFieldDeclaration(IntermediateNode node, params string[] tagHelperTypes)
+        internal static void TagHelperFieldDeclaration(IntermediateNode node, string typeFullName)
         {
-            var declareTagHelperFields = Assert.IsType<DeclareTagHelperFieldsIntermediateNode>(node);
-
             try
             {
-                Assert.Equal(tagHelperTypes, declareTagHelperFields.UsedTagHelperTypeNames);
+                var fieldNode = Assert.IsType<FieldDeclarationIntermediateNode>(node);
+                Assert.Equal(typeFullName, fieldNode.Type);
             }
             catch (XunitException e)
             {
-                throw new IntermediateNodeAssertException(declareTagHelperFields, e.Message);
+                throw new IntermediateNodeAssertException(node, e.Message);
             }
         }
 
-        internal static void DeclarePreallocatedTagHelperAttribute(
+        internal static void PreallocatedTagHelperPropertyValue(
             IntermediateNode node,
             string attributeName,
             string value,
             AttributeStructure valueStyle)
         {
-            var declarePreallocatedTagHelperAttribute = Assert.IsType<DeclarePreallocatedTagHelperAttributeIntermediateNode>(node);
+            var propertyValueNode = Assert.IsType<PreallocatedTagHelperPropertyValueIntermediateNode>(node);
 
             try
             {
-                Assert.Equal(attributeName, declarePreallocatedTagHelperAttribute.Name);
-                Assert.Equal(value, declarePreallocatedTagHelperAttribute.Value);
-                Assert.Equal(valueStyle, declarePreallocatedTagHelperAttribute.AttributeStructure);
+                Assert.Equal(attributeName, propertyValueNode.AttributeName);
+                Assert.Equal(value, propertyValueNode.Value);
+                Assert.Equal(valueStyle, propertyValueNode.AttributeStructure);
             }
             catch (XunitException e)
             {
-                throw new IntermediateNodeAssertException(declarePreallocatedTagHelperAttribute, e.Message);
+                throw new IntermediateNodeAssertException(propertyValueNode, e.Message);
             }
         }
-
+        
         internal static void TagHelper(string tagName, TagMode tagMode, IEnumerable<TagHelperDescriptor> tagHelpers, IntermediateNode node, params Action<IntermediateNode>[] childValidators)
         {
             var tagHelperNode = Assert.IsType<TagHelperIntermediateNode>(node);
@@ -352,7 +351,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 Assert.Equal(tagName, tagHelperNode.TagName);
                 Assert.Equal(tagMode, tagHelperNode.TagMode);
 
-                Assert.Equal(tagHelpers, tagHelperNode.TagHelpers);
+                Assert.Equal(tagHelpers, tagHelperNode.TagHelpers, TagHelperDescriptorComparer.CaseSensitive);
             }
             catch (XunitException e)
             {
@@ -368,11 +367,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             IntermediateNode node,
             params Action<IntermediateNode>[] valueValidators)
         {
-            var tagHelperHtmlAttribute = Assert.IsType<AddTagHelperHtmlAttributeIntermediateNode>(node);
+            var tagHelperHtmlAttribute = Assert.IsType<TagHelperHtmlAttributeIntermediateNode>(node);
 
             try
             {
-                Assert.Equal(name, tagHelperHtmlAttribute.Name);
+                Assert.Equal(name, tagHelperHtmlAttribute.AttributeName);
                 Assert.Equal(valueStyle, tagHelperHtmlAttribute.AttributeStructure);
                 Children(tagHelperHtmlAttribute, valueValidators);
             }
@@ -384,12 +383,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         internal static void SetPreallocatedTagHelperProperty(IntermediateNode node, string attributeName, string propertyName)
         {
-            var setPreallocatedTagHelperProperty = Assert.IsType<SetPreallocatedTagHelperPropertyIntermediateNode>(node);
+            var setPreallocatedTagHelperProperty = Assert.IsType<PreallocatedTagHelperPropertyIntermediateNode>(node);
 
             try
             {
                 Assert.Equal(attributeName, setPreallocatedTagHelperProperty.AttributeName);
-                Assert.Equal(propertyName, setPreallocatedTagHelperProperty.PropertyName);
+                Assert.Equal(propertyName, setPreallocatedTagHelperProperty.Property);
             }
             catch (XunitException e)
             {
@@ -404,18 +403,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             IntermediateNode node,
             params Action<IntermediateNode>[] valueValidators)
         {
-            var tagHelperBoundAttribute = Assert.IsType<SetTagHelperPropertyIntermediateNode>(node);
+            var propertyNode = Assert.IsType<TagHelperPropertyIntermediateNode>(node);
 
             try
             {
-                Assert.Equal(name, tagHelperBoundAttribute.AttributeName);
-                Assert.Equal(propertyName, tagHelperBoundAttribute.PropertyName);
-                Assert.Equal(valueStyle, tagHelperBoundAttribute.AttributeStructure);
-                Children(tagHelperBoundAttribute, valueValidators);
+                Assert.Equal(name, propertyNode.AttributeName);
+                Assert.Equal(propertyName, propertyNode.BoundAttribute.GetPropertyName());
+                Assert.Equal(valueStyle, propertyNode.AttributeStructure);
+                Children(propertyNode, valueValidators);
             }
             catch (XunitException e)
             {
-                throw new IntermediateNodeAssertException(tagHelperBoundAttribute, tagHelperBoundAttribute.Children, e.Message, e);
+                throw new IntermediateNodeAssertException(propertyNode, propertyNode.Children, e.Message, e);
             }
         }
 

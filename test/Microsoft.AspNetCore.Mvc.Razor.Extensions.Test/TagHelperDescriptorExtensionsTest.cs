@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         [Fact]
         public void IsViewComponentKind_ReturnsFalse_ForNonVCTHDescriptor()
         {
-            //Arrange
+            // Arrange
             var tagHelper = CreateTagHelperDescriptor();
 
             // Act
@@ -62,21 +62,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private static TagHelperDescriptor CreateTagHelperDescriptor()
         {
-            var descriptor = TagHelperDescriptorBuilder.Create("TypeName", "AssemblyName")
+            var tagHelper = TagHelperDescriptorBuilder.Create("TypeName", "AssemblyName")
                 .TagMatchingRuleDescriptor(rule => rule.RequireTagName("tag-name"))
                 .Build();
 
-            return descriptor;
+            return tagHelper;
         }
 
         private static TagHelperDescriptor CreateViewComponentTagHelperDescriptor(string name = "ViewComponentName")
         {
-            var descriptor = TagHelperDescriptorBuilder.Create(ViewComponentTagHelperConventions.Kind, "TypeName", "AssemblyName")
+            var tagHelper = TagHelperDescriptorBuilder.Create(ViewComponentTagHelperConventions.Kind, "TypeName", "AssemblyName")
                 .TagMatchingRuleDescriptor(rule => rule.RequireTagName("tag-name"))
                 .AddMetadata(ViewComponentTagHelperMetadata.Name, name)
                 .Build();
 
-            return descriptor;
+            return tagHelper;
         }
     }
 }

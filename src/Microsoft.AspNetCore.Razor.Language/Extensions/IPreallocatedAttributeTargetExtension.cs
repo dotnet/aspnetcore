@@ -2,18 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     internal interface IPreallocatedAttributeTargetExtension : ICodeTargetExtension
     {
-        void WriteDeclarePreallocatedTagHelperHtmlAttribute(CodeRenderingContext context, DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode node);
+        void WriteTagHelperHtmlAttribute(CodeRenderingContext context, PreallocatedTagHelperHtmlAttributeIntermediateNode node);
 
-        void WriteAddPreallocatedTagHelperHtmlAttribute(CodeRenderingContext context, AddPreallocatedTagHelperHtmlAttributeIntermediateNode node);
+        void WriteTagHelperHtmlAttributeValue(CodeRenderingContext context, PreallocatedTagHelperHtmlAttributeValueIntermediateNode node);
 
-        void WriteDeclarePreallocatedTagHelperAttribute(CodeRenderingContext context, DeclarePreallocatedTagHelperAttributeIntermediateNode node);
+        void WriteTagHelperProperty(CodeRenderingContext context, PreallocatedTagHelperPropertyIntermediateNode node);
 
-        void WriteSetPreallocatedTagHelperProperty(CodeRenderingContext context, SetPreallocatedTagHelperPropertyIntermediateNode node);
+        void WriteTagHelperPropertyValue(CodeRenderingContext context, PreallocatedTagHelperPropertyValueIntermediateNode node);
     }
 }

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
     public sealed class TemplateIntermediateNode : ExtensionIntermediateNode
     {
         public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
-        
+
         public override void Accept(IntermediateNodeVisitor visitor)
         {
             if (visitor == null)

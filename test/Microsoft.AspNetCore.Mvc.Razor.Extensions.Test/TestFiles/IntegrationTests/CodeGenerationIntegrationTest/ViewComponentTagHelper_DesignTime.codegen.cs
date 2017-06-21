@@ -14,6 +14,8 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
     {
+        private global::AllTagHelper __AllTagHelper;
+        private global::AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml.__Generated__TestViewComponentTagHelper __TestViewComponentTagHelper;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
@@ -23,8 +25,6 @@ global::System.Object __typeHelper = "*, AppCode";
         }
         #pragma warning restore 219
         private static System.Object __o = null;
-        private global::AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml.__Generated__TestViewComponentTagHelper __AspNetCore_TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml___Generated__TestViewComponentTagHelper = null;
-        private global::AllTagHelper __AllTagHelper = null;
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
@@ -34,14 +34,14 @@ global::System.Object __typeHelper = "*, AppCode";
 
 #line default
 #line hidden
-            __AspNetCore_TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml___Generated__TestViewComponentTagHelper = CreateTagHelper<global::AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml.__Generated__TestViewComponentTagHelper>();
             __AllTagHelper = CreateTagHelper<global::AllTagHelper>();
+            __TestViewComponentTagHelper = CreateTagHelper<global::AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml.__Generated__TestViewComponentTagHelper>();
 #line 6 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ViewComponentTagHelper.cshtml"
                 __o = foo;
 
 #line default
 #line hidden
-            __AspNetCore_TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ViewComponentTagHelper_cshtml___Generated__TestViewComponentTagHelper.firstName = string.Empty;
+            __TestViewComponentTagHelper.firstName = string.Empty;
             __AllTagHelper.Bar = " World";
         }
         #pragma warning restore 1998

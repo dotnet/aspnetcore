@@ -47,24 +47,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public string TagName { get; set; }
 
         public TagMode TagMode { get; set; }
-
+        
         public ICollection<TagHelperDescriptor> TagHelpers { get; } = new List<TagHelperDescriptor>();
 
         public TagHelperBodyIntermediateNode Body => Children.OfType<TagHelperBodyIntermediateNode>().SingleOrDefault();
 
-        public IEnumerable<SetTagHelperPropertyIntermediateNode> SetTagHelperProperties
+        public IEnumerable<TagHelperPropertyIntermediateNode> Properties
         {
             get
             {
-                return Children.OfType<SetTagHelperPropertyIntermediateNode>();
+                return Children.OfType<TagHelperPropertyIntermediateNode>();
             }
         }
 
-        public IEnumerable<AddTagHelperHtmlAttributeIntermediateNode> AddTagHelperHtmlAttributes
+        public IEnumerable<TagHelperHtmlAttributeIntermediateNode> HtmlAttributes
         {
             get
             {
-                return Children.OfType<AddTagHelperHtmlAttributeIntermediateNode>();
+                return Children.OfType<TagHelperHtmlAttributeIntermediateNode>();
             }
         }
 

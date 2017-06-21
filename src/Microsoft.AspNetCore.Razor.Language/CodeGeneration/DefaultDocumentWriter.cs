@@ -203,11 +203,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.NodeWriter.WriteHtmlContent(Context, node);
             }
 
-            public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIntermediateNode node)
-            {
-                Context.TagHelperWriter.WriteDeclareTagHelperFields(Context, node);
-            }
-
             public override void VisitTagHelper(TagHelperIntermediateNode node)
             {
                 var tagHelperRenderingContext = new TagHelperRenderingContext()
@@ -218,28 +213,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
                 using (Context.Push(tagHelperRenderingContext))
                 {
-                    Context.TagHelperWriter.WriteTagHelper(Context, node);
+                    RenderChildren(node);
                 }
-            }
-
-            public override void VisitTagHelperBody(TagHelperBodyIntermediateNode node)
-            {
-                Context.TagHelperWriter.WriteTagHelperBody(Context, node);
-            }
-
-            public override void VisitCreateTagHelper(CreateTagHelperIntermediateNode node)
-            {
-                Context.TagHelperWriter.WriteCreateTagHelper(Context, node);
-            }
-
-            public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIntermediateNode node)
-            {
-                Context.TagHelperWriter.WriteAddTagHelperHtmlAttribute(Context, node);
-            }
-
-            public override void VisitSetTagHelperProperty(SetTagHelperPropertyIntermediateNode node)
-            {
-                Context.TagHelperWriter.WriteSetTagHelperProperty(Context, node);
             }
 
             public override void VisitDefault(IntermediateNode node)

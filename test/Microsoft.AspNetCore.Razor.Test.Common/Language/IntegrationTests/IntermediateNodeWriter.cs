@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,12 +8,13 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
     // Serializes single IR nodes (shallow).
-    public class IntermediateNodeWriter : IntermediateNodeVisitor, IExtensionIntermediateNodeVisitor<SectionIntermediateNode>
+    public class IntermediateNodeWriter : 
+        IntermediateNodeVisitor,
+        IExtensionIntermediateNodeVisitor<SectionIntermediateNode>
     {
         private readonly TextWriter _writer;
 
@@ -65,6 +65,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.Content);
         }
 
+        public override void VisitFieldDeclaration(FieldDeclarationIntermediateNode node)
+        {
+            WriteContentNode(node, string.Join(" ", node.Modifiers), node.Type, node.Name);
+        }
+
         public override void VisitHtmlAttribute(HtmlAttributeIntermediateNode node)
         {
             WriteContentNode(node, node.Prefix, node.Suffix);
@@ -90,46 +95,51 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.Content);
         }
 
-        public override void VisitDeclareTagHelperFields(DeclareTagHelperFieldsIntermediateNode node)
-        {
-            WriteContentNode(node, node.UsedTagHelperTypeNames.ToArray());
-        }
-
         public override void VisitTagHelper(TagHelperIntermediateNode node)
         {
             WriteContentNode(node, node.TagName, string.Format("{0}.{1}", nameof(TagMode), node.TagMode));
         }
 
-        public override void VisitCreateTagHelper(CreateTagHelperIntermediateNode node)
+        public override void VisitTagHelperProperty(TagHelperPropertyIntermediateNode node)
         {
-            WriteContentNode(node, node.TagHelperTypeName);
+            WriteContentNode(node, node.AttributeName, node.BoundAttribute.DisplayName, string.Format("HtmlAttributeValueStyle.{0}", node.AttributeStructure));
         }
 
-        public override void VisitSetTagHelperProperty(SetTagHelperPropertyIntermediateNode node)
+        public override void VisitTagHelperHtmlAttribute(TagHelperHtmlAttributeIntermediateNode node)
         {
-            WriteContentNode(node, node.AttributeName, node.PropertyName, string.Format("HtmlAttributeValueStyle.{0}", node.AttributeStructure));
-        }
-
-        public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIntermediateNode node)
-        {
-            WriteContentNode(node, node.Name, string.Format("{0}.{1}", nameof(AttributeStructure), node.AttributeStructure));
+            WriteContentNode(node, node.AttributeName, string.Format("HtmlAttributeValueStyle.{0}", node.AttributeStructure));
         }
 
         public override void VisitExtension(ExtensionIntermediateNode node)
         {
             switch (node)
             {
-                case DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode n:
-                    WriteContentNode(n, n.VariableName, n.Name, n.Value, string.Format("{0}.{1}", nameof(AttributeStructure), n.AttributeStructure));
-                    break;
-                case AddPreallocatedTagHelperHtmlAttributeIntermediateNode n:
+                case PreallocatedTagHelperHtmlAttributeIntermediateNode n:
                     WriteContentNode(n, n.VariableName);
                     break;
-                case DeclarePreallocatedTagHelperAttributeIntermediateNode n:
-                    WriteContentNode(n, n.VariableName, n.Name, n.Value, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
+                case PreallocatedTagHelperHtmlAttributeValueIntermediateNode n:
+                    WriteContentNode(n, n.VariableName, n.AttributeName, n.Value, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
                     break;
-                case SetPreallocatedTagHelperPropertyIntermediateNode n:
-                    WriteContentNode(n, n.VariableName, n.AttributeName, n.PropertyName);
+                case PreallocatedTagHelperPropertyIntermediateNode n:
+                    WriteContentNode(n, n.VariableName, n.AttributeName, n.Property);
+                    break;
+                case PreallocatedTagHelperPropertyValueIntermediateNode n:
+                    WriteContentNode(n, n.VariableName, n.AttributeName, n.Value, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
+                    break;
+                case DefaultTagHelperCreateIntermediateNode n:
+                    WriteContentNode(n, n.Type);
+                    break;
+                case DefaultTagHelperExecuteIntermediateNode n:
+                    WriteBasicNode(n);
+                    break;
+                case DefaultTagHelperHtmlAttributeIntermediateNode n:
+                    WriteContentNode(n, n.AttributeName, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
+                    break;
+                case DefaultTagHelperPropertyIntermediateNode n:
+                    WriteContentNode(n, n.AttributeName, n.BoundAttribute.DisplayName, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
+                    break;
+                case DefaultTagHelperRuntimeIntermediateNode n:
+                    WriteBasicNode(n);
                     break;
                 default:
                     base.VisitExtension(node);

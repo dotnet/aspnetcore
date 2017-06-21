@@ -7,21 +7,15 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    internal sealed class DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode : ExtensionIntermediateNode
+    public sealed class DefaultTagHelperCreateIntermediateNode : ExtensionIntermediateNode
     {
-        public override RazorDiagnosticCollection Diagnostics { get; } = ReadOnlyDiagnosticCollection.Instance;
-        
-        public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
+        public override IntermediateNodeCollection Children { get; } = ReadOnlyIntermediateNodeCollection.Instance;
 
-        public override bool HasDiagnostics => false;
+        public string Field { get; set; }
 
-        public string VariableName { get; set; }
+        public TagHelperDescriptor TagHelper { get; set; }
 
-        public string Name { get; set; }
-
-        public string Value { get; set; }
-
-        public AttributeStructure AttributeStructure { get; set; }
+        public string Type { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {
@@ -30,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode>(this, visitor);
+            AcceptExtensionNode<DefaultTagHelperCreateIntermediateNode>(this, visitor);
         }
 
         public override void WriteNode(CodeTarget target, CodeRenderingContext context)
@@ -45,14 +39,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var extension = target.GetExtension<IPreallocatedAttributeTargetExtension>();
+            var extension = target.GetExtension<IDefaultTagHelperTargetExtension>();
             if (extension == null)
             {
-                ReportMissingCodeTargetExtension<IPreallocatedAttributeTargetExtension>(context);
+                ReportMissingCodeTargetExtension<IDefaultTagHelperTargetExtension>(context);
                 return;
             }
 
-            extension.WriteDeclarePreallocatedTagHelperHtmlAttribute(context, this);
+            extension.WriteTagHelperCreate(context, this);
         }
     }
 }

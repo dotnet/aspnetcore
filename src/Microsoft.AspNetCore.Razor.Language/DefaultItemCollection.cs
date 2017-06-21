@@ -44,6 +44,16 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override bool IsReadOnly => false;
 
+        public override void Add(object key, object value)
+        {
+            if (key == null)
+            {
+                throw new ArgumentNullException(nameof(key));
+            }
+
+            _items.Add(key, value);
+        }
+
         public override void Add(KeyValuePair<object, object> item)
         {
             if (item.Key == null)

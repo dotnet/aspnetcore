@@ -19,6 +19,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 #line hidden
     public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages_cshtml : global::Microsoft.AspNetCore.Mvc.RazorPages.Page
     {
+        private global::DivTagHelper __DivTagHelper;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
@@ -32,7 +33,6 @@ global::System.Object __typeHelper = "*, AppCode";
         }
         #pragma warning restore 219
         private static System.Object __o = null;
-        private global::DivTagHelper __DivTagHelper = null;
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {

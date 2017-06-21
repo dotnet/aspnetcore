@@ -144,33 +144,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void Execute_AddsTagHelperFieldsToClass()
-        {
-            // Arrange
-            var documentNode = new DocumentIntermediateNode()
-            {
-                Options = RazorCodeGenerationOptions.CreateDefault(),
-            };
-
-            var builder = IntermediateNodeBuilder.Create(documentNode);
-            builder.Add(new DeclareTagHelperFieldsIntermediateNode());
-
-            var pass = new TestDocumentClassifierPass();
-            pass.Engine = RazorEngine.CreateEmpty(b => { });
-
-            // Act
-            pass.Execute(TestRazorCodeDocument.CreateEmpty(), documentNode);
-
-            // Assert
-            var @namespace = SingleChild<NamespaceDeclarationIntermediateNode>(documentNode);
-            var @class = SingleChild<ClassDeclarationIntermediateNode>(@namespace);
-            Children(
-                @class,
-                n => Assert.IsType<DeclareTagHelperFieldsIntermediateNode>(n),
-                n => Assert.IsType<MethodDeclarationIntermediateNode>(n));
-        }
-
-        [Fact]
         public void Execute_AddsTheRestToMethod()
         {
             // Arrange

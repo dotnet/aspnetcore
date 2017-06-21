@@ -582,15 +582,15 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return new CSharpCodeWritingScope(this);
         }
 
-        public IDisposable BuildLinePragma(SourceSpan documentLocation)
+        public IDisposable BuildLinePragma(SourceSpan? span)
         {
-            if (string.IsNullOrEmpty(documentLocation.FilePath))
+            if (string.IsNullOrEmpty(span?.FilePath))
             {
                 // Can't build a valid line pragma without a file path.
                 return NullDisposable.Default;
             }
 
-            return new LinePragmaWriter(this, documentLocation);
+            return new LinePragmaWriter(this, span.Value);
         }
 
         private void WriteVerbatimStringLiteral(string literal)

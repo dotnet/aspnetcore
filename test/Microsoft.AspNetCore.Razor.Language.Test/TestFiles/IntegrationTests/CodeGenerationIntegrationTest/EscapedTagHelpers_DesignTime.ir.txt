@@ -1,11 +1,13 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_EscapedTagHelpers_DesignTime -  - 
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::TestNamespace.InputTagHelper - __TestNamespace_InputTagHelper
+            FieldDeclaration -  - private - global::TestNamespace.InputTagHelper2 - __TestNamespace_InputTagHelper2
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [15] EscapedTagHelpers.cshtml) - *, TestAssembly
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            DeclareTagHelperFields -  - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (29:0,29 [5] EscapedTagHelpers.cshtml)
                     IntermediateToken - (29:0,29 [4] EscapedTagHelpers.cshtml) - Html - \n\n
@@ -40,17 +42,18 @@ Document -
                     IntermediateToken - (186:5,33 [3] EscapedTagHelpers.cshtml) - Html - em>
                     IntermediateToken - (189:5,36 [1] EscapedTagHelpers.cshtml) - Html -  
                 TagHelper - (190:5,37 [45] EscapedTagHelpers.cshtml) - input - TagMode.SelfClosing
-                    TagHelperBody - 
-                    CreateTagHelper -  - TestNamespace.InputTagHelper
-                    CreateTagHelper -  - TestNamespace.InputTagHelper2
-                    SetTagHelperProperty - (203:5,50 [13] EscapedTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperBody - 
+                    DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
+                    DefaultTagHelperCreate -  - TestNamespace.InputTagHelper2
+                    DefaultTagHelperProperty - (203:5,50 [13] EscapedTagHelpers.cshtml) - type - string TestNamespace.InputTagHelper.Type - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (204:5,51 [12] EscapedTagHelpers.cshtml)
                             IntermediateToken - (204:5,51 [12] EscapedTagHelpers.cshtml) - CSharp - DateTime.Now
-                    SetTagHelperProperty - (203:5,50 [13] EscapedTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperProperty - (203:5,50 [13] EscapedTagHelpers.cshtml) - type - string TestNamespace.InputTagHelper2.Type - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (204:5,51 [12] EscapedTagHelpers.cshtml)
                             IntermediateToken - (204:5,51 [12] EscapedTagHelpers.cshtml) - CSharp - DateTime.Now
-                    SetTagHelperProperty - (227:5,74 [4] EscapedTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                    DefaultTagHelperProperty - (227:5,74 [4] EscapedTagHelpers.cshtml) - checked - bool TestNamespace.InputTagHelper2.Checked - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (227:5,74 [4] EscapedTagHelpers.cshtml) - CSharp - true
+                    DefaultTagHelperExecute - 
                 HtmlContent - (235:5,82 [8] EscapedTagHelpers.cshtml)
                     IntermediateToken - (235:5,82 [6] EscapedTagHelpers.cshtml) - Html - \n    
                     IntermediateToken - (241:6,4 [2] EscapedTagHelpers.cshtml) - Html - </

@@ -24,6 +24,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             AssemblyName = assemblyName;
 
             _metadata = new Dictionary<string, string>(StringComparer.Ordinal);
+
+            // Tells code generation that these tag helpers are compatible with ITagHelper.
+            // For now that's all we support.
+            _metadata.Add(TagHelperMetadata.Runtime.Name, TagHelperConventions.DefaultKind);
         }
 
         public override string Name { get; }

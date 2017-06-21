@@ -1,27 +1,32 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_AttributeTargetingTagHelpers_DesignTime -  - 
+            DefaultTagHelperRuntime - 
+            FieldDeclaration -  - private - global::TestNamespace.PTagHelper - __TestNamespace_PTagHelper
+            FieldDeclaration -  - private - global::TestNamespace.CatchAllTagHelper - __TestNamespace_CatchAllTagHelper
+            FieldDeclaration -  - private - global::TestNamespace.InputTagHelper - __TestNamespace_InputTagHelper
+            FieldDeclaration -  - private - global::TestNamespace.InputTagHelper2 - __TestNamespace_InputTagHelper2
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [15] AttributeTargetingTagHelpers.cshtml) - *, TestAssembly
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
-            DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.CatchAllTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (29:0,29 [4] AttributeTargetingTagHelpers.cshtml)
                     IntermediateToken - (29:0,29 [4] AttributeTargetingTagHelpers.cshtml) - Html - \n\n
                 TagHelper - (33:2,0 [228] AttributeTargetingTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
-                    TagHelperBody - 
+                    DefaultTagHelperBody - 
                         HtmlContent - (48:2,15 [9] AttributeTargetingTagHelpers.cshtml)
                             IntermediateToken - (48:2,15 [6] AttributeTargetingTagHelpers.cshtml) - Html - \n    
                             IntermediateToken - (54:3,4 [3] AttributeTargetingTagHelpers.cshtml) - Html - <p>
                         TagHelper - (57:3,7 [36] AttributeTargetingTagHelpers.cshtml) - strong - TagMode.StartTagAndEndTag
-                            TagHelperBody - 
+                            DefaultTagHelperBody - 
                                 HtmlContent - (79:3,29 [5] AttributeTargetingTagHelpers.cshtml)
                                     IntermediateToken - (79:3,29 [5] AttributeTargetingTagHelpers.cshtml) - Html - Hello
-                            CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                            AddTagHelperHtmlAttribute -  - catchAll - AttributeStructure.DoubleQuotes
+                            DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                            DefaultTagHelperHtmlAttribute -  - catchAll - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (75:3,25 [2] AttributeTargetingTagHelpers.cshtml)
                                     IntermediateToken - (75:3,25 [2] AttributeTargetingTagHelpers.cshtml) - Html - hi
+                            DefaultTagHelperExecute - 
                         HtmlContent - (93:3,43 [62] AttributeTargetingTagHelpers.cshtml)
                             IntermediateToken - (93:3,43 [8] AttributeTargetingTagHelpers.cshtml) - Html - <strong>
                             IntermediateToken - (101:3,51 [5] AttributeTargetingTagHelpers.cshtml) - Html - World
@@ -33,38 +38,41 @@ Document -
                             IntermediateToken - (146:4,25 [3] AttributeTargetingTagHelpers.cshtml) - Html -  />
                             IntermediateToken - (149:4,28 [6] AttributeTargetingTagHelpers.cshtml) - Html - \n    
                         TagHelper - (155:5,4 [40] AttributeTargetingTagHelpers.cshtml) - input - TagMode.SelfClosing
-                            TagHelperBody - 
-                            CreateTagHelper -  - TestNamespace.InputTagHelper
-                            CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            SetTagHelperProperty - (168:5,17 [8] AttributeTargetingTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper2
+                            DefaultTagHelperProperty - (168:5,17 [8] AttributeTargetingTagHelpers.cshtml) - type - string TestNamespace.InputTagHelper.Type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (168:5,17 [8] AttributeTargetingTagHelpers.cshtml)
                                     IntermediateToken - (168:5,17 [8] AttributeTargetingTagHelpers.cshtml) - Html - checkbox
-                            SetTagHelperProperty - (168:5,17 [8] AttributeTargetingTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperProperty - (168:5,17 [8] AttributeTargetingTagHelpers.cshtml) - type - string TestNamespace.InputTagHelper2.Type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (168:5,17 [8] AttributeTargetingTagHelpers.cshtml)
                                     IntermediateToken - (168:5,17 [8] AttributeTargetingTagHelpers.cshtml) - Html - checkbox
-                            SetTagHelperProperty - (187:5,36 [4] AttributeTargetingTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperProperty - (187:5,36 [4] AttributeTargetingTagHelpers.cshtml) - checked - bool TestNamespace.InputTagHelper2.Checked - HtmlAttributeValueStyle.DoubleQuotes
                                 IntermediateToken - (187:5,36 [4] AttributeTargetingTagHelpers.cshtml) - CSharp - true
+                            DefaultTagHelperExecute - 
                         HtmlContent - (195:5,44 [6] AttributeTargetingTagHelpers.cshtml)
                             IntermediateToken - (195:5,44 [6] AttributeTargetingTagHelpers.cshtml) - Html - \n    
                         TagHelper - (201:6,4 [54] AttributeTargetingTagHelpers.cshtml) - input - TagMode.SelfClosing
-                            TagHelperBody - 
-                            CreateTagHelper -  - TestNamespace.InputTagHelper
-                            CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                            SetTagHelperProperty - (214:6,17 [8] AttributeTargetingTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper
+                            DefaultTagHelperCreate -  - TestNamespace.InputTagHelper2
+                            DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
+                            DefaultTagHelperProperty - (214:6,17 [8] AttributeTargetingTagHelpers.cshtml) - type - string TestNamespace.InputTagHelper.Type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (214:6,17 [8] AttributeTargetingTagHelpers.cshtml)
                                     IntermediateToken - (214:6,17 [8] AttributeTargetingTagHelpers.cshtml) - Html - checkbox
-                            SetTagHelperProperty - (214:6,17 [8] AttributeTargetingTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperProperty - (214:6,17 [8] AttributeTargetingTagHelpers.cshtml) - type - string TestNamespace.InputTagHelper2.Type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (214:6,17 [8] AttributeTargetingTagHelpers.cshtml)
                                     IntermediateToken - (214:6,17 [8] AttributeTargetingTagHelpers.cshtml) - Html - checkbox
-                            SetTagHelperProperty - (233:6,36 [4] AttributeTargetingTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
+                            DefaultTagHelperProperty - (233:6,36 [4] AttributeTargetingTagHelpers.cshtml) - checked - bool TestNamespace.InputTagHelper2.Checked - HtmlAttributeValueStyle.DoubleQuotes
                                 IntermediateToken - (233:6,36 [4] AttributeTargetingTagHelpers.cshtml) - CSharp - true
-                            AddTagHelperHtmlAttribute -  - catchAll - AttributeStructure.DoubleQuotes
+                            DefaultTagHelperHtmlAttribute -  - catchAll - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (249:6,52 [2] AttributeTargetingTagHelpers.cshtml)
                                     IntermediateToken - (249:6,52 [2] AttributeTargetingTagHelpers.cshtml) - Html - hi
+                            DefaultTagHelperExecute - 
                         HtmlContent - (255:6,58 [2] AttributeTargetingTagHelpers.cshtml)
                             IntermediateToken - (255:6,58 [2] AttributeTargetingTagHelpers.cshtml) - Html - \n
-                    CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
+                    DefaultTagHelperCreate -  - TestNamespace.PTagHelper
+                    DefaultTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (43:2,10 [3] AttributeTargetingTagHelpers.cshtml)
                             IntermediateToken - (43:2,10 [3] AttributeTargetingTagHelpers.cshtml) - Html - btn
+                    DefaultTagHelperExecute - 
