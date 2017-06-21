@@ -1,11 +1,11 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_BasicTagHelpers_Runtime -  - 
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - data - -delay1000 - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - data - -delay1000 - AttributeStructure.DoubleQuotes
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.DoubleQuotes
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_2 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - class - Hello World - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_4 - data-delay - 1000 - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - class - Hello World - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_4 - data-delay - 1000 - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [71] BasicTagHelpers.cshtml)
@@ -31,7 +31,7 @@ Document -
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            AddTagHelperHtmlAttribute -  - data-interval - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - data-interval - AttributeStructure.DoubleQuotes
                                 HtmlContent - (212:5,30 [7] BasicTagHelpers.cshtml)
                                     IntermediateToken - (212:5,30 [7] BasicTagHelpers.cshtml) - Html - 2000 + 
                                 CSharpExpression - (220:5,38 [23] BasicTagHelpers.cshtml)

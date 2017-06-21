@@ -2,8 +2,8 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NestedScriptTagTagHelpers_Runtime -  - 
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - type - text - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - class - Hello World - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - data-delay - 1000 - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - class - Hello World - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - data-delay - 1000 - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [106] NestedScriptTagTagHelpers.cshtml)
@@ -38,7 +38,7 @@ Document -
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            AddTagHelperHtmlAttribute -  - data-interval - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - data-interval - AttributeStructure.DoubleQuotes
                                 HtmlContent - (331:7,42 [7] NestedScriptTagTagHelpers.cshtml)
                                     IntermediateToken - (331:7,42 [7] NestedScriptTagTagHelpers.cshtml) - Html - 2000 + 
                                 CSharpExpression - (339:7,50 [23] NestedScriptTagTagHelpers.cshtml)

@@ -23,7 +23,7 @@ Document -
                             SetTagHelperProperty - (84:3,17 [6] DuplicateAttributeTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (84:3,17 [6] DuplicateAttributeTagHelpers.cshtml)
                                     IntermediateToken - (84:3,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
-                            AddTagHelperHtmlAttribute -  - TYPE - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - TYPE - AttributeStructure.DoubleQuotes
                                 HtmlContent - (98:3,31 [8] DuplicateAttributeTagHelpers.cshtml)
                                     IntermediateToken - (98:3,31 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
                         HtmlContent - (110:3,43 [6] DuplicateAttributeTagHelpers.cshtml)
@@ -40,10 +40,10 @@ Document -
                                     IntermediateToken - (129:4,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
                             SetTagHelperProperty - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
                                 IntermediateToken - (146:4,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
-                            AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - type - AttributeStructure.DoubleQuotes
                                 HtmlContent - (158:4,46 [8] DuplicateAttributeTagHelpers.cshtml)
                                     IntermediateToken - (158:4,46 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
-                            AddTagHelperHtmlAttribute -  - checked - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - checked - AttributeStructure.DoubleQuotes
                                 HtmlContent - (177:4,65 [5] DuplicateAttributeTagHelpers.cshtml)
                                     IntermediateToken - (177:4,65 [5] DuplicateAttributeTagHelpers.cshtml) - Html - false
                         HtmlContent - (186:4,74 [6] DuplicateAttributeTagHelpers.cshtml)
@@ -60,16 +60,16 @@ Document -
                                     IntermediateToken - (205:5,17 [6] DuplicateAttributeTagHelpers.cshtml) - Html - button
                             SetTagHelperProperty - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
                                 IntermediateToken - (222:5,34 [4] DuplicateAttributeTagHelpers.cshtml) - CSharp - true
-                            AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - type - AttributeStructure.DoubleQuotes
                                 HtmlContent - (233:5,45 [8] DuplicateAttributeTagHelpers.cshtml)
                                     IntermediateToken - (233:5,45 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
-                            AddTagHelperHtmlAttribute -  - checked - HtmlAttributeValueStyle.SingleQuotes
+                            AddTagHelperHtmlAttribute -  - checked - AttributeStructure.SingleQuotes
                                 HtmlContent - (251:5,63 [4] DuplicateAttributeTagHelpers.cshtml)
                                     IntermediateToken - (251:5,63 [4] DuplicateAttributeTagHelpers.cshtml) - Html - true
-                            AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - type - AttributeStructure.DoubleQuotes
                                 HtmlContent - (263:5,75 [8] DuplicateAttributeTagHelpers.cshtml)
                                     IntermediateToken - (263:5,75 [8] DuplicateAttributeTagHelpers.cshtml) - Html - checkbox
-                            AddTagHelperHtmlAttribute -  - checked - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - checked - AttributeStructure.DoubleQuotes
                                 HtmlContent - (281:5,93 [4] DuplicateAttributeTagHelpers.cshtml)
                                     IntermediateToken - (281:5,93 [4] DuplicateAttributeTagHelpers.cshtml) - Html - true
                         HtmlContent - (288:5,100 [2] DuplicateAttributeTagHelpers.cshtml)
@@ -77,9 +77,9 @@ Document -
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     SetTagHelperProperty - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (43:2,8 [1] DuplicateAttributeTagHelpers.cshtml) - CSharp - 3
-                    AddTagHelperHtmlAttribute -  - AGE - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - AGE - AttributeStructure.DoubleQuotes
                         HtmlContent - (51:2,16 [2] DuplicateAttributeTagHelpers.cshtml)
                             IntermediateToken - (51:2,16 [2] DuplicateAttributeTagHelpers.cshtml) - Html - 40
-                    AddTagHelperHtmlAttribute -  - Age - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - Age - AttributeStructure.DoubleQuotes
                         HtmlContent - (60:2,25 [3] DuplicateAttributeTagHelpers.cshtml)
                             IntermediateToken - (60:2,25 [3] DuplicateAttributeTagHelpers.cshtml) - Html - 500

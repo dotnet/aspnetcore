@@ -35,7 +35,7 @@ Document -
                                 IntermediateToken - (155:8,49 [1] TagHelpersInSection.cshtml) - Html -  
                             CSharpExpression - (157:8,51 [12] TagHelpersInSection.cshtml)
                                 IntermediateToken - (157:8,51 [12] TagHelpersInSection.cshtml) - CSharp - DateTime.Now
-                        AddTagHelperHtmlAttribute -  - unboundproperty - HtmlAttributeValueStyle.DoubleQuotes
+                        AddTagHelperHtmlAttribute -  - unboundproperty - AttributeStructure.DoubleQuotes
                             HtmlAttributeValue - (188:8,82 [7] TagHelpersInSection.cshtml) - 
                                 IntermediateToken - (188:8,82 [7] TagHelpersInSection.cshtml) - Html - Current
                             HtmlAttributeValue - (195:8,89 [6] TagHelpersInSection.cshtml) -  

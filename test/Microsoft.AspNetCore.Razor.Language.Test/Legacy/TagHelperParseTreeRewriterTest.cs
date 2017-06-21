@@ -708,7 +708,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new MarkupTagHelperBlock("strong",
                     new List<TagHelperAttributeNode>
                     {
-                        new TagHelperAttributeNode("required", null, HtmlAttributeValueStyle.Minimized)
+                        new TagHelperAttributeNode("required", null, AttributeStructure.Minimized)
                     },
                     blockFactory.MarkupTagBlock("<strong>"),
                     blockFactory.MarkupTagBlock("</strong>")));

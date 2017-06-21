@@ -2,8 +2,8 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_NestedTagHelpers_Runtime -  - 
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - AttributeStructure.SingleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - SpanTagHelper - DivTagHelper - InputTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 TagHelper - (31:1,0 [26] NestedTagHelpers.cshtml) - span - TagMode.StartTagAndEndTag
@@ -11,7 +11,7 @@ Document -
                         HtmlContent - (46:1,15 [4] NestedTagHelpers.cshtml)
                             IntermediateToken - (46:1,15 [4] NestedTagHelpers.cshtml) - Html - Hola
                     CreateTagHelper -  - SpanTagHelper
-                    AddTagHelperHtmlAttribute -  - someattr - HtmlAttributeValueStyle.Minimized
+                    AddTagHelperHtmlAttribute -  - someattr - AttributeStructure.Minimized
                 HtmlContent - (57:1,26 [2] NestedTagHelpers.cshtml)
                     IntermediateToken - (57:1,26 [2] NestedTagHelpers.cshtml) - Html - \n
                 TagHelper - (59:2,0 [66] NestedTagHelpers.cshtml) - div - TagMode.StartTagAndEndTag

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 Name = "Foo",
                 Value = "Bar",
-                ValueStyle = HtmlAttributeValueStyle.DoubleQuotes,
+                AttributeStructure = AttributeStructure.DoubleQuotes,
                 VariableName = "MyProp"
             };
 
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 Name = "Foo",
                 Value = "Bar",
-                ValueStyle = HtmlAttributeValueStyle.Minimized,
+                AttributeStructure = AttributeStructure.Minimized,
                 VariableName = "_tagHelper1"
             };
 
@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 Name = "Foo",
                 Value = "Bar",
-                ValueStyle = HtmlAttributeValueStyle.DoubleQuotes,
+                AttributeStructure = AttributeStructure.DoubleQuotes,
                 VariableName = "_tagHelper1",
             };
 

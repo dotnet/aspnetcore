@@ -20,7 +20,7 @@ Document -
                     SetTagHelperProperty - (85:3,22 [6] TagHelpersWithPrefix.cshtml) - bound - BoundProp - HtmlAttributeValueStyle.DoubleQuotes
                         CSharpExpression - (86:3,23 [5] TagHelpersWithPrefix.cshtml)
                             IntermediateToken - (86:3,23 [5] TagHelpersWithPrefix.cshtml) - CSharp - Hello
-                    AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes
+                    AddTagHelperHtmlAttribute -  - type - AttributeStructure.SingleQuotes
                         HtmlContent - (98:3,35 [4] TagHelpersWithPrefix.cshtml)
                             IntermediateToken - (98:3,35 [4] TagHelpersWithPrefix.cshtml) - Html - text
                 HtmlContent - (106:3,43 [9] TagHelpersWithPrefix.cshtml)

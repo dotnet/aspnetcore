@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIntermediateNode node)
         {
-            var attributeValueStyleParameter = $"{HtmlAttributeValueStyleTypeName}.{node.ValueStyle}";
+            var attributeValueStyleParameter = $"{HtmlAttributeValueStyleTypeName}.{node.AttributeStructure}";
             var isConditionalAttributeValue = node.Children.Any(
                 child => child is CSharpExpressionAttributeValueIntermediateNode || child is CSharpCodeAttributeValueIntermediateNode);
 
@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .WriteParameterSeparator()
                 .Write(propertyValueAccessor)
                 .WriteParameterSeparator()
-                .Write($"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.ValueStyle}")
+                .Write($"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.AttributeStructure}")
                 .WriteEndMethodInvocation();
         }
 

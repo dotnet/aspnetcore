@@ -5,16 +5,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class TagHelperAttributeNode
     {
-        public TagHelperAttributeNode(string name, SyntaxTreeNode value, HtmlAttributeValueStyle valueStyle)
+        public TagHelperAttributeNode(string name, SyntaxTreeNode value, AttributeStructure attributeStructure)
         {
             Name = name;
             Value = value;
-            ValueStyle = valueStyle;
+            AttributeStructure = attributeStructure;
         }
 
         // Internal for testing
         internal TagHelperAttributeNode(string name, SyntaxTreeNode value)
-            : this(name, value, HtmlAttributeValueStyle.DoubleQuotes)
+            : this(name, value, AttributeStructure.DoubleQuotes)
         {
         }
 
@@ -22,6 +22,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public SyntaxTreeNode Value { get; }
 
-        public HtmlAttributeValueStyle ValueStyle { get; }
+        public AttributeStructure AttributeStructure { get; }
     }
 }

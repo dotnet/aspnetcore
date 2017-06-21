@@ -2,8 +2,8 @@ Document -
     NamespaceDeclaration -  - Razor
         ClassDeclaration -  - public - Template -  - 
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - AttributeStructure.SingleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - unbound - foo - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - PTagHelper - FormTagHelper - InputTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 TagHelper - (31:1,0 [20] NestedTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
@@ -11,7 +11,7 @@ Document -
                         HtmlContent - (43:1,12 [4] NestedTagHelpers.cshtml)
                             IntermediateToken - (43:1,12 [4] NestedTagHelpers.cshtml) - Html - Hola
                     CreateTagHelper -  - PTagHelper
-                    AddTagHelperHtmlAttribute -  - someattr - HtmlAttributeValueStyle.Minimized
+                    AddTagHelperHtmlAttribute -  - someattr - AttributeStructure.Minimized
                 HtmlContent - (51:1,20 [2] NestedTagHelpers.cshtml)
                     IntermediateToken - (51:1,20 [2] NestedTagHelpers.cshtml) - Html - \n
                 TagHelper - (53:2,0 [68] NestedTagHelpers.cshtml) - form - TagMode.StartTagAndEndTag

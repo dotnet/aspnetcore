@@ -23,7 +23,7 @@ Document -
                         TagHelper - (155:4,8 [25] BasicTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.PTagHelper
-                            AddTagHelperHtmlAttribute -  - data - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - data - AttributeStructure.DoubleQuotes
                                 HtmlContent - (164:4,17 [10] BasicTagHelpers.cshtml)
                                     IntermediateToken - (164:4,17 [10] BasicTagHelpers.cshtml) - Html - -delay1000
                         HtmlContent - (180:4,33 [10] BasicTagHelpers.cshtml)
@@ -32,7 +32,7 @@ Document -
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            AddTagHelperHtmlAttribute -  - data-interval - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - data-interval - AttributeStructure.DoubleQuotes
                                 HtmlContent - (212:5,30 [7] BasicTagHelpers.cshtml)
                                     IntermediateToken - (212:5,30 [7] BasicTagHelpers.cshtml) - Html - 2000 + 
                                 CSharpExpression - (220:5,38 [23] BasicTagHelpers.cshtml)
@@ -62,10 +62,10 @@ Document -
                         HtmlContent - (310:6,47 [6] BasicTagHelpers.cshtml)
                             IntermediateToken - (310:6,47 [6] BasicTagHelpers.cshtml) - Html - \n    
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (114:3,14 [11] BasicTagHelpers.cshtml)
                             IntermediateToken - (114:3,14 [11] BasicTagHelpers.cshtml) - Html - Hello World
-                    AddTagHelperHtmlAttribute -  - data-delay - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - data-delay - AttributeStructure.DoubleQuotes
                         HtmlContent - (139:3,39 [4] BasicTagHelpers.cshtml)
                             IntermediateToken - (139:3,39 [4] BasicTagHelpers.cshtml) - Html - 1000
                 HtmlContent - (320:7,8 [8] BasicTagHelpers.cshtml)

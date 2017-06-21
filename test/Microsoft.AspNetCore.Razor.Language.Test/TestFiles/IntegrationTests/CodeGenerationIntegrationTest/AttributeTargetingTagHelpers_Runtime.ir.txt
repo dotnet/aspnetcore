@@ -1,9 +1,9 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_AttributeTargetingTagHelpers_Runtime -  - 
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - catchAll - hi - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - catchAll - hi - AttributeStructure.DoubleQuotes
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_1 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - class - btn - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - class - btn - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.CatchAllTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [2] AttributeTargetingTagHelpers.cshtml)

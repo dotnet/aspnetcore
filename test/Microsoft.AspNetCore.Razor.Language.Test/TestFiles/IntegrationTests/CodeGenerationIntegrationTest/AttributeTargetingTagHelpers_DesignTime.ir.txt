@@ -19,7 +19,7 @@ Document -
                                 HtmlContent - (79:3,29 [5] AttributeTargetingTagHelpers.cshtml)
                                     IntermediateToken - (79:3,29 [5] AttributeTargetingTagHelpers.cshtml) - Html - Hello
                             CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                            AddTagHelperHtmlAttribute -  - catchAll - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - catchAll - AttributeStructure.DoubleQuotes
                                 HtmlContent - (75:3,25 [2] AttributeTargetingTagHelpers.cshtml)
                                     IntermediateToken - (75:3,25 [2] AttributeTargetingTagHelpers.cshtml) - Html - hi
                         HtmlContent - (93:3,43 [62] AttributeTargetingTagHelpers.cshtml)
@@ -59,12 +59,12 @@ Document -
                                     IntermediateToken - (214:6,17 [8] AttributeTargetingTagHelpers.cshtml) - Html - checkbox
                             SetTagHelperProperty - (233:6,36 [4] AttributeTargetingTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
                                 IntermediateToken - (233:6,36 [4] AttributeTargetingTagHelpers.cshtml) - CSharp - true
-                            AddTagHelperHtmlAttribute -  - catchAll - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - catchAll - AttributeStructure.DoubleQuotes
                                 HtmlContent - (249:6,52 [2] AttributeTargetingTagHelpers.cshtml)
                                     IntermediateToken - (249:6,52 [2] AttributeTargetingTagHelpers.cshtml) - Html - hi
                         HtmlContent - (255:6,58 [2] AttributeTargetingTagHelpers.cshtml)
                             IntermediateToken - (255:6,58 [2] AttributeTargetingTagHelpers.cshtml) - Html - \n
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (43:2,10 [3] AttributeTargetingTagHelpers.cshtml)
                             IntermediateToken - (43:2,10 [3] AttributeTargetingTagHelpers.cshtml) - Html - btn

@@ -36,7 +36,7 @@ Document -
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            AddTagHelperHtmlAttribute -  - data-interval - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - data-interval - AttributeStructure.DoubleQuotes
                                 HtmlContent - (331:7,42 [7] NestedScriptTagTagHelpers.cshtml)
                                     IntermediateToken - (331:7,42 [7] NestedScriptTagTagHelpers.cshtml) - Html - 2000 + 
                                 CSharpExpression - (339:7,50 [23] NestedScriptTagTagHelpers.cshtml)
@@ -65,10 +65,10 @@ Document -
                             IntermediateToken - (549:12,12 [9] NestedScriptTagTagHelpers.cshtml) - Html - </script>
                             IntermediateToken - (558:12,21 [10] NestedScriptTagTagHelpers.cshtml) - Html - \n        
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (149:4,18 [11] NestedScriptTagTagHelpers.cshtml)
                             IntermediateToken - (149:4,18 [11] NestedScriptTagTagHelpers.cshtml) - Html - Hello World
-                    AddTagHelperHtmlAttribute -  - data-delay - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - data-delay - AttributeStructure.DoubleQuotes
                         HtmlContent - (174:4,43 [4] NestedScriptTagTagHelpers.cshtml)
                             IntermediateToken - (174:4,43 [4] NestedScriptTagTagHelpers.cshtml) - Html - 1000
                 HtmlContent - (572:13,12 [23] NestedScriptTagTagHelpers.cshtml)

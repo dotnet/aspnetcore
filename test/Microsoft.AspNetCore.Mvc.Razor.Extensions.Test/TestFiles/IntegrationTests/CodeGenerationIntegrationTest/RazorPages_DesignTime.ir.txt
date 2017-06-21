@@ -52,7 +52,7 @@ Document -
                 TagHelper - (551:26,4 [31] RazorPages.cshtml) - div - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                     CreateTagHelper -  - DivTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (563:26,16 [11] RazorPages.cshtml)
                             IntermediateToken - (563:26,16 [11] RazorPages.cshtml) - Html - text-danger
                 HtmlContent - (582:26,35 [6] RazorPages.cshtml)
@@ -83,13 +83,13 @@ Document -
                                     IntermediateToken - (796:31,38 [7] RazorPages.cshtml) - Html - </span>
                                     IntermediateToken - (803:31,45 [10] RazorPages.cshtml) - Html - \n        
                             CreateTagHelper -  - DivTagHelper
-                            AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                                 HtmlContent - (701:29,20 [9] RazorPages.cshtml)
                                     IntermediateToken - (701:29,20 [9] RazorPages.cshtml) - Html - col-md-10
                         HtmlContent - (819:32,14 [6] RazorPages.cshtml)
                             IntermediateToken - (819:32,14 [6] RazorPages.cshtml) - Html - \n    
                     CreateTagHelper -  - DivTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (600:27,16 [10] RazorPages.cshtml)
                             IntermediateToken - (600:27,16 [10] RazorPages.cshtml) - Html - form-group
                 HtmlContent - (831:33,10 [6] RazorPages.cshtml)
@@ -110,13 +110,13 @@ Document -
                                     IntermediateToken - (974:36,62 [9] RazorPages.cshtml) - Html - </button>
                                     IntermediateToken - (983:36,71 [10] RazorPages.cshtml) - Html - \n        
                             CreateTagHelper -  - DivTagHelper
-                            AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                                 HtmlContent - (883:35,20 [25] RazorPages.cshtml)
                                     IntermediateToken - (883:35,20 [25] RazorPages.cshtml) - Html - col-md-offset-2 col-md-10
                         HtmlContent - (999:37,14 [6] RazorPages.cshtml)
                             IntermediateToken - (999:37,14 [6] RazorPages.cshtml) - Html - \n    
                     CreateTagHelper -  - DivTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (849:34,16 [10] RazorPages.cshtml)
                             IntermediateToken - (849:34,16 [10] RazorPages.cshtml) - Html - form-group
                 HtmlContent - (1011:38,10 [11] RazorPages.cshtml)

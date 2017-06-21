@@ -23,7 +23,7 @@ Document -
                             IntermediateToken - (56:3,16 [0] EmptyAttributeTagHelpers.cshtml) - Html - 
                     SetTagHelperProperty - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (66:3,26 [0] EmptyAttributeTagHelpers.cshtml) - CSharp - 
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (74:3,34 [0] EmptyAttributeTagHelpers.cshtml)
                             IntermediateToken - (74:3,34 [0] EmptyAttributeTagHelpers.cshtml) - Html - 
                 HtmlContent - (78:3,38 [6] EmptyAttributeTagHelpers.cshtml)
@@ -44,7 +44,7 @@ Document -
                                     IntermediateToken - (117:5,21 [0] EmptyAttributeTagHelpers.cshtml) - Html - 
                             SetTagHelperProperty - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
                                 IntermediateToken - (126:5,30 [0] EmptyAttributeTagHelpers.cshtml) - CSharp - 
-                            AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                                 HtmlContent - (134:5,38 [0] EmptyAttributeTagHelpers.cshtml)
                                     IntermediateToken - (134:5,38 [0] EmptyAttributeTagHelpers.cshtml) - Html - 
                         HtmlContent - (138:5,42 [6] EmptyAttributeTagHelpers.cshtml)

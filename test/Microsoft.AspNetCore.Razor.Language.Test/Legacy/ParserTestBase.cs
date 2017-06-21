@@ -381,16 +381,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 collector.AddMessage("{0} - PASSED :: Attribute names match", expected.Name);
             }
 
-            if (actual.ValueStyle != expected.ValueStyle)
+            if (actual.AttributeStructure != expected.AttributeStructure)
             {
-                collector.AddError("{0} - FAILED :: Attribute value styles do not match", expected.ValueStyle.ToString());
+                collector.AddError("{0} - FAILED :: Attribute value styles do not match", expected.AttributeStructure.ToString());
             }
             else
             {
-                collector.AddMessage("{0} - PASSED :: Attribute value style match", expected.ValueStyle);
+                collector.AddMessage("{0} - PASSED :: Attribute value style match", expected.AttributeStructure);
             }
 
-            if (actual.ValueStyle != HtmlAttributeValueStyle.Minimized)
+            if (actual.AttributeStructure != AttributeStructure.Minimized)
             {
                 EvaluateSyntaxTreeNode(collector, actual.Value, expected.Value);
             }

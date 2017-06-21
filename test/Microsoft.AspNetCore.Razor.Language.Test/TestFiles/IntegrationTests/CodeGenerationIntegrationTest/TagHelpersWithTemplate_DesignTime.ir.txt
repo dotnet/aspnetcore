@@ -29,14 +29,14 @@ Document -
                                     TagHelper - (436:15,49 [40] TagHelpersWithTemplate.cshtml) - input - TagMode.SelfClosing
                                         TagHelperBody - 
                                         CreateTagHelper -  - InputTagHelper
-                                        AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
+                                        AddTagHelperHtmlAttribute -  - type - AttributeStructure.DoubleQuotes
                                             HtmlContent - (449:15,62 [8] TagHelpersWithTemplate.cshtml)
                                                 IntermediateToken - (449:15,62 [8] TagHelpersWithTemplate.cshtml) - Html - checkbox
-                                        AddTagHelperHtmlAttribute -  - checked - HtmlAttributeValueStyle.DoubleQuotes
+                                        AddTagHelperHtmlAttribute -  - checked - AttributeStructure.DoubleQuotes
                                             HtmlContent - (468:15,81 [4] TagHelpersWithTemplate.cshtml)
                                                 IntermediateToken - (468:15,81 [4] TagHelpersWithTemplate.cshtml) - Html - true
                                 CreateTagHelper -  - DivTagHelper
-                                AddTagHelperHtmlAttribute -  - condition - HtmlAttributeValueStyle.DoubleQuotes
+                                AddTagHelperHtmlAttribute -  - condition - AttributeStructure.DoubleQuotes
                                     HtmlContent - (416:15,29 [4] TagHelpersWithTemplate.cshtml)
                                         IntermediateToken - (416:15,29 [4] TagHelpersWithTemplate.cshtml) - Html - true
                         CSharpCode - (482:15,95 [8] TagHelpersWithTemplate.cshtml)

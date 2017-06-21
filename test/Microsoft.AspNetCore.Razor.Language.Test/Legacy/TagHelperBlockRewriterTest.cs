@@ -25,11 +25,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("ul",
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound", null, AttributeStructure.Minimized),
                                     new TagHelperAttributeNode(
                                         "[item]",
                                         factory.CodeMarkup("items").With(new ExpressionChunkGenerator()),
-                                        HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.SingleQuotes)
                                 }))
                     },
                     {
@@ -38,11 +38,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("ul",
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound", null, AttributeStructure.Minimized),
                                     new TagHelperAttributeNode(
                                         "[(item)]",
                                         factory.CodeMarkup("items").With(new ExpressionChunkGenerator()),
-                                        HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.SingleQuotes)
                                 }))
                     },
                     {
@@ -51,11 +51,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("button",
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound", null, AttributeStructure.Minimized),
                                     new TagHelperAttributeNode(
                                         "(click)",
                                         factory.CodeMarkup("doSomething()").With(new ExpressionChunkGenerator()),
-                                        HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.SingleQuotes)
                                 },
                                 children: factory.Markup("Click Me")))
                     },
@@ -65,11 +65,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("button",
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound", null, AttributeStructure.Minimized),
                                     new TagHelperAttributeNode(
                                         "(^click)",
                                         factory.CodeMarkup("doSomething()").With(new ExpressionChunkGenerator()),
-                                        HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.SingleQuotes)
                                 },
                                 children: factory.Markup("Click Me")))
                     },
@@ -79,11 +79,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("template",
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound", null, AttributeStructure.Minimized),
                                     new TagHelperAttributeNode(
                                         "*something",
                                         factory.Markup("value"),
-                                        HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.SingleQuotes)
                                 }))
                     },
                     {
@@ -92,8 +92,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("div",
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("#localminimized", null, HtmlAttributeValueStyle.Minimized)
+                                    new TagHelperAttributeNode("bound", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("#localminimized", null, AttributeStructure.Minimized)
                                 }))
                     },
                     {
@@ -102,8 +102,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("div",
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("#local", factory.Markup("value"), HtmlAttributeValueStyle.SingleQuotes)
+                                    new TagHelperAttributeNode("bound", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("#local", factory.Markup("value"), AttributeStructure.SingleQuotes)
                                 }))
                     },
                 };
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagOnly,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("type", factory.Markup("text"), HtmlAttributeValueStyle.SingleQuotes)
+                                    new TagHelperAttributeNode("type", factory.Markup("text"), AttributeStructure.SingleQuotes)
                                 }))
                     },
                     {
@@ -198,7 +198,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagOnly,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("type", factory.Markup("text"), HtmlAttributeValueStyle.SingleQuotes)
+                                    new TagHelperAttributeNode("type", factory.Markup("text"), AttributeStructure.SingleQuotes)
                                 }),
                             new MarkupTagHelperBlock("input", TagMode.StartTagOnly))
                     },
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagOnly,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("type", factory.Markup("text"), HtmlAttributeValueStyle.SingleQuotes)
+                                    new TagHelperAttributeNode("type", factory.Markup("text"), AttributeStructure.SingleQuotes)
                                 }))
                     },
                     {
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("type", factory.Markup("text"), HtmlAttributeValueStyle.SingleQuotes)
+                                    new TagHelperAttributeNode("type", factory.Markup("text"), AttributeStructure.SingleQuotes)
                                 }))
                     },
                     {
@@ -373,7 +373,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "class",
                                         factory.Markup(string.Empty).With(SpanChunkGenerator.Null),
-                                        HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.SingleQuotes)
                                 })),
                         new []
                         {
@@ -412,7 +412,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "bar",
                                         new MarkupBlock(factory.Markup("false"), factory.Markup("  <strong>")),
-                                        HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.SingleQuotes)
                                 })),
                         new []
                         {
@@ -437,7 +437,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new MarkupBlock(
                                             factory.Markup("false"),
                                             factory.Markup("  <strong")),
-                                        HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.SingleQuotes)
                                 })),
                         new []
                         {
@@ -460,7 +460,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "bar",
                                         factory.Markup("false"),
-                                        HtmlAttributeValueStyle.NoQuotes)
+                                        AttributeStructure.NoQuotes)
                                 })),
                         new []
                         {
@@ -530,8 +530,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p",
                                 new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("foo", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("bar", null, HtmlAttributeValueStyle.Minimized)
+                                    new TagHelperAttributeNode("foo", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("bar", null, AttributeStructure.Minimized)
                                 },
                                 new MarkupTagHelperBlock("strong"))),
                         new []
@@ -556,7 +556,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p",
                                 new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.NoQuotes)
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.NoQuotes)
                                 })),
                         new []
                         {
@@ -572,7 +572,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p",
                                 new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.NoQuotes)
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.NoQuotes)
                                 })),
                         new []
                         {
@@ -591,7 +591,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "class",
                                         new MarkupBlock(factory.Markup("btn"), factory.Markup(" bar="))),
-                                    new TagHelperAttributeNode("foo", null, HtmlAttributeValueStyle.Minimized)
+                                    new TagHelperAttributeNode("foo", null, AttributeStructure.Minimized)
                                 },
                                 new MarkupTagHelperBlock("strong"))),
                         new []
@@ -619,7 +619,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "class",
                                         new MarkupBlock(factory.Markup("btn"), factory.Markup(" bar="))),
-                                    new TagHelperAttributeNode("foo", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("foo", null, AttributeStructure.Minimized),
                                 })),
                         new RazorError[0]
                     },
@@ -665,7 +665,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                         factory.Code("DateTime.Now")
                                                             .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                             .Accepts(AcceptedCharactersInternal.NonWhiteSpace)))),
-                                        HtmlAttributeValueStyle.DoubleQuotes)
+                                        AttributeStructure.DoubleQuotes)
                                 })),
                         new []
                         {
@@ -757,7 +757,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p",
                                 new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("class", factory.Markup("some"), HtmlAttributeValueStyle.NoQuotes)
+                                    new TagHelperAttributeNode("class", factory.Markup("some"), AttributeStructure.NoQuotes)
                                 })),
                         new []
                         {
@@ -1086,7 +1086,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                     factory
                                                         .CSharpCodeMarkup("DateTime.Now")
                                                         .With(new ExpressionChunkGenerator())))),
-                                        HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.SingleQuotes)
                                 }))
                     },
                     {
@@ -1238,7 +1238,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
+                                new TagHelperAttributeNode("class", factory.Markup("foo"), AttributeStructure.NoQuotes),
                                 new TagHelperAttributeNode(
                                     "dynamic",
                                     new MarkupBlock(
@@ -1253,8 +1253,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                     factory.Code("DateTime.Now")
                                                         .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                                         .Accepts(AcceptedCharactersInternal.NonWhiteSpace)))),
-                                    HtmlAttributeValueStyle.DoubleQuotes),
-                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), HtmlAttributeValueStyle.NoQuotes)
+                                    AttributeStructure.DoubleQuotes),
+                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), AttributeStructure.NoQuotes)
                             },
                             new MarkupTagHelperBlock("strong")),
                             blockFactory.MarkupTagBlock("</strong>")),
@@ -1472,7 +1472,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new List<TagHelperAttributeNode>
                         {
                             new TagHelperAttributeNode("class", dateTimeNow(10)),
-                            new TagHelperAttributeNode("style", dateTimeNow(32), HtmlAttributeValueStyle.SingleQuotes)
+                            new TagHelperAttributeNode("style", dateTimeNow(32), AttributeStructure.SingleQuotes)
                         }))
                 };
                 yield return new object[]
@@ -1483,7 +1483,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new List<TagHelperAttributeNode>
                         {
                             new TagHelperAttributeNode("class", doWhile(10)),
-                            new TagHelperAttributeNode("style", doWhile(83), HtmlAttributeValueStyle.SingleQuotes)
+                            new TagHelperAttributeNode("style", doWhile(83), AttributeStructure.SingleQuotes)
                         }))
                 };
 
@@ -1496,7 +1496,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new List<TagHelperAttributeNode>
                             {
                                 new TagHelperAttributeNode("class", dateTimeNow(10)),
-                                new TagHelperAttributeNode("style", dateTimeNow(32), HtmlAttributeValueStyle.SingleQuotes)
+                                new TagHelperAttributeNode("style", dateTimeNow(32), AttributeStructure.SingleQuotes)
                             },
                             factory.Markup("Hello World")))
                 };
@@ -1508,7 +1508,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new List<TagHelperAttributeNode>
                             {
                                 new TagHelperAttributeNode("class", doWhile(10)),
-                                new TagHelperAttributeNode("style", doWhile(83), HtmlAttributeValueStyle.SingleQuotes)
+                                new TagHelperAttributeNode("style", doWhile(83), AttributeStructure.SingleQuotes)
                             },
                             factory.Markup("Hello World")))
                 };
@@ -1528,7 +1528,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("style", dateTimeNow(45), HtmlAttributeValueStyle.SingleQuotes)
+                                new TagHelperAttributeNode("style", dateTimeNow(45), AttributeStructure.SingleQuotes)
                             },
                             factory.Markup("World")))
                 };
@@ -1546,7 +1546,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("style", doWhile(96), HtmlAttributeValueStyle.SingleQuotes)
+                                new TagHelperAttributeNode("style", doWhile(96), AttributeStructure.SingleQuotes)
                             },
                             factory.Markup("World")))
                 };
@@ -1561,7 +1561,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new List<TagHelperAttributeNode>
                             {
                                 new TagHelperAttributeNode("class", dateTimeNow(10)),
-                                new TagHelperAttributeNode("style", dateTimeNow(32), HtmlAttributeValueStyle.SingleQuotes)
+                                new TagHelperAttributeNode("style", dateTimeNow(32), AttributeStructure.SingleQuotes)
                             },
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(
@@ -1862,7 +1862,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("class",  new MarkupBlock(), HtmlAttributeValueStyle.SingleQuotes)
+                                new TagHelperAttributeNode("class",  new MarkupBlock(), AttributeStructure.SingleQuotes)
                             }))
                     },
                     {
@@ -1876,7 +1876,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 new TagHelperAttributeNode(
                                     "class",
                                     factory.Markup("").With(SpanChunkGenerator.Null),
-                                    HtmlAttributeValueStyle.DoubleQuotes),
+                                    AttributeStructure.DoubleQuotes),
                             }))
                     },
                     {
@@ -1886,11 +1886,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("class1", new MarkupBlock(), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("class1", new MarkupBlock(), AttributeStructure.SingleQuotes),
                                     new TagHelperAttributeNode(
                                         "class2",
                                         factory.Markup(string.Empty).With(SpanChunkGenerator.Null),
-                                        HtmlAttributeValueStyle.DoubleQuotes),
+                                        AttributeStructure.DoubleQuotes),
                                     new TagHelperAttributeNode("class3", new MarkupBlock()),
                                 }))
                     },
@@ -1901,12 +1901,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("class1",  new MarkupBlock(), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("class1",  new MarkupBlock(), AttributeStructure.SingleQuotes),
                                     new TagHelperAttributeNode("class2",  new MarkupBlock()),
                                     new TagHelperAttributeNode(
                                         "class3",
                                         factory.Markup(string.Empty).With(SpanChunkGenerator.Null),
-                                        HtmlAttributeValueStyle.DoubleQuotes),
+                                        AttributeStructure.DoubleQuotes),
                                 }))
                     },
                 };
@@ -1941,7 +1941,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", new MarkupBlock(), HtmlAttributeValueStyle.SingleQuotes)
+                                    new TagHelperAttributeNode("bound", new MarkupBlock(), AttributeStructure.SingleQuotes)
                                 })),
                         new[]
                         {
@@ -1961,7 +1961,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "bound",
                                         factory.CodeMarkup("    true").With(new ExpressionChunkGenerator()),
-                                        HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.SingleQuotes)
                                 })),
                         new RazorError[0]
                     },
@@ -1976,7 +1976,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "bound",
                                         factory.CodeMarkup("    ").With(new ExpressionChunkGenerator()),
-                                        HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.SingleQuotes)
                                 })),
                         new[]
                         {
@@ -1993,7 +1993,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("bound", new MarkupBlock(), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("bound", new MarkupBlock(), AttributeStructure.SingleQuotes),
                                     new TagHelperAttributeNode("bound", new MarkupBlock())
                                 })),
                         new[]
@@ -2017,7 +2017,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "bound",
                                         factory.CodeMarkup(" ").With(new ExpressionChunkGenerator()),
-                                        HtmlAttributeValueStyle.SingleQuotes),
+                                        AttributeStructure.SingleQuotes),
                                     new TagHelperAttributeNode(
                                         "bound",
                                         factory.CodeMarkup("  "))
@@ -2043,11 +2043,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "bound",
                                         factory.CodeMarkup("true").With(new ExpressionChunkGenerator()),
-                                        HtmlAttributeValueStyle.SingleQuotes),
+                                        AttributeStructure.SingleQuotes),
                                     new TagHelperAttributeNode(
                                         "bound",
                                         factory.CodeMarkup(string.Empty).With(SpanChunkGenerator.Null),
-                                        HtmlAttributeValueStyle.DoubleQuotes)
+                                        AttributeStructure.DoubleQuotes)
                                 })),
                         new[]
                         {
@@ -2067,8 +2067,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "bound",
                                         factory.CodeMarkup(string.Empty).With(SpanChunkGenerator.Null),
-                                        HtmlAttributeValueStyle.DoubleQuotes),
-                                    new TagHelperAttributeNode("name", new MarkupBlock(), HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.DoubleQuotes),
+                                    new TagHelperAttributeNode("name", new MarkupBlock(), AttributeStructure.SingleQuotes)
                                 })),
                         new[]
                         {
@@ -2088,8 +2088,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "bound",
                                         factory.CodeMarkup(string.Empty).With(SpanChunkGenerator.Null),
-                                        HtmlAttributeValueStyle.DoubleQuotes),
-                                    new TagHelperAttributeNode("name", factory.Markup("  "), HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.DoubleQuotes),
+                                    new TagHelperAttributeNode("name", factory.Markup("  "), AttributeStructure.SingleQuotes)
                                 })),
                         new[]
                         {
@@ -2109,16 +2109,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "bound",
                                         factory.CodeMarkup("true").With(new ExpressionChunkGenerator()),
-                                        HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("name", factory.Markup("john"), HtmlAttributeValueStyle.SingleQuotes),
+                                        AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("name", factory.Markup("john"), AttributeStructure.SingleQuotes),
                                     new TagHelperAttributeNode(
                                         "bound",
                                         factory.CodeMarkup(string.Empty).With(SpanChunkGenerator.Null),
-                                        HtmlAttributeValueStyle.DoubleQuotes),
+                                        AttributeStructure.DoubleQuotes),
                                     new TagHelperAttributeNode(
                                         "name",
                                         factory.Markup(string.Empty).With(SpanChunkGenerator.Null),
-                                        HtmlAttributeValueStyle.DoubleQuotes)
+                                        AttributeStructure.DoubleQuotes)
                                 })),
                         new[]
                         {
@@ -2135,7 +2135,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("BouND", new MarkupBlock(), HtmlAttributeValueStyle.SingleQuotes)
+                                    new TagHelperAttributeNode("BouND", new MarkupBlock(), AttributeStructure.SingleQuotes)
                                 })),
                         new[]
                         {
@@ -2152,7 +2152,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("BOUND", new MarkupBlock(), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("BOUND", new MarkupBlock(), AttributeStructure.SingleQuotes),
                                     new TagHelperAttributeNode("bOUnd", new MarkupBlock())
                                 })),
                         new[]
@@ -2175,8 +2175,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "BOUND",
                                         factory.CodeMarkup(string.Empty).With(SpanChunkGenerator.Null),
-                                        HtmlAttributeValueStyle.DoubleQuotes),
-                                    new TagHelperAttributeNode("nAMe", factory.Markup("john"), HtmlAttributeValueStyle.SingleQuotes)
+                                        AttributeStructure.DoubleQuotes),
+                                    new TagHelperAttributeNode("nAMe", factory.Markup("john"), AttributeStructure.SingleQuotes)
                                 })),
                         new[]
                         {
@@ -2204,7 +2204,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                     factory.CSharpCodeMarkup("true")
                                                         .With(new ExpressionChunkGenerator()))),
                                                 factory.CodeMarkup("  ").With(new ExpressionChunkGenerator())),
-                                            HtmlAttributeValueStyle.SingleQuotes)
+                                            AttributeStructure.SingleQuotes)
                                     }
                                 })),
                         new RazorError[0]
@@ -2230,7 +2230,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                                         .With(new ExpressionChunkGenerator()),
                                                     factory.CSharpCodeMarkup(")").With(new ExpressionChunkGenerator()))),
                                                 factory.CodeMarkup("  ").With(new ExpressionChunkGenerator())),
-                                            HtmlAttributeValueStyle.SingleQuotes)
+                                            AttributeStructure.SingleQuotes)
                                     }
                                 })),
                         new RazorError[0]
@@ -2467,9 +2467,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                         new List<TagHelperAttributeNode>
                         {
-                            new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
+                            new TagHelperAttributeNode("class", factory.Markup("foo"), AttributeStructure.NoQuotes),
                             new TagHelperAttributeNode("dynamic", dateTimeNow(21)),
-                            new TagHelperAttributeNode("style", factory.Markup("color:red;"), HtmlAttributeValueStyle.NoQuotes)
+                            new TagHelperAttributeNode("style", factory.Markup("color:red;"), AttributeStructure.NoQuotes)
                         }))
                 };
                 yield return new object[]
@@ -2479,9 +2479,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
+                                new TagHelperAttributeNode("class", factory.Markup("foo"), AttributeStructure.NoQuotes),
                                 new TagHelperAttributeNode("dynamic", dateTimeNow(21)),
-                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), HtmlAttributeValueStyle.NoQuotes)
+                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), AttributeStructure.NoQuotes)
                             },
                             factory.Markup("Hello World")))
                 };
@@ -2492,7 +2492,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
+                                new TagHelperAttributeNode("class", factory.Markup("foo"), AttributeStructure.NoQuotes),
                                 new TagHelperAttributeNode("dynamic", dateTimeNow(21)),
                                 new TagHelperAttributeNode(
                                     "style",
@@ -2502,7 +2502,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             factory.Markup("@").Accepts(AcceptedCharactersInternal.None),
                                             factory.Markup("@").With(SpanChunkGenerator.Null).Accepts(AcceptedCharactersInternal.None)),
                                         factory.Markup(":red;")),
-                                    HtmlAttributeValueStyle.DoubleQuotes)
+                                    AttributeStructure.DoubleQuotes)
                             },
                             factory.Markup("Hello World")))
                 };
@@ -2513,7 +2513,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
+                                new TagHelperAttributeNode("class", factory.Markup("foo"), AttributeStructure.NoQuotes),
                                 new TagHelperAttributeNode("dynamic", dateTimeNow(21))
                             },
                             factory.Markup("Hello")),
@@ -2521,7 +2521,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), HtmlAttributeValueStyle.NoQuotes),
+                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), AttributeStructure.NoQuotes),
                                 new TagHelperAttributeNode("dynamic", dateTimeNow(73))
                             },
                             factory.Markup("World")))
@@ -2533,9 +2533,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         new MarkupTagHelperBlock("p",
                             new List<TagHelperAttributeNode>
                             {
-                                new TagHelperAttributeNode("class", factory.Markup("foo"), HtmlAttributeValueStyle.NoQuotes),
+                                new TagHelperAttributeNode("class", factory.Markup("foo"), AttributeStructure.NoQuotes),
                                 new TagHelperAttributeNode("dynamic", dateTimeNow(21)),
-                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), HtmlAttributeValueStyle.NoQuotes)
+                                new TagHelperAttributeNode("style", factory.Markup("color:red;"), AttributeStructure.NoQuotes)
                             },
                             factory.Markup("Hello World "),
                             new MarkupTagBlock(
@@ -2725,7 +2725,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "data-required",
                                         new MarkupBlock(dateTimeNow),
-                                        HtmlAttributeValueStyle.SingleQuotes),
+                                        AttributeStructure.SingleQuotes),
                                 }))
                     },
                     {
@@ -2736,7 +2736,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("data-required", factory.Markup("value"), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("data-required", factory.Markup("value"), AttributeStructure.SingleQuotes),
                                 }))
                     },
                     {
@@ -2750,7 +2750,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "data-required",
                                         new MarkupBlock(factory.Markup("prefix "), dateTimeNow),
-                                        HtmlAttributeValueStyle.SingleQuotes),
+                                        AttributeStructure.SingleQuotes),
                                 }))
                     },
                     {
@@ -2764,7 +2764,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "data-required",
                                         new MarkupBlock(dateTimeNow, factory.Markup(" suffix")),
-                                        HtmlAttributeValueStyle.SingleQuotes),
+                                        AttributeStructure.SingleQuotes),
                                 }))
                     },
                     {
@@ -2781,7 +2781,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             factory.Markup("prefix "),
                                             dateTimeNow,
                                             factory.Markup(" suffix")),
-                                        HtmlAttributeValueStyle.SingleQuotes),
+                                        AttributeStructure.SingleQuotes),
                                 }))
                     },
                     {
@@ -2792,15 +2792,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("pre-attribute", value: null, valueStyle: HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("pre-attribute", value: null, attributeStructure: AttributeStructure.Minimized),
                                     new TagHelperAttributeNode(
                                         "data-required",
                                         new MarkupBlock(
                                             factory.Markup("prefix "),
                                             dateTimeNow,
                                             factory.Markup(" suffix")),
-                                        HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("post-attribute", value: null, valueStyle: HtmlAttributeValueStyle.Minimized),
+                                        AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("post-attribute", value: null, attributeStructure: AttributeStructure.Minimized),
                                 }))
                     },
                     {
@@ -2817,7 +2817,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                             dateTimeNow,
                                             factory.Markup(" middle "),
                                             dateTimeNow),
-                                        HtmlAttributeValueStyle.SingleQuotes),
+                                        AttributeStructure.SingleQuotes),
                                 }))
                     },
                 };
@@ -2910,7 +2910,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("unbound-required", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("unbound-required", null, AttributeStructure.Minimized),
                                 })),
                         noErrors
                     },
@@ -2922,7 +2922,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -2938,7 +2938,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-required-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-required-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -2954,7 +2954,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-required-int", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-required-int", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -2970,7 +2970,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-int", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-int", null, AttributeStructure.Minimized),
                                 })),
                         new[] { new RazorError(string.Format(errorFormat, "bound-int", "p", intType), 3, 0, 3, 9) }
                     },
@@ -2982,7 +2982,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("int-dictionary", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("int-dictionary", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3002,7 +3002,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("string-dictionary", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("string-dictionary", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3022,7 +3022,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("int-prefix-", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("int-prefix-", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3048,7 +3048,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("string-prefix-", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("string-prefix-", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3074,7 +3074,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("int-prefix-value", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("int-prefix-value", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3094,7 +3094,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("string-prefix-value", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("string-prefix-value", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3114,7 +3114,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("int-prefix-value", new MarkupBlock(), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("int-prefix-value", new MarkupBlock(), AttributeStructure.SingleQuotes),
                                 })),
                         new[]
                         {
@@ -3134,7 +3134,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>
                                 {
-                                    new TagHelperAttributeNode("string-prefix-value", new MarkupBlock(), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("string-prefix-value", new MarkupBlock(), AttributeStructure.SingleQuotes),
                                 })),
                         new RazorError[0]
                     },
@@ -3149,7 +3149,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                     new TagHelperAttributeNode(
                                         "int-prefix-value",
                                         factory.CodeMarkup("3").With(new ExpressionChunkGenerator()),
-                                        HtmlAttributeValueStyle.SingleQuotes),
+                                        AttributeStructure.SingleQuotes),
                                 })),
                         new RazorError[0]
                     },
@@ -3166,7 +3166,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                         new MarkupBlock(
                                             factory.Markup("some"),
                                             factory.Markup(" string")),
-                                        HtmlAttributeValueStyle.SingleQuotes),
+                                        AttributeStructure.SingleQuotes),
                                 })),
                         new RazorError[0]
                     },
@@ -3178,8 +3178,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("unbound-required", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("bound-required-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("unbound-required", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("bound-required-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3199,8 +3199,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-int", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("bound-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-int", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("bound-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3216,9 +3216,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-required-int", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("unbound-required", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("bound-required-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-required-int", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("unbound-required", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("bound-required-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3240,9 +3240,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-int", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("bound-string", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("bound-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-int", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("bound-string", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("bound-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3259,8 +3259,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("unbound-required", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("unbound-required", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.SingleQuotes),
                                 })),
                         noErrors
                     },
@@ -3272,8 +3272,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-string", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-string", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.SingleQuotes),
                                 })),
                         new[]
                         {
@@ -3293,8 +3293,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("unbound-required", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("unbound-required", null, AttributeStructure.Minimized),
                                 })),
                         noErrors
                     },
@@ -3306,8 +3306,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("bound-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3327,8 +3327,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-required-string", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-required-string", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.SingleQuotes),
                                 })),
                         new[]
                         {
@@ -3348,8 +3348,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("bound-required-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-required-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3369,8 +3369,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-required-int", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-required-int", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.SingleQuotes),
                                 })),
                         new[]
                         {
@@ -3386,8 +3386,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-int", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-int", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.SingleQuotes),
                                 })),
                         new[]
                         {
@@ -3402,8 +3402,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("bound-required-int", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-required-int", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3418,8 +3418,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("class", factory.Markup("btn"), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("bound-int", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("class", factory.Markup("btn"), AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-int", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3434,8 +3434,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("class", expression(14), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("bound-required-int", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("class", expression(14), AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-required-int", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3451,8 +3451,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("class", expression(10), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("bound-int", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("class", expression(10), AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-int", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3468,11 +3468,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.SelfClosing,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-required-int", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("class", expression(36), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("bound-required-string", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("class", expression(86), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("unbound-required", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-required-int", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("class", expression(36), AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-required-string", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("class", expression(86), AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("unbound-required", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3495,11 +3495,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-int", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("class", expression(23), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("bound-string", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("class", expression(64), HtmlAttributeValueStyle.SingleQuotes),
-                                    new TagHelperAttributeNode("bound-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-int", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("class", expression(23), AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-string", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("class", expression(64), AttributeStructure.SingleQuotes),
+                                    new TagHelperAttributeNode("bound-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3598,7 +3598,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 tagHelperBlock.Attributes[i] = new TagHelperAttributeNode(
                                     attribute.Name,
                                     blockBuilder.Build(),
-                                    attribute.ValueStyle);
+                                    attribute.AttributeStructure);
                             }
                         }
                     }
@@ -3650,7 +3650,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("unbound-required", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("unbound-required", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3672,7 +3672,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-required-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-required-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3700,7 +3700,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-required-int", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-required-int", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3728,9 +3728,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-required-int", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("unbound-required", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("bound-required-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-required-int", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("unbound-required", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("bound-required-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3764,7 +3764,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3788,7 +3788,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-int", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-int", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3811,8 +3811,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-int", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("bound-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-int", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("bound-string", null, AttributeStructure.Minimized),
                                 })),
                         new[]
                         {
@@ -3837,17 +3837,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 TagMode.StartTagAndEndTag,
                                 attributes: new List<TagHelperAttributeNode>()
                                 {
-                                    new TagHelperAttributeNode("bound-required-int", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("unbound-required", null, HtmlAttributeValueStyle.Minimized),
-                                    new TagHelperAttributeNode("bound-required-string", null, HtmlAttributeValueStyle.Minimized),
+                                    new TagHelperAttributeNode("bound-required-int", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("unbound-required", null, AttributeStructure.Minimized),
+                                    new TagHelperAttributeNode("bound-required-string", null, AttributeStructure.Minimized),
                                 },
                                 children: new MarkupTagHelperBlock(
                                     "p",
                                     TagMode.StartTagAndEndTag,
                                     attributes: new List<TagHelperAttributeNode>()
                                     {
-                                        new TagHelperAttributeNode("bound-int", null, HtmlAttributeValueStyle.Minimized),
-                                        new TagHelperAttributeNode("bound-string", null, HtmlAttributeValueStyle.Minimized),
+                                        new TagHelperAttributeNode("bound-int", null, AttributeStructure.Minimized),
+                                        new TagHelperAttributeNode("bound-string", null, AttributeStructure.Minimized),
                                     }))),
                         new[]
                         {

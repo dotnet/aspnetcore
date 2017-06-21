@@ -42,7 +42,7 @@ Document -
                         HtmlContent - (232:7,49 [6] BasicTagHelpers_Prefixed.cshtml)
                             IntermediateToken - (232:7,49 [6] BasicTagHelpers_Prefixed.cshtml) - Html - \n    
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (122:4,17 [11] BasicTagHelpers_Prefixed.cshtml)
                             IntermediateToken - (122:4,17 [11] BasicTagHelpers_Prefixed.cshtml) - Html - Hello World
                 HtmlContent - (245:8,11 [11] BasicTagHelpers_Prefixed.cshtml)

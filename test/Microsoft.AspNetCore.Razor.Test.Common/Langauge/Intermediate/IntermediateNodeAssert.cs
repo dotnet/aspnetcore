@@ -326,7 +326,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             IntermediateNode node,
             string attributeName,
             string value,
-            HtmlAttributeValueStyle valueStyle)
+            AttributeStructure valueStyle)
         {
             var declarePreallocatedTagHelperAttribute = Assert.IsType<DeclarePreallocatedTagHelperAttributeIntermediateNode>(node);
 
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             {
                 Assert.Equal(attributeName, declarePreallocatedTagHelperAttribute.Name);
                 Assert.Equal(value, declarePreallocatedTagHelperAttribute.Value);
-                Assert.Equal(valueStyle, declarePreallocatedTagHelperAttribute.ValueStyle);
+                Assert.Equal(valueStyle, declarePreallocatedTagHelperAttribute.AttributeStructure);
             }
             catch (XunitException e)
             {
@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         internal static void TagHelperHtmlAttribute(
             string name,
-            HtmlAttributeValueStyle valueStyle,
+            AttributeStructure valueStyle,
             IntermediateNode node,
             params Action<IntermediateNode>[] valueValidators)
         {
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             try
             {
                 Assert.Equal(name, tagHelperHtmlAttribute.Name);
-                Assert.Equal(valueStyle, tagHelperHtmlAttribute.ValueStyle);
+                Assert.Equal(valueStyle, tagHelperHtmlAttribute.AttributeStructure);
                 Children(tagHelperHtmlAttribute, valueValidators);
             }
             catch (XunitException e)
@@ -399,7 +399,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         internal static void SetTagHelperProperty(
             string name,
             string propertyName,
-            HtmlAttributeValueStyle valueStyle,
+            AttributeStructure valueStyle,
             IntermediateNode node,
             params Action<IntermediateNode>[] valueValidators)
         {
@@ -409,7 +409,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             {
                 Assert.Equal(name, tagHelperBoundAttribute.AttributeName);
                 Assert.Equal(propertyName, tagHelperBoundAttribute.PropertyName);
-                Assert.Equal(valueStyle, tagHelperBoundAttribute.ValueStyle);
+                Assert.Equal(valueStyle, tagHelperBoundAttribute.AttributeStructure);
                 Children(tagHelperBoundAttribute, valueValidators);
             }
             catch (XunitException e)

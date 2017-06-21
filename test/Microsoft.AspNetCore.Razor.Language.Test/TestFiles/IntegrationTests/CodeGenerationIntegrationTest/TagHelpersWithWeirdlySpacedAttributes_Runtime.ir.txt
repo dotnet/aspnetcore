@@ -1,12 +1,12 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TagHelpersWithWeirdlySpacedAttributes_Runtime -  - 
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - Hello World - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - Hello World - AttributeStructure.DoubleQuotes
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - data-content - hello - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - data-content - hello2 - HtmlAttributeValueStyle.SingleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - data-content - hello - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - data-content - hello2 - AttributeStructure.SingleQuotes
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_4 - type - password - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5 - data-content - blah - HtmlAttributeValueStyle.NoQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5 - data-content - blah - AttributeStructure.NoQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] TagHelpersWithWeirdlySpacedAttributes.cshtml)
@@ -19,7 +19,7 @@ Document -
                     AddPreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0
                     SetTagHelperProperty - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - CSharp - 1337
-                    AddTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - data-content - AttributeStructure.DoubleQuotes
                         CSharpExpression - (99:6,19 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             IntermediateToken - (99:6,19 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - CSharp - true
                 HtmlContent - (120:6,40 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)

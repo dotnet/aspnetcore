@@ -14,12 +14,12 @@ Document -
                         HtmlContent - (105:6,25 [11] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             IntermediateToken - (105:6,25 [11] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - Body of Tag
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (54:5,1 [11] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             IntermediateToken - (54:5,1 [11] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - Hello World
                     SetTagHelperProperty - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (74:5,21 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - CSharp - 1337
-                    AddTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - data-content - AttributeStructure.DoubleQuotes
                         CSharpExpression - (99:6,19 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             IntermediateToken - (99:6,19 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - CSharp - true
                 HtmlContent - (120:6,40 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
@@ -34,7 +34,7 @@ Document -
                     SetTagHelperProperty - (140:8,16 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - type - Type - HtmlAttributeValueStyle.SingleQuotes
                         HtmlContent - (140:8,16 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             IntermediateToken - (140:8,16 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - text
-                    AddTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - data-content - AttributeStructure.DoubleQuotes
                         HtmlContent - (162:8,38 [5] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             IntermediateToken - (162:8,38 [5] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - hello
                 HtmlContent - (171:8,47 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
@@ -44,7 +44,7 @@ Document -
                     CreateTagHelper -  - TestNamespace.PTagHelper
                     SetTagHelperProperty - (186:10,11 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (186:10,11 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - CSharp - 1234
-                    AddTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.SingleQuotes
+                    AddTagHelperHtmlAttribute -  - data-content - AttributeStructure.SingleQuotes
                         HtmlContent - (209:11,3 [6] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             IntermediateToken - (209:11,3 [6] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - hello2
                 HtmlContent - (221:11,15 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
@@ -59,6 +59,6 @@ Document -
                     SetTagHelperProperty - (247:14,8 [8] TagHelpersWithWeirdlySpacedAttributes.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
                         HtmlContent - (247:14,8 [8] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             IntermediateToken - (247:14,8 [8] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - password
-                    AddTagHelperHtmlAttribute -  - data-content - HtmlAttributeValueStyle.NoQuotes
+                    AddTagHelperHtmlAttribute -  - data-content - AttributeStructure.NoQuotes
                         HtmlContent - (270:14,31 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml)
                             IntermediateToken - (270:14,31 [4] TagHelpersWithWeirdlySpacedAttributes.cshtml) - Html - blah

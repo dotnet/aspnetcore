@@ -754,7 +754,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                                 TagHelperTypeName = tagHelperTypeName,
                                 Descriptor = associatedAttributeDescriptor,
                                 Binding = tagHelperBinding,
-                                ValueStyle = attribute.ValueStyle,
+                                AttributeStructure = attribute.AttributeStructure,
                                 Source = BuildSourceSpanFromNode(attributeValueNode),
                                 IsIndexerNameMatch = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(attribute.Name, associatedAttributeDescriptor),
                             };
@@ -769,7 +769,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         var addHtmlAttribute = new AddTagHelperHtmlAttributeIntermediateNode()
                         {
                             Name = attribute.Name,
-                            ValueStyle = attribute.ValueStyle
+                            AttributeStructure = attribute.AttributeStructure
                         };
 
                         _builder.Push(addHtmlAttribute);

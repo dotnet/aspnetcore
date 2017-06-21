@@ -1,8 +1,8 @@
 Document - 
     NamespaceDeclaration -  - Razor
         ClassDeclaration -  - public - Template -  - 
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - value - Hello - HtmlAttributeValueStyle.SingleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - HtmlAttributeValueStyle.SingleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - value - Hello - AttributeStructure.SingleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - type - text - AttributeStructure.SingleQuotes
             DeclareTagHelperFields -  - InputTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:1,0 [25] SimpleTagHelpers.cshtml)

@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     c => Assert.IsType<CreateTagHelperIntermediateNode>(c),
                     c => TagHelperHtmlAttribute(
                         "val",
-                        HtmlAttributeValueStyle.DoubleQuotes,
+                        AttributeStructure.DoubleQuotes,
                         c,
                         v => CSharpExpressionAttributeValue(string.Empty, "Hello", v),
                         v => LiteralAttributeValue(" ", "World", v))));
@@ -252,7 +252,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     c => Assert.IsType<CreateTagHelperIntermediateNode>(c),
                     c => TagHelperHtmlAttribute(
                         "val",
-                        HtmlAttributeValueStyle.DoubleQuotes,
+                        AttributeStructure.DoubleQuotes,
                         c,
                         v => CSharpExpressionAttributeValue(string.Empty, "Hello", v),
                         v => LiteralAttributeValue(" ", "World", v))));
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         c2 => Assert.IsType<CreateTagHelperIntermediateNode>(c2),
                         c2 => TagHelperHtmlAttribute(
                             "val",
-                            HtmlAttributeValueStyle.DoubleQuotes,
+                            AttributeStructure.DoubleQuotes,
                             c2,
                             v => CSharpExpressionAttributeValue(string.Empty, "Hello", v),
                             v => LiteralAttributeValue(" ", "World", v))),
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     c => SetTagHelperProperty(
                         "bound",
                         "FooProp",
-                        HtmlAttributeValueStyle.SingleQuotes,
+                        AttributeStructure.SingleQuotes,
                         c,
                         v => Html("foo", v))));
         }

@@ -27,7 +27,7 @@ Document -
                             IntermediateToken - (150:7,19 [1] ComplexTagHelpers.cshtml) - CSharp - (
                             IntermediateToken - (151:7,20 [3] ComplexTagHelpers.cshtml) - CSharp - 1+2
                             IntermediateToken - (154:7,23 [1] ComplexTagHelpers.cshtml) - CSharp - )
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (164:7,33 [1] ComplexTagHelpers.cshtml)
                             IntermediateToken - (164:7,33 [1] ComplexTagHelpers.cshtml) - Html - @
                         HtmlContent - (166:7,35 [6] ComplexTagHelpers.cshtml)
@@ -58,10 +58,10 @@ Document -
                                     SetTagHelperProperty - (342:12,42 [4] ComplexTagHelpers.cshtml) - type - Type - HtmlAttributeValueStyle.DoubleQuotes
                                         HtmlContent - (342:12,42 [4] ComplexTagHelpers.cshtml)
                                             IntermediateToken - (342:12,42 [4] ComplexTagHelpers.cshtml) - Html - text
-                                    AddTagHelperHtmlAttribute -  - value - HtmlAttributeValueStyle.DoubleQuotes
+                                    AddTagHelperHtmlAttribute -  - value - AttributeStructure.DoubleQuotes
                                         HtmlContent - (355:12,55 [0] ComplexTagHelpers.cshtml)
                                             IntermediateToken - (355:12,55 [0] ComplexTagHelpers.cshtml) - Html - 
-                                    AddTagHelperHtmlAttribute -  - placeholder - HtmlAttributeValueStyle.DoubleQuotes
+                                    AddTagHelperHtmlAttribute -  - placeholder - AttributeStructure.DoubleQuotes
                                         HtmlContent - (370:12,70 [22] ComplexTagHelpers.cshtml)
                                             IntermediateToken - (370:12,70 [22] ComplexTagHelpers.cshtml) - Html - Enter in a new time...
                             CreateTagHelper -  - TestNamespace.PTagHelper
@@ -129,7 +129,7 @@ Document -
                         HtmlContent - (705:19,13 [10] ComplexTagHelpers.cshtml)
                             IntermediateToken - (705:19,13 [10] ComplexTagHelpers.cshtml) - Html - \n        
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - time - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - time - AttributeStructure.DoubleQuotes
                         HtmlAttributeValue - (197:8,17 [7] ComplexTagHelpers.cshtml) - 
                             IntermediateToken - (197:8,17 [7] ComplexTagHelpers.cshtml) - Html - Current
                         HtmlAttributeValue - (204:8,24 [6] ComplexTagHelpers.cshtml) -  
@@ -158,7 +158,7 @@ Document -
                         HtmlContent - (896:23,40 [10] ComplexTagHelpers.cshtml)
                             IntermediateToken - (896:23,40 [10] ComplexTagHelpers.cshtml) - Html - \n        
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - unbound - AttributeStructure.DoubleQuotes
                         HtmlContent - (741:21,20 [11] ComplexTagHelpers.cshtml)
                             IntermediateToken - (741:21,20 [11] ComplexTagHelpers.cshtml) - Html - first value
                     SetTagHelperProperty - (759:21,38 [31] ComplexTagHelpers.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
@@ -166,7 +166,7 @@ Document -
                             IntermediateToken - (760:21,39 [23] ComplexTagHelpers.cshtml) - CSharp - DateTimeOffset.Now.Year
                         IntermediateToken - (783:21,62 [2] ComplexTagHelpers.cshtml) - CSharp -  -
                         IntermediateToken - (785:21,64 [5] ComplexTagHelpers.cshtml) - CSharp -  1970
-                    AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - unbound - AttributeStructure.DoubleQuotes
                         HtmlContent - (801:21,80 [12] ComplexTagHelpers.cshtml)
                             IntermediateToken - (801:21,80 [12] ComplexTagHelpers.cshtml) - Html - second value
                 HtmlContent - (910:24,12 [10] ComplexTagHelpers.cshtml)
@@ -179,10 +179,10 @@ Document -
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.InputTagHelper2
-                            AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - unbound - AttributeStructure.DoubleQuotes
                                 HtmlContent - (992:26,28 [5] ComplexTagHelpers.cshtml)
                                     IntermediateToken - (992:26,28 [5] ComplexTagHelpers.cshtml) - Html - hello
-                            AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - unbound - AttributeStructure.DoubleQuotes
                                 HtmlContent - (1008:26,44 [5] ComplexTagHelpers.cshtml)
                                     IntermediateToken - (1008:26,44 [5] ComplexTagHelpers.cshtml) - Html - world
                             SetTagHelperProperty - (1024:26,60 [33] ComplexTagHelpers.cshtml) - checked - Checked - HtmlAttributeValueStyle.DoubleQuotes
@@ -262,7 +262,7 @@ Document -
                             CreateTagHelper -  - TestNamespace.PTagHelper
                             SetTagHelperProperty - (1375:34,29 [3] ComplexTagHelpers.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
                                 IntermediateToken - (1375:34,29 [3] ComplexTagHelpers.cshtml) - CSharp - 123
-                            AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                                 HtmlContent - (1387:34,41 [5] ComplexTagHelpers.cshtml)
                                     IntermediateToken - (1387:34,41 [5] ComplexTagHelpers.cshtml) - Html - hello
                     IntermediateToken - (1424:34,78 [1] ComplexTagHelpers.cshtml) - CSharp - )

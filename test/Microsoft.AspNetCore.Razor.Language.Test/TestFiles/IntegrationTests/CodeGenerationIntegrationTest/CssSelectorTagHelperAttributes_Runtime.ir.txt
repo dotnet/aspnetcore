@@ -1,15 +1,15 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_CssSelectorTagHelperAttributes_Runtime -  - 
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - href - ~/ - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - href - ~/hello - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - href - ~/?hello=world - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - href - ~/?hello=world@false - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - href - ~/ - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - href - ~/hello - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - href - ~/?hello=world - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - href - ~/?hello=world@false - AttributeStructure.DoubleQuotes
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_4 - type - text - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5 - value - 3 TagHelpers - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5 - value - 3 TagHelpers - AttributeStructure.DoubleQuotes
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_6 - type - texty - HtmlAttributeValueStyle.SingleQuotes
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_7 - type - checkbox - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_8 - value - 2 TagHelper - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_8 - value - 2 TagHelper - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.ATagHelper - TestNamespace.CatchAllTagHelper - TestNamespace.ATagHelperMultipleSelectors - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2 - TestNamespace.CatchAllTagHelper2
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] CssSelectorTagHelperAttributes.cshtml)
@@ -46,7 +46,7 @@ Document -
                             IntermediateToken - (175:5,31 [12] CssSelectorTagHelperAttributes.cshtml) - Html - 2 TagHelpers
                     CreateTagHelper -  - TestNamespace.ATagHelperMultipleSelectors
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - href - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - href - AttributeStructure.DoubleQuotes
                         HtmlAttributeValue - (153:5,9 [2] CssSelectorTagHelperAttributes.cshtml) - 
                             IntermediateToken - (153:5,9 [2] CssSelectorTagHelperAttributes.cshtml) - Html - ~/
                         CSharpExpressionAttributeValue - (155:5,11 [6] CssSelectorTagHelperAttributes.cshtml) - 
@@ -66,7 +66,7 @@ Document -
                         HtmlContent - (243:7,17 [11] CssSelectorTagHelperAttributes.cshtml)
                             IntermediateToken - (243:7,17 [11] CssSelectorTagHelperAttributes.cshtml) - Html - 1 TagHelper
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - href - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - href - AttributeStructure.DoubleQuotes
                         HtmlAttributeValue - (234:7,8 [2] CssSelectorTagHelperAttributes.cshtml) - 
                             IntermediateToken - (234:7,8 [2] CssSelectorTagHelperAttributes.cshtml) - Html - ~/
                         CSharpExpressionAttributeValue - (236:7,10 [6] CssSelectorTagHelperAttributes.cshtml) - 
@@ -86,7 +86,7 @@ Document -
                         HtmlContent - (340:9,32 [11] CssSelectorTagHelperAttributes.cshtml)
                             IntermediateToken - (340:9,32 [11] CssSelectorTagHelperAttributes.cshtml) - Html - 1 TagHelper
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - href - HtmlAttributeValueStyle.SingleQuotes
+                    AddTagHelperHtmlAttribute -  - href - AttributeStructure.SingleQuotes
                         HtmlAttributeValue - (317:9,9 [14] CssSelectorTagHelperAttributes.cshtml) - 
                             IntermediateToken - (317:9,9 [14] CssSelectorTagHelperAttributes.cshtml) - Html - ~/?hello=world
                         CSharpExpressionAttributeValue - (331:9,23 [7] CssSelectorTagHelperAttributes.cshtml) -  

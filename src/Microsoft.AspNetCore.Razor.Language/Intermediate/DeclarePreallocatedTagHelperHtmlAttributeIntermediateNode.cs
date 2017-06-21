@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string Value { get; set; }
 
-        public HtmlAttributeValueStyle ValueStyle { get; set; }
+        public AttributeStructure AttributeStructure { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

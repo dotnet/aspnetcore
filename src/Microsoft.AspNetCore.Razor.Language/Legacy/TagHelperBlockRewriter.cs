@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     var attributeNode = new TagHelperAttributeNode(
                         result.AttributeName,
                         result.AttributeValueNode,
-                        result.AttributeValueStyle);
+                        result.AttributeStructure);
 
                     attributes.Add(attributeNode);
                 }
@@ -164,7 +164,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             // Default to DoubleQuotes. We purposefully do not persist NoQuotes ValueStyle to stay consistent with the
             // TryParseBlock() variation of attribute parsing.
-            var attributeValueStyle = HtmlAttributeValueStyle.DoubleQuotes;
+            var attributeValueStyle = AttributeStructure.DoubleQuotes;
 
             // The symbolOffset is initialized to 0 to expect worst case: "class=". If a quote is found later on for
             // the attribute value the symbolOffset is adjusted accordingly.
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         if (htmlSymbols[i].Type == HtmlSymbolType.SingleQuote)
                         {
-                            attributeValueStyle = HtmlAttributeValueStyle.SingleQuotes;
+                            attributeValueStyle = AttributeStructure.SingleQuotes;
                         }
 
                         symbolStartLocation = htmlSymbols[i].Start;
@@ -311,11 +311,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else
             {
-                attributeValueStyle = HtmlAttributeValueStyle.Minimized;
+                attributeValueStyle = AttributeStructure.Minimized;
             }
 
             result.AttributeValueNode = attributeValue;
-            result.AttributeValueStyle = attributeValueStyle;
+            result.AttributeStructure = attributeValueStyle;
             return result;
         }
 
@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             value.Kind == SpanKindInternal.Markup)
                         {
                             // Attribute value is a string literal. Eg: <tag my-attribute=foo />.
-                            result.AttributeValueStyle = HtmlAttributeValueStyle.NoQuotes;
+                            result.AttributeStructure = AttributeStructure.NoQuotes;
                         }
                         else
                         {
@@ -393,17 +393,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                             // that can break attributes.
                             // Ex: <tag my-attribute=@value /> where @value results in the test "hello world".
                             // This way, the above code would render <tag my-attribute="hello world" />.
-                            result.AttributeValueStyle = HtmlAttributeValueStyle.DoubleQuotes;
+                            result.AttributeStructure = AttributeStructure.DoubleQuotes;
                         }
                         break;
                     case HtmlSymbolType.DoubleQuote:
-                        result.AttributeValueStyle = HtmlAttributeValueStyle.DoubleQuotes;
+                        result.AttributeStructure = AttributeStructure.DoubleQuotes;
                         break;
                     case HtmlSymbolType.SingleQuote:
-                        result.AttributeValueStyle = HtmlAttributeValueStyle.SingleQuotes;
+                        result.AttributeStructure = AttributeStructure.SingleQuotes;
                         break;
                     default:
-                        result.AttributeValueStyle = HtmlAttributeValueStyle.Minimized;
+                        result.AttributeStructure = AttributeStructure.Minimized;
                         break;
                 }
             }
@@ -760,7 +760,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             public SyntaxTreeNode AttributeValueNode { get; set; }
 
-            public HtmlAttributeValueStyle AttributeValueStyle { get; set; }
+            public AttributeStructure AttributeStructure { get; set; }
 
             public bool IsBoundAttribute { get; set; }
 

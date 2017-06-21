@@ -22,7 +22,7 @@ Document -
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         CSharpExpressionAttributeValue - (130:7,14 [21] EnumTagHelpers.cshtml) - 
                             IntermediateToken - (131:7,15 [20] EnumTagHelpers.cshtml) - CSharp - MyEnum.MySecondValue
                 HtmlContent - (155:7,39 [2] EnumTagHelpers.cshtml)

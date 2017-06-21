@@ -2,13 +2,13 @@ Document -
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_ComplexTagHelpers_Runtime -  - 
             DeclarePreallocatedTagHelperAttribute -  - __tagHelperAttribute_0 - type - text - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - value -  - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - placeholder - Enter in a new time... - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - unbound - first value - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_4 - unbound - second value - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5 - unbound - hello - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_6 - unbound - world - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_7 - class - hello - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - value -  - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - placeholder - Enter in a new time... - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - unbound - first value - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_4 - unbound - second value - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_5 - unbound - hello - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_6 - unbound - world - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_7 - class - hello - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper - TestNamespace.InputTagHelper - TestNamespace.InputTagHelper2
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] ComplexTagHelpers.cshtml)
@@ -32,7 +32,7 @@ Document -
                             IntermediateToken - (150:7,19 [1] ComplexTagHelpers.cshtml) - CSharp - (
                             IntermediateToken - (151:7,20 [3] ComplexTagHelpers.cshtml) - CSharp - 1+2
                             IntermediateToken - (154:7,23 [1] ComplexTagHelpers.cshtml) - CSharp - )
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (164:7,33 [1] ComplexTagHelpers.cshtml)
                             IntermediateToken - (164:7,33 [1] ComplexTagHelpers.cshtml) - Html - @
                         HtmlContent - (166:7,35 [6] ComplexTagHelpers.cshtml)
@@ -138,7 +138,7 @@ Document -
                         HtmlContent - (707:20,0 [8] ComplexTagHelpers.cshtml)
                             IntermediateToken - (707:20,0 [8] ComplexTagHelpers.cshtml) - Html -         
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - time - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - time - AttributeStructure.DoubleQuotes
                         HtmlAttributeValue - (197:8,17 [7] ComplexTagHelpers.cshtml) - 
                             IntermediateToken - (197:8,17 [7] ComplexTagHelpers.cshtml) - Html - Current
                         HtmlAttributeValue - (204:8,24 [6] ComplexTagHelpers.cshtml) -  

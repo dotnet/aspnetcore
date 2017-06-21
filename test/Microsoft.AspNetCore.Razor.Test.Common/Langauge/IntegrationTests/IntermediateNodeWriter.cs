@@ -101,12 +101,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitSetTagHelperProperty(SetTagHelperPropertyIntermediateNode node)
         {
-            WriteContentNode(node, node.AttributeName, node.PropertyName, string.Format("HtmlAttributeValueStyle.{0}", node.ValueStyle));
+            WriteContentNode(node, node.AttributeName, node.PropertyName, string.Format("HtmlAttributeValueStyle.{0}", node.AttributeStructure));
         }
 
         public override void VisitAddTagHelperHtmlAttribute(AddTagHelperHtmlAttributeIntermediateNode node)
         {
-            WriteContentNode(node, node.Name, string.Format("{0}.{1}", nameof(HtmlAttributeValueStyle), node.ValueStyle));
+            WriteContentNode(node, node.Name, string.Format("{0}.{1}", nameof(AttributeStructure), node.AttributeStructure));
         }
 
         public override void VisitExtension(ExtensionIntermediateNode node)
@@ -114,13 +114,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             switch (node)
             {
                 case DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode n:
-                    WriteContentNode(n, n.VariableName, n.Name, n.Value, string.Format("{0}.{1}", nameof(HtmlAttributeValueStyle), n.ValueStyle));
+                    WriteContentNode(n, n.VariableName, n.Name, n.Value, string.Format("{0}.{1}", nameof(AttributeStructure), n.AttributeStructure));
                     break;
                 case AddPreallocatedTagHelperHtmlAttributeIntermediateNode n:
                     WriteContentNode(n, n.VariableName);
                     break;
                 case DeclarePreallocatedTagHelperAttributeIntermediateNode n:
-                    WriteContentNode(n, n.VariableName, n.Name, n.Value, string.Format("HtmlAttributeValueStyle.{0}", n.ValueStyle));
+                    WriteContentNode(n, n.VariableName, n.Name, n.Value, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
                     break;
                 case SetPreallocatedTagHelperPropertyIntermediateNode n:
                     WriteContentNode(n, n.VariableName, n.AttributeName, n.PropertyName);

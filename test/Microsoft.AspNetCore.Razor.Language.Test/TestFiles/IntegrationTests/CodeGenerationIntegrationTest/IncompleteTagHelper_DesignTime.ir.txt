@@ -12,6 +12,6 @@ Document -
                 TagHelper - (35:2,0 [10] IncompleteTagHelper.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (45:2,10 [0] IncompleteTagHelper.cshtml)
                             IntermediateToken - (45:2,10 [0] IncompleteTagHelper.cshtml) - Html - 

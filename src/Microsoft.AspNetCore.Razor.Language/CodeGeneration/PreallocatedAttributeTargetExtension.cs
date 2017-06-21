@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .WriteStartNewObject("global::" + TagHelperAttributeTypeName)
                 .WriteStringLiteral(node.Name);
 
-            if (node.ValueStyle == HtmlAttributeValueStyle.Minimized)
+            if (node.AttributeStructure == AttributeStructure.Minimized)
             {
                 context.Writer.WriteEndMethodInvocation();
             }
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     .WriteStringLiteral(node.Value)
                     .WriteEndMethodInvocation(endLine: false)
                     .WriteParameterSeparator()
-                    .Write($"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.ValueStyle}")
+                    .Write($"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.AttributeStructure}")
                     .WriteEndMethodInvocation();
             }
         }
@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 .WriteParameterSeparator()
                 .WriteStringLiteral(node.Value)
                 .WriteParameterSeparator()
-                .Write($"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.ValueStyle}")
+                .Write($"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.AttributeStructure}")
                 .WriteEndMethodInvocation();
         }
 

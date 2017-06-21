@@ -11,10 +11,10 @@ Document -
         UsingStatement - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         UsingStatement - (55:4,1 [43] RazorPages.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - text-danger - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - class - col-md-10 - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - class - form-group - HtmlAttributeValueStyle.DoubleQuotes
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - class - col-md-offset-2 col-md-10 - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - text-danger - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_1 - class - col-md-10 - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_2 - class - form-group - AttributeStructure.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_3 - class - col-md-offset-2 col-md-10 - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - DivTagHelper
             MethodDeclaration -  - public - async, override - global::System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - 

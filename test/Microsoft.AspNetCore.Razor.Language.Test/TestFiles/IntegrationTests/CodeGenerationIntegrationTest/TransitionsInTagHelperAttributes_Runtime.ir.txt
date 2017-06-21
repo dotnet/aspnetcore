@@ -1,7 +1,7 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_TransitionsInTagHelperAttributes_Runtime -  - 
-            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - test - HtmlAttributeValueStyle.DoubleQuotes
+            DeclarePreallocatedTagHelperHtmlAttribute -  - __tagHelperAttribute_0 - class - test - AttributeStructure.DoubleQuotes
             DeclareTagHelperFields -  - TestNamespace.PTagHelper
             MethodDeclaration -  - public - async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (35:1,2 [59] TransitionsInTagHelperAttributes.cshtml)
@@ -13,7 +13,7 @@ Document -
                         HtmlContent - (128:6,29 [11] TransitionsInTagHelperAttributes.cshtml)
                             IntermediateToken - (128:6,29 [11] TransitionsInTagHelperAttributes.cshtml) - Html - Body of Tag
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         CSharpCodeAttributeValue - (109:6,10 [6] TransitionsInTagHelperAttributes.cshtml) - 
                     SetTagHelperProperty - (122:6,23 [4] TransitionsInTagHelperAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (122:6,23 [4] TransitionsInTagHelperAttributes.cshtml) - CSharp - 1337
@@ -22,7 +22,7 @@ Document -
                 TagHelper - (145:7,0 [34] TransitionsInTagHelperAttributes.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         CSharpExpressionAttributeValue - (155:7,10 [9] TransitionsInTagHelperAttributes.cshtml) - 
                             IntermediateToken - (157:7,12 [6] TransitionsInTagHelperAttributes.cshtml) - CSharp - @class
                     SetTagHelperProperty - (171:7,26 [2] TransitionsInTagHelperAttributes.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes
@@ -65,7 +65,7 @@ Document -
                 TagHelper - (288:11,0 [54] TransitionsInTagHelperAttributes.cshtml) - p - TagMode.StartTagAndEndTag
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlAttributeValue - (298:11,10 [7] TransitionsInTagHelperAttributes.cshtml) - 
                             IntermediateToken - (298:11,10 [7] TransitionsInTagHelperAttributes.cshtml) - Html - custom-
                         CSharpExpressionAttributeValue - (305:11,17 [9] TransitionsInTagHelperAttributes.cshtml) - 

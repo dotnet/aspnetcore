@@ -14,7 +14,7 @@ Document -
                         HtmlContent - (69:2,34 [11] SingleTagHelper.cshtml)
                             IntermediateToken - (69:2,34 [11] SingleTagHelper.cshtml) - Html - Body of Tag
                     CreateTagHelper -  - TestNamespace.PTagHelper
-                    AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                         HtmlContent - (45:2,10 [11] SingleTagHelper.cshtml)
                             IntermediateToken - (45:2,10 [11] SingleTagHelper.cshtml) - Html - Hello World
                     SetTagHelperProperty - (63:2,28 [4] SingleTagHelper.cshtml) - age - Age - HtmlAttributeValueStyle.DoubleQuotes

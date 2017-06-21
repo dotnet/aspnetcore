@@ -21,7 +21,7 @@ Document -
                     SetTagHelperProperty - (70:3,18 [5] SimpleTagHelpers.cshtml) - value - FooProp - HtmlAttributeValueStyle.SingleQuotes
                         HtmlContent - (70:3,18 [5] SimpleTagHelpers.cshtml)
                             IntermediateToken - (70:3,18 [5] SimpleTagHelpers.cshtml) - Html - Hello
-                    AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.SingleQuotes
+                    AddTagHelperHtmlAttribute -  - type - AttributeStructure.SingleQuotes
                         HtmlContent - (83:3,31 [4] SimpleTagHelpers.cshtml)
                             IntermediateToken - (83:3,31 [4] SimpleTagHelpers.cshtml) - Html - text
                 HtmlContent - (91:3,39 [9] SimpleTagHelpers.cshtml)

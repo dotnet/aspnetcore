@@ -12,7 +12,7 @@ Document -
                 TagHelper - (35:2,0 [40] DynamicAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper
-                    AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - unbound - AttributeStructure.DoubleQuotes
                         HtmlAttributeValue - (51:2,16 [6] DynamicAttributeTagHelpers.cshtml) - 
                             IntermediateToken - (51:2,16 [6] DynamicAttributeTagHelpers.cshtml) - Html - prefix
                         CSharpExpressionAttributeValue - (57:2,22 [14] DynamicAttributeTagHelpers.cshtml) -  
@@ -22,7 +22,7 @@ Document -
                 TagHelper - (79:4,0 [71] DynamicAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper
-                    AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - unbound - AttributeStructure.DoubleQuotes
                         CSharpCodeAttributeValue - (95:4,16 [44] DynamicAttributeTagHelpers.cshtml) - 
                             IntermediateToken - (96:4,17 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - if (true) { 
                             CSharpExpression - (109:4,30 [12] DynamicAttributeTagHelpers.cshtml)
@@ -46,7 +46,7 @@ Document -
                             IntermediateToken - (176:6,22 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - DateTime.Now
                         HtmlContent - (188:6,34 [7] DynamicAttributeTagHelpers.cshtml)
                             IntermediateToken - (188:6,34 [7] DynamicAttributeTagHelpers.cshtml) - Html -  suffix
-                    AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - unbound - AttributeStructure.DoubleQuotes
                         HtmlAttributeValue - (206:6,52 [6] DynamicAttributeTagHelpers.cshtml) - 
                             IntermediateToken - (206:6,52 [6] DynamicAttributeTagHelpers.cshtml) - Html - prefix
                         CSharpExpressionAttributeValue - (212:6,58 [14] DynamicAttributeTagHelpers.cshtml) -  
@@ -77,7 +77,7 @@ Document -
                             IntermediateToken - (314:8,73 [1] DynamicAttributeTagHelpers.cshtml) - Html -  
                         CSharpExpression - (316:8,75 [12] DynamicAttributeTagHelpers.cshtml)
                             IntermediateToken - (316:8,75 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - int.MaxValue
-                    AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - unbound - AttributeStructure.DoubleQuotes
                         CSharpExpressionAttributeValue - (347:9,16 [14] DynamicAttributeTagHelpers.cshtml) - 
                             IntermediateToken - (348:9,17 [13] DynamicAttributeTagHelpers.cshtml) - CSharp - long.MinValue
                         CSharpCodeAttributeValue - (361:9,30 [45] DynamicAttributeTagHelpers.cshtml) -  
@@ -95,7 +95,7 @@ Document -
                 TagHelper - (428:11,0 [80] DynamicAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper
-                    AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - unbound - AttributeStructure.DoubleQuotes
                         CSharpExpressionAttributeValue - (444:11,16 [14] DynamicAttributeTagHelpers.cshtml) - 
                             IntermediateToken - (445:11,17 [13] DynamicAttributeTagHelpers.cshtml) - CSharp - long.MinValue
                         CSharpExpressionAttributeValue - (458:11,30 [14] DynamicAttributeTagHelpers.cshtml) -  
@@ -111,7 +111,7 @@ Document -
                 TagHelper - (512:13,0 [64] DynamicAttributeTagHelpers.cshtml) - input - TagMode.SelfClosing
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper
-                    AddTagHelperHtmlAttribute -  - unbound - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - unbound - AttributeStructure.DoubleQuotes
                         CSharpCodeAttributeValue - (528:13,16 [44] DynamicAttributeTagHelpers.cshtml) - 
                             IntermediateToken - (529:13,17 [12] DynamicAttributeTagHelpers.cshtml) - CSharp - if (true) { 
                             CSharpExpression - (542:13,30 [12] DynamicAttributeTagHelpers.cshtml)

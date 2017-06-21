@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     {
                         if (string.Equals(existingDeclaration.Name, node.Name, StringComparison.Ordinal) &&
                             string.Equals(existingDeclaration.Value, plainTextValue, StringComparison.Ordinal) &&
-                            existingDeclaration.ValueStyle == node.ValueStyle)
+                            existingDeclaration.AttributeStructure == node.AttributeStructure)
                         {
                             declaration = existingDeclaration;
                             break;
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         VariableName = preAllocatedAttributeVariableName,
                         Name = node.Name,
                         Value = plainTextValue,
-                        ValueStyle = node.ValueStyle,
+                        AttributeStructure = node.AttributeStructure,
                     };
                     _classDeclaration.Children.Insert(_preallocatedDeclarationCount++, declaration);
                 }
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     {
                         if (string.Equals(existingDeclaration.Name, node.AttributeName, StringComparison.Ordinal) &&
                             string.Equals(existingDeclaration.Value, plainTextValue, StringComparison.Ordinal) &&
-                            existingDeclaration.ValueStyle == node.ValueStyle)
+                            existingDeclaration.AttributeStructure == node.AttributeStructure)
                         {
                             declaration = existingDeclaration;
                             break;
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                         VariableName = preAllocatedAttributeVariableName,
                         Name = node.AttributeName,
                         Value = plainTextValue,
-                        ValueStyle = node.ValueStyle,
+                        AttributeStructure = node.AttributeStructure,
                     };
                     _classDeclaration.Children.Insert(_preallocatedDeclarationCount++, declaration);
                 }

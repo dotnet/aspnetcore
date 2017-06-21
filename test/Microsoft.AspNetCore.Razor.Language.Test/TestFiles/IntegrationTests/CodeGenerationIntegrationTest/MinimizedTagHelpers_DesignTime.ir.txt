@@ -20,21 +20,21 @@ Document -
                         TagHelper - (98:4,4 [59] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                            AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                                 HtmlContent - (112:4,18 [3] MinimizedTagHelpers.cshtml)
                                     IntermediateToken - (112:4,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
-                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
+                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - AttributeStructure.Minimized
                         HtmlContent - (157:5,39 [6] MinimizedTagHelpers.cshtml)
                             IntermediateToken - (157:5,39 [6] MinimizedTagHelpers.cshtml) - Html - \n    
                         TagHelper - (163:6,4 [119] MinimizedTagHelpers.cshtml) - input - TagMode.SelfClosing
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                            AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                                 HtmlContent - (190:7,18 [3] MinimizedTagHelpers.cshtml)
                                     IntermediateToken - (190:7,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
-                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
-                            AddTagHelperHtmlAttribute -  - input-unbound-required - HtmlAttributeValueStyle.Minimized
+                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - AttributeStructure.Minimized
+                            AddTagHelperHtmlAttribute -  - input-unbound-required - AttributeStructure.Minimized
                             SetTagHelperProperty - (273:7,101 [5] MinimizedTagHelpers.cshtml) - input-bound-required-string - BoundRequiredString - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (273:7,101 [5] MinimizedTagHelpers.cshtml)
                                     IntermediateToken - (273:7,101 [5] MinimizedTagHelpers.cshtml) - Html - hello
@@ -44,11 +44,11 @@ Document -
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                            AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                                 HtmlContent - (315:9,18 [3] MinimizedTagHelpers.cshtml)
                                     IntermediateToken - (315:9,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
-                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
-                            AddTagHelperHtmlAttribute -  - input-unbound-required - HtmlAttributeValueStyle.Minimized
+                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - AttributeStructure.Minimized
+                            AddTagHelperHtmlAttribute -  - input-unbound-required - AttributeStructure.Minimized
                             SetTagHelperProperty - (418:11,57 [5] MinimizedTagHelpers.cshtml) - catchall-bound-string - BoundRequiredString - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (418:11,57 [5] MinimizedTagHelpers.cshtml)
                                     IntermediateToken - (418:11,57 [5] MinimizedTagHelpers.cshtml) - Html - world
@@ -61,20 +61,20 @@ Document -
                             TagHelperBody - 
                             CreateTagHelper -  - TestNamespace.InputTagHelper
                             CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                            AddTagHelperHtmlAttribute -  - class - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - class - AttributeStructure.DoubleQuotes
                                 HtmlContent - (484:12,18 [3] MinimizedTagHelpers.cshtml)
                                     IntermediateToken - (484:12,18 [3] MinimizedTagHelpers.cshtml) - Html - btn
-                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - AttributeStructure.DoubleQuotes
                                 HtmlContent - (529:13,38 [5] MinimizedTagHelpers.cshtml)
                                     IntermediateToken - (529:13,38 [5] MinimizedTagHelpers.cshtml) - Html - hello
-                            AddTagHelperHtmlAttribute -  - input-unbound-required - HtmlAttributeValueStyle.DoubleQuotes
+                            AddTagHelperHtmlAttribute -  - input-unbound-required - AttributeStructure.DoubleQuotes
                                 HtmlContent - (578:14,40 [6] MinimizedTagHelpers.cshtml)
                                     IntermediateToken - (578:14,40 [6] MinimizedTagHelpers.cshtml) - Html - hello2
-                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
+                            AddTagHelperHtmlAttribute -  - catchall-unbound-required - AttributeStructure.Minimized
                             SetTagHelperProperty - (667:16,40 [5] MinimizedTagHelpers.cshtml) - input-bound-required-string - BoundRequiredString - HtmlAttributeValueStyle.DoubleQuotes
                                 HtmlContent - (667:16,40 [5] MinimizedTagHelpers.cshtml)
                                     IntermediateToken - (667:16,40 [5] MinimizedTagHelpers.cshtml) - Html - world
                         HtmlContent - (676:16,49 [2] MinimizedTagHelpers.cshtml)
                             IntermediateToken - (676:16,49 [2] MinimizedTagHelpers.cshtml) - Html - \n
                     CreateTagHelper -  - TestNamespace.CatchAllTagHelper
-                    AddTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
+                    AddTagHelperHtmlAttribute -  - catchall-unbound-required - AttributeStructure.Minimized

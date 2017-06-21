@@ -21,7 +21,7 @@ Document -
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper1
                     CreateTagHelper -  - TestNamespace.InputTagHelper2
-                    AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - type - AttributeStructure.DoubleQuotes
                         HtmlContent - (344:15,17 [8] PrefixedAttributeTagHelpers.cshtml)
                             IntermediateToken - (344:15,17 [8] PrefixedAttributeTagHelpers.cshtml) - Html - checkbox
                     SetTagHelperProperty - (370:15,43 [13] PrefixedAttributeTagHelpers.cshtml) - int-dictionary - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
@@ -38,7 +38,7 @@ Document -
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper1
                     CreateTagHelper -  - TestNamespace.InputTagHelper2
-                    AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - type - AttributeStructure.DoubleQuotes
                         HtmlContent - (442:16,17 [8] PrefixedAttributeTagHelpers.cshtml)
                             IntermediateToken - (442:16,17 [8] PrefixedAttributeTagHelpers.cshtml) - Html - password
                     SetTagHelperProperty - (468:16,43 [13] PrefixedAttributeTagHelpers.cshtml) - int-dictionary - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
@@ -59,7 +59,7 @@ Document -
                     TagHelperBody - 
                     CreateTagHelper -  - TestNamespace.InputTagHelper1
                     CreateTagHelper -  - TestNamespace.InputTagHelper2
-                    AddTagHelperHtmlAttribute -  - type - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - type - AttributeStructure.DoubleQuotes
                         HtmlContent - (551:17,17 [5] PrefixedAttributeTagHelpers.cshtml)
                             IntermediateToken - (551:17,17 [5] PrefixedAttributeTagHelpers.cshtml) - Html - radio
                     SetTagHelperProperty - (590:18,31 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-grabber - IntProperty - HtmlAttributeValueStyle.DoubleQuotes
@@ -74,7 +74,7 @@ Document -
                         IntermediateToken - (634:18,75 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 98
                     SetTagHelperProperty - (634:18,75 [2] PrefixedAttributeTagHelpers.cshtml) - int-prefix-pepper - IntDictionaryProperty - HtmlAttributeValueStyle.DoubleQuotes
                         IntermediateToken - (634:18,75 [2] PrefixedAttributeTagHelpers.cshtml) - CSharp - 98
-                    AddTagHelperHtmlAttribute -  - int-prefix-salt - HtmlAttributeValueStyle.DoubleQuotes
+                    AddTagHelperHtmlAttribute -  - int-prefix-salt - AttributeStructure.DoubleQuotes
                         HtmlContent - (655:18,96 [1] PrefixedAttributeTagHelpers.cshtml)
                             IntermediateToken - (655:18,96 [1] PrefixedAttributeTagHelpers.cshtml) - Html - 8
                     SetTagHelperProperty - (693:19,34 [6] PrefixedAttributeTagHelpers.cshtml) - string-prefix-grabber - StringProperty - HtmlAttributeValueStyle.DoubleQuotes
