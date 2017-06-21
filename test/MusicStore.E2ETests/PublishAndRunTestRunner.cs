@@ -1,10 +1,9 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -12,61 +11,18 @@ using Xunit.Abstractions;
 
 namespace E2ETests
 {
-    [Trait("E2Etests", "PublishAndRun")]
-    public class PublishAndRunTests_X64 : LoggedTest
+    public class PublishAndRunTestRunner : LoggedTest
     {
-        public PublishAndRunTests_X64(ITestOutputHelper output) : base(output)
+        public PublishAndRunTestRunner(ITestOutputHelper output) 
+            : base(output)
         {
         }
 
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public Task PublishAndRunTests_X64_WebListener_CoreCLR_Portable()
-        {
-            return RunTests(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Portable);
-        }
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public Task PublishAndRunTests_X64_WebListener_CoreCLR_Standalone()
-        {
-            return RunTests(ServerType.WebListener, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
-        }
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public Task PublishAndRunTests_X64_WebListener_Clr()
-        {
-            return RunTests(ServerType.WebListener, RuntimeFlavor.Clr, ApplicationType.Portable);
-        }
-
-        [Fact]
-        public Task PublishAndRunTests_X64_Kestrel_CoreClr_Portable()
-        {
-            return RunTests(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Portable);
-        }
-
-        [Fact]
-        public Task PublishAndRunTests_X64_Kestrel_CoreClr_Standalone()
-        {
-            return RunTests(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
-        }
-
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        public Task PublishAndRunTests_X64_Kestrel_Clr()
-        {
-            return RunTests(ServerType.Kestrel, RuntimeFlavor.Clr, ApplicationType.Standalone);
-        }
-
-        private async Task RunTests(
+        public async Task RunTests(
             ServerType serverType,
             RuntimeFlavor runtimeFlavor,
-            ApplicationType applicationType)
+            ApplicationType applicationType,
+            RuntimeArchitecture runtimeArchitecture)
         {
             var testName = $"PublishAndRunTests_{serverType}_{runtimeFlavor}_{applicationType}";
             using (StartLog(out var loggerFactory, testName))
@@ -75,7 +31,7 @@ namespace E2ETests
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(
-                    Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, RuntimeArchitecture.x64)
+                    Helpers.GetApplicationPath(applicationType), serverType, runtimeFlavor, runtimeArchitecture)
                 {
                     PublishApplicationBeforeDeployment = true,
                     PreservePublishedApplicationForDebugging = Helpers.PreservePublishedApplicationForDebugging,
