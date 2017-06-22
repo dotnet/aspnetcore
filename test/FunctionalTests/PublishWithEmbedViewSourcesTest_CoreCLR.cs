@@ -2,36 +2,35 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace FunctionalTests
 {
-    public class PublishWithEmbedViewSourcesTest
-        : IClassFixture<PublishWithEmbedViewSourcesTest.PublishWithEmbedViewSourcesTestFixture>
+    public class PublishWithEmbedViewSourcesTest_CoreCLR
+        : LoggedTest, IClassFixture<CoreCLRApplicationTestFixture<PublishWithEmbedViewSources.Startup>>
     {
-        private const string ApplicationName = "PublishWithEmbedViewSources";
-
-        public PublishWithEmbedViewSourcesTest(PublishWithEmbedViewSourcesTestFixture fixture)
+        public PublishWithEmbedViewSourcesTest_CoreCLR(
+            CoreCLRApplicationTestFixture<PublishWithEmbedViewSources.Startup> fixture,
+            ITestOutputHelper output)
+            : base(output)
         {
             Fixture = fixture;
         }
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
-
-        [ConditionalTheory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task Precompilation_CanEmbedViewSourcesAsResources(RuntimeFlavor flavor)
+        [Fact]
+        public async Task Precompilation_CanEmbedViewSourcesAsResources()
         {
-            // Arrange
-            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            using (StartLog(out var loggerFactory))
             {
+                // Arrange
+                var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
+                var logger = loggerFactory.CreateLogger(Fixture.ApplicationName);
                 var expectedViews = new[]
                 {
                     "/Areas/TestArea/Views/Home/Index.cshtml",
@@ -43,7 +42,7 @@ namespace FunctionalTests
                 // Act - 1
                 var response1 = await deployment.HttpClient.GetStringWithRetryAsync(
                     "Home/Index",
-                    Fixture.Logger);
+                    logger);
 
                 // Assert - 1
                 Assert.Equal(expectedText, response1.Trim());
@@ -51,20 +50,12 @@ namespace FunctionalTests
                 // Act - 2
                 var response2 = await deployment.HttpClient.GetStringWithRetryAsync(
                     "Home/GetPrecompiledResourceNames",
-                    Fixture.Logger);
+                    logger);
 
                 // Assert - 2
                 var actual = response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
                     .OrderBy(p => p, StringComparer.OrdinalIgnoreCase);
                 Assert.Equal(expectedViews, actual);
-            }
-        }
-
-        public class PublishWithEmbedViewSourcesTestFixture : ApplicationTestFixture
-        {
-            public PublishWithEmbedViewSourcesTestFixture()
-                : base(PublishWithEmbedViewSourcesTest.ApplicationName)
-            {
             }
         }
     }

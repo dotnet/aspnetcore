@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 
-namespace ApplicationWithTagHelpers
+namespace ApplicationUsingPrecompiledViewClassLibrary
 {
     public class Program
     {

@@ -5,62 +5,61 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace FunctionalTests
 {
-    public class ApplicationWithCustomInputFilesTest
-        : IClassFixture<ApplicationWithCustomInputFilesTest.ApplicationWithCustomInputFilesTestFixture>
+    public class ApplicationWithCustomInputFilesTest_CoreCLR
+        : LoggedTest, IClassFixture<CoreCLRApplicationTestFixture<ApplicationWithCustomInputFiles.Startup>>
     {
-        private const string ApplicationName = "ApplicationWithCustomInputFiles";
-
-        public ApplicationWithCustomInputFilesTest(ApplicationWithCustomInputFilesTestFixture fixture)
+        public ApplicationWithCustomInputFilesTest_CoreCLR(
+            CoreCLRApplicationTestFixture<ApplicationWithCustomInputFiles.Startup> fixture,
+            ITestOutputHelper output)
+            : base(output)
         {
             Fixture = fixture;
         }
 
         public ApplicationTestFixture Fixture { get; }
 
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
-
-        [ConditionalTheory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task ApplicationWithCustomInputFiles_Works(RuntimeFlavor flavor)
+        [Fact]
+        public async Task ApplicationWithCustomInputFiles_Works()
         {
-            // Arrange
-            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            using (StartLog(out var loggerFactory))
             {
+                // Arrange
+                var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
                 var expectedText = "Hello Index!";
 
                 // Act
                 var response = await deployment.HttpClient.GetStringWithRetryAsync(
-                    deployment.DeploymentResult.ApplicationBaseUri,
-                    Fixture.Logger);
+                    deployment.ApplicationBaseUri,
+                    loggerFactory.CreateLogger(Fixture.ApplicationName));
 
                 // Assert
                 Assert.Equal(expectedText, response.Trim());
             }
         }
 
-        [ConditionalTheory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task MvcRazorFilesToCompile_OverridesTheFilesToBeCompiled(RuntimeFlavor flavor)
+        [Fact]
+        public async Task MvcRazorFilesToCompile_OverridesTheFilesToBeCompiled()
         {
-            // Arrange
-            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            using (StartLog(out var loggerFactory))
             {
+                // Arrange
+                var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
                 var expectedViews = new[]
-            {
-                "/Views/Home/About.cshtml",
-                "/Views/Home/Index.cshtml",
-            };
+                {
+                    "/Views/Home/About.cshtml",
+                    "/Views/Home/Index.cshtml",
+                };
 
                 // Act
                 var response2 = await deployment.HttpClient.GetStringWithRetryAsync(
                     "Home/GetPrecompiledResourceNames",
-                    Fixture.Logger);
+                    loggerFactory.CreateLogger(Fixture.ApplicationName));
 
                 // Assert
                 var actual = response2.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
@@ -69,13 +68,13 @@ namespace FunctionalTests
             }
         }
 
-        [ConditionalTheory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task MvcRazorFilesToCompile_SpecificallyDoesNotPublishFilesToBeCompiled(RuntimeFlavor flavor)
+        [Fact]
+        public async Task MvcRazorFilesToCompile_SpecificallyDoesNotPublishFilesToBeCompiled()
         {
-            // Arrange
-            using (var deployment = await Fixture.CreateDeploymentAsync(flavor))
+            using (StartLog(out var loggerFactory))
             {
+                // Arrange
+                var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
                 var viewsNotPublished = new[]
                 {
                     "Index.cshtml",
@@ -86,7 +85,7 @@ namespace FunctionalTests
                 {
                     "NotIncluded.cshtml",
                 };
-                var viewsDirectory = Path.Combine(deployment.DeploymentResult.ContentRoot, "Views", "Home");
+                var viewsDirectory = Path.Combine(deployment.ContentRoot, "Views", "Home");
 
                 // Act & Assert
                 foreach (var file in viewsPublished)
@@ -100,14 +99,6 @@ namespace FunctionalTests
                     var filePath = Path.Combine(viewsDirectory, file);
                     Assert.False(File.Exists(filePath), $"{filePath} was published.");
                 }
-            }
-        }
-
-        public class ApplicationWithCustomInputFilesTestFixture : ApplicationTestFixture
-        {
-            public ApplicationWithCustomInputFilesTestFixture()
-                : base(ApplicationWithCustomInputFilesTest.ApplicationName)
-            {
             }
         }
     }

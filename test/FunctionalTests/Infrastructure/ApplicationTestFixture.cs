@@ -3,8 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
@@ -13,40 +11,36 @@ namespace FunctionalTests
 {
     public abstract class ApplicationTestFixture : IDisposable
     {
-        public const string DotnetCLITelemetryOptOut = "DOTNET_CLI_TELEMETRY_OPTOUT";
+        private const string DotnetCLITelemetryOptOut = "DOTNET_CLI_TELEMETRY_OPTOUT";
+        private readonly object _deploymentLock = new object();
+        private Task<DeploymentResult> _deploymentTask;
+        private IApplicationDeployer _deployer;
 
-        protected ApplicationTestFixture(string applicationName)
+        protected ApplicationTestFixture(string applicationName, string applicationPath)
         {
             ApplicationName = applicationName;
-            LoggerFactory = CreateLoggerFactory();
-            Logger = LoggerFactory.CreateLogger($"{ApplicationName}");
+            ApplicationPath = applicationPath ?? ApplicationPaths.GetTestAppDirectory(applicationName);
         }
 
         public string ApplicationName { get; }
 
-        public string ApplicationPath => ApplicationPaths.GetTestAppDirectory(ApplicationName);
+        public string ApplicationPath { get; }
 
-        public ILogger Logger { get; private set; }
+        protected abstract DeploymentParameters GetDeploymentParameters();
 
-        public ILoggerFactory LoggerFactory { get; private set; }
-
-        public virtual DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
-        {
-            return GetDeploymentParameters(ApplicationPath, flavor);
-        }
-
-        public static DeploymentParameters GetDeploymentParameters(string applicationPath, RuntimeFlavor flavor)
+        protected DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
         {
             var telemetryOptOut = new KeyValuePair<string, string>(
                 DotnetCLITelemetryOptOut,
                 "1");
 
             var deploymentParameters = new DeploymentParameters(
-                applicationPath,
+                ApplicationPath,
                 ServerType.Kestrel,
                 flavor,
                 RuntimeArchitecture.x64)
             {
+                ApplicationName = ApplicationName,
                 PublishApplicationBeforeDeployment = true,
                 TargetFramework = flavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
 #if DEBUG
@@ -67,56 +61,29 @@ namespace FunctionalTests
             return deploymentParameters;
         }
 
-        public virtual ILoggerFactory CreateLoggerFactory()
-        {
-            return new LoggerFactory().AddConsole();
-        }
-
         public void Dispose()
         {
+            if (_deploymentTask?.Status == TaskStatus.RanToCompletion)
+            {
+                _deploymentTask.Result.HttpClient?.Dispose();
+            }
+
+            _deployer?.Dispose();
         }
 
-        private static void TryDeleteDirectory(string directory)
+        public async Task<DeploymentResult> CreateDeploymentAsync(ILoggerFactory loggerFactory)
         {
-            try
+            lock (_deploymentLock)
             {
-                Directory.Delete(directory, recursive: true);
-            }
-            catch (IOException)
-            {
-                // Ignore delete failures.
-            }
-        }
-
-        public async Task<Deployment> CreateDeploymentAsync(RuntimeFlavor flavor)
-        {
-            var deploymentParameters = GetDeploymentParameters(flavor);
-            var deployer = ApplicationDeployerFactory.Create(deploymentParameters, LoggerFactory);
-            var deploymentResult = await deployer.DeployAsync();
-
-            return new Deployment(deployer, deploymentResult);
-        }
-
-        public class Deployment : IDisposable
-        {
-            public Deployment(IApplicationDeployer deployer, DeploymentResult deploymentResult)
-            {
-                Deployer = deployer;
-                DeploymentResult = deploymentResult;
-                HttpClient = deploymentResult.HttpClient;
+                if (_deploymentTask == null)
+                {
+                    var deploymentParameters = GetDeploymentParameters();
+                    _deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory);
+                    _deploymentTask = _deployer.DeployAsync();
+                }
             }
 
-            public IApplicationDeployer Deployer { get; }
-
-            public HttpClient HttpClient { get; }
-
-            public DeploymentResult DeploymentResult { get; }
-
-            public void Dispose()
-            {
-                Deployer.Dispose();
-                HttpClient.Dispose();
-            }
+            return await _deploymentTask;
         }
     }
 }

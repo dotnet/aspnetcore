@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace ApplicationWithTagHelpers
+namespace ApplicationUsingPrecompiledViewClassLibrary
 {
     public class Startup
     {

@@ -5,20 +5,26 @@ using System;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace FunctionalTests
 {
-    public class ApplicationWithParseErrorsTest
+    [OSSkipCondition(OperatingSystems.Linux)]
+    [OSSkipCondition(OperatingSystems.MacOSX)]
+    public class ApplicationWithParseErrorsTest_Desktop
+        : IClassFixture<DesktopApplicationTestFixture<ApplicationWithParseErrors.Startup>>
     {
-        public static TheoryData SupportedFlavorsTheoryData => RuntimeFlavors.SupportedFlavorsTheoryData;
+        public ApplicationWithParseErrorsTest_Desktop(DesktopApplicationTestFixture<ApplicationWithParseErrors.Startup> fixture)
+        {
+            Fixture = fixture;
+        }
 
-        [ConditionalTheory]
-        [MemberData(nameof(SupportedFlavorsTheoryData))]
-        public async Task PublishingPrintsParseErrors(RuntimeFlavor flavor)
+        public ApplicationTestFixture Fixture { get; }
+
+        [ConditionalFact]
+        public async Task PublishingPrintsParseErrors()
         {
             // Arrange
             var applicationPath = ApplicationPaths.GetTestAppDirectory("ApplicationWithParseErrors");
@@ -31,19 +37,16 @@ namespace FunctionalTests
 
             };
             var testSink = new TestSink();
-            var deploymentParameters = ApplicationTestFixture.GetDeploymentParameters(applicationPath, flavor);
             var loggerFactory = new TestLoggerFactory(testSink, enabled: true);
-            using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
-            {
-                // Act
-                await Assert.ThrowsAsync<Exception>(() => deployer.DeployAsync());
 
-                // Assert
-                var logs = testSink.Writes.Select(w => w.State.ToString().Trim()).ToList();
-                foreach (var expectedError in expectedErrors)
-                {
-                    Assert.Contains(logs, log => log.Contains(expectedError));
-                }
+            // Act
+            await Assert.ThrowsAsync<Exception>(() => Fixture.CreateDeploymentAsync(loggerFactory));
+
+            // Assert
+            var logs = testSink.Writes.Select(w => w.State.ToString().Trim()).ToList();
+            foreach (var expectedError in expectedErrors)
+            {
+                Assert.Contains(logs, log => log.Contains(expectedError));
             }
         }
     }

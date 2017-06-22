@@ -2,7 +2,7 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace SimpleApp
+namespace SimpleAppDesktopOnly
 {
     public class Startup
     {
