@@ -130,6 +130,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task ViewStart_IsDiscoveredForFilesOutsidePageRoot()
+        {
+            //Arrange
+            var newLine = Environment.NewLine;
+            var expected = $"Hello from _ViewStart at root{newLine}Hello from _ViewStart{newLine}Hello from page";
+
+            // Act
+            var response = await Client.GetStringAsync("/WithViewStart/ViewStartAtRoot");
+
+            // Assert
+            Assert.Equal(expected, response.Trim());
+        }
+
+        [Fact]
         public async Task ViewImport_IsDiscoveredWhenRootDirectoryIsSpecified()
         {
             // Test for https://github.com/aspnet/Mvc/issues/5915

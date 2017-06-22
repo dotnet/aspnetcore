@@ -196,8 +196,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 loader.Object,
                 CreateActionDescriptorCollection(descriptor),
                 razorPageFactoryProvider: razorPageFactoryProvider.Object,
-                razorProject: defaultRazorProject,
-                razorPagesOptions: new RazorPagesOptions { RootDirectory = "/" });
+                razorProject: defaultRazorProject);
 
             var context = new ActionInvokerProviderContext(new ActionContext()
             {
@@ -317,67 +316,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         [Fact]
         public void GetViewStartFactories_FindsFullHeirarchy()
         {
-            // Arrange
-            var descriptor = new PageActionDescriptor()
-            {
-                RelativePath = "/Views/Deeper/Index.cshtml",
-                FilterDescriptors = new FilterDescriptor[0],
-                ViewEnginePath = "/Views/Deeper/Index.cshtml"
-            };
 
-            var loader = new Mock<IPageLoader>();
-            loader
-                .Setup(l => l.Load(It.IsAny<PageActionDescriptor>()))
-                .Returns(CreateCompiledPageActionDescriptor(descriptor, typeof(TestPageModel)));
-
-            var fileProvider = new TestFileProvider();
-            fileProvider.AddFile("/View/Deeper/Not_ViewStart.cshtml", "page content");
-            fileProvider.AddFile("/View/Wrong/_ViewStart.cshtml", "page content");
-            fileProvider.AddFile("/_ViewStart.cshtml", "page content ");
-            fileProvider.AddFile("/Views/_ViewStart.cshtml", "@page starts!");
-            fileProvider.AddFile("/Views/Deeper/_ViewStart.cshtml", "page content");
-
-            var razorProject = new TestRazorProject(fileProvider);
-
-            var mock = new Mock<IRazorPageFactoryProvider>();
-            mock
-                .Setup(p => p.CreateFactory("/Views/Deeper/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
-                .Verifiable();
-            mock
-                .Setup(p => p.CreateFactory("/Views/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
-                .Verifiable();
-            mock
-                .Setup(p => p.CreateFactory("/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
-                .Verifiable();
-
-            var razorPageFactoryProvider = mock.Object;
-
-            var invokerProvider = CreateInvokerProvider(
-                loader.Object,
-                CreateActionDescriptorCollection(descriptor),
-                pageProvider: null,
-                modelProvider: null,
-                razorPageFactoryProvider: razorPageFactoryProvider,
-                razorProject: razorProject,
-                razorPagesOptions: new RazorPagesOptions { RootDirectory = "/" });
-
-            var compiledDescriptor = CreateCompiledPageActionDescriptor(descriptor);
-
-            // Act
-            var factories = invokerProvider.GetViewStartFactories(compiledDescriptor);
-
-            // Assert
-            mock.Verify();
-        }
-
-        [Theory]
-        [InlineData("/Pages/Level1/")]
-        [InlineData("/Pages/Level1")]
-        public void GetPageFactories_DoesNotFindViewStartsOutsideBaseDirectory(string rootDirectory)
-        {
             // Arrange
             var descriptor = new PageActionDescriptor()
             {
@@ -414,19 +353,22 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 .Setup(p => p.CreateFactory("/Pages/Level1/_ViewStart.cshtml"))
                 .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
                 .Verifiable();
-            var razorPageFactoryProvider = mock.Object;
+            mock
+                .Setup(p => p.CreateFactory("/Pages/_ViewStart.cshtml"))
+                .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
+                .Verifiable();
+            mock
+                .Setup(p => p.CreateFactory("/_ViewStart.cshtml"))
+                .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
+                .Verifiable();
 
-            var options = new RazorPagesOptions
-            {
-                RootDirectory = rootDirectory,
-            };
+            var razorPageFactoryProvider = mock.Object;
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,
                 CreateActionDescriptorCollection(descriptor),
                 razorPageFactoryProvider: razorPageFactoryProvider,
-                razorProject: razorProject,
-                razorPagesOptions: options);
+                razorProject: razorProject);
 
             // Act
             var factories = invokerProvider.GetViewStartFactories(compiledPageDescriptor);
@@ -474,8 +416,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 pageProvider: null,
                 modelProvider: null,
                 razorPageFactoryProvider: pageFactory.Object,
-                razorProject: razorProject,
-                razorPagesOptions: new RazorPagesOptions { RootDirectory = "/" });
+                razorProject: razorProject);
 
             var compiledDescriptor = CreateCompiledPageActionDescriptor(descriptor);
 
@@ -513,8 +454,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IPageFactoryProvider pageProvider = null,
             IPageModelFactoryProvider modelProvider = null,
             IRazorPageFactoryProvider razorPageFactoryProvider = null,
-            RazorProject razorProject = null,
-            RazorPagesOptions razorPagesOptions = null)
+            RazorProject razorProject = null)
         {
             var tempDataFactory = new Mock<ITempDataDictionaryFactory>();
             tempDataFactory
@@ -544,7 +484,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 tempDataFactory.Object,
                 new TestOptionsManager<MvcOptions>(),
                 new TestOptionsManager<HtmlHelperOptions>(),
-                new TestOptionsManager<RazorPagesOptions>(razorPagesOptions ?? new RazorPagesOptions()),
                 Mock.Of<IPageHandlerMethodSelector>(),
                 razorProject,
                 new DiagnosticListener("Microsoft.AspNetCore"),

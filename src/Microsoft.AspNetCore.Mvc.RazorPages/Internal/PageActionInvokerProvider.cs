@@ -37,7 +37,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly IModelMetadataProvider _modelMetadataProvider;
         private readonly ITempDataDictionaryFactory _tempDataFactory;
         private readonly HtmlHelperOptions _htmlHelperOptions;
-        private readonly RazorPagesOptions _razorPagesOptions;
         private readonly IPageHandlerMethodSelector _selector;
         private readonly RazorProject _razorProject;
         private readonly DiagnosticSource _diagnosticSource;
@@ -56,7 +55,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             ITempDataDictionaryFactory tempDataFactory,
             IOptions<MvcOptions> mvcOptions,
             IOptions<HtmlHelperOptions> htmlHelperOptions,
-            IOptions<RazorPagesOptions> razorPagesOptions,
             IPageHandlerMethodSelector selector,
             RazorProject razorProject,
             DiagnosticSource diagnosticSource,
@@ -73,7 +71,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _modelMetadataProvider = modelMetadataProvider;
             _tempDataFactory = tempDataFactory;
             _htmlHelperOptions = htmlHelperOptions.Value;
-            _razorPagesOptions = razorPagesOptions.Value;
             _selector = selector;
             _razorProject = razorProject;
             _diagnosticSource = diagnosticSource;
@@ -210,8 +207,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         internal List<Func<IRazorPage>> GetViewStartFactories(CompiledPageActionDescriptor descriptor)
         {
             var viewStartFactories = new List<Func<IRazorPage>>();
+            // Always pick up all _ViewStarts, including the ones outside the Pages root.
             var viewStartItems = _razorProject.FindHierarchicalItems(
-                _razorPagesOptions.RootDirectory,
                 descriptor.RelativePath,
                 ViewStartFileName);
             foreach (var item in viewStartItems)
