@@ -20,7 +20,7 @@ Behind the scenes, it uses the [`Microsoft.AspNetCore.NodeServices`](https://git
 
 ### Installation into existing projects
 
- * Add `Microsoft.AspNetCore.SpaServices` to the dependencies list in your `project.json` file
+ * Install the `Microsoft.AspNetCore.SpaServices` NuGet package
  * Run `dotnet restore` (or if you use Visual Studio, just wait a moment - it will restore dependencies automatically)
  * Install supporting NPM packages for the features you'll be using:
    * For **server-side prerendering**, install `aspnet-prerendering`
