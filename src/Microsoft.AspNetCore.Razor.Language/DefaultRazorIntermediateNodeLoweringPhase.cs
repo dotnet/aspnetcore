@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var i = 0;
             foreach (var @namespace in namespaces)
             {
-                var @using = new UsingStatementIntermediateNode()
+                var @using = new UsingDirectiveIntermediateNode()
                 {
                     Content = @namespace.Key,
                     Source = @namespace.Value,

@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     public abstract class BasicWriter
     {
-        public abstract void WriteUsingStatement(CSharpRenderingContext context, UsingStatementIntermediateNode node);
+        public abstract void WriteUsingDirective(CSharpRenderingContext context, UsingDirectiveIntermediateNode node);
 
         public abstract void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIntermediateNode node);
 

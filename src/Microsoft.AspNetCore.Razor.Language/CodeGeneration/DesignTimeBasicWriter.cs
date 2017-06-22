@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     public class DesignTimeBasicWriter : BasicWriter
     {
-        public override void WriteUsingStatement(CSharpRenderingContext context, UsingStatementIntermediateNode node)
+        public override void WriteUsingDirective(CSharpRenderingContext context, UsingDirectiveIntermediateNode node)
         {
             if (node.Source.HasValue)
             {

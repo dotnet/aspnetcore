@@ -2,13 +2,13 @@ Document -
     CSharpCode - 
         IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml))]
     NamespaceDeclaration -  - AspNetCore
-        UsingStatement - (1:0,1 [14] ) - System
-        UsingStatement - (16:1,1 [34] ) - System.Collections.Generic
-        UsingStatement - (51:2,1 [19] ) - System.Linq
-        UsingStatement - (71:3,1 [30] ) - System.Threading.Tasks
-        UsingStatement - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
-        UsingStatement - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
-        UsingStatement - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        UsingDirective - (1:0,1 [14] ) - System
+        UsingDirective - (16:1,1 [34] ) - System.Collections.Generic
+        UsingDirective - (51:2,1 [19] ) - System.Linq
+        UsingDirective - (71:3,1 [30] ) - System.Threading.Tasks
+        UsingDirective - (102:4,1 [32] ) - Microsoft.AspNetCore.Mvc
+        UsingDirective - (135:5,1 [42] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingDirective - (178:6,1 [45] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 MalformedDirective - (0:0,0 [6] MalformedPageDirective.cshtml)

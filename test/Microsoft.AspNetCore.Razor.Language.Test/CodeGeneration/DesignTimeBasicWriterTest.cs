@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
     public class DesignTimeBasicWriterTest
     {
         [Fact]
-        public void WriteUsingStatement_NoSource_WritesContent()
+        public void WriteUsingDirective_NoSource_WritesContent()
         {
             // Arrange
             var writer = new DesignTimeBasicWriter();
@@ -21,13 +21,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Writer = new CSharpCodeWriter()
             };
 
-            var node = new UsingStatementIntermediateNode()
+            var node = new UsingDirectiveIntermediateNode()
             {
                 Content = "System",
             };
 
             // Act
-            writer.WriteUsingStatement(context, node);
+            writer.WriteUsingDirective(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         [Fact]
-        public void WriteUsingStatement_WithSource_WritesContentWithLinePragmaAndMapping()
+        public void WriteUsingDirective_WithSource_WritesContentWithLinePragmaAndMapping()
         {
             // Arrange
             var writer = new DesignTimeBasicWriter();
@@ -53,14 +53,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var originalSpan = new SourceSpan("test.cshtml", 0, 0, 0, 6);
             var generatedSpan = new SourceSpan(null, 21 + Environment.NewLine.Length, 1, 0, 6);
             var expectedLineMapping = new LineMapping(originalSpan, generatedSpan);
-            var node = new UsingStatementIntermediateNode()
+            var node = new UsingDirectiveIntermediateNode()
             {
                 Content = "System",
                 Source = originalSpan,
             };
 
             // Act
-            writer.WriteUsingStatement(context, node);
+            writer.WriteUsingDirective(context, node);
 
             // Assert
             var mapping = Assert.Single(context.LineMappings);

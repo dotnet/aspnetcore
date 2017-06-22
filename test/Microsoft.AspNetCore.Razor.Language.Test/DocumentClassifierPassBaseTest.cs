@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             };
 
             var builder = IntermediateNodeBuilder.Create(documentNode);
-            builder.Add(new UsingStatementIntermediateNode());
+            builder.Add(new UsingDirectiveIntermediateNode());
 
             var pass = new TestDocumentClassifierPass();
             pass.Engine = RazorEngine.CreateEmpty(b => { });
@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var @namespace = SingleChild<NamespaceDeclarationIntermediateNode>(documentNode);
             Children(
                 @namespace,
-                n => Assert.IsType<UsingStatementIntermediateNode>(n),
+                n => Assert.IsType<UsingDirectiveIntermediateNode>(n),
                 n => Assert.IsType<ClassDeclarationIntermediateNode>(n));
         }
 

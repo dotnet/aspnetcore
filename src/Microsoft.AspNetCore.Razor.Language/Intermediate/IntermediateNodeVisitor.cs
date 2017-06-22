@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             VisitDefault(node);
         }
 
-        public virtual void VisitUsingStatement(UsingStatementIntermediateNode node)
+        public virtual void VisitUsingDirective(UsingDirectiveIntermediateNode node)
         {
             VisitDefault(node);
         }

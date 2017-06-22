@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
@@ -12,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
     public class RuntimeBasicWriterTest
     {
         [Fact]
-        public void WriteUsingStatement_NoSource_WritesContent()
+        public void WriteUsingDirective_NoSource_WritesContent()
         {
             // Arrange
             var writer = new RuntimeBasicWriter();
@@ -20,14 +19,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 Writer = new CSharpCodeWriter()
             };
-
-            var node = new UsingStatementIntermediateNode()
+            
+            var node = new UsingDirectiveIntermediateNode()
             {
                 Content = "System",
             };
 
             // Act
-            writer.WriteUsingStatement(context, node);
+            writer.WriteUsingDirective(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();
@@ -39,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         [Fact]
-        public void WriteUsingStatement_WithSource_WritesContentWithLinePragma()
+        public void WriteUsingDirective_WithSource_WritesContentWithLinePragma()
         {
             // Arrange
             var writer = new RuntimeBasicWriter();
@@ -48,14 +47,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Writer = new CSharpCodeWriter()
             };
 
-            var node = new UsingStatementIntermediateNode()
+            var node = new UsingDirectiveIntermediateNode()
             {
                 Content = "System",
                 Source = new SourceSpan("test.cshtml", 0, 0, 0, 3),
             };
 
             // Act
-            writer.WriteUsingStatement(context, node);
+            writer.WriteUsingDirective(context, node);
 
             // Assert
             var csharp = context.Writer.Builder.ToString();

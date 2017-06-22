@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public sealed class UsingStatementIntermediateNode : IntermediateNode
+    public sealed class UsingDirectiveIntermediateNode : IntermediateNode
     {
         private RazorDiagnosticCollection _diagnostics;
 
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            visitor.VisitUsingStatement(this);
+            visitor.VisitUsingDirective(this);
         }
     }
 }

@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         {
             try
             {
-                var @using = Assert.IsType<UsingStatementIntermediateNode>(node);
+                var @using = Assert.IsType<UsingDirectiveIntermediateNode>(node);
                 Assert.Equal(expected, @using.Content);
             }
             catch (XunitException e)

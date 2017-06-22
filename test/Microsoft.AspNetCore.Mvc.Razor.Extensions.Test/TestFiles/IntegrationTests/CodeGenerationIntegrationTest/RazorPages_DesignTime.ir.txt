@@ -2,15 +2,15 @@ Document -
     CSharpCode - 
         IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages_cshtml), null)]
     NamespaceDeclaration -  - AspNetCore
-        UsingStatement -  - TModel = global::System.Object
-        UsingStatement - (1:0,1 [12] ) - System
-        UsingStatement - (16:1,1 [32] ) - System.Collections.Generic
-        UsingStatement - (51:2,1 [17] ) - System.Linq
-        UsingStatement - (71:3,1 [28] ) - System.Threading.Tasks
-        UsingStatement - (102:4,1 [30] ) - Microsoft.AspNetCore.Mvc
-        UsingStatement - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
-        UsingStatement - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
-        UsingStatement - (55:4,1 [41] RazorPages.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
+        UsingDirective -  - TModel = global::System.Object
+        UsingDirective - (1:0,1 [12] ) - System
+        UsingDirective - (16:1,1 [32] ) - System.Collections.Generic
+        UsingDirective - (51:2,1 [17] ) - System.Linq
+        UsingDirective - (71:3,1 [28] ) - System.Threading.Tasks
+        UsingDirective - (102:4,1 [30] ) - Microsoft.AspNetCore.Mvc
+        UsingDirective - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
+        UsingDirective - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
+        UsingDirective - (55:4,1 [41] RazorPages.cshtml) - Microsoft.AspNetCore.Mvc.RazorPages
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             DesignTimeDirective - 
                 DirectiveToken - (231:7,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>

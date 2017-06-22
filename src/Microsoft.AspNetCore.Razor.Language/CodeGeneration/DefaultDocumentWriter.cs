@@ -102,9 +102,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 RenderChildren(node);
             }
 
-            public override void VisitUsingStatement(UsingStatementIntermediateNode node)
+            public override void VisitUsingDirective(UsingDirectiveIntermediateNode node)
             {
-                Context.BasicWriter.WriteUsingStatement(Context, node);
+                Context.BasicWriter.WriteUsingDirective(Context, node);
             }
 
             public override void VisitNamespaceDeclaration(NamespaceDeclarationIntermediateNode node)

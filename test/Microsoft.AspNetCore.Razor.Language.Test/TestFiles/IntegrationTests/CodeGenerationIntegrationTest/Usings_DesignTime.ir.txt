@@ -1,11 +1,11 @@
 Document - 
     NamespaceDeclaration -  - Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
-        UsingStatement - (1:0,1 [15] Usings.cshtml) - System.IO
-        UsingStatement - (19:1,1 [32] Usings.cshtml) - Foo = System.Text.Encoding
-        UsingStatement - (54:2,1 [12] Usings.cshtml) - System
-        UsingStatement - (71:4,1 [19] Usings.cshtml) - static System
-        UsingStatement - (93:5,1 [27] Usings.cshtml) - static System.Console
-        UsingStatement - (123:6,1 [41] Usings.cshtml) - static global::System.Text.Encoding
+        UsingDirective - (1:0,1 [15] Usings.cshtml) - System.IO
+        UsingDirective - (19:1,1 [32] Usings.cshtml) - Foo = System.Text.Encoding
+        UsingDirective - (54:2,1 [12] Usings.cshtml) - System
+        UsingDirective - (71:4,1 [19] Usings.cshtml) - static System
+        UsingDirective - (93:5,1 [27] Usings.cshtml) - static System.Console
+        UsingDirective - (123:6,1 [41] Usings.cshtml) - static global::System.Text.Encoding
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Usings_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 

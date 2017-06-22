@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         [Fact]
-        public void ModelDirectivePass_DesignTime_AddsTModelUsingStatement()
+        public void ModelDirectivePass_DesignTime_AddsTModelUsingDirective()
         {
             // Arrange
             var codeDocument = CreateDocument(@"
@@ -180,12 +180,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("BaseType<dynamic>", @class.BaseType);
 
             var @namespace = FindNamespaceNode(irDocument);
-            var usingNode = Assert.IsType<UsingStatementIntermediateNode>(@namespace.Children[0]);
+            var usingNode = Assert.IsType<UsingDirectiveIntermediateNode>(@namespace.Children[0]);
             Assert.Equal($"TModel = global::{typeof(object).FullName}", usingNode.Content);
         }
 
         [Fact]
-        public void ModelDirectivePass_DesignTime_WithModel_AddsTModelUsingStatement()
+        public void ModelDirectivePass_DesignTime_WithModel_AddsTModelUsingDirective()
         {
             // Arrange
             var codeDocument = CreateDocument(@"
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("BaseType<SomeType>", @class.BaseType);
 
             var @namespace = FindNamespaceNode(irDocument);
-            var usingNode = Assert.IsType<UsingStatementIntermediateNode>(@namespace.Children[0]);
+            var usingNode = Assert.IsType<UsingDirectiveIntermediateNode>(@namespace.Children[0]);
             Assert.Equal($"TModel = global::System.Object", usingNode.Content);
         }
 

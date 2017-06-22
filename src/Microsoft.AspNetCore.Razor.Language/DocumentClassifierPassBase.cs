@@ -123,14 +123,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _method = method;
             }
 
-            public override void VisitUsingStatement(UsingStatementIntermediateNode node)
+            public override void VisitUsingDirective(UsingDirectiveIntermediateNode node)
             {
                 var children = _namespace.Current.Children;
                 var i = children.Count - 1;
                 for (; i >= 0; i--)
                 {
                     var child = children[i];
-                    if (child is UsingStatementIntermediateNode)
+                    if (child is UsingDirectiveIntermediateNode)
                     {
                         break;
                     }

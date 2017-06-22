@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, string.Join(" ", node.Modifiers), node.ReturnType, node.Name);
         }
 
-        public override void VisitUsingStatement(UsingStatementIntermediateNode node)
+        public override void VisitUsingDirective(UsingDirectiveIntermediateNode node)
         {
             WriteContentNode(node, node.Content);
         }

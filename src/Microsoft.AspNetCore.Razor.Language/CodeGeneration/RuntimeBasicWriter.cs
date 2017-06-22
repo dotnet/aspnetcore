@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public string TemplateTypeName { get; set; } = "Microsoft.AspNetCore.Mvc.Razor.HelperResult";
 
-        public override void WriteUsingStatement(CSharpRenderingContext context, UsingStatementIntermediateNode node)
+        public override void WriteUsingDirective(CSharpRenderingContext context, UsingDirectiveIntermediateNode node)
         {
             if (node.Source.HasValue)
             {
