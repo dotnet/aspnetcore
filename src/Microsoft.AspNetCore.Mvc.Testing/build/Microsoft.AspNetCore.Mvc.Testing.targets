@@ -1,0 +1,37 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <!--
+    Work around https://github.com/NuGet/Home/issues/4412. MVC uses DependencyContext.Load() which looks next to a .dll
+    for a .deps.json. Information isn't available elsewhere. Need the .deps.json file for all web site applications.
+  -->
+  <PropertyGroup>
+    <!--
+      The functional tests act as the host application for all test websites. Since the CLI copies all reference
+      assembly dependencies in websites to their corresponding bin/{config}/refs folder we need to re-calculate
+      reference assemblies for this project so there's a corresponding refs folder in our output. Without it
+      our websites deps files will fail to find their assembly referenes.
+    -->
+
+    <PreserveCompilationContext>true</PreserveCompilationContext>
+  </PropertyGroup>
+
+  <PropertyGroup Condition=" '$(TargetFramework)' != 'netcoreapp2.0' ">
+    <!-- Work around https://github.com/dotnet/sdk/issues/926. Align with bitness of the web site projects. -->
+    <PlatformTarget>x86</PlatformTarget>
+
+    <!--
+      Work around https://github.com/Microsoft/vstest/issues/428 aka https://github.com/aspnet/Mvc/issues/5873.
+      Create the appropriate binding redirects.
+    -->
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+
+  <Target Name="CopyAditionalFiles" AfterTargets="Build" Condition="'$(TargetFramework)'!=''">
+    <ItemGroup>
+      <DepsFilePaths Include="$([System.IO.Path]::ChangeExtension('%(_ResolvedProjectReferencePaths.FullPath)', '.deps.json'))" />
+    </ItemGroup>
+
+    <Copy SourceFiles="%(DepsFilePaths.FullPath)" DestinationFolder="$(OutputPath)" Condition="Exists('%(DepsFilePaths.FullPath)')" />
+  </Target>
+</Project>

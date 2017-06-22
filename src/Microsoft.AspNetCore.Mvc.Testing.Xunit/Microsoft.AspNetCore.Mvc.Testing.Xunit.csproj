@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  
+  <Import Project="..\..\build\common.props" />
+  
+  <PropertyGroup>
+    <Description>XUnit convenience fixture for creating functional tests for MVC applications.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <PackageTags>aspnetcore;aspnetcoremvc;aspnetcoremvctesting</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="xunit" Version="$(XunitVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="build\**\*.targets" Pack="true" PackagePath="%(Identity)" />
+    <Content Include="build\xunit.runner.json" Pack="true" PackagePath="%(Identity)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.csproj" />
+  </ItemGroup>
+
+</Project>

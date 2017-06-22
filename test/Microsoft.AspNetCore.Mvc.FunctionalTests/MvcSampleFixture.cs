@@ -4,10 +4,8 @@
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     public class MvcSampleFixture<TStartup> : MvcTestFixture<TStartup>
+        where TStartup : class
     {
-        public MvcSampleFixture()
-            : base("samples")
-        {
-        }
+        public MvcSampleFixture() : base("samples") { }
     }
 }

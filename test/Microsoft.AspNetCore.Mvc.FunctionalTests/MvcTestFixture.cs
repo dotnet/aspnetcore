@@ -1,71 +1,30 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
-using System.Net.Http;
 using System.Reflection;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.ApplicationParts;
-using Microsoft.AspNetCore.Mvc.Controllers;
-using Microsoft.AspNetCore.Mvc.ViewComponents;
-using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class MvcTestFixture<TStartup> : IDisposable
+    public class MvcTestFixture<TStartup> : WebApplicationTestFixture<TStartup>
+        where TStartup : class
     {
-        private readonly TestServer _server;
-
         public MvcTestFixture()
-            : this(Path.Combine("test", "WebSites"))
+            : base(Path.Combine("test", "WebSites"))
         {
         }
 
         protected MvcTestFixture(string solutionRelativePath)
+            : base(solutionRelativePath)
         {
-            // RequestLocalizationOptions saves the current culture when constructed, potentially changing response
-            // localization i.e. RequestLocalizationMiddleware behavior. Ensure the saved culture
-            // (DefaultRequestCulture) is consistent regardless of system configuration or personal preferences.
-            using (new CultureReplacer())
-            {
-                var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
-                var contentRoot = SolutionPathUtility.GetProjectPath(solutionRelativePath, startupAssembly);
-
-                var builder = new WebHostBuilder()
-                    .UseContentRoot(contentRoot)
-                    .ConfigureServices(InitializeServices)
-                    .UseStartup(typeof(TStartup));
-
-                _server = new TestServer(builder);
-            }
-
-            Client = _server.CreateClient();
-            Client.BaseAddress = new Uri("http://localhost");
         }
 
-        public HttpClient Client { get; }
-
-        public void Dispose()
+        protected override void ConfigureApplication(MvcWebApplicationBuilder<TStartup> builder)
         {
-            Client.Dispose();
-            _server.Dispose();
-        }
-
-        protected virtual void InitializeServices(IServiceCollection services)
-        {
-            var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
-
-            // Inject a custom application part manager. Overrides AddMvcCore() because that uses TryAdd().
-            var manager = new ApplicationPartManager();
-            manager.ApplicationParts.Add(new AssemblyPart(startupAssembly));
-
-            manager.FeatureProviders.Add(new ControllerFeatureProvider());
-            manager.FeatureProviders.Add(new ViewComponentFeatureProvider());
-
-            services.AddSingleton(manager);
+            base.ConfigureApplication(builder);
+            builder.ApplicationAssemblies.Clear();
+            builder.ApplicationAssemblies.Add(typeof(TStartup).GetTypeInfo().Assembly);
         }
     }
 }

@@ -1,0 +1,14 @@
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <Target Name="CopyXunitRunner" AfterTargets="Build" Condition="'$(TargetFramework)'!=''">
+    <ItemGroup>
+      <XunitRunnerJson Include="$(MSBuildThisFileDirectory)xunit.runner.json" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <ShouldCopyXUnitRunnerJson Condition="Exists('%(XunitRunnerJson.FullPath)') and !Exists('$(OutputPath)xunit.runner.json') and '$(DisableCopyXunitRunnerJson)' == ''" >true</ShouldCopyXUnitRunnerJson>
+    </PropertyGroup>
+    <Copy SourceFiles="%(XunitRunnerJson.FullPath)" DestinationFolder="$(OutputPath)" Condition="'$(ShouldCopyXUnitRunnerJson)' != ''" />
+    <Message Condition="'$(ShouldCopyXUnitRunnerJson)' != ''" Text="Automatically copied 'xunit.runner.json' to '$(OutputPath)'. Set a non-empty value to 'DisableCopyXunitRunnerJson' to disable this behavior. You will have to manually configure 'shadowCopy: false' for functional tests to run properly." />
+  </Target>
+</Project>
