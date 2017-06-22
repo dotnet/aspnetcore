@@ -137,6 +137,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         }
 
+        [Fact]
+        public async Task InvalidOperation_AddsErrorToModelState()
+        {
+            // Arrange
+            var input = "[{ 'op': 'invalid', 'path': 'Reviews/1/Rating', 'from': 'Reviews/0/Rating'}]".Replace("'", "\"");
+            var request = GetPatchRequest(input);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
         private HttpRequestMessage GetPatchRequest(string body)
         {
             return new HttpRequestMessage

@@ -11,6 +11,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -210,6 +211,11 @@ namespace Microsoft.AspNetCore.Mvc
                     Assert.Equal(typeof(Stream), excludeFilter.Type);
                 },
                 provider => Assert.IsType<DataAnnotationsMetadataProvider>(provider),
+                provider =>
+                {
+                    var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
+                    Assert.Equal(typeof(IJsonPatchDocument), excludeFilter.Type);
+                },
                 provider =>
                 {
                     var excludeFilter = Assert.IsType<SuppressChildValidationMetadataProvider>(provider);
