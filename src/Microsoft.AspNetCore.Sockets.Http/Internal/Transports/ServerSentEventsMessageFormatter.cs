@@ -2,8 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Binary;
 using System.Buffers;
+using System.IO;
 
 namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 {
@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
         private const byte LineFeed = (byte)'\n';
 
-        public static bool TryWriteMessage(ReadOnlySpan<byte> payload, IOutput output)
+        public static bool TryWriteMessage(ReadOnlySpan<byte> payload, MemoryStream output)
         {
             // Write the payload
             if (!TryWritePayload(payload, output))
@@ -22,15 +22,12 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                 return false;
             }
 
-            if (!output.TryWrite(Newline))
-            {
-                return false;
-            }
+            output.Write(Newline, 0, Newline.Length);
 
             return true;
         }
 
-        private static bool TryWritePayload(ReadOnlySpan<byte> payload, IOutput output)
+        private static bool TryWritePayload(ReadOnlySpan<byte> payload, Stream output)
         {
             // Short-cut for empty payload
             if (payload.Length == 0)
@@ -88,22 +85,16 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             return true;
         }
 
-        private static bool TryWriteLine(ReadOnlySpan<byte> line, IOutput output)
+        private static bool TryWriteLine(ReadOnlySpan<byte> payload, Stream output)
         {
-            if (!output.TryWrite(DataPrefix))
-            {
-                return false;
-            }
+            output.Write(DataPrefix, 0, DataPrefix.Length);
 
-            if (!output.TryWrite(line))
-            {
-                return false;
-            }
+            var buffer = ArrayPool<byte>.Shared.Rent(payload.Length);
+            payload.CopyTo(buffer);
+            output.Write(buffer, 0, payload.Length);
+            ArrayPool<byte>.Shared.Return(buffer);
 
-            if (!output.TryWrite(Newline))
-            {
-                return false;
-            }
+            output.Write(Newline, 0, Newline.Length);
 
             return true;
         }

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Buffers;
+using System.IO;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
-using Microsoft.AspNetCore.Sockets.Tests.Internal;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {
@@ -12,8 +12,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         private static readonly Random Random = new Random();
         private readonly TextMessageParser _textMessageParser = new TextMessageParser();
         private readonly BinaryMessageParser _binaryMessageParser = new BinaryMessageParser();
-        private ReadOnlyBytes _binaryInput;
-        private ReadOnlyBytes _textInput;
+        private ReadOnlyBuffer<byte> _binaryInput;
+        private ReadOnlyBuffer<byte> _textInput;
 
         [Params(32, 64)]
         public int ChunkSize { get; set; }
@@ -26,30 +26,30 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         {
             var buffer = new byte[MessageLength];
             Random.NextBytes(buffer);
-            var output = new ArrayOutput(MessageLength + 32);
+            var output = new MemoryStream();
             if (!BinaryMessageFormatter.TryWriteMessage(buffer, output))
             {
                 throw new InvalidOperationException("Failed to format message");
             }
 
-            _binaryInput = output.ToArray().ToChunkedReadOnlyBytes(ChunkSize);
+            _binaryInput = output.ToArray();
 
             buffer = new byte[MessageLength];
             Random.NextBytes(buffer);
-            output = new ArrayOutput(MessageLength + 32);
+            output = new MemoryStream();
             if (!TextMessageFormatter.TryWriteMessage(buffer, output))
             {
                 throw new InvalidOperationException("Failed to format message");
             }
 
-            _textInput = output.ToArray().ToChunkedReadOnlyBytes(ChunkSize);
+            _textInput = output.ToArray();
         }
 
         [Benchmark]
         public void SingleBinaryMessage()
         {
-            var reader = new BytesReader(_binaryInput);
-            if (!_binaryMessageParser.TryParseMessage(ref reader, out _))
+            var buffer = _binaryInput.Span;
+            if (!_binaryMessageParser.TryParseMessage(ref buffer, out _))
             {
                 throw new InvalidOperationException("Failed to parse");
             }
@@ -58,8 +58,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void SingleTextMessage()
         {
-            var reader = new BytesReader(_textInput);
-            if (!_textMessageParser.TryParseMessage(ref reader, out _))
+            var buffer = _textInput.Span;
+            if (!_textMessageParser.TryParseMessage(ref buffer, out _))
             {
                 throw new InvalidOperationException("Failed to parse");
             }

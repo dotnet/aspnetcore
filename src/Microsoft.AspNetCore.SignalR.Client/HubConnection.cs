@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             try
             {
-                var payload = await _protocol.WriteToArrayAsync(invocationMessage);
+                var payload = _protocol.WriteToArray(invocationMessage);
 
                 _logger.LogInformation("Sending Invocation '{invocationId}'", invocationMessage.InvocationId);
 

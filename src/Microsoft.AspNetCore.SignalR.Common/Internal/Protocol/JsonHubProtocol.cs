@@ -47,11 +47,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
         {
-            var reader = new BytesReader(input.ToArray());
             messages = new List<HubMessage>();
 
             var parser = new TextMessageParser();
-            while (parser.TryParseMessage(ref reader, out var payload))
+            while (parser.TryParseMessage(ref input, out var payload))
             {
                 // TODO: Need a span-native JSON parser!
                 using (var memoryStream = new MemoryStream(payload.ToArray()))
@@ -63,9 +62,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return messages.Count > 0;
         }
 
-        public bool TryWriteMessage(HubMessage message, IOutput output)
+        public bool TryWriteMessage(HubMessage message, Stream output)
         {
-            // TODO: Need IOutput-compatible JSON serializer!
             using (var memoryStream = new MemoryStream())
             {
                 WriteMessage(message, memoryStream);

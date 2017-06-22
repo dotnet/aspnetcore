@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         public void ReadMessage(byte[] encoded, string payload)
         {
             var parser = new BinaryMessageParser();
-            var reader = new BytesReader(encoded);
-            Assert.True(parser.TryParseMessage(ref reader, out var message));
-            Assert.Equal(reader.Index, encoded.Length);
+            ReadOnlySpan<byte> span = encoded.AsSpan();
+            Assert.True(parser.TryParseMessage(ref span, out var message));
+            Assert.Equal(0, span.Length);
 
             Assert.Equal(Encoding.UTF8.GetBytes(payload), message.ToArray());
         }
@@ -32,18 +32,14 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         public void ReadBinaryMessage(byte[] encoded, byte[] payload)
         {
             var parser = new BinaryMessageParser();
-            var reader = new BytesReader(encoded);
-            Assert.True(parser.TryParseMessage(ref reader, out var message));
-            Assert.Equal(reader.Index, encoded.Length);
+            ReadOnlySpan<byte> span = encoded.AsSpan();
+            Assert.True(parser.TryParseMessage(ref span, out var message));
+            Assert.Equal(0, span.Length);
             Assert.Equal(payload, message.ToArray());
         }
 
-        [Theory]
-        [InlineData(0)] // No chunking
-        [InlineData(4)]
-        [InlineData(8)]
-        [InlineData(256)]
-        public void ReadMultipleMessages(int chunkSize)
+        [Fact]
+        public void ReadMultipleMessages()
         {
             var encoded = new byte[]
             {
@@ -53,16 +49,15 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
                     /* body: */ 0x48, 0x65, 0x6C, 0x6C, 0x6F, 0x2C, 0x0D, 0x0A, 0x57, 0x6F, 0x72, 0x6C, 0x64, 0x21,
             };
             var parser = new BinaryMessageParser();
-            var buffer = encoded.ToChunkedReadOnlyBytes(chunkSize);
-            var reader = new BytesReader(buffer);
+            ReadOnlySpan<byte> span = encoded.AsSpan();
 
             var messages = new List<byte[]>();
-            while (parser.TryParseMessage(ref reader, out var message))
+            while (parser.TryParseMessage(ref span, out var message))
             {
                 messages.Add(message.ToArray());
             }
 
-            Assert.Equal(encoded.Length, reader.Index);
+            Assert.Equal(0, span.Length);
 
             Assert.Equal(2, messages.Count);
             Assert.Equal(new byte[0], messages[0]);
@@ -75,9 +70,9 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         public void ReadIncompleteMessages(byte[] encoded)
         {
             var parser = new BinaryMessageParser();
-            var reader = new BytesReader(new ReadOnlyBytes(encoded));
-            Assert.False(parser.TryParseMessage(ref reader, out var message));
-            Assert.Equal(encoded.Length, reader.Index);
+            ReadOnlySpan<byte> span = encoded.AsSpan();
+            Assert.False(parser.TryParseMessage(ref span, out var message));
+            Assert.Equal(0, span.Length);
         }
     }
 }

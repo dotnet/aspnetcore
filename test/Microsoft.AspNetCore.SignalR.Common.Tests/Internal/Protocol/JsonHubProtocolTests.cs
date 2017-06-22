@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
-using Microsoft.AspNetCore.Sockets.Tests.Internal;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         [Theory]
         [MemberData(nameof(ProtocolTestData))]
-        public async Task WriteMessage(HubMessage message, bool camelCase, NullValueHandling nullValueHandling, string expectedOutput)
+        public void WriteMessage(HubMessage message, bool camelCase, NullValueHandling nullValueHandling, string expectedOutput)
         {
             expectedOutput = Frame(expectedOutput);
 
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             };
 
             var protocol = new JsonHubProtocol(jsonSerializer);
-            var encoded = await protocol.WriteToArrayAsync(message);
+            var encoded = protocol.WriteToArray(message);
             var json = Encoding.UTF8.GetString(encoded);
 
             Assert.Equal(expectedOutput, json);
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         private static byte[] FormatMessageToArray(byte[] message)
         {
-            var output = new ArrayOutput(1024);
+            var output = new MemoryStream();
             Assert.True(TextMessageFormatter.TryWriteMessage(message, output));
             return output.ToArray();
         }

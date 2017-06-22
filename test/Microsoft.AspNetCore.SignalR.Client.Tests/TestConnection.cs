@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
-using Microsoft.AspNetCore.Sockets.Tests.Internal;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -88,7 +87,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         private byte[] FormatMessageToArray(byte[] message)
         {
-            var output = new ArrayOutput(1024);
+            var output = new MemoryStream();
             Assert.True(TextMessageFormatter.TryWriteMessage(message, output));
             return output.ToArray();
         }

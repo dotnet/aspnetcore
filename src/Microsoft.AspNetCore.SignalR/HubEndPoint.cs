@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task SendMessageAsync(ConnectionContext connection, IHubProtocol protocol, HubMessage hubMessage)
         {
-            var payload = await protocol.WriteToArrayAsync(hubMessage);
+            var payload = protocol.WriteToArray(hubMessage);
 
             while (await connection.Transport.Output.WaitToWriteAsync())
             {

@@ -4,14 +4,11 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipelines;
-using System.IO.Pipelines.Text.Primitives;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 
 namespace Microsoft.AspNetCore.SignalR
 {
@@ -125,7 +122,7 @@ namespace Microsoft.AspNetCore.SignalR
         private async Task WriteAsync(ConnectionContext connection, HubMessage hubMessage)
         {
             var protocol = connection.Metadata.Get<IHubProtocol>(HubConnectionMetadataNames.HubProtocol);
-            var payload = await protocol.WriteToArrayAsync(hubMessage);
+            var payload = protocol.WriteToArray(hubMessage);
 
             while (await connection.Transport.Output.WaitToWriteAsync())
             {

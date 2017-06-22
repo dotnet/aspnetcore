@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
@@ -11,6 +12,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
     {
         bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages);
 
-        bool TryWriteMessage(HubMessage message, IOutput output);
+        bool TryWriteMessage(HubMessage message, Stream output);
     }
 }

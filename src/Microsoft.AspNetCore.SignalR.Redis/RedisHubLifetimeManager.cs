@@ -5,15 +5,12 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Pipelines;
-using System.IO.Pipelines.Text.Primitives;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -313,7 +310,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         private async Task WriteAsync(ConnectionContext connection, HubMessage hubMessage)
         {
             var protocol = connection.Metadata.Get<IHubProtocol>(HubConnectionMetadataNames.HubProtocol);
-            var data = await protocol.WriteToArrayAsync(hubMessage);
+            var data = protocol.WriteToArray(hubMessage);
 
             while (await connection.Transport.Output.WaitToWriteAsync())
             {

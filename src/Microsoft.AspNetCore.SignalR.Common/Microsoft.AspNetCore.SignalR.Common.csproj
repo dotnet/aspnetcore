@@ -13,12 +13,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="../Common/IOutputExtensions.cs" Link="IOutputExtensions.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
-    <PackageReference Include="System.IO.Pipelines.Text.Primitives" Version="$(CoreFxLabsVersion)" />
+    <PackageReference Include="System.Buffers.Primitives" Version="$(CoreFxLabsVersion)" />
+    <PackageReference Include="System.Binary" Version="$(CoreFxLabsVersion)" />
   </ItemGroup>
 
 </Project>

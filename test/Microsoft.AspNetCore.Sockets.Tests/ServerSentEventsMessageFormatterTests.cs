@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Xunit;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
         [InlineData("data: Hello\r\ndata: \r\n\r\n", "Hello\r\n")]
         public void WriteTextMessage(string encoded, string payload)
         {
-            var output = new ArrayOutput(chunkSize: 8); // Use small chunks to test Advance/Enlarge and partial payload writing
+            var output = new MemoryStream();
             Assert.True(ServerSentEventsMessageFormatter.TryWriteMessage(Encoding.UTF8.GetBytes(payload), output));
 
             Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));

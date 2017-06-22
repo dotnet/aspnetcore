@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Xunit;
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
                 Encoding.UTF8.GetBytes("Hello,\r\nWorld!")
             };
 
-            var output = new ArrayOutput(chunkSize: 8); // Use small chunks to test Advance/Enlarge and partial payload writing
+            var output = new MemoryStream();
             foreach (var message in messages)
             {
                 Assert.True(TextMessageFormatter.TryWriteMessage(message, output));
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
         public void WriteMessage(int chunkSize, string encoded, string payload)
         {
             var message = Encoding.UTF8.GetBytes(payload);
-            var output = new ArrayOutput(chunkSize); // Use small chunks to test Advance/Enlarge and partial payload writing
+            var output = new MemoryStream();
 
             Assert.True(TextMessageFormatter.TryWriteMessage(message, output));
 

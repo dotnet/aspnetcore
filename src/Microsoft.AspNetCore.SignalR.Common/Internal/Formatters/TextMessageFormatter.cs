@@ -2,37 +2,44 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Binary;
 using System.Buffers;
+using System.Globalization;
+using System.IO;
 using System.Text;
-using System.Text.Formatting;
 
 namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 {
     public static class TextMessageFormatter
     {
+        private const int Int32OverflowLength = 10;
+
         internal const char FieldDelimiter = ':';
         internal const char MessageDelimiter = ';';
-        
-        public static bool TryWriteMessage(ReadOnlySpan<byte> payload, IOutput output)
+
+        public static bool TryWriteMessage(ReadOnlySpan<byte> payload, Stream output)
         {
             // Calculate the length, it's the number of characters for text messages, but number of base64 characters for binary
-            var length = payload.Length;
 
             // Write the length as a string
-            output.Append(length, TextEncoder.Utf8);
+
+            // Super inefficient...
+            var lengthString = payload.Length.ToString(CultureInfo.InvariantCulture);
+            var buffer = ArrayPool<byte>.Shared.Rent(Int32OverflowLength);
+            var encodedLength = Encoding.UTF8.GetBytes(lengthString, 0, lengthString.Length, buffer, 0);
+            output.Write(buffer, 0, encodedLength);
+            ArrayPool<byte>.Shared.Return(buffer);
 
             // Write the field delimiter ':'
-            output.Append(FieldDelimiter, TextEncoder.Utf8);
+            output.WriteByte((byte)FieldDelimiter);
 
-            // Write the payload
-            if (!output.TryWrite(payload))
-            {
-                return false;
-            }
+            buffer = ArrayPool<byte>.Shared.Rent(payload.Length);
+            payload.CopyTo(buffer);
+            output.Write(buffer, 0, payload.Length);
+            ArrayPool<byte>.Shared.Return(buffer);
 
             // Terminator
-            output.Append(MessageDelimiter, TextEncoder.Utf8);
+            output.WriteByte((byte)MessageDelimiter);
+
             return true;
         }
     }

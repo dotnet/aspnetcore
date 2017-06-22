@@ -4,6 +4,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
@@ -191,7 +192,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 throw new InvalidOperationException("No Parsed Message provided");
             }
 
-            public bool TryWriteMessage(HubMessage message, IOutput output)
+            public bool TryWriteMessage(HubMessage message, Stream output)
             {
                 WriteCalls += 1;
 

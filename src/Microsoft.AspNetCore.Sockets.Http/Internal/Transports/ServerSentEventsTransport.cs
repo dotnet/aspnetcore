@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
-using System.IO.Pipelines.Text.Primitives;
-using System.Text;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
@@ -44,17 +42,15 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
             await context.Response.WriteAsync(":\r\n");
             await context.Response.Body.FlushAsync();
 
-            var pipe = context.Response.Body.AsPipelineWriter();
-            var output = new PipelineTextOutput(pipe, TextEncoder.Utf8); // We don't need the Encoder, but it's harmless to set.
-
             try
             {
+                var ms = new MemoryStream();
                 while (await _application.WaitToReadAsync(token))
                 {
                     while (_application.TryRead(out var buffer))
                     {
                         _logger.SSEWritingMessage(_connectionId, buffer.Length);
-                        if (!ServerSentEventsMessageFormatter.TryWriteMessage(buffer, output))
+                        if (!ServerSentEventsMessageFormatter.TryWriteMessage(buffer, ms))
                         {
                             // We ran out of space to write, even after trying to enlarge.
                             // This should only happen in a significant lack-of-memory scenario.
@@ -64,10 +60,11 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                             // Throwing InvalidOperationException here, but it's not quite an invalid operation...
                             throw new InvalidOperationException("Ran out of space to format messages!");
                         }
-
-                        await output.FlushAsync();
                     }
                 }
+
+                ms.Seek(0, SeekOrigin.Begin);
+                await ms.CopyToAsync(context.Response.Body);
 
                 await _application.Completion;
             }

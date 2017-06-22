@@ -3,6 +3,7 @@
 
 using System;
 using System.Buffers;
+using System.IO;
 using System.Text;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Xunit;
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
                 Encoding.UTF8.GetBytes("Hello,\r\nWorld!")
             };
 
-            var output = new ArrayOutput(chunkSize: 8); // Use small chunks to test Advance/Enlarge and partial payload writing
+            var output = new MemoryStream(); // Use small chunks to test Advance/Enlarge and partial payload writing
             foreach (var message in messages)
             {
                 Assert.True(BinaryMessageFormatter.TryWriteMessage(message, output));
@@ -46,11 +47,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
         [InlineData(0, 256, new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0xAB, 0xCD, 0xEF, 0x12 }, new byte[] { 0xAB, 0xCD, 0xEF, 0x12 })]
         public void WriteBinaryMessage(int offset, int chunkSize, byte[] encoded, byte[] payload)
         {
-            var output = new ArrayOutput(chunkSize);
+            var output = new MemoryStream();
 
             if (offset > 0)
             {
-                output.Advance(offset);
+                output.Seek(offset, SeekOrigin.Begin);
             }
 
             Assert.True(BinaryMessageFormatter.TryWriteMessage(payload, output));
@@ -66,11 +67,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
         public void WriteTextMessage(int offset, int chunkSize, byte[] encoded, string payload)
         {
             var message = Encoding.UTF8.GetBytes(payload);
-            var output = new ArrayOutput(chunkSize);
+            var output = new MemoryStream();
 
             if (offset > 0)
             {
-                output.Advance(offset);
+                output.Seek(offset, SeekOrigin.Begin);
             }
 
             Assert.True(BinaryMessageFormatter.TryWriteMessage(message, output));

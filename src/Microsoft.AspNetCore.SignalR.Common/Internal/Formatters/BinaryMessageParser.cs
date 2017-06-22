@@ -3,7 +3,6 @@
 
 using System;
 using System.Binary;
-using System.Buffers;
 
 namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 {
@@ -16,33 +15,27 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             _state = default(ParserState);
         }
 
-        public bool TryParseMessage(ref BytesReader buffer, out ReadOnlyBuffer<byte> payload)
+        public bool TryParseMessage(ref ReadOnlySpan<byte> buffer, out ReadOnlyBuffer<byte> payload)
         {
             if (_state.Length == null)
             {
-                var lengthBuffer = buffer.TryReadBytes(sizeof(long));
+                long length = 0;
 
-                if (lengthBuffer == null)
+                if (buffer.Length < sizeof(long))
                 {
                     payload = default(ReadOnlyBuffer<byte>);
                     return false;
                 }
 
-                var length = lengthBuffer.Value.ToSingleSpan();
+                length = buffer.Slice(0, sizeof(long)).ReadBigEndian<long>();
 
-                if (length.Length < sizeof(long))
-                {
-                    payload = default(ReadOnlyBuffer<byte>);
-                    return false;
-                }
-
-                var longLength = length.ReadBigEndian<long>();
-                if (longLength > Int32.MaxValue)
+                if (length > Int32.MaxValue)
                 {
                     throw new FormatException("Messages over 2GB in size are not supported");
                 }
-                buffer.Advance(length.Length);
-                _state.Length = (int)longLength;
+
+                buffer = buffer.Slice(sizeof(long));
+                _state.Length = (int)length;
             }
 
             if (_state.Payload == null)
@@ -50,13 +43,13 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                 _state.Payload = new byte[_state.Length.Value];
             }
 
-            while (_state.Read < _state.Payload.Length && buffer.Unread.Length > 0)
+            while (_state.Read < _state.Payload.Length && buffer.Length > 0)
             {
                 // Copy what we can from the current unread segment
-                var toCopy = Math.Min(_state.Payload.Length - _state.Read, buffer.Unread.Length);
-                buffer.Unread.Slice(0, toCopy).CopyTo(_state.Payload.Slice(_state.Read));
+                var toCopy = Math.Min(_state.Payload.Length - _state.Read, buffer.Length);
+                buffer.Slice(0, toCopy).CopyTo(new Span<byte>(_state.Payload, _state.Read));
                 _state.Read += toCopy;
-                buffer.Advance(toCopy);
+                buffer = buffer.Slice(toCopy);
             }
 
             if (_state.Read == _state.Payload.Length)
