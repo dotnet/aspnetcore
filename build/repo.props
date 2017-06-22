@@ -2,7 +2,5 @@
   <ItemGroup>
     <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNetCore.RuntimeStore\Microsoft.AspNetCore.RuntimeStore.csproj" />
     <ExcludeFromPack Include="$(RepositoryRoot)src\Archive.AspNetCore.All\Archive.AspNetCore.All.csproj" />
-    <ExcludeFromPack Include="$(RepositoryRoot)src\dotnet-archive\dotnet-archive.csproj" />
-    <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.DotNet.Archive\Microsoft.DotNet.Archive.csproj" />
   </ItemGroup>
 </Project>

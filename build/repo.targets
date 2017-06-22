@@ -12,8 +12,6 @@
     <!-- Project for building the NuGet Fallback Archive (LZMA for CLI) -->
     <FallbackArchiveDir>$(RepositoryRoot)src\Archive.AspNetCore.All\</FallbackArchiveDir>
     <FallbackArchiveProj>$(FallbackArchiveDir)Archive.AspNetCore.All.csproj</FallbackArchiveProj>
-    <ArchiverProject>$(RepositoryRoot)src\dotnet-archive\dotnet-archive.csproj</ArchiverProject>
-    <ArchiverBinary>$(RepositoryRoot)src\dotnet-archive\bin\$(Configuration)\netcoreapp2.0\dotnet-archive.dll</ArchiverBinary>
 
     <!-- Determine ASP.NET Package Version -->
     <NoTimestampSuffix Condition="'$(TIMESTAMP_FREE_VERSION)' != ''">$(TIMESTAMP_FREE_VERSION)</NoTimestampSuffix>
@@ -273,10 +271,6 @@
         <NoTimestampSource>$(COHERENCE_SIGNED_DROP_LOCATION)\Signed\Packages-NoTimeStamp</NoTimestampSource>
         <TimestampSource>$(COHERENCE_SIGNED_DROP_LOCATION)\Signed\Packages</TimestampSource>
     </PropertyGroup>
-
-    <!-- Build the dotnet-archiver project -->
-    <MSBuild Projects="$(ArchiverProject)" Targets="Restore" Properties="Configuration=$(Configuration)" />
-    <MSBuild Projects="$(ArchiverProject)" Targets="Build" Properties="Configuration=$(Configuration)" />
 
     <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
     <!-- Here, we're re-invoking KoreBuild, but limiting it to a specific target. -->
