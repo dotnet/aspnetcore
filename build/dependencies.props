@@ -9,5 +9,6 @@
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
     <XunitVersion>2.3.0-beta2-*</XunitVersion>
+    <SystemReflectionMetadataVersion>1.5.0-*</SystemReflectionMetadataVersion>
   </PropertyGroup>
 </Project>
