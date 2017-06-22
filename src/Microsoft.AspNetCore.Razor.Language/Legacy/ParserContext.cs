@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 
@@ -25,11 +26,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseOnlyLeadingDirectives = options.ParseOnlyLeadingDirectives;
             Builder = new SyntaxTreeBuilder();
             ErrorSink = new ErrorSink();
+            SeenDirectives = new HashSet<string>(StringComparer.Ordinal);
         }
 
         public SyntaxTreeBuilder Builder { get; }
 
         public ErrorSink ErrorSink { get; set; }
+
+        public HashSet<string> SeenDirectives { get; }
 
         public ITextDocument Source { get; }
 

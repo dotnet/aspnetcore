@@ -54,7 +54,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private Dictionary<string, Action> _directiveParsers = new Dictionary<string, Action>(StringComparer.Ordinal);
         private Dictionary<CSharpKeyword, Action<bool>> _keywordParsers = new Dictionary<CSharpKeyword, Action<bool>>();
-        private HashSet<string> _seenDirectives = new HashSet<string>(StringComparer.Ordinal);
 
         public CSharpCodeParser(ParserContext context)
             : this(directives: Enumerable.Empty<DirectiveDescriptor>(), context: context)
@@ -95,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 _directiveParsers.Add(directive, () =>
                 {
                     handler();
-                    _seenDirectives.Add(directive);
+                    Context.SeenDirectives.Add(directive);
                 });
 
                 Keywords.Add(directive);
@@ -1781,7 +1780,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (descriptor.Usage == DirectiveUsage.FileScopedSinglyOccurring)
             {
-                if (_seenDirectives.Contains(descriptor.Directive))
+                if (Context.SeenDirectives.Contains(descriptor.Directive))
                 {
                     UsageError(Resources.FormatDuplicateDirective(descriptor.Directive));
                     return;
