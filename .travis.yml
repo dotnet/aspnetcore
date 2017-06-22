@@ -8,12 +8,16 @@ env:
     - SIGNALR_TESTS_VERBOSE: 1
     - TRAVIS_NODE_VERSION: 8.0.0
 mono: none
-python:
-  - "2.7"
 os:
   - linux
   - osx
 osx_image: xcode8.2
+addons:
+  apt:
+    sources:
+      - debian-sid
+    packages:
+      - libunwind8
 branches:
   only:
     - master
