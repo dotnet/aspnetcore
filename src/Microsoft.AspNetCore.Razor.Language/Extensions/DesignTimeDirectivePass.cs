@@ -3,7 +3,7 @@
 
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     internal class DesignTimeDirectivePass : IntermediateNodePassBase, IRazorDirectiveClassifierPass
     {

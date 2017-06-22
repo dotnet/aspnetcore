@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -103,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         internal static void AddRuntimeDefaults(IRazorEngineBuilder builder)
         {
-            builder.Features.Add(new RazorPreallocatedTagHelperAttributeOptimizationPass());
+            builder.Features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
         }
 
         internal static void AddDesignTimeDefaults(IRazorEngineBuilder builder)

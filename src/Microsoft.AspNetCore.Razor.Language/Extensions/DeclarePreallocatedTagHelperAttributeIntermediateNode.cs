@@ -3,10 +3,11 @@
 
 using System;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language.Intermediate
+namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    internal sealed class AddPreallocatedTagHelperHtmlAttributeIntermediateNode : ExtensionIntermediateNode
+    internal sealed class DeclarePreallocatedTagHelperAttributeIntermediateNode : ExtensionIntermediateNode
     {
         public override RazorDiagnosticCollection Diagnostics { get; } = ReadOnlyDiagnosticCollection.Instance;
         
@@ -16,6 +17,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string VariableName { get; set; }
 
+        public string Name { get; set; }
+
+        public string Value { get; set; }
+
+        public AttributeStructure AttributeStructure { get; set; }
+
         public override void Accept(IntermediateNodeVisitor visitor)
         {
             if (visitor == null)
@@ -23,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 throw new ArgumentNullException(nameof(visitor));
             }
 
-            AcceptExtensionNode<AddPreallocatedTagHelperHtmlAttributeIntermediateNode>(this, visitor);
+            AcceptExtensionNode<DeclarePreallocatedTagHelperAttributeIntermediateNode>(this, visitor);
         }
 
         public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
@@ -45,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 return;
             }
 
-            extension.WriteAddPreallocatedTagHelperHtmlAttribute(context, this);
+            extension.WriteDeclarePreallocatedTagHelperAttribute(context, this);
         }
     }
 }

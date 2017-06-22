@@ -3,7 +3,7 @@
 
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Moq;
 using Xunit;
 
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 feature => Assert.IsType<DefaultDocumentClassifierPass>(feature),
                 feature => Assert.IsType<DirectiveRemovalOptimizationPass>(feature),
                 feature => Assert.IsType<DefaultDocumentClassifierPassFeature>(feature),
-                feature => Assert.IsType<RazorPreallocatedTagHelperAttributeOptimizationPass>(feature));
+                feature => Assert.IsType<PreallocatedTagHelperAttributeOptimizationPass>(feature));
         }
 
         private static void AssertDefaultRuntimePhases(IReadOnlyList<IRazorEnginePhase> phases)

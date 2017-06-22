@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
-namespace Microsoft.AspNetCore.Razor.Language
+namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
-    internal class RazorPreallocatedTagHelperAttributeOptimizationPass : IntermediateNodePassBase, IRazorOptimizationPass
+    internal class PreallocatedTagHelperAttributeOptimizationPass : IntermediateNodePassBase, IRazorOptimizationPass
     {
         public override int Order => DefaultFeatureOrder;
 
