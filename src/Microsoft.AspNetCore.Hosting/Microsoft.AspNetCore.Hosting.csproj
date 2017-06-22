@@ -29,6 +29,7 @@
     <PackageReference Include="Microsoft.Extensions.StackTrace.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="$(SystemDiagnosticsDiagnosticSourceVersion)" />
+    <PackageReference Include="System.Reflection.Metadata" Version="$(SystemReflectionMetadataVersion)" />
   </ItemGroup>
 
   <ItemGroup>

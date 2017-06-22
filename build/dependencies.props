@@ -12,5 +12,6 @@
     <MoqVersion>4.7.1</MoqVersion>
     <SerilogExtensionsLoggingVersion>1.4.0</SerilogExtensionsLoggingVersion>
     <SerilogFileSinkVersion>3.2.0</SerilogFileSinkVersion>
+    <SystemReflectionMetadataVersion>1.5.0-*</SystemReflectionMetadataVersion>
   </PropertyGroup>
 </Project>
