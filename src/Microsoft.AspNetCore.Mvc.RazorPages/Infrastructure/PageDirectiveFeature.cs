@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
+using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
@@ -26,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             builder.Features.Add(new PageDirectiveParserOptionsFeature());
         });
 
-        public static bool TryGetPageDirective(RazorProjectItem projectItem, out string template)
+        public static bool TryGetPageDirective(ILogger logger, RazorProjectItem projectItem, out string template)
         {
             if (projectItem == null)
             {
@@ -34,35 +36,34 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             }
 
             var sourceDocument = RazorSourceDocument.ReadFrom(projectItem);
-            return TryGetPageDirective(sourceDocument, out template);
+            return TryGetPageDirective(logger, sourceDocument, out template);
         }
 
-        public static bool TryGetPageDirective(Func<Stream> streamFactory, out string template)
-        {
-            if (streamFactory == null)
-            {
-                throw new ArgumentNullException(nameof(streamFactory));
-            }
-
-            using (var stream = streamFactory())
-            {
-                var sourceDocument = RazorSourceDocument.ReadFrom(stream, fileName: "Parse.cshtml");
-                return TryGetPageDirective(sourceDocument, out template);
-            }
-        }
-
-        private static bool TryGetPageDirective(RazorSourceDocument sourceDocument, out string template)
+        static bool TryGetPageDirective(
+            ILogger logger,
+            RazorSourceDocument sourceDocument,
+            out string template)
         {
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             PageDirectiveEngine.Process(codeDocument);
 
-            if (PageDirective.TryGetPageDirective(codeDocument.GetDocumentIntermediateNode(), out var pageDirective))
+            var documentIRNode = codeDocument.GetDocumentIntermediateNode();
+            if (PageDirective.TryGetPageDirective(documentIRNode, out var pageDirective))
             {
                 template = pageDirective.RouteTemplate;
                 return true;
             }
 
             template = null;
+
+            var visitor = new Visitor();
+            visitor.Visit(documentIRNode);
+            if (visitor.MalformedPageDirective != null)
+            {
+                logger.MalformedPageDirective(sourceDocument.FilePath, visitor.MalformedPageDirective.Diagnostics);
+                return true;
+            }
+
             return false;
         }
 
@@ -73,6 +74,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             public void Configure(RazorParserOptionsBuilder options)
             {
                 options.ParseOnlyLeadingDirectives = true;
+            }
+        }
+
+        private class Visitor : IntermediateNodeWalker
+        {
+            public MalformedDirectiveIntermediateNode MalformedPageDirective { get; private set; }
+
+            public override void VisitMalformedDirective(MalformedDirectiveIntermediateNode node)
+            {
+                if (node.Descriptor == PageDirective.Directive)
+                {
+                    MalformedPageDirective = node;
+                }
             }
         }
     }

@@ -4,6 +4,7 @@
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -12,13 +13,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     {
         private readonly RazorProject _project;
         private readonly RazorPagesOptions _pagesOptions;
+        private readonly ILogger _logger;
 
         public RazorProjectPageApplicationModelProvider(
             RazorProject razorProject,
-            IOptions<RazorPagesOptions> pagesOptionsAccessor)
+            IOptions<RazorPagesOptions> pagesOptionsAccessor,
+            ILoggerFactory loggerFactory)
         {
             _project = razorProject;
             _pagesOptions = pagesOptionsAccessor.Value;
+            _logger = loggerFactory.CreateLogger<RazorProjectPageApplicationModelProvider>();
         }
 
         public int Order => -1000;
@@ -37,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     continue;
                 }
 
-                if (!PageDirectiveFeature.TryGetPageDirective(item, out var routeTemplate))
+                if (!PageDirectiveFeature.TryGetPageDirective(_logger, item, out var routeTemplate))
                 {
                     // .cshtml pages without @page are not RazorPages.
                     continue;

@@ -3,8 +3,12 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
@@ -15,126 +19,110 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         public void TryGetPageDirective_FindsTemplate()
         {
             // Arrange
-            string template;
             var projectItem = new TestRazorProjectItem(@"@page ""Some/Path/{value}""
 The rest of the thing");
+            var sink = new TestSink();
+            var logger = new TestLogger("logger", sink, enabled: true);
 
             // Act & Assert
-            Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.True(PageDirectiveFeature.TryGetPageDirective(logger, projectItem, out var template));
             Assert.Equal("Some/Path/{value}", template);
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
         public void TryGetPageDirective_NoNewLine()
         {
             // Arrange
-            string template;
             var projectItem = new TestRazorProjectItem(@"@page ""Some/Path/{value}""");
+            var sink = new TestSink();
+            var logger = new TestLogger("logger", sink, enabled: true);
 
             // Act & Assert
-            Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.True(PageDirectiveFeature.TryGetPageDirective(logger, projectItem, out var template));
             Assert.Equal("Some/Path/{value}", template);
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
         public void TryGetPageDirective_JunkBeforeDirective()
         {
             // Arrange
-            string template;
             var projectItem = new TestRazorProjectItem(@"Not a directive @page ""Some/Path/{value}""");
+            var sink = new TestSink();
+            var logger = new TestLogger("logger", sink, enabled: true);
 
             // Act & Assert
-            Assert.False(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.False(PageDirectiveFeature.TryGetPageDirective(logger, projectItem, out var template));
             Assert.Null(template);
+            Assert.Empty(sink.Writes);
         }
 
         [Theory]
         [InlineData(@"""Some/Path/{value}")]
         [InlineData(@"Some/Path/{value}""")]
-        public void TryGetPageDirective_RequiresBothQuotes(string inTemplate)
+        public void TryGetPageDirective_WithoutBothQuotes_LogsWarning(string inTemplate)
         {
             // Arrange
-            string template;
+            var expected = "The page directive at 'Test.cshtml' is malformed. Please fix the following issues: The 'page' directive expects a string surrounded by double quotes.";
+            var sink = new TestSink();
+            var logger = new TestLogger("logger", sink, enabled: true);
             var projectItem = new TestRazorProjectItem($@"@page {inTemplate}");
 
             // Act & Assert
-            Assert.False(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.True(PageDirectiveFeature.TryGetPageDirective(logger, projectItem, out var template));
             Assert.Null(template);
+            Assert.Collection(sink.Writes,
+                log =>
+                {
+                    Assert.Equal(LogLevel.Warning, log.LogLevel);
+                    Assert.Equal(expected, log.State.ToString());
+                });
         }
 
         [Fact]
-        public void TryGetPageDirective_NoQuotesAroundPath_IsNotTemplate()
+        public void TryGetPageDirective_NoQuotesAroundPath_LogsWarning()
         {
             // Arrange
-            string template;
+            var expected = "The page directive at 'Test.cshtml' is malformed. Please fix the following issues: The 'page' directive expects a string surrounded by double quotes.";
+            var sink = new TestSink();
+            var logger = new TestLogger("logger", sink, enabled: true);
             var projectItem = new TestRazorProjectItem(@"@page Some/Path/{value}");
 
             // Act & Assert
-            Assert.False(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.True(PageDirectiveFeature.TryGetPageDirective(logger, projectItem, out var template));
             Assert.Null(template);
-        }
-
-        [Fact]
-        public void TryGetPageDirective_WrongNewLine()
-        {
-            // Arrange
-            var wrongNewLine = Environment.NewLine == "\r\n" ? "\n" : "\r\n";
-
-            string template;
-            var projectItem = new TestRazorProjectItem($"@page \"Some/Path/{{value}}\" {wrongNewLine}");
-
-            // Act & Assert
-            Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
-            Assert.Equal("Some/Path/{value}", template);
+            var logs = sink.Writes.Select(w => w.State.ToString().Trim()).ToList();
+            Assert.Collection(sink.Writes,
+                log =>
+                {
+                    Assert.Equal(LogLevel.Warning, log.LogLevel);
+                    Assert.Equal(expected, log.State.ToString());
+                });
         }
 
         [Fact]
         public void TryGetPageDirective_NewLineBeforeDirective()
         {
             // Arrange
-            string template;
             var projectItem = new TestRazorProjectItem("\n @page \"Some/Path/{value}\"");
+            var sink = new TestSink();
+            var logger = new TestLogger("logger", sink, enabled: true);
 
             // Act
-            Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.True(PageDirectiveFeature.TryGetPageDirective(logger, projectItem, out var template));
             Assert.Equal("Some/Path/{value}", template);
-        }
-
-        [Fact]
-        public void TryGetPageDirective_WhitespaceBeforeDirective()
-        {
-            // Arrange
-            string template;
-            var projectItem = new TestRazorProjectItem(@"   @page ""Some/Path/{value}""
-");
-
-            // Act & Assert
-            Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
-            Assert.Equal("Some/Path/{value}", template);
-        }
-
-        [Fact]
-        public void TryGetPageDirective_JunkBeforeNewline()
-        {
-            // Arrange
-            string template;
-            var projectItem = new TestRazorProjectItem(@"@page ""Some/Path/{value}"" things that are not the path
-a new line");
-
-            // Act & Assert
-            Assert.False(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
-            Assert.Null(template);
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
         public void TryGetPageDirective_Directive_WithoutPathOrContent()
         {
             // Arrange
-            string template;
             var projectItem = new TestRazorProjectItem(@"@page");
 
             // Act & Assert
-            Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.True(PageDirectiveFeature.TryGetPageDirective(NullLogger.Instance, projectItem, out var template));
             Assert.Null(template);
         }
 
@@ -142,59 +130,30 @@ a new line");
         public void TryGetPageDirective_DirectiveWithContent_WithoutPath()
         {
             // Arrange
-            string template;
             var projectItem = new TestRazorProjectItem(@"@page
 Non-path things");
+            var sink = new TestSink();
+            var logger = new TestLogger("logger", sink, enabled: true);
 
             // Act & Assert
-            Assert.True(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.True(PageDirectiveFeature.TryGetPageDirective(logger, projectItem, out var template));
             Assert.Null(template);
+            Assert.Empty(sink.Writes);
         }
 
         [Fact]
         public void TryGetPageDirective_NoDirective()
         {
             // Arrange
-            string template;
             var projectItem = new TestRazorProjectItem(@"This is junk
 Nobody will use it");
+            var sink = new TestSink();
+            var logger = new TestLogger("logger", sink, enabled: true);
 
             // Act & Assert
-            Assert.False(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.False(PageDirectiveFeature.TryGetPageDirective(logger, projectItem, out var template));
             Assert.Null(template);
-        }
-
-        [Fact]
-        public void TryGetPageDirective_EmptyStream()
-        {
-            // Arrange
-            string template;
-            var projectItem = new TestRazorProjectItem(string.Empty);
-
-            // Act
-            Assert.False(PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
-            Assert.Null(template);
-        }
-
-        [Fact]
-        public void TryGetPageDirective_NullProject()
-        {
-            // Arrange
-            string template;
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => PageDirectiveFeature.TryGetPageDirective(projectItem: null, template: out template));
-        }
-
-        [Fact]
-        public void TryGetPageDirective_NullStream()
-        {
-            // Arrange
-            string template;
-            var projectItem = new TestRazorProjectItem(content: null);
-
-            // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => PageDirectiveFeature.TryGetPageDirective(projectItem, out template));
+            Assert.Empty(sink.Writes);
         }
     }
 
@@ -207,21 +166,9 @@ Nobody will use it");
             _content = content;
         }
 
-        public override string BasePath
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override string BasePath => throw new NotImplementedException();
 
-        public override bool Exists
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-        }
+        public override bool Exists => throw new NotImplementedException();
 
         public override string Path => "Test.cshtml";
 

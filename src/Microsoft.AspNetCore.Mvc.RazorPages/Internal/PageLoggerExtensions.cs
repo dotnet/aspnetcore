@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -14,6 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private static readonly Action<ILogger, string, string[], ModelValidationState, Exception> _handlerMethodExecuting;
         private static readonly Action<ILogger, string, string, Exception> _handlerMethodExecuted;
         private static readonly Action<ILogger, object, Exception> _pageFilterShortCircuit;
+        private static readonly Action<ILogger, string, string[], Exception> _malformedPageDirective;
 
         static PageLoggerExtensions()
         {
@@ -33,6 +36,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                LogLevel.Debug,
                3,
                "Request was short circuited at page filter '{PageFilter}'.");
+
+            _malformedPageDirective = LoggerMessage.Define<string, string[]>(
+                LogLevel.Warning,
+                104,
+                "The page directive at '{FilePath}' is malformed. Please fix the following issues: {Diagnostics}");
         }
 
         public static void ExecutingHandlerMethod(this ILogger logger, PageContext context, HandlerMethodDescriptor handler, object[] arguments)
@@ -75,6 +83,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IFilterMetadata filter)
         {
             _pageFilterShortCircuit(logger, filter, null);
+        }
+
+        public static void MalformedPageDirective(this ILogger logger, string filePath, IList<RazorDiagnostic> diagnostics)
+        {
+            if (logger.IsEnabled(LogLevel.Warning))
+            {
+                var messages = new string[diagnostics.Count];
+                for (var i = 0; i < diagnostics.Count; i++)
+                {
+                    messages[i] = diagnostics[i].GetMessage();
+                }
+
+                _malformedPageDirective(logger, filePath, messages, null);
+            }
         }
     }
 }
