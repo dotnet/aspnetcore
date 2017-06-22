@@ -1,8 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -12,11 +12,11 @@ namespace FunctionalTests
 {
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
-    public class SimpleAppTest_Desktop :
-        LoggedTest, IClassFixture<DesktopApplicationTestFixture<SimpleApp.Startup>>
+    public class PublishWithDebugTest_Desktop :
+        LoggedTest, IClassFixture<PublishWithDebugTest_Desktop.TestFixture>
     {
-        public SimpleAppTest_Desktop(
-            DesktopApplicationTestFixture<SimpleApp.Startup> fixture,
+        public PublishWithDebugTest_Desktop(
+            TestFixture fixture,
             ITestOutputHelper output)
             : base(output)
         {
@@ -26,7 +26,7 @@ namespace FunctionalTests
         public ApplicationTestFixture Fixture { get; }
 
         [ConditionalFact]
-        public async Task Precompilation_WorksForSimpleApps()
+        public async Task PublishingInDebugWorks()
         {
             using (StartLog(out var loggerFactory))
             {
@@ -43,30 +43,14 @@ namespace FunctionalTests
             }
         }
 
-        [ConditionalFact]
-        public async Task Precompilation_PreventsRefAssembliesFromBeingPublished()
+        public class TestFixture : DesktopApplicationTestFixture<SimpleApp.Startup>
         {
-            using (StartLog(out var loggerFactory))
+            protected override DeploymentParameters GetDeploymentParameters()
             {
-                // Arrange
-                var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
+                var deploymentParameters = base.GetDeploymentParameters();
+                deploymentParameters.Configuration = "Debug";
 
-                // Act & Assert
-                Assert.False(Directory.Exists(Path.Combine(deployment.ContentRoot, "refs")));
-            }
-        }
-
-        [ConditionalFact]
-        public async Task Precompilation_PublishesPdbsToOutputDirectory()
-        {
-            using (StartLog(out var loggerFactory))
-            {
-                // Arrange
-                var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
-                var pdbPath = Path.Combine(deployment.ContentRoot, Fixture.ApplicationName + ".PrecompiledViews.pdb");
-
-                // Act & Assert
-                Assert.True(File.Exists(pdbPath), $"PDB at {pdbPath} was not found.");
+                return deploymentParameters;
             }
         }
     }

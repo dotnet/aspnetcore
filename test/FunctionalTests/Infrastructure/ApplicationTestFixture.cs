@@ -43,11 +43,7 @@ namespace FunctionalTests
                 ApplicationName = ApplicationName,
                 PublishApplicationBeforeDeployment = true,
                 TargetFramework = flavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
-#if DEBUG
-                Configuration = "Debug",
-#else
                 Configuration = "Release",
-#endif
                 EnvironmentVariables =
                 {
                     telemetryOptOut,
