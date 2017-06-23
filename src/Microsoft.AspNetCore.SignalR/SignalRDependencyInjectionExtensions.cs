@@ -16,6 +16,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton(typeof(HubEndPoint<>), typeof(HubEndPoint<>));
             services.AddScoped(typeof(IHubActivator<,>), typeof(DefaultHubActivator<,>));
 
+            services.AddAuthorization();
+
             return new SignalRBuilder(services);
         }
     }

@@ -3,11 +3,14 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
@@ -251,6 +254,13 @@ namespace Microsoft.AspNetCore.SignalR
 
             using (var scope = _serviceScopeFactory.CreateScope())
             {
+                if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection.User, descriptor.Policies))
+                {
+                    _logger.LogDebug("Failed to invoke {hubMethod} because user is unauthorized", invocationMessage.Target);
+                    await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationMessage.InvocationId, $"Failed to invoke '{invocationMessage.Target}' because user is unauthorized"));
+                    return;
+                }
+
                 var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub, TClient>>();
                 var hub = hubActivator.Create();
 
@@ -395,13 +405,34 @@ namespace Microsoft.AspNetCore.SignalR
                 }
 
                 var executor = ObjectMethodExecutor.Create(methodInfo, hubTypeInfo);
-                _methods[methodName] = new HubMethodDescriptor(executor);
+                var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
+                _methods[methodName] = new HubMethodDescriptor(executor, authorizeAttributes);
 
                 if (_logger.IsEnabled(LogLevel.Debug))
                 {
                     _logger.LogDebug("Hub method '{methodName}' is bound", methodName);
                 }
             }
+        }
+
+        private async Task<bool> IsHubMethodAuthorized(IServiceProvider provider, ClaimsPrincipal principal, IList<IAuthorizeData> policies)
+        {
+            // If there are no policies we don't need to run auth
+            if (!policies.Any())
+            {
+                return true;
+            }
+
+            var authService = provider.GetRequiredService<IAuthorizationService>();
+            var policyProvider = provider.GetRequiredService<IAuthorizationPolicyProvider>();
+
+            var authorizePolicy = await AuthorizationPolicy.CombineAsync(policyProvider, policies);
+            // AuthorizationPolicy.CombineAsync only returns null if there are no policies and we check that above
+            Debug.Assert(authorizePolicy != null);
+
+            var authorizationResult = await authService.AuthorizeAsync(principal, authorizePolicy);
+            // Only check authorization success, challenge or forbid wouldn't make sense from a hub method invocation
+            return authorizationResult.Succeeded;
         }
 
         Type IInvocationBinder.GetReturnType(string invocationId)
@@ -422,15 +453,18 @@ namespace Microsoft.AspNetCore.SignalR
         // REVIEW: We can decide to move this out of here if we want pluggable hub discovery
         private class HubMethodDescriptor
         {
-            public HubMethodDescriptor(ObjectMethodExecutor methodExecutor)
+            public HubMethodDescriptor(ObjectMethodExecutor methodExecutor, IEnumerable<IAuthorizeData> policies)
             {
                 MethodExecutor = methodExecutor;
                 ParameterTypes = methodExecutor.MethodParameters.Select(p => p.ParameterType).ToArray();
+                Policies = policies.ToArray();
             }
 
             public ObjectMethodExecutor MethodExecutor { get; }
 
             public Type[] ParameterTypes { get; }
+
+            public IList<IAuthorizeData> Policies { get; }
         }
     }
 }

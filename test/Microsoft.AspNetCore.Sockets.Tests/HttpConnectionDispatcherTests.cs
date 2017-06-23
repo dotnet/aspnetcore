@@ -1071,7 +1071,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
     {
         public override void OnCompleted(Func<object, Task> callback, object state)
         {
-            
         }
 
         public override void OnStarting(Func<object, Task> callback, object state)

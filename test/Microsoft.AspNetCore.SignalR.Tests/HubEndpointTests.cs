@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
@@ -597,7 +599,74 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 client.Dispose();
 
-                await endPointLifetime;
+                await endPointLifetime.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task UnauthorizedConnectionCannotInvokeHubMethodWithAuthorization()
+        {
+            var serviceProvider = CreateServiceProvider(services =>
+            {
+                services.AddAuthorization(options =>
+                {
+                    options.AddPolicy("test", policy =>
+                    {
+                        policy.RequireClaim(ClaimTypes.NameIdentifier);
+                        policy.AddAuthenticationSchemes("Default");
+                    });
+                });
+            });
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                var message = await client.InvokeAsync(nameof(MethodHub.AuthMethod)).OrTimeout();
+
+                Assert.NotNull(message.Error);
+
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task AuthorizedConnectionCanInvokeHubMethodWithAuthorization()
+        {
+            var serviceProvider = CreateServiceProvider(services =>
+            {
+                services.AddAuthorization(options =>
+                {
+                    options.AddPolicy("test", policy =>
+                    {
+                        policy.RequireClaim(ClaimTypes.NameIdentifier);
+                        policy.AddAuthenticationSchemes("Default");
+                    });
+                });
+            });
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                client.Connection.User.AddIdentity(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "name") }));
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                var message = await client.InvokeAsync(nameof(MethodHub.AuthMethod)).OrTimeout();
+
+                Assert.Null(message.Error);
+
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
             }
         }
 
@@ -791,6 +860,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
 
             public static void StaticMethod()
+            {
+            }
+
+            [Authorize("test")]
+            public void AuthMethod()
             {
             }
         }

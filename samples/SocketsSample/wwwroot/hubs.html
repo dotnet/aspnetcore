@@ -81,22 +81,29 @@ let transportType = signalR.TransportType[getParameterByName('transport')] || si
 
 document.getElementById('head1').innerHTML = signalR.TransportType[transportType];
 
-let http = new signalR.HttpConnection(`http://${document.location.host}/hubs`, { transport: transportType });
-let connection = new signalR.HubConnection(http);
-connection.on('Send', msg => {
-    addLine('message-list', msg);
-});
-
-connection.onClosed = e => {
-    if (e) {
-        addLine('message-list', 'Connection closed with error: ' + e, 'red');
-    }
-    else {
-        addLine('message-list', 'Disconnected', 'green');
-    }
-}
+let connectButton = document.getElementById('connect');
+let disconnectButton = document.getElementById('disconnect');
+disconnectButton.disabled = true;
+var connection;
 
 click('connect', event => {
+    connectButton.disabled = true;
+    disconnectButton.disabled = false;
+    let http = new signalR.HttpConnection(`http://${document.location.host}/hubs`, { transport: transportType });
+    connection = new signalR.HubConnection(http);
+    connection.on('Send', msg => {
+        addLine('message-list', msg);
+    });
+
+    connection.onClosed = e => {
+        if (e) {
+            addLine('message-list', 'Connection closed with error: ' + e, 'red');
+        }
+        else {
+            addLine('message-list', 'Disconnected', 'green');
+        }
+    }
+
     connection.start()
         .then(() => {
             isConnected = true;
@@ -108,6 +115,8 @@ click('connect', event => {
 });
 
 click('disconnect', event => {
+    connectButton.disabled = false;
+    disconnectButton.disabled = true;
     connection.stop()
         .then(() => {
             isConnected = false;
