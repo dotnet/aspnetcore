@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
-    public abstract class IntermediateNodeBuilder
+    internal abstract class IntermediateNodeBuilder
     {
         public static IntermediateNodeBuilder Create(IntermediateNode root)
         {

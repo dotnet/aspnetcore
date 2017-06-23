@@ -23,21 +23,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             var viewDataType = $"global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<{modelType}>";
             var vddProperty = new CSharpCodeIntermediateNode();
-            IntermediateNodeBuilder.Create(vddProperty)
-                .Add(new IntermediateToken()
-                {
-                    Kind = IntermediateToken.TokenKind.CSharp,
-                    Content = $"public {viewDataType} ViewData => ({viewDataType})PageContext?.ViewData;",
-                });
+            vddProperty.Children.Add(new IntermediateToken()
+            {
+                Kind = IntermediateToken.TokenKind.CSharp,
+                Content = $"public {viewDataType} ViewData => ({viewDataType})PageContext?.ViewData;",
+            });
             @class.Children.Add(vddProperty);
 
             var modelProperty = new CSharpCodeIntermediateNode();
-            IntermediateNodeBuilder.Create(modelProperty)
-                .Add(new IntermediateToken()
-                {
-                    Kind = IntermediateToken.TokenKind.CSharp,
-                    Content = $"public {modelType} Model => ViewData.Model;",
-                });
+            modelProperty.Children.Add(new IntermediateToken()
+            {
+                Kind = IntermediateToken.TokenKind.CSharp,
+                Content = $"public {modelType} Model => ViewData.Model;",
+            });
             @class.Children.Add(modelProperty);
         }
 

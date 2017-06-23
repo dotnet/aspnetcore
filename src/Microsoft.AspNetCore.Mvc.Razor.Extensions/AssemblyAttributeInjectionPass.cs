@@ -52,12 +52,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Debug.Assert(index >= 0);
 
             var pageAttribute = new CSharpCodeIntermediateNode();
-            IntermediateNodeBuilder.Create(pageAttribute)
-                .Add(new IntermediateToken()
-                {
-                    Kind = IntermediateToken.TokenKind.CSharp,
-                    Content = attribute,
-                });
+            pageAttribute.Children.Add(new IntermediateToken()
+            {
+                Kind = IntermediateToken.TokenKind.CSharp,
+                Content = attribute,
+            });
 
             documentNode.Children.Insert(index, pageAttribute);
         }

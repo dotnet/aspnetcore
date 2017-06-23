@@ -49,12 +49,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             WriteClass(writer, tagHelper);
 
             var statement = new CSharpCodeIntermediateNode();
-            IntermediateNodeBuilder.Create(statement)
-                .Add(new IntermediateToken()
-                {
-                    Kind = IntermediateToken.TokenKind.CSharp,
-                    Content = writer.GenerateCode()
-                });
+            statement.Children.Add(new IntermediateToken()
+            {
+                Kind = IntermediateToken.TokenKind.CSharp,
+                Content = writer.GenerateCode()
+            });
 
             @class.Children.Add(statement);
         }

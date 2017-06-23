@@ -30,9 +30,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                      string.Equals(node.Descriptor.IndexerTypeName, ModelExpressionTypeName, StringComparison.Ordinal)))
                 {
                     var expression = new CSharpExpressionIntermediateNode();
-                    var builder = IntermediateNodeBuilder.Create(expression);
 
-                    builder.Add(new IntermediateToken()
+                    expression.Children.Add(new IntermediateToken()
                     {
                         Kind = IntermediateToken.TokenKind.CSharp,
                         Content = "ModelExpressionProvider.CreateModelExpression(ViewData, __model => ",
@@ -42,13 +41,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     {
                         // A 'simple' expression will look like __model => __model.Foo
 
-                        builder.Add(new IntermediateToken()
+                        expression.Children.Add(new IntermediateToken()
                         {
                             Kind = IntermediateToken.TokenKind.CSharp,
                             Content = "__model."
                         });
 
-                        builder.Add(token);
+                        expression.Children.Add(token);
                     }
                     else
                     {
@@ -61,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                                     if (nestedExpression.Children[j] is IntermediateToken cSharpToken &&
                                         cSharpToken.IsCSharp)
                                     {
-                                        builder.Add(cSharpToken);
+                                        expression.Children.Add(cSharpToken);
                                     }
                                 }
 
@@ -70,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                         }
                     }
 
-                    builder.Add(new IntermediateToken()
+                    expression.Children.Add(new IntermediateToken()
                     {
                         Kind = IntermediateToken.TokenKind.CSharp,
                         Content = ")",
