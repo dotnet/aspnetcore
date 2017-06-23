@@ -1,10 +1,10 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Newtonsoft.Json;
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var protocol = new JsonHubProtocol(jsonSerializer);
             protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, out var messages);
 
-            Assert.Equal(expectedMessage, messages[0], TestEqualityComparer.Instance);
+            Assert.Equal(expectedMessage, messages[0], TestHubMessageEqualityComparer.Instance);
         }
 
         [Theory]
@@ -145,136 +145,6 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var output = new MemoryStream();
             Assert.True(TextMessageFormatter.TryWriteMessage(message, output));
             return output.ToArray();
-        }
-
-        private class CustomObject : IEquatable<CustomObject>
-        {
-            // Not intended to be a full set of things, just a smattering of sample serializations
-            public string StringProp => "SignalR!";
-
-            public double DoubleProp => 6.2831853071;
-
-            public int IntProp => 42;
-
-            public DateTime DateTimeProp => new DateTime(2017, 4, 11);
-
-            public object NullProp => null;
-
-            public override bool Equals(object obj)
-            {
-                return obj is CustomObject o && Equals(o);
-            }
-
-            public override int GetHashCode()
-            {
-                // This is never used in a hash table
-                return 0;
-            }
-
-            public bool Equals(CustomObject right)
-            {
-                // This allows the comparer below to properly compare the object in the test.
-                return string.Equals(StringProp, right.StringProp, StringComparison.Ordinal) &&
-                    DoubleProp == right.DoubleProp &&
-                    IntProp == right.IntProp &&
-                    DateTime.Equals(DateTimeProp, right.DateTimeProp) &&
-                    NullProp == right.NullProp;
-            }
-        }
-
-        // Binder that works based on the expected message argument/result types :)
-        private class TestBinder : IInvocationBinder
-        {
-            private readonly Type[] _paramTypes;
-            private readonly Type _returnType;
-
-            public TestBinder(HubMessage expectedMessage)
-            {
-                switch(expectedMessage)
-                {
-                    case InvocationMessage i:
-                        _paramTypes = i.Arguments?.Select(a => a?.GetType() ?? typeof(object))?.ToArray();
-                        break;
-                    case StreamItemMessage s:
-                        _returnType = s.Item?.GetType() ?? typeof(object);
-                        break;
-                    case CompletionMessage c:
-                        _returnType = c.Result?.GetType() ?? typeof(object);
-                        break;
-                }
-            }
-
-            public TestBinder() : this(null, null) { }
-            public TestBinder(Type[] paramTypes) : this(paramTypes, null) { }
-            public TestBinder(Type returnType) : this(null, returnType) {}
-            public TestBinder(Type[] paramTypes, Type returnType)
-            {
-                _paramTypes = paramTypes;
-                _returnType = returnType;
-            }
-
-            public Type[] GetParameterTypes(string methodName)
-            {
-                if (_paramTypes != null)
-                {
-                    return _paramTypes;
-                }
-                throw new InvalidOperationException("Unexpected binder call");
-            }
-
-            public Type GetReturnType(string invocationId)
-            {
-                if (_returnType != null)
-                {
-                    return _returnType;
-                }
-                throw new InvalidOperationException("Unexpected binder call");
-            }
-        }
-
-        private class TestEqualityComparer : IEqualityComparer<HubMessage>
-        {
-            public static readonly TestEqualityComparer Instance = new TestEqualityComparer();
-
-            private TestEqualityComparer() { }
-
-            public bool Equals(HubMessage x, HubMessage y)
-            {
-                if (!string.Equals(x.InvocationId, y.InvocationId, StringComparison.Ordinal))
-                {
-                    return false;
-                }
-
-                return InvocationMessagesEqual(x, y) || StreamItemMessagesEqual(x, y) || CompletionMessagesEqual(x, y);
-            }
-
-            private bool CompletionMessagesEqual(HubMessage x, HubMessage y)
-            {
-                return x is CompletionMessage left && y is CompletionMessage right &&
-                    string.Equals(left.Error, right.Error, StringComparison.Ordinal) &&
-                    Equals(left.Result, right.Result) &&
-                    left.HasResult == right.HasResult;
-            }
-
-            private bool StreamItemMessagesEqual(HubMessage x, HubMessage y)
-            {
-                return x is StreamItemMessage left && y is StreamItemMessage right &&
-                    Equals(left.Item, right.Item);
-            }
-
-            private bool InvocationMessagesEqual(HubMessage x, HubMessage y)
-            {
-                return x is InvocationMessage left && y is InvocationMessage right &&
-                    string.Equals(left.Target, right.Target, StringComparison.Ordinal) &&
-                    Enumerable.SequenceEqual(left.Arguments, right.Arguments) &&
-                    left.NonBlocking == right.NonBlocking;
-            }
-
-            public int GetHashCode(HubMessage obj)
-            {
-                // We never use these in a hash-table
-                return 0;
-            }
         }
     }
 }

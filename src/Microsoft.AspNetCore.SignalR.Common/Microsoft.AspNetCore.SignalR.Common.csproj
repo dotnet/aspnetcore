@@ -16,6 +16,7 @@
     <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
     <PackageReference Include="System.Buffers.Primitives" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.Binary" Version="$(CoreFxLabsVersion)" />
+    <PackageReference Include="MsgPack.Cli" Version="$(MsgPackVersion)" />
   </ItemGroup>
 
 </Project>

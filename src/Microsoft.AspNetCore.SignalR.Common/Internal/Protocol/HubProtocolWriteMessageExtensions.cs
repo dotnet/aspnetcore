@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 {
                     throw new InvalidOperationException("Failed to write message to the output stream");
                 }
-                
+
                 return output.ToArray();
             }
         }
