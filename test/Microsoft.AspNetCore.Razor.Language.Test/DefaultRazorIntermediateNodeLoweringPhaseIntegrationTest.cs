@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void Lower_WithImports_Directive()
+        public void Lower_WithMultipleImports_SingleLineFileScopedSinglyOccurring()
         {
             // Arrange
             var source = TestRazorSourceDocument.Create("<p>Hi!</p>");
@@ -395,13 +395,19 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var documentNode = Lower(codeDocument, b =>
             {
-                b.AddDirective(DirectiveDescriptor.CreateDirective("test", DirectiveKind.SingleLine, d => d.AddMemberToken()));
+                b.AddDirective(DirectiveDescriptor.CreateDirective(
+                    "test", 
+                    DirectiveKind.SingleLine, 
+                    builder =>
+                    {
+                        builder.AddMemberToken();
+                        builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+                    }));
             });
 
             // Assert
             Children(
                 documentNode,
-                n => Directive("test", n, c => DirectiveToken(DirectiveTokenKind.Member, "value1", c)),
                 n => Directive("test", n, c => DirectiveToken(DirectiveTokenKind.Member, "value2", c)),
                 n => Html("<p>Hi!</p>", n));
         }

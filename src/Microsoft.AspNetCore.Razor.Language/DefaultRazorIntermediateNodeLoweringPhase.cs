@@ -73,6 +73,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 builder.Insert(i++, @using);
             }
 
+            ImportDirectives(document);
+
             // The document should contain all errors that currently exist in the system. This involves
             // adding the errors from the primary and imported syntax trees.
 
@@ -94,6 +96,56 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             codeDocument.SetDocumentIntermediateNode(document);
+        }
+
+        private void ImportDirectives(DocumentIntermediateNode document)
+        {
+            var visitor = new DirectiveVisitor();
+            visitor.VisitDocument(document);
+
+            var seenDirectives = new HashSet<DirectiveDescriptor>();
+            for (var i = visitor.Directives.Count - 1; i >= 0; i--)
+            {
+                var reference = visitor.Directives[i];
+                var directive = (DirectiveIntermediateNode)reference.Node;
+                var descriptor = directive.Descriptor;
+                var seenDirective = !seenDirectives.Add(descriptor);
+                var imported = ReferenceEquals(directive.Annotations[CommonAnnotations.Imported], CommonAnnotations.Imported);
+
+                if (!imported)
+                {
+                    continue;
+                }
+
+                switch (descriptor.Kind)
+                {
+                    case DirectiveKind.SingleLine:
+                        if (seenDirective && descriptor.Usage == DirectiveUsage.FileScopedSinglyOccurring)
+                        {
+                            // This directive has been overridden, it should be removed from the document.
+
+                            break;
+                        }
+
+                        continue;
+                    case DirectiveKind.RazorBlock:
+                    case DirectiveKind.CodeBlock:
+                        if (descriptor.Usage == DirectiveUsage.FileScopedSinglyOccurring)
+                        {
+                            // A block directive cannot be imported.
+
+                            document.Diagnostics.Add(
+                                RazorDiagnosticFactory.CreateDirective_BlockDirectiveCannotBeImported(descriptor.Directive));
+                        }
+                        break;
+                    default:
+                        throw new InvalidOperationException(Resources.FormatUnexpectedDirectiveKind(typeof(DirectiveKind).FullName));
+                }
+
+                // Overridden and invalid imported directives make it to here. They should be removed from the document.
+
+                reference.Remove();
+            }
         }
 
         private RazorCodeGenerationOptions CreateCodeGenerationOptions()
@@ -121,6 +173,50 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             public string FilePath { get; set; }
+
+            public override void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
+            {
+                _builder.Add(new DirectiveTokenIntermediateNode()
+                {
+                    Content = span.Content,
+                    Descriptor = chunkGenerator.Descriptor,
+                    Source = BuildSourceSpanFromNode(span),
+                });
+            }
+
+            public override void VisitDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
+            {
+                IntermediateNode directiveNode;
+                if (IsMalformed(chunkGenerator.Diagnostics))
+                {
+                    directiveNode = new MalformedDirectiveIntermediateNode()
+                    {
+                        Name = chunkGenerator.Descriptor.Directive,
+                        Descriptor = chunkGenerator.Descriptor,
+                        Source = BuildSourceSpanFromNode(block),
+                    };
+                }
+                else
+                {
+                    directiveNode = new DirectiveIntermediateNode()
+                    {
+                        Name = chunkGenerator.Descriptor.Directive,
+                        Descriptor = chunkGenerator.Descriptor,
+                        Source = BuildSourceSpanFromNode(block),
+                    };
+                }
+
+                for (var i = 0; i < chunkGenerator.Diagnostics.Count; i++)
+                {
+                    directiveNode.Diagnostics.Add(chunkGenerator.Diagnostics[i]);
+                }
+
+                _builder.Push(directiveNode);
+
+                VisitDefault(block);
+
+                _builder.Pop();
+            }
 
             public override void VisitImportSpan(AddImportChunkGenerator chunkGenerator, Span span)
             {
@@ -264,73 +360,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
         }
 
-        private class ImportsVisitor : LoweringVisitor
-        {
-            // Imports only supports usings and single-line directives. We only want to include directive tokens
-            // when we're inside a single line directive. Also single line directives can't nest which makes
-            // this simple.
-            private bool _insideLineDirective;
-
-            public ImportsVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces)
-                : base(document, builder, namespaces)
-            {
-            }
-
-            public override void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
-            {
-                if (_insideLineDirective)
-                {
-                    _builder.Add(new DirectiveTokenIntermediateNode()
-                    {
-                        Content = span.Content,
-                        Descriptor = chunkGenerator.Descriptor,
-                        Source = BuildSourceSpanFromNode(span),
-                    });
-                }
-            }
-
-            public override void VisitDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
-            {
-                if (chunkGenerator.Descriptor.Kind == DirectiveKind.SingleLine)
-                {
-                    _insideLineDirective = true;
-
-                    IntermediateNode directiveNode;
-                    if (IsMalformed(chunkGenerator.Diagnostics))
-                    {
-                        directiveNode = new MalformedDirectiveIntermediateNode()
-                        {
-                            Name = chunkGenerator.Descriptor.Directive,
-                            Descriptor = chunkGenerator.Descriptor,
-                            Source = BuildSourceSpanFromNode(block),
-                        };
-                    }
-                    else
-                    {
-                        directiveNode = new DirectiveIntermediateNode()
-                        {
-                            Name = chunkGenerator.Descriptor.Directive,
-                            Descriptor = chunkGenerator.Descriptor,
-                            Source = BuildSourceSpanFromNode(block),
-                        };
-                    }
-
-                    for (var i = 0; i < chunkGenerator.Diagnostics.Count; i++)
-                    {
-                        directiveNode.Diagnostics.Add(chunkGenerator.Diagnostics[i]);
-                    }
-
-                    _builder.Push(directiveNode);
-
-                    base.VisitDirectiveBlock(chunkGenerator, block);
-
-                    _builder.Pop();
-
-                    _insideLineDirective = false;
-                }
-            }
-        }
-
         private class MainSourceVisitor : LoweringVisitor
         {
             private DeclareTagHelperFieldsIntermediateNode _tagHelperFields;
@@ -340,50 +369,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                 : base(document, builder, namespaces)
             {
                 _tagHelperPrefix = tagHelperPrefix;
-            }
-
-            public override void VisitDirectiveToken(DirectiveTokenChunkGenerator chunkGenerator, Span span)
-            {
-                _builder.Add(new DirectiveTokenIntermediateNode()
-                {
-                    Content = span.Content,
-                    Descriptor = chunkGenerator.Descriptor,
-                    Source = BuildSourceSpanFromNode(span),
-                });
-            }
-
-            public override void VisitDirectiveBlock(DirectiveChunkGenerator chunkGenerator, Block block)
-            {
-                IntermediateNode directiveNode;
-                if (IsMalformed(chunkGenerator.Diagnostics))
-                {
-                    directiveNode = new MalformedDirectiveIntermediateNode()
-                    {
-                        Name = chunkGenerator.Descriptor.Directive,
-                        Descriptor = chunkGenerator.Descriptor,
-                        Source = BuildSourceSpanFromNode(block),
-                    };
-                }
-                else
-                {
-                    directiveNode = new DirectiveIntermediateNode()
-                    {
-                        Name = chunkGenerator.Descriptor.Directive,
-                        Descriptor = chunkGenerator.Descriptor,
-                        Source = BuildSourceSpanFromNode(block),
-                    };
-                }
-
-                for (var i = 0; i < chunkGenerator.Diagnostics.Count; i++)
-                {
-                    directiveNode.Diagnostics.Add(chunkGenerator.Diagnostics[i]);
-                }
-
-                _builder.Push(directiveNode);
-
-                VisitDefault(block);
-
-                _builder.Pop();
             }
 
             // Example
@@ -780,6 +765,60 @@ namespace Microsoft.AspNetCore.Razor.Language
                         _builder.Pop();
                     }
                 }
+            }
+        }
+
+        private class ImportsVisitor : LoweringVisitor
+        {
+            public ImportsVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces)
+                : base(document, new ImportBuilder(builder), namespaces)
+            {
+            }
+
+            private class ImportBuilder : IntermediateNodeBuilder
+            {
+                private readonly IntermediateNodeBuilder _innerBuilder;
+
+                public ImportBuilder(IntermediateNodeBuilder innerBuilder)
+                {
+                    _innerBuilder = innerBuilder;
+                }
+
+                public override IntermediateNode Current => _innerBuilder.Current;
+
+                public override void Add(IntermediateNode node)
+                {
+                    node.Annotations[CommonAnnotations.Imported] = CommonAnnotations.Imported;
+                    _innerBuilder.Add(node);
+                }
+
+                public override IntermediateNode Build() => _innerBuilder.Build();
+
+                public override void Insert(int index, IntermediateNode node)
+                {
+                    node.Annotations[CommonAnnotations.Imported] = CommonAnnotations.Imported;
+                    _innerBuilder.Insert(index, node);
+                }
+
+                public override IntermediateNode Pop() => _innerBuilder.Pop();
+
+                public override void Push(IntermediateNode node)
+                {
+                    node.Annotations[CommonAnnotations.Imported] = CommonAnnotations.Imported;
+                    _innerBuilder.Push(node);
+                }
+            }
+        }
+
+        private class DirectiveVisitor : IntermediateNodeWalker
+        {
+            public List<IntermediateNodeReference> Directives = new List<IntermediateNodeReference>();
+
+            public override void VisitDirective(DirectiveIntermediateNode node)
+            {
+                Directives.Add(new IntermediateNodeReference(Parent, node));
+
+                base.VisitDirective(node);
             }
         }
 

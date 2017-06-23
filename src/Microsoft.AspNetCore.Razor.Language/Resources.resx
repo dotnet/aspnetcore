@@ -231,4 +231,10 @@
   <data name="DirectiveMustExistBeforeMarkupOrCode" xml:space="preserve">
     <value>The '{0}' directive must exist prior to markup or code.</value>
   </data>
+  <data name="BlockDirectiveCannotBeImported" xml:space="preserve">
+    <value>Block directive '{0}' cannot be imported.</value>
+  </data>
+  <data name="UnexpectedDirectiveKind" xml:space="preserve">
+    <value>Unreachable code. This can happen when a new {0} is introduced.</value>
+  </data>
 </root>

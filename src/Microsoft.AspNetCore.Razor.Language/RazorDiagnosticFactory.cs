@@ -13,6 +13,16 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         // General Errors ID Offset = 0
 
+        public static readonly RazorDiagnosticDescriptor Directive_BlockDirectiveCannotBeImported =
+        new RazorDiagnosticDescriptor(
+            $"{DiagnosticPrefix}0000",
+            () => Resources.BlockDirectiveCannotBeImported,
+            RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateDirective_BlockDirectiveCannotBeImported(string directive)
+        {
+            return RazorDiagnostic.Create(Directive_BlockDirectiveCannotBeImported, SourceSpan.Undefined, directive);
+        }
+
         #endregion
 
         #region Language Errors

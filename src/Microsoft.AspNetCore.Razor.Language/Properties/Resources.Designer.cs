@@ -542,6 +542,34 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatDirectiveMustExistBeforeMarkupOrCode(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveMustExistBeforeMarkupOrCode"), p0);
 
+        /// <summary>
+        /// Block directive '{0}' cannot be imported.
+        /// </summary>
+        internal static string BlockDirectiveCannotBeImported
+        {
+            get => GetString("BlockDirectiveCannotBeImported");
+        }
+
+        /// <summary>
+        /// Block directive '{0}' cannot be imported.
+        /// </summary>
+        internal static string FormatBlockDirectiveCannotBeImported(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("BlockDirectiveCannotBeImported"), p0);
+
+        /// <summary>
+        /// Unreachable code. This can happen when a new {0} is introduced.
+        /// </summary>
+        internal static string UnexpectedDirectiveKind
+        {
+            get => GetString("UnexpectedDirectiveKind");
+        }
+
+        /// <summary>
+        /// Unreachable code. This can happen when a new {0} is introduced.
+        /// </summary>
+        internal static string FormatUnexpectedDirectiveKind(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("UnexpectedDirectiveKind"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
