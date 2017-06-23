@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
         /// <summary>
         /// The object provided by the application to process events raised by the bearer authentication handler.
-        /// The application may implement the interface fully, or it may create an instance of JwtBearerAuthenticationEvents
+        /// The application may implement the interface fully, or it may create an instance of JwtBearerEvents
         /// and assign delegates only to the events it wants to process.
         /// </summary>
         public new JwtBearerEvents Events
