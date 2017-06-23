@@ -21,7 +21,6 @@
     <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="System.Threading.Tasks.Channels" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.Memory" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Binary" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
   </ItemGroup>
 
