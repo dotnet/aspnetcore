@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26510.0
+VisualStudioVersion = 15.0.26621.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7972A5D6-3385-4127-9277-428506DD44FF}"
 	ProjectSection(SolutionItems) = preProject
@@ -20,7 +20,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{0EF2ACDF-012F-4472-A13A-4272419E2903}"
 	ProjectSection(SolutionItems) = preProject
 		test\shared\DummyApplication.cs = test\shared\DummyApplication.cs
-		test\shared\HttpClientSlim.cs = test\shared\HttpClientSlim.cs
 		test\shared\HttpParsingData.cs = test\shared\HttpParsingData.cs
 		test\shared\KestrelTestLoggerProvider.cs = test\shared\KestrelTestLoggerProvider.cs
 		test\shared\LifetimeNotImplemented.cs = test\shared\LifetimeNotImplemented.cs
@@ -269,5 +268,8 @@ Global
 		{2E9CB89D-EC8F-4DD9-A72B-08D5BABF752D} = {2D5D5227-4DBD-499A-96B1-76A36B03B750}
 		{D95A7EC3-48AC-4D03-B2E2-0DA3E13BD3A4} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
 		{4F1C30F8-CCAA-48D7-9DF6-2A84021F5BCC} = {D3273454-EA07-41D2-BF0B-FCC3675C2483}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {2D10D020-6770-47CA-BB8D-2C23FE3AE071}
 	EndGlobalSection
 EndGlobal
