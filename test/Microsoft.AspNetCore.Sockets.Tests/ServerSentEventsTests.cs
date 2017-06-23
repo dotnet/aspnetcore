@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Internal.Transports;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -44,6 +45,30 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             await sse.ProcessRequestAsync(context, context.RequestAborted);
 
             Assert.True(feature.ResponseBufferingDisabled);
+        }
+
+        [Fact]
+        public async Task SSEWritesMessages()
+        {
+            var channel = Channel.CreateUnbounded<byte[]>(new ChannelOptimizations
+            {
+                AllowSynchronousContinuations = true
+            });
+
+            var context = new DefaultHttpContext();
+            var ms = new MemoryStream();
+            context.Response.Body = ms;
+            var sse = new ServerSentEventsTransport(channel, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+
+            var task = sse.ProcessRequestAsync(context, context.RequestAborted);
+
+            await channel.Out.WriteAsync(Encoding.ASCII.GetBytes("Hello"));
+
+            Assert.Equal(":\r\ndata: Hello\r\n\r\n", Encoding.ASCII.GetString(ms.ToArray()));
+
+            channel.Out.TryComplete();
+
+            await task.OrTimeout();
         }
 
         [Theory]

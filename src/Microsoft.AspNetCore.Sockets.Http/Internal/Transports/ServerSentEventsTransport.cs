@@ -44,9 +44,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
             try
             {
-                var ms = new MemoryStream();
                 while (await _application.WaitToReadAsync(token))
                 {
+                    var ms = new MemoryStream();
                     while (_application.TryRead(out var buffer))
                     {
                         _logger.SSEWritingMessage(_connectionId, buffer.Length);
@@ -61,10 +61,10 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                             throw new InvalidOperationException("Ran out of space to format messages!");
                         }
                     }
-                }
 
-                ms.Seek(0, SeekOrigin.Begin);
-                await ms.CopyToAsync(context.Response.Body);
+                    ms.Seek(0, SeekOrigin.Begin);
+                    await ms.CopyToAsync(context.Response.Body);
+                }
 
                 await _application.Completion;
             }
