@@ -3,8 +3,8 @@ init:
 install:
    - ps: Install-Product node 6.9.2 x64
    # .NET Core SDK binaries
-   # Download .NET Core 2.0 Preview 1 SDK and add to PATH
-   - ps: $urlCurrent = "https://download.microsoft.com/download/0/6/5/0656B047-5F2F-4281-A851-F30776F8616D/dotnet-dev-win-x64.2.0.0-preview1-005977.zip"
+   # Download .NET Core latest prerelease SDK and add to PATH
+   - ps: $urlCurrent = "https://dotnetcli.blob.core.windows.net/dotnet/Sdk/master/dotnet-sdk-latest-win-x64.zip"
    - ps: $env:DOTNET_INSTALL_DIR = "$pwd\.dotnetsdk"
    - ps: mkdir $env:DOTNET_INSTALL_DIR -Force | Out-Null
    - ps: $tempFileCurrent = [System.IO.Path]::GetTempFileName()
