@@ -56,13 +56,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             _processRequest = new Action<object>(ProcessRequestAsync);
             _maxAccepts = _options.MaxAccepts;
-            EnableResponseCaching = _options.EnableResponseCaching;
             _shutdownSignal = new TaskCompletionSource<object>();
         }
 
         internal HttpSysListener Listener { get; }
-
-        internal bool EnableResponseCaching { get; set; }
 
         public IFeatureCollection Features { get; }
 
@@ -199,12 +196,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Interlocked.Increment(ref _outstandingRequests);
                 try
                 {
-                    var featureContext = new FeatureContext(requestContext, EnableResponseCaching);
+                    var featureContext = new FeatureContext(requestContext);
                     context = _application.CreateContext(featureContext.Features);
                     try
                     {
                         await _application.ProcessRequestAsync(context).SupressContext();
-                        await featureContext.OnStart();
+                        await featureContext.OnResponseStart();
                         requestContext.Dispose();
                         _application.DisposeContext(context, null);
                     }

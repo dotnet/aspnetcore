@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             { typeof(IHttpAuthenticationFeature), _identityFunc },
             { typeof(IHttpRequestIdentifierFeature), _identityFunc },
             { typeof(RequestContext), ctx => ctx.RequestContext },
+            { typeof(IHttpMaxRequestBodySizeFeature), _identityFunc },
         };
 
         private readonly FeatureContext _featureContext;

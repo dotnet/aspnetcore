@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpRequestLifetimeFeature,
         IHttpAuthenticationFeature,
         IHttpUpgradeFeature,
-        IHttpRequestIdentifierFeature
+        IHttpRequestIdentifierFeature,
+        IHttpMaxRequestBodySizeFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -62,11 +63,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private bool _responseStarted;
         private bool _completed;
 
-        internal FeatureContext(RequestContext requestContext, bool enableResponseCaching)
+        internal FeatureContext(RequestContext requestContext)
         {
             _requestContext = requestContext;
             _features = new FeatureCollection(new StandardFeatureCollection(this));
-            _enableResponseCaching = enableResponseCaching;
+            _enableResponseCaching = _requestContext.Server.Options.EnableResponseCaching;
 
             // Pre-initialize any fields that are not lazy at the lower level.
             _requestHeaders = Request.Headers;
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _scheme = Request.Scheme;
             _user = _requestContext.User;
 
-            _responseStream = new ResponseStream(requestContext.Response.Body, OnStart);
+            _responseStream = new ResponseStream(requestContext.Response.Body, OnResponseStart);
             _responseHeaders = Response.Headers;
         }
 
@@ -405,7 +406,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         async Task IHttpSendFileFeature.SendFileAsync(string path, long offset, long? length, CancellationToken cancellation)
         {
-            await OnStart();
+            await OnResponseStart();
             await Response.SendFileAsync(path, offset, length, cancellation);
         }
 
@@ -433,7 +434,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         async Task<Stream> IHttpUpgradeFeature.UpgradeAsync()
         {
-            await OnStart();
+            await OnResponseStart();
             return await _requestContext.UpgradeAsync();
         }
 
@@ -463,7 +464,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        internal async Task OnStart()
+        bool IHttpMaxRequestBodySizeFeature.IsReadOnly => Request.HasRequestBodyStarted;
+
+        long? IHttpMaxRequestBodySizeFeature.MaxRequestBodySize
+        {
+            get => Request.MaxRequestBodySize;
+            set => Request.MaxRequestBodySize = value;
+        }
+
+        internal async Task OnResponseStart()
         {
             if (_responseStarted)
             {

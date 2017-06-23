@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private BoundaryType _contentBoundaryType;
         private long? _contentLength;
-        private Stream _nativeStream;
+        private RequestStream _nativeStream;
 
         private SocketAddress _localEndPoint;
         private SocketAddress _remoteEndPoint;
@@ -143,15 +143,32 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public string Method { get; }
 
-        public Stream Body
+        public Stream Body => EnsureRequestStream() ?? Stream.Null;
+
+        private RequestStream EnsureRequestStream()
         {
-            get
+            if (_nativeStream == null && HasEntityBody)
             {
-                if (_nativeStream == null)
+                _nativeStream = new RequestStream(RequestContext)
                 {
-                    _nativeStream = HasEntityBody ? new RequestStream(RequestContext) : Stream.Null;
+                    MaxSize = RequestContext.Server.Options.MaxRequestBodySize
+                };
+            }
+            return _nativeStream;
+        }
+
+        public bool HasRequestBodyStarted => _nativeStream?.HasStarted ?? false;
+
+        public long? MaxRequestBodySize
+        {
+            get => EnsureRequestStream()?.MaxSize;
+            set
+            {
+                EnsureRequestStream();
+                if (_nativeStream != null)
+                {
+                    _nativeStream.MaxSize = value;
                 }
-                return _nativeStream;
             }
         }
 
@@ -319,10 +336,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void SwitchToOpaqueMode()
         {
-            if (_nativeStream == null || _nativeStream == Stream.Null)
+            if (_nativeStream == null)
             {
                 _nativeStream = new RequestStream(RequestContext);
             }
+            _nativeStream.SwitchToOpaqueMode();
         }
     }
 }

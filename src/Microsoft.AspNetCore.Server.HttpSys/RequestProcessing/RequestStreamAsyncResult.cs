@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             catch (Exception e)
             {
-                asyncResult.Fail(e);
+                asyncResult.Fail(new IOException(string.Empty, e));
             }
         }
 
@@ -112,7 +112,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal void Complete(int read, uint errorCode = UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS)
         {
-            if (_tcs.TrySetResult(read + (int)DataAlreadyRead))
+            if (_requestStream.TryCheckSizeLimit(read + (int)DataAlreadyRead, out var exception))
+            {
+                _tcs.TrySetException(exception);
+            }
+            else if (_tcs.TrySetResult(read + (int)DataAlreadyRead))
             {
                 RequestStream.UpdateAfterRead((uint)errorCode, (uint)(read + DataAlreadyRead));
                 if (_callback != null)

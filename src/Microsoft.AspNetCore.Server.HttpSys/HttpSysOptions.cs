@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -9,12 +10,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     {
         private const long DefaultRequestQueueLength = 1000; // Http.sys default.
         internal static readonly int DefaultMaxAccepts = 5 * Environment.ProcessorCount;
+        // Matches the default maxAllowedContentLength in IIS (~28.6 MB)
+        // https://www.iis.net/configreference/system.webserver/security/requestfiltering/requestlimits#005
+        private const long DefaultMaxRequestBodySize = 30000000;
 
         // The native request queue
         private long _requestQueueLength = DefaultRequestQueueLength;
         private long? _maxConnections;
         private RequestQueue _requestQueue;
         private UrlGroup _urlGroup;
+        private long? _maxRequestBodySize = DefaultMaxRequestBodySize;
 
         public HttpSysOptions()
         {
@@ -101,6 +106,28 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 // Only store it if it succeeds or hasn't started yet
                 _requestQueueLength = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the maximum allowed size of any request body in bytes.
+        /// When set to null, the maximum request body size is unlimited.
+        /// This limit has no effect on upgraded connections which are always unlimited.
+        /// This can be overridden per-request via <see cref="IHttpMaxRequestBodySizeFeature"/>.
+        /// </summary>
+        /// <remarks>
+        /// Defaults to 30,000,000 bytes, which is approximately 28.6MB.
+        /// </remarks>
+        public long? MaxRequestBodySize
+        {
+            get => _maxRequestBodySize;
+            set
+            {
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Empty);
+                }
+                _maxRequestBodySize = value;
             }
         }
 

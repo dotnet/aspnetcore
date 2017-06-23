@@ -27,25 +27,41 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static IServer CreateHttpServer(out string baseAddress, RequestDelegate app)
         {
             string root;
-            return CreateDynamicHttpServer(string.Empty, AuthenticationSchemes.None, true, out root, out baseAddress, app);
+            return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, options => { }, app);
+        }
+
+        internal static IServer CreateHttpServer(out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
+        {
+            string root;
+            return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, configureOptions, app);
         }
 
         internal static IServer CreateHttpServerReturnRoot(string path, out string root, RequestDelegate app)
         {
             string baseAddress;
-            return CreateDynamicHttpServer(path, AuthenticationSchemes.None, true, out root, out baseAddress, app);
+            return CreateDynamicHttpServer(path, out root, out baseAddress, options => { }, app);
         }
 
         internal static IServer CreateHttpAuthServer(AuthenticationSchemes authType, bool allowAnonymous, out string baseAddress, RequestDelegate app)
         {
             string root;
-            return CreateDynamicHttpServer(string.Empty, authType, allowAnonymous, out root, out baseAddress, app);
+            return CreateDynamicHttpServer(string.Empty, out root, out baseAddress, options =>
+            {
+                options.Authentication.Schemes = authType;
+                options.Authentication.AllowAnonymous = allowAnonymous;
+            }, app);
         }
 
         internal static IWebHost CreateDynamicHost(AuthenticationSchemes authType, bool allowAnonymous, out string root, RequestDelegate app)
-            => CreateDynamicHost(string.Empty, authType, allowAnonymous, out root, out var baseAddress, app);
+        {
+            return CreateDynamicHost(string.Empty, out root, out var baseAddress, options =>
+            {
+                options.Authentication.Schemes = authType;
+                options.Authentication.AllowAnonymous = allowAnonymous;
+            }, app);
+        }
 
-        internal static IWebHost CreateDynamicHost(string basePath, AuthenticationSchemes authType, bool allowAnonymous, out string root, out string baseAddress, RequestDelegate app)
+        internal static IWebHost CreateDynamicHost(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
             lock (PortLock)
             {
@@ -60,8 +76,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         .UseHttpSys(options =>
                         {
                             options.UrlPrefixes.Add(prefix);
-                            options.Authentication.Schemes = authType;
-                            options.Authentication.AllowAnonymous = allowAnonymous;
+                            configureOptions(options);
                         })
                         .Configure(appBuilder => appBuilder.Run(app));
 
@@ -86,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal static MessagePump CreatePump()
             => new MessagePump(Options.Create(new HttpSysOptions()), new LoggerFactory(), new AuthenticationSchemeProvider(Options.Create(new AuthenticationOptions())));
 
-        internal static IServer CreateDynamicHttpServer(string basePath, AuthenticationSchemes authType, bool allowAnonymous, out string root, out string baseAddress, RequestDelegate app)
+        internal static IServer CreateDynamicHttpServer(string basePath, out string root, out string baseAddress, Action<HttpSysOptions> configureOptions, RequestDelegate app)
         {
             lock (PortLock)
             {
@@ -100,8 +115,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
                     var server = CreatePump();
                     server.Features.Get<IServerAddressesFeature>().Addresses.Add(baseAddress);
-                    server.Listener.Options.Authentication.Schemes = authType;
-                    server.Listener.Options.Authentication.AllowAnonymous = allowAnonymous;
+                    configureOptions(server.Listener.Options);
                     try
                     {
                         server.StartAsync(new DummyApplication(app), CancellationToken.None).Wait();

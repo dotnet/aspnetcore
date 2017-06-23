@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
@@ -17,6 +18,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private RequestContext _requestContext;
         private uint _dataChunkOffset;
         private int _dataChunkIndex;
+        private long? _maxSize;
+        private long _totalRead;
         private bool _closed;
 
         internal RequestStream(RequestContext httpContext)
@@ -35,68 +38,53 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         private ILogger Logger => RequestContext.Server.Logger;
 
-        public override bool CanSeek
+        public bool HasStarted { get; private set; }
+
+        public long? MaxSize
         {
-            get
+            get => _maxSize;
+            set
             {
-                return false;
+                if (HasStarted)
+                {
+                    throw new InvalidOperationException("The maximum request size cannot be changed after the request body has started reading.");
+                }
+                if (value.HasValue && value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Empty);
+                }
+                _maxSize = value;
             }
         }
 
-        public override bool CanWrite
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public override bool CanSeek => false;
 
-        public override bool CanRead
-        {
-            get
-            {
-                return true;
-            }
-        }
+        public override bool CanWrite => false;
 
-        public override long Length
-        {
-            get
-            {
-                throw new NotSupportedException(Resources.Exception_NoSeek);
-            }
-        }
+        public override bool CanRead => true;
+
+        public override long Length => throw new NotSupportedException(Resources.Exception_NoSeek);
 
         public override long Position
         {
-            get
-            {
-                throw new NotSupportedException(Resources.Exception_NoSeek);
-            }
-            set
-            {
-                throw new NotSupportedException(Resources.Exception_NoSeek);
-            }
+            get => throw new NotSupportedException(Resources.Exception_NoSeek);
+            set => throw new NotSupportedException(Resources.Exception_NoSeek);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
-        {
-            throw new NotSupportedException(Resources.Exception_NoSeek);
-        }
+            => throw new NotSupportedException(Resources.Exception_NoSeek);
 
-        public override void SetLength(long value)
-        {
-            throw new NotSupportedException(Resources.Exception_NoSeek);
-        }
+        public override void SetLength(long value) => throw new NotSupportedException(Resources.Exception_NoSeek);
 
-        public override void Flush()
-        {
-            throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
-        }
+        public override void Flush() => throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
 
         public override Task FlushAsync(CancellationToken cancellationToken)
+            => throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
+
+        internal void SwitchToOpaqueMode()
         {
-            throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
+            HasStarted = true;
+            _maxSize = null;
         }
 
         internal void Abort()
@@ -124,6 +112,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public override unsafe int Read([In, Out] byte[] buffer, int offset, int size)
         {
             ValidateReadBuffer(buffer, offset, size);
+            CheckSizeLimit();
             if (_closed)
             {
                 return 0;
@@ -177,6 +166,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 UpdateAfterRead(statusCode, dataRead);
             }
+            if (TryCheckSizeLimit((int)dataRead, out var ex))
+            {
+                throw ex;
+            }
 
             // TODO: Verbose log dump data read
             return (int)dataRead;
@@ -193,6 +186,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public override unsafe IAsyncResult BeginRead(byte[] buffer, int offset, int size, AsyncCallback callback, object state)
         {
             ValidateReadBuffer(buffer, offset, size);
+            CheckSizeLimit();
             if (_closed)
             {
                 RequestStreamAsyncResult result = new RequestStreamAsyncResult(this, state, callback);
@@ -295,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             castedAsyncResult.EndCalled = true;
             // wait & then check for errors
             // Throws on failure
-            int dataRead = castedAsyncResult.Task.Result;
+            int dataRead = castedAsyncResult.Task.GetAwaiter().GetResult();
             // TODO: Verbose log #dataRead.
             return dataRead;
         }
@@ -303,6 +297,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public override unsafe Task<int> ReadAsync(byte[] buffer, int offset, int size, CancellationToken cancellationToken)
         {
             ValidateReadBuffer(buffer, offset, size);
+            CheckSizeLimit();
             if (_closed)
             {
                 return Task.FromResult<int>(0);
@@ -323,6 +318,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 if (_dataChunkIndex != -1 && dataRead == size)
                 {
                     UpdateAfterRead(UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS, dataRead);
+                    if (TryCheckSizeLimit((int)dataRead, out var exception))
+                    {
+                        return Task.FromException<int>(exception);
+                    }
                     // TODO: Verbose log #dataRead
                     return Task.FromResult<int>((int)dataRead);
                 }
@@ -378,6 +377,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         uint totalRead = dataRead + bytesReturned;
                         UpdateAfterRead(statusCode, totalRead);
+                        if (TryCheckSizeLimit((int)totalRead, out var exception))
+                        {
+                            return Task.FromException<int>(exception);
+                        }
                         // TODO: Verbose log totalRead
                         return Task.FromResult<int>((int)totalRead);
                     }
@@ -396,6 +399,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     asyncResult.Dispose();
                     uint totalRead = dataRead + bytesReturned;
                     UpdateAfterRead(statusCode, totalRead);
+                    if (TryCheckSizeLimit((int)totalRead, out var exception))
+                    {
+                        return Task.FromException<int>(exception);
+                    }
                     // TODO: Verbose log
                     return Task.FromResult<int>((int)totalRead);
                 }
@@ -416,6 +423,40 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public override void EndWrite(IAsyncResult asyncResult)
         {
             throw new InvalidOperationException(Resources.Exception_ReadOnlyStream);
+        }
+
+        // Called before each read
+        private void CheckSizeLimit()
+        {
+            // Note SwitchToOpaqueMode sets HasStarted and clears _maxSize, so these limits don't apply.
+            if (!HasStarted)
+            {
+                var contentLength = RequestContext.Request.ContentLength;
+                if (contentLength.HasValue && _maxSize.HasValue && contentLength.Value > _maxSize.Value)
+                {
+                    throw new IOException(
+                        $"The request's Content-Length {contentLength.Value} is larger than the request body size limit {_maxSize.Value}.");
+                }
+
+                HasStarted = true;
+            }
+            else if (TryCheckSizeLimit(0, out var exception))
+            {
+                throw exception;
+            }
+        }
+
+        // Called after each read.
+        internal bool TryCheckSizeLimit(int bytesRead, out Exception exception)
+        {
+            _totalRead += bytesRead;
+            if (_maxSize.HasValue && _totalRead > _maxSize.Value)
+            {
+                exception = new IOException($"The total number of bytes read {_totalRead} has exceeded the request body size limit {_maxSize.Value}.");
+                return true;
+            }
+            exception = null;
+            return false;
         }
 
         protected override void Dispose(bool disposing)
