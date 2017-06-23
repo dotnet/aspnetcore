@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="PackagePublisher" Version="1.0.2-*" />
+    <PackageReference Include="PackagePublisher" Version="2.0.0-*" />
     <PackageReference Include="NuGet.CommandLine" Version="$(NuGetCommandLineVersion)" />
   </ItemGroup>
 
