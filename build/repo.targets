@@ -322,11 +322,17 @@
     <Error Text="Docker host must be using Linux containers." Condition="'$(DockerHostOS)' != 'linux'"/>
 
     <!-- Download runtime store archives -->
-    <Exec Command="dotnet restore --packages $(RuntimeStoreArchiveDirectory)" WorkingDirectory="$(RestoreRuntimeStoreDirectory)" />
+    <Message Text="Local runtime store signed artifacts not specified via RUNTIMESTORE_SIGNED_ARTIFACTS_PATH, falling back to artifacts availabe on myget." Importance="high" Condition="'$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)' == ''"/>
+    <MSBuild Projects="$(RestoreRuntimeStoreDirectory)\RestoreRuntimeStore.csproj" Targets="Restore" Properties="RestorePackagesPath=$(RuntimeStoreArchiveDirectory)" Condition="'$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)' == ''"/>
+
+    <PropertyGroup>
+      <RuntimeStoreSignedArchivesPath>$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)</RuntimeStoreSignedArchivesPath>
+      <RuntimeStoreSignedArchivesPath  Condition="'$(RuntimeStoreSignedArchivesPath)' == ''">$(RuntimeStoreArchiveDirectory)</RuntimeStoreSignedArchivesPath>
+    </PropertyGroup>
 
     <ItemGroup>
-      <RuntimeStoreTimestampArchive Include="$(RuntimeStoreArchiveDirectory)**\Build.RS.linux-*"/>
-      <RuntimeStoreNoTimestampArchive Include="$(RuntimeStoreArchiveDirectory)**\Build.RS.linux.*"/>
+      <RuntimeStoreTimestampArchive Include="$(RuntimeStoreSignedArchivesPath)**\Build.RS.linux-*.tar.gz"/>
+      <RuntimeStoreNoTimestampArchive Include="$(RuntimeStoreSignedArchivesPath)**\Build.RS.linux.tar.gz"/>
     </ItemGroup>
 
     <Error Text="@(RuntimeStoreTimestampArchive->Count()) timestamp linux archives found." Condition="'@(RuntimeStoreTimestampArchive->Count())' != 1" />
