@@ -17,5 +17,10 @@
       "TypeId": "public class Microsoft.AspNetCore.Hosting.WebHostBuilder : Microsoft.AspNetCore.Hosting.IWebHostBuilder",
       "MemberId": "public Microsoft.AspNetCore.Hosting.IWebHostBuilder UseLoggerFactory(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory)",
       "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Hosting.StartupBase : Microsoft.AspNetCore.Hosting.IStartup",
+      "MemberId": "public System.IServiceProvider ConfigureServices(Microsoft.Extensions.DependencyInjection.IServiceCollection services)",
+      "Kind": "Removal"
     }
 ]
