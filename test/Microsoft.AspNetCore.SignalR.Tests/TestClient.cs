@@ -20,9 +20,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         private static int _id;
         private IHubProtocol _protocol;
         private CancellationTokenSource _cts;
+        private ChannelConnection<byte[]> _transport;
 
         public DefaultConnectionContext Connection { get; }
-        public IChannelConnection<byte[]> Application { get; }
+        public Channel<byte[]> Application { get; }
         public Task Connected => Connection.Metadata.Get<TaskCompletionSource<bool>>("ConnectedTask").Task;
 
         public TestClient()
@@ -31,9 +32,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
             Application = ChannelConnection.Create<byte[]>(input: applicationToTransport, output: transportToApplication);
-            var transport = ChannelConnection.Create<byte[]>(input: transportToApplication, output: applicationToTransport);
+            _transport = ChannelConnection.Create<byte[]>(input: transportToApplication, output: applicationToTransport);
 
-            Connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), transport, Application);
+            Connection = new DefaultConnectionContext(Guid.NewGuid().ToString(), _transport, Application);
             Connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, Interlocked.Increment(ref _id).ToString()) }));
             Connection.Metadata["ConnectedTask"] = new TaskCompletionSource<bool>();
 
@@ -110,7 +111,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var invocationId = GetInvocationId();
             var payload = _protocol.WriteToArray(new InvocationMessage(invocationId, nonBlocking: false, target: methodName, arguments: args));
 
-            await Application.Output.WriteAsync(payload);
+            await Application.Out.WriteAsync(payload);
 
             return invocationId;
         }
@@ -123,7 +124,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 if (message == null)
                 {
-                    if (!await Application.Input.WaitToReadAsync())
+                    if (!await Application.In.WaitToReadAsync())
                     {
                         return null;
                     }
@@ -137,7 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public HubMessage TryRead()
         {
-            if (Application.Input.TryRead(out var buffer) && 
+            if (Application.In.TryRead(out var buffer) &&
                 _protocol.TryParseMessages(buffer, this, out var messages))
             {
                 return messages[0];
@@ -148,7 +149,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void Dispose()
         {
             _cts.Cancel();
-            Connection.Transport.Dispose();
+            _transport.Dispose();
         }
 
         private static string GetInvocationId()

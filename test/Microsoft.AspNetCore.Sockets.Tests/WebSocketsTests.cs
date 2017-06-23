@@ -25,8 +25,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
-            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
+            using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
@@ -45,10 +45,10 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     cancellationToken: CancellationToken.None);
                 await feature.Client.CloseAsync(WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
 
-                var buffer = await applicationSide.Input.In.ReadAsync();
+                var buffer = await applicationSide.In.ReadAsync();
                 Assert.Equal("Hello", Encoding.UTF8.GetString(buffer));
 
-                Assert.True(applicationSide.Output.Out.TryComplete());
+                Assert.True(applicationSide.Out.TryComplete());
 
                 // The transport should finish now
                 await transport;
@@ -68,8 +68,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
-            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
+            using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var ws = new WebSocketsTransport(new WebSocketOptions() { WebSocketMessageType = webSocketMessageType }, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
@@ -81,8 +81,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var client = feature.Client.ExecuteAndCaptureFramesAsync();
 
                 // Write to the output channel, and then complete it
-                await applicationSide.Output.Out.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
-                Assert.True(applicationSide.Output.Out.TryComplete());
+                await applicationSide.Out.WriteAsync(Encoding.UTF8.GetBytes("Hello"));
+                Assert.True(applicationSide.Out.TryComplete());
 
                 // The client should finish now, as should the server
                 var clientSummary = await client;
@@ -102,8 +102,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
-            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
+            using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var options = new WebSocketOptions()
@@ -136,8 +136,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
-            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
+            using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 var client = feature.Client.ExecuteAndCaptureFramesAsync();
 
                 // Fail in the app
-                Assert.True(applicationSide.Output.Out.TryComplete(new InvalidOperationException("Catastrophic failure.")));
+                Assert.True(applicationSide.Out.TryComplete(new InvalidOperationException("Catastrophic failure.")));
                 var clientSummary = await client.OrTimeout();
                 Assert.Equal(WebSocketCloseStatus.InternalServerError, clientSummary.CloseResult.CloseStatus);
 
@@ -167,8 +167,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
-            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
+            using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var options = new WebSocketOptions()
@@ -200,8 +200,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
-            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
+            using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var options = new WebSocketOptions()
@@ -233,8 +233,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
-            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
+            using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var options = new WebSocketOptions()
@@ -270,8 +270,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            using (var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication))
-            using (var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport))
+            using (var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication))
+            using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
                 var options = new WebSocketOptions()

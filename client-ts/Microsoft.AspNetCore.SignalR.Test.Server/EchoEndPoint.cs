@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.SignalR.Test.Server
     {
         public async override Task OnConnectedAsync(ConnectionContext connection)
         {
-            await connection.Transport.Output.WriteAsync(await connection.Transport.Input.ReadAsync());
+            await connection.Transport.Out.WriteAsync(await connection.Transport.In.ReadAsync());
         }
     }
 }

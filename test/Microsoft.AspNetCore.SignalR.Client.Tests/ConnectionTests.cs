@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Client.Tests;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.Extensions.Logging;
@@ -151,7 +152,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             releaseDisposeTcs.SetResult(null);
             await disposeTask.OrTimeout();
 
-            transport.Verify(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<IChannelConnection<SendMessage, byte[]>>()), Times.Never);
+            transport.Verify(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>()), Times.Never);
         }
 
         [Fact]
@@ -234,7 +235,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 });
 
             var mockTransport = new Mock<ITransport>();
-            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<IChannelConnection<SendMessage, byte[]>>()))
+            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>()))
                 .Returns(Task.FromException(new InvalidOperationException("Transport failed to start")));
 
 
@@ -330,9 +331,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 });
 
             var mockTransport = new Mock<ITransport>();
-            IChannelConnection<SendMessage, byte[]> channel = null;
-            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<IChannelConnection<SendMessage, byte[]>>()))
-                .Returns<Uri, IChannelConnection<SendMessage, byte[]>>((url, c) =>
+            Channel<byte[], SendMessage> channel = null;
+            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>()))
+                .Returns<Uri, Channel<byte[], SendMessage>>((url, c) =>
                 {
                     channel = c;
                     return Task.CompletedTask;
@@ -342,8 +343,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 {
                     // The connection is now in the Disconnected state so the Received event for
                     // this message should not be raised
-                    channel.Output.TryWrite(Array.Empty<byte>());
-                    channel.Output.TryComplete();
+                    channel.Out.TryWrite(Array.Empty<byte>());
+                    channel.Out.TryComplete();
                     return Task.CompletedTask;
                 });
 
@@ -372,9 +373,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 });
 
             var mockTransport = new Mock<ITransport>();
-            IChannelConnection<SendMessage, byte[]> channel = null;
-            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<IChannelConnection<SendMessage, byte[]>>()))
-                .Returns<Uri, IChannelConnection<SendMessage, byte[]>>((url, c) =>
+            Channel<byte[], SendMessage> channel = null;
+            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>()))
+                .Returns<Uri, Channel<byte[], SendMessage>>((url, c) =>
                 {
                     channel = c;
                     return Task.CompletedTask;
@@ -382,7 +383,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             mockTransport.Setup(t => t.StopAsync())
                 .Returns(() =>
                 {
-                    channel.Output.TryComplete();
+                    channel.Out.TryComplete();
                     return Task.CompletedTask;
                 });
 
@@ -404,8 +405,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             connection.Closed += e => closedTcs.SetResult(null);
 
             await connection.StartAsync();
-            channel.Output.TryWrite(Array.Empty<byte>());
-            channel.Output.TryWrite(Array.Empty<byte>());
+            channel.Out.TryWrite(Array.Empty<byte>());
+            channel.Out.TryWrite(Array.Empty<byte>());
             await allowDisposeTcs.Task.OrTimeout();
             await connection.DisposeAsync();
             Assert.Equal(2, receivedInvocationCount);

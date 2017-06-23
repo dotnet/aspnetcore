@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private readonly ILogger _logger;
 
         private volatile int _connectionState = ConnectionState.Initial;
-        private volatile IChannelConnection<byte[], SendMessage> _transportChannel;
+        private volatile ChannelConnection<byte[], SendMessage> _transportChannel;
         private readonly HttpClient _httpClient;
         private volatile ITransport _transport;
         private volatile Task _receiveLoopTask;
@@ -29,8 +29,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private TaskQueue _eventQueue = new TaskQueue();
         private readonly ITransportFactory _transportFactory;
 
-        private ReadableChannel<byte[]> Input => _transportChannel.Input;
-        private WritableChannel<SendMessage> Output => _transportChannel.Output;
+        private ReadableChannel<byte[]> Input => _transportChannel.In;
+        private WritableChannel<SendMessage> Output => _transportChannel.Out;
 
         public Uri Url { get; }
 
@@ -250,9 +250,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
         {
             var applicationToTransport = Channel.CreateUnbounded<SendMessage>();
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
-            var applicationSide = new ChannelConnection<SendMessage, byte[]>(applicationToTransport, transportToApplication);
-
-            _transportChannel = new ChannelConnection<byte[], SendMessage>(transportToApplication, applicationToTransport);
+            var applicationSide = ChannelConnection.Create(applicationToTransport, transportToApplication);
+            _transportChannel = ChannelConnection.Create(transportToApplication, applicationToTransport);
 
             // Start the transport, giving it one end of the pipeline
             try

@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
     {
         private readonly HttpClient _httpClient;
         private readonly ILogger _logger;
-        private IChannelConnection<SendMessage, byte[]> _application;
+        private Channel<byte[], SendMessage> _application;
         private Task _sender;
         private Task _poller;
 
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public Task StartAsync(Uri url, IChannelConnection<SendMessage, byte[]> application)
+        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application)
         {
             _logger.LogInformation("Starting {0}", nameof(LongPollingTransport));
 
@@ -47,7 +48,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 _logger.LogDebug("Transport stopped. Exception: '{0}'", t.Exception?.InnerException);
 
-                _application.Output.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
+                _application.Out.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                 return t;
             }).Unwrap();
 
@@ -100,9 +101,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         var payload = await response.Content.ReadAsByteArrayAsync();
                         if (payload.Length > 0)
                         {
-                            while (!_application.Output.TryWrite(payload))
+                            while (!_application.Out.TryWrite(payload))
                             {
-                                if (cancellationToken.IsCancellationRequested || !await _application.Output.WaitToWriteAsync(cancellationToken))
+                                if (cancellationToken.IsCancellationRequested || !await _application.Out.WaitToWriteAsync(cancellationToken))
                                 {
                                     return;
                                 }

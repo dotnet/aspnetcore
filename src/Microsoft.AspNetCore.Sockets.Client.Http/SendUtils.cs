@@ -8,6 +8,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Client
@@ -17,17 +18,17 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private static readonly string DefaultUserAgent = "Microsoft.AspNetCore.SignalR.Client/0.0.0";
         public static readonly ProductInfoHeaderValue DefaultUserAgentHeader = ProductInfoHeaderValue.Parse(DefaultUserAgent);
 
-        public static async Task SendMessages(Uri sendUrl, IChannelConnection<SendMessage, byte[]> application, HttpClient httpClient, CancellationTokenSource transportCts, ILogger logger)
+        public static async Task SendMessages(Uri sendUrl, Channel<byte[], SendMessage> application, HttpClient httpClient, CancellationTokenSource transportCts, ILogger logger)
         {
             logger.LogInformation("Starting the send loop");
             IList<SendMessage> messages = null;
             try
             {
-                while (await application.Input.WaitToReadAsync(transportCts.Token))
+                while (await application.In.WaitToReadAsync(transportCts.Token))
                 {
                     // Grab as many messages as we can from the channel
                     messages = new List<SendMessage>();
-                    while (!transportCts.Token.IsCancellationRequested && application.Input.TryRead(out SendMessage message))
+                    while (!transportCts.Token.IsCancellationRequested && application.In.TryRead(out SendMessage message))
                     {
                         messages.Add(message);
                     }

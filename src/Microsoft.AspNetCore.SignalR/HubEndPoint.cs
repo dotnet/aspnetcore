@@ -154,9 +154,9 @@ namespace Microsoft.AspNetCore.SignalR
 
             try
             {
-                while (await connection.Transport.Input.WaitToReadAsync(cts.Token))
+                while (await connection.Transport.In.WaitToReadAsync(cts.Token))
                 {
-                    while (connection.Transport.Input.TryRead(out var buffer))
+                    while (connection.Transport.In.TryRead(out var buffer))
                     {
                         if (protocol.TryParseMessages(buffer, this, out var hubMessages))
                         {
@@ -232,9 +232,9 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var payload = protocol.WriteToArray(hubMessage);
 
-            while (await connection.Transport.Output.WaitToWriteAsync())
+            while (await connection.Transport.Out.WaitToWriteAsync())
             {
-                if (connection.Transport.Output.TryWrite(payload))
+                if (connection.Transport.Out.TryWrite(payload))
                 {
                     return;
                 }

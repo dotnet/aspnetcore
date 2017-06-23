@@ -5,7 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Sockets;
 
 namespace SocialWeather
@@ -40,7 +39,7 @@ namespace SocialWeather
                 var ms = new MemoryStream();
                 await formatter.WriteAsync(data, ms);
 
-                connection.Transport.Output.TryWrite(ms.ToArray());
+                connection.Transport.Out.TryWrite(ms.ToArray());
             }
         }
 

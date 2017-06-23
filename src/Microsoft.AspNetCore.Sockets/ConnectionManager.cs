@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Sockets
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
 
-            var transportSide = new ChannelConnection<byte[]>(applicationToTransport, transportToApplication);
-            var applicationSide = new ChannelConnection<byte[]>(transportToApplication, applicationToTransport);
+            var transportSide = ChannelConnection.Create<byte[]>(applicationToTransport, transportToApplication);
+            var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport);
 
             var connection = new DefaultConnectionContext(id, applicationSide, transportSide);
 

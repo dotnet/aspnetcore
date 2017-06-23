@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -16,10 +17,10 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
     {
         private readonly WebSocketOptions _options;
         private readonly ILogger _logger;
-        private readonly IChannelConnection<byte[]> _application;
+        private readonly Channel<byte[]> _application;
         private readonly string _connectionId;
 
-        public WebSocketsTransport(WebSocketOptions options, IChannelConnection<byte[]> application, string connectionId, ILoggerFactory loggerFactory)
+        public WebSocketsTransport(WebSocketOptions options, Channel<byte[]> application, string connectionId, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
             }
 
             // We're done writing
-            _application.Output.TryComplete();
+            _application.Out.TryComplete();
 
             await socket.CloseOutputAsync(failed ? WebSocketCloseStatus.InternalServerError : WebSocketCloseStatus.NormalClosure, "", CancellationToken.None);
 
@@ -153,9 +154,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                 }
 
                 _logger.MessageToApplication(_connectionId, messageBuffer.Length);
-                while (await _application.Output.WaitToWriteAsync())
+                while (await _application.Out.WaitToWriteAsync())
                 {
-                    if (_application.Output.TryWrite(messageBuffer))
+                    if (_application.Out.TryWrite(messageBuffer))
                     {
                         incomingMessage.Clear();
                         break;
@@ -166,10 +167,10 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
         private async Task StartSending(WebSocket ws)
         {
-            while (await _application.Input.WaitToReadAsync())
+            while (await _application.In.WaitToReadAsync())
             {
                 // Get a frame from the application
-                while (_application.Input.TryRead(out var buffer))
+                while (_application.In.TryRead(out var buffer))
                 {
                     if (buffer.Length > 0)
                     {

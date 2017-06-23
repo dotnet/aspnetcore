@@ -5,6 +5,7 @@ using System;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Sockets
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Sockets
         // on the same task
         private TaskCompletionSource<object> _disposeTcs = new TaskCompletionSource<object>();
 
-        public DefaultConnectionContext(string id, IChannelConnection<byte[]> transport, IChannelConnection<byte[]> application)
+        public DefaultConnectionContext(string id, Channel<byte[]> transport, Channel<byte[]> application)
         {
             Transport = transport;
             Application = application;
@@ -43,9 +44,9 @@ namespace Microsoft.AspNetCore.Sockets
 
         public override ConnectionMetadata Metadata { get; } = new ConnectionMetadata();
 
-        public IChannelConnection<byte[]> Application { get; }
+        public Channel<byte[]> Application { get; }
 
-        public override IChannelConnection<byte[]> Transport { get; set; }
+        public override Channel<byte[]> Transport { get; set; }
 
         public async Task DisposeAsync()
         {
@@ -66,17 +67,22 @@ namespace Microsoft.AspNetCore.Sockets
                     // If the application task is faulted, propagate the error to the transport
                     if (ApplicationTask?.IsFaulted == true)
                     {
-                        Transport.Output.TryComplete(ApplicationTask.Exception.InnerException);
+                        Transport.Out.TryComplete(ApplicationTask.Exception.InnerException);
+                    }
+                    else
+                    {
+                        Transport.Out.TryComplete();
                     }
 
                     // If the transport task is faulted, propagate the error to the application
                     if (TransportTask?.IsFaulted == true)
                     {
-                        Application.Output.TryComplete(TransportTask.Exception.InnerException);
+                        Application.Out.TryComplete(TransportTask.Exception.InnerException);
                     }
-
-                    Transport.Dispose();
-                    Application.Dispose();
+                    else
+                    {
+                        Application.Out.TryComplete();
+                    }
 
                     var applicationTask = ApplicationTask ?? Task.CompletedTask;
                     var transportTask = TransportTask ?? Task.CompletedTask;

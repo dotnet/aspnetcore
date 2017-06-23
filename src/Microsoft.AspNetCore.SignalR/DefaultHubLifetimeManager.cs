@@ -124,9 +124,9 @@ namespace Microsoft.AspNetCore.SignalR
             var protocol = connection.Metadata.Get<IHubProtocol>(HubConnectionMetadataNames.HubProtocol);
             var payload = protocol.WriteToArray(hubMessage);
 
-            while (await connection.Transport.Output.WaitToWriteAsync())
+            while (await connection.Transport.Out.WaitToWriteAsync())
             {
-                if (connection.Transport.Output.TryWrite(payload))
+                if (connection.Transport.Out.TryWrite(payload))
                 {
                     break;
                 }

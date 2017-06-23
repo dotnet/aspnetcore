@@ -312,9 +312,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             var protocol = connection.Metadata.Get<IHubProtocol>(HubConnectionMetadataNames.HubProtocol);
             var data = protocol.WriteToArray(hubMessage);
 
-            while (await connection.Transport.Output.WaitToWriteAsync())
+            while (await connection.Transport.Out.WaitToWriteAsync())
             {
-                if (connection.Transport.Output.TryWrite(data))
+                if (connection.Transport.Out.TryWrite(data))
                 {
                     break;
                 }

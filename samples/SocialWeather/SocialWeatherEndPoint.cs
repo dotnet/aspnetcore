@@ -34,9 +34,9 @@ namespace SocialWeather
             var formatter = _formatterResolver.GetFormatter<WeatherReport>(
                 connection.Metadata.Get<string>("formatType"));
 
-            while (await connection.Transport.Input.WaitToReadAsync())
+            while (await connection.Transport.In.WaitToReadAsync())
             {
-                if (connection.Transport.Input.TryRead(out var buffer))
+                if (connection.Transport.In.TryRead(out var buffer))
                 {
                     var stream = new MemoryStream();
                     await stream.WriteAsync(buffer, 0, buffer.Length);

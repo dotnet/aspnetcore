@@ -3,12 +3,13 @@
 
 using System;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
     public interface ITransport
     {
-        Task StartAsync(Uri url, IChannelConnection<SendMessage, byte[]> application);
+        Task StartAsync(Uri url, Channel<byte[], SendMessage> application);
         Task StopAsync();
     }
 }

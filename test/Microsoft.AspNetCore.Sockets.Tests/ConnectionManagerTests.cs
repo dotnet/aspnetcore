@@ -81,12 +81,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             connection.ApplicationTask = Task.Run(async () =>
             {
-                Assert.False(await connection.Transport.Input.WaitToReadAsync());
+                Assert.False(await connection.Transport.In.WaitToReadAsync());
             });
 
             connection.TransportTask = Task.Run(async () =>
             {
-                Assert.False(await connection.Application.Input.WaitToReadAsync());
+                Assert.False(await connection.Application.In.WaitToReadAsync());
             });
 
             connectionManager.CloseConnections();

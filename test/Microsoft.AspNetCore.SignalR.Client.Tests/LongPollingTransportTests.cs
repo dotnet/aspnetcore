@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Client.Tests
                 {
                     var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
                     var transportToConnection = Channel.CreateUnbounded<byte[]>();
-                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
+                    var channelConnection = ChannelConnection.Create(connectionToTransport, transportToConnection);
                     await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection);
 
                     await longPollingTransport.Running.OrTimeout();

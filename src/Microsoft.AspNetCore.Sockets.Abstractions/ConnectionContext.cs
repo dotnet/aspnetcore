@@ -2,10 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Security.Claims;
-using System.Text;
-using System.Threading;
+using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Sockets
@@ -22,6 +20,6 @@ namespace Microsoft.AspNetCore.Sockets
         public abstract ConnectionMetadata Metadata { get; }
 
         // TEMPORARY
-        public abstract IChannelConnection<byte[]> Transport { get; set; }
+        public abstract Channel<byte[]> Transport { get; set; }
     }
 }

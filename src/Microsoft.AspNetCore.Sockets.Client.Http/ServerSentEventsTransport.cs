@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -20,7 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
         private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
 
-        private IChannelConnection<SendMessage, byte[]> _application;
+        private Channel<byte[], SendMessage> _application;
 
         public Task Running { get; private set; } = Task.CompletedTask;
 
@@ -39,7 +40,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         }
 
-        public Task StartAsync(Uri url, IChannelConnection<SendMessage, byte[]> application)
+        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application)
         {
             _logger.LogInformation("Starting {transportName}", nameof(ServerSentEventsTransport));
 
@@ -54,14 +55,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     _logger.LogError(0, t.Exception.InnerException, "Transport stopped");
                 }
 
-                _application.Output.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
+                _application.Out.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                 return t;
             }).Unwrap();
 
             return Task.CompletedTask;
         }
 
-        private async Task OpenConnection(IChannelConnection<SendMessage, byte[]> application, Uri url, CancellationToken cancellationToken)
+        private async Task OpenConnection(Channel<byte[], SendMessage> application, Uri url, CancellationToken cancellationToken)
         {
             _logger.LogInformation("Starting receive loop");
 
@@ -94,7 +95,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         switch (parseResult)
                         {
                             case ServerSentEventsMessageParser.ParseResult.Completed:
-                                _application.Output.TryWrite(buffer);
+                                _application.Out.TryWrite(buffer);
                                 _parser.Reset();
                                 break;
                             case ServerSentEventsMessageParser.ParseResult.Incomplete:
@@ -122,7 +123,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         {
             _logger.LogInformation("Transport {transportName} is stopping", nameof(ServerSentEventsTransport));
             _transportCts.Cancel();
-            _application.Output.TryComplete();
+            _application.Out.TryComplete();
             await Running;
         }
     }

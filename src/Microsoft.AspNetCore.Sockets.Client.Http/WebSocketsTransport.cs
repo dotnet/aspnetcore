@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Collections.Generic;
+using System.Threading.Tasks.Channels;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
     public class WebSocketsTransport : ITransport
     {
         private readonly ClientWebSocket _webSocket = new ClientWebSocket();
-        private IChannelConnection<SendMessage, byte[]> _application;
+        private Channel<byte[], SendMessage> _application;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
         private readonly ILogger _logger;
 
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public Task Running { get; private set; } = Task.CompletedTask;
 
-        public async Task StartAsync(Uri url, IChannelConnection<SendMessage, byte[]> application)
+        public async Task StartAsync(Uri url, Channel<byte[], SendMessage> application)
         {
             _logger.LogInformation("Starting {0}", nameof(WebSocketsTransport));
 
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 _logger.LogDebug("Transport stopped. Exception: '{0}'", t.Exception?.InnerException);
 
-                _application.Output.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
+                _application.Out.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                 return t;
             }).Unwrap();
         }
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         {
                             _logger.LogInformation("Websocket closed by the server. Close status {0}", receiveResult.CloseStatus);
 
-                            _application.Output.Complete(
+                            _application.Out.Complete(
                                 receiveResult.CloseStatus == WebSocketCloseStatus.NormalClosure
                                 ? null
                                 : new InvalidOperationException(
@@ -119,9 +120,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     }
 
                     _logger.LogInformation("Passing message to application. Payload size: {0}", messageBuffer.Length);
-                    while (await _application.Output.WaitToWriteAsync(_transportCts.Token))
+                    while (await _application.Out.WaitToWriteAsync(_transportCts.Token))
                     {
-                        if (_application.Output.TryWrite(messageBuffer))
+                        if (_application.Out.TryWrite(messageBuffer))
                         {
                             incomingMessage.Clear();
                             break;
@@ -146,9 +147,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             try
             {
-                while (await _application.Input.WaitToReadAsync(_transportCts.Token))
+                while (await _application.In.WaitToReadAsync(_transportCts.Token))
                 {
-                    while (_application.Input.TryRead(out SendMessage message))
+                    while (_application.In.TryRead(out SendMessage message))
                     {
                         try
                         {

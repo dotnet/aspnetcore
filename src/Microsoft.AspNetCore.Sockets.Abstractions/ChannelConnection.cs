@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading.Tasks.Channels;
 
 namespace Microsoft.AspNetCore.Sockets.Internal
@@ -18,20 +19,36 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         }
     }
 
-    public class ChannelConnection<T> : ChannelConnection<T, T>, IChannelConnection<T>
+    public class ChannelConnection<T> : Channel<T>, IDisposable
     {
+        public Channel<T> Input { get; }
+        public Channel<T> Output { get; }
+
+        public override ReadableChannel<T> In => Input;
+
+        public override WritableChannel<T> Out => Output;
+
         public ChannelConnection(Channel<T> input, Channel<T> output)
-            : base(input, output)
-        { }
+        {
+            Input = input;
+            Output = output;
+        }
+
+        public void Dispose()
+        {
+            Input.Out.TryComplete();
+            Output.Out.TryComplete();
+        }
     }
 
-    public class ChannelConnection<TIn, TOut> : IChannelConnection<TIn, TOut>
+    public class ChannelConnection<TIn, TOut> : Channel<TOut, TIn>, IDisposable
     {
         public Channel<TIn> Input { get; }
         public Channel<TOut> Output { get; }
 
-        ReadableChannel<TIn> IChannelConnection<TIn, TOut>.Input => Input;
-        WritableChannel<TOut> IChannelConnection<TIn, TOut>.Output => Output;
+        public override ReadableChannel<TIn> In => Input;
+
+        public override WritableChannel<TOut> Out => Output;
 
         public ChannelConnection(Channel<TIn> input, Channel<TOut> output)
         {
@@ -41,8 +58,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal
 
         public void Dispose()
         {
-            Output.Out.TryComplete();
             Input.Out.TryComplete();
+            Output.Out.TryComplete();
         }
     }
 }

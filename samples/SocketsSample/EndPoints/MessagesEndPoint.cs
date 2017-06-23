@@ -20,9 +20,9 @@ namespace SocketsSample.EndPoints
 
             try
             {
-                while (await connection.Transport.Input.WaitToReadAsync())
+                while (await connection.Transport.In.WaitToReadAsync())
                 {
-                    if (connection.Transport.Input.TryRead(out var buffer))
+                    if (connection.Transport.In.TryRead(out var buffer))
                     {
                         // We can avoid the copy here but we'll deal with that later
                         var text = Encoding.UTF8.GetString(buffer);
@@ -50,7 +50,7 @@ namespace SocketsSample.EndPoints
 
             foreach (var c in Connections)
             {
-                tasks.Add(c.Transport.Output.WriteAsync(payload));
+                tasks.Add(c.Transport.Out.WriteAsync(payload));
             }
 
             return Task.WhenAll(tasks);
