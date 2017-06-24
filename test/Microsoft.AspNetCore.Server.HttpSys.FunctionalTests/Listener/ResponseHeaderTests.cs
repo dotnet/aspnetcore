@@ -14,8 +14,15 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 {
-    public class ResponseHeaderTests
+    public class ResponseHeaderTests : IDisposable
     {
+        private HttpClient _client = new HttpClient();
+
+        void IDisposable.Dispose()
+        {
+            _client.Dispose();
+        }
+
         [ConditionalFact]
         public async Task ResponseHeaders_11Request_ServerSendsDefaultHeaders()
         {
@@ -74,12 +81,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 HttpResponseMessage response = await responseTask;
                 response.EnsureSuccessStatusCode();
-                Assert.Equal(3, response.Headers.Count());
-                Assert.True(response.Headers.TransferEncodingChunked.Value);
+                Assert.Equal(2, response.Headers.Count());
+                Assert.False(response.Headers.TransferEncodingChunked.HasValue);
                 Assert.True(response.Headers.Date.HasValue);
                 Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers.Server.ToString());
                 Assert.False(response.Content.Headers.Contains("Content-Length"));
                 Assert.Equal(0, response.Content.Headers.Count());
+
+                // Send a second request to check that the connection wasn't corrupted.
+                responseTask = SendHeadRequestAsync(address);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context.Dispose();
+                response = await responseTask;
             }
         }
 
@@ -103,6 +116,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers.Server.ToString());
                 Assert.False(response.Content.Headers.Contains("Content-Length"));
                 Assert.Equal(0, response.Content.Headers.Count());
+
+                // Send a second request to check that the connection wasn't corrupted.
+                responseTask = SendHeadRequestAsync(address);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context.Dispose();
+                response = await responseTask;
             }
         }
 
@@ -126,6 +145,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers.Server.ToString());
                 Assert.Equal(1, response.Content.Headers.Count());
                 Assert.Equal(20, response.Content.Headers.ContentLength);
+
+                // Send a second request to check that the connection wasn't corrupted.
+                responseTask = SendHeadRequestAsync(address);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context.Dispose();
+                response = await responseTask;
             }
         }
 
@@ -172,6 +197,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers.Server.ToString());
                 Assert.False(response.Content.Headers.Contains("Content-Length"));
                 Assert.Equal(0, response.Content.Headers.Count());
+
+                // Send a second request to check that the connection wasn't corrupted.
+                responseTask = SendHeadRequestAsync(address);
+                context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                context.Dispose();
+                response = await responseTask;
             }
         }
 
@@ -484,32 +515,26 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
         private async Task<HttpResponseMessage> SendRequestAsync(string uri, bool usehttp11 = true, bool sendKeepAlive = false)
         {
-            using (HttpClient client = new HttpClient())
+            var request = new HttpRequestMessage(HttpMethod.Get, uri);
+            if (!usehttp11)
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, uri);
-                if (!usehttp11)
-                {
-                    request.Version = new Version(1, 0);
-                }
-                if (sendKeepAlive)
-                {
-                    request.Headers.Add("Connection", "Keep-Alive");
-                }
-                return await client.SendAsync(request);
+                request.Version = new Version(1, 0);
             }
+            if (sendKeepAlive)
+            {
+                request.Headers.Add("Connection", "Keep-Alive");
+            }
+            return await _client.SendAsync(request);
         }
 
         private async Task<HttpResponseMessage> SendHeadRequestAsync(string uri, bool usehttp11 = true)
         {
-            using (HttpClient client = new HttpClient())
+            var request = new HttpRequestMessage(HttpMethod.Head, uri);
+            if (!usehttp11)
             {
-                var request = new HttpRequestMessage(HttpMethod.Head, uri);
-                if (!usehttp11)
-                {
-                    request.Version = new Version(1, 0);
-                }
-                return await client.SendAsync(request);
+                request.Version = new Version(1, 0);
             }
+            return await _client.SendAsync(request);
         }
     }
 }

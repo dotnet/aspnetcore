@@ -384,9 +384,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 // The application is performing it's own chunking.
                 _boundaryType = BoundaryType.PassThrough;
             }
-            else if (endOfRequest && !(isHeadRequest && statusCanHaveBody)) // HEAD requests should always end without a body. Assume a GET response would have a body.
+            else if (endOfRequest)
             {
-                if (statusCanHaveBody)
+                if (!isHeadRequest && statusCanHaveBody)
                 {
                     Headers[HttpKnownHeaderNames.ContentLength] = Constants.Zero;
                 }
