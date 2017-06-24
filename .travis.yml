@@ -10,6 +10,12 @@ os:
   - linux
   - osx
 osx_image: xcode8.2
+addons:
+  apt:
+    sources:
+      - debian-sid
+    packages:
+      - libunwind8
 branches:
   only:
     - master
