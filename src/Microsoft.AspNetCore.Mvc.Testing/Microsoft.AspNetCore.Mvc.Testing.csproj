@@ -6,6 +6,7 @@
     <Description>Support for writing functional tests for MVC applications.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;aspnetcoremvc;aspnetcoremvctesting</PackageTags>
   </PropertyGroup>
 

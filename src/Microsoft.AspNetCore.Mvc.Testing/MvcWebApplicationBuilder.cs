@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         public List<Assembly> ApplicationAssemblies { get; set; } = new List<Assembly>();
 
         /// <summary>
-        /// Configures services before <see cref="TStartup.ConfigureServices"/> runs.
+        /// Configures services before TStartup.ConfigureServices runs.
         /// </summary>
         /// <param name="configure">The <see cref="Action{IServiceCollection}"/> to configure the services with.</param>
         /// <returns>An instance of this <see cref="MvcWebApplicationBuilder{TStartup}"/></returns>
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         }
 
         /// <summary>
-        /// Configures services after <see cref="TStartup.ConfigureServices"/> runs.
+        /// Configures services after TStartup.ConfigureServices runs.
         /// </summary>
         /// <param name="configure">The <see cref="Action{IServiceCollection}"/> to configure the services with.</param>
         /// <returns>An instance of this <see cref="MvcWebApplicationBuilder{TStartup}"/></returns>
