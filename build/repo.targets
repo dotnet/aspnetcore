@@ -368,8 +368,8 @@
 
   <Target Name="BuildRuntimeStoreRPM">
     <ItemGroup>
-      <RPMDirectories Include="/usr/share/dotnet/store" />
-      <RPMDirectories Include="/usr/share/dotnet/additionalDeps" />
+      <RPMDirectories Include="/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/store" />
+      <RPMDirectories Include="/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/additionalDeps" />
     </ItemGroup>
 
     <PropertyGroup>
@@ -384,7 +384,7 @@
       <InstallerLicense>Apache-2.0</InstallerLicense>
       <InstallerPackageRevision>1</InstallerPackageRevision>
       <InstallerHomepage>https://www.asp.net/</InstallerHomepage>
-      <InstallerInstallRoot>/usr/share/dotnet</InstallerInstallRoot>
+      <InstallerInstallRoot>/opt/rh/rh-dotnet20/root/usr/lib64/dotnet</InstallerInstallRoot>
     </PropertyGroup>
 
     <!-- Clear the output dir -->
@@ -440,7 +440,7 @@
         --license &quot;$(InstallerLicense)&quot;
         --iteration $(InstallerPackageRevision)
         --url &quot;$(InstallerHomepage)&quot;
-        $(DockerRootDirectory)artifacts/inLayout/package_root/=$(InstallerInstallRoot)" />
+        $(DockerRootDirectory)artifacts/inLayout/package_root/=&quot;$(InstallerInstallRoot)&quot;" />
 
     <!-- Remove Docker Image to save disk space -->
     <Exec Command="docker rmi docker-image-$(InstallerPlatform)" />
