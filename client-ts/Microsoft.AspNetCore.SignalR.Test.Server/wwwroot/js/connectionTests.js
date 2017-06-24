@@ -1,7 +1,7 @@
 describe('connection', () => {
     it(`can connect to the server without specifying transport explicitly`, done => {
         const message = "Hello World!";
-        let connection = new signalR.Connection(ECHOENDPOINT_URL);
+        let connection = new signalR.HttpConnection(ECHOENDPOINT_URL);
 
         let received = "";
         connection.onDataReceived = data => {
@@ -29,7 +29,7 @@ describe('connection', () => {
     eachTransport(transportType => {
         it(`over ${signalR.TransportType[transportType]} can send and receive messages`, done => {
             const message = "Hello World!";
-            let connection = new signalR.Connection(ECHOENDPOINT_URL);
+            let connection = new signalR.HttpConnection(ECHOENDPOINT_URL, { transport: transportType });
 
             let received = "";
             connection.onDataReceived = data => {
@@ -44,7 +44,7 @@ describe('connection', () => {
                 done();
             }
 
-            connection.start(transportType)
+            connection.start()
                 .then(() => {
                     connection.send(message);
                 })
