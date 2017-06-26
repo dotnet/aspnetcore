@@ -476,5 +476,21 @@ Partial that does not specify Layout
                 ignoreLineEndingDifferences: true);
 #endif
         }
+
+        [Fact]
+        public async Task ViewEngine_NormalizesPathsReturnedByViewLocationExpanders()
+        {
+            // Arrange
+            var expected = 
+@"Layout
+Page
+Partial";
+
+            // Act
+            var responseContent = await Client.GetStringAsync("/BackSlash");
+
+            // Assert
+            Assert.Equal(expected, responseContent.Trim());
+        }
     }
 }

@@ -2,8 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.Primitives;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
 {
@@ -14,59 +13,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     {
         /// <summary>
         /// Initializes a new instance of <see cref="RazorPageFactoryResult"/> with the
-        /// specified <paramref name="expirationTokens"/>.
-        /// </summary>
-        /// <param name="expirationTokens">One or more <see cref="IChangeToken"/> instances.</param>
-        public RazorPageFactoryResult(IList<IChangeToken> expirationTokens)
-        {
-            if (expirationTokens == null)
-            {
-                throw new ArgumentNullException(nameof(expirationTokens));
-            }
-
-            ExpirationTokens = expirationTokens;
-            RazorPageFactory = null;
-            IsPrecompiled = false;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RazorPageFactoryResult"/> with the
         /// specified <see cref="IRazorPage"/> factory.
         /// </summary>
         /// <param name="razorPageFactory">The <see cref="IRazorPage"/> factory.</param>
-        /// <param name="expirationTokens">One or more <see cref="IChangeToken"/> instances.</param>
+        /// <param name="viewDescriptor">The <see cref="CompiledViewDescriptor"/>.</param>
         public RazorPageFactoryResult(
-            Func<IRazorPage> razorPageFactory,
-            IList<IChangeToken> expirationTokens)
-            : this(razorPageFactory, expirationTokens, isPrecompiled: false)
+            CompiledViewDescriptor viewDescriptor,
+            Func<IRazorPage> razorPageFactory)
         {
-        }
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="RazorPageFactoryResult"/> with the
-        /// specified <see cref="IRazorPage"/> factory.
-        /// </summary>
-        /// <param name="razorPageFactory">The <see cref="IRazorPage"/> factory.</param>
-        /// <param name="expirationTokens">One or more <see cref="IChangeToken"/> instances.</param>
-        /// <param name="isPrecompiled"><c>true</c> if the view is precompiled, <c>false</c> otherwise.</param>
-        public RazorPageFactoryResult(
-            Func<IRazorPage> razorPageFactory,
-            IList<IChangeToken> expirationTokens,
-            bool isPrecompiled)
-        {
-            if (razorPageFactory == null)
-            {
-                throw new ArgumentNullException(nameof(razorPageFactory));
-            }
-
-            if (expirationTokens == null)
-            {
-                throw new ArgumentNullException(nameof(expirationTokens));
-            }
-
+            ViewDescriptor = viewDescriptor ?? throw new ArgumentNullException(nameof(viewDescriptor));
             RazorPageFactory = razorPageFactory;
-            ExpirationTokens = expirationTokens;
-            IsPrecompiled = isPrecompiled;
         }
 
         /// <summary>
@@ -76,19 +32,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         public Func<IRazorPage> RazorPageFactory { get; }
 
         /// <summary>
-        /// One or more <see cref="IChangeToken"/>s associated with this instance of
-        /// <see cref="RazorPageFactoryResult"/>.
+        /// Gets the <see cref="CompiledViewDescriptor"/>.
         /// </summary>
-        public IList<IChangeToken> ExpirationTokens { get; }
+        public CompiledViewDescriptor ViewDescriptor { get; }
 
         /// <summary>
         /// Gets a value that determines if the page was successfully located.
         /// </summary>
         public bool Success => RazorPageFactory != null;
-
-        /// <summary>
-        /// Gets a value that determines if the view is precompiled.
-        /// </summary>
-        public bool IsPrecompiled { get; }
     }
 }

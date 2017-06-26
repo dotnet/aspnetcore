@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
     public class DefaultRazorPageFactoryProviderTest
     {
         [Fact]
-        public void CreateFactory_ReturnsExpirationTokensFromCompilerCache_ForUnsuccessfulResults()
+        public void CreateFactory_ReturnsViewDescriptor_ForUnsuccessfulResults()
         {
             // Arrange
             var path = "/file-does-not-exist";
@@ -39,11 +39,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             // Assert
             Assert.False(result.Success);
-            Assert.Equal(expirationTokens, result.ExpirationTokens);
+            Assert.Same(descriptor, result.ViewDescriptor);
         }
 
         [Fact]
-        public void CreateFactory_ReturnsExpirationTokensFromCompilerCache_ForSuccessfulResults()
+        public void CreateFactory_ReturnsViewDescriptor_ForSuccessfulResults()
         {
             // Arrange
             var relativePath = "/file-exists";

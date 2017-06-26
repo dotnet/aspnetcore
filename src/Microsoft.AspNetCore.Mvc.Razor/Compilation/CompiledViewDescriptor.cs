@@ -8,6 +8,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
 {
     public class CompiledViewDescriptor
     {
+        /// <summary>
+        /// The normalized application relative path of the view.
+        /// </summary>
         public string RelativePath { get; set; }
 
         /// <summary>

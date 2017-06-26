@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
@@ -255,10 +256,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 v.Write("layout-content" + Environment.NewLine);
                 v.RenderBodyPublic();
             });
+            var pageFactoryResult = new RazorPageFactoryResult(new CompiledViewDescriptor(), () => layout);
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
             pageFactory
                 .Setup(p => p.CreateFactory(LayoutPath))
-                .Returns(new RazorPageFactoryResult(() => layout, new IChangeToken[0]));
+                .Returns(pageFactoryResult);
 
             var viewEngine = new Mock<IRazorViewEngine>(MockBehavior.Strict);
             viewEngine

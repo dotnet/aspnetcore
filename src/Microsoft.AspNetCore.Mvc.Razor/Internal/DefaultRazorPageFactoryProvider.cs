@@ -57,11 +57,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 var pageFactory = Expression
                     .Lambda<Func<IRazorPage>>(objectInitializeExpression)
                     .Compile();
-                return new RazorPageFactoryResult(pageFactory, viewDescriptor.ExpirationTokens, viewDescriptor.IsPrecompiled);
+                return new RazorPageFactoryResult(viewDescriptor, pageFactory);
             }
             else
             {
-                return new RazorPageFactoryResult(viewDescriptor.ExpirationTokens);
+                return new RazorPageFactoryResult(viewDescriptor, razorPageFactory: null);
             }
         }
     }

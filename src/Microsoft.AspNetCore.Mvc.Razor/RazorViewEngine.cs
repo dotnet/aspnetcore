@@ -396,11 +396,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             bool isMainPage)
         {
             var factoryResult = _pageFactory.CreateFactory(relativePath);
-            if (factoryResult.ExpirationTokens != null)
+            var viewDescriptor = factoryResult.ViewDescriptor;
+            if (viewDescriptor?.ExpirationTokens != null)
             {
-                for (var i = 0; i < factoryResult.ExpirationTokens.Count; i++)
+                for (var i = 0; i < viewDescriptor.ExpirationTokens.Count; i++)
                 {
-                    expirationTokens.Add(factoryResult.ExpirationTokens[i]);
+                    expirationTokens.Add(viewDescriptor.ExpirationTokens[i]);
                 }
             }
 
@@ -408,9 +409,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             {
                 // Only need to lookup _ViewStarts for the main page.
                 var viewStartPages = isMainPage ?
-                    GetViewStartPages(relativePath, expirationTokens) :
+                    GetViewStartPages(viewDescriptor.RelativePath, expirationTokens) :
                     Array.Empty<ViewLocationCacheItem>();
-                if (factoryResult.IsPrecompiled)
+                if (viewDescriptor.IsPrecompiled)
                 {
                     _logger.PrecompiledViewFound(relativePath);
                 }
@@ -427,17 +428,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             string path,
             HashSet<IChangeToken> expirationTokens)
         {
-            var applicationRelativePath = MakePathApplicationRelative(path);
             var viewStartPages = new List<ViewLocationCacheItem>();
 
-            foreach (var viewStartProjectItem in _razorProject.FindHierarchicalItems(applicationRelativePath, ViewStartFileName))
+            foreach (var viewStartProjectItem in _razorProject.FindHierarchicalItems(path, ViewStartFileName))
             {
                 var result = _pageFactory.CreateFactory(viewStartProjectItem.Path);
-                if (result.ExpirationTokens != null)
+                var viewDescriptor = result.ViewDescriptor;
+                if (viewDescriptor?.ExpirationTokens != null)
                 {
-                    for (var i = 0; i < result.ExpirationTokens.Count; i++)
+                    for (var i = 0; i < viewDescriptor.ExpirationTokens.Count; i++)
                     {
-                        expirationTokens.Add(result.ExpirationTokens[i]);
+                        expirationTokens.Add(viewDescriptor.ExpirationTokens[i]);
                     }
                 }
 
@@ -477,22 +478,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             Debug.Assert(!string.IsNullOrEmpty(name));
             return name[0] == '~' || name[0] == '/';
-        }
-
-        private string MakePathApplicationRelative(string path)
-        {
-            Debug.Assert(!string.IsNullOrEmpty(path));
-            if (path[0] == '~')
-            {
-                path = path.Substring(1);
-            }
-
-            if (path[0] != '/')
-            {
-                path = '/' + path;
-            }
-
-            return path;
         }
 
         private static bool IsRelativePath(string name)

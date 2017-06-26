@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Mvc.Razor;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -181,10 +182,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             razorPageFactoryProvider
                 .Setup(f => f.CreateFactory("/Home/Path1/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(factory1, new IChangeToken[0]));
+                .Returns(new RazorPageFactoryResult(new CompiledViewDescriptor(), factory1));
             razorPageFactoryProvider
                 .Setup(f => f.CreateFactory("/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(factory2, new[] { Mock.Of<IChangeToken>() }));
+                .Returns(new RazorPageFactoryResult(new CompiledViewDescriptor(), factory2));
 
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile("/Home/Path1/_ViewStart.cshtml", "content1");
@@ -214,7 +215,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var entry = actionInvoker.CacheEntry;
             Assert.Equal(new[] { factory2, factory1 }, entry.ViewStartFactories);
         }
-
 
         [Fact]
         public void OnProvidersExecuting_CachesEntries()
@@ -347,19 +347,19 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var mock = new Mock<IRazorPageFactoryProvider>(MockBehavior.Strict);
             mock
                 .Setup(p => p.CreateFactory("/Pages/Level1/Level2/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
+                .Returns(new RazorPageFactoryResult(new CompiledViewDescriptor(), () => null))
                 .Verifiable();
             mock
                 .Setup(p => p.CreateFactory("/Pages/Level1/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
+                .Returns(new RazorPageFactoryResult(new CompiledViewDescriptor(), () => null))
                 .Verifiable();
             mock
                 .Setup(p => p.CreateFactory("/Pages/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
+                .Returns(new RazorPageFactoryResult(new CompiledViewDescriptor(), () => null))
                 .Verifiable();
             mock
                 .Setup(p => p.CreateFactory("/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => null, new List<IChangeToken>()))
+                .Returns(new RazorPageFactoryResult(new CompiledViewDescriptor(), () => null))
                 .Verifiable();
 
             var razorPageFactoryProvider = mock.Object;
@@ -398,13 +398,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var pageFactory = new Mock<IRazorPageFactoryProvider>();
             pageFactory
                 .Setup(f => f.CreateFactory("/Views/Deeper/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => null, new IChangeToken[0]));
+                .Returns(new RazorPageFactoryResult(new CompiledViewDescriptor(), () => null));
             pageFactory
                 .Setup(f => f.CreateFactory("/Views/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(new IChangeToken[0]));
+                .Returns(new RazorPageFactoryResult(new CompiledViewDescriptor(), razorPageFactory: null));
             pageFactory
                 .Setup(f => f.CreateFactory("/_ViewStart.cshtml"))
-                .Returns(new RazorPageFactoryResult(() => null, new IChangeToken[0]));
+                .Returns(new RazorPageFactoryResult(new CompiledViewDescriptor(), () => null));
 
             // No files
             var fileProvider = new TestFileProvider();

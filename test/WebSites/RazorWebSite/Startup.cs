@@ -33,6 +33,7 @@ namespace RazorWebSite
                         $"{nameof(RazorWebSite)}.EmbeddedViews"));
                     options.FileProviders.Add(updateableFileProvider);
                     options.ViewLocationExpanders.Add(new NonMainPageViewLocationExpander());
+                    options.ViewLocationExpanders.Add(new ForwardSlashExpander());
                 })
                 .AddViewOptions(options =>
                 {
@@ -51,6 +52,7 @@ namespace RazorWebSite
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseDeveloperExceptionPage();
             app.UseRequestLocalization(new RequestLocalizationOptions
             {
                 DefaultRequestCulture = new RequestCulture("en-GB", "en-US"),
