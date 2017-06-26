@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Routing.Performance
                 NullLoggerFactory.Instance,
                 UrlEncoder.Default,
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(UrlEncoder.Default)),
-                new DefaultInlineConstraintResolver(new OptionsManager<RouteOptions>(Enumerable.Empty<IConfigureOptions<RouteOptions>>())));
+                new DefaultInlineConstraintResolver(new OptionsManager<RouteOptions>(new OptionsFactory<RouteOptions>(Enumerable.Empty<IConfigureOptions<RouteOptions>>(), Enumerable.Empty<IPostConfigureOptions<RouteOptions>>()))));
 
             treeBuilder.MapInbound(handler, TemplateParser.Parse("api/Widgets"), "default", 0);
             treeBuilder.MapInbound(handler, TemplateParser.Parse("api/Widgets/{id}"), "default", 0);
