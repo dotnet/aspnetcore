@@ -4,11 +4,15 @@
 using System;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
-namespace Microsoft.AspNetCore.Mvc.RazorPages
+namespace Microsoft.AspNetCore.Mvc
 {
     [AttributeUsage(AttributeTargets.Property | AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
-    public class BindPropertyAttribute : Attribute, IModelNameProvider, IBinderTypeProviderMetadata
+    public class BindPropertyAttribute : Attribute, IModelNameProvider, IBinderTypeProviderMetadata, IRequestPredicateProvider
     {
+        private static readonly Func<ActionContext, bool> _supportsAllRequests = (c) => true;
+
+        private static readonly Func<ActionContext, bool> _supportsNonGetRequests = IsNonGetRequest;
+
         private BindingSource _bindingSource;
 
         public bool SupportsGet { get; set; }
@@ -35,5 +39,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         /// <inheritdoc />
         public string Name { get; set; }
+
+        Func<ActionContext, bool> IRequestPredicateProvider.RequestPredicate
+        {
+            get
+            {
+                return SupportsGet ? _supportsAllRequests : _supportsNonGetRequests;
+            }
+        }
+
+        private static bool IsNonGetRequest(ActionContext context)
+        {
+            return !string.Equals(context.HttpContext.Request.Method, "GET", StringComparison.OrdinalIgnoreCase);
+        }
     }
 }

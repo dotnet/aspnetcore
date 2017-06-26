@@ -728,7 +728,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task PagePropertiesAreNotBoundInGetRequests()
         {
             // Arrange
-            var expected = "Id = 11, Name = , Age =";
+            var expected = "Id = 11, Name = Test-Name, Age =";
             var validationError = "The Name field is required.";
             var request = new HttpRequestMessage(HttpMethod.Get, "Pages/PropertyBinding/PageWithPropertyAndArgumentBinding?id=11")
             {

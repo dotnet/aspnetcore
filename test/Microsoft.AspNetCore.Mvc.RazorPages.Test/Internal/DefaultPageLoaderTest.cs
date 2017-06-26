@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -576,7 +577,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 p =>
                 {
                     Assert.Equal("Property", p.Property.Name);
-                    Assert.True(p.SupportsGet);
+                    Assert.NotNull(p.BindingInfo.RequestPredicate);
+                    Assert.True(p.BindingInfo.RequestPredicate(new ActionContext()
+                    {
+                        HttpContext = new DefaultHttpContext()
+                        {
+                            Request =
+                            {
+                                Method ="GET",
+                            }
+                        }
+                    }));
                 });
         }
 
@@ -603,7 +614,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 p =>
                 {
                     Assert.Equal("Property", p.Property.Name);
-                    Assert.True(p.SupportsGet);
+                    Assert.NotNull(p.BindingInfo.RequestPredicate);
+                    Assert.True(p.BindingInfo.RequestPredicate(new ActionContext()
+                    {
+                        HttpContext = new DefaultHttpContext()
+                        {
+                            Request =
+                            {
+                                Method ="GET",
+                            }
+                        }
+                    }));
                 });
         }
 
@@ -628,7 +649,17 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 p =>
                 {
                     Assert.Equal("Property", p.Property.Name);
-                    Assert.False(p.SupportsGet);
+                    Assert.NotNull(p.BindingInfo.RequestPredicate);
+                    Assert.False(p.BindingInfo.RequestPredicate(new ActionContext()
+                    {
+                        HttpContext = new DefaultHttpContext()
+                        {
+                            Request =
+                            {
+                                Method ="GET",
+                            }
+                        }
+                    }));
                 });
         }
 

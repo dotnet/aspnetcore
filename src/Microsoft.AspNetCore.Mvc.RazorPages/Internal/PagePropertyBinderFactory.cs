@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
@@ -56,16 +55,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IList<ParameterDescriptor> properties,
             IList<ModelMetadata> metadata)
         {
-            var isGet = string.Equals("GET", pageContext.HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase);
-
             var valueProvider = await CompositeValueProvider.CreateAsync(pageContext, pageContext.ValueProviderFactories);
             for (var i = 0; i < properties.Count; i++)
             {
-                if (isGet && !((PageBoundPropertyDescriptor)properties[i]).SupportsGet)
-                {
-                    continue;
-                }
-
                 var result = await parameterBinder.BindModelAsync(pageContext, valueProvider, properties[i]);
                 if (result.IsModelSet)
                 {

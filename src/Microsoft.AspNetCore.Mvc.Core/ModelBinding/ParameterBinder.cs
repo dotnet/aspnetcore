@@ -152,6 +152,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new ArgumentNullException(nameof(metadata));
             }
 
+            if (parameter.BindingInfo?.RequestPredicate?.Invoke(actionContext) == false)
+            {
+                return ModelBindingResult.Failed();
+            }
+
             var modelBindingContext = DefaultModelBindingContext.CreateBindingContext(
                 actionContext,
                 valueProvider,

@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         [InlineData("Get")]
         [InlineData("GET")]
         [InlineData("gET")]
-        public async Task ModelBinderFactory_IgnoresPropertyWithoutSupportsGet_WhenRequestIsGet(string method)
+        public async Task ModelBinderFactory_BindsPropertyWithoutSupportsGet_WhenRequestIsGet(string method)
         {
             // Arrange
             var type = typeof(PageModelWithSupportsGetProperty).GetTypeInfo();
@@ -338,7 +338,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         Name = nameof(PageModelWithSupportsGetProperty.SupportsGet),
                         ParameterType = typeof(string),
                         Property = type.GetProperty(nameof(PageModelWithSupportsGetProperty.SupportsGet)),
-                        SupportsGet = true,
+                        BindingInfo = new BindingInfo()
+                        {
+                            // Simulates placing a [BindProperty] on the property
+                            RequestPredicate = ((IRequestPredicateProvider)new BindPropertyAttribute() { SupportsGet = true }).RequestPredicate,
+                        }
                     },
                     new PageBoundPropertyDescriptor()
                     {
@@ -356,7 +360,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var binder = new TestParameterBinder(new Dictionary<string, object>()
             {
                 { "SupportsGet", "value" },
-                { "Default", "ignored" },
+                { "Default", "set" },
             });
 
             var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
@@ -366,11 +370,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             {
                 PageContext = new PageContext()
                 {
-                    HttpContext = new DefaultHttpContext(),
+                    HttpContext = new DefaultHttpContext()
+                    {
+                        Request=
+                        {
+                            Method = method,
+                        }
+                    }
                 }
             };
-
-            page.HttpContext.Request.Method = method;
 
             var model = new PageModelWithSupportsGetProperty();
 
@@ -379,7 +387,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             // Assert
             Assert.Equal("value", model.SupportsGet);
-            Assert.Null(model.Default);
+            Assert.Equal("set", model.Default);
         }
 
         [Fact]
@@ -397,7 +405,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         Name = nameof(PageModelWithSupportsGetProperty.SupportsGet),
                         ParameterType = typeof(string),
                         Property = type.GetProperty(nameof(PageModelWithSupportsGetProperty.SupportsGet)),
-                        SupportsGet = true,
+                        BindingInfo = new BindingInfo()
+                        {
+                            RequestPredicate = ((IRequestPredicateProvider)new BindPropertyAttribute() { SupportsGet = true }).RequestPredicate,
+                        }
                     },
                     new PageBoundPropertyDescriptor()
                     {

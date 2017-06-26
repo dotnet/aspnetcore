@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Routing;
 using Moq;
 using Xunit;
@@ -488,6 +489,125 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             Assert.Null(controller.NullableProperty);
+        }
+
+        [Fact]
+        public async Task BindActionArgumentsAsync_SupportsRequestPredicate_ForPropertiesAndParameters_NotBound()
+        {
+            // Arrange
+            var actionDescriptor = GetActionDescriptor();
+
+            actionDescriptor.Parameters.Add(new ParameterDescriptor
+            {
+                Name = "test-parameter",
+                BindingInfo = new BindingInfo()
+                {
+                    BindingSource = BindingSource.Custom,
+
+                    // Simulates [BindProperty] on a parameter
+                    RequestPredicate = ((IRequestPredicateProvider)new BindPropertyAttribute()).RequestPredicate,
+                },
+                ParameterType = typeof(string)
+            });
+
+            actionDescriptor.BoundProperties.Add(new ParameterDescriptor
+            {
+                Name = nameof(TestController.NullableProperty),
+                BindingInfo = new BindingInfo()
+                {
+                    BindingSource = BindingSource.Custom,
+
+                    // Simulates [BindProperty] on a property
+                    RequestPredicate = ((IRequestPredicateProvider)new BindPropertyAttribute()).RequestPredicate,
+                },
+                ParameterType = typeof(string)
+            });
+
+            var controllerContext = GetControllerContext(actionDescriptor);
+            controllerContext.HttpContext.Request.Method = "GET";
+
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
+
+            var binder = new StubModelBinder(ModelBindingResult.Success(model: null));
+            var factory = GetModelBinderFactory(binder);
+            var parameterBinder = GetParameterBinder(factory);
+
+            // Some non default value.
+            controller.NullableProperty = -1;
+
+            // Act
+            var binderDelegate = ControllerBinderDelegateProvider.CreateBinderDelegate(
+                parameterBinder,
+                factory,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                actionDescriptor);
+
+            await binderDelegate(controllerContext, controller, arguments);
+
+            // Assert
+            Assert.Equal(-1, controller.NullableProperty);
+            Assert.DoesNotContain("test-parameter", arguments.Keys);
+        }
+
+        [Fact]
+        public async Task BindActionArgumentsAsync_SupportsRequestPredicate_ForPropertiesAndParameters_Bound()
+        {
+            // Arrange
+            var actionDescriptor = GetActionDescriptor();
+
+            actionDescriptor.Parameters.Add(new ParameterDescriptor
+            {
+                Name = "test-parameter",
+                BindingInfo = new BindingInfo()
+                {
+                    BindingSource = BindingSource.Custom,
+
+                    // Simulates [BindProperty] on a parameter
+                    RequestPredicate = ((IRequestPredicateProvider)new BindPropertyAttribute()).RequestPredicate,
+                },
+                ParameterType = typeof(string)
+            });
+
+            actionDescriptor.BoundProperties.Add(new ParameterDescriptor
+            {
+                Name = nameof(TestController.NullableProperty),
+                BindingInfo = new BindingInfo()
+                {
+                    BindingSource = BindingSource.Custom,
+
+                    // Simulates [BindProperty] on a property
+                    RequestPredicate = ((IRequestPredicateProvider)new BindPropertyAttribute()).RequestPredicate,
+                },
+                ParameterType = typeof(string)
+            });
+
+            var controllerContext = GetControllerContext(actionDescriptor);
+            controllerContext.HttpContext.Request.Method = "POST";
+
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
+
+            var binder = new StubModelBinder(ModelBindingResult.Success(model: null));
+            var factory = GetModelBinderFactory(binder);
+            var parameterBinder = GetParameterBinder(factory);
+
+            // Some non default value.
+            controller.NullableProperty = -1;
+
+            // Act
+            var binderDelegate = ControllerBinderDelegateProvider.CreateBinderDelegate(
+                parameterBinder,
+                factory,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                actionDescriptor);
+
+            await binderDelegate(controllerContext, controller, arguments);
+
+            // Assert
+            Assert.Null(controller.NullableProperty);
+            Assert.Contains("test-parameter", arguments.Keys);
+            Assert.Null(arguments["test-parameter"]);
         }
 
         // property name, property type, property accessor, input value, expected value

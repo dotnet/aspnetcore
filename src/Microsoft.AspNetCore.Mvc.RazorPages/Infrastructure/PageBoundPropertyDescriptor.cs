@@ -9,7 +9,5 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     public class PageBoundPropertyDescriptor : ParameterDescriptor
     {
         public PropertyInfo Property { get; set; }
-
-        public bool SupportsGet { get; set; }
     }
 }
