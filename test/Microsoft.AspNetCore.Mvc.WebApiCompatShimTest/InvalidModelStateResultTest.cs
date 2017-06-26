@@ -80,7 +80,7 @@ namespace System.Web.Http
 
         private static IServiceProvider CreateServices()
         {
-            var options = new OptionsManager<MvcOptions>(new IConfigureOptions<MvcOptions>[] { });
+            var options = new TestOptionsManager<MvcOptions>();
             options.Value.OutputFormatters.Add(new StringOutputFormatter());
             options.Value.OutputFormatters.Add(new JsonOutputFormatter(
                 new JsonSerializerSettings(),
