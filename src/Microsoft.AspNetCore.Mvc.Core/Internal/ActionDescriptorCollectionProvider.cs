@@ -43,6 +43,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private IChangeToken GetCompositeChangeToken()
         {
+            if (_actionDescriptorChangeProviders.Length == 1)
+            {
+                return _actionDescriptorChangeProviders[0].GetChangeToken();
+            }
+
             var changeTokens = new IChangeToken[_actionDescriptorChangeProviders.Length];
             for (var i = 0; i < _actionDescriptorChangeProviders.Length; i++)
             {
