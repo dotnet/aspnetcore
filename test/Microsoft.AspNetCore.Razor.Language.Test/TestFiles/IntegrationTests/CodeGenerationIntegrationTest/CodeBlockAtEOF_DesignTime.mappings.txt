@@ -1,5 +1,5 @@
 Source Location: (2:0,2 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockAtEOF.cshtml)
 ||
-Generated Location: (523:13,14 [0] )
+Generated Location: (575:15,14 [0] )
 ||
 

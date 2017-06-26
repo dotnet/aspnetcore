@@ -1,19 +1,19 @@
 Source Location: (2:0,2 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UnfinishedExpressionInCode.cshtml)
 |
 |
-Generated Location: (535:13,14 [2] )
+Generated Location: (587:15,14 [2] )
 |
 |
 
 Source Location: (5:1,1 [9] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UnfinishedExpressionInCode.cshtml)
 |DateTime.|
-Generated Location: (647:16,6 [9] )
+Generated Location: (699:18,6 [9] )
 |DateTime.|
 
 Source Location: (14:1,10 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/UnfinishedExpressionInCode.cshtml)
 |
 |
-Generated Location: (712:20,22 [2] )
+Generated Location: (764:22,22 [2] )
 |
 |
 

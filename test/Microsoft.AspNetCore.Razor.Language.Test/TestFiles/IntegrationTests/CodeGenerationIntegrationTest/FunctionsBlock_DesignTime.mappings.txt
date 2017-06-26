@@ -1,13 +1,13 @@
 Source Location: (167:11,25 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/FunctionsBlock.cshtml)
 |RandomInt()|
-Generated Location: (625:14,25 [11] )
+Generated Location: (677:16,25 [11] )
 |RandomInt()|
 
 Source Location: (12:0,12 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/FunctionsBlock.cshtml)
 |
 
 |
-Generated Location: (739:20,20 [4] )
+Generated Location: (791:22,20 [4] )
 |
 
 |
@@ -19,7 +19,7 @@ Source Location: (33:4,12 [104] TestFiles/IntegrationTests/CodeGenerationIntegra
         return _rand.Next();
     }
 |
-Generated Location: (847:24,12 [104] )
+Generated Location: (899:26,12 [104] )
 |
     Random _rand = new Random();
     private int RandomInt() {

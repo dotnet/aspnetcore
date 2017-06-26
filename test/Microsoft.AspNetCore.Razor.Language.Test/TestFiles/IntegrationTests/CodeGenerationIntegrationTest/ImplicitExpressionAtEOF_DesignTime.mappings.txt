@@ -1,5 +1,5 @@
 Source Location: (19:2,1 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ImplicitExpressionAtEOF.cshtml)
 ||
-Generated Location: (623:14,6 [0] )
+Generated Location: (675:16,6 [0] )
 ||
 

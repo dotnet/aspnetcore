@@ -2,21 +2,21 @@ Source Location: (2:0,2 [46] TestFiles/IntegrationTests/CodeGenerationIntegratio
 |
     for(int i = 1; i <= 10; i++) {
         |
-Generated Location: (607:14,2 [46] )
+Generated Location: (659:16,2 [46] )
 |
     for(int i = 1; i <= 10; i++) {
         |
 
 Source Location: (69:2,29 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MarkupInCodeBlock.cshtml)
 |i.ToString()|
-Generated Location: (808:21,29 [12] )
+Generated Location: (860:23,29 [12] )
 |i.ToString()|
 
 Source Location: (86:2,46 [9] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MarkupInCodeBlock.cshtml)
 |
     }
 |
-Generated Location: (993:26,46 [9] )
+Generated Location: (1045:28,46 [9] )
 |
     }
 |

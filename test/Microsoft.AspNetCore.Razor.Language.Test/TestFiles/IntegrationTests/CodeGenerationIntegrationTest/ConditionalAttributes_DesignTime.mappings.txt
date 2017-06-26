@@ -3,7 +3,7 @@ Source Location: (2:0,2 [48] TestFiles/IntegrationTests/CodeGenerationIntegratio
     var ch = true;
     var cls = "bar";
     |
-Generated Location: (615:14,2 [48] )
+Generated Location: (667:16,2 [48] )
 |
     var ch = true;
     var cls = "bar";
@@ -12,127 +12,127 @@ Generated Location: (615:14,2 [48] )
 Source Location: (66:3,20 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |
     |
-Generated Location: (728:21,32 [6] )
+Generated Location: (780:23,32 [6] )
 |
     |
 
 Source Location: (83:4,15 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |cls|
-Generated Location: (848:24,15 [3] )
+Generated Location: (900:26,15 [3] )
 |cls|
 
 Source Location: (90:4,22 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |
     |
-Generated Location: (919:28,34 [6] )
+Generated Location: (971:30,34 [6] )
 |
     |
 
 Source Location: (111:5,19 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |cls|
-Generated Location: (1043:31,19 [3] )
+Generated Location: (1095:33,19 [3] )
 |cls|
 
 Source Location: (118:5,26 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |
     |
-Generated Location: (1118:35,38 [6] )
+Generated Location: (1170:37,38 [6] )
 |
     |
 
 Source Location: (135:6,15 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |cls|
-Generated Location: (1238:38,15 [3] )
+Generated Location: (1290:40,15 [3] )
 |cls|
 
 Source Location: (146:6,26 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |
     |
-Generated Location: (1313:42,38 [6] )
+Generated Location: (1365:44,38 [6] )
 |
     |
 
 Source Location: (185:7,37 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |ch|
-Generated Location: (1455:45,37 [2] )
+Generated Location: (1507:47,37 [2] )
 |ch|
 
 Source Location: (191:7,43 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |
     |
-Generated Location: (1546:49,55 [6] )
+Generated Location: (1598:51,55 [6] )
 |
     |
 
 Source Location: (234:8,41 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |ch|
-Generated Location: (1692:52,41 [2] )
+Generated Location: (1744:54,41 [2] )
 |ch|
 
 Source Location: (240:8,47 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |
     |
-Generated Location: (1787:56,59 [6] )
+Generated Location: (1839:58,59 [6] )
 |
     |
 
 Source Location: (257:9,15 [18] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |if(cls != null) { |
-Generated Location: (1908:59,15 [18] )
+Generated Location: (1960:61,15 [18] )
 |if(cls != null) { |
 
 Source Location: (276:9,34 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |cls|
-Generated Location: (2091:64,34 [3] )
+Generated Location: (2143:66,34 [3] )
 |cls|
 
 Source Location: (279:9,37 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 | }|
-Generated Location: (2263:69,37 [2] )
+Generated Location: (2315:71,37 [2] )
 | }|
 
 Source Location: (285:9,43 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |
     |
-Generated Location: (2353:73,55 [6] )
+Generated Location: (2405:75,55 [6] )
 |
     |
 
 Source Location: (309:10,22 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |
     |
-Generated Location: (2395:75,34 [6] )
+Generated Location: (2447:77,34 [6] )
 |
     |
 
 Source Location: (329:11,18 [44] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |Url.Content("~/Scripts/jquery-1.6.2.min.js")|
-Generated Location: (2519:78,18 [44] )
+Generated Location: (2571:80,18 [44] )
 |Url.Content("~/Scripts/jquery-1.6.2.min.js")|
 
 Source Location: (407:11,96 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |
     |
-Generated Location: (2705:82,108 [6] )
+Generated Location: (2757:84,108 [6] )
 |
     |
 
 Source Location: (427:12,18 [60] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |Url.Content("~/Scripts/modernizr-2.0.6-development-only.js")|
-Generated Location: (2829:85,18 [60] )
+Generated Location: (2881:87,18 [60] )
 |Url.Content("~/Scripts/modernizr-2.0.6-development-only.js")|
 
 Source Location: (521:12,112 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |
     |
-Generated Location: (3047:89,124 [6] )
+Generated Location: (3099:91,124 [6] )
 |
     |
 
 Source Location: (638:13,115 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/ConditionalAttributes.cshtml)
 |
 |
-Generated Location: (3182:91,127 [2] )
+Generated Location: (3234:93,127 [2] )
 |
 |
 

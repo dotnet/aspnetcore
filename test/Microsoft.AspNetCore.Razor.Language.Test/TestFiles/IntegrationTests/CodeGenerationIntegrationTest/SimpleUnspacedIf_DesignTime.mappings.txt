@@ -2,7 +2,7 @@ Source Location: (1:0,1 [15] TestFiles/IntegrationTests/CodeGenerationIntegratio
 |if (true)
 {
 	|
-Generated Location: (604:14,1 [15] )
+Generated Location: (656:16,1 [15] )
 |if (true)
 {
 	|
@@ -10,7 +10,7 @@ Generated Location: (604:14,1 [15] )
 Source Location: (27:2,12 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SimpleUnspacedIf.cshtml)
 |
 }|
-Generated Location: (759:21,15 [3] )
+Generated Location: (811:23,15 [3] )
 |
 }|
 

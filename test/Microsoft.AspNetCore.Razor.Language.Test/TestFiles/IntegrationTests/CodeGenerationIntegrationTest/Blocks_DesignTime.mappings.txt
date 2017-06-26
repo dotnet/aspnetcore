@@ -2,7 +2,7 @@ Source Location: (2:0,2 [18] TestFiles/IntegrationTests/CodeGenerationIntegratio
 |
     int i = 1;
 |
-Generated Location: (585:14,2 [18] )
+Generated Location: (637:16,2 [18] )
 |
     int i = 1;
 |
@@ -10,20 +10,20 @@ Generated Location: (585:14,2 [18] )
 Source Location: (26:4,1 [22] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |while(i <= 10) {
     |
-Generated Location: (717:20,1 [22] )
+Generated Location: (769:22,1 [22] )
 |while(i <= 10) {
     |
 
 Source Location: (69:5,25 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |i|
-Generated Location: (879:26,25 [1] )
+Generated Location: (931:28,25 [1] )
 |i|
 
 Source Location: (75:5,31 [16] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |
     i += 1;
 }|
-Generated Location: (1027:31,31 [16] )
+Generated Location: (1079:33,31 [16] )
 |
     i += 1;
 }|
@@ -31,14 +31,14 @@ Generated Location: (1027:31,31 [16] )
 Source Location: (96:9,1 [19] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |if(i == 11) {
     |
-Generated Location: (1160:38,1 [19] )
+Generated Location: (1212:40,1 [19] )
 |if(i == 11) {
     |
 
 Source Location: (140:10,29 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |
 }|
-Generated Location: (1324:44,29 [3] )
+Generated Location: (1376:46,29 [3] )
 |
 }|
 
@@ -46,7 +46,7 @@ Source Location: (148:13,1 [35] TestFiles/IntegrationTests/CodeGenerationIntegra
 |switch(i) {
     case 11:
         |
-Generated Location: (1444:50,1 [35] )
+Generated Location: (1496:52,1 [35] )
 |switch(i) {
     case 11:
         |
@@ -56,7 +56,7 @@ Source Location: (219:15,44 [40] TestFiles/IntegrationTests/CodeGenerationIntegr
         break;
     default:
         |
-Generated Location: (1639:57,44 [40] )
+Generated Location: (1691:59,44 [40] )
 |
         break;
     default:
@@ -66,7 +66,7 @@ Source Location: (288:18,37 [19] TestFiles/IntegrationTests/CodeGenerationIntegr
 |
         break;
 }|
-Generated Location: (1832:65,37 [19] )
+Generated Location: (1884:67,37 [19] )
 |
         break;
 }|
@@ -74,26 +74,26 @@ Generated Location: (1832:65,37 [19] )
 Source Location: (312:22,1 [39] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |for(int j = 1; j <= 10; j += 2) {
     |
-Generated Location: (1968:72,1 [39] )
+Generated Location: (2020:74,1 [39] )
 |for(int j = 1; j <= 10; j += 2) {
     |
 
 Source Location: (378:23,31 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |j|
-Generated Location: (2154:78,31 [1] )
+Generated Location: (2206:80,31 [1] )
 |j|
 
 Source Location: (384:23,37 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |
 }|
-Generated Location: (2309:83,37 [3] )
+Generated Location: (2361:85,37 [3] )
 |
 }|
 
 Source Location: (392:26,1 [11] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |try {
     |
-Generated Location: (2429:89,1 [11] )
+Generated Location: (2481:91,1 [11] )
 |try {
     |
 
@@ -101,39 +101,39 @@ Source Location: (438:27,39 [31] TestFiles/IntegrationTests/CodeGenerationIntegr
 |
 } catch(Exception ex) {
     |
-Generated Location: (2595:95,39 [31] )
+Generated Location: (2647:97,39 [31] )
 |
 } catch(Exception ex) {
     |
 
 Source Location: (500:29,35 [10] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |ex.Message|
-Generated Location: (2777:102,35 [10] )
+Generated Location: (2829:104,35 [10] )
 |ex.Message|
 
 Source Location: (515:29,50 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |
 }|
-Generated Location: (2954:107,50 [3] )
+Generated Location: (3006:109,50 [3] )
 |
 }|
 
 Source Location: (535:32,13 [1] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |i|
-Generated Location: (3086:113,13 [1] )
+Generated Location: (3138:115,13 [1] )
 |i|
 
 Source Location: (545:34,1 [26] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |lock(new object()) {
     |
-Generated Location: (3205:118,1 [26] )
+Generated Location: (3257:120,1 [26] )
 |lock(new object()) {
     |
 
 Source Location: (618:35,51 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Blocks.cshtml)
 |
 }|
-Generated Location: (3398:124,51 [3] )
+Generated Location: (3450:126,51 [3] )
 |
 }|
 

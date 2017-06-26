@@ -1,7 +1,7 @@
 Source Location: (2:0,2 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml)
 |
     |
-Generated Location: (521:13,14 [6] )
+Generated Location: (573:15,14 [6] )
 |
     |
 
@@ -9,27 +9,27 @@ Source Location: (9:1,5 [53] TestFiles/IntegrationTests/CodeGenerationIntegratio
 |foreach (var result in (dynamic)Url)
     {
         |
-Generated Location: (622:16,5 [53] )
+Generated Location: (674:18,5 [53] )
 |foreach (var result in (dynamic)Url)
     {
         |
 
 Source Location: (82:4,13 [16] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml)
 |result.SomeValue|
-Generated Location: (809:23,13 [16] )
+Generated Location: (861:25,13 [16] )
 |result.SomeValue|
 
 Source Location: (115:5,14 [7] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml)
 |
     }|
-Generated Location: (961:28,14 [7] )
+Generated Location: (1013:30,14 [7] )
 |
     }|
 
 Source Location: (122:6,5 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NestedCSharp.cshtml)
 |
 |
-Generated Location: (1018:33,17 [2] )
+Generated Location: (1070:35,17 [2] )
 |
 |
 

@@ -1,75 +1,75 @@
 Source Location: (2:0,2 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |
     |
-Generated Location: (535:13,14 [6] )
+Generated Location: (587:15,14 [6] )
 |
     |
 
 Source Location: (9:1,5 [13] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |ViewBag?.Data|
-Generated Location: (651:16,6 [13] )
+Generated Location: (703:18,6 [13] )
 |ViewBag?.Data|
 
 Source Location: (22:1,18 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |
     |
-Generated Location: (728:20,30 [6] )
+Generated Location: (780:22,30 [6] )
 |
     |
 
 Source Location: (29:2,5 [22] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |ViewBag.IntIndexer?[0]|
-Generated Location: (844:23,6 [22] )
+Generated Location: (896:25,6 [22] )
 |ViewBag.IntIndexer?[0]|
 
 Source Location: (51:2,27 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |
     |
-Generated Location: (939:27,39 [6] )
+Generated Location: (991:29,39 [6] )
 |
     |
 
 Source Location: (58:3,5 [26] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |ViewBag.StrIndexer?["key"]|
-Generated Location: (1055:30,6 [26] )
+Generated Location: (1107:32,6 [26] )
 |ViewBag.StrIndexer?["key"]|
 
 Source Location: (84:3,31 [6] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |
     |
-Generated Location: (1158:34,43 [6] )
+Generated Location: (1210:36,43 [6] )
 |
     |
 
 Source Location: (91:4,5 [41] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |ViewBag?.Method(Value?[23]?.More)?["key"]|
-Generated Location: (1274:37,6 [41] )
+Generated Location: (1326:39,6 [41] )
 |ViewBag?.Method(Value?[23]?.More)?["key"]|
 
 Source Location: (132:4,46 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |
 |
-Generated Location: (1407:41,58 [2] )
+Generated Location: (1459:43,58 [2] )
 |
 |
 
 Source Location: (140:7,1 [13] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |ViewBag?.Data|
-Generated Location: (1519:44,6 [13] )
+Generated Location: (1571:46,6 [13] )
 |ViewBag?.Data|
 
 Source Location: (156:8,1 [22] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |ViewBag.IntIndexer?[0]|
-Generated Location: (1674:49,6 [22] )
+Generated Location: (1726:51,6 [22] )
 |ViewBag.IntIndexer?[0]|
 
 Source Location: (181:9,1 [26] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |ViewBag.StrIndexer?["key"]|
-Generated Location: (1839:54,6 [26] )
+Generated Location: (1891:56,6 [26] )
 |ViewBag.StrIndexer?["key"]|
 
 Source Location: (210:10,1 [41] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/NullConditionalExpressions.cshtml)
 |ViewBag?.Method(Value?[23]?.More)?["key"]|
-Generated Location: (2008:59,6 [41] )
+Generated Location: (2060:61,6 [41] )
 |ViewBag?.Method(Value?[23]?.More)?["key"]|
 

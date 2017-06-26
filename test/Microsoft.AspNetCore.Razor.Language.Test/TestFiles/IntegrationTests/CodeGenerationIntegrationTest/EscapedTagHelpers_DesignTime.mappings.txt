@@ -1,20 +1,20 @@
 Source Location: (14:0,14 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml)
 |*, TestAssembly|
-Generated Location: (372:8,38 [15] )
+Generated Location: (424:10,38 [15] )
 |*, TestAssembly|
 
 Source Location: (106:3,29 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml)
 |DateTime.Now|
-Generated Location: (939:20,29 [12] )
+Generated Location: (991:22,29 [12] )
 |DateTime.Now|
 
 Source Location: (204:5,51 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml)
 |DateTime.Now|
-Generated Location: (1337:27,51 [12] )
+Generated Location: (1389:29,51 [12] )
 |DateTime.Now|
 
 Source Location: (227:5,74 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/EscapedTagHelpers.cshtml)
 |true|
-Generated Location: (1704:34,74 [4] )
+Generated Location: (1756:36,74 [4] )
 |true|
 

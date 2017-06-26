@@ -1,26 +1,26 @@
 Source Location: (2:0,2 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml)
 |
     var a = 1; |
-Generated Location: (621:14,2 [17] )
+Generated Location: (673:16,2 [17] )
 |
     var a = 1; |
 
 Source Location: (35:1,31 [22] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml)
 | 		
     var b = 1;			|
-Generated Location: (802:20,31 [22] )
+Generated Location: (854:22,31 [22] )
 | 		
     var b = 1;			|
 
 Source Location: (69:2,29 [3] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml)
 |a+b|
-Generated Location: (995:26,38 [3] )
+Generated Location: (1047:28,38 [3] )
 |a+b|
 
 Source Location: (80:2,40 [2] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/CodeBlockWithTextElement.cshtml)
 |
 |
-Generated Location: (1093:30,61 [2] )
+Generated Location: (1145:32,61 [2] )
 |
 |
 

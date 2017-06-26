@@ -1,15 +1,15 @@
 Source Location: (14:0,14 [15] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithPrefix.cshtml)
 |*, TestAssembly|
-Generated Location: (375:8,38 [15] )
+Generated Location: (427:10,38 [15] )
 |*, TestAssembly|
 
 Source Location: (48:1,17 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithPrefix.cshtml)
 |cool:|
-Generated Location: (492:12,38 [5] )
+Generated Location: (544:14,38 [5] )
 |cool:|
 
 Source Location: (86:3,23 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithPrefix.cshtml)
 |Hello|
-Generated Location: (998:24,23 [5] )
+Generated Location: (1050:26,23 [5] )
 |Hello|
 
