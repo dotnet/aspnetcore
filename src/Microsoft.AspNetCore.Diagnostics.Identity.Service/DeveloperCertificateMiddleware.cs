@@ -24,19 +24,16 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
         private readonly IOptions<DeveloperCertificateOptions> _options;
         private readonly ITimeStampManager _timeStampManager;
         private readonly IConfiguration _configuration;
-        private readonly IOptionsCache<IdentityServiceOptions> _identityServiceOptionsCache;
 
         public DeveloperCertificateMiddleware(
             RequestDelegate next,
             IOptions<DeveloperCertificateOptions> options,
-            IOptionsCache<IdentityServiceOptions> identityServiceOptions,
             ITimeStampManager timeStampManager,
             IHostingEnvironment environment,
             IConfiguration configuration)
         {
             _next = next;
             _options = options;
-            _identityServiceOptionsCache = identityServiceOptions;
             _environment = environment;
             _timeStampManager = timeStampManager;
             _configuration = configuration;
@@ -51,7 +48,6 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
                 await _next(context);
                 return;
             }
-            var openIdOptionsCache = context.RequestServices.GetRequiredService<IOptionsCache<OpenIdConnectOptions>>();
             if (_environment.IsDevelopment() &&
                 context.Request.Path.Equals(_options.Value.ListeningEndpoint))
             {
@@ -107,7 +103,6 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
                         store.Open(OpenFlags.ReadWrite);
                         store.Add(imported);
                         store.Close();
-                        openIdOptionsCache.TryRemove(OpenIdConnectDefaults.AuthenticationScheme);
 
                         context.Response.StatusCode = StatusCodes.Status204NoContent;
                     };
