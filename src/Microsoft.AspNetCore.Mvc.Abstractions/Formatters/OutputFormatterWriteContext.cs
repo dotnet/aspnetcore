@@ -34,8 +34,24 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <summary>
-        /// Gets or sets a delegate used to create a <see cref="TextWriter"/> for writing the response.
+        /// <para>
+        /// Gets or sets a delegate used to create a <see cref="TextWriter"/> for writing text to the response.
+        /// </para>
+        /// <para>
+        /// Write to <see cref="HttpResponse.Body"/> directly to write binary data to the response.
+        /// </para>
         /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The <see cref="TextWriter"/> created by this delegate will encode text and write to the
+        /// <see cref="HttpResponse.Body"/> stream. Call this delegate to create a <see cref="TextWriter"/>
+        /// for writing text output to the response stream.
+        /// </para>
+        /// <para>
+        /// To implement a formatter that writes binary data to the response stream, do not use the
+        /// <see cref="WriterFactory"/> delegate, and use <see cref="HttpResponse.Body"/> instead.
+        /// </para>
+        /// </remarks>
         public virtual Func<Stream, Encoding, TextWriter> WriterFactory { get; protected set; }
     }
 }
