@@ -8,8 +8,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
     public sealed class IntermediateToken : IntermediateNode
     {
         private RazorDiagnosticCollection _diagnostics;
+        private ItemCollection _annotations;
 
-        public override ItemCollection Annotations => ReadOnlyItemCollection.Empty;
+        public override ItemCollection Annotations
+        {
+            get
+            {
+                if (_annotations == null)
+                {
+                    _annotations = new DefaultItemCollection();
+                }
+
+                return _annotations;
+            }
+        }
 
         public override RazorDiagnosticCollection Diagnostics
         {
