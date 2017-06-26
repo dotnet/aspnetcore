@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace E2ETests
@@ -38,14 +39,22 @@ namespace E2ETests
             Assert.Equal<string>("code id_token", queryItems["response_type"]);
             Assert.Equal<string>("openid profile", queryItems["scope"]);
             Assert.Equal<string>("ValidStateData", queryItems["state"]);
-            Assert.Contains(".AspNetCore.OpenIdConnect.Nonce.protectedString", GetCookieNames());
+
+            // Workaround for https://github.com/dotnet/corefx/issues/21250
+            Assert.True(response.Headers.TryGetValues("Set-Cookie", out var setCookieValues));
+            var setCookie = SetCookieHeaderValue.ParseList(setCookieValues.ToList());
+            Assert.Contains(setCookie, c => c.Name == ".AspNetCore.OpenIdConnect.Nonce.protectedString");
 
             // This is just enable the auto-redirect.
             _httpClientHandler = new HttpClientHandler();
             _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
-            foreach (var header in Microsoft.Net.Http.Headers.SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()))
+            foreach (var header in SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()))
             {
-                _httpClientHandler.CookieContainer.Add(new Uri(_deploymentResult.ApplicationBaseUri), new Cookie(header.Name.ToString(), header.Value.ToString()));
+                // Workaround for https://github.com/dotnet/corefx/issues/21250
+                // The path of the cookie must either match the URI or be a prefix of it due to the fact
+                // that CookieContainer doesn't support the latest version of the standard for cookies.
+                var uri = new Uri(new Uri(_deploymentResult.ApplicationBaseUri), header.Path.ToString());
+                _httpClientHandler.CookieContainer.Add(uri, new Cookie(header.Name.ToString(), header.Value.ToString()));
             }
 
             //Post a message to the OpenIdConnect middleware
@@ -98,12 +107,21 @@ namespace E2ETests
             };
 
             content = new FormUrlEncodedContent(formParameters.ToArray());
+
             // Need a non-redirecting handler
             var handler = new HttpClientHandler() { AllowAutoRedirect = false };
             handler.CookieContainer.Add(new Uri(_deploymentResult.ApplicationBaseUri), _httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri)));
             _httpClient = new HttpClient(handler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
 
             response = await DoPostAsync("Account/LogOff", content);
+            Assert.True(response.Headers.TryGetValues("Set-Cookie", out var logoutSetCookieHeaders));
+            var responseCookies = SetCookieHeaderValue.ParseList(logoutSetCookieHeaders.ToList());
+
+            foreach (var logoutSetcookie in logoutSetCookieHeaders)
+            {
+                _httpClientHandler.CookieContainer.SetCookies(new Uri(_deploymentResult.ApplicationBaseUri), logoutSetcookie.Replace("; samesite=lax", ""));
+            }
+
             Assert.DoesNotContain(IdentityCookieName, GetCookieNames());
             Assert.Equal<string>(
                 "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/logout",

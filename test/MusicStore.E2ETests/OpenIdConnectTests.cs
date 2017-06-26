@@ -17,20 +17,19 @@ namespace E2ETests
         {
         }
 
-        [Fact(Skip = "Broken due to https://github.com/dotnet/corefx/issues/21250")]
+        [Fact]
         public Task OpenIdConnect_Kestrel_CoreCLR_Portable()
         {
-            while (!System.Diagnostics.Debugger.IsAttached) ;
             return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Portable);
         }
 
-        [Fact(Skip = "Broken due to https://github.com/dotnet/corefx/issues/21250")]
+        [Fact]
         public Task OpenIdConnect_Kestrel_CoreCLR_Standalone()
         {
             return OpenIdConnectTestSuite(ServerType.Kestrel, RuntimeFlavor.CoreClr, ApplicationType.Standalone);
         }
 
-        [ConditionalFact(Skip = "Broken due to https://github.com/dotnet/corefx/issues/21250")]
+        [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public Task OpenIdConnect_Kestrel_CLR()
