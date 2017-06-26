@@ -1,0 +1,27 @@
+@addTagHelper *, Microsoft.AspNetCore.Mvc.TagHelpers
+@using HtmlGenerationWebSite.Models
+@model WeirdModel
+
+@functions{
+    private string PrivateProperty { get; set; } = "Hello, Private World!";
+}
+
+<html>
+<body>
+    <div>
+        <p>Field</p>
+        <label asp-for="Field" />
+        <input asp-for="Field" />
+    </div>
+    <div>
+        <p>Static Property</p>
+        <label asp-for="@WeirdModel.StaticProperty" />
+        <input asp-for="@WeirdModel.StaticProperty" />
+    </div>
+    <div>
+        <p>Private Property</p>
+        <label asp-for="@PrivateProperty" />
+        <input asp-for="@PrivateProperty" />
+    </div>
+</body>
+</html>

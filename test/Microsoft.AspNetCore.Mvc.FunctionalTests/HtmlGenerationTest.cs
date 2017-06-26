@@ -523,6 +523,32 @@ Products: Music Systems, Televisions (3)";
             Assert.Equal(expected, response, ignoreLineEndingDifferences: true);
         }
 
+        // We want to make sure that for 'wierd' model expressions involving:
+        // - fields
+        // - statics
+        // - private
+        //
+        // These tests verify that we don't throw, and can evaluate the expression to get the model
+        // value. One quirk of behavior for these cases is that we can't return a correct model metadata
+        // instance (this is true for anything other than a public instance property). We're not overly
+        // concerned with that, and so the accuracy of the model metadata is is not verified by the test.
+        [Theory]
+        [InlineData("GetWeirdWithHtmlHelpers")]
+        [InlineData("GetWeirdWithTagHelpers")]
+        public async Task WeirdModelExpressions_CanAccessModelValues(string action)
+        {
+            // Arrange
+            var url = "http://localhost/HtmlGeneration_WeirdExpressions/" + action;
+
+            // Act
+            var response = await Client.GetStringAsync(url);
+
+            // Assert
+            Assert.Contains("Hello, Field World!", response);
+            Assert.Contains("Hello, Static World!", response);
+            Assert.Contains("Hello, Private World!", response);
+        }
+
         private static HttpRequestMessage RequestWithLocale(string url, string locale)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, url);

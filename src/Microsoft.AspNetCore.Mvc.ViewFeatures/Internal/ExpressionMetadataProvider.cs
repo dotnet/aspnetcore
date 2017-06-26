@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -60,7 +61,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         return FromModel(viewData, metadataProvider);
                     }
 
-                    containerType = memberExpression.Expression.Type;
+                    // memberExpression.Expression can be null when this is a static field or property.
+                    //
+                    // This can be the case if the expression is like (m => Person.Name) where Name is a static field
+                    // or property on the Person type.
+                    containerType = memberExpression.Expression?.Type;
+
                     legalExpression = true;
                     break;
 
@@ -86,22 +92,30 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 }
             };
 
-            ModelMetadata metadata;
-            if (propertyName == null)
-            {
-                // Ex:
-                //    m => 5 (arbitrary expression)
-                //    m => foo (arbitrary expression)
-                //    m => m.Widgets[0] (expression ending with non-property-access)
-                metadata = metadataProvider.GetMetadataForType(typeof(TResult));
-            }
-            else
+            ModelMetadata metadata = null;
+            if (containerType != null && propertyName != null)
             {
                 // Ex:
                 //    m => m.Color (simple property access)
                 //    m => m.Color.Red (nested property access)
                 //    m => m.Widgets[0].Size (expression ending with property-access)
                 metadata = metadataProvider.GetMetadataForType(containerType).Properties[propertyName];
+            }
+            
+            if (metadata == null)
+            {
+                // Ex:
+                //    m => 5 (arbitrary expression)
+                //    m => foo (arbitrary expression)
+                //    m => m.Widgets[0] (expression ending with non-property-access)
+                //
+                // This can also happen for any case where we cannot retrieve a model metadata.
+                // This will happen for:
+                // - fields
+                // - statics
+                // - non-visibility (internal/private)
+                metadata = metadataProvider.GetMetadataForType(typeof(TResult));
+                Debug.Assert(metadata != null);
             }
 
             return viewData.ModelExplorer.GetExplorerForExpression(metadata, modelAccessor);
