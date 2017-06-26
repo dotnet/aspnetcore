@@ -221,6 +221,58 @@ namespace Microsoft.AspNetCore.Mvc
             };
         }
 
+        public class OnBeforeViewPageEventData
+        {
+            public IProxyPage Page { get; set; }
+            public IProxyViewContext ViewContext { get; set; }
+            public IProxyActionDescriptor ActionDescriptor { get; set; }
+            public IProxyHttpContext HttpContext { get; set; }
+        }
+
+        public OnBeforeViewPageEventData BeforeViewPage { get; set; }
+
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.Razor.BeforeViewPage")]
+        public virtual void OnBeforeViewPage(
+            IProxyPage page,
+            IProxyViewContext viewContext,
+            IProxyActionDescriptor actionDescriptor,
+            IProxyHttpContext httpContext)
+        {
+            BeforeViewPage = new OnBeforeViewPageEventData()
+            {
+                Page = page,
+                ViewContext = viewContext,
+                ActionDescriptor = actionDescriptor,
+                HttpContext = httpContext,
+            };
+        }
+
+        public class OnAfterViewPageEventData
+        {
+            public IProxyPage Page { get; set; }
+            public IProxyViewContext ViewContext { get; set; }
+            public IProxyActionDescriptor ActionDescriptor { get; set; }
+            public IProxyHttpContext HttpContext { get; set; }
+        }
+
+        public OnAfterViewPageEventData AfterViewPage { get; set; }
+
+        [DiagnosticName("Microsoft.AspNetCore.Mvc.Razor.AfterViewPage")]
+        public virtual void OnAfterViewPage(
+            IProxyPage page,
+            IProxyViewContext viewContext,
+            IProxyActionDescriptor actionDescriptor,
+            IProxyHttpContext httpContext)
+        {
+            AfterViewPage = new OnAfterViewPageEventData()
+            {
+                Page = page,
+                ViewContext = viewContext,
+                ActionDescriptor = actionDescriptor,
+                HttpContext = httpContext,
+            };
+        }
+
         public class OnBeforeViewComponentEventData
         {
             public IProxyActionDescriptor ActionDescriptor { get; set; }

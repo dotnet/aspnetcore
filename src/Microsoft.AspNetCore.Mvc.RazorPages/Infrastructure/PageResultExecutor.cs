@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         private readonly IRazorViewEngine _razorViewEngine;
         private readonly IRazorPageActivator _razorPageActivator;
+        private readonly DiagnosticSource _diagnosticSource;
         private readonly HtmlEncoder _htmlEncoder;
 
         /// <summary>
@@ -42,6 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             _razorViewEngine = razorViewEngine;
             _htmlEncoder = htmlEncoder;
             _razorPageActivator = razorPageActivator;
+            _diagnosticSource = diagnosticSource;
         }
 
         /// <summary>
@@ -76,7 +78,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 _razorPageActivator,
                 viewStarts,
                 new RazorPageAdapter(result.Page),
-                _htmlEncoder);
+                _htmlEncoder,
+                _diagnosticSource);
 
             return ExecuteAsync(viewContext, result.ContentType, result.StatusCode);
         }

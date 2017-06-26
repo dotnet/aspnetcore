@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private readonly ILogger _logger;
         private readonly RazorViewEngineOptions _options;
         private readonly RazorProject _razorProject;
+        private readonly DiagnosticSource _diagnosticSource;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RazorViewEngine" />.
@@ -54,7 +55,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             HtmlEncoder htmlEncoder,
             IOptions<RazorViewEngineOptions> optionsAccessor,
             RazorProject razorProject,
-            ILoggerFactory loggerFactory)
+            ILoggerFactory loggerFactory,
+            DiagnosticSource diagnosticSource)
         {
             _options = optionsAccessor.Value;
 
@@ -77,6 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             _htmlEncoder = htmlEncoder;
             _logger = loggerFactory.CreateLogger<RazorViewEngine>();
             _razorProject = razorProject;
+            _diagnosticSource = diagnosticSource;
             ViewLookupCache = new MemoryCache(new MemoryCacheOptions());
         }
 
@@ -466,7 +469,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 viewStarts[i] = viewStartItem.PageFactory();
             }
 
-            var view = new RazorView(this, _pageActivator, viewStarts, page, _htmlEncoder);
+            var view = new RazorView(this, _pageActivator, viewStarts, page, _htmlEncoder, _diagnosticSource);
             return ViewEngineResult.Found(viewName, view);
         }
 

@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -1350,7 +1351,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
                 new HtmlTestEncoder(),
                 GetOptionsAccessor(expanders: null),
                 new FileProviderRazorProject(new TestFileProvider()),
-                loggerFactory);
+                loggerFactory,
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
 
             // Act
             var result = viewEngine.CreateCacheResult(null, relativePath, false);
@@ -1881,7 +1883,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
                 IRazorPageFactoryProvider pageFactory,
                 IOptions<RazorViewEngineOptions> optionsAccessor,
                 RazorProject razorProject)
-                : base(pageFactory, Mock.Of<IRazorPageActivator>(), new HtmlTestEncoder(), optionsAccessor, razorProject, NullLoggerFactory.Instance)
+                : base(pageFactory, Mock.Of<IRazorPageActivator>(), new HtmlTestEncoder(), optionsAccessor, razorProject, NullLoggerFactory.Instance, new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"))
             {
             }
 

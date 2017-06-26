@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -45,7 +46,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
             var expected = viewContext.Writer;
 
@@ -74,7 +76,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 activator.Object,
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
 
             var viewContext = CreateViewContext(view);
             var expectedWriter = viewContext.Writer;
@@ -93,6 +96,55 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             // Assert
             activator.Verify();
             Assert.Same(expectedWriter, viewContext.Writer);
+        }
+
+        [Fact]
+        public async Task RenderAsync_AsPartial_ActivatesViews_WritesBeforeAndAfterRazorViewEventDiagnostics()
+        {
+            // Arrange
+            var viewData = new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary());
+            var page = new TestableRazorPageForDiagnostics(v =>
+            {
+                // viewData is assigned to ViewContext by the activator
+                Assert.Same(viewData, v.ViewContext.ViewData);
+            });
+            var activator = new Mock<IRazorPageActivator>();
+
+            var adapter = new TestDiagnosticListener();
+            var diagnosticSource = new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor");
+            diagnosticSource.SubscribeWithAdapter(adapter);
+
+            var view = new RazorView(
+                Mock.Of<IRazorViewEngine>(),
+                activator.Object,
+                new IRazorPage[0],
+                page,
+                new HtmlTestEncoder(),
+                diagnosticSource);
+
+            var viewContext = CreateViewContext(view);
+            var expectedWriter = viewContext.Writer;
+            activator
+                .Setup(a => a.Activate(page, It.IsAny<ViewContext>()))
+                .Callback((IRazorPage p, ViewContext c) =>
+                {
+                    Assert.Same(c, viewContext);
+                    c.ViewData = viewData;
+                })
+                .Verifiable();
+
+            // Act
+            await view.RenderAsync(viewContext);
+
+            // Assert
+            Assert.NotNull(adapter.BeforeViewPage?.Page);
+            Assert.NotNull(adapter.BeforeViewPage?.ViewContext);
+            Assert.NotNull(adapter.BeforeViewPage?.ActionDescriptor);
+            Assert.NotNull(adapter.BeforeViewPage?.HttpContext);
+            Assert.NotNull(adapter.AfterViewPage?.Page);
+            Assert.NotNull(adapter.AfterViewPage?.ViewContext);
+            Assert.NotNull(adapter.AfterViewPage?.ActionDescriptor);
+            Assert.NotNull(adapter.AfterViewPage?.HttpContext);
         }
 
         [Fact]
@@ -143,7 +195,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 activator,
                 new[] { viewStart },
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
 
             var viewContext = CreateViewContext(view);
             var expectedWriter = viewContext.Writer;
@@ -169,7 +222,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 activator.Object,
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -216,7 +270,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -240,7 +295,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
 
@@ -265,7 +321,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
             var original = viewContext.Writer;
 
@@ -293,7 +350,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 activator.Object,
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -348,7 +406,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 activator.Object,
                 new[] { viewStart1, viewStart2 },
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -391,7 +450,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var context = CreateViewContext(view);
 
             // Act
@@ -444,7 +504,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new[] { viewStart },
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var context = CreateViewContext(view);
 
             // Act
@@ -477,7 +538,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
             viewEngine
                 .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath))
@@ -519,7 +581,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
             viewEngine
                 .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath))
@@ -563,7 +626,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
             viewEngine
                 .Setup(v => v.GetPage(/*executingFilePath*/ null, layoutPath))
@@ -638,7 +702,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 activator.Object,
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -678,7 +743,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -744,7 +810,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -812,7 +879,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -874,7 +942,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -942,7 +1011,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -976,7 +1046,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -1043,7 +1114,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1116,7 +1188,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1156,7 +1229,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -1209,7 +1283,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -1278,7 +1353,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1335,7 +1411,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1389,7 +1466,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1419,7 +1497,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -1465,7 +1544,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new IRazorPage[0],
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act and Assert
@@ -1509,7 +1589,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new[] { viewStart1, viewStart2 },
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1566,7 +1647,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new[] { viewStart1, viewStart2 },
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1610,7 +1692,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new[] { viewStart1, viewStart2 },
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1651,7 +1734,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<IRazorPageActivator>(),
                 new[] { viewStart1, viewStart2 },
                 page,
-                new HtmlTestEncoder());
+                new HtmlTestEncoder(),
+                new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
             var viewContext = CreateViewContext(view);
 
             // Act
@@ -1676,6 +1760,28 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 Mock.Of<ITempDataDictionary>(),
                 new StringWriter(),
                 new HtmlHelperOptions());
+        }
+
+        public class TestableRazorPageForDiagnostics : RazorPage
+        {
+            private readonly Action<TestableRazorPageForDiagnostics> _executeAction;
+
+            public TestableRazorPageForDiagnostics(Action<TestableRazorPageForDiagnostics> executeAction)
+            {
+                _executeAction = executeAction;
+                HtmlEncoder = new HtmlTestEncoder();
+            }
+
+            public void RenderBodyPublic()
+            {
+                Write(RenderBody());
+            }
+
+            public override Task ExecuteAsync()
+            {
+                _executeAction(this);
+                return Task.FromResult(0);
+            }
         }
 
         private class TestableRazorPage : RazorPage

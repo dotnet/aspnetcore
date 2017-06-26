@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
+using Microsoft.AspNetCore.Mvc.Razor.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Mvc.Razor
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         private readonly IRazorViewEngine _viewEngine;
         private readonly IRazorPageActivator _pageActivator;
         private readonly HtmlEncoder _htmlEncoder;
+        private readonly DiagnosticSource _diagnosticSource;
         private IViewBufferScope _bufferScope;
 
         /// <summary>
@@ -34,12 +36,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         /// </param>
         /// <param name="razorPage">The <see cref="IRazorPage"/> instance to execute.</param>
         /// <param name="htmlEncoder">The HTML encoder.</param>
+        /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
         public RazorView(
             IRazorViewEngine viewEngine,
             IRazorPageActivator pageActivator,
             IReadOnlyList<IRazorPage> viewStartPages,
             IRazorPage razorPage,
-            HtmlEncoder htmlEncoder)
+            HtmlEncoder htmlEncoder,
+            DiagnosticSource diagnosticSource)
         {
             if (viewEngine == null)
             {
@@ -66,11 +70,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 throw new ArgumentNullException(nameof(htmlEncoder));
             }
 
+            if (diagnosticSource == null)
+            {
+                throw new ArgumentNullException(nameof(diagnosticSource));
+            }
+
             _viewEngine = viewEngine;
             _pageActivator = pageActivator;
             ViewStartPages = viewStartPages;
             RazorPage = razorPage;
             _htmlEncoder = htmlEncoder;
+            _diagnosticSource = diagnosticSource;
         }
 
         /// <inheritdoc />
@@ -152,11 +162,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             }
         }
 
-        private Task RenderPageCoreAsync(IRazorPage page, ViewContext context)
+        private async Task RenderPageCoreAsync(IRazorPage page, ViewContext context)
         {
             page.ViewContext = context;
             _pageActivator.Activate(page, context);
-            return page.ExecuteAsync();
+
+            _diagnosticSource.BeforeViewPage(page, context);
+
+            try
+            {
+                await page.ExecuteAsync();
+            }
+            finally
+            {
+                _diagnosticSource.AfterViewPage(page, context);
+            }
         }
 
         private async Task RenderViewStartsAsync(ViewContext context)
