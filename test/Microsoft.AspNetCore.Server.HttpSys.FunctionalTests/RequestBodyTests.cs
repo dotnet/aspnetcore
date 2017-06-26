@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task RequestBody_ReadAync_Success()
+        public async Task RequestBody_ReadAsync_Success()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, async httpContext =>

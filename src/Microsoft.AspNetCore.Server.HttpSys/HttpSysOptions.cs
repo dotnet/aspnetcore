@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (value.HasValue && value < -1)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Empty);
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be positive, or -1 for infiniate.");
                 }
 
                 if (value.HasValue && _urlGroup != null)
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (value <= 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Empty);
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater than zero.");
                 }
 
                 if (_requestQueue != null)
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Empty);
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater or equal to zero.");
                 }
                 _maxRequestBodySize = value;
             }

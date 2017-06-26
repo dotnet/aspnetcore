@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 if (value.HasValue && value < 0)
                 {
-                    throw new ArgumentOutOfRangeException(nameof(value), value, string.Empty);
+                    throw new ArgumentOutOfRangeException(nameof(value), value, "The value must be greater or equal to zero.");
                 }
                 _maxSize = value;
             }
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             castedAsyncResult.EndCalled = true;
             // wait & then check for errors
             // Throws on failure
-            int dataRead = castedAsyncResult.Task.GetAwaiter().GetResult();
+            var dataRead = castedAsyncResult.Task.GetAwaiter().GetResult();
             // TODO: Verbose log #dataRead.
             return dataRead;
         }

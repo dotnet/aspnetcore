@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task ContentLengthEqualsLimit_ReadAync_Success()
+        public async Task ContentLengthEqualsLimit_ReadAsync_Success()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, async httpContext =>
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task ChunkedEqualsLimit_ReadAync_Success()
+        public async Task ChunkedEqualsLimit_ReadAsync_Success()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, async httpContext =>
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task ContentLengthExceedsLimit_ReadSync_ThrowsImmidately()
+        public async Task ContentLengthExceedsLimit_ReadSync_ThrowsImmediately()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task ContentLengthExceedsLimit_ReadAsync_ThrowsImmidately()
+        public async Task ContentLengthExceedsLimit_ReadAsync_ThrowsImmediately()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task ContentLengthExceedsLimit_ReadBeginEnd_ThrowsImmidately()
+        public async Task ContentLengthExceedsLimit_ReadBeginEnd_ThrowsImmediately()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task AdjustLimitPerRequest_ContentLength_ReadAync_Success()
+        public async Task AdjustLimitPerRequest_ContentLength_ReadAsync_Success()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, async httpContext =>
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public async Task AdjustLimitPerRequest_Chunked_ReadAync_Success()
+        public async Task AdjustLimitPerRequest_Chunked_ReadAsync_Success()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, async httpContext =>

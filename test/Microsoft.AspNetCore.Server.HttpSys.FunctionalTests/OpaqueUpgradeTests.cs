@@ -103,6 +103,43 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
+        public async Task OpaqueUpgrade_GetUpgrade_NotAffectedByMaxRequestBodyLimit()
+        {
+            ManualResetEvent waitHandle = new ManualResetEvent(false);
+            bool? upgraded = null;
+            string address;
+            using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, async httpContext =>
+            {
+                var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
+                Assert.NotNull(feature);
+                Assert.False(feature.IsReadOnly);
+                Assert.Null(feature.MaxRequestBodySize); // GET/Upgrade requests don't actually have an entity body, so they can't set the limit.
+
+                httpContext.Response.Headers["Upgrade"] = "websocket"; // Win8.1 blocks anything but WebSockets
+                var opaqueFeature = httpContext.Features.Get<IHttpUpgradeFeature>();
+                Assert.NotNull(opaqueFeature);
+                Assert.True(opaqueFeature.IsUpgradableRequest);
+                var stream = await opaqueFeature.UpgradeAsync();
+                Assert.True(feature.IsReadOnly);
+                Assert.Null(feature.MaxRequestBodySize);
+                Assert.Throws<InvalidOperationException>(() => feature.MaxRequestBodySize = 12);
+                Assert.Equal(15, stream.Read(new byte[15], 0, 15));
+                upgraded = true;
+                waitHandle.Set();
+            }))
+            {
+                using (Stream stream = await SendOpaqueRequestAsync("GET", address))
+                {
+                    stream.Write(new byte[15], 0, 15);
+                    Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(1)), "Timed out");
+                    Assert.True(upgraded.HasValue, "Upgraded not set");
+                    Assert.True(upgraded.Value, "Upgrade failed");
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2)]
         public async Task OpaqueUpgrade_WithOnStarting_CallbackCalled()
         {
             var callbackCalled = false;
