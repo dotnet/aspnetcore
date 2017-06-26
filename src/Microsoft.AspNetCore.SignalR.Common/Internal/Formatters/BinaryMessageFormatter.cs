@@ -10,8 +10,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 {
     public static class BinaryMessageFormatter
     {
-        public static bool TryWriteMessage(ReadOnlySpan<byte> payload, MemoryStream output)
+        public static bool TryWriteMessage(ReadOnlySpan<byte> payload, Stream output)
         {
+            // TODO: Optimize for size - (e.g. use Varints)
             var length = sizeof(long);
             var buffer = ArrayPool<byte>.Shared.Rent(length);
             BufferWriter.WriteBigEndian<long>(buffer, payload.Length);

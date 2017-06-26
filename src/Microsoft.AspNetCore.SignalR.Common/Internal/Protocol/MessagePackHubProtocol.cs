@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using MsgPack;
 using MsgPack.Serialization;
 
@@ -19,9 +20,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         {
             messages = new List<HubMessage>();
 
-            using (var memoryStream = new MemoryStream(input.ToArray()))
+            var messageParser = new BinaryMessageParser();
+
+            while (messageParser.TryParseMessage(ref input, out var payload))
             {
-                messages.Add(ParseMessage(memoryStream, binder));
+                using (var memoryStream = new MemoryStream(payload.ToArray()))
+                {
+                    messages.Add(ParseMessage(memoryStream, binder));
+                }
             }
 
             return messages.Count > 0;
@@ -99,8 +105,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return new CompletionMessage(invocationId, error, result, hasResult);
         }
 
-        // TODO: when to return false?
         public bool TryWriteMessage(HubMessage message, Stream output)
+        {
+            using (var memoryStream = new MemoryStream())
+            {
+                WriteMessage(message, memoryStream);
+                return BinaryMessageFormatter.TryWriteMessage(new ReadOnlySpan<byte>(memoryStream.ToArray()), output);
+            }
+        }
+
+        private void WriteMessage(HubMessage message, Stream output)
         {
             var packer = Packer.Create(output);
             switch (message)
@@ -117,8 +131,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 default:
                     throw new FormatException($"Unexpected message type: {message.GetType().Name}");
             }
-
-            return true;
         }
 
         private static void WriteInvocationMessage(InvocationMessage invocationMessage, Packer packer, Stream output)
