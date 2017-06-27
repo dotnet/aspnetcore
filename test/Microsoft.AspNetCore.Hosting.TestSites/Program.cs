@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
@@ -19,6 +20,7 @@ namespace ServerComparison.TestSites
         {
             var config = new ConfigurationBuilder()
                 .AddCommandLine(args)
+                .AddEnvironmentVariables(prefix: "ASPNETCORE_")
                 .Build();
 
             var builder = new WebHostBuilder()
@@ -31,9 +33,29 @@ namespace ServerComparison.TestSites
                 })
                 .UseStartup("Microsoft.AspNetCore.Hosting.TestSites");
 
-            var host = builder.Build();
+            if (config["STARTMECHANIC"] == "Run")
+            {
+                var host = builder.Build();
 
-            host.Run();
+                host.Run();
+            }
+            else if (config["STARTMECHANIC"] == "WaitForShutdown")
+            {
+                using (var host = builder.Build())
+                {
+                    host.Start();
+
+                    // Mimic application startup messages so application deployer knows that the application has started
+                    Console.WriteLine("Application started. Press Ctrl+C to shut down.");
+                    Console.WriteLine("Now listening on: http://localhost:5000");
+
+                    host.WaitForShutdown();
+                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Starting mechanic not specified");
+            }
         }
     }
 

@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
@@ -22,11 +23,11 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        public async Task ShutdownTest()
+        public async Task ShutdownTestRun()
         {
             using (StartLog(out var loggerFactory))
             {
-                var logger = loggerFactory.CreateLogger(nameof(ShutdownTest));
+                var logger = loggerFactory.CreateLogger(nameof(ShutdownTestRun));
 
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test",
                     "Microsoft.AspNetCore.Hosting.TestSites");
@@ -43,12 +44,11 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     PublishApplicationBeforeDeployment = true
                 };
 
+                deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("ASPNETCORE_STARTMECHANIC", "Run"));
+
                 using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
                 {
                     await deployer.DeployAsync();
-
-                    // Wait for application to start
-                    await Task.Delay(1000);
 
                     string output = string.Empty;
                     deployer.HostProcess.OutputDataReceived += (sender, args) => output += args.Data + '\n';
@@ -61,6 +61,53 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 
                     Assert.Equal(output, "Application is shutting down...\n" +
                                          "Stopping firing\n" +
+                                         "Stopping end\n" +
+                                         "Stopped firing\n" +
+                                         "Stopped end");
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        public async Task ShutdownTestWaitForShutdown()
+        {
+            using (StartLog(out var loggerFactory))
+            {
+                var logger = loggerFactory.CreateLogger(nameof(ShutdownTestWaitForShutdown));
+
+                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test",
+                    "Microsoft.AspNetCore.Hosting.TestSites");
+
+                var deploymentParameters = new DeploymentParameters(
+                    applicationPath,
+                    ServerType.Kestrel,
+                    RuntimeFlavor.CoreClr,
+                    RuntimeArchitecture.x64)
+                {
+                    EnvironmentName = "Shutdown",
+                    TargetFramework = "netcoreapp2.0",
+                    ApplicationType = ApplicationType.Portable,
+                    PublishApplicationBeforeDeployment = true
+                };
+
+                deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("ASPNETCORE_STARTMECHANIC", "WaitForShutdown"));
+
+                using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
+                {
+                    await deployer.DeployAsync();
+
+                    string output = string.Empty;
+                    deployer.HostProcess.OutputDataReceived += (sender, args) => output += args.Data + '\n';
+
+                    SendSIGINT(deployer.HostProcess.Id);
+
+                    WaitForExitOrKill(deployer.HostProcess);
+
+                    output = output.Trim('\n');
+
+                    Assert.Equal(output, "Stopping firing\n" +
                                          "Stopping end\n" +
                                          "Stopped firing\n" +
                                          "Stopped end");
