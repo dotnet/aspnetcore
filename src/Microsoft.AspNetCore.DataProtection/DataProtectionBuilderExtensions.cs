@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.DataProtection
         /// Configures the key management options for the data protection system.
         /// </summary>
         /// <param name="builder">The <see cref="IDataProtectionBuilder"/>.</param>
-        /// <param name="setupAction">An <see cref="Action{KeyManagementOptions}"/> to configure the provided<see cref="KeyManagementOptions"/>.</param>
+        /// <param name="setupAction">An <see cref="Action{KeyManagementOptions}"/> to configure the provided <see cref="KeyManagementOptions"/>.</param>
         /// <returns>A reference to the <see cref="IDataProtectionBuilder" /> after this operation has completed.</returns>
         public static IDataProtectionBuilder AddKeyManagementOptions(this IDataProtectionBuilder builder, Action<KeyManagementOptions> setupAction)
         {

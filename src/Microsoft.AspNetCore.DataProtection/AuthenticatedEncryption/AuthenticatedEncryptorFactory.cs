@@ -11,6 +11,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.DataProtection.AuthenticatedEncryption
 {
+    /// <summary>
+    /// An <see cref="IAuthenticatedEncryptorFactory"/> to create an <see cref="IAuthenticatedEncryptor"/>
+    /// based on the <see cref="AuthenticatedEncryptorConfiguration"/>.
+    /// </summary>
     public sealed class AuthenticatedEncryptorFactory : IAuthenticatedEncryptorFactory
     {
         private readonly ILoggerFactory _loggerFactory;
