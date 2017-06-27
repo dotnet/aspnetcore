@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.True(feature.IsReadOnly);
                 Assert.Null(feature.MaxRequestBodySize);
                 Assert.Throws<InvalidOperationException>(() => feature.MaxRequestBodySize = 12);
-                Assert.Equal(15, stream.Read(new byte[15], 0, 15));
+                Assert.Equal(15, await stream.ReadAsync(new byte[15], 0, 15));
                 upgraded = true;
                 waitHandle.Set();
             }))
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 using (Stream stream = await SendOpaqueRequestAsync("GET", address))
                 {
                     stream.Write(new byte[15], 0, 15);
-                    Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(1)), "Timed out");
+                    Assert.True(waitHandle.WaitOne(TimeSpan.FromSeconds(10)), "Timed out");
                     Assert.True(upgraded.HasValue, "Upgraded not set");
                     Assert.True(upgraded.Value, "Upgrade failed");
                 }

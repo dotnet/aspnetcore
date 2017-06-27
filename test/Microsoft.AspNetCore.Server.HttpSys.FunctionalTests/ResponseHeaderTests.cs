@@ -130,8 +130,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
                 var responseHeaders = responseInfo.Headers;
                 responseHeaders["Connection"] = new string[] { "Close" };
-                httpContext.Response.Body.Flush(); // Http.Sys adds the Content-Length: header for us if we don't flush
-                return Task.FromResult(0);
+                return httpContext.Response.Body.FlushAsync(); // Http.Sys adds the Content-Length: header for us if we don't flush
             }))
             {
                 HttpResponseMessage response = await SendRequestAsync(address);
@@ -204,6 +203,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
                 {
+                    httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                     var responseInfo = httpContext.Features.Get<IHttpResponseFeature>();
                     var responseHeaders = responseInfo.Headers;
                     responseHeaders.Add("Custom1", new string[] { "value1a", "value1b" });

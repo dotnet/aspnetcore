@@ -9,6 +9,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -22,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 httpContext.Response.Body.Write(new byte[10], 0, 10);
                 return httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
             }))
@@ -42,6 +44,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 httpContext.Response.Body.Write(new byte[10], 0, 10);
                 await httpContext.Response.Body.WriteAsync(new byte[10], 0, 10);
                 await httpContext.Response.Body.FlushAsync();
@@ -85,6 +88,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 httpContext.Response.Headers["Content-lenGth"] = " 30 ";
                 Stream stream = httpContext.Response.Body;
                 stream.EndWrite(stream.BeginWrite(new byte[10], 0, 10, null, null));
@@ -124,8 +128,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 httpContext.Response.Headers["Content-lenGth"] = " 20 ";
-                httpContext.Response.Body.Write(new byte[5], 0, 5);
-                return Task.FromResult(0);
+                return httpContext.Response.Body.WriteAsync(new byte[5], 0, 5);
             }))
             {
                 Assert.Throws<AggregateException>(() => SendRequestAsync(address).Result);
@@ -137,13 +140,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             var completed = false;
             string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
             {
                 httpContext.Response.Headers["Content-lenGth"] = " 10 ";
-                httpContext.Response.Body.Write(new byte[5], 0, 5);
-                Assert.Throws<InvalidOperationException>(() => httpContext.Response.Body.Write(new byte[6], 0, 6));
+                await httpContext.Response.Body.WriteAsync(new byte[5], 0, 5);
+                await Assert.ThrowsAsync<InvalidOperationException>(() =>
+                    httpContext.Response.Body.WriteAsync(new byte[6], 0, 6));
                 completed = true;
-                return Task.FromResult(0);
             }))
             {
                 await Assert.ThrowsAsync<HttpRequestException>(() => SendRequestAsync(address));
@@ -161,6 +164,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 try
                 {
+                    httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                     httpContext.Response.Headers["Content-lenGth"] = " 10 ";
                     httpContext.Response.Body.Write(new byte[10], 0, 10);
                     httpContext.Response.Body.Write(new byte[9], 0, 9);
@@ -197,6 +201,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 httpContext.Response.OnStarting(state =>
                 {
                     onStartingCalled = true;

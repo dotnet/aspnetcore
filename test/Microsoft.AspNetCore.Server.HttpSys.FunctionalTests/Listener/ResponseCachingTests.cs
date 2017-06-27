@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength = 10;
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
-                context.Response.Body.Write(new byte[10], 0, 10);
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
                 // Http.Sys will add this for us
                 Assert.Null(context.Response.ContentLength);
                 context.Dispose();
@@ -381,6 +381,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
+                server.Options.AllowSynchronousIO = true;
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
@@ -418,8 +419,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Response.Headers["x-request-count"] = "1";
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
-                context.Response.Body.Write(new byte[10], 0, 10);
-                context.Response.Body.Flush();
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+                await context.Response.Body.FlushAsync();
                 context.Dispose();
 
                 var response = await responseTask;
@@ -453,7 +454,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength = 10;
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
-                context.Response.Body.Write(new byte[10], 0, 10);
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
                 // Http.Sys will add this for us
                 Assert.Null(context.Response.ContentLength);
                 context.Dispose();
@@ -999,7 +1000,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Response.Headers["content-range"] = "bytes 0-10/100";
                 context.Response.ContentLength = 11;
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
-                context.Response.Body.Write(new byte[100], 0, 11);
+                await context.Response.Body.WriteAsync(new byte[100], 0, 11);
                 context.Dispose();
 
                 var response = await responseTask;
@@ -1016,7 +1017,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Response.Headers["content-range"] = "bytes 0-10/100";
                 context.Response.ContentLength = 11;
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
-                context.Response.Body.Write(new byte[100], 0, 11);
+                await context.Response.Body.WriteAsync(new byte[100], 0, 11);
                 context.Dispose();
 
                 response = await responseTask;
@@ -1041,7 +1042,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength = 100;
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
-                context.Response.Body.Write(new byte[100], 0, 100);
+                await context.Response.Body.WriteAsync(new byte[100], 0, 100);
                 context.Dispose();
 
                 var response = await responseTask;
@@ -1071,7 +1072,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Response.Headers["content-type"] = "some/thing"; // Http.sys requires a content-type to cache
                 context.Response.ContentLength = 100;
                 context.Response.CacheTtl = TimeSpan.FromSeconds(10);
-                context.Response.Body.Write(new byte[100], 0, 100);
+                await context.Response.Body.WriteAsync(new byte[100], 0, 100);
                 context.Dispose();
 
                 var response = await responseTask;

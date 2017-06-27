@@ -91,10 +91,16 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // Send headers
         public override void Flush()
         {
+            if (!RequestContext.AllowSynchronousIO)
+            {
+                throw new InvalidOperationException("Synchronous IO APIs are disabled, see AllowSynchronousIO.");
+            }
+
             if (_disposed)
             {
                 return;
             }
+
             FlushInternal(endOfRequest: false);
         }
 
@@ -449,9 +455,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public override void Write(byte[] buffer, int offset, int count)
         {
+            if (!RequestContext.AllowSynchronousIO)
+            {
+                throw new InvalidOperationException("Synchronous IO APIs are disabled, see AllowSynchronousIO.");
+            }
+
             // Validates for null and bounds. Allows count == 0.
             // TODO: Verbose log parameters
             var data = new ArraySegment<byte>(buffer, offset, count);
+
             CheckDisposed();
 
             CheckWriteCount(count);

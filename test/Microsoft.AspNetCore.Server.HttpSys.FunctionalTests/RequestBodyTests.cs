@@ -9,6 +9,7 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 byte[] input = new byte[100];
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 int read = httpContext.Request.Body.Read(input, 0, input.Length);
                 httpContext.Response.ContentLength = read;
                 httpContext.Response.Body.Write(input, 0, read);
@@ -75,6 +77,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 byte[] input = new byte[100];
                 Assert.Throws<ArgumentNullException>("buffer", () => httpContext.Request.Body.Read(null, 0, 1));
                 Assert.Throws<ArgumentOutOfRangeException>("offset", () => httpContext.Request.Body.Read(input, -1, 1));
@@ -99,6 +102,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             using (Utilities.CreateHttpServer(out address, httpContext =>
             {
                 byte[] input = new byte[10];
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 int read = httpContext.Request.Body.Read(input, 0, input.Length);
                 Assert.Equal(5, read);
                 content.Block.Release();

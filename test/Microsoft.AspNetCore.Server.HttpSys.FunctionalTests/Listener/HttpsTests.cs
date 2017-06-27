@@ -60,10 +60,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 string input = new StreamReader(context.Request.Body).ReadToEnd();
                 Assert.Equal("Hello World", input);
                 context.Response.ContentLength = 11;
-                using (var writer = new StreamWriter(context.Response.Body))
-                {
-                    writer.Write("Hello World");
-                }
+                var writer = new StreamWriter(context.Response.Body);
+                await writer.WriteAsync("Hello World");
+                await writer.FlushAsync();
 
                 string response = await responseTask;
                 Assert.Equal("Hello World", response);

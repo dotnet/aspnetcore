@@ -131,6 +131,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
+        /// <summary>
+        /// Gets or sets a value that controls whether synchronous IO is allowed for the HttpContext.Request.Body and HttpContext.Response.Body.
+        /// The default is `true`.
+        /// </summary>
+        public bool AllowSynchronousIO { get; set; } = true;
+
         internal void Apply(UrlGroup urlGroup, RequestQueue requestQueue)
         {
             _urlGroup = urlGroup;

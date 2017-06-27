@@ -42,10 +42,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.ContentLength = 11;
-                using (var writer = new StreamWriter(context.Response.Body))
-                {
-                    writer.Write("Hello World");
-                }
+                var writer = new StreamWriter(context.Response.Body);
+                await writer.WriteAsync("Hello World");
+                await writer.FlushAsync();
 
                 string response = await responseTask;
                 Assert.Equal("Hello World", response);
@@ -61,13 +60,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var responseTask = SendRequestAsync(address, "Hello World");
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
-                string input = new StreamReader(context.Request.Body).ReadToEnd();
+                var input = await new StreamReader(context.Request.Body).ReadToEndAsync();
                 Assert.Equal("Hello World", input);
                 context.Response.ContentLength = 11;
-                using (var writer = new StreamWriter(context.Response.Body))
-                {
-                    writer.Write("Hello World");
-                }
+                var writer = new StreamWriter(context.Response.Body);
+                await writer.WriteAsync("Hello World");
+                await writer.FlushAsync();
 
                 var response = await responseTask;
                 Assert.Equal("Hello World", response);
@@ -218,10 +216,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 context.Response.Headers["Connection"] = "close";
 
                 context.Response.ContentLength = 11;
-                using (var writer = new StreamWriter(context.Response.Body))
-                {
-                    writer.Write("Hello World");
-                }
+                var writer = new StreamWriter(context.Response.Body);
+                await writer.WriteAsync("Hello World");
+                await writer.FlushAsync();
 
                 Assert.True(canceled.WaitOne(interval), "Disconnected");
                 Assert.True(ct.IsCancellationRequested, "IsCancellationRequested");

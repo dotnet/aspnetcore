@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         internal RequestStream(RequestContext httpContext)
         {
             _requestContext = httpContext;
+            _maxSize = _requestContext.Server.Options.MaxRequestBodySize;
         }
 
         internal RequestContext RequestContext
@@ -111,6 +112,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public override unsafe int Read([In, Out] byte[] buffer, int offset, int size)
         {
+            if (!RequestContext.AllowSynchronousIO)
+            {
+                throw new InvalidOperationException("Synchronous IO APIs are disabled, see AllowSynchronousIO.");
+            }
+
             ValidateReadBuffer(buffer, offset, size);
             CheckSizeLimit();
             if (_closed)

@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _memoryBlob = memoryBlob;
             Request = new Request(this, _memoryBlob);
             Response = new Response(this);
+            AllowSynchronousIO = server.Options.AllowSynchronousIO;
         }
 
         internal HttpSysListener Server { get; }
@@ -87,6 +88,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         public bool IsUpgradableRequest => Request.IsUpgradable;
+
+        internal bool AllowSynchronousIO { get; set; }
 
         public Task<Stream> UpgradeAsync()
         {

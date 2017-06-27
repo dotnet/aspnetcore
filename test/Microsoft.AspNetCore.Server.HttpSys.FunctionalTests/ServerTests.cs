@@ -53,12 +53,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         public async Task Server_EchoHelloWorld_Success()
         {
             string address;
-            using (Utilities.CreateHttpServer(out address, httpContext =>
+            using (Utilities.CreateHttpServer(out address, async httpContext =>
                 {
-                    string input = new StreamReader(httpContext.Request.Body).ReadToEnd();
+                    var input = await new StreamReader(httpContext.Request.Body).ReadToEndAsync();
                     Assert.Equal("Hello World", input);
                     httpContext.Response.ContentLength = 11;
-                    return httpContext.Response.WriteAsync("Hello World");
+                    await httpContext.Response.WriteAsync("Hello World");
                 }))
             {
                 string response = await SendRequestAsync(address, "Hello World");

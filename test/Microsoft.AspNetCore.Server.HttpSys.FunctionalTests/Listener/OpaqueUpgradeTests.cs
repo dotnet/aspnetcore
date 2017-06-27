@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 byte[] body = Encoding.UTF8.GetBytes("Hello World");
-                context.Response.Body.Write(body, 0, body.Length);
+                await context.Response.Body.WriteAsync(body, 0, body.Length);
 
                 Assert.Throws<InvalidOperationException>(() => context.Response.Headers["Upgrade"] = "WebSocket"); // Win8.1 blocks anything but WebSocket
                 await Assert.ThrowsAsync<InvalidOperationException>(async () => await context.UpgradeAsync());

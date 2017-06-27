@@ -17,6 +17,41 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
     public class ResponseBodyTests
     {
         [ConditionalFact]
+        public async Task ResponseBody_SyncWriteEnabledByDefault_ThrowsWhenDisabled()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                var responseTask = SendRequestAsync(address);
+
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+
+                Assert.True(context.AllowSynchronousIO);
+
+                context.Response.Body.Flush();
+                context.Response.Body.Write(new byte[10], 0, 10);
+                context.Response.Body.Flush();
+
+                context.AllowSynchronousIO = false;
+
+                Assert.Throws<InvalidOperationException>(() => context.Response.Body.Flush());
+                Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(new byte[10], 0, 10));
+                Assert.Throws<InvalidOperationException>(() => context.Response.Body.Flush());
+
+                await context.Response.Body.WriteAsync(new byte[10], 0, 10);
+                context.Dispose();
+
+                var response = await responseTask;
+                Assert.Equal(200, (int)response.StatusCode);
+                Assert.Equal(new Version(1, 1), response.Version);
+                IEnumerable<string> ignored;
+                Assert.False(response.Content.Headers.TryGetValues("content-length", out ignored), "Content-Length");
+                Assert.True(response.Headers.TransferEncodingChunked.Value, "Chunked");
+                Assert.Equal(new byte[20], await response.Content.ReadAsByteArrayAsync());
+            }
+        }
+
+        [ConditionalFact]
         public async Task ResponseBody_WriteNoHeaders_DefaultsToChunked()
         {
             string address;
@@ -24,6 +59,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
+                server.Options.AllowSynchronousIO = true;
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Body.Write(new byte[10], 0, 10);
                 await context.Response.Body.WriteAsync(new byte[10], 0, 10);
@@ -45,6 +81,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                server.Options.AllowSynchronousIO = true;
                 var responseTask = SendRequestAsync(address);
 
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
@@ -95,6 +132,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
+                server.Options.AllowSynchronousIO = true;
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = " 30 ";
                 var stream = context.Response.Body;
@@ -181,6 +219,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
+                server.Options.AllowSynchronousIO = true;
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Headers["Content-lenGth"] = " 10 ";
                 context.Response.Body.Write(new byte[10], 0, 10);
@@ -206,6 +245,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 var responseTask = SendRequestAsync(address);
 
+                server.Options.AllowSynchronousIO = true;
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 context.Response.Body.Write(new byte[10], 0, 0);
                 Assert.True(context.Response.HasStarted);
@@ -380,6 +420,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             using (var server = Utilities.CreateHttpServer(out address))
             {
                 server.Options.ThrowWriteExceptions = true;
+                server.Options.AllowSynchronousIO = true;
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
@@ -444,6 +485,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 var cts = new CancellationTokenSource();
                 var responseTask = SendRequestAsync(address, cts.Token);
 
+                server.Options.AllowSynchronousIO = true;
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 // First write sends headers
                 cts.Cancel();
@@ -555,6 +597,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             string address;
             using (var server = Utilities.CreateHttpServer(out address))
             {
+                server.Options.AllowSynchronousIO = true;
                 RequestContext context;
                 using (var client = new HttpClient())
                 {

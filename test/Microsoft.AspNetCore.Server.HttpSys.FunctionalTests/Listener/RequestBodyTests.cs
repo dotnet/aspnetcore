@@ -17,6 +17,32 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
     public class RequestBodyTests
     {
         [ConditionalFact]
+        public async Task RequestBody_SyncReadEnabledByDefault_ThrowsWhenDisabled()
+        {
+            string address;
+            using (var server = Utilities.CreateHttpServer(out address))
+            {
+                Task<string> responseTask = SendRequestAsync(address, "Hello World");
+
+                Assert.True(server.Options.AllowSynchronousIO);
+
+                var context = await server.AcceptAsync(Utilities.DefaultTimeout);
+                byte[] input = new byte[100];
+
+                Assert.True(context.AllowSynchronousIO);
+                var read = context.Request.Body.Read(input, 0, input.Length);
+                context.Response.ContentLength = read;
+                context.Response.Body.Write(input, 0, read);
+
+                context.AllowSynchronousIO = false;
+                Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(input, 0, input.Length));
+
+                string response = await responseTask;
+                Assert.Equal("Hello World", response);
+            }
+        }
+
+        [ConditionalFact]
         public async Task RequestBody_ReadSync_Success()
         {
             string address;
@@ -24,6 +50,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
+                server.Options.AllowSynchronousIO = true;
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 byte[] input = new byte[100];
                 int read = context.Request.Body.Read(input, 0, input.Length);
@@ -81,6 +108,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(address, "Hello World");
 
+                server.Options.AllowSynchronousIO = true;
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 byte[] input = new byte[100];
                 Assert.Throws<ArgumentNullException>("buffer", () => context.Request.Body.Read(null, 0, 1));
@@ -106,6 +134,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<string> responseTask = SendRequestAsync(address, content);
 
+                server.Options.AllowSynchronousIO = true;
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 byte[] input = new byte[10];
                 int read = context.Request.Body.Read(input, 0, input.Length);

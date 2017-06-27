@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // private byte[] _referredTokenBindingId;
 
         private BoundaryType _contentBoundaryType;
+
         private long? _contentLength;
         private RequestStream _nativeStream;
 
@@ -149,10 +150,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             if (_nativeStream == null && HasEntityBody)
             {
-                _nativeStream = new RequestStream(RequestContext)
-                {
-                    MaxSize = RequestContext.Server.Options.MaxRequestBodySize
-                };
+                _nativeStream = new RequestStream(RequestContext);
             }
             return _nativeStream;
         }

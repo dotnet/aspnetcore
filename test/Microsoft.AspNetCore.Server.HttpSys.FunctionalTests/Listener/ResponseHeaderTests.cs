@@ -390,6 +390,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             {
                 Task<HttpResponseMessage> responseTask = SendRequestAsync(address);
 
+                server.Options.AllowSynchronousIO = true;
                 var context = await server.AcceptAsync(Utilities.DefaultTimeout);
                 var responseHeaders = context.Response.Headers;
 

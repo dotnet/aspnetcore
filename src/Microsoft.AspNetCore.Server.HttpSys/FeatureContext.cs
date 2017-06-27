@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         IHttpAuthenticationFeature,
         IHttpUpgradeFeature,
         IHttpRequestIdentifierFeature,
-        IHttpMaxRequestBodySizeFeature
+        IHttpMaxRequestBodySizeFeature,
+        IHttpBodyControlFeature
     {
         private RequestContext _requestContext;
         private IFeatureCollection _features;
@@ -462,6 +463,12 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 _traceIdentitfier = value;
                 SetInitialized(Fields.TraceIdentifier);
             }
+        }
+
+        bool IHttpBodyControlFeature.AllowSynchronousIO
+        {
+            get => _requestContext.AllowSynchronousIO;
+            set => _requestContext.AllowSynchronousIO = value;
         }
 
         bool IHttpMaxRequestBodySizeFeature.IsReadOnly => Request.HasRequestBodyStarted;

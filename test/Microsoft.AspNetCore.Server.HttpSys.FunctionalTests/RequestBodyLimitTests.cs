@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, httpContext =>
             {
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
                 Assert.False(feature.IsReadOnly);
@@ -86,6 +87,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 11, httpContext =>
             {
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
                 Assert.False(feature.IsReadOnly);
@@ -151,6 +153,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
             {
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
                 Assert.False(feature.IsReadOnly);
@@ -220,6 +223,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
             {
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
                 Assert.False(feature.IsReadOnly);
@@ -290,6 +294,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             string address;
             using (Utilities.CreateHttpServer(out address, options => options.MaxRequestBodySize = 10, httpContext =>
             {
+                httpContext.Features.Get<IHttpBodyControlFeature>().AllowSynchronousIO = true;
                 var feature = httpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
                 Assert.NotNull(feature);
                 Assert.False(feature.IsReadOnly);
