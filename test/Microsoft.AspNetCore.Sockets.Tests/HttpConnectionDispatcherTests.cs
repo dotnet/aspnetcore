@@ -901,7 +901,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 }
                 else
                 {
-                    return Task.FromResult(AuthenticateResult.None());
+                    return Task.FromResult(AuthenticateResult.NoResult());
                 }
             }
 
@@ -922,16 +922,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 HttpContext = context;
                 _scheme = scheme;
                 return Task.CompletedTask;
-            }
-
-            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
-            {
-                throw new NotImplementedException();
-            }
-
-            public Task SignOutAsync(AuthenticationProperties properties)
-            {
-                throw new NotImplementedException();
             }
         }
 
