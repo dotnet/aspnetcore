@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             {
                 var options = new WebSocketOptions()
                 {
-                    CloseTimeout = TimeSpan.FromSeconds(1)
+                    CloseTimeout = TimeSpan.FromMilliseconds(100)
                 };
 
                 var ws = new WebSocketsTransport(options, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());

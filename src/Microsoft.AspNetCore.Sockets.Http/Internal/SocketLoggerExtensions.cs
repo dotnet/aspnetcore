@@ -90,6 +90,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         private static readonly Action<ILogger, DateTime, string, Exception> _errorWritingFrame =
             LoggerMessage.Define<DateTime, string>(LogLevel.Error, 11, "{time}: Connection Id {connectionId}: Error writing frame.");
 
+        private static readonly Action<ILogger, DateTime, string, Exception> _sendFailed =
+            LoggerMessage.Define<DateTime, string>(LogLevel.Trace, 12, "{time}: Connection Id {connectionId}: Socket failed to send.");
+
         // Category: ServerSentEventsTransport
         private static readonly Action<ILogger, DateTime, string, int, Exception> _sseWritingMessage =
             LoggerMessage.Define<DateTime, string, int>(LogLevel.Debug, 0, "{time}: Connection Id {connectionId}: Writing a {count} byte message.");
@@ -299,6 +302,14 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             if (logger.IsEnabled(LogLevel.Error))
             {
                 _errorWritingFrame(logger, DateTime.Now, connectionId, ex);
+            }
+        }
+
+        public static void SendFailed(this ILogger logger, string connectionId, Exception ex)
+        {
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                _sendFailed(logger, DateTime.Now, connectionId, ex);
             }
         }
 
