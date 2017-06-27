@@ -51,18 +51,59 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public void DoesNotTimeOutWhenDebuggerIsAttached()
+        {
+            var mockDebugger = new Mock<IDebugger>();
+            mockDebugger.SetupGet(g => g.IsAttached).Returns(true);
+            _frameConnection.Debugger = mockDebugger.Object;
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+
+            var now = DateTimeOffset.Now;
+            _frameConnection.Tick(now);
+            _frameConnection.SetTimeout(1, TimeoutAction.SendTimeoutResponse);
+            _frameConnection.Tick(now.AddTicks(2).Add(Heartbeat.Interval));
+
+            Assert.False(_frameConnection.TimedOut);
+        }
+
+        [Fact]
+        public void DoesNotTimeOutWhenRequestBodyDoesNotSatisfyMinimumDataRateButDebuggerIsAttached()
+        {
+            var mockDebugger = new Mock<IDebugger>();
+            mockDebugger.SetupGet(g => g.IsAttached).Returns(true);
+            _frameConnection.Debugger = mockDebugger.Object;
+            var requestBodyMinimumDataRate = 100;
+            var mockLogger = new Mock<IKestrelTrace>();
+            mockLogger.Setup(l => l.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>())).Throws(new InvalidOperationException("Should not log"));
+
+            TickBodyWithMinimumDataRate(mockLogger.Object, requestBodyMinimumDataRate);
+
+            Assert.False(_frameConnection.TimedOut);
+        }
+
+        [Fact]
         public void TimesOutWhenRequestBodyDoesNotSatisfyMinimumDataRate()
         {
             var requestBodyMinimumDataRate = 100;
+            var mockLogger = new Mock<IKestrelTrace>();
+            TickBodyWithMinimumDataRate(mockLogger.Object, requestBodyMinimumDataRate);
+
+            // Timed out
+            Assert.True(_frameConnection.TimedOut);
+            mockLogger.Verify(logger =>
+                logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), requestBodyMinimumDataRate), Times.Once);
+        }
+
+        private void TickBodyWithMinimumDataRate(IKestrelTrace logger, int requestBodyMinimumDataRate)
+        {
             var requestBodyGracePeriod = TimeSpan.FromSeconds(5);
 
             _frameConnectionContext.ServiceContext.ServerOptions.Limits.RequestBodyMinimumDataRate =
                 new MinimumDataRate(rate: requestBodyMinimumDataRate, gracePeriod: requestBodyGracePeriod);
 
-            var mockLogger = new Mock<IKestrelTrace>();
-            _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
+            _frameConnectionContext.ServiceContext.Log = logger;
 
-            _frameConnection.CreateFrame(new DummyApplication(context => Task.CompletedTask), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
             _frameConnection.Frame.Reset();
 
             // Initialize timestamp
@@ -75,11 +116,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             now += requestBodyGracePeriod + TimeSpan.FromSeconds(1);
             _frameConnection.BytesRead(1);
             _frameConnection.Tick(now);
-
-            // Timed out
-            Assert.True(_frameConnection.TimedOut);
-            mockLogger.Verify(logger =>
-                logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), requestBodyMinimumDataRate), Times.Once);
         }
 
         [Fact]

@@ -44,6 +44,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         // For testing
         internal Frame Frame => _frame;
+        internal IDebugger Debugger { get; set; } = DebuggerWrapper.Singleton;
+
 
         public bool TimedOut { get; private set; }
 
@@ -263,14 +265,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // TODO: Use PlatformApis.VolatileRead equivalent again
             if (timestamp > Interlocked.Read(ref _timeoutTimestamp))
             {
-                CancelTimeout();
-
-                if (_timeoutAction == TimeoutAction.SendTimeoutResponse)
+                if (!Debugger.IsAttached)
                 {
-                    SetTimeoutResponse();
-                }
+                    CancelTimeout();
 
-                Timeout();
+                    if (_timeoutAction == TimeoutAction.SendTimeoutResponse)
+                    {
+                        SetTimeoutResponse();
+                    }
+
+                    Timeout();
+                }
             }
             else
             {
@@ -285,7 +290,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                             var elapsedSeconds = (double)_readTimingElapsedTicks / TimeSpan.TicksPerSecond;
                             var rate = Interlocked.Read(ref _readTimingBytesRead) / elapsedSeconds;
 
-                            if (rate < _frame.RequestBodyMinimumDataRate.Rate)
+                            if (rate < _frame.RequestBodyMinimumDataRate.Rate && !Debugger.IsAttached)
                             {
                                 Log.RequestBodyMininumDataRateNotSatisfied(_context.ConnectionId, _frame.TraceIdentifier, _frame.RequestBodyMinimumDataRate.Rate);
                                 Timeout();
