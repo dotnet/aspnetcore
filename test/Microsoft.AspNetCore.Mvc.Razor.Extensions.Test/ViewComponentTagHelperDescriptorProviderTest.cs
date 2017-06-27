@@ -39,8 +39,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             };
 
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
+                ViewComponentTagHelperConventions.Kind,
                 "__Generated__StringParameterViewComponentTagHelper",
                 TestCompilation.AssemblyName)
+                .TypeName("__Generated__StringParameterViewComponentTagHelper")
                 .DisplayName("StringParameterViewComponentTagHelper")
                 .TagMatchingRule(rule =>
                     rule
@@ -59,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     .PropertyName("bar")
                     .TypeName(typeof(string).FullName)
                     .DisplayName("string StringParameterViewComponentTagHelper.bar"))
-                .AddMetadata(ViewComponentTypes.ViewComponentNameKey, "StringParameter")
+                .AddMetadata(ViewComponentTagHelperMetadata.Name, "StringParameter")
                 .Build();
 
             // Act

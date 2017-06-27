@@ -8,74 +8,56 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public sealed class TagMatchingRuleBuilder
+    internal class DefaultTagMatchingRuleDescriptorBuilder : TagMatchingRuleDescriptorBuilder
     {
         private string _tagName;
         private string _parentTag;
         private TagStructure _tagStructure;
-        private HashSet<RequiredAttributeDescriptor> _requiredAttributeDescriptors;
+        private List<DefaultRequiredAttributeDescriptorBuilder> _requiredAttributeBuilders;
         private HashSet<RazorDiagnostic> _diagnostics;
 
-        private TagMatchingRuleBuilder()
+        internal DefaultTagMatchingRuleDescriptorBuilder()
         {
         }
 
-        public static TagMatchingRuleBuilder Create()
-        {
-            return new TagMatchingRuleBuilder();
-        }
-
-        public TagMatchingRuleBuilder RequireTagName(string tagName)
+        public override TagMatchingRuleDescriptorBuilder RequireTagName(string tagName)
         {
             _tagName = tagName;
 
             return this;
         }
 
-        public TagMatchingRuleBuilder RequireParentTag(string parentTag)
+        public override TagMatchingRuleDescriptorBuilder RequireParentTag(string parentTag)
         {
             _parentTag = parentTag;
 
             return this;
         }
 
-        public TagMatchingRuleBuilder RequireTagStructure(TagStructure tagStructure)
+        public override TagMatchingRuleDescriptorBuilder RequireTagStructure(TagStructure tagStructure)
         {
             _tagStructure = tagStructure;
 
             return this;
         }
 
-        public TagMatchingRuleBuilder RequireAttribute(RequiredAttributeDescriptor requiredAttributeDescriptor)
-        {
-            if (requiredAttributeDescriptor == null)
-            {
-                throw new ArgumentNullException(nameof(requiredAttributeDescriptor));
-            }
-
-            EnsureRequiredAttributeDescriptors();
-            _requiredAttributeDescriptors.Add(requiredAttributeDescriptor);
-
-            return this;
-        }
-
-        public TagMatchingRuleBuilder RequireAttribute(Action<RequiredAttributeDescriptorBuilder> configure)
+        public override TagMatchingRuleDescriptorBuilder RequireAttribute(Action<RequiredAttributeDescriptorBuilder> configure)
         {
             if (configure == null)
             {
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var builder = RequiredAttributeDescriptorBuilder.Create();
+            EnsureRequiredAttributeBuilders();
 
+            var builder = new DefaultRequiredAttributeDescriptorBuilder();
             configure(builder);
+            _requiredAttributeBuilders.Add(builder);
 
-            var requiredAttributeDescriptor = builder.Build();
-
-            return RequireAttribute(requiredAttributeDescriptor);
+            return this;
         }
 
-        public TagMatchingRuleBuilder AddDiagnostic(RazorDiagnostic diagnostic)
+        public override TagMatchingRuleDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic)
         {
             EnsureDiagnostics();
             _diagnostics.Add(diagnostic);
@@ -83,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return this;
         }
 
-        public TagMatchingRule Build()
+        public TagMatchingRuleDescriptor Build()
         {
             var validationDiagnostics = Validate();
             var diagnostics = new HashSet<RazorDiagnostic>(validationDiagnostics);
@@ -92,23 +74,26 @@ namespace Microsoft.AspNetCore.Razor.Language
                 diagnostics.UnionWith(_diagnostics);
             }
 
-            var rule = new DefaultTagMatchingRule(
+            var requiredAttributes = Array.Empty<RequiredAttributeDescriptor>();
+            if (_requiredAttributeBuilders != null)
+            {
+                var requiredAttributeSet = new HashSet<RequiredAttributeDescriptor>(RequiredAttributeDescriptorComparer.Default);
+                for (var i = 0; i < _requiredAttributeBuilders.Count; i++)
+                {
+                    requiredAttributeSet.Add(_requiredAttributeBuilders[i].Build());
+                }
+
+                requiredAttributes = requiredAttributeSet.ToArray();
+            }
+
+            var rule = new DefaultTagMatchingRuleDescriptor(
                 _tagName,
                 _parentTag,
                 _tagStructure,
-                _requiredAttributeDescriptors ?? Enumerable.Empty<RequiredAttributeDescriptor>(),
-                diagnostics);
+                requiredAttributes,
+                diagnostics.ToArray());
 
             return rule;
-        }
-
-        public void Reset()
-        {
-            _tagName = null;
-            _parentTag = null;
-            _tagStructure = default(TagStructure);
-            _requiredAttributeDescriptors?.Clear();
-            _diagnostics?.Clear();
         }
 
         private IEnumerable<RazorDiagnostic> Validate()
@@ -155,11 +140,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
         }
 
-        private void EnsureRequiredAttributeDescriptors()
+        private void EnsureRequiredAttributeBuilders()
         {
-            if (_requiredAttributeDescriptors == null)
+            if (_requiredAttributeBuilders == null)
             {
-                _requiredAttributeDescriptors = new HashSet<RequiredAttributeDescriptor>(RequiredAttributeDescriptorComparer.Default);
+                _requiredAttributeBuilders = new List<DefaultRequiredAttributeDescriptorBuilder>();
             }
         }
 
@@ -168,23 +153,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (_diagnostics == null)
             {
                 _diagnostics = new HashSet<RazorDiagnostic>();
-            }
-        }
-
-        private class DefaultTagMatchingRule : TagMatchingRule
-        {
-            public DefaultTagMatchingRule(
-                string tagName,
-                string parentTag,
-                TagStructure tagStructure,
-                IEnumerable<RequiredAttributeDescriptor> requiredAttributeDescriptors,
-                IEnumerable<RazorDiagnostic> diagnostics)
-            {
-                TagName = tagName;
-                ParentTag = parentTag;
-                TagStructure = tagStructure;
-                Attributes = new List<RequiredAttributeDescriptor>(requiredAttributeDescriptors);
-                Diagnostics = new List<RazorDiagnostic>(diagnostics);
             }
         }
     }

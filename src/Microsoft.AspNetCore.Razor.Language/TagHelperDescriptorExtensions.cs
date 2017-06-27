@@ -9,12 +9,14 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         public static string GetTypeName(this TagHelperDescriptor descriptor)
         {
-            descriptor.Metadata.TryGetValue(TagHelperDescriptorBuilder.TypeNameKey, out var typeName);
+            descriptor.Metadata.TryGetValue(TagHelperMetadata.Common.TypeName, out var typeName);
 
             return typeName;
         }
 
         public static bool IsDefaultKind(this TagHelperDescriptor descriptor)
-            => string.Equals(descriptor.Kind, TagHelperDescriptorBuilder.DescriptorKind, StringComparison.Ordinal);
+        {
+            return string.Equals(descriptor.Kind, TagHelperConventions.DefaultKind, StringComparison.Ordinal);
+        }
     }
 }

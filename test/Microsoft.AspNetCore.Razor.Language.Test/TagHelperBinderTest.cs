@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal("body", bindingResult.ParentTagName);
             Assert.Equal(expectedAttributes, bindingResult.Attributes);
             Assert.Equal("th:", bindingResult.TagHelperPrefix);
-            Assert.Equal(divTagHelper.TagMatchingRules, bindingResult.GetBoundRules(divTagHelper), TagMatchingRuleComparer.CaseSensitive);
+            Assert.Equal(divTagHelper.TagMatchingRules, bindingResult.GetBoundRules(divTagHelper), TagMatchingRuleDescriptorComparer.CaseSensitive);
         }
 
         public static TheoryData RequiredParentData

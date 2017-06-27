@@ -21,9 +21,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var testCompilation = TestCompilation.Create(_assembly);
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(StringParameterViewComponent).FullName);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
+                ViewComponentTagHelperConventions.Kind,
                 "__Generated__StringParameterViewComponentTagHelper",
                 typeof(StringParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
+                .TypeName("__Generated__StringParameterViewComponentTagHelper")
                 .DisplayName("StringParameterViewComponentTagHelper")
                 .TagMatchingRule(rule =>
                     rule
@@ -42,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     .PropertyName("bar")
                     .TypeName(typeof(string).FullName)
                     .DisplayName("string StringParameterViewComponentTagHelper.bar"))
-                .AddMetadata(ViewComponentTypes.ViewComponentNameKey, "StringParameter")
+                .AddMetadata(ViewComponentTagHelperMetadata.Name, "StringParameter")
                 .Build();
 
             // Act
@@ -59,9 +62,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var testCompilation = TestCompilation.Create(_assembly);
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(VariousParameterViewComponent).FullName);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
+                ViewComponentTagHelperConventions.Kind,
                 "__Generated__VariousParameterViewComponentTagHelper",
                 typeof(VariousParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
+                .TypeName("__Generated__VariousParameterViewComponentTagHelper")
                 .DisplayName("VariousParameterViewComponentTagHelper")
                 .TagMatchingRule(rule =>
                     rule
@@ -88,7 +94,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     .PropertyName("baz")
                     .TypeName(typeof(int).FullName)
                     .DisplayName("int VariousParameterViewComponentTagHelper.baz"))
-                .AddMetadata(ViewComponentTypes.ViewComponentNameKey, "VariousParameter")
+                .AddMetadata(ViewComponentTagHelperMetadata.Name, "VariousParameter")
                 .Build();
 
             // Act
@@ -105,9 +111,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var testCompilation = TestCompilation.Create(_assembly);
             var viewComponent = testCompilation.GetTypeByMetadataName(typeof(GenericParameterViewComponent).FullName);
             var factory = new ViewComponentTagHelperDescriptorFactory(testCompilation);
+
             var expectedDescriptor = TagHelperDescriptorBuilder.Create(
+                ViewComponentTagHelperConventions.Kind,
                 "__Generated__GenericParameterViewComponentTagHelper",
                 typeof(GenericParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
+                .TypeName("__Generated__GenericParameterViewComponentTagHelper")
                 .DisplayName("GenericParameterViewComponentTagHelper")
                 .TagMatchingRule(rule =>
                     rule
@@ -126,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     .TypeName("System.Collections.Generic.Dictionary<System.String, System.Int32>")
                     .AsDictionary("bar-", typeof(int).FullName)
                     .DisplayName("System.Collections.Generic.Dictionary<System.String, System.Int32> GenericParameterViewComponentTagHelper.Bar"))
-                .AddMetadata(ViewComponentTypes.ViewComponentNameKey, "GenericParameter")
+                .AddMetadata(ViewComponentTagHelperMetadata.Name, "GenericParameter")
                 .Build();
 
             // Act

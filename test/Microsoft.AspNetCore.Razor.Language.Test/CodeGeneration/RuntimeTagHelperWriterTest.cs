@@ -483,6 +483,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            builder.TypeName(typeName);
 
             if (attributes != null)
             {

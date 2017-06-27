@@ -8,6 +8,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+    [DebuggerDisplay("{DisplayName,nq}")]
     public abstract class RequiredAttributeDescriptor
     {
         public string Name { get; protected set; }

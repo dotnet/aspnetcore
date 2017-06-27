@@ -5,17 +5,21 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class BoundAttributeDescriptorBuilderTest
+    public class DefaultBoundAttributeDescriptorBuilderTest
     {
         [Fact]
         public void DisplayName_SetsDescriptorsDisplayName()
         {
             // Arrange
             var expectedDisplayName = "ExpectedDisplayName";
-            var builder = BoundAttributeDescriptorBuilder.Create("TestTagHelper");
+
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            builder.DisplayName(expectedDisplayName);
 
             // Act
-            var descriptor = builder.DisplayName(expectedDisplayName).Build();
+            var descriptor = builder.Build();
 
             // Assert
             Assert.Equal(expectedDisplayName, descriptor.DisplayName);
@@ -25,7 +29,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void DisplayName_DefaultsToPropertyLookingDisplayName()
         {
             // Arrange
-            var builder = BoundAttributeDescriptorBuilder.Create("TestTagHelper")
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            tagHelperBuilder.TypeName("TestTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            builder
                 .TypeName(typeof(int).FullName)
                 .PropertyName("SomeProperty");
 

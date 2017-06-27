@@ -27,7 +27,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         .PropertyName("TestAttribute")
                         .TypeName("string"),
                 },
-                ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                 {
                     builder => builder
                         .RequireAttribute(attribute => attribute
@@ -70,7 +70,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         .PropertyName("TestAttribute")
                         .TypeName("string"),
                 },
-                ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                 {
                     builder => builder
                         .RequireAttribute(attribute => attribute
@@ -122,7 +122,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         .TypeName("SomeDictionary")
                         .AsDictionary("dict-prefix-", "string"),
                 },
-                ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                 {
                     builder => builder
                         .RequireAttribute(attribute => attribute
@@ -150,10 +150,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             string typeName,
             string assemblyName,
             IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null,
-            IEnumerable<Action<TagMatchingRuleBuilder>> ruleBuilders = null,
+            IEnumerable<Action<TagMatchingRuleDescriptorBuilder>> ruleBuilders = null,
             Action<TagHelperDescriptorBuilder> configureAction = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            builder.TypeName(typeName);
 
             if (attributes != null)
             {

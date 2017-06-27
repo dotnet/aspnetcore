@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "a",
                         typeName: "TestNamespace.ATagHelper",
                         assemblyName: "TestAssembly",
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
                                 .RequireAttribute(attribute => attribute
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "a",
                         typeName: "TestNamespace.ATagHelperMultipleSelectors",
                         assemblyName: "TestAssembly",
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
                                 .RequireAttribute(attribute => attribute
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", inputTypePropertyInfo),
                         },
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
                                 .RequireAttribute(attribute => attribute
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", inputTypePropertyInfo),
                         },
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
                                 .RequireAttribute(attribute => attribute
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "*",
                         typeName: "TestNamespace.CatchAllTagHelper",
                         assemblyName: "TestAssembly",
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
                                 .RequireAttribute(attribute => attribute
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "*",
                         typeName: "TestNamespace.CatchAllTagHelper2",
                         assemblyName: "TestAssembly",
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
                                 .RequireAttribute(attribute => attribute
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                             builder => builder
                                 .Name("[item]")
                                 .PropertyName("ListItems")
-                                .TypeName(typeof(List<string>).FullName),
+                                .TypeName("System.Collections.Generic.List<string>"),
                             builder => builder
                                 .Name("[(item)]")
                                 .PropertyName("ArrayItems")
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .PropertyName("StringProperty2")
                                 .TypeName(typeof(string).FullName),
                         },
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder.RequireAttribute(attribute => attribute.Name("bound")),
                         }),
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .PropertyName("BoundRequiredString")
                                 .TypeName(typeof(string).FullName),
                         },
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder.RequireAttribute(attribute => attribute.Name("catchall-unbound-required")),
                         }),
@@ -261,7 +261,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .PropertyName("BoundString")
                                 .TypeName(typeof(string).FullName),
                         },
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
                                 .RequireAttribute(attribute => attribute.Name("input-bound-required-string"))
@@ -309,7 +309,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", typePropertyInfo),
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "checked", checkedPropertyInfo),
                         },
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder.RequireAttribute(attribute => attribute.Name("type")),
                             builder => builder.RequireAttribute(attribute => attribute.Name("checked"))
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", typePropertyInfo),
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "checked", checkedPropertyInfo),
                         },
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder.RequireAttribute(attribute => attribute.Name("type")),
                             builder => builder.RequireAttribute(attribute => attribute.Name("checked"))
@@ -344,7 +344,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "p",
                         typeName: "TestNamespace.PTagHelper",
                         assemblyName: "TestAssembly",
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder.RequireAttribute(attribute => attribute.Name("class")),
                         }),
@@ -356,7 +356,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", inputTypePropertyInfo),
                         },
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder.RequireAttribute(attribute => attribute.Name("type")),
                         }),
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", inputTypePropertyInfo),
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "checked", inputCheckedPropertyInfo),
                         },
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
                                 .RequireAttribute(attribute => attribute.Name("type"))
@@ -379,7 +379,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         tagName: "*",
                         typeName: "TestNamespace.CatchAllTagHelper",
                         assemblyName: "TestAssembly",
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder.RequireAttribute(attribute => attribute.Name("catchAll")),
                         }),
@@ -480,7 +480,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "age", pAgePropertyInfo),
                         },
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder.RequireTagStructure(TagStructure.NormalOrSelfClosing)
                         }),
@@ -492,7 +492,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         {
                             builder => BuildBoundAttributeDescriptorFromPropertyInfo(builder, "type", inputTypePropertyInfo),
                         },
-                        ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                        ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder.RequireTagStructure(TagStructure.WithoutEndTag)
                         }),
@@ -514,9 +514,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             string typeName,
             string assemblyName,
             IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null,
-            IEnumerable<Action<TagMatchingRuleBuilder>> ruleBuilders = null)
+            IEnumerable<Action<TagMatchingRuleDescriptorBuilder>> ruleBuilders = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            builder.TypeName(typeName);
 
             if (attributes != null)
             {
@@ -530,7 +531,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 foreach (var ruleBuilder in ruleBuilders)
                 {
-                    builder.TagMatchingRule(innerRuleBuilder => {
+                    builder.TagMatchingRule(innerRuleBuilder =>
+                    {
                         innerRuleBuilder.RequireTagName(tagName);
                         ruleBuilder(innerRuleBuilder);
                     });

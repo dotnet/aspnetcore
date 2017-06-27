@@ -160,11 +160,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     CreateTagHelperDescriptor(
                         tagName: "form",
-                        typeName: null,
+                        typeName: "TestFormTagHelper",
                         assemblyName: "TestAssembly"),
                     CreateTagHelperDescriptor(
                         tagName: "input",
-                        typeName: null,
+                        typeName: "TestInputTagHelper",
                         assemblyName: "TestAssembly"),
                 });
             });
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 tagName: "form",
                 typeName: "TestFormTagHelper",
                 assemblyName: "TestAssembly",
-                ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                 {
                     ruleBuilder => ruleBuilder
                         .RequireAttribute(attribute => attribute
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 tagName: "form",
                 typeName: "TestFormTagHelper",
                 assemblyName: "TestAssembly",
-                ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                 {
                     ruleBuilder => ruleBuilder
                         .RequireAttribute(attribute => attribute
@@ -415,11 +415,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     CreateTagHelperDescriptor(
                         tagName: "form",
-                        typeName: null,
+                        typeName: "TestFormTagHelper",
                         assemblyName: "TestAssembly"),
                     CreateTagHelperDescriptor(
                         tagName: "input",
-                        typeName: null,
+                        typeName: "TestInputTagHelper",
                         assemblyName: "TestAssembly"),
                 });
             });
@@ -1323,7 +1323,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var expectedErrorMessage = string.Format(
                 "Invalid tag helper directive look up text '{0}'. The correct look up text " +
-                "format is: \"typeName, assemblyName\".",
+                "format is: \"name, assemblyName\".",
                 directiveText);
 
             var expectedError = RazorDiagnostic.Create(
@@ -1346,28 +1346,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         private static TagHelperDescriptor CreatePrefixedValidPlainDescriptor(string prefix)
         {
             return Valid_PlainTagHelperDescriptor;
-            //return new TagHelperDescriptor(Valid_PlainTagHelperDescriptor)
-            //{
-            //    Prefix = prefix,
-            //};
         }
 
         private static TagHelperDescriptor CreatePrefixedValidInheritedDescriptor(string prefix)
         {
             return Valid_InheritedTagHelperDescriptor;
-            //return new TagHelperDescriptor(Valid_InheritedTagHelperDescriptor)
-            //{
-            //    Prefix = prefix,
-            //};
         }
 
         private static TagHelperDescriptor CreatePrefixedStringDescriptor(string prefix)
         {
             return String_TagHelperDescriptor;
-            //return new TagHelperDescriptor(String_TagHelperDescriptor)
-            //{
-            //    Prefix = prefix,
-            //};
         }
 
         private static TagHelperDirectiveDescriptor CreateTagHelperDirectiveDescriptor(
@@ -1400,9 +1388,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             string typeName,
             string assemblyName,
             IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null,
-            IEnumerable<Action<TagMatchingRuleBuilder>> ruleBuilders = null)
+            IEnumerable<Action<TagMatchingRuleDescriptorBuilder>> ruleBuilders = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            builder.TypeName(typeName);
 
             if (attributes != null)
             {

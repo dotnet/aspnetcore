@@ -1,138 +1,128 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class TagHelperRequiredAttributeDescriptorTest
+    public class TagHelperMatchingConventionsTest
     {
         public static TheoryData RequiredAttributeDescriptorData
         {
             get
             {
                 // requiredAttributeDescriptor, attributeName, attributeValue, expectedResult
-                return new TheoryData<RequiredAttributeDescriptor, string, string, bool>
+                return new TheoryData<Action<RequiredAttributeDescriptorBuilder>, string, string, bool>
                 {
                     {
-                        RequiredAttributeDescriptorBuilder.Create().Name("key").Build(),
+                        builder => builder.Name("key"),
                         "KeY",
                         "value",
                         true
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create().Name("key").Build(),
+                        builder => builder.Name("key"),
                         "keys",
                         "value",
                         false
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create()
+                        builder => builder
                             .Name("route-")
-                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)
-                            .Build(),
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch),
                         "ROUTE-area",
                         "manage",
                         true
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create()
+                        builder => builder
                             .Name("route-")
-                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)
-                            .Build(),
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch),
                         "routearea",
                         "manage",
                         false
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create()
+                        builder => builder
                             .Name("route-")
-                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)
-                            .Build(),
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch),
                         "route-",
                         "manage",
                         false
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create()
+                        builder => builder
                             .Name("key")
-                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
-                            .Build(),
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch),
                         "KeY",
                         "value",
                         true
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create()
+                        builder => builder
                             .Name("key")
-                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
-                            .Build(),
+                            .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch),
                         "keys",
                         "value",
                         false
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create()
+                        builder => builder
                             .Name("key")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                             .Value("value")
-                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.FullMatch)
-                            .Build(),
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.FullMatch),
                         "key",
                         "value",
                         true
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create()
+                        builder => builder
                             .Name("key")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                             .Value("value")
-                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.FullMatch)
-                            .Build(),
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.FullMatch),
                         "key",
                         "Value",
                         false
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create()
+                        builder => builder
                             .Name("class")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                             .Value("btn")
-                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.PrefixMatch)
-                            .Build(),
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.PrefixMatch),
                         "class",
                         "btn btn-success",
                         true
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create()
+                        builder => builder
                             .Name("class")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                             .Value("btn")
-                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.PrefixMatch)
-                            .Build(),
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.PrefixMatch),
                         "class",
                         "BTN btn-success",
                         false
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create()
+                        builder => builder
                             .Name("href")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                             .Value("#navigate")
-                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.SuffixMatch)
-                            .Build(),
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.SuffixMatch),
                         "href",
                         "/home/index#navigate",
                         true
                     },
                     {
-                        RequiredAttributeDescriptorBuilder.Create()
+                        builder => builder
                             .Name("href")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                             .Value("#navigate")
-                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.SuffixMatch)
-                            .Build(),
+                            .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.SuffixMatch),
                         "href",
                         "/home/index#NAVigate",
                         false
@@ -144,13 +134,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         [Theory]
         [MemberData(nameof(RequiredAttributeDescriptorData))]
         public void Matches_ReturnsExpectedResult(
-            object requiredAttributeDescriptor,
+            Action<RequiredAttributeDescriptorBuilder> configure,
             string attributeName,
             string attributeValue,
             bool expectedResult)
         {
+            // Arrange
+
+            var builder = new DefaultRequiredAttributeDescriptorBuilder();
+            configure(builder);
+
+            var requiredAttibute = builder.Build();
+
             // Act
-            var result = TagHelperMatchingConventions.SatisfiesRequiredAttribute(attributeName, attributeValue, (RequiredAttributeDescriptor)requiredAttributeDescriptor);
+            var result = TagHelperMatchingConventions.SatisfiesRequiredAttribute(attributeName, attributeValue, requiredAttibute);
 
             // Assert
             Assert.Equal(expectedResult, result);

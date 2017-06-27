@@ -5,18 +5,20 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public class TagHelperRequiredAttributeDescriptorBuilderTest
+    public class DefaultRequiredAttributeDescriptorBuilderTest
     {
         [Fact]
         public void Build_DisplayNameIsName_NameComparisonFullMatch()
         {
             // Arrange
-            var descriptorBuilder = RequiredAttributeDescriptorBuilder.Create()
+            var builder = new DefaultRequiredAttributeDescriptorBuilder();
+
+            builder
                 .Name("asp-action")
                 .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch);
 
             // Act
-            var descriptor = descriptorBuilder.Build();
+            var descriptor = builder.Build();
 
             // Assert
             Assert.Equal("asp-action", descriptor.DisplayName);
@@ -26,12 +28,14 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Build_DisplayNameIsNameWithDots_NameComparisonPrefixMatch()
         {
             // Arrange
-            var descriptorBuilder = RequiredAttributeDescriptorBuilder.Create()
+            var builder = new DefaultRequiredAttributeDescriptorBuilder();
+
+            builder
                 .Name("asp-route-")
                 .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch);
 
             // Act
-            var descriptor = descriptorBuilder.Build();
+            var descriptor = builder.Build();
 
             // Assert
             Assert.Equal("asp-route-...", descriptor.DisplayName);

@@ -87,13 +87,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             throw new NotImplementedException();
         }
 
-        private void ReadTagMatchingRule(TagMatchingRuleBuilder builder, JObject rule, JsonSerializer serializer)
+        private void ReadTagMatchingRule(TagMatchingRuleDescriptorBuilder builder, JObject rule, JsonSerializer serializer)
         {
-            var tagName = rule[nameof(TagMatchingRule.TagName)].Value<string>();
-            var attributes = rule[nameof(TagMatchingRule.Attributes)].Value<JArray>();
-            var parentTag = rule[nameof(TagMatchingRule.ParentTag)].Value<string>();
-            var tagStructure = rule[nameof(TagMatchingRule.TagStructure)].Value<int>();
-            var diagnostics = rule[nameof(TagMatchingRule.Diagnostics)].Value<JArray>();
+            var tagName = rule[nameof(TagMatchingRuleDescriptor.TagName)].Value<string>();
+            var attributes = rule[nameof(TagMatchingRuleDescriptor.Attributes)].Value<JArray>();
+            var parentTag = rule[nameof(TagMatchingRuleDescriptor.ParentTag)].Value<string>();
+            var tagStructure = rule[nameof(TagMatchingRuleDescriptor.TagStructure)].Value<int>();
+            var diagnostics = rule[nameof(TagMatchingRuleDescriptor.Diagnostics)].Value<JArray>();
 
             builder
                 .RequireTagName(tagName)
@@ -139,11 +139,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         private void ReadBoundAttribute(BoundAttributeDescriptorBuilder builder, JObject attribute, JsonSerializer serializer)
         {
             var descriptorKind = attribute[nameof(BoundAttributeDescriptor.Kind)].Value<string>();
-            if (descriptorKind != BoundAttributeDescriptorBuilder.DescriptorKind)
-            {
-                throw new NotSupportedException();
-            }
-
             var name = attribute[nameof(BoundAttributeDescriptor.Name)].Value<string>();
             var typeName = attribute[nameof(BoundAttributeDescriptor.TypeName)].Value<string>();
             var isEnum = attribute[nameof(BoundAttributeDescriptor.IsEnum)].Value<bool>();
@@ -181,9 +176,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             {
                 builder.AddMetadata(item.Key, item.Value);
             }
-
-            var propertyName = metadataValue[BoundAttributeDescriptorBuilder.PropertyNameKey];
-            builder.PropertyName(propertyName);
         }
     }
 }

@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var tagNameWithoutPrefix = _tagHelperPrefix != null ? tagName.Substring(_tagHelperPrefix.Length) : tagName;
-            Dictionary<TagHelperDescriptor, IEnumerable<TagMatchingRule>> applicableDescriptorMappings = null;
+            Dictionary<TagHelperDescriptor, IEnumerable<TagMatchingRuleDescriptor>> applicableDescriptorMappings = null;
             foreach (var descriptor in descriptors)
             {
                 var applicableRules = descriptor.TagMatchingRules.Where(
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     if (applicableDescriptorMappings == null)
                     {
-                        applicableDescriptorMappings = new Dictionary<TagHelperDescriptor, IEnumerable<TagMatchingRule>>();
+                        applicableDescriptorMappings = new Dictionary<TagHelperDescriptor, IEnumerable<TagMatchingRuleDescriptor>>();
                     }
 
                     applicableDescriptorMappings[descriptor] = applicableRules;

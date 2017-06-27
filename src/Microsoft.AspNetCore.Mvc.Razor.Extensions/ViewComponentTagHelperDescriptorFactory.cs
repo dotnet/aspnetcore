@@ -56,7 +56,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var tagName = $"vc:{HtmlConventions.ToHtmlCase(shortName)}";
             var typeName = $"__Generated__{shortName}ViewComponentTagHelper";
             var displayName = shortName + "ViewComponentTagHelper";
-            var descriptorBuilder = TagHelperDescriptorBuilder.Create(typeName, assemblyName)
+            var descriptorBuilder = TagHelperDescriptorBuilder.Create(ViewComponentTagHelperConventions.Kind, typeName, assemblyName)
+                .TypeName(typeName)
                 .DisplayName(displayName);
             
             if (TryFindInvokeMethod(type, out var method, out var diagnostic))
@@ -75,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 descriptorBuilder.AddDiagnostic(diagnostic);
             }
 
-            descriptorBuilder.AddMetadata(ViewComponentTypes.ViewComponentNameKey, shortName);
+            descriptorBuilder.AddMetadata(ViewComponentTagHelperMetadata.Name, shortName);
 
             var descriptor = descriptorBuilder.Build();
             return descriptor;
@@ -152,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return true;
         }
 
-        private void AddRequiredAttributes(ImmutableArray<IParameterSymbol> methodParameters, TagMatchingRuleBuilder builder)
+        private void AddRequiredAttributes(ImmutableArray<IParameterSymbol> methodParameters, TagMatchingRuleDescriptorBuilder builder)
         {
             foreach (var parameter in methodParameters)
             {

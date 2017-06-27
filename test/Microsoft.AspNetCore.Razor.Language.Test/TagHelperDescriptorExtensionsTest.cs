@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var expectedTypeName = "TestTagHelper";
-            var descriptor = TagHelperDescriptorBuilder.Create(expectedTypeName, "TestAssembly").Build();
+            var descriptor = TagHelperDescriptorBuilder.Create(expectedTypeName, "TestAssembly").TypeName(expectedTypeName).Build();
 
             // Act
             var typeName = descriptor.GetTypeName();
@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GetTypeName_ReturnsNullIfNoTypeName()
         {
             // Arrange
-            var descriptor = new CustomTagHelperDescriptor();
+            var descriptor = TagHelperDescriptorBuilder.Create("Test", "TestAssembly").Build();
 
             // Act
             var typeName = descriptor.GetTypeName();
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void IsDefaultKind_ReturnsTrueIfFromDefaultBuilder()
+        public void IsDefaultKind_ReturnsTrue_IfKindIsDefault()
         {
             // Arrange
             var descriptor = TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly").Build();
@@ -49,24 +49,16 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Fact]
-        public void IsDefaultKind_ReturnsFalseIfFromCustomBuilder()
+        public void IsDefaultKind_ReturnsFalse_IfKindIsNotDefault()
         {
             // Arrange
-            var descriptor = new CustomTagHelperDescriptor();
+            var descriptor = TagHelperDescriptorBuilder.Create("other-kind", "TestTagHelper", "TestAssembly").Build();
 
             // Act
             var isDefault = descriptor.IsDefaultKind();
 
             // Assert
             Assert.False(isDefault);
-        }
-
-        private class CustomTagHelperDescriptor : TagHelperDescriptor
-        {
-            public CustomTagHelperDescriptor() : base("custom")
-            {
-                Metadata = new Dictionary<string, string>();
-            }
         }
     }
 }

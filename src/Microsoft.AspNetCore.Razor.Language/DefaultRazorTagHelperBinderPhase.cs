@@ -262,14 +262,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return false;
             }
 
-            if (!descriptor.IsDefaultKind())
-            {
-                // We only understand default TagHelperDescriptors.
-                return false;
-            }
-
-            var descriptorTypeName = descriptor.GetTypeName();
-
             if (lookupInfo.TypePattern.EndsWith("*", StringComparison.Ordinal))
             {
                 if (lookupInfo.TypePattern.Length == 1)
@@ -280,10 +272,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 var lookupTypeName = lookupInfo.TypePattern.Substring(0, lookupInfo.TypePattern.Length - 1);
 
-                return descriptorTypeName.StartsWith(lookupTypeName, StringComparison.Ordinal);
+                return descriptor.Name.StartsWith(lookupTypeName, StringComparison.Ordinal);
             }
 
-            return string.Equals(descriptorTypeName, lookupInfo.TypePattern, StringComparison.Ordinal);
+            return string.Equals(descriptor.Name, lookupInfo.TypePattern, StringComparison.Ordinal);
         }
 
         private static int GetErrorLength(string directiveText)

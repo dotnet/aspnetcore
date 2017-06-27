@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             => string.Format(CultureInfo.CurrentCulture, GetString("FeatureDependencyMissing"), p0, p1, p2);
 
         /// <summary>
-        /// Invalid tag helper directive look up text '{0}'. The correct look up text format is: "typeName, assemblyName".
+        /// Invalid tag helper directive look up text '{0}'. The correct look up text format is: "name, assemblyName".
         /// </summary>
         internal static string InvalidTagHelperLookupText
         {
@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         /// <summary>
-        /// Invalid tag helper directive look up text '{0}'. The correct look up text format is: "typeName, assemblyName".
+        /// Invalid tag helper directive look up text '{0}'. The correct look up text format is: "name, assemblyName".
         /// </summary>
         internal static string FormatInvalidTagHelperLookupText(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidTagHelperLookupText"), p0);
@@ -193,186 +193,186 @@ namespace Microsoft.AspNetCore.Razor.Language
             => string.Format(CultureInfo.CurrentCulture, GetString("RazorTemplateEngine_ItemCouldNotBeFound"), p0);
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name contains a '{3}' character.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name contains a '{3}' character.
         /// </summary>
-        internal static string InvalidBoundAttributeName
+        internal static string TagHelper_InvalidBoundAttributeName
         {
-            get => GetString("InvalidBoundAttributeName");
+            get => GetString("TagHelper_InvalidBoundAttributeName");
         }
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name contains a '{3}' character.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name contains a '{3}' character.
         /// </summary>
-        internal static string FormatInvalidBoundAttributeName(object p0, object p1, object p2, object p3)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidBoundAttributeName"), p0, p1, p2, p3);
+        internal static string FormatTagHelper_InvalidBoundAttributeName(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidBoundAttributeName"), p0, p1, p2, p3);
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name starts with '{3}'.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name starts with '{3}'.
         /// </summary>
-        internal static string InvalidBoundAttributeNameStartsWith
+        internal static string TagHelper_InvalidBoundAttributeNameStartsWith
         {
-            get => GetString("InvalidBoundAttributeNameStartsWith");
+            get => GetString("TagHelper_InvalidBoundAttributeNameStartsWith");
         }
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name starts with '{3}'.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name starts with '{3}'.
         /// </summary>
-        internal static string FormatInvalidBoundAttributeNameStartsWith(object p0, object p1, object p2, object p3)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidBoundAttributeNameStartsWith"), p0, p1, p2, p3);
+        internal static string FormatTagHelper_InvalidBoundAttributeNameStartsWith(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidBoundAttributeNameStartsWith"), p0, p1, p2, p3);
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with a null or empty name.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with a null or empty name.
         /// </summary>
-        internal static string InvalidBoundAttributeNullOrWhitespace
+        internal static string TagHelper_InvalidBoundAttributeNullOrWhitespace
         {
-            get => GetString("InvalidBoundAttributeNullOrWhitespace");
+            get => GetString("TagHelper_InvalidBoundAttributeNullOrWhitespace");
         }
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with a null or empty name.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with a null or empty name.
         /// </summary>
-        internal static string FormatInvalidBoundAttributeNullOrWhitespace(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidBoundAttributeNullOrWhitespace"), p0, p1);
+        internal static string FormatTagHelper_InvalidBoundAttributeNullOrWhitespace(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidBoundAttributeNullOrWhitespace"), p0, p1);
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix contains a '{3}' character.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix contains a '{3}' character.
         /// </summary>
-        internal static string InvalidBoundAttributePrefix
+        internal static string TagHelper_InvalidBoundAttributePrefix
         {
-            get => GetString("InvalidBoundAttributePrefix");
+            get => GetString("TagHelper_InvalidBoundAttributePrefix");
         }
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix contains a '{3}' character.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix contains a '{3}' character.
         /// </summary>
-        internal static string FormatInvalidBoundAttributePrefix(object p0, object p1, object p2, object p3)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidBoundAttributePrefix"), p0, p1, p2, p3);
+        internal static string FormatTagHelper_InvalidBoundAttributePrefix(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidBoundAttributePrefix"), p0, p1, p2, p3);
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix starts with '{3}'.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix starts with '{3}'.
         /// </summary>
-        internal static string InvalidBoundAttributePrefixStartsWith
+        internal static string TagHelper_InvalidBoundAttributePrefixStartsWith
         {
-            get => GetString("InvalidBoundAttributePrefixStartsWith");
+            get => GetString("TagHelper_InvalidBoundAttributePrefixStartsWith");
         }
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix starts with '{3}'.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix starts with '{3}'.
         /// </summary>
-        internal static string FormatInvalidBoundAttributePrefixStartsWith(object p0, object p1, object p2, object p3)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidBoundAttributePrefixStartsWith"), p0, p1, p2, p3);
+        internal static string FormatTagHelper_InvalidBoundAttributePrefixStartsWith(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidBoundAttributePrefixStartsWith"), p0, p1, p2, p3);
 
         /// <summary>
-        /// Invalid restricted child '{0}' for tag helper '{1}'. Tag helpers cannot restrict child elements that contain a '{2}' character.
+        /// Invalid restricted child '{1}' for tag helper '{0}'. Tag helpers cannot restrict child elements that contain a '{2}' character.
         /// </summary>
-        internal static string InvalidRestrictedChild
+        internal static string TagHelper_InvalidRestrictedChild
         {
-            get => GetString("InvalidRestrictedChild");
+            get => GetString("TagHelper_InvalidRestrictedChild");
         }
 
         /// <summary>
-        /// Invalid restricted child '{0}' for tag helper '{1}'. Tag helpers cannot restrict child elements that contain a '{2}' character.
+        /// Invalid restricted child '{1}' for tag helper '{0}'. Tag helpers cannot restrict child elements that contain a '{2}' character.
         /// </summary>
-        internal static string FormatInvalidRestrictedChild(object p0, object p1, object p2)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidRestrictedChild"), p0, p1, p2);
+        internal static string FormatTagHelper_InvalidRestrictedChild(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidRestrictedChild"), p0, p1, p2);
 
         /// <summary>
         /// Invalid restricted child for tag helper '{0}'. Name cannot be null or whitespace.
         /// </summary>
-        internal static string InvalidRestrictedChildNullOrWhitespace
+        internal static string TagHelper_InvalidRestrictedChildNullOrWhitespace
         {
-            get => GetString("InvalidRestrictedChildNullOrWhitespace");
+            get => GetString("TagHelper_InvalidRestrictedChildNullOrWhitespace");
         }
 
         /// <summary>
         /// Invalid restricted child for tag helper '{0}'. Name cannot be null or whitespace.
         /// </summary>
-        internal static string FormatInvalidRestrictedChildNullOrWhitespace(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidRestrictedChildNullOrWhitespace"), p0);
+        internal static string FormatTagHelper_InvalidRestrictedChildNullOrWhitespace(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidRestrictedChildNullOrWhitespace"), p0);
 
         /// <summary>
         /// Tag helpers cannot target attribute name '{0}' because it contains a '{1}' character.
         /// </summary>
-        internal static string InvalidTargetedAttributeName
+        internal static string TagHelper_InvalidTargetedAttributeName
         {
-            get => GetString("InvalidTargetedAttributeName");
+            get => GetString("TagHelper_InvalidTargetedAttributeName");
         }
 
         /// <summary>
         /// Tag helpers cannot target attribute name '{0}' because it contains a '{1}' character.
         /// </summary>
-        internal static string FormatInvalidTargetedAttributeName(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidTargetedAttributeName"), p0, p1);
+        internal static string FormatTagHelper_InvalidTargetedAttributeName(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidTargetedAttributeName"), p0, p1);
 
         /// <summary>
         /// Targeted attribute name cannot be null or whitespace.
         /// </summary>
-        internal static string InvalidTargetedAttributeNameNullOrWhitespace
+        internal static string TagHelper_InvalidTargetedAttributeNameNullOrWhitespace
         {
-            get => GetString("InvalidTargetedAttributeNameNullOrWhitespace");
+            get => GetString("TagHelper_InvalidTargetedAttributeNameNullOrWhitespace");
         }
 
         /// <summary>
         /// Targeted attribute name cannot be null or whitespace.
         /// </summary>
-        internal static string FormatInvalidTargetedAttributeNameNullOrWhitespace()
-            => GetString("InvalidTargetedAttributeNameNullOrWhitespace");
+        internal static string FormatTagHelper_InvalidTargetedAttributeNameNullOrWhitespace()
+            => GetString("TagHelper_InvalidTargetedAttributeNameNullOrWhitespace");
 
         /// <summary>
         /// Tag helpers cannot target parent tag name '{0}' because it contains a '{1}' character.
         /// </summary>
-        internal static string InvalidTargetedParentTagName
+        internal static string TagHelper_InvalidTargetedParentTagName
         {
-            get => GetString("InvalidTargetedParentTagName");
+            get => GetString("TagHelper_InvalidTargetedParentTagName");
         }
 
         /// <summary>
         /// Tag helpers cannot target parent tag name '{0}' because it contains a '{1}' character.
         /// </summary>
-        internal static string FormatInvalidTargetedParentTagName(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidTargetedParentTagName"), p0, p1);
+        internal static string FormatTagHelper_InvalidTargetedParentTagName(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidTargetedParentTagName"), p0, p1);
 
         /// <summary>
         /// Targeted parent tag name cannot be null or whitespace.
         /// </summary>
-        internal static string InvalidTargetedParentTagNameNullOrWhitespace
+        internal static string TagHelper_InvalidTargetedParentTagNameNullOrWhitespace
         {
-            get => GetString("InvalidTargetedParentTagNameNullOrWhitespace");
+            get => GetString("TagHelper_InvalidTargetedParentTagNameNullOrWhitespace");
         }
 
         /// <summary>
         /// Targeted parent tag name cannot be null or whitespace.
         /// </summary>
-        internal static string FormatInvalidTargetedParentTagNameNullOrWhitespace()
-            => GetString("InvalidTargetedParentTagNameNullOrWhitespace");
+        internal static string FormatTagHelper_InvalidTargetedParentTagNameNullOrWhitespace()
+            => GetString("TagHelper_InvalidTargetedParentTagNameNullOrWhitespace");
 
         /// <summary>
         /// Tag helpers cannot target tag name '{0}' because it contains a '{1}' character.
         /// </summary>
-        internal static string InvalidTargetedTagName
+        internal static string TagHelper_InvalidTargetedTagName
         {
-            get => GetString("InvalidTargetedTagName");
+            get => GetString("TagHelper_InvalidTargetedTagName");
         }
 
         /// <summary>
         /// Tag helpers cannot target tag name '{0}' because it contains a '{1}' character.
         /// </summary>
-        internal static string FormatInvalidTargetedTagName(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidTargetedTagName"), p0, p1);
+        internal static string FormatTagHelper_InvalidTargetedTagName(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidTargetedTagName"), p0, p1);
 
         /// <summary>
         /// Targeted tag name cannot be null or whitespace.
         /// </summary>
-        internal static string InvalidTargetedTagNameNullOrWhitespace
+        internal static string TagHelper_InvalidTargetedTagNameNullOrWhitespace
         {
-            get => GetString("InvalidTargetedTagNameNullOrWhitespace");
+            get => GetString("TagHelper_InvalidTargetedTagNameNullOrWhitespace");
         }
 
         /// <summary>
         /// Targeted tag name cannot be null or whitespace.
         /// </summary>
-        internal static string FormatInvalidTargetedTagNameNullOrWhitespace()
-            => GetString("InvalidTargetedTagNameNullOrWhitespace");
+        internal static string FormatTagHelper_InvalidTargetedTagNameNullOrWhitespace()
+            => GetString("TagHelper_InvalidTargetedTagNameNullOrWhitespace");
 
         /// <summary>
         /// The node '{0}' is not the owner of change '{1}'.

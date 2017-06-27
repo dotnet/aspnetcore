@@ -61,144 +61,144 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         // TagHelper Errors ID Offset = 3000
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidRestrictedChildNullOrWhitespace =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidRestrictedChildNullOrWhitespace =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3000",
-                () => Resources.InvalidRestrictedChildNullOrWhitespace,
+                () => Resources.TagHelper_InvalidRestrictedChildNullOrWhitespace,
                 RazorDiagnosticSeverity.Error);
-        public static RazorDiagnostic CreateTagHelper_InvalidRestrictedChildNullOrWhitespace(string tagHelperType)
+        public static RazorDiagnostic CreateTagHelper_InvalidRestrictedChildNullOrWhitespace(string tagHelperDisplayName)
         {
             var diagnostic = RazorDiagnostic.Create(
                 TagHelper_InvalidRestrictedChildNullOrWhitespace,
                 new SourceSpan(SourceLocation.Undefined, contentLength: 0),
-                tagHelperType);
+                tagHelperDisplayName);
 
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidRestrictedChild =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidRestrictedChild =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3001",
-                () => Resources.InvalidRestrictedChild,
+                () => Resources.TagHelper_InvalidRestrictedChild,
                 RazorDiagnosticSeverity.Error);
-        public static RazorDiagnostic CreateTagHelper_InvalidRestrictedChild(string restrictedChild, string tagHelperType, char invalidCharacter)
+        public static RazorDiagnostic CreateTagHelper_InvalidRestrictedChild(string tagHelperDisplayName, string restrictedChild, char invalidCharacter)
         {
             var diagnostic = RazorDiagnostic.Create(
                 TagHelper_InvalidRestrictedChild,
                 new SourceSpan(SourceLocation.Undefined, contentLength: 0),
+                tagHelperDisplayName,
                 restrictedChild,
-                tagHelperType,
                 invalidCharacter);
 
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributeNullOrWhitespace =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributeNullOrWhitespace =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3002",
-                () => Resources.InvalidBoundAttributeNullOrWhitespace,
+                () => Resources.TagHelper_InvalidBoundAttributeNullOrWhitespace,
                 RazorDiagnosticSeverity.Error);
-        public static RazorDiagnostic CreateTagHelper_InvalidBoundAttributeNullOrWhitespace(string containingTypeName, string propertyName)
+        public static RazorDiagnostic CreateTagHelper_InvalidBoundAttributeNullOrWhitespace(string tagHelperDisplayName, string propertyDisplayName)
         {
             var diagnostic = RazorDiagnostic.Create(
                 TagHelper_InvalidBoundAttributeNullOrWhitespace,
                 new SourceSpan(SourceLocation.Undefined, contentLength: 0),
-                containingTypeName,
-                propertyName);
+                tagHelperDisplayName,
+                propertyDisplayName);
 
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributeName =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributeName =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3003",
-                () => Resources.InvalidBoundAttributeName,
+                () => Resources.TagHelper_InvalidBoundAttributeName,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidBoundAttributeName(
-            string containingTypeName, 
-            string propertyName,
+            string tagHelperDisplayName, 
+            string propertyDisplayName,
             string invalidName,
             char invalidCharacter)
         {
             var diagnostic = RazorDiagnostic.Create(
                 TagHelper_InvalidBoundAttributeName,
                 new SourceSpan(SourceLocation.Undefined, contentLength: 0),
-                containingTypeName,
-                propertyName,
+                tagHelperDisplayName,
+                propertyDisplayName,
                 invalidName,
                 invalidCharacter);
 
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributeNameStartsWith =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributeNameStartsWith =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3004",
-                () => Resources.InvalidBoundAttributeNameStartsWith,
+                () => Resources.TagHelper_InvalidBoundAttributeNameStartsWith,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidBoundAttributeNameStartsWith(
-            string containingTypeName,
-            string propertyName,
+            string tagHelperDisplayName,
+            string propertyDisplayName,
             string invalidName)
         {
             var diagnostic = RazorDiagnostic.Create(
                 TagHelper_InvalidBoundAttributeNameStartsWith,
                 new SourceSpan(SourceLocation.Undefined, contentLength: 0),
-                containingTypeName,
-                propertyName,
+                tagHelperDisplayName,
+                propertyDisplayName,
                 invalidName,
                 "data-");
 
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributePrefix =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributePrefix =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3005",
-                () => Resources.InvalidBoundAttributePrefix,
+                () => Resources.TagHelper_InvalidBoundAttributePrefix,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidBoundAttributePrefix(
-            string containingTypeName,
-            string propertyName,
+            string tagHelperDisplayName,
+            string propertyDisplayName,
             string invalidName,
             char invalidCharacter)
         {
             var diagnostic = RazorDiagnostic.Create(
                 TagHelper_InvalidBoundAttributePrefix,
                 new SourceSpan(SourceLocation.Undefined, contentLength: 0),
-                containingTypeName,
-                propertyName,
+                tagHelperDisplayName,
+                propertyDisplayName,
                 invalidName,
                 invalidCharacter);
 
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributePrefixStartsWith =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidBoundAttributePrefixStartsWith =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3006",
-                () => Resources.InvalidBoundAttributePrefixStartsWith,
+                () => Resources.TagHelper_InvalidBoundAttributePrefixStartsWith,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidBoundAttributePrefixStartsWith(
-            string containingTypeName,
-            string propertyName,
+            string tagHelperDisplayName,
+            string propertyDisplayName,
             string invalidName)
         {
             var diagnostic = RazorDiagnostic.Create(
                 TagHelper_InvalidBoundAttributePrefixStartsWith,
                 new SourceSpan(SourceLocation.Undefined, contentLength: 0),
-                containingTypeName,
-                propertyName,
+                tagHelperDisplayName,
+                propertyDisplayName,
                 invalidName,
                 "data-");
 
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedTagNameNullOrWhitespace =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedTagNameNullOrWhitespace =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3007",
-                () => Resources.InvalidTargetedTagNameNullOrWhitespace,
+                () => Resources.TagHelper_InvalidTargetedTagNameNullOrWhitespace,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidTargetedTagNameNullOrWhitespace()
         {
@@ -209,10 +209,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedTagName =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedTagName =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3008",
-                () => Resources.InvalidTargetedTagName,
+                () => Resources.TagHelper_InvalidTargetedTagName,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidTargetedTagName(string invalidTagName, char invalidCharacter)
         {
@@ -225,10 +225,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedParentTagNameNullOrWhitespace =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedParentTagNameNullOrWhitespace =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3009",
-                () => Resources.InvalidTargetedParentTagNameNullOrWhitespace,
+                () => Resources.TagHelper_InvalidTargetedParentTagNameNullOrWhitespace,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidTargetedParentTagNameNullOrWhitespace()
         {
@@ -239,10 +239,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedParentTagName =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedParentTagName =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3010",
-                () => Resources.InvalidTargetedParentTagName,
+                () => Resources.TagHelper_InvalidTargetedParentTagName,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidTargetedParentTagName(string invalidTagName, char invalidCharacter)
         {
@@ -255,10 +255,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedAttributeNameNullOrWhitespace =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedAttributeNameNullOrWhitespace =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3009",
-                () => Resources.InvalidTargetedAttributeNameNullOrWhitespace,
+                () => Resources.TagHelper_InvalidTargetedAttributeNameNullOrWhitespace,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace()
         {
@@ -269,10 +269,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             return diagnostic;
         }
 
-        private static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedAttributeName =
+        internal static readonly RazorDiagnosticDescriptor TagHelper_InvalidTargetedAttributeName =
             new RazorDiagnosticDescriptor(
                 $"{DiagnosticPrefix}3010",
-                () => Resources.InvalidTargetedAttributeName,
+                () => Resources.TagHelper_InvalidTargetedAttributeName,
                 RazorDiagnosticSeverity.Error);
         public static RazorDiagnostic CreateTagHelper_InvalidTargetedAttributeName(string invalidAttributeName, char invalidCharacter)
         {

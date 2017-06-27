@@ -1165,7 +1165,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     "InputTagHelper1",
                     "InputTagHelper2",
                     "input",
-                    nameof(TagMatchingRule.TagStructure)),
+                    nameof(TagMatchingRuleDescriptor.TagStructure)),
                 absoluteIndex: 0,
                 lineIndex: 0,
                 columnIndex: 0,

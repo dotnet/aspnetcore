@@ -13,114 +13,114 @@ namespace Microsoft.CodeAnalysis.Razor
         /// <summary>
         /// Could not find matching ']' for required attribute '{0}'.
         /// </summary>
-        internal static string TagHelperDescriptorFactory_CouldNotFindMatchingEndBrace
+        internal static string TagHelper_CouldNotFindMatchingEndBrace
         {
-            get => GetString("TagHelperDescriptorFactory_CouldNotFindMatchingEndBrace");
+            get => GetString("TagHelper_CouldNotFindMatchingEndBrace");
         }
 
         /// <summary>
         /// Could not find matching ']' for required attribute '{0}'.
         /// </summary>
-        internal static string FormatTagHelperDescriptorFactory_CouldNotFindMatchingEndBrace(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_CouldNotFindMatchingEndBrace"), p0);
+        internal static string FormatTagHelper_CouldNotFindMatchingEndBrace(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_CouldNotFindMatchingEndBrace"), p0);
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null unless property type implements '{4}'.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. '{2}.{3}' must be null unless property type implements '{4}'.
         /// </summary>
-        internal static string TagHelperDescriptorFactory_InvalidAttributePrefixNotNull
+        internal static string TagHelper_InvalidAttributePrefixNotNull
         {
-            get => GetString("TagHelperDescriptorFactory_InvalidAttributePrefixNotNull");
+            get => GetString("TagHelper_InvalidAttributePrefixNotNull");
         }
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null unless property type implements '{4}'.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. '{2}.{3}' must be null unless property type implements '{4}'.
         /// </summary>
-        internal static string FormatTagHelperDescriptorFactory_InvalidAttributePrefixNotNull(object p0, object p1, object p2, object p3, object p4)
-            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidAttributePrefixNotNull"), p0, p1, p2, p3, p4);
+        internal static string FormatTagHelper_InvalidAttributePrefixNotNull(object p0, object p1, object p2, object p3, object p4)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidAttributePrefixNotNull"), p0, p1, p2, p3, p4);
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null or empty if property has no public setter.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. '{2}.{3}' must be null or empty if property has no public setter.
         /// </summary>
-        internal static string TagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty
+        internal static string TagHelper_InvalidAttributeNameNotNullOrEmpty
         {
-            get => GetString("TagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty");
+            get => GetString("TagHelper_InvalidAttributeNameNotNullOrEmpty");
         }
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null or empty if property has no public setter.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. '{2}.{3}' must be null or empty if property has no public setter.
         /// </summary>
-        internal static string FormatTagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty(object p0, object p1, object p2, object p3)
-            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty"), p0, p1, p2, p3);
+        internal static string FormatTagHelper_InvalidAttributeNameNotNullOrEmpty(object p0, object p1, object p2, object p3)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidAttributeNameNotNullOrEmpty"), p0, p1, p2, p3);
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must not be null if property has no public setter and its type implements '{4}'.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. '{2}.{3}' must not be null if property has no public setter and its type implements '{4}'.
         /// </summary>
-        internal static string TagHelperDescriptorFactory_InvalidAttributePrefixNull
+        internal static string TagHelper_InvalidAttributePrefixNull
         {
-            get => GetString("TagHelperDescriptorFactory_InvalidAttributePrefixNull");
+            get => GetString("TagHelper_InvalidAttributePrefixNull");
         }
 
         /// <summary>
-        /// Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must not be null if property has no public setter and its type implements '{4}'.
+        /// Invalid tag helper bound property '{1}' on tag helper '{0}'. '{2}.{3}' must not be null if property has no public setter and its type implements '{4}'.
         /// </summary>
-        internal static string FormatTagHelperDescriptorFactory_InvalidAttributePrefixNull(object p0, object p1, object p2, object p3, object p4)
-            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidAttributePrefixNull"), p0, p1, p2, p3, p4);
+        internal static string FormatTagHelper_InvalidAttributePrefixNull(object p0, object p1, object p2, object p3, object p4)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidAttributePrefixNull"), p0, p1, p2, p3, p4);
 
         /// <summary>
         /// Invalid required attribute character '{0}' in required attribute '{1}'. Separate required attributes with commas.
         /// </summary>
-        internal static string TagHelperDescriptorFactory_InvalidRequiredAttributeCharacter
+        internal static string TagHelper_InvalidRequiredAttributeCharacter
         {
-            get => GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeCharacter");
+            get => GetString("TagHelper_InvalidRequiredAttributeCharacter");
         }
 
         /// <summary>
         /// Invalid required attribute character '{0}' in required attribute '{1}'. Separate required attributes with commas.
         /// </summary>
-        internal static string FormatTagHelperDescriptorFactory_InvalidRequiredAttributeCharacter(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeCharacter"), p0, p1);
+        internal static string FormatTagHelper_InvalidRequiredAttributeCharacter(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidRequiredAttributeCharacter"), p0, p1);
 
         /// <summary>
         /// Required attribute '{0}' has mismatched quotes '{1}' around value.
         /// </summary>
-        internal static string TagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes
+        internal static string TagHelper_InvalidRequiredAttributeMismatchedQuotes
         {
-            get => GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes");
+            get => GetString("TagHelper_InvalidRequiredAttributeMismatchedQuotes");
         }
 
         /// <summary>
         /// Required attribute '{0}' has mismatched quotes '{1}' around value.
         /// </summary>
-        internal static string FormatTagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes"), p0, p1);
+        internal static string FormatTagHelper_InvalidRequiredAttributeMismatchedQuotes(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidRequiredAttributeMismatchedQuotes"), p0, p1);
 
         /// <summary>
         /// Invalid character '{0}' in required attribute '{1}'. Expected supported CSS operator or ']'.
         /// </summary>
-        internal static string TagHelperDescriptorFactory_InvalidRequiredAttributeOperator
+        internal static string TagHelper_InvalidRequiredAttributeOperator
         {
-            get => GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeOperator");
+            get => GetString("TagHelper_InvalidRequiredAttributeOperator");
         }
 
         /// <summary>
         /// Invalid character '{0}' in required attribute '{1}'. Expected supported CSS operator or ']'.
         /// </summary>
-        internal static string FormatTagHelperDescriptorFactory_InvalidRequiredAttributeOperator(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_InvalidRequiredAttributeOperator"), p0, p1);
+        internal static string FormatTagHelper_InvalidRequiredAttributeOperator(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_InvalidRequiredAttributeOperator"), p0, p1);
 
         /// <summary>
         /// Required attribute '{0}' has a partial CSS operator. '{1}' must be followed by an equals.
         /// </summary>
-        internal static string TagHelperDescriptorFactory_PartialRequiredAttributeOperator
+        internal static string TagHelper_PartialRequiredAttributeOperator
         {
-            get => GetString("TagHelperDescriptorFactory_PartialRequiredAttributeOperator");
+            get => GetString("TagHelper_PartialRequiredAttributeOperator");
         }
 
         /// <summary>
         /// Required attribute '{0}' has a partial CSS operator. '{1}' must be followed by an equals.
         /// </summary>
-        internal static string FormatTagHelperDescriptorFactory_PartialRequiredAttributeOperator(object p0, object p1)
-            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelperDescriptorFactory_PartialRequiredAttributeOperator"), p0, p1);
+        internal static string FormatTagHelper_PartialRequiredAttributeOperator(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("TagHelper_PartialRequiredAttributeOperator"), p0, p1);
 
         private static string GetString(string name, params string[] formatterNames)
         {

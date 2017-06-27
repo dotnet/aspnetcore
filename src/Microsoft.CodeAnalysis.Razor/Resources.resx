@@ -117,28 +117,28 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
-  <data name="TagHelperDescriptorFactory_CouldNotFindMatchingEndBrace" xml:space="preserve">
+  <data name="TagHelper_CouldNotFindMatchingEndBrace" xml:space="preserve">
     <value>Could not find matching ']' for required attribute '{0}'.</value>
   </data>
-  <data name="TagHelperDescriptorFactory_InvalidAttributePrefixNotNull" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null unless property type implements '{4}'.</value>
+  <data name="TagHelper_InvalidAttributePrefixNotNull" xml:space="preserve">
+    <value>Invalid tag helper bound property '{1}' on tag helper '{0}'. '{2}.{3}' must be null unless property type implements '{4}'.</value>
   </data>
-  <data name="TagHelperDescriptorFactory_InvalidAttributeNameNotNullOrEmpty" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must be null or empty if property has no public setter.</value>
+  <data name="TagHelper_InvalidAttributeNameNotNullOrEmpty" xml:space="preserve">
+    <value>Invalid tag helper bound property '{1}' on tag helper '{0}'. '{2}.{3}' must be null or empty if property has no public setter.</value>
   </data>
-  <data name="TagHelperDescriptorFactory_InvalidAttributePrefixNull" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. '{2}.{3}' must not be null if property has no public setter and its type implements '{4}'.</value>
+  <data name="TagHelper_InvalidAttributePrefixNull" xml:space="preserve">
+    <value>Invalid tag helper bound property '{1}' on tag helper '{0}'. '{2}.{3}' must not be null if property has no public setter and its type implements '{4}'.</value>
   </data>
-  <data name="TagHelperDescriptorFactory_InvalidRequiredAttributeCharacter" xml:space="preserve">
+  <data name="TagHelper_InvalidRequiredAttributeCharacter" xml:space="preserve">
     <value>Invalid required attribute character '{0}' in required attribute '{1}'. Separate required attributes with commas.</value>
   </data>
-  <data name="TagHelperDescriptorFactory_InvalidRequiredAttributeMismatchedQuotes" xml:space="preserve">
+  <data name="TagHelper_InvalidRequiredAttributeMismatchedQuotes" xml:space="preserve">
     <value>Required attribute '{0}' has mismatched quotes '{1}' around value.</value>
   </data>
-  <data name="TagHelperDescriptorFactory_InvalidRequiredAttributeOperator" xml:space="preserve">
+  <data name="TagHelper_InvalidRequiredAttributeOperator" xml:space="preserve">
     <value>Invalid character '{0}' in required attribute '{1}'. Expected supported CSS operator or ']'.</value>
   </data>
-  <data name="TagHelperDescriptorFactory_PartialRequiredAttributeOperator" xml:space="preserve">
+  <data name="TagHelper_PartialRequiredAttributeOperator" xml:space="preserve">
     <value>Required attribute '{0}' has a partial CSS operator. '{1}' must be followed by an equals.</value>
   </data>
 </root>

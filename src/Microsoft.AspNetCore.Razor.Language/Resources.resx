@@ -124,7 +124,7 @@
     <value>The '{0}' feature requires a '{1}' provided by the '{2}'.</value>
   </data>
   <data name="InvalidTagHelperLookupText" xml:space="preserve">
-    <value>Invalid tag helper directive look up text '{0}'. The correct look up text format is: "typeName, assemblyName".</value>
+    <value>Invalid tag helper directive look up text '{0}'. The correct look up text format is: "name, assemblyName".</value>
   </data>
   <data name="InvalidTagHelperPrefixValue" xml:space="preserve">
     <value>Invalid tag helper directive '{0}' value. '{1}' is not allowed in prefix '{2}'.</value>
@@ -156,43 +156,43 @@
   <data name="RazorTemplateEngine_ItemCouldNotBeFound" xml:space="preserve">
     <value>The item '{0}' could not be found.</value>
   </data>
-  <data name="InvalidBoundAttributeName" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name contains a '{3}' character.</value>
+  <data name="TagHelper_InvalidBoundAttributeName" xml:space="preserve">
+    <value>Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name contains a '{3}' character.</value>
   </data>
-  <data name="InvalidBoundAttributeNameStartsWith" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name starts with '{3}'.</value>
+  <data name="TagHelper_InvalidBoundAttributeNameStartsWith" xml:space="preserve">
+    <value>Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with name '{2}' because the name starts with '{3}'.</value>
   </data>
-  <data name="InvalidBoundAttributeNullOrWhitespace" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with a null or empty name.</value>
+  <data name="TagHelper_InvalidBoundAttributeNullOrWhitespace" xml:space="preserve">
+    <value>Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with a null or empty name.</value>
   </data>
-  <data name="InvalidBoundAttributePrefix" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix contains a '{3}' character.</value>
+  <data name="TagHelper_InvalidBoundAttributePrefix" xml:space="preserve">
+    <value>Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix contains a '{3}' character.</value>
   </data>
-  <data name="InvalidBoundAttributePrefixStartsWith" xml:space="preserve">
-    <value>Invalid tag helper bound property '{0}.{1}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix starts with '{3}'.</value>
+  <data name="TagHelper_InvalidBoundAttributePrefixStartsWith" xml:space="preserve">
+    <value>Invalid tag helper bound property '{1}' on tag helper '{0}'. Tag helpers cannot bind to HTML attributes with prefix '{2}' because the prefix starts with '{3}'.</value>
   </data>
-  <data name="InvalidRestrictedChild" xml:space="preserve">
-    <value>Invalid restricted child '{0}' for tag helper '{1}'. Tag helpers cannot restrict child elements that contain a '{2}' character.</value>
+  <data name="TagHelper_InvalidRestrictedChild" xml:space="preserve">
+    <value>Invalid restricted child '{1}' for tag helper '{0}'. Tag helpers cannot restrict child elements that contain a '{2}' character.</value>
   </data>
-  <data name="InvalidRestrictedChildNullOrWhitespace" xml:space="preserve">
+  <data name="TagHelper_InvalidRestrictedChildNullOrWhitespace" xml:space="preserve">
     <value>Invalid restricted child for tag helper '{0}'. Name cannot be null or whitespace.</value>
   </data>
-  <data name="InvalidTargetedAttributeName" xml:space="preserve">
+  <data name="TagHelper_InvalidTargetedAttributeName" xml:space="preserve">
     <value>Tag helpers cannot target attribute name '{0}' because it contains a '{1}' character.</value>
   </data>
-  <data name="InvalidTargetedAttributeNameNullOrWhitespace" xml:space="preserve">
+  <data name="TagHelper_InvalidTargetedAttributeNameNullOrWhitespace" xml:space="preserve">
     <value>Targeted attribute name cannot be null or whitespace.</value>
   </data>
-  <data name="InvalidTargetedParentTagName" xml:space="preserve">
+  <data name="TagHelper_InvalidTargetedParentTagName" xml:space="preserve">
     <value>Tag helpers cannot target parent tag name '{0}' because it contains a '{1}' character.</value>
   </data>
-  <data name="InvalidTargetedParentTagNameNullOrWhitespace" xml:space="preserve">
+  <data name="TagHelper_InvalidTargetedParentTagNameNullOrWhitespace" xml:space="preserve">
     <value>Targeted parent tag name cannot be null or whitespace.</value>
   </data>
-  <data name="InvalidTargetedTagName" xml:space="preserve">
+  <data name="TagHelper_InvalidTargetedTagName" xml:space="preserve">
     <value>Tag helpers cannot target tag name '{0}' because it contains a '{1}' character.</value>
   </data>
-  <data name="InvalidTargetedTagNameNullOrWhitespace" xml:space="preserve">
+  <data name="TagHelper_InvalidTargetedTagNameNullOrWhitespace" xml:space="preserve">
     <value>Targeted tag name cannot be null or whitespace.</value>
   </data>
   <data name="InvalidOperation_SpanIsNotChangeOwner" xml:space="preserve">

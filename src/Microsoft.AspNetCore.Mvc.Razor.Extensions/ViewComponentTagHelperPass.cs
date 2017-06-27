@@ -82,14 +82,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             ClassDeclarationIntermediateNode @class,
             TagHelperDescriptor tagHelper)
         {
-            var vcName = tagHelper.Metadata[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
+            var vcName = tagHelper.GetViewComponentName();
             return $"{@namespace.Content}.{@class.Name}.__Generated__{vcName}ViewComponentTagHelper";
         }
 
         private static string GetVCTHClassName(
             TagHelperDescriptor tagHelper)
         {
-            var vcName = tagHelper.Metadata[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
+            var vcName = tagHelper.GetViewComponentName();
             return $"__Generated__{vcName}ViewComponentTagHelper";
         }
 
@@ -201,13 +201,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private string[] GetMethodParameters(TagHelperDescriptor descriptor)
         {
-            var propertyNames = descriptor.BoundAttributes.Select(
-                attribute => attribute.GetPropertyName());
+            var propertyNames = descriptor.BoundAttributes.Select(attribute => attribute.GetPropertyName());
             var joinedPropertyNames = string.Join(", ", propertyNames);
             var parametersString = $"new {{ { joinedPropertyNames } }}";
 
-            var viewComponentName = descriptor.Metadata[
-                ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
+            var viewComponentName = descriptor.GetViewComponentName();
             var methodParameters = new[] { $"\"{viewComponentName}\"", parametersString };
             return methodParameters;
         }
@@ -239,10 +237,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             public override void VisitCreateTagHelper(CreateTagHelperIntermediateNode node)
             {
                 var tagHelper = node.Descriptor;
-                if (ViewComponentTagHelperDescriptorConventions.IsViewComponentDescriptor(tagHelper))
+                if (tagHelper.IsViewComponentKind())
                 {
                     // Capture all the VCTagHelpers (unique by type name) so we can generate a class for each one.
-                    var vcName = tagHelper.Metadata[ViewComponentTagHelperDescriptorConventions.ViewComponentNameKey];
+                    var vcName = tagHelper.GetViewComponentName();
                     TagHelpers[vcName] = tagHelper;
 
                     CreateTagHelpers.Add(new IntermediateNodeReference(Parent, node));

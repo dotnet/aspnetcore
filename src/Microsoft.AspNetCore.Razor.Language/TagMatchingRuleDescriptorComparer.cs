@@ -9,24 +9,24 @@ using Microsoft.Extensions.Internal;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class TagMatchingRuleComparer : IEqualityComparer<TagMatchingRule>
+    internal class TagMatchingRuleDescriptorComparer : IEqualityComparer<TagMatchingRuleDescriptor>
     {
         /// <summary>
-        /// A default instance of the <see cref="TagMatchingRuleComparer"/>.
+        /// A default instance of the <see cref="TagMatchingRuleDescriptorComparer"/>.
         /// </summary>
-        public static readonly TagMatchingRuleComparer Default = new TagMatchingRuleComparer();
+        public static readonly TagMatchingRuleDescriptorComparer Default = new TagMatchingRuleDescriptorComparer();
 
         /// <summary>
-        /// A default instance of the <see cref="TagMatchingRuleComparer"/> that does case-sensitive comparison.
+        /// A default instance of the <see cref="TagMatchingRuleDescriptorComparer"/> that does case-sensitive comparison.
         /// </summary>
-        internal static readonly TagMatchingRuleComparer CaseSensitive =
-            new TagMatchingRuleComparer(caseSensitive: true);
+        internal static readonly TagMatchingRuleDescriptorComparer CaseSensitive =
+            new TagMatchingRuleDescriptorComparer(caseSensitive: true);
 
         private readonly StringComparer _stringComparer;
         private readonly StringComparison _stringComparison;
         private readonly RequiredAttributeDescriptorComparer _requiredAttributeComparer;
 
-        private TagMatchingRuleComparer(bool caseSensitive = false)
+        private TagMatchingRuleDescriptorComparer(bool caseSensitive = false)
         {
             if (caseSensitive)
             {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
         }
 
-        public virtual bool Equals(TagMatchingRule ruleX, TagMatchingRule ruleY)
+        public virtual bool Equals(TagMatchingRuleDescriptor ruleX, TagMatchingRuleDescriptor ruleY)
         {
             if (object.ReferenceEquals(ruleX, ruleY))
             {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 Enumerable.SequenceEqual(ruleX.Diagnostics, ruleY.Diagnostics);
         }
 
-        public virtual int GetHashCode(TagMatchingRule rule)
+        public virtual int GetHashCode(TagMatchingRuleDescriptor rule)
         {
             if (rule == null)
             {

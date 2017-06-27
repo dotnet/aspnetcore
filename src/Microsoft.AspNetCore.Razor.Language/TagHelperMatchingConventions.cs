@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             string tagNameWithoutPrefix,
             string parentTagName,
             IEnumerable<KeyValuePair<string, string>> tagAttributes,
-            TagMatchingRule rule)
+            TagMatchingRuleDescriptor rule)
         {
             if (tagNameWithoutPrefix == null)
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return true;
         }
 
-        public static bool SatisfiesTagName(string tagNameWithoutPrefix, TagMatchingRule rule)
+        public static bool SatisfiesTagName(string tagNameWithoutPrefix, TagMatchingRuleDescriptor rule)
         {
             if (tagNameWithoutPrefix == null)
             {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return true;
         }
 
-        public static bool SatisfiesParentTag(string parentTagName, TagMatchingRule rule)
+        public static bool SatisfiesParentTag(string parentTagName, TagMatchingRuleDescriptor rule)
         {
             if (rule == null)
             {
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return true;
         }
 
-        public static bool SatisfiesAttributes(IEnumerable<KeyValuePair<string, string>> tagAttributes, TagMatchingRule rule)
+        public static bool SatisfiesAttributes(IEnumerable<KeyValuePair<string, string>> tagAttributes, TagMatchingRuleDescriptor rule)
         {
             if (tagAttributes == null)
             {

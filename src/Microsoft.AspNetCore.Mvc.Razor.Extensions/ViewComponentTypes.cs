@@ -23,8 +23,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         public const string IDictionary = "System.Collections.Generic.IDictionary`2";
 
-        public const string ViewComponentNameKey = "ViewComponentName";
-
         public const string AsyncMethodName = "InvokeAsync";
 
         public const string SyncMethodName = "Invoke";

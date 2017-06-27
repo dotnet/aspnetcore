@@ -135,12 +135,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 Writer = new CSharpCodeWriter()
             };
 
-            var descriptor = BoundAttributeDescriptorBuilder
-                .Create("FooTagHelper")
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "FooTagHelper", "Test");
+            tagHelperBuilder.TypeName("FooTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+
+            builder
                 .Name("Foo")
                 .TypeName("System.String")
-                .PropertyName("FooProp")
-                .Build();
+                .PropertyName("FooProp");
+            
+            var descriptor = builder.Build();
 
             var node = new SetPreallocatedTagHelperPropertyIntermediateNode()
             {
@@ -174,13 +179,18 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
                 TagHelperRenderingContext = new TagHelperRenderingContext()
             };
 
-            var descriptor = BoundAttributeDescriptorBuilder
-                .Create("FooTagHelper")
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "FooTagHelper", "Test");
+            tagHelperBuilder.TypeName("FooTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+
+            builder
                 .Name("Foo")
                 .TypeName("System.Collections.Generic.Dictionary<System.String, System.String>")
                 .AsDictionary("pre-", "System.String")
-                .PropertyName("FooProp")
-                .Build();
+                .PropertyName("FooProp");
+
+            var descriptor = builder.Build();
 
             var node = new SetPreallocatedTagHelperPropertyIntermediateNode()
             {

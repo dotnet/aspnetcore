@@ -476,6 +476,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            builder.TypeName(typeName);
 
             if (attributes != null)
             {

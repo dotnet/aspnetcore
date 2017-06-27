@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public abstract class TagMatchingRule : IEquatable<TagMatchingRule>
+    public abstract class TagMatchingRuleDescriptor : IEquatable<TagMatchingRuleDescriptor>
     {
         private IEnumerable<RazorDiagnostic> _allDiagnostics;
 
@@ -44,19 +44,19 @@ namespace Microsoft.AspNetCore.Razor.Language
             return _allDiagnostics;
         }
 
-        public bool Equals(TagMatchingRule other)
+        public bool Equals(TagMatchingRuleDescriptor other)
         {
-            return TagMatchingRuleComparer.Default.Equals(this, other);
+            return TagMatchingRuleDescriptorComparer.Default.Equals(this, other);
         }
 
         public override bool Equals(object obj)
         {
-            return Equals(obj as TagMatchingRule);
+            return Equals(obj as TagMatchingRuleDescriptor);
         }
 
         public override int GetHashCode()
         {
-            return TagMatchingRuleComparer.Default.GetHashCode(this);
+            return TagMatchingRuleDescriptorComparer.Default.GetHashCode(this);
         }
     }
 }

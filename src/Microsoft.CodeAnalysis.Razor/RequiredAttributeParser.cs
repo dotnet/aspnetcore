@@ -11,7 +11,7 @@ namespace Microsoft.CodeAnalysis.Razor
     // Internal for testing
     internal static class RequiredAttributeParser
     {
-        public static void AddRequiredAttributes(string requiredAttributes, TagMatchingRuleBuilder ruleBuilder)
+        public static void AddRequiredAttributes(string requiredAttributes, TagMatchingRuleDescriptorBuilder ruleBuilder)
         {
             var requiredAttributeParser = new DefaultRequiredAttributeParser(requiredAttributes);
             requiredAttributeParser.AddRequiredAttributes(ruleBuilder);
@@ -46,7 +46,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             private bool AtEnd => _index >= _requiredAttributes.Length;
 
-            public void AddRequiredAttributes(TagMatchingRuleBuilder ruleBuilder)
+            public void AddRequiredAttributes(TagMatchingRuleDescriptorBuilder ruleBuilder)
             {
                 if (string.IsNullOrEmpty(_requiredAttributes))
                 {

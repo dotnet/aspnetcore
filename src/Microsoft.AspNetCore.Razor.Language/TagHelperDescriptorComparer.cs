@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly StringComparer _stringComparer;
         private readonly StringComparison _stringComparison;
         private readonly BoundAttributeDescriptorComparer _boundAttributeComparer;
-        private readonly TagMatchingRuleComparer _tagMatchingRuleComparer;
+        private readonly TagMatchingRuleDescriptorComparer _tagMatchingRuleComparer;
 
         private TagHelperDescriptorComparer(bool caseSensitive = false)
         {
@@ -33,14 +33,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _stringComparer = StringComparer.Ordinal;
                 _stringComparison = StringComparison.Ordinal;
                 _boundAttributeComparer = BoundAttributeDescriptorComparer.CaseSensitive;
-                _tagMatchingRuleComparer = TagMatchingRuleComparer.CaseSensitive;
+                _tagMatchingRuleComparer = TagMatchingRuleDescriptorComparer.CaseSensitive;
             }
             else
             {
                 _stringComparer = StringComparer.OrdinalIgnoreCase;
                 _stringComparison = StringComparison.OrdinalIgnoreCase;
                 _boundAttributeComparer = BoundAttributeDescriptorComparer.Default;
-                _tagMatchingRuleComparer = TagMatchingRuleComparer.Default;
+                _tagMatchingRuleComparer = TagMatchingRuleDescriptorComparer.Default;
             }
         }
 

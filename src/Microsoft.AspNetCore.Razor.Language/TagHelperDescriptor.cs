@@ -3,10 +3,12 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
+    [DebuggerDisplay("{DisplayName,nq}")]
     public abstract class TagHelperDescriptor : IEquatable<TagHelperDescriptor>
     {
         private IEnumerable<RazorDiagnostic> _allDiagnostics;
@@ -20,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public string Name { get; protected set; }
 
-        public IEnumerable<TagMatchingRule> TagMatchingRules { get; protected set; }
+        public IEnumerable<TagMatchingRuleDescriptor> TagMatchingRules { get; protected set; }
 
         public string AssemblyName { get; protected set; }
 

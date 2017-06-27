@@ -28,182 +28,165 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         {
             get
             {
-                return new TheoryData<string, RequiredAttributeDescriptor[]>
+                return new TheoryData<string, Action<RequiredAttributeDescriptorBuilder>[]>
                 {
                     {
                         "name,",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("name")
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("name,"))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("name,")),
                         }
                     },
                     {
                         " ",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name(string.Empty)
-                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace())
-                                .Build(),
+                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace()),
                         }
                     },
                     {
                         "n@me",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("n@me")
-                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("n@me", '@'))
-                                .Build(),
+                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("n@me", '@')),
                         }
                     },
                     {
                         "name extra",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("name")
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeCharacter('e', "name extra"))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeCharacter('e', "name extra")),
                         }
                     },
                     {
                         "[[ ",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("[")
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[[ "))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[[ ")),
                         }
                     },
                     {
                         "[ ",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("")
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[ "))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[ ")),
                         }
                     },
                     {
                         "[name='unended]",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("name")
                                 .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.FullMatch)
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeMismatchedQuotes('\'', "[name='unended]"))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeMismatchedQuotes('\'', "[name='unended]")),
                         }
                     },
                     {
                         "[name='unended",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("name")
                                 .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.FullMatch)
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeMismatchedQuotes('\'', "[name='unended"))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeMismatchedQuotes('\'', "[name='unended")),
                         }
                     },
                     {
                         "[name",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("name")
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[name"))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[name")),
                         }
                     },
                     {
                         "[ ]",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name(string.Empty)
-                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace())
-                                .Build(),
+                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace()),
                         }
                     },
                     {
                         "[n@me]",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("n@me")
-                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("n@me", '@'))
-                                .Build(),
+                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("n@me", '@')),
                         }
                     },
                     {
                         "[name@]",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("name@")
-                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("name@", '@'))
-                                .Build(),
+                                .AddDiagnostic(AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName("name@", '@')),
                         }
                     },
                     {
                         "[name^]",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("name")
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_PartialRequiredAttributeOperator('^', "[name^]"))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_PartialRequiredAttributeOperator('^', "[name^]")),
                         }
                     },
                     {
                         "[name='value'",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("name")
                                 .Value("value")
                                 .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.FullMatch)
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[name='value'"))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[name='value'")),
                         }
                     },
                     {
                         "[name ",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("name")
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[name "))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[name ")),
                         }
                     },
                     {
                         "[name extra]",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("name")
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeOperator('e', "[name extra]"))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeOperator('e', "[name extra]")),
                         }
                     },
                     {
                         "[name=value ",
-                        new[]
+                        new Action<RequiredAttributeDescriptorBuilder>[]
                         {
-                            RequiredAttributeDescriptorBuilder.Create()
+                            builder => builder
                                 .Name("name")
                                 .Value("value")
                                 .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.FullMatch)
-                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[name=value "))
-                                .Build(),
+                                .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace("[name=value ")),
                         }
                     },
                 };
@@ -214,39 +197,47 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         [MemberData(nameof(RequiredAttributeParserErrorData))]
         public void RequiredAttributeParser_ParsesRequiredAttributesAndLogsDiagnosticsCorrectly(
             string requiredAttributes,
-            IEnumerable<RequiredAttributeDescriptor> expectedDescriptors)
+            IEnumerable<Action<RequiredAttributeDescriptorBuilder>> configureBuilders)
         {
             // Arrange
-            var ruleBuilder = TagMatchingRuleBuilder.Create();
+            var ruleBuilder = new DefaultTagMatchingRuleDescriptorBuilder();
+
+            var expectedRules = new List<RequiredAttributeDescriptor>();
+            foreach (var configureBuilder in configureBuilders)
+            {
+                var builder = new DefaultRequiredAttributeDescriptorBuilder();
+                configureBuilder(builder);
+
+                expectedRules.Add(builder.Build());
+            }
 
             // Act
             RequiredAttributeParser.AddRequiredAttributes(requiredAttributes, ruleBuilder);
 
             // Assert
             var descriptors = ruleBuilder.Build().Attributes;
-            Assert.Equal(expectedDescriptors, descriptors, RequiredAttributeDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedRules, descriptors, RequiredAttributeDescriptorComparer.CaseSensitive);
         }
 
         public static TheoryData RequiredAttributeParserData
         {
             get
             {
-                Func<string, RequiredAttributeDescriptor.NameComparisonMode, RequiredAttributeDescriptor> plain =
-                    (name, nameComparison) => RequiredAttributeDescriptorBuilder.Create()
+                Func<string, RequiredAttributeDescriptor.NameComparisonMode, Action<RequiredAttributeDescriptorBuilder>> plain =
+                    (name, nameComparison) => (builder) => builder
                         .Name(name)
-                        .NameComparisonMode(nameComparison)
-                        .Build();
-                Func<string, string, RequiredAttributeDescriptor.ValueComparisonMode, RequiredAttributeDescriptor> css =
-                    (name, value, valueComparison) => RequiredAttributeDescriptorBuilder.Create()
+                        .NameComparisonMode(nameComparison);
+
+                Func<string, string, RequiredAttributeDescriptor.ValueComparisonMode, Action<RequiredAttributeDescriptorBuilder>> css =
+                    (name, value, valueComparison) => (builder) => builder
                         .Name(name)
                         .Value(value)
-                        .ValueComparisonMode(valueComparison)
-                        .Build();
+                        .ValueComparisonMode(valueComparison);
 
-                return new TheoryData<string, IEnumerable<RequiredAttributeDescriptor>>
+                return new TheoryData<string, IEnumerable<Action<RequiredAttributeDescriptorBuilder>>>
                 {
-                    { null, Enumerable.Empty<RequiredAttributeDescriptor>() },
-                    { string.Empty, Enumerable.Empty<RequiredAttributeDescriptor>() },
+                    { null, Enumerable.Empty<Action<RequiredAttributeDescriptorBuilder>>() },
+                    { string.Empty, Enumerable.Empty<Action<RequiredAttributeDescriptorBuilder>>() },
                     { "name", new[] { plain("name", RequiredAttributeDescriptor.NameComparisonMode.FullMatch) } },
                     { "name-*", new[] { plain("name-", RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch) } },
                     { "  name-*   ", new[] { plain("name-", RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch) } },
@@ -300,17 +291,26 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         [MemberData(nameof(RequiredAttributeParserData))]
         public void RequiredAttributeParser_ParsesRequiredAttributesCorrectly(
             string requiredAttributes,
-            IEnumerable<RequiredAttributeDescriptor> expectedDescriptors)
+            IEnumerable<Action<RequiredAttributeDescriptorBuilder>> configureBuilders)
         {
             // Arrange
-            var ruleBuilder = TagMatchingRuleBuilder.Create();
+            var ruleBuilder = new DefaultTagMatchingRuleDescriptorBuilder();
+
+            var expectedRules = new List<RequiredAttributeDescriptor>();
+            foreach (var configureBuilder in configureBuilders)
+            {
+                var builder = new DefaultRequiredAttributeDescriptorBuilder();
+                configureBuilder(builder);
+
+                expectedRules.Add(builder.Build());
+            }
 
             // Act
             RequiredAttributeParser.AddRequiredAttributes(requiredAttributes, ruleBuilder);
 
             // Assert
             var descriptors = ruleBuilder.Build().Attributes;
-            Assert.Equal(expectedDescriptors, descriptors, RequiredAttributeDescriptorComparer.CaseSensitive);
+            Assert.Equal(expectedRules, descriptors, RequiredAttributeDescriptorComparer.CaseSensitive);
         }
 
         public static TheoryData IsEnumData
@@ -323,6 +323,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(EnumTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(EnumTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(EnumTagHelper).FullName)
                             .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("enum"))
                             .BindAttribute(builder =>
                                 builder
@@ -340,6 +341,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(MultiEnumTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiEnumTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(MultiEnumTagHelper).FullName)
                             .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("p"))
                             .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("input"))
                             .BindAttribute(builder =>
@@ -358,6 +360,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(NestedEnumTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(NestedEnumTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(NestedEnumTagHelper).FullName)
                             .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("nested-enum"))
                             .BindAttribute(builder =>
                                 builder
@@ -409,12 +412,14 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(RequiredParentTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(RequiredParentTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(RequiredParentTagHelper).FullName)
                             .TagMatchingRule(builder => builder.RequireTagName("input").RequireParentTag("div"))
                             .Build()
                     },
                     {
                         typeof(MultiSpecifiedRequiredParentTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiSpecifiedRequiredParentTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(MultiSpecifiedRequiredParentTagHelper).FullName)
                             .TagMatchingRule(builder => builder.RequireTagName("p").RequireParentTag("div"))
                             .TagMatchingRule(builder => builder.RequireTagName("input").RequireParentTag("section"))
                             .Build()
@@ -422,6 +427,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(MultiWithUnspecifiedRequiredParentTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiWithUnspecifiedRequiredParentTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(MultiWithUnspecifiedRequiredParentTagHelper).FullName)
                             .TagMatchingRule(builder => builder.RequireTagName("p"))
                             .TagMatchingRule(builder => builder.RequireTagName("input").RequireParentTag("div"))
                             .Build()
@@ -457,6 +463,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(RestrictChildrenTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(RestrictChildrenTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(RestrictChildrenTagHelper).FullName)
                             .TagMatchingRule(builder => builder.RequireTagName("restrict-children"))
                             .AllowChildTag("p")
                             .Build()
@@ -464,6 +471,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(DoubleRestrictChildrenTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(DoubleRestrictChildrenTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(DoubleRestrictChildrenTagHelper).FullName)
                             .TagMatchingRule(builder => builder.RequireTagName("double-restrict-children"))
                             .AllowChildTag("p")
                             .AllowChildTag("strong")
@@ -472,6 +480,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(MultiTargetRestrictChildrenTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiTargetRestrictChildrenTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(MultiTargetRestrictChildrenTagHelper).FullName)
                             .TagMatchingRule(builder => builder.RequireTagName("p"))
                             .TagMatchingRule(builder => builder.RequireTagName("div"))
                             .AllowChildTag("p")
@@ -510,6 +519,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(TagStructureTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(TagStructureTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(TagStructureTagHelper).FullName)
                             .TagMatchingRule(builder => builder
                                 .RequireTagName("input")
                                 .RequireTagStructure(TagStructure.WithoutEndTag))
@@ -518,6 +528,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(MultiSpecifiedTagStructureTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiSpecifiedTagStructureTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(MultiSpecifiedTagStructureTagHelper).FullName)
                             .TagMatchingRule(builder => builder
                                 .RequireTagName("p")
                                 .RequireTagStructure(TagStructure.NormalOrSelfClosing))
@@ -529,6 +540,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(MultiWithUnspecifiedTagStructureTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiWithUnspecifiedTagStructureTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(MultiWithUnspecifiedTagStructureTagHelper).FullName)
                             .TagMatchingRule(builder => builder
                                 .RequireTagName("p"))
                             .TagMatchingRule(builder => builder
@@ -747,7 +759,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(AttributeTargetingTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder.RequireAttribute(attribute => attribute.Name("class")),
                             })
@@ -758,7 +770,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(MultiAttributeTargetingTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder =>
                                 {
@@ -774,7 +786,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(MultiAttributeAttributeTargetingTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder.RequireAttribute(attribute => attribute.Name("custom")),
                                 builder =>
@@ -791,7 +803,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(InheritedAttributeTargetingTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder.RequireAttribute(attribute => attribute.Name("style")),
                             })
@@ -802,7 +814,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             "input",
                             typeof(RequiredAttributeTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder.RequireAttribute(attribute => attribute.Name("class")),
                             })
@@ -813,7 +825,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             "div",
                             typeof(InheritedRequiredAttributeTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder.RequireAttribute(attribute => attribute.Name("class")),
                             })
@@ -824,7 +836,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             "div",
                             typeof(MultiAttributeRequiredAttributeTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .RequireTagName("div")
@@ -840,7 +852,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             "input",
                             typeof(MultiAttributeSameTagRequiredAttributeTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder.RequireAttribute(attribute => attribute.Name("style")),
                                 builder => builder.RequireAttribute(attribute => attribute.Name("class")),
@@ -852,7 +864,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             "input",
                             typeof(MultiRequiredAttributeTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .RequireAttribute(attribute => attribute.Name("class"))
@@ -865,7 +877,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             "div",
                             typeof(MultiTagMultiRequiredAttributeTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .RequireTagName("div")
@@ -883,7 +895,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(AttributeWildcardTargetingTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .RequireAttribute(attribute => attribute
@@ -897,7 +909,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             TagHelperMatchingConventions.ElementCatchAllName,
                             typeof(MultiAttributeWildcardTargetingTagHelper).FullName,
                             AssemblyName,
-                            ruleBuilders: new Action<TagMatchingRuleBuilder>[]
+                            ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder
                                     .RequireAttribute(attribute => attribute
@@ -1038,15 +1050,15 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         }
 
         [Fact]
-        public void CreateDescriptor_AllowsOverridenAttributeNameOnUnimplementedVirtual()
+        public void CreateDescriptor_AllowsOverriddenAttributeNameOnUnimplementedVirtual()
         {
             // Arrange
             var validProperty1 = typeof(InheritedNotOverriddenAttributeTagHelper).GetProperty(
                 nameof(InheritedNotOverriddenAttributeTagHelper.ValidAttribute1));
             var validProperty2 = typeof(InheritedNotOverriddenAttributeTagHelper).GetProperty(
                 nameof(InheritedNotOverriddenAttributeTagHelper.ValidAttribute2));
-            var expectedDescriptor =
-                CreateTagHelperDescriptor(
+
+            var expectedDescriptor =  CreateTagHelperDescriptor(
                     "inherited-not-overridden-attribute",
                     typeof(InheritedNotOverriddenAttributeTagHelper).FullName,
                     AssemblyName,
@@ -1217,7 +1229,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             .PropertyName(nameof(MultiTagTagHelper.ValidAttribute))
                             .TypeName(typeof(string).FullName),
                     },
-                    new Action<TagMatchingRuleBuilder>[]
+                    new Action<TagMatchingRuleDescriptorBuilder>[]
                     {
                         builder => builder.RequireTagName("p"),
                         builder => builder.RequireTagName("div"),
@@ -1262,16 +1274,16 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         public void CreateDescriptor_IgnoresDuplicateTagNamesFromAttribute()
         {
             // Arrange
-            var expectedDescriptor =
-                CreateTagHelperDescriptor(
-                    string.Empty,
-                    typeof(DuplicateTagNameTagHelper).FullName,
-                    AssemblyName,
-                    ruleBuilders: new Action<TagMatchingRuleBuilder>[]
-                    {
-                        builder => builder.RequireTagName("p"),
-                        builder => builder.RequireTagName("div"),
-                    });
+            var expectedDescriptor = CreateTagHelperDescriptor(
+                string.Empty,
+                typeof(DuplicateTagNameTagHelper).FullName,
+                AssemblyName,
+                ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
+                {
+                    builder => builder.RequireTagName("p"),
+                    builder => builder.RequireTagName("div"),
+                });
+
             var factory = new DefaultTagHelperDescriptorFactory(Compilation, designTime: false);
             var typeSymbol = Compilation.GetTypeByMetadataName(typeof(DuplicateTagNameTagHelper).FullName);
 
@@ -1376,6 +1388,9 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
         {
             get
             {
+                var invalidBoundAttributeBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, nameof(InvalidBoundAttribute), "Test");
+                invalidBoundAttributeBuilder.TypeName(typeof(InvalidBoundAttribute).FullName);
+
                 // type, expectedAttributeDescriptors
                 return new TheoryData<Type, IEnumerable<BoundAttributeDescriptor>>
                 {
@@ -1383,80 +1398,72 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(InvalidBoundAttribute),
                         new[]
                         {
-                            BoundAttributeDescriptorBuilder.Create(typeof(InvalidBoundAttribute).FullName)
+                            CreateAttributeFor(typeof(InvalidBoundAttribute), attribute =>
+                            {
+                                attribute
                                 .Name("data-something")
                                 .PropertyName(nameof(InvalidBoundAttribute.DataSomething))
-                                .TypeName(typeof(string).FullName)
-                                .AddDiagnostic(
-                                    AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
-                                        typeof(InvalidBoundAttribute).FullName, 
-                                        nameof(InvalidBoundAttribute.DataSomething), 
-                                        "data-something"))
-                                .Build()
+                                .TypeName(typeof(string).FullName);
+                            }),
                         }
                     },
                     {
                         typeof(InvalidBoundAttributeWithValid),
                         new[]
                         {
-                            BoundAttributeDescriptorBuilder.Create(typeof(InvalidBoundAttributeWithValid).FullName)
+                            CreateAttributeFor(typeof(InvalidBoundAttributeWithValid), attribute =>
+                            {
+                                attribute
                                 .Name("data-something")
                                 .PropertyName(nameof(InvalidBoundAttributeWithValid.DataSomething))
-                                .TypeName(typeof(string).FullName)
-                                .AddDiagnostic(
-                                    AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
-                                        typeof(InvalidBoundAttributeWithValid).FullName,
-                                        nameof(InvalidBoundAttributeWithValid.DataSomething),
-                                        "data-something"))
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(InvalidBoundAttributeWithValid).FullName)
+                                .TypeName(typeof(string).FullName); ;
+                            }),
+                            CreateAttributeFor(typeof(InvalidBoundAttributeWithValid), attribute =>
+                            {
+                                attribute
                                 .Name("int-attribute")
                                 .PropertyName(nameof(InvalidBoundAttributeWithValid.IntAttribute))
-                                .TypeName(typeof(int).FullName)
-                                .Build(),
+                                .TypeName(typeof(int).FullName);
+                            }),
                         }
                     },
                     {
                         typeof(OverriddenInvalidBoundAttributeWithValid),
                         new[]
                         {
-                            BoundAttributeDescriptorBuilder.Create(typeof(OverriddenInvalidBoundAttributeWithValid).FullName)
+                            CreateAttributeFor(typeof(OverriddenInvalidBoundAttributeWithValid), attribute =>
+                            {
+                                attribute
                                 .Name("valid-something")
                                 .PropertyName(nameof(OverriddenInvalidBoundAttributeWithValid.DataSomething))
-                                .TypeName(typeof(string).FullName)
-                                .Build()
+                                .TypeName(typeof(string).FullName);
+                            }),
                         }
                     },
                     {
                         typeof(OverriddenValidBoundAttributeWithInvalid),
                         new[]
                         {
-                            BoundAttributeDescriptorBuilder.Create(typeof(OverriddenValidBoundAttributeWithInvalid).FullName)
+                            CreateAttributeFor(typeof(OverriddenValidBoundAttributeWithInvalid), attribute =>
+                            {
+                                attribute
                                 .Name("data-something")
                                 .PropertyName(nameof(OverriddenValidBoundAttributeWithInvalid.ValidSomething))
-                                .TypeName(typeof(string).FullName)
-                                .AddDiagnostic(
-                                    AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
-                                        typeof(OverriddenValidBoundAttributeWithInvalid).FullName,
-                                        nameof(OverriddenValidBoundAttributeWithInvalid.ValidSomething),
-                                        "data-something"))
-                                .Build()
+                                .TypeName(typeof(string).FullName);
+                            }),
                         }
                     },
                     {
                         typeof(OverriddenValidBoundAttributeWithInvalidUpperCase),
                         new[]
                         {
-                            BoundAttributeDescriptorBuilder.Create(typeof(OverriddenValidBoundAttributeWithInvalidUpperCase).FullName)
+                            CreateAttributeFor(typeof(OverriddenValidBoundAttributeWithInvalidUpperCase), attribute =>
+                            {
+                                attribute
                                 .Name("DATA-SOMETHING")
                                 .PropertyName(nameof(OverriddenValidBoundAttributeWithInvalidUpperCase.ValidSomething))
-                                .TypeName(typeof(string).FullName)
-                                .AddDiagnostic(
-                                    AspNetCore.Razor.Language.RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
-                                        typeof(OverriddenValidBoundAttributeWithInvalidUpperCase).FullName,
-                                        nameof(OverriddenValidBoundAttributeWithInvalidUpperCase.ValidSomething),
-                                        "DATA-SOMETHING"))
-                                .Build()
+                                .TypeName(typeof(string).FullName);
+                            }),
                         }
                     },
                 };
@@ -1481,6 +1488,13 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                 expectedAttributeDescriptors,
                 descriptor.BoundAttributes,
                 BoundAttributeDescriptorComparer.Default);
+
+            var id = AspNetCore.Razor.Language.RazorDiagnosticFactory.TagHelper_InvalidBoundAttributeNameStartsWith.Id;
+            foreach (var attribute in descriptor.BoundAttributes.Where(a => a.Name.StartsWith("data-", StringComparison.OrdinalIgnoreCase)))
+            {
+                var diagnostic = Assert.Single(attribute.Diagnostics);
+                Assert.Equal(id, diagnostic.Id);
+            }
         }
 
         public static TheoryData<string> ValidAttributeNameData
@@ -1568,13 +1582,13 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             get
             {
                 Func<string, string, string> onNameError = (invalidText, invalidCharacter) =>
-                    "Invalid tag helper bound property 'DynamicTestTagHelper.InvalidProperty'. Tag helpers " +
+                    "Invalid tag helper bound property 'string DynamicTestTagHelper.InvalidProperty' on tag helper 'DynamicTestTagHelper'. Tag helpers " +
                     $"cannot bind to HTML attributes with name '{invalidText}' because the name contains a '{invalidCharacter}' character.";
                 var whitespaceErrorString =
-                    "Invalid tag helper bound property 'DynamicTestTagHelper.InvalidProperty'. Tag helpers cannot " +
+                    "Invalid tag helper bound property 'string DynamicTestTagHelper.InvalidProperty' on tag helper 'DynamicTestTagHelper'. Tag helpers cannot " +
                     "bind to HTML attributes with a null or empty name.";
                 Func<string, string> onDataError = invalidText =>
-                "Invalid tag helper bound property 'DynamicTestTagHelper.InvalidProperty'. Tag helpers cannot bind "+
+                "Invalid tag helper bound property 'string DynamicTestTagHelper.InvalidProperty' on tag helper 'DynamicTestTagHelper'. Tag helpers cannot bind " +
                 $"to HTML attributes with name '{invalidText}' because the name starts with 'data-'.";
 
                 return GetInvalidNameOrPrefixData(onNameError, whitespaceErrorString, onDataError);
@@ -1612,12 +1626,15 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             get
             {
                 Func<string, string, string> onPrefixError = (invalidText, invalidCharacter) =>
-                    "Invalid tag helper bound property 'DynamicTestTagHelper.InvalidProperty'. Tag helpers "+
+                    "Invalid tag helper bound property 'System.Collections.Generic.IDictionary<System.String, System.Int32> DynamicTestTagHelper.InvalidProperty' " +
+                    "on tag helper 'DynamicTestTagHelper'. Tag helpers " +
                     $"cannot bind to HTML attributes with prefix '{invalidText}' because the prefix contains a '{invalidCharacter}' character.";
                 var whitespaceErrorString =
-                    "Invalid tag helper bound property 'DynamicTestTagHelper.InvalidProperty'. Tag helpers cannot bind to HTML attributes with a null or empty name.";
+                    "Invalid tag helper bound property 'System.Collections.Generic.IDictionary<System.String, System.Int32> DynamicTestTagHelper.InvalidProperty' " +
+                    "on tag helper 'DynamicTestTagHelper'. Tag helpers cannot bind to HTML attributes with a null or empty name.";
                 Func<string, string> onDataError = invalidText =>
-                    "Invalid tag helper bound property 'DynamicTestTagHelper.InvalidProperty'. Tag helpers cannot bind to HTML attributes "+
+                    "Invalid tag helper bound property 'System.Collections.Generic.IDictionary<System.String, System.Int32> DynamicTestTagHelper.InvalidProperty' " +
+                    "on tag helper 'DynamicTestTagHelper'. Tag helpers cannot bind to HTML attributes " +
                     $"with prefix '{invalidText}' because the prefix starts with 'data-'.";
 
                 return GetInvalidNameOrPrefixData(onPrefixError, whitespaceErrorString, onDataError);
@@ -1634,7 +1651,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             public class DynamicTestTagHelper : {typeof(AspNetCore.Razor.TagHelpers.TagHelper).FullName}
             {{
                 [{typeof(AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute).FullName}({nameof(AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute.DictionaryAttributePrefix)} = ""{prefix}"")]
-                public System.Collections.Generic.IDictionary<string, int> InvalidProperty {{ get; set; }}
+                public System.Collections.Generic.IDictionary<System.String, System.Int32> InvalidProperty {{ get; set; }}
             }}";
             var syntaxTree = CSharpSyntaxTree.ParseText(text);
             var compilation = TestCompilation.Create(_assembly, syntaxTree);
@@ -1654,13 +1671,13 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             get
             {
                 var nullOrWhiteSpaceError =
-                    AspNetCore.Razor.Language.Resources.FormatInvalidRestrictedChildNullOrWhitespace("DynamicTestTagHelper");
+                    AspNetCore.Razor.Language.Resources.FormatTagHelper_InvalidRestrictedChildNullOrWhitespace("DynamicTestTagHelper");
 
                 return GetInvalidNameOrPrefixData(
                     onNameError: (invalidInput, invalidCharacter) =>
-                        AspNetCore.Razor.Language.Resources.FormatInvalidRestrictedChild(
-                            invalidInput,
+                        AspNetCore.Razor.Language.Resources.FormatTagHelper_InvalidRestrictedChild(
                             "DynamicTestTagHelper",
+                            invalidInput,
                             invalidCharacter),
                     whitespaceErrorString: nullOrWhiteSpaceError,
                     onDataError: null);
@@ -1696,11 +1713,11 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             get
             {
                 var nullOrWhiteSpaceError =
-                    AspNetCore.Razor.Language.Resources.InvalidTargetedParentTagNameNullOrWhitespace;
+                    AspNetCore.Razor.Language.Resources.TagHelper_InvalidTargetedParentTagNameNullOrWhitespace;
 
                 return GetInvalidNameOrPrefixData(
                     onNameError: (invalidInput, invalidCharacter) =>
-                        AspNetCore.Razor.Language.Resources.FormatInvalidTargetedParentTagName(
+                        AspNetCore.Razor.Language.Resources.FormatTagHelper_InvalidTargetedParentTagName(
                             invalidInput,
                             invalidCharacter),
                     whitespaceErrorString: nullOrWhiteSpaceError,
@@ -1763,12 +1780,14 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(DefaultValidHtmlAttributePrefix),
                         new[]
                         {
-                            BoundAttributeDescriptorBuilder.Create(typeof(DefaultValidHtmlAttributePrefix).FullName)
+                            CreateAttributeFor(typeof(DefaultValidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("dictionary-property")
                                 .PropertyName(nameof(DefaultValidHtmlAttributePrefix.DictionaryProperty))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
-                                .AsDictionary("dictionary-property-", typeof(string).FullName)
-                                .Build()
+                                .AsDictionary("dictionary-property-", typeof(string).FullName);
+                            }),
                         },
                         Enumerable.Empty<RazorDiagnostic>()
                     },
@@ -1776,12 +1795,14 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(SingleValidHtmlAttributePrefix),
                         new[]
                         {
-                            BoundAttributeDescriptorBuilder.Create(typeof(SingleValidHtmlAttributePrefix).FullName)
+                            CreateAttributeFor(typeof(SingleValidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name")
                                 .PropertyName(nameof(SingleValidHtmlAttributePrefix.DictionaryProperty))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
-                                .AsDictionary("valid-name-", typeof(string).FullName)
-                                .Build()
+                                .AsDictionary("valid-name-", typeof(string).FullName);
+                            }),
                         },
                         Enumerable.Empty<RazorDiagnostic>()
                     },
@@ -1789,51 +1810,67 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(MultipleValidHtmlAttributePrefix),
                         new[]
                         {
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                            CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name1")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.DictionaryProperty))
                                 .TypeName($"{typeof(Dictionary<,>).Namespace}.Dictionary<System.String, System.Object>")
-                                .AsDictionary("valid-prefix1-", typeof(object).FullName)
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                                .AsDictionary("valid-prefix1-", typeof(object).FullName);
+                            }),
+                            CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name2")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.DictionarySubclassProperty))
                                 .TypeName(typeof(DictionarySubclass).FullName)
-                                .AsDictionary("valid-prefix2-", typeof(string).FullName)
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                                .AsDictionary("valid-prefix2-", typeof(string).FullName);
+                            }),
+                            CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name3")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.DictionaryWithoutParameterlessConstructorProperty))
                                 .TypeName(typeof(DictionaryWithoutParameterlessConstructor).FullName)
-                                .AsDictionary("valid-prefix3-", typeof(string).FullName)
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                                .AsDictionary("valid-prefix3-", typeof(string).FullName);
+                            }),
+                            CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name4")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.GenericDictionarySubclassProperty))
                                 .TypeName(typeof(GenericDictionarySubclass<object>).Namespace + ".GenericDictionarySubclass<System.Object>")
-                                .AsDictionary("valid-prefix4-", typeof(object).FullName)
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                                .AsDictionary("valid-prefix4-", typeof(object).FullName);
+                            }),
+                            CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name5")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.SortedDictionaryProperty))
                                 .TypeName(typeof(SortedDictionary<string, int>).Namespace + ".SortedDictionary<System.String, System.Int32>")
-                                .AsDictionary("valid-prefix5-", typeof(int).FullName)
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                                .AsDictionary("valid-prefix5-", typeof(int).FullName);
+                            }),
+                            CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name6")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.StringProperty))
-                                .TypeName(typeof(string).FullName)
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                                .TypeName(typeof(string).FullName);
+                            }),
+                            CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.GetOnlyDictionaryProperty))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.Int32>")
-                                .AsDictionary("get-only-dictionary-property-", typeof(int).FullName)
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleValidHtmlAttributePrefix).FullName)
+                                .AsDictionary("get-only-dictionary-property-", typeof(int).FullName);
+                            }),
+                            CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.GetOnlyDictionaryPropertyWithAttributePrefix))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
-                                .AsDictionary("valid-prefix6", typeof(string).FullName)
-                                .Build()
+                                .AsDictionary("valid-prefix6", typeof(string).FullName);
+                            }),
                         },
                         Enumerable.Empty<RazorDiagnostic>()
                     },
@@ -1841,14 +1878,16 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(SingleInvalidHtmlAttributePrefix),
                         new[]
                         {
-                            BoundAttributeDescriptorBuilder.Create(typeof(SingleInvalidHtmlAttributePrefix).FullName)
+                            CreateAttributeFor(typeof(SingleInvalidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name")
                                 .PropertyName(nameof(SingleInvalidHtmlAttributePrefix.StringProperty))
                                 .TypeName(typeof(string).FullName)
                                 .AddDiagnostic(RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
                                     typeof(SingleInvalidHtmlAttributePrefix).FullName,
-                                    nameof(SingleInvalidHtmlAttributePrefix.StringProperty)))
-                                .Build(),
+                                    nameof(SingleInvalidHtmlAttributePrefix.StringProperty)));
+                            }),
                         },
                         new[]
                         {
@@ -1861,12 +1900,16 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(MultipleInvalidHtmlAttributePrefix),
                         new[]
                         {
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                            CreateAttributeFor(typeof(MultipleInvalidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name1")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.LongProperty))
-                                .TypeName(typeof(long).FullName)
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                                .TypeName(typeof(long).FullName);
+                            }),
+                            CreateAttributeFor(typeof(MultipleInvalidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name2")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntProperty))
                                 .TypeName($"{typeof(Dictionary<,>).Namespace}.Dictionary<System.Int32, System.String>")
@@ -1874,27 +1917,33 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
-                                        nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntProperty)))
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                                        nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntProperty)));
+                            }),
+                            CreateAttributeFor(typeof(MultipleInvalidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name3")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.ReadOnlyDictionaryProperty))
                                 .TypeName($"{typeof(IReadOnlyDictionary<,>).Namespace}.IReadOnlyDictionary<System.String, System.Object>")
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
-                                        nameof(MultipleInvalidHtmlAttributePrefix.ReadOnlyDictionaryProperty)))
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                                        nameof(MultipleInvalidHtmlAttributePrefix.ReadOnlyDictionaryProperty)));
+                            }),
+                            CreateAttributeFor(typeof(MultipleInvalidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name4")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.IntProperty))
                                 .TypeName(typeof(int).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
-                                        nameof(MultipleInvalidHtmlAttributePrefix.IntProperty)))
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                                        nameof(MultipleInvalidHtmlAttributePrefix.IntProperty)));
+                            }),
+                            CreateAttributeFor(typeof(MultipleInvalidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .Name("valid-name5")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntSubclassProperty))
                                 .TypeName(typeof(DictionaryOfIntSubclass).FullName)
@@ -1902,26 +1951,30 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
-                                        nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntSubclassProperty)))
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                                        nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntSubclassProperty)));
+                            }),
+                            CreateAttributeFor(typeof(MultipleInvalidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryAttributePrefix))
                                 .TypeName($"{dictionaryNamespace}<System.Int32, System.String>")
                                 .AsDictionary("valid-prefix6", typeof(string).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
-                                        nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryAttributePrefix)))
-                                .Build(),
-                            BoundAttributeDescriptorBuilder.Create(typeof(MultipleInvalidHtmlAttributePrefix).FullName)
+                                        nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryAttributePrefix)));
+                            }),
+                            CreateAttributeFor(typeof(MultipleInvalidHtmlAttributePrefix), attribute =>
+                            {
+                                attribute
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryPropertyWithAttributeName))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.Object>")
                                 .AsDictionary("invalid-name7-", typeof(object).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNull(
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
-                                        nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryPropertyWithAttributeName)))
-                                .Build(),
+                                        nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryPropertyWithAttributeName)));
+                            }),
                         },
                         new[]
                         {
@@ -1981,6 +2034,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(MultipleDescriptorTagHelperWithOutputElementHint),
                         TagHelperDescriptorBuilder.Create(typeof(MultipleDescriptorTagHelperWithOutputElementHint).FullName, AssemblyName)
+                            .TypeName(typeof(MultipleDescriptorTagHelperWithOutputElementHint).FullName)
                             .TagMatchingRule(builder => builder.RequireTagName("a"))
                             .TagMatchingRule(builder => builder.RequireTagName("p"))
                             .TagOutputHint("div")
@@ -1989,12 +2043,14 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(InheritedOutputElementHintTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(InheritedOutputElementHintTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(InheritedOutputElementHintTagHelper).FullName)
                             .TagMatchingRule(builder => builder.RequireTagName("inherited-output-element-hint"))
                             .Build()
                     },
                     {
                         typeof(OutputElementHintTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(OutputElementHintTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(OutputElementHintTagHelper).FullName)
                             .TagMatchingRule(builder => builder.RequireTagName("output-element-hint"))
                             .TagOutputHint("hinted-value")
                             .Build()
@@ -2002,6 +2058,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                     {
                         typeof(OverriddenOutputElementHintTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(OverriddenOutputElementHintTagHelper).FullName, AssemblyName)
+                            .TypeName(typeof(OverriddenOutputElementHintTagHelper).FullName)
                             .TagMatchingRule(builder => builder.RequireTagName("overridden-output-element-hint"))
                             .TagOutputHint("overridden")
                             .Build()
@@ -2264,9 +2321,10 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             string typeName,
             string assemblyName,
             IEnumerable<Action<BoundAttributeDescriptorBuilder>> attributes = null,
-            IEnumerable<Action<TagMatchingRuleBuilder>> ruleBuilders = null)
+            IEnumerable<Action<TagMatchingRuleDescriptorBuilder>> ruleBuilders = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
+            builder.TypeName(typeName);
 
             if (attributes != null)
             {
@@ -2295,6 +2353,16 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             var descriptor = builder.Build();
 
             return descriptor;
+        }
+
+        private static BoundAttributeDescriptor CreateAttributeFor(Type tagHelperType, Action<BoundAttributeDescriptorBuilder> configure)
+        {
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, tagHelperType.Name, "Test");
+            tagHelperBuilder.TypeName(tagHelperType.FullName);
+
+            var attributeBuilder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            configure(attributeBuilder);
+            return attributeBuilder.Build();
         }
     }
 

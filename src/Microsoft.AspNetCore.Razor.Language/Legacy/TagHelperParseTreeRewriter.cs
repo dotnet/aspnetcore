@@ -273,14 +273,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
                         if (invalidRule != null)
                         {
-                            var typeName = descriptor.GetTypeName();
-
                             // End tag TagHelper that states it shouldn't have an end tag.
                             errorSink.OnError(
                                 SourceLocationTracker.Advance(tagBlock.Start, "</"),
                                 LegacyResources.FormatTagHelperParseTreeRewriter_EndTagTagHelperMustNotHaveAnEndTag(
                                     tagName,
-                                    typeName,
+                                    descriptor.DisplayName,
                                     invalidRule.TagStructure),
                                 tagName.Length);
 
@@ -564,15 +562,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         // Can't have a set of TagHelpers that expect different structures.
                         if (baseStructure.HasValue && baseStructure != rule.TagStructure)
                         {
-                            var baseDescriptorTypeName = baseDescriptor.GetTypeName();
-                            var descriptorTypeName = descriptor.GetTypeName();
                             errorSink.OnError(
                                 tagBlock.Start,
                                 LegacyResources.FormatTagHelperParseTreeRewriter_InconsistentTagStructure(
-                                    baseDescriptorTypeName,
-                                    descriptorTypeName,
+                                    baseDescriptor.DisplayName,
+                                    descriptor.DisplayName,
                                     tagName,
-                                    nameof(TagMatchingRule.TagStructure)),
+                                    nameof(TagMatchingRuleDescriptor.TagStructure)),
                                 tagBlock.Length);
                         }
 
