@@ -24,12 +24,13 @@ function Save-TeamCityBackup()
     $authInfo = $username + ":" + $password
     $authInfo = [System.Convert]::ToBase64String([System.Text.Encoding]::Default.GetBytes($authInfo))
 
-    $Headers = @{ Authorization = "Basic $authInfo" }
-    
     Write-Host "Url: $TeamCityURL
     OutFile: $targetFile"
 
-    Invoke-WebRequest -Uri $TeamCityURL -Headers $Headers -OutFile $targetFile
+    $webClient = new-object System.Net.WebClient
+    $webClient.Headers["Authorization"] = "Basic $authInfo"
+
+    $webClient.DownloadFile($TeamCityURL, $targetFolder+$fileName)
 }
 
 function Invoke-TeamCityRequest(){

@@ -77,7 +77,7 @@ del "c:\Git-2.8.4-64-bit.exe" -Force
 Write-Host "`nCopying SSH keys to $env:USERPROFILE..."
 Copy "$setupFilesShare\.ssh" "$env:USERPROFILE" -Recurse
 
-Write-Host "`Clonding Coherence-signed repo..."
+Write-Host "`Cloning Coherence-signed repo..."
 cd "c:\"
 git clone http://github.com/aspnet/coherence-signed
 cd coherence-signed
