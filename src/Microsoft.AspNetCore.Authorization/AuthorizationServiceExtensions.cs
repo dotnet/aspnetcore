@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Authorization
                 throw new ArgumentNullException(nameof(policy));
             }
 
-            return service.AuthorizeAsync(user, resource, policy.Requirements.ToArray());
+            return service.AuthorizeAsync(user, resource, policy.Requirements);
         }
 
         /// <summary>
