@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 return Task.FromResult(AuthenticateResult.Success(new AuthenticationTicket(_requestContext.User, properties: null, authenticationScheme: _scheme.Name)));
             }
-            return Task.FromResult(AuthenticateResult.None());
+            return Task.FromResult(AuthenticateResult.NoResult());
         }
 
         public Task ChallengeAsync(AuthenticationProperties properties)
@@ -47,16 +47,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 throw new InvalidOperationException("No RequestContext found.");
             }
 
-            return Task.CompletedTask;
-        }
-
-        public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task SignOutAsync(AuthenticationProperties properties)
-        {
             return Task.CompletedTask;
         }
     }
