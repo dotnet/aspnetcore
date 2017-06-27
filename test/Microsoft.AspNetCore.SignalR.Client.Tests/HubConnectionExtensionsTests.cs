@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await connection.ReceiveJsonMessage(
                     new
                     {
-                    invocationId = "1",
+                        invocationId = "1",
                         type = 1,
                         target = "Foo",
                         arguments = new object[] { 42, "42" }

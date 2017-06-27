@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using static Microsoft.AspNetCore.SignalR.Client.HubConnection;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -87,6 +88,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _ = RunChannel();
 
             return outputChannel.In;
+        }
+
+        private static void On(this HubConnection hubConnetion, string methodName, Type[] parameterTypes, Action<object[]> handler)
+        {
+            hubConnetion.On(methodName, parameterTypes, (parameters) => 
+            {
+                handler(parameters);
+                return Task.CompletedTask;
+            });
         }
 
         public static void On(this HubConnection hubConnection, string methodName, Action handler)

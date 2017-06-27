@@ -96,6 +96,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     {
                         logger.LogInformation("Received {length} byte message", data.Length);
                         receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
+                        return Task.CompletedTask;
                     };
                     connection.Closed += e =>
                     {
@@ -163,6 +164,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     {
                         logger.LogInformation("Received {length} byte message", data.Length);
                         receiveTcs.TrySetResult(data);
+                        return Task.CompletedTask;
                     };
 
                     logger.LogInformation("Starting connection to {url}", url);

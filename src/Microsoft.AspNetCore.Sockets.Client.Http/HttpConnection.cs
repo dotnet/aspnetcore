@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         public Uri Url { get; }
 
         public event Action Connected;
-        public event Action<byte[]> Received;
+        public event Func<byte[], Task> Received;
         public event Action<Exception> Closed;
 
         public HttpConnection(Uri url)
@@ -284,11 +284,17 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     if (Input.TryRead(out var buffer))
                     {
                         _logger.LogDebug("Scheduling raising Received event.");
-                        var ignore = _eventQueue.Enqueue(() =>
+                        _ = _eventQueue.Enqueue(() =>
                         {
                             _logger.LogDebug("Raising Received event.");
 
-                            Received?.Invoke(buffer);
+                            // Making a copy of the Received handler to ensure that its not null
+                            // Can't use the ? operator because we specifically want to check if the handler is null
+                            var receivedHandler = Received;
+                            if (receivedHandler != null)
+                            {
+                                return receivedHandler(buffer);
+                            }
 
                             return Task.CompletedTask;
                         });

@@ -49,7 +49,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
                     {
                         return t;
                     }
-                    return taskFunc(s1);
+
+                    return taskFunc(s1) ?? Task.CompletedTask;
                 },
                 state).Unwrap();
                 _lastQueuedTask = newTask;

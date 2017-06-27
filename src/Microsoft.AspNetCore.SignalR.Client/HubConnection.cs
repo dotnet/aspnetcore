@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _protocol = protocol;
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HubConnection>();
-            _connection.Received += OnDataReceived;
+            _connection.Received += OnDataReceivedAsync;
             _connection.Closed += Shutdown;
         }
 
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
         // TODO: Client return values/tasks?
-        public void On(string methodName, Type[] parameterTypes, Action<object[]> handler)
+        public void On(string methodName, Type[] parameterTypes, Func<object[], Task> handler)
         {
             var invocationHandler = new InvocationHandler(parameterTypes, handler);
             _handlers.AddOrUpdate(methodName, invocationHandler, (_, __) => invocationHandler);
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private void OnDataReceived(byte[] data)
+        private async Task OnDataReceivedAsync(byte[] data)
         {
             if (_protocol.TryParseMessages(data, _binder, out var messages))
             {
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                                 var argsList = string.Join(", ", invocation.Arguments.Select(a => a.GetType().FullName));
                                 _logger.LogTrace("Received Invocation '{invocationId}': {methodName}({args})", invocation.InvocationId, invocation.Target, argsList);
                             }
-                            DispatchInvocation(invocation, _connectionActive.Token);
+                            await DispatchInvocationAsync(invocation, _connectionActive.Token);
                             break;
                         case CompletionMessage completion:
                             if (!TryRemoveInvocation(completion.InvocationId, out irq))
@@ -218,18 +218,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private void DispatchInvocation(InvocationMessage invocation, CancellationToken cancellationToken)
+        private Task DispatchInvocationAsync(InvocationMessage invocation, CancellationToken cancellationToken)
         {
             // Find the handler
             if (!_handlers.TryGetValue(invocation.Target, out InvocationHandler handler))
             {
                 _logger.LogWarning("Failed to find handler for '{target}' method", invocation.Target);
-                return;
+                return Task.CompletedTask;
             }
 
             // TODO: Return values
             // TODO: Dispatch to a sync context to ensure we aren't blocking this loop.
-            handler.Handler(invocation.Arguments);
+            return handler.Handler(invocation.Arguments);
         }
 
         // This async void is GROSS but we need to dispatch asynchronously because we're writing to a Channel
@@ -355,10 +355,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private struct InvocationHandler
         {
-            public Action<object[]> Handler { get; }
+            public Func<object[], Task> Handler { get; }
             public Type[] ParameterTypes { get; }
 
-            public InvocationHandler(Type[] parameterTypes, Action<object[]> handler)
+            public InvocationHandler(Type[] parameterTypes, Func<object[], Task> handler)
             {
                 Handler = handler;
                 ParameterTypes = parameterTypes;

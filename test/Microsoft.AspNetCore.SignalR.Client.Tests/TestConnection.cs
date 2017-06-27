@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private Task _receiveLoop;
 
         public event Action Connected;
-        public event Action<byte[]> Received;
+        public event Func<byte[], Task> Received;
         public event Action<Exception> Closed;
 
         public Task Started => _started.Task;
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     {
                         while (_receivedMessages.In.TryRead(out var message))
                         {
-                            Received?.Invoke(message);
+                            await Received?.Invoke(message);
                         }
                     }
                 }
