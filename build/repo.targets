@@ -1,6 +1,11 @@
 <Project>
   <Import Project="common.props" />
 
+  <ItemGroup>
+    <!-- remove package references that don't belong in KoreBuild -->
+    <PackageReference Remove="Internal.AspNetCore.Sdk" />
+  </ItemGroup>
+
   <PropertyGroup>
     <!-- Project for building the Runtime Store -->
     <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.RuntimeStore\</MetaPackagePath>
