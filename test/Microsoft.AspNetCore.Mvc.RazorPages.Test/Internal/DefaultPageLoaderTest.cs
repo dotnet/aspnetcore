@@ -537,31 +537,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             public int IgnoreMe { get; set; }
         }
 
-        // Additionally [BindProperty] on a property can opt-in a property
-        [Fact]
-        public void CreateBoundProperties_BindPropertyAttributeOnModel_OptsInAllProperties()
-        {
-            // Arrange
-            var type = typeof(ModelWithBindPropertyOnClass).GetTypeInfo();
-
-            // Act
-            var results = DefaultPageLoader.CreateBoundProperties(type);
-
-            // Assert
-            Assert.Collection(
-                results.OrderBy(p => p.Property.Name),
-                p =>
-                {
-                    Assert.Equal("Property", p.Property.Name);
-                });
-        }
-
-        [BindProperty]
-        private class ModelWithBindPropertyOnClass : EmptyPageModel
-        {
-            public int Property { get; set; }
-        }
-
         [Fact]
         public void CreateBoundProperties_SupportsGet_OnProperty()
         {
@@ -597,77 +572,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             public int Property { get; set; }
 
             public int IgnoreMe { get; set; }
-        }
-
-        [Fact]
-        public void CreateBoundProperties_SupportsGet_OnClass()
-        {
-            // Arrange
-            var type = typeof(ModelSupportsGetOnClass).GetTypeInfo();
-
-            // Act
-            var results = DefaultPageLoader.CreateBoundProperties(type);
-
-            // Assert
-            Assert.Collection(
-                results.OrderBy(p => p.Property.Name),
-                p =>
-                {
-                    Assert.Equal("Property", p.Property.Name);
-                    Assert.NotNull(p.BindingInfo.RequestPredicate);
-                    Assert.True(p.BindingInfo.RequestPredicate(new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext()
-                        {
-                            Request =
-                            {
-                                Method ="GET",
-                            }
-                        }
-                    }));
-                });
-        }
-
-        [BindProperty(SupportsGet = true)]
-        private class ModelSupportsGetOnClass : EmptyPageModel
-        {
-            public int Property { get; set; }
-        }
-
-        [Fact]
-        public void CreateBoundProperties_SupportsGet_Override()
-        {
-            // Arrange
-            var type = typeof(ModelSupportsGetOverride).GetTypeInfo();
-
-            // Act
-            var results = DefaultPageLoader.CreateBoundProperties(type);
-
-            // Assert
-            Assert.Collection(
-                results.OrderBy(p => p.Property.Name),
-                p =>
-                {
-                    Assert.Equal("Property", p.Property.Name);
-                    Assert.NotNull(p.BindingInfo.RequestPredicate);
-                    Assert.False(p.BindingInfo.RequestPredicate(new ActionContext()
-                    {
-                        HttpContext = new DefaultHttpContext()
-                        {
-                            Request =
-                            {
-                                Method ="GET",
-                            }
-                        }
-                    }));
-                });
-        }
-
-        [BindProperty(SupportsGet = true)]
-        private class ModelSupportsGetOverride : EmptyPageModel
-        {
-            [BindProperty(SupportsGet = false)]
-            public int Property { get; set; }
         }
 
         [Theory]

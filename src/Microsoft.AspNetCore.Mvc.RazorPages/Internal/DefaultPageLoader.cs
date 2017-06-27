@@ -239,9 +239,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             var properties = PropertyHelper.GetVisibleProperties(type.AsType());
 
-            // If the type has a [BindPropertyAttribute] then we'll consider any and all public properties bindable.
-            var bindPropertyOnType = type.GetCustomAttribute<BindPropertyAttribute>();
-
             var results = new List<PageBoundPropertyDescriptor>();
             for (var i = 0; i < properties.Length; i++)
             {
@@ -249,23 +246,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 var bindingInfo = BindingInfo.GetBindingInfo(property.Property.GetCustomAttributes());
 
                 // If there's no binding info then that means there are no model binding attributes on the
-                // property. So we won't bind this property unless there's a [BindProperty] on the type.
-                if (bindingInfo == null && bindPropertyOnType == null)
+                // property. So we won't bind this property.
+                if (bindingInfo == null)
                 {
                     continue;
                 }
-
-                // If this property is declared as part of a pages base class, then it's likely infrastructure,
-                // so skip it.
-                if (property.Property.DeclaringType.GetTypeInfo().IsDefined(typeof(PagesBaseClassAttribute)))
-                {
-                    continue;
-                }
-
-                bindingInfo = bindingInfo ?? new BindingInfo();
-
-                // Allow a predicate on the class to cascade if it wasn't set on the property.
-                bindingInfo.RequestPredicate = bindingInfo.RequestPredicate ?? ((IRequestPredicateProvider)bindPropertyOnType)?.RequestPredicate;
 
                 var descriptor = new PageBoundPropertyDescriptor()
                 {

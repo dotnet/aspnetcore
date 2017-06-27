@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 {
     /// <summary>
     /// An attribute for base classes for Pages and PageModels. Applying this attribute to a type
-    /// suppresses discovery of handler methods and bound properties for that type.
+    /// suppresses discovery of handler methods for that type.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = false)]
     public class PagesBaseClassAttribute : Attribute
