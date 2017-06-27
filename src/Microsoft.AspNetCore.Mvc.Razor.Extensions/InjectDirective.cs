@@ -14,7 +14,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             "inject",
             DirectiveKind.SingleLine,
-            builder => builder.AddTypeToken().AddMemberToken());
+            builder =>
+            {
+                builder.AddTypeToken().AddMemberToken();
+                builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
+            });
 
         public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)
         {

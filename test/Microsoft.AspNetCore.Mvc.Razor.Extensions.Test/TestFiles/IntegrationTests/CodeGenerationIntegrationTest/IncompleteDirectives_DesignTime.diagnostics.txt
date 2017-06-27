@@ -5,8 +5,11 @@ TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cs
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(7,7): Error RZ9999: The 'model' directive expects a type name.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,1): Error RZ9999: The 'model' directive may only occur once per document.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(8,8): Error RZ9999: The 'model' directive expects a type name.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(10,1): Error RZ9999: The 'inject' directive must exist prior to markup or code.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(10,8): Error RZ9999: The 'inject' directive expects a type name.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(11,1): Error RZ9999: The 'inject' directive must exist prior to markup or code.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(11,9): Error RZ9999: The 'inject' directive expects a type name.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,1): Error RZ9999: The 'inject' directive must exist prior to markup or code.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,26): Error RZ9999: The 'inject' directive expects an identifier.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(14,1): Error RZ9999: The 'namespace' directive must exist prior to markup or code.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(14,11): Error RZ9999: The 'namespace' directive expects a namespace name.
