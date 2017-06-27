@@ -21,10 +21,6 @@
     <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkVersion)" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" PrivateAssets="All" />
-  </ItemGroup>
-
   <!-- defines the default values for each item type -->
   <ItemDefinitionGroup>
     <!-- set PrivateAssets=None to ensure that all assets, including Build and Analyzer, are included in the nuspec -->
