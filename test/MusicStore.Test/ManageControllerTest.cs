@@ -92,7 +92,7 @@ namespace MusicStore.Controllers
         {
             public Task<AuthenticateResult> AuthenticateAsync(HttpContext context, string scheme)
             {
-                return Task.FromResult(AuthenticateResult.None());
+                return Task.FromResult(AuthenticateResult.NoResult());
             }
 
             public Task ChallengeAsync(HttpContext context, string scheme, AuthenticationProperties properties)
