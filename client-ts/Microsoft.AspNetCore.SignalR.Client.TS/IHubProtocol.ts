@@ -24,7 +24,12 @@ export interface CompletionMessage extends HubMessage {
     readonly result?: any;
 }
 
+export interface NegotiationMessage {
+    readonly protocol: string;
+}
+
 export interface IHubProtocol {
+    name(): string;
     parseMessages(input: string): HubMessage[];
     writeMessage(message: HubMessage): string;
 }

@@ -4,8 +4,9 @@ import { TransportType } from "./Transports"
 import { Subject, Observable } from "./Observable"
 export { TransportType } from "./Transports"
 export { HttpConnection } from "./HttpConnection"
-import { IHubProtocol, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage } from "./IHubProtocol";
+import { IHubProtocol, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, NegotiationMessage } from "./IHubProtocol";
 import { JsonHubProtocol } from "./JsonHubProtocol";
+import { TextMessageFormat } from "./Formatters"
 
 export class HubConnection {
     private connection: IConnection;
@@ -39,7 +40,7 @@ export class HubConnection {
 
             switch (message.type) {
                 case MessageType.Invocation:
-                    this.InvokeClientMethod(<InvocationMessage>message);
+                    this.invokeClientMethod(<InvocationMessage>message);
                     break;
                 case MessageType.Result:
                 case MessageType.Completion:
@@ -59,7 +60,7 @@ export class HubConnection {
         }
     }
 
-    private InvokeClientMethod(invocationMessage: InvocationMessage) {
+    private invokeClientMethod(invocationMessage: InvocationMessage) {
         let method = this.methods.get(invocationMessage.target);
         if (method) {
             method.apply(this, invocationMessage.arguments);
@@ -89,8 +90,11 @@ export class HubConnection {
         }
     }
 
-    start(): Promise<void> {
-        return this.connection.start();
+    async start(): Promise<void> {
+        await this.connection.start();
+        await this.connection.send(
+            TextMessageFormat.write(
+                JSON.stringify(<NegotiationMessage>{ protocol: this.protocol.name()})));
     }
 
     stop(): void {

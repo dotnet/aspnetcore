@@ -2,6 +2,10 @@
 import { IHubProtocol, HubMessage } from "./IHubProtocol";
 
 export class JsonHubProtocol implements IHubProtocol {
+    name(): string {
+        return "json"
+    }
+
     parseMessages(input: string): HubMessage[] {
         if (!input) {
             return [];
@@ -18,6 +22,6 @@ export class JsonHubProtocol implements IHubProtocol {
     }
 
     writeMessage(message: HubMessage): string {
-        return TextMessageFormat.write(JSON.stringify(message));   
+        return TextMessageFormat.write(JSON.stringify(message));
     }
 }

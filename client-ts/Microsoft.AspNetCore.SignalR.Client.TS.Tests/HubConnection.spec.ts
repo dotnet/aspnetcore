@@ -8,6 +8,19 @@ import { TextMessageFormat } from "../Microsoft.AspNetCore.SignalR.Client.TS/For
 import { asyncit as it, captureException } from './JasmineUtils';
 
 describe("HubConnection", () => {
+    describe("start", () => {
+        it("sends negotiation message", async () => {
+            let connection = new TestConnection();
+            let hubConnection = new HubConnection(connection);
+            await hubConnection.start();
+            expect(connection.sentData.length).toBe(1)
+            expect(JSON.parse(connection.sentData[0])).toEqual({
+                protocol: "json"
+            });
+            await hubConnection.stop();
+        });
+    });
+
     describe("invoke", () => {
         it("sends an invocation", async () => {
             let connection = new TestConnection();
