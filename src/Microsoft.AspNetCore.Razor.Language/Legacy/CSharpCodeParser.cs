@@ -1785,7 +1785,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     UsageError(Resources.FormatDuplicateDirective(descriptor.Directive));
                     return;
                 }
+            }
 
+            if (descriptor.Usage == DirectiveUsage.FileScopedSinglyOccurring ||
+                descriptor.Usage == DirectiveUsage.FileScopedMultipleOccurring)
+            {
                 var root = Context.Builder.ActiveBlocks.Last();
                 for (var i = 0; i < root.Children.Count; i++)
                 {

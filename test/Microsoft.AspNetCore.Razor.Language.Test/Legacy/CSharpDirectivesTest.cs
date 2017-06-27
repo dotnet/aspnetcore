@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     public class CSharpDirectivesTest : CsHtmlCodeParserTestBase
     {
         [Fact]
-        public void DirectiveDescriptor_FileScopedSinglyOccurring_ErrorsIfNestedInCode()
+        public void DirectiveDescriptor_FileScopedMultipleOccurring_CanHaveDuplicates()
         {
             // Arrange
             var descriptor = DirectiveDescriptor.CreateDirective(
@@ -20,7 +20,106 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine,
                 builder =>
                 {
-                    builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+                    builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
+                    builder.AddTypeToken();
+                });
+
+            // Act & Assert
+            ParseDocumentTest(
+@"@custom System.Text.Encoding.ASCIIEncoding
+@custom System.Text.Encoding.UTF8Encoding",
+                new[] { descriptor },
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new DirectiveBlock(new DirectiveChunkGenerator(descriptor),
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                        Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
+                        Factory.MetaCode(Environment.NewLine).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                    Factory.EmptyHtml(),
+                    new DirectiveBlock(new DirectiveChunkGenerator(descriptor),
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                        Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.UTF8Encoding", markup: false).AsDirectiveToken(descriptor.Tokens[0])),
+                    Factory.EmptyHtml()));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_FileScopedMultipleOccurring_MixedContentErrors()
+        {
+            // Arrange
+            var customDescriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                builder =>
+                {
+                    builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
+                    builder.AddTypeToken();
+                });
+            var chunkGenerator = new DirectiveChunkGenerator(customDescriptor);
+            chunkGenerator.Diagnostics.Add(
+                RazorDiagnostic.Create(
+                    new RazorError(
+                        Resources.FormatDirectiveMustExistBeforeMarkupOrCode("custom"),
+                        151 + Environment.NewLine.Length * 4, 4, 0, 7)));
+
+            // Act & Assert
+            ParseDocumentTest(
+@"@custom System.Text.Encoding.ASCIIEncoding
+@* There is invalid content beneath this *@
+<p>Should cause error</p>
+@* There is invalid content above this *@
+@custom Else",
+                new[] { customDescriptor },
+                new MarkupBlock(
+                    Factory.EmptyHtml(),
+                    new DirectiveBlock(new DirectiveChunkGenerator(customDescriptor),
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                        Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(customDescriptor.Tokens[0]),
+                        Factory.MetaCode(Environment.NewLine).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                    Factory.EmptyHtml(),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition).Accepts(AcceptedCharactersInternal.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(" There is invalid content beneath this ", HtmlSymbolType.RazorComment)).Accepts(AcceptedCharactersInternal.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition).Accepts(AcceptedCharactersInternal.None)),
+                    Factory.Markup(Environment.NewLine),
+                    BlockFactory.MarkupTagBlock("<p>"),
+                    Factory.Markup("Should cause error"),
+                    BlockFactory.MarkupTagBlock("</p>"),
+                    Factory.Markup(Environment.NewLine),
+                    new CommentBlock(
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition).Accepts(AcceptedCharactersInternal.None),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Comment, new HtmlSymbol(" There is invalid content above this ", HtmlSymbolType.RazorComment)).Accepts(AcceptedCharactersInternal.Any),
+                        Factory.MetaMarkup("*", HtmlSymbolType.RazorCommentStar).Accepts(AcceptedCharactersInternal.None),
+                        Factory.MarkupTransition(HtmlSymbolType.RazorCommentTransition).Accepts(AcceptedCharactersInternal.None)),
+                    Factory.Markup(Environment.NewLine).With(SpanChunkGenerator.Null),
+                    new DirectiveBlock(chunkGenerator,
+                        Factory.CodeTransition(),
+                        Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                        Factory.Span(SpanKindInternal.Code, "Else", markup: false).AsDirectiveToken(customDescriptor.Tokens[0])),
+                    Factory.EmptyHtml()));
+        }
+
+        [Theory]
+        [InlineData(DirectiveUsage.FileScopedSinglyOccurring)]
+        [InlineData(DirectiveUsage.FileScopedMultipleOccurring)]
+        public void DirectiveDescriptor_FileScopedSinglyOccurring_ErrorsIfNestedInCode(DirectiveUsage directiveUsage)
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                builder =>
+                {
+                    builder.Usage = directiveUsage;
                     builder.AddTypeToken();
                 });
             var chunkGenerator = new DirectiveChunkGenerator(descriptor);
@@ -51,8 +150,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
 
-        [Fact]
-        public void DirectiveDescriptor_FileScopedSinglyOccurring_ErrorsIfNestedInHtml()
+        [Theory]
+        [InlineData(DirectiveUsage.FileScopedSinglyOccurring)]
+        [InlineData(DirectiveUsage.FileScopedMultipleOccurring)]
+        public void DirectiveDescriptor_FileScoped_ErrorsIfNestedInHtml(DirectiveUsage directiveUsage)
         {
             // Arrange
             var descriptor = DirectiveDescriptor.CreateDirective(
@@ -60,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine,
                 builder =>
                 {
-                    builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+                    builder.Usage = directiveUsage;
                     builder.AddTypeToken();
                 });
             var chunkGenerator = new DirectiveChunkGenerator(descriptor);
@@ -129,8 +230,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml()));
         }
 
-        [Fact]
-        public void DirectiveDescriptor_FileScopedSinglyOccurring_CanBeBeneathOtherDirectives()
+        [Theory]
+        [InlineData(DirectiveUsage.FileScopedSinglyOccurring)]
+        [InlineData(DirectiveUsage.FileScopedMultipleOccurring)]
+        public void DirectiveDescriptor_FileScoped_CanBeBeneathOtherDirectives(DirectiveUsage directiveUsage)
         {
             // Arrange
             var customDescriptor = DirectiveDescriptor.CreateDirective(
@@ -138,7 +241,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine,
                 builder =>
                 {
-                    builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+                    builder.Usage = directiveUsage;
                     builder.AddTypeToken();
                 });
             var somethingDescriptor = DirectiveDescriptor.CreateDirective(
@@ -146,7 +249,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine,
                 builder =>
                 {
-                    builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+                    builder.Usage = directiveUsage;
                     builder.AddMemberToken();
                 });
 
@@ -172,8 +275,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml()));
         }
 
-        [Fact]
-        public void DirectiveDescriptor_FileScopedSinglyOccurring_CanBeBeneathOtherWhiteSpaceCommentsAndDirectives()
+        [Theory]
+        [InlineData(DirectiveUsage.FileScopedSinglyOccurring)]
+        [InlineData(DirectiveUsage.FileScopedMultipleOccurring)]
+        public void DirectiveDescriptor_FileScoped_CanBeBeneathOtherWhiteSpaceCommentsAndDirectives(DirectiveUsage directiveUsage)
         {
             // Arrange
             var customDescriptor = DirectiveDescriptor.CreateDirective(
@@ -181,7 +286,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine,
                 builder =>
                 {
-                    builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+                    builder.Usage = directiveUsage;
                     builder.AddTypeToken();
                 });
             var somethingDescriptor = DirectiveDescriptor.CreateDirective(
@@ -189,7 +294,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 DirectiveKind.SingleLine,
                 builder =>
                 {
-                    builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+                    builder.Usage = directiveUsage;
                     builder.AddMemberToken();
                 });
 

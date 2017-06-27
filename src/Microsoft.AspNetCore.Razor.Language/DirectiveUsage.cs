@@ -18,5 +18,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// <see cref="DirectiveKind.SingleLine"/>, the last occurrence of the directive is imported.
         /// </summary>
         FileScopedSinglyOccurring,
+
+        /// <summary>
+        /// Directive must exist prior to any HTML or code.
+        /// </summary>
+        FileScopedMultipleOccurring,
     }
 }
