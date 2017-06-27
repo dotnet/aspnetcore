@@ -8,7 +8,7 @@
     <FSharpNetSdkVersion>1.0.*</FSharpNetSdkVersion>
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
     <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
-    <MoqVersion>4.7.1</MoqVersion>
+    <MoqVersion>4.7.49</MoqVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
     <RoslynVersion>2.3.0-beta1</RoslynVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
