@@ -1,14 +1,9 @@
 <Project>
   <PropertyGroup>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);GenerateVSIX</PackageDependsOn>
-    <NuGetCommandLineVersion>4.1.0</NuGetCommandLineVersion>
     <VSIXName>Microsoft.VisualStudio.RazorExtension</VSIXName>
     <VSIXProject>$(RepositoryRoot)tooling\$(VSIXName)\$(VSIXName).csproj</VSIXProject>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="NuGet.CommandLine" Version="$(NuGetCommandLineVersion)" Condition="'$(OS)'=='Windows_NT'" />
-  </ItemGroup>
 
   <Target
     Name="GenerateVSIX"
@@ -29,13 +24,6 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_RestoreProject">
-    <PropertyGroup>
-      <NuGetExe>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))nuget.commandline\$(NuGetCommandLineVersion)\tools\nuget.exe</NuGetExe>
-    </PropertyGroup>
-    <Exec Command="$(NuGetExe) restore &quot;$(VSIXProject)&quot; -SolutionDir &quot;$(RepositoryRoot) &quot; -verbosity quiet" />
-  </Target>
-
   <Target Name="_BuildVSIX" Condition="'$(MSBuildExePath)'!=''">
     <PropertyGroup>
       <MSBuildArtifactsDir>$(ArtifactsDir)msbuild\</MSBuildArtifactsDir>
@@ -44,7 +32,8 @@
       <VSIXOutputPath>$(BuildDir)$(VSIXName).vsix</VSIXOutputPath>
     </PropertyGroup>
 
-    <CallTarget Targets="_RestoreProject" />
+    <Exec Command="&quot;$(MSBuildExePath)&quot; &quot;$(VSIXProject)&quot; /nologo /t:Restore /v:m" />
+
     <ItemGroup>
       <MSBuildArguments Include="
         $(VSIXProject);
