@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,6 +42,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _protocol = new JsonHubProtocol(new JsonSerializer());
 
             _cts = new CancellationTokenSource();
+
+            using (var memoryStream = new MemoryStream())
+            {
+                NegotiationProtocol.TryWriteProtocolNegotiationMessage(new NegotiationMessage(_protocol.Name), memoryStream);
+                Application.Out.TryWrite(memoryStream.ToArray());
+            }
         }
 
         public async Task<IList<HubMessage>> StreamAsync(string methodName, params object[] args)

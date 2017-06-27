@@ -2,11 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
@@ -14,6 +16,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
+using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
@@ -47,13 +50,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             _testServer = new TestServer(webHostBuilder);
         }
 
-        [Fact]
-        public async Task CheckFixedMessage()
+        [Theory]
+        [MemberData(nameof(HubProtocols))]
+        public async Task CheckFixedMessage(IHubProtocol protocol)
         {
             var loggerFactory = CreateLogger();
 
             var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
-            var connection = new HubConnection(httpConnection, loggerFactory);
+            var connection = new HubConnection(httpConnection, protocol, loggerFactory);
             try
             {
                 await connection.StartAsync();
@@ -68,14 +72,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task CanSendAndReceiveMessage()
+        [Theory]
+        [MemberData(nameof(HubProtocols))]
+        public async Task CanSendAndReceiveMessage(IHubProtocol protocol)
         {
             var loggerFactory = CreateLogger();
             const string originalMessage = "SignalR";
 
             var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
-            var connection = new HubConnection(httpConnection, loggerFactory);
+            var connection = new HubConnection(httpConnection, protocol, loggerFactory);
             try
             {
                 await connection.StartAsync();
@@ -90,14 +95,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task MethodsAreCaseInsensitive()
+        [Theory]
+        [MemberData(nameof(HubProtocols))]
+        public async Task MethodsAreCaseInsensitive(IHubProtocol protocol)
         {
             var loggerFactory = CreateLogger();
             const string originalMessage = "SignalR";
 
             var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
-            var connection = new HubConnection(httpConnection, loggerFactory);
+            var connection = new HubConnection(httpConnection, protocol, loggerFactory);
             try
             {
                 await connection.StartAsync();
@@ -112,14 +118,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task CanInvokeClientMethodFromServer()
+        [Theory]
+        [MemberData(nameof(HubProtocols))]
+        public async Task CanInvokeClientMethodFromServer(IHubProtocol protocol)
         {
             var loggerFactory = CreateLogger();
             const string originalMessage = "SignalR";
 
             var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
-            var connection = new HubConnection(httpConnection, loggerFactory);
+            var connection = new HubConnection(httpConnection, protocol, loggerFactory);
             try
             {
                 await connection.StartAsync();
@@ -137,13 +144,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task CanStreamClientMethodFromServer()
+        [Theory]
+        [MemberData(nameof(HubProtocols))]
+        public async Task CanStreamClientMethodFromServer(IHubProtocol protocol)
         {
             var loggerFactory = CreateLogger();
 
             var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
-            var connection = new HubConnection(httpConnection, loggerFactory);
+            var connection = new HubConnection(httpConnection, protocol, loggerFactory);
             try
             {
                 await connection.StartAsync();
@@ -160,13 +168,14 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        [Fact]
-        public async Task ServerClosesConnectionIfHubMethodCannotBeResolved()
+        [Theory]
+        [MemberData(nameof(HubProtocols))]
+        public async Task ServerClosesConnectionIfHubMethodCannotBeResolved(IHubProtocol hubProtocol)
         {
             var loggerFactory = CreateLogger();
 
             var httpConnection = new HttpConnection(new Uri("http://test/hubs"), TransportType.LongPolling, loggerFactory, _testServer.CreateHandler());
-            var connection = new HubConnection(httpConnection, loggerFactory);
+            var connection = new HubConnection(httpConnection, hubProtocol, loggerFactory);
             try
             {
                 await connection.StartAsync();
@@ -181,6 +190,13 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 await connection.DisposeAsync();
             }
         }
+
+        public static IEnumerable<object[]> HubProtocols() =>
+            new[]
+            {
+                new object[] { new JsonHubProtocol(new JsonSerializer()) },
+                new object[] { new MessagePackHubProtocol() },
+            };
 
         public void Dispose()
         {

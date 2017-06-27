@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const int StreamItemMessageType = 2;
         private const int CompletionMessageType = 3;
 
+        public string Name { get => "messagepack"; }
+
         public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
         {
             messages = new List<HubMessage>();

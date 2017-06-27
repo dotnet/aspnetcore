@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
@@ -173,6 +172,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                     _error = error
                 };
             }
+
+            public string Name { get => "MockHubProtocol"; }
 
             public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
             {

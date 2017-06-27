@@ -59,19 +59,36 @@ namespace Microsoft.AspNetCore.SignalR
 
         public async Task OnConnectedAsync(ConnectionContext connection)
         {
+            await ProcessNegotiate(connection);
+
             try
             {
-                // Resolve the Hub Protocol for the connection and store it in metadata
-                // Other components, outside the Hub, may need to know what protocol is in use
-                // for a particular connection, so we store it here.
-                connection.Metadata[HubConnectionMetadataNames.HubProtocol] = _protocolResolver.GetProtocol(connection);
-
                 await _lifetimeManager.OnConnectedAsync(connection);
                 await RunHubAsync(connection);
             }
             finally
             {
                 await _lifetimeManager.OnDisconnectedAsync(connection);
+            }
+        }
+
+        private async Task ProcessNegotiate(ConnectionContext connection)
+        {
+            while (await connection.Transport.In.WaitToReadAsync())
+            {
+                while (connection.Transport.In.TryRead(out var buffer))
+                {
+                    if (NegotiationProtocol.TryReadProtocolNegotiationMessage(buffer, out var negotiationMessage))
+                    {
+                        // Resolve the Hub Protocol for the connection and store it in metadata
+                        // Other components, outside the Hub, may need to know what protocol is in use
+                        // for a particular connection, so we store it here.
+                        connection.Metadata[HubConnectionMetadataNames.HubProtocol] =
+                            _protocolResolver.GetProtocol(negotiationMessage.Protocol, connection);
+
+                        return;
+                    }
+                }
             }
         }
 

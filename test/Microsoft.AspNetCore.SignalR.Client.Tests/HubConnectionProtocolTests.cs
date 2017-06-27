@@ -18,6 +18,25 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     public class HubConnectionProtocolTests
     {
         [Fact]
+        public async Task ClientSendsNegotationMessageWhenStartingConnection()
+        {
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(new JsonSerializer()), new LoggerFactory());
+            try
+            {
+                await hubConnection.StartAsync();
+                var negotiationMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
+
+                Assert.Equal("19:{\"protocol\":\"json\"};", negotiationMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().OrTimeout();
+            }
+        }
+
+        [Fact]
         public async Task InvokeSendsAnInvocationMessage()
         {
             var connection = new TestConnection();
@@ -28,6 +47,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var invokeTask = hubConnection.Invoke("Foo");
 
+                // skip negotiation
+                await connection.ReadSentTextMessageAsync().OrTimeout();
                 var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
                 Assert.Equal("59:{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"arguments\":[]};", invokeMessage);
@@ -50,6 +71,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var channel = hubConnection.Stream<object>("Foo");
 
+                // skip negotiation
+                await connection.ReadSentTextMessageAsync().OrTimeout();
                 var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
                 Assert.Equal("59:{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"arguments\":[]};", invokeMessage);

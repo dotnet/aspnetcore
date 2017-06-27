@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -77,6 +78,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public async Task StartAsync()
         {
             await _connection.StartAsync();
+
+            using (var memoryStream = new MemoryStream())
+            {
+                NegotiationProtocol.TryWriteProtocolNegotiationMessage(new NegotiationMessage(_protocol.Name), memoryStream);
+                await _connection.SendAsync(memoryStream.ToArray(), _connectionActive.Token);
+            }
         }
 
         public async Task DisposeAsync()
