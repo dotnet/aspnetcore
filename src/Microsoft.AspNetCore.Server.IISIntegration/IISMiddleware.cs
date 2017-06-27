@@ -2,12 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -20,13 +19,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     {
         private const string MSAspNetCoreClientCert = "MS-ASPNETCORE-CLIENTCERT";
         private const string MSAspNetCoreToken = "MS-ASPNETCORE-TOKEN";
+        private const string MSAspNetCoreEvent = "MS-ASPNETCORE-EVENT";
+        private const string ANCMShutdownEventHeaderValue = "shutdown";
+        private static readonly PathString ANCMRequestPath = new PathString("/iisintegration");
 
         private readonly RequestDelegate _next;
         private readonly IISOptions _options;
         private readonly ILogger _logger;
         private readonly string _pairingToken;
+        private readonly IApplicationLifetime _applicationLifetime;
 
-        public IISMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<IISOptions> options, string pairingToken, IAuthenticationSchemeProvider authentication)
+        public IISMiddleware(RequestDelegate next, ILoggerFactory loggerFactory, IOptions<IISOptions> options, string pairingToken, IAuthenticationSchemeProvider authentication, IApplicationLifetime applicationLifetime)
         {
             if (next == null)
             {
@@ -39,6 +42,10 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
+            }
+            if (applicationLifetime == null)
+            {
+                throw new ArgumentNullException(nameof(applicationLifetime));
             }
             if (string.IsNullOrEmpty(pairingToken))
             {
@@ -54,6 +61,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             }
 
             _pairingToken = pairingToken;
+            _applicationLifetime = applicationLifetime;
             _logger = loggerFactory.CreateLogger<IISMiddleware>();
         }
 
@@ -62,7 +70,18 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             if (!string.Equals(_pairingToken, httpContext.Request.Headers[MSAspNetCoreToken], StringComparison.Ordinal))
             {
                 _logger.LogError($"'{MSAspNetCoreToken}' does not match the expected pairing token '{_pairingToken}', request rejected.");
-                httpContext.Response.StatusCode = 400;
+                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                return;
+            }
+
+            // Handle shutdown from ANCM
+            if (HttpMethods.IsPost(httpContext.Request.Method) &&
+                httpContext.Request.Path.Equals(ANCMRequestPath) &&
+                string.Equals(ANCMShutdownEventHeaderValue, httpContext.Request.Headers[MSAspNetCoreEvent], StringComparison.OrdinalIgnoreCase))
+            {
+                // Execute shutdown task on background thread without waiting for completion
+                var shutdownTask = Task.Run(() => _applicationLifetime.StopApplication());
+                httpContext.Response.StatusCode = StatusCodes.Status202Accepted;
                 return;
             }
 

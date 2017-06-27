@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
@@ -70,6 +72,165 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var response = await server.CreateClient().SendAsync(req);
             Assert.False(assertsExecuted);
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("/", "/iisintegration", "shutdown")]
+        [InlineData("/", "/iisintegration", "Shutdown")]
+        [InlineData("/pathBase", "/pathBase/iisintegration", "shutdown")]
+        [InlineData("/pathBase", "/pathBase/iisintegration", "Shutdown")]
+        public async Task MiddlewareShutsdownGivenANCMShutdown(string pathBase, string requestPath, string shutdownEvent)
+        {
+            var requestExecuted = new ManualResetEvent(false);
+            var applicationStoppingFired = new ManualResetEvent(false);
+            var builder = new WebHostBuilder()
+                .UseSetting("TOKEN", "TestToken")
+                .UseSetting("PORT", "12345")
+                .UseSetting("APPL_PATH", pathBase)
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.Set());
+
+                    app.Run(context =>
+                    {
+                        requestExecuted.Set();
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, requestPath);
+            request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
+            request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-EVENT", shutdownEvent);
+            var response = await server.CreateClient().SendAsync(request);
+
+            Assert.True(applicationStoppingFired.WaitOne(TimeSpan.FromSeconds(5)));
+            Assert.False(requestExecuted.WaitOne(0));
+            Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+        }
+
+        public static TheoryData<HttpMethod> InvalidShutdownMethods
+        {
+            get
+            {
+                return new TheoryData<HttpMethod>
+                {
+                    HttpMethod.Put,
+                    HttpMethod.Trace,
+                    HttpMethod.Head,
+                    HttpMethod.Get,
+                    HttpMethod.Delete,
+                    HttpMethod.Options
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidShutdownMethods))]
+        public async Task MiddlewareIgnoresShutdownGivenWrongMethod(HttpMethod method)
+        {
+            var requestExecuted = new ManualResetEvent(false);
+            var applicationStoppingFired = new ManualResetEvent(false);
+            var builder = new WebHostBuilder()
+                .UseSetting("TOKEN", "TestToken")
+                .UseSetting("PORT", "12345")
+                .UseSetting("APPL_PATH", "/")
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.Set());
+
+                    app.Run(context =>
+                    {
+                        requestExecuted.Set();
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var request = new HttpRequestMessage(method, "/iisintegration");
+            request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
+            request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-EVENT", "shutdown");
+            var response = await server.CreateClient().SendAsync(request);
+
+            Assert.False(applicationStoppingFired.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(requestExecuted.WaitOne(0));
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("/")]
+        [InlineData("/path")]
+        [InlineData("/path/iisintegration")]
+        public async Task MiddlewareIgnoresShutdownGivenWrongPath(string path)
+        {
+            var requestExecuted = new ManualResetEvent(false);
+            var applicationStoppingFired = new ManualResetEvent(false);
+            var builder = new WebHostBuilder()
+                .UseSetting("TOKEN", "TestToken")
+                .UseSetting("PORT", "12345")
+                .UseSetting("APPL_PATH", "/")
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.Set());
+
+                    app.Run(context =>
+                    {
+                        requestExecuted.Set();
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, path);
+            request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
+            request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-EVENT", "shutdown");
+            var response = await server.CreateClient().SendAsync(request);
+
+            Assert.False(applicationStoppingFired.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(requestExecuted.WaitOne(0));
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Theory]
+        [InlineData("event")]
+        [InlineData("")]
+        [InlineData(null)]
+        public async Task MiddlewareIgnoresShutdownGivenWrongEvent(string shutdownEvent)
+        {
+            var requestExecuted = new ManualResetEvent(false);
+            var applicationStoppingFired = new ManualResetEvent(false);
+            var builder = new WebHostBuilder()
+                .UseSetting("TOKEN", "TestToken")
+                .UseSetting("PORT", "12345")
+                .UseSetting("APPL_PATH", "/")
+                .UseIISIntegration()
+                .Configure(app =>
+                {
+                    var appLifetime = app.ApplicationServices.GetRequiredService<IApplicationLifetime>();
+                    appLifetime.ApplicationStopping.Register(() => applicationStoppingFired.Set());
+
+                    app.Run(context =>
+                    {
+                        requestExecuted.Set();
+                        return Task.FromResult(0);
+                    });
+                });
+            var server = new TestServer(builder);
+
+            var request = new HttpRequestMessage(HttpMethod.Post, "/iisintegration");
+            request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-TOKEN", "TestToken");
+            request.Headers.TryAddWithoutValidation("MS-ASPNETCORE-EVENT", shutdownEvent);
+            var response = await server.CreateClient().SendAsync(request);
+
+            Assert.False(applicationStoppingFired.WaitOne(TimeSpan.FromSeconds(1)));
+            Assert.True(requestExecuted.WaitOne(0));
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
         [Fact]
