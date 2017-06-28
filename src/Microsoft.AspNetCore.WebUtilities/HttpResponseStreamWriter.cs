@@ -16,11 +16,7 @@ namespace Microsoft.AspNetCore.WebUtilities
     public class HttpResponseStreamWriter : TextWriter
     {
         private const int MinBufferSize = 128;
-
-        /// <summary>
-        /// Default buffer size.
-        /// </summary>
-        public const int DefaultBufferSize = 1024;
+        internal const int DefaultBufferSize = 16 * 1024;
 
         private Stream _stream;
         private readonly Encoder _encoder;
@@ -50,39 +46,19 @@ namespace Microsoft.AspNetCore.WebUtilities
             ArrayPool<byte> bytePool,
             ArrayPool<char> charPool)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
             if (!stream.CanWrite)
             {
                 throw new ArgumentException(Resources.HttpResponseStreamWriter_StreamNotWritable, nameof(stream));
             }
 
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
+            Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
+            _bytePool = bytePool ?? throw new ArgumentNullException(nameof(bytePool));
+            _charPool = charPool ?? throw new ArgumentNullException(nameof(charPool));
+            _stream = stream ?? throw new ArgumentNullException(nameof(stream));
 
-            if (bytePool == null)
-            {
-                throw new ArgumentNullException(nameof(bytePool));
-            }
-
-            if (charPool == null)
-            {
-                throw new ArgumentNullException(nameof(charPool));
-            }
-
-            _stream = stream;
-            Encoding = encoding;
             _charBufferSize = bufferSize;
 
             _encoder = encoding.GetEncoder();
-            _bytePool = bytePool;
-            _charPool = charPool;
-
             _charBuffer = charPool.Rent(bufferSize);
 
             try

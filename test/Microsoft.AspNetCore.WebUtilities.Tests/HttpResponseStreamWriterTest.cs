@@ -161,10 +161,10 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
         }
 
         [Theory]
-        [InlineData(1023)]
-        [InlineData(1024)]
-        [InlineData(1050)]
-        [InlineData(2048)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize - 1)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1)]
+        [InlineData(HttpResponseStreamWriter.DefaultBufferSize * 2)]
         public async Task FlushesBuffer_ButNotStream_OnFlushAsync(int byteLength)
         {
             // Arrange
