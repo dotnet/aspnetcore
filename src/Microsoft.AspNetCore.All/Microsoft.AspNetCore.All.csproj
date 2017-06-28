@@ -20,6 +20,7 @@
   <ItemGroup>
     <Content Include="build\**\*.xml" PackagePath="%(Identity)" />
     <Content Include="build\**\*.targets" PackagePath="%(Identity)" />
+    <Content Include="lib\$(TargetFramework)\_._" PackagePath="%(Identity)" />
   </ItemGroup>
 
 </Project>
