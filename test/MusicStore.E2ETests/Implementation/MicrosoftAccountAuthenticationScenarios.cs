@@ -1,12 +1,13 @@
 using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace E2ETests
@@ -41,33 +42,30 @@ namespace E2ETests
             Assert.Equal<string>("custom", queryItems["custom_redirect_uri"]);
 
             //Check for the correlation cookie
-            Assert.NotEmpty(
-                _httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri))
-                .Cast<Cookie>()
-                .Where(cookie => cookie.Name.StartsWith(".AspNetCore.Correlation.Microsoft")));
+            // Workaround for https://github.com/dotnet/corefx/issues/21250
+            Assert.True(response.Headers.TryGetValues("Set-Cookie", out var setCookieValues));
+            var setCookie = SetCookieHeaderValue.ParseList(setCookieValues.ToList());
+            Assert.Contains(setCookie, c => c.Name.StartsWith(".AspNetCore.Correlation.Microsoft", StringComparison.OrdinalIgnoreCase));
 
-            //This is just to generate a correlation cookie. Previous step would generate this cookie, but we have reset the handler now.
+            // This is just enable the auto-redirect.
             _httpClientHandler = new HttpClientHandler();
             _httpClient = new HttpClient(_httpClientHandler) { BaseAddress = new Uri(_deploymentResult.ApplicationBaseUri) };
-
-            response = await DoGetAsync("Account/Login");
-            responseContent = await response.Content.ReadAsStringAsync();
-            formParameters = new List<KeyValuePair<string, string>>
+            foreach (var header in SetCookieHeaderValue.ParseList(response.Headers.GetValues("Set-Cookie").ToList()))
             {
-                new KeyValuePair<string, string>("provider", "Microsoft"),
-                new KeyValuePair<string, string>("returnUrl", "/"),
-                new KeyValuePair<string, string>("__RequestVerificationToken", HtmlDOMHelper.RetrieveAntiForgeryToken(responseContent, "/Account/ExternalLogin")),
-            };
-
-            content = new FormUrlEncodedContent(formParameters.ToArray());
-            response = await DoPostAsync("Account/ExternalLogin", content);
+                // Workaround for https://github.com/dotnet/corefx/issues/21250
+                // The path of the cookie must either match the URI or be a prefix of it due to the fact
+                // that CookieContainer doesn't support the latest version of the standard for cookies.
+                var uri = new Uri(new Uri(_deploymentResult.ApplicationBaseUri), header.Path.ToString());
+                _httpClientHandler.CookieContainer.Add(uri, new Cookie(header.Name.ToString(), header.Value.ToString()));
+            }
+            
             //Post a message to the MicrosoftAccount middleware
             response = await DoGetAsync("signin-microsoft?code=ValidCode&state=ValidStateData");
             await ThrowIfResponseStatusNotOk(response);
             responseContent = await response.Content.ReadAsStringAsync();
 
             //Correlation cookie not getting cleared after successful signin?
-            Assert.DoesNotContain(".AspNetCore.Correlation.Microsoft", GetCookieNames());
+            Assert.DoesNotContain(".AspNetCore.Correlation.Microsoft", GetCookieNames(_deploymentResult.ApplicationBaseUri + "signin-microsoft"));
             Assert.Equal(_deploymentResult.ApplicationBaseUri + "Account/ExternalLoginCallback?ReturnUrl=%2F", response.RequestMessage.RequestUri.AbsoluteUri);
 
             formParameters = new List<KeyValuePair<string, string>>

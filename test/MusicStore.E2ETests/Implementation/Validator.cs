@@ -527,9 +527,14 @@ namespace E2ETests
             }
         }
 
-        private IEnumerable<string> GetCookieNames()
+        private IEnumerable<string> GetCookieNames(string uri = null)
         {
-            return _httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri))
+            if (uri == null)
+            {
+                uri = _deploymentResult.ApplicationBaseUri;
+            }
+
+            return _httpClientHandler.CookieContainer.GetCookies(new Uri(uri))
                 .OfType<Cookie>()
                 .Select(c => c.Name);
         }
