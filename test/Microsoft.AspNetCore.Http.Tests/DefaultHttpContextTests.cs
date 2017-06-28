@@ -7,6 +7,7 @@ using System.Linq;
 using System.Net.WebSockets;
 using System.Reflection;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Xunit;
@@ -301,12 +302,12 @@ namespace Microsoft.AspNetCore.Http
                 _store.Clear();
             }
 
-            public Task CommitAsync()
+            public Task CommitAsync(CancellationToken cancellationToken)
             {
                 return Task.FromResult(0);
             }
 
-            public Task LoadAsync()
+            public Task LoadAsync(CancellationToken cancellationToken)
             {
                 return Task.FromResult(0);
             }

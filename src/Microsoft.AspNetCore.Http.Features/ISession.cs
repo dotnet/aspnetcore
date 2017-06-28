@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Http
@@ -28,13 +29,13 @@ namespace Microsoft.AspNetCore.Http
         /// Load the session from the data store. This may throw if the data store is unavailable.
         /// </summary>
         /// <returns></returns>
-        Task LoadAsync();
+        Task LoadAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Store the session in the data store. This may throw if the data store is unavailable.
         /// </summary>
         /// <returns></returns>
-        Task CommitAsync();
+        Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Retrieve the value of the given key, if present.
