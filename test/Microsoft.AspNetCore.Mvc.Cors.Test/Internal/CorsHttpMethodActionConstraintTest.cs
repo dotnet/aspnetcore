@@ -5,13 +5,14 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Cors.Internal
 {
-    public class HttpMethodActionConstraintTest
+    public class CorsHttpMethodActionConstraintTest
     {
         public static TheoryData AcceptCaseInsensitiveData =
             new TheoryData<IEnumerable<string>, string>
@@ -26,12 +27,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         [Theory]
         [MemberData(nameof(AcceptCaseInsensitiveData))]
-        public void HttpMethodActionConstraint_IgnoresPreflightRequests(IEnumerable<string> httpMethods, string accessControlMethod)
+        public void HttpMethodActionConstraint_Accept_Preflight_CaseInsensitive(IEnumerable<string> httpMethods, string accessControlMethod)
         {
             // Arrange
-            var constraint = new HttpMethodActionConstraint(httpMethods);
+            var constraint = new CorsHttpMethodActionConstraint(new HttpMethodActionConstraint(httpMethods)) as IActionConstraint;
             var context = CreateActionConstraintContext(constraint);
             context.RouteContext = CreateRouteContext("oPtIoNs", accessControlMethod);
+
+            // Act
+            var result = constraint.Accept(context);
+
+            // Assert
+            Assert.True(result, "Request should have been accepted.");
+        }
+
+        [Fact]
+        public void HttpMethodActionConstraint_RejectsOptionsRequest_WithoutAccessControlMethod()
+        {
+            // Arrange
+            var constraint = new CorsHttpMethodActionConstraint(new HttpMethodActionConstraint(new[] { "GET", "Post" })) as IActionConstraint;
+            var context = CreateActionConstraintContext(constraint);
+            context.RouteContext = CreateRouteContext("oPtIoNs", accessControlMethod: "");
 
             // Act
             var result = constraint.Accept(context);
@@ -45,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void HttpMethodActionConstraint_Accept_CaseInsensitive(IEnumerable<string> httpMethods, string expectedMethod)
         {
             // Arrange
-            var constraint = new HttpMethodActionConstraint(httpMethods);
+            var constraint = new CorsHttpMethodActionConstraint(new HttpMethodActionConstraint(httpMethods)) as IActionConstraint;
             var context = CreateActionConstraintContext(constraint);
             context.RouteContext = CreateRouteContext(expectedMethod);
 
@@ -56,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.True(result, "Request should have been accepted.");
         }
 
-        private static ActionConstraintContext CreateActionConstraintContext(HttpMethodActionConstraint constraint)
+        private static ActionConstraintContext CreateActionConstraintContext(IActionConstraint constraint)
         {
             var context = new ActionConstraintContext();
 
@@ -77,7 +93,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             if (accessControlMethod != null)
             {
                 httpContext.Request.Headers.Add("Origin", StringValues.Empty);
-                httpContext.Request.Headers.Add("Access-Control-Request-Method", accessControlMethod);
+                if (accessControlMethod != string.Empty)
+                {
+                    httpContext.Request.Headers.Add("Access-Control-Request-Method", accessControlMethod);
+                }
             }
 
             var routeContext = new RouteContext(httpContext);
