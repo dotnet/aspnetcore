@@ -40,6 +40,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         "SelectedCategory.CategoryId"
                     },
                     {
+                        (Expression<Func<LowerModel, int>>)(testModel => testModel.selectedcategory.CategoryId),
+                        "selectedcategory.CategoryId"
+                    },
+                    {
                         (Expression<Func<TestModel, string>>)(model => model.SelectedCategory.CategoryName.MainCategory),
                         "SelectedCategory.CategoryName.MainCategory"
                     },
@@ -72,6 +76,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         "[3].SelectedCategory"
                     },
                     {
+                        (Expression<Func<IList<LowerModel>, Category>>)(model => model[i].selectedcategory),
+                        "[3].selectedcategory"
+                    },
+                    {
                         (Expression<Func<IDictionary<string, TestModel>, string>>)(model => model[key].SelectedCategory.CategoryName.MainCategory),
                         "[TestModel].SelectedCategory.CategoryName.MainCategory"
                     },
@@ -88,8 +96,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         "[2].PreferredCategories[3].CategoryId"
                     },
                     {
+                        (Expression<Func<IList<LowerModel>, int>>)(model => model[2].preferredcategories[i].CategoryId),
+                        "[2].preferredcategories[3].CategoryId"
+                    },
+                    {
                         (Expression<Func<IList<TestModel>, string>>)(model => model.FirstOrDefault().Name),
                         "Name"
+                    },
+                    {
+                        (Expression<Func<IList<LowerModel>, string>>)(model => model.FirstOrDefault().name),
+                        "name"
                     },
                     {
                         (Expression<Func<IList<TestModel>, string>>)(model => model.FirstOrDefault().Model),
@@ -286,8 +302,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         (Expression<Func<TestModel, CategoryName>>)(model => model.SelectedCategory.CategoryName)
                     },
                     {
+                        (Expression<Func<TestModel, CategoryName>>)(model => model.SelectedCategory.CategoryName),
+                        (Expression<Func<LowerModel, CategoryName>>)(model => model.selectedcategory.CategoryName)
+                    },
+                    {
                         (Expression<Func<TestModel, string>>)(model => model.Model),
                         (Expression<Func<TestModel, string>>)(model => model.Name)
+                    },
+                    {
+                        (Expression<Func<TestModel, string>>)(model => model.Model),
+                        (Expression<Func<LowerModel, string>>)(model => model.model)
+                    },
+                    {
+                        (Expression<Func<TestModel, string>>)(model => model.Name),
+                        (Expression<Func<LowerModel, string>>)(model => model.name)
                     },
                     {
                         (Expression<Func<TestModel, CategoryName>>)(model => model.SelectedCategory.CategoryName),
@@ -302,12 +330,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                         (Expression<Func<TestModel, string>>)(model => model.SelectedCategory.CategoryName.MainCategory)
                     },
                     {
+                        (Expression<Func<IList<TestModel>, Category>>)(model => model[2].SelectedCategory),
+                        (Expression<Func<IList<LowerModel>, Category>>)(model => model[2].selectedcategory)
+                    },
+                    {
                         (Expression<Func<TestModel, int>>)(testModel => testModel.SelectedCategory.CategoryId),
                         (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory)
                     },
                     {
                         (Expression<Func<IDictionary<string, TestModel>, string>>)(model => model[key].SelectedCategory.CategoryName.MainCategory),
                         (Expression<Func<TestModel, Category>>)(model => model.SelectedCategory)
+                    },
+                    {
+                        (Expression<Func<IDictionary<string, TestModel>, string>>)(model => model[key].SelectedCategory.CategoryName.MainCategory),
+                        (Expression<Func<IDictionary<string, LowerModel>, string>>)(model => model[key].selectedcategory.CategoryName.MainCategory)
                     },
                     {
                         (Expression<Func<TestModel, string>>)(m => Model),
@@ -406,6 +442,17 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             public Category SelectedCategory { get; set; }
 
             public IList<Category> PreferredCategories { get; set; }
+        }
+
+        private class LowerModel
+        {
+            public string name { get; set; }
+
+            public string model { get; set; }
+
+            public Category selectedcategory { get; set; }
+
+            public IList<Category> preferredcategories { get; set; }
         }
 
         private class Category

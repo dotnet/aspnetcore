@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                                 return true;
                             }
 
-                            if (!string.Equals(memberName1, memberName2, StringComparison.OrdinalIgnoreCase))
+                            if (!string.Equals(memberName1, memberName2, StringComparison.Ordinal))
                             {
                                 return false;
                             }
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                             break;
                         }
 
-                        hashCodeCombiner.Add(memberName, StringComparer.OrdinalIgnoreCase);
+                        hashCodeCombiner.Add(memberName, StringComparer.Ordinal);
                         expression = memberExpression.Expression;
                     }
                     else
