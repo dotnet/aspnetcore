@@ -24,6 +24,21 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         }
 
         [Fact]
+        public void GenericAdd_UsesTypeFilterAttribute()
+        {
+            // Arrange
+            var collection = new FilterCollection();
+
+            // Act
+            var added = collection.Add<MyFilter>();
+
+            // Assert
+            var typeFilter = Assert.IsType<TypeFilterAttribute>(added);
+            Assert.Equal(typeof(MyFilter), typeFilter.ImplementationType);
+            Assert.Same(typeFilter, Assert.Single(collection));
+        }
+
+        [Fact]
         public void Add_WithOrder_SetsOrder()
         {
             // Arrange
@@ -31,6 +46,19 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             // Act
             var added = collection.Add(typeof(MyFilter), 17);
+
+            // Assert
+            Assert.Equal(17, Assert.IsAssignableFrom<IOrderedFilter>(added).Order);
+        }
+
+        [Fact]
+        public void GenericAdd_WithOrder_SetsOrder()
+        {
+            // Arrange
+            var collection = new FilterCollection();
+
+            // Act
+            var added = collection.Add<MyFilter>(17);
 
             // Assert
             Assert.Equal(17, Assert.IsAssignableFrom<IOrderedFilter>(added).Order);
@@ -67,6 +95,21 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         }
 
         [Fact]
+        public void GenericAddService_UsesServiceFilterAttribute()
+        {
+            // Arrange
+            var collection = new FilterCollection();
+
+            // Act
+            var added = collection.AddService<MyFilter>();
+
+            // Assert
+            var serviceFilter = Assert.IsType<ServiceFilterAttribute>(added);
+            Assert.Equal(typeof(MyFilter), serviceFilter.ServiceType);
+            Assert.Same(serviceFilter, Assert.Single(collection));
+        }
+
+        [Fact]
         public void AddService_SetsOrder()
         {
             // Arrange
@@ -74,6 +117,19 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             // Act
             var added = collection.AddService(typeof(MyFilter), 17);
+
+            // Assert
+            Assert.Equal(17, Assert.IsAssignableFrom<IOrderedFilter>(added).Order);
+        }
+
+        [Fact]
+        public void GenericAddService_SetsOrder()
+        {
+            // Arrange
+            var collection = new FilterCollection();
+
+            // Act
+            var added = collection.AddService<MyFilter>(17);
 
             // Assert
             Assert.Equal(17, Assert.IsAssignableFrom<IOrderedFilter>(added).Order);
