@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     section.Children.Add(directive.Node.Children[i]);
                 }
 
-                directive.Replace(section);
+                directive.InsertAfter(section);
             }
         }
     }

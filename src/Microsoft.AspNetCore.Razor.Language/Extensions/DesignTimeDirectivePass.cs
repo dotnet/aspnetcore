@@ -9,8 +9,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
     {
         internal const string DesignTimeVariable = "__o";
 
-        // This needs to run before other directive classifiers.
-        public override int Order => -10;
+        // This needs to run after other directive classifiers. Any DirectiveToken that is not removed 
+        // by the previous classifiers will have auto-generated design time support.
+        public override int Order => DefaultFeatureOrder;
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {

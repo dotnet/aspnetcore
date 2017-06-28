@@ -66,7 +66,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var @class = @namespace.Children[0];
             var method = SingleChild<MethodDeclarationIntermediateNode>(@class);
 
-            var section = SingleChild<SectionIntermediateNode>(method);
+            Children(
+                method,
+                node => Assert.IsType<DirectiveIntermediateNode>(node),
+                node => Assert.IsType<SectionIntermediateNode>(node));
+
+            var section = method.Children[1] as SectionIntermediateNode;
             Assert.Equal("Header", section.Name);
             Children(section, c => Html(" <p>Hello World</p> ", c));
         }

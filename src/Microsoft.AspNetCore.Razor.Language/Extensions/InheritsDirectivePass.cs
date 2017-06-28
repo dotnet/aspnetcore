@@ -19,12 +19,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             foreach (var inherits in documentNode.FindDirectiveReferences(InheritsDirective.Directive))
             {
-                inherits.Remove();
-
                 var token = ((DirectiveIntermediateNode)inherits.Node).Tokens.FirstOrDefault();
                 if (token != null)
                 {
-                    
                     @class.BaseType = token.Content;
                     break;
                 }

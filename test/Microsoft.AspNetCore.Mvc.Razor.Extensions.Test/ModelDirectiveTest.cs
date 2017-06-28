@@ -259,6 +259,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
             }
 
+            // InheritsDirectivePass needs to run before ModelDirective.
+            var pass = new InheritsDirectivePass()
+            {
+                Engine = engine
+            };
+            pass.Execute(codeDocument, codeDocument.GetDocumentIntermediateNode());
+
             return codeDocument.GetDocumentIntermediateNode();
         }
 

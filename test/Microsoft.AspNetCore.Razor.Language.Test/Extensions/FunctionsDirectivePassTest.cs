@@ -35,7 +35,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         }
 
         [Fact]
-        public void Execute_MovesStatementsToClassLevel()
+        public void Execute_AddsStatementsToClassLevel()
         {
             // Arrange
             var engine = CreateEngine();
@@ -68,8 +68,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 node => Assert.IsType<MethodDeclarationIntermediateNode>(node),
                 node => CSharpCode(" var value = true; ", node));
 
-            var method = (MethodDeclarationIntermediateNode)@class.Children[0];
-            Assert.Empty(method.Children);
+            var method = @class.Children[0];
+            Children(
+                method,
+                node => Assert.IsType<DirectiveIntermediateNode>(node));
         }
 
         private static RazorEngine CreateEngine()

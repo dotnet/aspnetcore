@@ -17,8 +17,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             foreach (var functions in documentNode.FindDirectiveReferences(FunctionsDirective.Directive))
             {
-                functions.Remove();
-
                 for (var i = 0; i < functions.Node.Children.Count; i++)
                 {
                     @class.Children.Add(functions.Node.Children[i]);

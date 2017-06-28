@@ -94,18 +94,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
 
                 var baseType = visitor.Class?.BaseType?.Replace("<TModel>", "<" + modelType + ">");
-                for (var i = visitor.InheritsDirectives.Count - 1; i >= 0; i--)
-                {
-                    var directive = visitor.InheritsDirectives[i];
-                    var tokens = directive.Tokens.ToArray();
-                    if (tokens.Length >= 1)
-                    {
-                        baseType = tokens[0].Content.Replace("<TModel>", "<" + modelType + ">");
-                        tokens[0].Content = baseType;
-                        break;
-                    }
-                }
-
                 visitor.Class.BaseType = baseType;
             }
         }
@@ -115,8 +103,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             public NamespaceDeclarationIntermediateNode Namespace { get; private set; }
 
             public ClassDeclarationIntermediateNode Class { get; private set; }
-
-            public IList<DirectiveIntermediateNode> InheritsDirectives { get; } = new List<DirectiveIntermediateNode>();
 
             public IList<DirectiveIntermediateNode> ModelDirectives { get; } = new List<DirectiveIntermediateNode>();
 
@@ -145,10 +131,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 if (node.Descriptor == Directive)
                 {
                     ModelDirectives.Add(node);
-                }
-                else if (node.Descriptor.Directive == "inherits")
-                {
-                    InheritsDirectives.Add(node);
                 }
             }
         }
