@@ -3,6 +3,7 @@
 
 using System;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.DataProtection;
@@ -98,7 +99,7 @@ namespace Microsoft.AspNetCore.Session
             }
 
             var feature = new SessionFeature();
-            feature.Session = _sessionStore.Create(sessionKey, _options.IdleTimeout, tryEstablishSession, isNewSessionKey);
+            feature.Session = _sessionStore.Create(sessionKey, _options.IdleTimeout, _options.IOTimeout, tryEstablishSession, isNewSessionKey);
             context.Features.Set<ISessionFeature>(feature);
 
             try
@@ -113,7 +114,7 @@ namespace Microsoft.AspNetCore.Session
                 {
                     try
                     {
-                        await feature.Session.CommitAsync();
+                        await feature.Session.CommitAsync(context.RequestAborted);
                     }
                     catch (Exception ex)
                     {

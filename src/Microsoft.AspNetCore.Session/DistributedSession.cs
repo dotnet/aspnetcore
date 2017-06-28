@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Caching.Distributed;
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Session
         private readonly IDistributedCache _cache;
         private readonly string _sessionKey;
         private readonly TimeSpan _idleTimeout;
+        private readonly TimeSpan _ioTimeout;
         private readonly Func<bool> _tryEstablishSession;
         private readonly ILogger _logger;
         private IDictionary<EncodedKey, byte[]> _store;
@@ -38,6 +40,7 @@ namespace Microsoft.AspNetCore.Session
             IDistributedCache cache,
             string sessionKey,
             TimeSpan idleTimeout,
+            TimeSpan ioTimeout,
             Func<bool> tryEstablishSession,
             ILoggerFactory loggerFactory,
             bool isNewSessionKey)
@@ -65,6 +68,7 @@ namespace Microsoft.AspNetCore.Session
             _cache = cache;
             _sessionKey = sessionKey;
             _idleTimeout = idleTimeout;
+            _ioTimeout = ioTimeout;
             _tryEstablishSession = tryEstablishSession;
             _store = new Dictionary<EncodedKey, byte[]>();
             _logger = loggerFactory.CreateLogger<DistributedSession>();
@@ -194,58 +198,68 @@ namespace Microsoft.AspNetCore.Session
         }
 
         // This will throw if called directly and a failure occurs. The user is expected to handle the failures.
-        public async Task LoadAsync()
+        public async Task LoadAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
+            cancellationToken.ThrowIfCancellationRequested();
             if (!_loaded)
             {
-                var data = await _cache.GetAsync(_sessionKey);
-                if (data != null)
+                using (var timeout = new CancellationTokenSource(_ioTimeout))
                 {
-                    Deserialize(new MemoryStream(data));
-                }
-                else if (!_isNewSessionKey)
-                {
-                    _logger.AccessingExpiredSession(_sessionKey);
+                    var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+                    var data = await _cache.GetAsync(_sessionKey, cts.Token);
+                    if (data != null)
+                    {
+                        Deserialize(new MemoryStream(data));
+                    }
+                    else if (!_isNewSessionKey)
+                    {
+                        _logger.AccessingExpiredSession(_sessionKey);
+                    }
                 }
                 _isAvailable = true;
                 _loaded = true;
             }
         }
 
-        public async Task CommitAsync()
+        public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            if (_isModified)
+            cancellationToken.ThrowIfCancellationRequested();
+            using (var timeout = new CancellationTokenSource(_ioTimeout))
             {
-                if (_logger.IsEnabled(LogLevel.Information))
+                var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
+                if (_isModified)
                 {
-                    try
+                    if (_logger.IsEnabled(LogLevel.Information))
                     {
-                        var data = await _cache.GetAsync(_sessionKey);
-                        if (data == null)
+                        try
                         {
-                            _logger.SessionStarted(_sessionKey, Id);
+                            var data = await _cache.GetAsync(_sessionKey, cts.Token);
+                            if (data == null)
+                            {
+                                _logger.SessionStarted(_sessionKey, Id);
+                            }
+                        }
+                        catch (Exception exception)
+                        {
+                            _logger.SessionCacheReadException(_sessionKey, exception);
                         }
                     }
-                    catch (Exception exception)
-                    {
-                        _logger.SessionCacheReadException(_sessionKey, exception);
-                    }
+
+                    var stream = new MemoryStream();
+                    Serialize(stream);
+
+                    await _cache.SetAsync(
+                        _sessionKey,
+                        stream.ToArray(),
+                        new DistributedCacheEntryOptions().SetSlidingExpiration(_idleTimeout),
+                        cts.Token);
+                    _isModified = false;
+                    _logger.SessionStored(_sessionKey, Id, _store.Count);
                 }
-
-                var stream = new MemoryStream();
-                Serialize(stream);
-                
-                await _cache.SetAsync(
-                    _sessionKey,
-                    stream.ToArray(),
-                    new DistributedCacheEntryOptions().SetSlidingExpiration(_idleTimeout));
-
-                _isModified = false;
-                _logger.SessionStored(_sessionKey, Id, _store.Count);
-            }
-            else
-            {
-                await _cache.RefreshAsync(_sessionKey);
+                else
+                {
+                    await _cache.RefreshAsync(_sessionKey, cts.Token);
+                }
             }
         }
 

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Session
             _loggerFactory = loggerFactory;
         }
 
-        public ISession Create(string sessionKey, TimeSpan idleTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey)
+        public ISession Create(string sessionKey, TimeSpan idleTimeout, TimeSpan ioTimeout, Func<bool> tryEstablishSession, bool isNewSessionKey)
         {
             if (string.IsNullOrEmpty(sessionKey))
             {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Session
                 throw new ArgumentNullException(nameof(tryEstablishSession));
             }
 
-            return new DistributedSession(_cache, sessionKey, idleTimeout, tryEstablishSession, _loggerFactory, isNewSessionKey);
+            return new DistributedSession(_cache, sessionKey, idleTimeout, ioTimeout, tryEstablishSession, _loggerFactory, isNewSessionKey);
         }
     }
 }
