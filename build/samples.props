@@ -1,0 +1,4 @@
+<Project>
+  <Import Project="dependencies.props" />
+  <Import Project="compiler.props" />
+</Project>
