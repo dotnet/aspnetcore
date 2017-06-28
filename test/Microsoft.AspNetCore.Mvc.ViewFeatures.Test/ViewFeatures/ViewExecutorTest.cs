@@ -298,9 +298,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Theory]
-        [InlineData(HttpResponseStreamWriter.DefaultBufferSize - 1)]
-        [InlineData(HttpResponseStreamWriter.DefaultBufferSize + 1)]
-        [InlineData(2 * HttpResponseStreamWriter.DefaultBufferSize + 4)]
+        [InlineData(TestHttpResponseStreamWriterFactory.DefaultBufferSize - 1)]
+        [InlineData(TestHttpResponseStreamWriterFactory.DefaultBufferSize + 1)]
+        [InlineData(2 * TestHttpResponseStreamWriterFactory.DefaultBufferSize + 4)]
         public async Task ExecuteAsync_AsynchronouslyFlushesToTheResponseStream_PriorToDispose(int writeLength)
         {
             // Arrange
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 await v.Writer.WriteAsync(text);
             });
 
-            var expectedWriteCallCount = Math.Ceiling((double)writeLength / HttpResponseStreamWriter.DefaultBufferSize);
+            var expectedWriteCallCount = Math.Ceiling((double)writeLength / TestHttpResponseStreamWriterFactory.DefaultBufferSize);
 
             var context = new DefaultHttpContext();
             var stream = new Mock<Stream>();
