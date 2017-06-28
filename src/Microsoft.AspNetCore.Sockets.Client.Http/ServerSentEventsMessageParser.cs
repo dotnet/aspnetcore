@@ -27,12 +27,11 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             consumed = buffer.Start;
             examined = buffer.End;
             message = null;
-            var reader = new ReadableBufferReader(buffer);
 
             var start = consumed;
             var end = examined;
 
-            while (!reader.End)
+            while (buffer.Length > 0)
             {
                 if (ReadCursorOperations.Seek(start, end, out var lineEnd, ByteLF) == -1)
                 {
@@ -51,7 +50,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
                 lineEnd = buffer.Move(lineEnd, 1);
                 var line = ConvertBufferToSpan(buffer.Slice(start, lineEnd));
-                reader.Skip(line.Length);
+                buffer = buffer.Slice(line.Length);
 
                 if (line.Length <= 1)
                 {
@@ -138,7 +137,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                         return ParseResult.Completed;
                 }
 
-                if (reader.Peek() == ByteCR)
+                if (buffer.Length > 0 && buffer.First.Span[0] == ByteCR)
                 {
                     _internalParserState = InternalParseState.ReadEndOfMessage;
                 }
