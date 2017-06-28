@@ -4,7 +4,6 @@
 using System;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Identity
