@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -71,7 +71,7 @@ namespace Microsoft.DotNet.Watcher.Internal
         {
             EnsureInitialized();
 
-            var watchList = Path.GetTempFileName();
+            var watchList = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             try
             {
                 var projectDir = Path.GetDirectoryName(_projectFile);
