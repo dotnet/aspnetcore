@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Reflection;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Routing;
 
 namespace Microsoft.AspNetCore.Sockets
@@ -30,7 +32,20 @@ namespace Microsoft.AspNetCore.Sockets
 
         public void MapEndPoint<TEndPoint>(string path) where TEndPoint : EndPoint
         {
-            MapSocket(path, builder =>
+            MapEndPoint<TEndPoint>(path, socketOptions: null);
+        }
+
+        public void MapEndPoint<TEndPoint>(string path, Action<HttpSocketOptions> socketOptions) where TEndPoint : EndPoint
+        {
+            var authorizeAttributes = typeof(TEndPoint).GetCustomAttributes<AuthorizeAttribute>(inherit: true);
+            var options = new HttpSocketOptions();
+            foreach (var attribute in authorizeAttributes)
+            {
+                options.AuthorizationData.Add(attribute);
+            }
+            socketOptions?.Invoke(options);
+
+            MapSocket(path, options, builder =>
             {
                 builder.UseEndPoint<TEndPoint>();
             });
