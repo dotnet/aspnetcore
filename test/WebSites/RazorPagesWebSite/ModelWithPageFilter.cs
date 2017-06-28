@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.RazorPages;
 namespace RazorPagesWebSite
 {
     [HandlerChangingPageFilter]
-    public class ModelWithPageFilter
+    public class ModelWithPageFilter : PageModel
     {
         public string Message { get; private set; }
 

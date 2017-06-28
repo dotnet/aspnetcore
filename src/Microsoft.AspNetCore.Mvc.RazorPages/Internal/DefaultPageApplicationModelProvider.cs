@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Options;
@@ -66,23 +66,34 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 throw new ArgumentNullException(nameof(pageTypeInfo));
             }
 
+            if (!typeof(PageBase).GetTypeInfo().IsAssignableFrom(pageTypeInfo))
+            {
+                throw new InvalidOperationException(Resources.FormatInvalidPageType_WrongBase(
+                    pageTypeInfo.FullName,
+                    typeof(PageBase).FullName));
+            }
+
             // Pages always have a model type. If it's not set explicitly by the developer using
             // @model, it will be the same as the page type.
-            var modelTypeInfo = pageTypeInfo.GetProperty(ModelPropertyName)?.PropertyType?.GetTypeInfo();
+            var modelProperty = pageTypeInfo.GetProperty(ModelPropertyName, BindingFlags.Public | BindingFlags.Instance);
+            if (modelProperty == null)
+            {
+                throw new InvalidOperationException(Resources.FormatInvalidPageType_NoModelProperty(
+                    pageTypeInfo.FullName,
+                    ModelPropertyName));
+            }
 
-            // Now we want to find the handler methods. If the model defines any handlers, then we'll use those,
-            // otherwise look at the page itself (unless the page IS the model, in which case we already looked).
+            var modelTypeInfo = modelProperty.PropertyType.GetTypeInfo();
+
+            // Now we want figure out which type is the handler type.
             TypeInfo handlerType;
-
-            var handlerModels = modelTypeInfo == null ? null : CreateHandlerModels(modelTypeInfo);
-            if (handlerModels?.Count > 0)
+            if (modelProperty.PropertyType.IsDefined(typeof(PageModelAttribute), inherit: true))
             {
                 handlerType = modelTypeInfo;
             }
             else
             {
-                handlerType = pageTypeInfo.GetTypeInfo();
-                handlerModels = CreateHandlerModels(pageTypeInfo);
+                handlerType = pageTypeInfo;
             }
 
             var handlerTypeAttributes = handlerType.GetCustomAttributes(inherit: true);
@@ -95,27 +106,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 ModelType = modelTypeInfo,
             };
 
-            for (var i = 0; i < handlerModels.Count; i++)
-            {
-                var handlerModel = handlerModels[i];
-                handlerModel.Page = pageModel;
-                pageModel.HandlerMethods.Add(handlerModel);
-            }
-
+            PopulateHandlerMethods(pageModel);
             PopulateHandlerProperties(pageModel);
-
-            for (var i = 0; i < _globalFilters.Count; i++)
-            {
-                pageModel.Filters.Add(_globalFilters[i]);
-            }
-
-            for (var i = 0; i < handlerTypeAttributes.Length; i++)
-            {
-                if (handlerTypeAttributes[i] is IFilterMetadata filter)
-                {
-                    pageModel.Filters.Add(filter);
-                }
-            }
+            PopulateFilters(pageModel);
 
             return pageModel;
         }
@@ -124,6 +117,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         internal void PopulateHandlerProperties(PageApplicationModel pageModel)
         {
             var properties = PropertyHelper.GetVisibleProperties(pageModel.HandlerType.AsType());
+
             for (var i = 0; i < properties.Length; i++)
             {
                 var propertyModel = CreatePropertyModel(properties[i].Property);
@@ -136,21 +130,34 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         // Internal for unit testing
-        internal IList<PageHandlerModel> CreateHandlerModels(TypeInfo handlerTypeInfo)
+        internal void PopulateHandlerMethods(PageApplicationModel pageModel)
         {
-            var methods = handlerTypeInfo.GetMethods();
-            var results = new List<PageHandlerModel>();
+            var methods = pageModel.HandlerType.GetMethods();
 
             for (var i = 0; i < methods.Length; i++)
             {
                 var handler = CreateHandlerModel(methods[i]);
                 if (handler != null)
                 {
-                    results.Add(handler);
+                    pageModel.HandlerMethods.Add(handler);
                 }
             }
+        }
 
-            return results;
+        internal void PopulateFilters(PageApplicationModel pageModel)
+        {
+            for (var i = 0; i < _globalFilters.Count; i++)
+            {
+                pageModel.Filters.Add(_globalFilters[i]);
+            }
+
+            for (var i = 0; i < pageModel.HandlerTypeAttributes.Count; i++)
+            {
+                if (pageModel.HandlerTypeAttributes[i] is IFilterMetadata filter)
+                {
+                    pageModel.Filters.Add(filter);
+                }
+            }
         }
 
         /// <summary>
@@ -166,16 +173,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             }
 
             if (!IsHandler(method))
-            {
-                return null;
-            }
-
-            if (method.IsDefined(typeof(NonHandlerAttribute)))
-            {
-                return null;
-            }
-
-            if (method.DeclaringType.GetTypeInfo().IsDefined(typeof(PagesBaseClassAttribute)))
             {
                 return null;
             }
@@ -294,7 +291,32 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 return false;
             }
 
-            return methodInfo.IsPublic;
+            if (!methodInfo.IsPublic)
+            {
+                return false;
+            }
+
+            if (methodInfo.IsDefined(typeof(NonHandlerAttribute)))
+            {
+                return false;
+            }
+
+            // Exclude the whole hierarchy of Page.
+            var declaringType = methodInfo.DeclaringType;
+            if (declaringType == typeof(Page) ||
+                declaringType == typeof(PageBase) ||
+                declaringType == typeof(RazorPageBase))
+            {
+                return false;
+            }
+
+            // Exclude methods declared on PageModel
+            if (declaringType == typeof(PageModel))
+            {
+                return false;
+            }
+
+            return true;
         }
 
         internal static bool TryParseHandlerMethod(string methodName, out string httpMethod, out string handler)

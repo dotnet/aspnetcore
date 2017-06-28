@@ -21,7 +21,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
-    [PagesBaseClass]
+    [PageModelAttribute]
     public abstract class PageModel
     {
         private IModelMetadataProvider _metadataProvider;

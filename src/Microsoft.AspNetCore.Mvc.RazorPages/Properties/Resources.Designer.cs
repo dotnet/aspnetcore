@@ -136,6 +136,34 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         internal static string FormatAsyncPageFilter_InvalidShortCircuit(object p0, object p1, object p2, object p3)
             => string.Format(CultureInfo.CurrentCulture, GetString("AsyncPageFilter_InvalidShortCircuit"), p0, p1, p2, p3);
 
+        /// <summary>
+        /// The type '{0}' is not a valid page. A page must inherit from '{1}'.
+        /// </summary>
+        internal static string InvalidPageType_WrongBase
+        {
+            get => GetString("InvalidPageType_WrongBase");
+        }
+
+        /// <summary>
+        /// The type '{0}' is not a valid page. A page must inherit from '{1}'.
+        /// </summary>
+        internal static string FormatInvalidPageType_WrongBase(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidPageType_WrongBase"), p0, p1);
+
+        /// <summary>
+        /// The type '{0}' is not a valid page. A page must define a public, non-static '{1}' property.
+        /// </summary>
+        internal static string InvalidPageType_NoModelProperty
+        {
+            get => GetString("InvalidPageType_NoModelProperty");
+        }
+
+        /// <summary>
+        /// The type '{0}' is not a valid page. A page must define a public, non-static '{1}' property.
+        /// </summary>
+        internal static string FormatInvalidPageType_NoModelProperty(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidPageType_NoModelProperty"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

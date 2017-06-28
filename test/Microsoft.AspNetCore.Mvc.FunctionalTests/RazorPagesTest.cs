@@ -385,6 +385,19 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task HelloWorldWithPageModelAttributeHandler()
+        {
+            // Arrange
+            var url = "HelloWorldWithPageModelAttributeModel?message=DecoratedModel";
+
+            // Act
+            var content = await Client.GetStringAsync(url);
+
+            // Assert
+            Assert.Equal("Hello, DecoratedModel!", content.Trim());
+        }
+
+        [Fact]
         public async Task PageWithoutContent()
         {
             // Arrange
