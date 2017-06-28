@@ -1137,16 +1137,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             if (_configuration != null)
             {
-                if (string.IsNullOrEmpty(validationParameters.ValidIssuer))
-                {
-                    validationParameters.ValidIssuer = _configuration.Issuer;
-                }
-                else if (!string.IsNullOrEmpty(_configuration.Issuer))
-                {
-                    validationParameters.ValidIssuers = validationParameters.ValidIssuers?.Concat(new[] { _configuration.Issuer }) ?? new[] { _configuration.Issuer };
-                }
+                var issuer = new[] { _configuration.Issuer };
+                validationParameters.ValidIssuers = validationParameters.ValidIssuers?.Concat(issuer) ?? issuer;
 
-                validationParameters.IssuerSigningKeys = validationParameters.IssuerSigningKeys?.Concat(_configuration.SigningKeys) ?? _configuration.SigningKeys;
+                validationParameters.IssuerSigningKeys = validationParameters.IssuerSigningKeys?.Concat(_configuration.SigningKeys)
+                    ?? _configuration.SigningKeys;
             }
 
             var principal = Options.SecurityTokenValidator.ValidateToken(idToken, validationParameters, out SecurityToken validatedToken);

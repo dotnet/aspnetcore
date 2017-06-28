@@ -90,17 +90,11 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 var validationParameters = Options.TokenValidationParameters.Clone();
                 if (_configuration != null)
                 {
-                    if (validationParameters.ValidIssuer == null && !string.IsNullOrEmpty(_configuration.Issuer))
-                    {
-                        validationParameters.ValidIssuer = _configuration.Issuer;
-                    }
-                    else
-                    {
-                        var issuers = new[] { _configuration.Issuer };
-                        validationParameters.ValidIssuers = (validationParameters.ValidIssuers == null ? issuers : validationParameters.ValidIssuers.Concat(issuers));
-                    }
+                    var issuers = new[] { _configuration.Issuer };
+                    validationParameters.ValidIssuers = validationParameters.ValidIssuers?.Concat(issuers) ?? issuers;
 
-                    validationParameters.IssuerSigningKeys = (validationParameters.IssuerSigningKeys == null ? _configuration.SigningKeys : validationParameters.IssuerSigningKeys.Concat(_configuration.SigningKeys));
+                    validationParameters.IssuerSigningKeys = validationParameters.IssuerSigningKeys?.Concat(_configuration.SigningKeys)
+                        ?? _configuration.SigningKeys;
                 }
 
                 List<Exception> validationFailures = null;
