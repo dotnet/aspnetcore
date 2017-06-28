@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.False(httpContext.User.Identity.IsAuthenticated);
                 var authResults = await httpContext.AuthenticateAsync(HttpSysDefaults.AuthenticationScheme);
                 Assert.False(authResults.Succeeded);
-                Assert.True(authResults.Nothing);
+                Assert.True(authResults.None);
             }))
             {
                 var response = await SendRequestAsync(address);
