@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task BindModel_Error_FormatExceptionsTurnedIntoStringsInModelState()
         {
             // Arrange
-            var message = "The value 'not an integer' is not valid for Int32.";
+            var message = "The value 'not an integer' is not valid.";
             var bindingContext = GetBindingContext(typeof(int));
             bindingContext.ValueProvider = new SimpleValueProvider
             {
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Null(bindingContext.Result.Model);
 
             var error = Assert.Single(bindingContext.ModelState["theModelName"].Errors);
-            Assert.Equal("The value '12,5' is not valid for Decimal.", error.ErrorMessage, StringComparer.Ordinal);
+            Assert.Equal("The value '12,5' is not valid.", error.ErrorMessage, StringComparer.Ordinal);
             Assert.Null(error.Exception);
         }
 

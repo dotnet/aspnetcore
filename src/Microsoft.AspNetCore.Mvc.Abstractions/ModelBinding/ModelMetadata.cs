@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 throw new NotImplementedException();
             }
         }
-        
+
         /// <summary>
         /// Gets a value indicating the kind of metadata element represented by the current instance.
         /// </summary>

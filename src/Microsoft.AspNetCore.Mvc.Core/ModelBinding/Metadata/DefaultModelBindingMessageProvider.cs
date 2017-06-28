@@ -16,9 +16,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         private Func<string> _missingRequestBodyRequiredValueAccessor;
         private Func<string, string> _valueMustNotBeNullAccessor;
         private Func<string, string, string> _attemptedValueIsInvalidAccessor;
+        private Func<string, string> _nonPropertyAttemptedValueIsInvalidAccessor;
         private Func<string, string> _unknownValueIsInvalidAccessor;
+        private Func<string> _nonPropertyUnknownValueIsInvalidAccessor;
         private Func<string, string> _valueIsInvalidAccessor;
         private Func<string, string> _valueMustBeANumberAccessor;
+        private Func<string> _nonPropertyValueMustBeANumberAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DefaultModelBindingMessageProvider"/> class.
@@ -30,9 +33,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             SetMissingRequestBodyRequiredValueAccessor(Resources.FormatModelBinding_MissingRequestBodyRequiredMember);
             SetValueMustNotBeNullAccessor(Resources.FormatModelBinding_NullValueNotValid);
             SetAttemptedValueIsInvalidAccessor(Resources.FormatModelState_AttemptedValueIsInvalid);
+            SetNonPropertyAttemptedValueIsInvalidAccessor(Resources.FormatModelState_NonPropertyAttemptedValueIsInvalid);
             SetUnknownValueIsInvalidAccessor(Resources.FormatModelState_UnknownValueIsInvalid);
+            SetNonPropertyUnknownValueIsInvalidAccessor(Resources.FormatModelState_NonPropertyUnknownValueIsInvalid);
             SetValueIsInvalidAccessor(Resources.FormatHtmlGeneration_ValueIsInvalid);
             SetValueMustBeANumberAccessor(Resources.FormatHtmlGeneration_ValueMustBeNumber);
+            SetNonPropertyValueMustBeANumberAccessor(Resources.FormatHtmlGeneration_NonPropertyValueMustBeNumber);
         }
 
         /// <summary>
@@ -52,9 +58,12 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             SetMissingRequestBodyRequiredValueAccessor(originalProvider.MissingRequestBodyRequiredValueAccessor);
             SetValueMustNotBeNullAccessor(originalProvider.ValueMustNotBeNullAccessor);
             SetAttemptedValueIsInvalidAccessor(originalProvider.AttemptedValueIsInvalidAccessor);
+            SetNonPropertyAttemptedValueIsInvalidAccessor(originalProvider.NonPropertyAttemptedValueIsInvalidAccessor);
             SetUnknownValueIsInvalidAccessor(originalProvider.UnknownValueIsInvalidAccessor);
+            SetNonPropertyUnknownValueIsInvalidAccessor(originalProvider.NonPropertyUnknownValueIsInvalidAccessor);
             SetValueIsInvalidAccessor(originalProvider.ValueIsInvalidAccessor);
             SetValueMustBeANumberAccessor(originalProvider.ValueMustBeANumberAccessor);
+            SetNonPropertyValueMustBeANumberAccessor(originalProvider.NonPropertyValueMustBeANumberAccessor);
         }
 
         /// <inheritdoc/>
@@ -143,6 +152,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <inheritdoc/>
+        public override Func<string, string> NonPropertyAttemptedValueIsInvalidAccessor => _nonPropertyAttemptedValueIsInvalidAccessor;
+
+        /// <summary>
+        /// Sets the <see cref="NonPropertyAttemptedValueIsInvalidAccessor"/> property.
+        /// </summary>
+        /// <param name="nonPropertyAttemptedValueIsInvalidAccessor">The value to set.</param>
+        public void SetNonPropertyAttemptedValueIsInvalidAccessor(
+            Func<string, string> nonPropertyAttemptedValueIsInvalidAccessor)
+        {
+            if (nonPropertyAttemptedValueIsInvalidAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(nonPropertyAttemptedValueIsInvalidAccessor));
+            }
+
+            _nonPropertyAttemptedValueIsInvalidAccessor = nonPropertyAttemptedValueIsInvalidAccessor;
+        }
+
+        /// <inheritdoc/>
         public override Func<string, string> UnknownValueIsInvalidAccessor => _unknownValueIsInvalidAccessor;
 
         /// <summary>
@@ -157,6 +184,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
 
             _unknownValueIsInvalidAccessor = unknownValueIsInvalidAccessor;
+        }
+
+        /// <inheritdoc/>
+        public override Func<string> NonPropertyUnknownValueIsInvalidAccessor => _nonPropertyUnknownValueIsInvalidAccessor;
+
+        /// <summary>
+        /// Sets the <see cref="NonPropertyUnknownValueIsInvalidAccessor"/> property.
+        /// </summary>
+        /// <param name="nonPropertyUnknownValueIsInvalidAccessor">The value to set.</param>
+        public void SetNonPropertyUnknownValueIsInvalidAccessor(Func<string> nonPropertyUnknownValueIsInvalidAccessor)
+        {
+            if (nonPropertyUnknownValueIsInvalidAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(nonPropertyUnknownValueIsInvalidAccessor));
+            }
+
+            _nonPropertyUnknownValueIsInvalidAccessor = nonPropertyUnknownValueIsInvalidAccessor;
         }
 
         /// <inheritdoc/>
@@ -191,6 +235,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             }
 
             _valueMustBeANumberAccessor = valueMustBeANumberAccessor;
+        }
+
+        /// <inheritdoc/>
+        public override Func<string> NonPropertyValueMustBeANumberAccessor => _nonPropertyValueMustBeANumberAccessor;
+
+        /// <summary>
+        /// Sets the <see cref="NonPropertyValueMustBeANumberAccessor"/> property.
+        /// </summary>
+        /// <param name="nonPropertyValueMustBeANumberAccessor">The value to set.</param>
+        public void SetNonPropertyValueMustBeANumberAccessor(Func<string> nonPropertyValueMustBeANumberAccessor)
+        {
+            if (nonPropertyValueMustBeANumberAccessor == null)
+            {
+                throw new ArgumentNullException(nameof(nonPropertyValueMustBeANumberAccessor));
+            }
+
+            _nonPropertyValueMustBeANumberAccessor = nonPropertyValueMustBeANumberAccessor;
         }
     }
 }

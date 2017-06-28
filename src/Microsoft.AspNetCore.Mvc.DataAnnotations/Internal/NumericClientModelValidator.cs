@@ -41,8 +41,14 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 throw new ArgumentNullException(nameof(modelMetadata));
             }
 
-            return modelMetadata.ModelBindingMessageProvider.ValueMustBeANumberAccessor(
-                modelMetadata.GetDisplayName());
+            var messageProvider = modelMetadata.ModelBindingMessageProvider;
+            var name = modelMetadata.DisplayName ?? modelMetadata.PropertyName;
+            if (name == null)
+            {
+                return messageProvider.NonPropertyValueMustBeANumberAccessor();
+            }
+
+            return messageProvider.ValueMustBeANumberAccessor(name);
         }
     }
 }

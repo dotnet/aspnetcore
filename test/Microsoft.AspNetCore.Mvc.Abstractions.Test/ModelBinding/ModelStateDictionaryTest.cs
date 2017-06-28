@@ -907,6 +907,32 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         }
 
         [Fact]
+        public void ModelStateDictionary_AddsCustomErrorMessage_WhenModelStateNotSet_WithNonProperty()
+        {
+            // Arrange
+            var expected = "Hmm, the supplied value is not valid.";
+            var dictionary = new ModelStateDictionary();
+
+            var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+            var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
+            var optionsAccessor = new OptionsAccessor();
+            optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyUnknownValueIsInvalidAccessor(
+                () => $"Hmm, the supplied value is not valid.");
+
+            var provider = new DefaultModelMetadataProvider(compositeProvider, optionsAccessor);
+            var metadata = provider.GetMetadataForType(typeof(int));
+
+            // Act
+            dictionary.TryAddModelError("key", new FormatException(), metadata);
+
+            // Assert
+            var entry = Assert.Single(dictionary);
+            Assert.Equal("key", entry.Key);
+            var error = Assert.Single(entry.Value.Errors);
+            Assert.Equal(expected, error.ErrorMessage);
+        }
+
+        [Fact]
         public void ModelStateDictionary_ReturnSpecificErrorMessage_WhenModelStateSet()
         {
             // Arrange
@@ -940,6 +966,33 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             var provider = new DefaultModelMetadataProvider(compositeProvider, optionsAccessor);
             var metadata = provider.GetMetadataForProperty(typeof(string), nameof(string.Length));
+
+            // Act
+            dictionary.TryAddModelError("key", new FormatException(), metadata);
+
+            // Assert
+            var entry = Assert.Single(dictionary);
+            Assert.Equal("key", entry.Key);
+            var error = Assert.Single(entry.Value.Errors);
+            Assert.Equal(expected, error.ErrorMessage);
+        }
+
+        [Fact]
+        public void ModelStateDictionary_AddsCustomErrorMessage_WhenModelStateSet_WithNonProperty()
+        {
+            // Arrange
+            var expected = "Hmm, the value 'some value' is not valid.";
+            var dictionary = new ModelStateDictionary();
+            dictionary.SetModelValue("key", new string[] { "some value" }, "some value");
+
+            var bindingMetadataProvider = new DefaultBindingMetadataProvider();
+            var compositeProvider = new DefaultCompositeMetadataDetailsProvider(new[] { bindingMetadataProvider });
+            var optionsAccessor = new OptionsAccessor();
+            optionsAccessor.Value.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(
+                (value) => $"Hmm, the value '{ value }' is not valid.");
+
+            var provider = new DefaultModelMetadataProvider(compositeProvider, optionsAccessor);
+            var metadata = provider.GetMetadataForType(typeof(int));
 
             // Act
             dictionary.TryAddModelError("key", new FormatException(), metadata);

@@ -907,6 +907,20 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("ModelState_AttemptedValueIsInvalid"), p0, p1);
 
         /// <summary>
+        /// The value '{0}' is not valid.
+        /// </summary>
+        internal static string ModelState_NonPropertyAttemptedValueIsInvalid
+        {
+            get => GetString("ModelState_NonPropertyAttemptedValueIsInvalid");
+        }
+
+        /// <summary>
+        /// The value '{0}' is not valid.
+        /// </summary>
+        internal static string FormatModelState_NonPropertyAttemptedValueIsInvalid(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ModelState_NonPropertyAttemptedValueIsInvalid"), p0);
+
+        /// <summary>
         /// The supplied value is invalid for {0}.
         /// </summary>
         internal static string ModelState_UnknownValueIsInvalid
@@ -919,6 +933,20 @@ namespace Microsoft.AspNetCore.Mvc.Core
         /// </summary>
         internal static string FormatModelState_UnknownValueIsInvalid(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("ModelState_UnknownValueIsInvalid"), p0);
+
+        /// <summary>
+        /// The supplied value is invalid.
+        /// </summary>
+        internal static string ModelState_NonPropertyUnknownValueIsInvalid
+        {
+            get => GetString("ModelState_NonPropertyUnknownValueIsInvalid");
+        }
+
+        /// <summary>
+        /// The supplied value is invalid.
+        /// </summary>
+        internal static string FormatModelState_NonPropertyUnknownValueIsInvalid()
+            => GetString("ModelState_NonPropertyUnknownValueIsInvalid");
 
         /// <summary>
         /// The value '{0}' is invalid.
@@ -947,6 +975,20 @@ namespace Microsoft.AspNetCore.Mvc.Core
         /// </summary>
         internal static string FormatHtmlGeneration_ValueMustBeNumber(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("HtmlGeneration_ValueMustBeNumber"), p0);
+
+        /// <summary>
+        /// The field must be a number.
+        /// </summary>
+        internal static string HtmlGeneration_NonPropertyValueMustBeNumber
+        {
+            get => GetString("HtmlGeneration_NonPropertyValueMustBeNumber");
+        }
+
+        /// <summary>
+        /// The field must be a number.
+        /// </summary>
+        internal static string FormatHtmlGeneration_NonPropertyValueMustBeNumber()
+            => GetString("HtmlGeneration_NonPropertyValueMustBeNumber");
 
         /// <summary>
         /// The list of '{0}' must not be empty. Add at least one supported encoding.

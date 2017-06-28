@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             Assert.True(result.HasError);
-            Assert.Equal("The supplied value is invalid for Byte.", modelState["[2]"].Errors[0].ErrorMessage);
+            Assert.Equal("The supplied value is invalid.", modelState["[2]"].Errors[0].ErrorMessage);
             Assert.Null(modelState["[2]"].Errors[0].Exception);
         }
 

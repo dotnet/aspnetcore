@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var error = Assert.Single(entry.Errors);
             Assert.Null(error.Exception);
-            Assert.Equal("The value 'abcd' is not valid for Int32.", error.ErrorMessage);
+            Assert.Equal("The value 'abcd' is not valid.", error.ErrorMessage);
         }
 
         [Fact]
@@ -256,8 +256,8 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
                 .BindingDetails(binding =>
                 {
                     // A real details provider could customize message based on BindingMetadataProviderContext.
-                    binding.ModelBindingMessageProvider.SetAttemptedValueIsInvalidAccessor(
-                        (value, name) => $"Hmm, '{ value }' is not a valid value for '{ name }'.");
+                    binding.ModelBindingMessageProvider.SetNonPropertyAttemptedValueIsInvalidAccessor(
+                        (value) => $"Hmm, '{ value }' is not a valid value.");
                 });
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder(metadataProvider);
             var parameter = new ParameterDescriptor()
@@ -300,7 +300,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             var error = Assert.Single(entry.Errors);
             Assert.Null(error.Exception);
-            Assert.Equal($"Hmm, 'abcd' is not a valid value for 'Int32'.", error.ErrorMessage);
+            Assert.Equal($"Hmm, 'abcd' is not a valid value.", error.ErrorMessage);
         }
 
         [Theory]

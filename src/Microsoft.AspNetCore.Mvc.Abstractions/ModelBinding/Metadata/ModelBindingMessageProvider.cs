@@ -40,17 +40,35 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
         /// <summary>
         /// Error message the model binding system adds when <see cref="ModelError.Exception"/> is of type
-        /// <see cref="FormatException"/> or <see cref="OverflowException"/> and value is known.
+        /// <see cref="FormatException"/> or <see cref="OverflowException"/>, value is known, and error is associated
+        /// with a property.
         /// </summary>
         /// <value>Default <see cref="string"/> is "The value '{0}' is not valid for {1}.".</value>
         public virtual Func<string, string, string> AttemptedValueIsInvalidAccessor { get; }
 
         /// <summary>
         /// Error message the model binding system adds when <see cref="ModelError.Exception"/> is of type
-        /// <see cref="FormatException"/> or <see cref="OverflowException"/> and value is unknown.
+        /// <see cref="FormatException"/> or <see cref="OverflowException"/>, value is known, and error is associated
+        /// with a collection element or action parameter.
+        /// </summary>
+        /// <value>Default <see cref="string"/> is "The value '{0}' is not valid.".</value>
+        public virtual Func<string, string> NonPropertyAttemptedValueIsInvalidAccessor { get; }
+
+        /// <summary>
+        /// Error message the model binding system adds when <see cref="ModelError.Exception"/> is of type
+        /// <see cref="FormatException"/> or <see cref="OverflowException"/>, value is unknown, and error is associated
+        /// with a property.
         /// </summary>
         /// <value>Default <see cref="string"/> is "The supplied value is invalid for {0}.".</value>
         public virtual Func<string, string> UnknownValueIsInvalidAccessor { get; }
+
+        /// <summary>
+        /// Error message the model binding system adds when <see cref="ModelError.Exception"/> is of type
+        /// <see cref="FormatException"/> or <see cref="OverflowException"/>, value is unknown, and error is associated
+        /// with a collection element or action parameter.
+        /// </summary>
+        /// <value>Default <see cref="string"/> is "The supplied value is invalid.".</value>
+        public virtual Func<string> NonPropertyUnknownValueIsInvalidAccessor { get; }
 
         /// <summary>
         /// Fallback error message HTML and tag helpers display when a property is invalid but the
@@ -61,9 +79,17 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
         /// <summary>
         /// Error message HTML and tag helpers add for client-side validation of numeric formats. Visible in the
-        /// browser if the field for a <c>float</c> property (for example) does not have a correctly-formatted value.
+        /// browser if the field for a <c>float</c> (for example) property does not have a correctly-formatted value.
         /// </summary>
         /// <value>Default <see cref="string"/> is "The field {0} must be a number.".</value>
         public virtual Func<string, string> ValueMustBeANumberAccessor { get; }
+
+        /// <summary>
+        /// Error message HTML and tag helpers add for client-side validation of numeric formats. Visible in the
+        /// browser if the field for a <c>float</c> (for example) collection element or action parameter does not have a
+        /// correctly-formatted value.
+        /// </summary>
+        /// <value>Default <see cref="string"/> is "The field must be a number.".</value>
+        public virtual Func<string> NonPropertyValueMustBeANumberAccessor { get; }
     }
 }

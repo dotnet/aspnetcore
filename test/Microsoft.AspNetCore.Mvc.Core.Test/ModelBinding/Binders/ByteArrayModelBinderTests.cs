@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         public async Task BindModelAddsModelErrorsOnInvalidCharacters()
         {
             // Arrange
-            var expected = "The value '\"Fys1\"' is not valid for Byte[].";
+            var expected = "The value '\"Fys1\"' is not valid.";
 
             var valueProvider = new SimpleValueProvider()
             {
