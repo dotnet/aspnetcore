@@ -45,6 +45,16 @@ namespace Microsoft.AspNetCore.Razor.Language
             return RazorDiagnostic.Create(CodeTarget_UnsupportedExtension, SourceSpan.Undefined, documentKind, extensionType.Name);
         }
 
+        internal static readonly RazorDiagnosticDescriptor Parsing_DuplicateDirective =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}2001",
+                () => Resources.DuplicateDirective,
+                RazorDiagnosticSeverity.Error);
+        public static RazorDiagnostic CreateParsing_DuplicateDirective(string directive, SourceSpan location)
+        {
+            return RazorDiagnostic.Create(Parsing_DuplicateDirective, location, directive);
+        }
+
         #endregion
 
         #region TagHelper Errors

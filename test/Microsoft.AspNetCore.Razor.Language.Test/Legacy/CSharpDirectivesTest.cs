@@ -1114,6 +1114,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void TagHelperPrefixDirective_DuplicatesCauseError()
+        {
+            // Arrange
+            var expectedDiagnostic = RazorDiagnosticFactory.CreateParsing_DuplicateDirective(
+                "tagHelperPrefix",
+                new SourceSpan(null, 22 + Environment.NewLine.Length, 1, 0, 16));
+
+            // Act
+            var document = ParseDocument(
+@"@tagHelperPrefix ""th:""
+@tagHelperPrefix ""th""",
+                directives: null,
+                designTime: false);
+
+            // Assert
+            var directive = document.Root.Children.OfType<Block>().Last();
+            var erroredSpan = (Span)directive.Children.Last();
+            var chunkGenerator = Assert.IsType<TagHelperPrefixDirectiveChunkGenerator>(erroredSpan.ChunkGenerator);
+            var diagnostic = Assert.Single(chunkGenerator.Diagnostics);
+            Assert.Equal(expectedDiagnostic, diagnostic);
+        }
+
+        [Fact]
         public void TagHelperPrefixDirective_NoValueSucceeds()
         {
             ParseBlockTest("@tagHelperPrefix \"\"",

@@ -1877,9 +1877,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected virtual void TagHelperPrefixDirective()
         {
+            RazorDiagnostic duplicateDiagnostic = null;
+            if (Context.SeenDirectives.Contains(SyntaxConstants.CSharp.TagHelperPrefixKeyword))
+            {
+                // There wil always be at least 1 child because of the `@` transition.
+                var directiveStart = Context.Builder.CurrentBlock.Children.First().Start;
+                var errorLength = /* @ */ 1 + SyntaxConstants.CSharp.TagHelperPrefixKeyword.Length;
+                duplicateDiagnostic = RazorDiagnosticFactory.CreateParsing_DuplicateDirective(
+                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                    new SourceSpan(directiveStart, errorLength));
+            }
+
             TagHelperDirective(
                 SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                (prefix, errors) => new TagHelperPrefixDirectiveChunkGenerator(prefix, errors));
+                (prefix, errors) =>
+                {
+                    if (duplicateDiagnostic != null)
+                    {
+                        errors.Add(duplicateDiagnostic);
+                    }
+
+                    return new TagHelperPrefixDirectiveChunkGenerator(prefix, errors);
+                });
         }
 
         protected virtual void AddTagHelperDirective()

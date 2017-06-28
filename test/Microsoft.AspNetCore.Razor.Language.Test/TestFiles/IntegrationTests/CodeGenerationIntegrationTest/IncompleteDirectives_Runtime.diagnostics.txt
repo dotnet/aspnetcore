@@ -6,7 +6,9 @@ TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cs
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(9,18): Error RZ9999: Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(11,2): Error RZ9999: Directive 'tagHelperPrefix' must have a value.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,2): Error RZ9999: Directive 'tagHelperPrefix' must have a value.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(12,1): Error RZ2001: The 'tagHelperPrefix' directive may only occur once per document.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(13,18): Error RZ9999: Unterminated string literal.  Strings that start with a quotation mark (") must be terminated before the end of the line.  However, strings that start with @ and a quotation mark (@") can span multiple lines.
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(13,1): Error RZ2001: The 'tagHelperPrefix' directive may only occur once per document.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(15,10): Error RZ9999: The 'inherits' directive expects a type name.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(16,1): Error RZ9999: The 'inherits' directive may only occur once per document.
 TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml(16,11): Error RZ9999: The 'inherits' directive expects a type name.
