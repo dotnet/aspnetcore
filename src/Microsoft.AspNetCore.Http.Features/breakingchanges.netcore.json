@@ -1,0 +1,12 @@
+[
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Http.IHeaderDictionary : System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
+    "MemberId": "System.Nullable<System.Int64> get_ContentLength()",
+    "Kind": "Addition"
+  },
+  {
+    "TypeId": "public interface Microsoft.AspNetCore.Http.IHeaderDictionary : System.Collections.Generic.IDictionary<System.String, Microsoft.Extensions.Primitives.StringValues>",
+    "MemberId": "System.Void set_ContentLength(System.Nullable<System.Int64> value)",
+    "Kind": "Addition"
+  }
+]

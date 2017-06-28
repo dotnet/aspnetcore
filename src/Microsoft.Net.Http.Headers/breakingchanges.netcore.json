@@ -1,0 +1,412 @@
+﻿[
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public .ctor(System.String dispositionType)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.ContentDispositionHeaderValue Parse(System.String input)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public static System.Boolean TryParse(System.String input, out Microsoft.Net.Http.Headers.ContentDispositionHeaderValue parsedValue)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public System.String get_DispositionType()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public System.String get_FileName()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public System.String get_FileNameStar()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public System.String get_Name()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public System.Void set_DispositionType(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public System.Void set_FileName(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public System.Void set_FileNameStar(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public System.Void set_Name(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public System.Void SetHttpFileName(System.String fileName)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
+    "MemberId": "public System.Void SetMimeFileName(System.String fileName)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public .ctor(System.String mediaType)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public .ctor(System.String mediaType, System.Double quality)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.MediaTypeHeaderValue Parse(System.String input)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public static System.Boolean TryParse(System.String input, out Microsoft.Net.Http.Headers.MediaTypeHeaderValue parsedValue)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public System.String get_Boundary()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public System.String get_Charset()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public System.String get_MediaType()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public System.String get_SubType()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public System.String get_Type()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public System.Void set_Boundary(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public System.Void set_Charset(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
+    "MemberId": "public System.Void set_MediaType(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CookieHeaderValue",
+    "MemberId": "public .ctor(System.String name)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CookieHeaderValue",
+    "MemberId": "public .ctor(System.String name, System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CookieHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.CookieHeaderValue Parse(System.String input)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CookieHeaderValue",
+    "MemberId": "public static System.Boolean TryParse(System.String input, out Microsoft.Net.Http.Headers.CookieHeaderValue parsedValue)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CookieHeaderValue",
+    "MemberId": "public System.String get_Name()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CookieHeaderValue",
+    "MemberId": "public System.String get_Value()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CookieHeaderValue",
+    "MemberId": "public System.Void set_Name(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CookieHeaderValue",
+    "MemberId": "public System.Void set_Value(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.NameValueHeaderValue",
+    "MemberId": "public .ctor(System.String name)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.NameValueHeaderValue",
+    "MemberId": "public .ctor(System.String name, System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.NameValueHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.NameValueHeaderValue Find(System.Collections.Generic.IList<Microsoft.Net.Http.Headers.NameValueHeaderValue> values, System.String name)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.NameValueHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.NameValueHeaderValue Parse(System.String input)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.NameValueHeaderValue",
+    "MemberId": "public static System.Boolean TryParse(System.String input, out Microsoft.Net.Http.Headers.NameValueHeaderValue parsedValue)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.NameValueHeaderValue",
+    "MemberId": "public System.String get_Name()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.NameValueHeaderValue",
+    "MemberId": "public System.String get_Value()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.NameValueHeaderValue",
+    "MemberId": "public System.Void set_Value(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public .ctor(System.String name)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public .ctor(System.String name, System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.SetCookieHeaderValue Parse(System.String input)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public static System.Boolean TryParse(System.String input, out Microsoft.Net.Http.Headers.SetCookieHeaderValue parsedValue)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public System.String get_Domain()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public System.String get_Name()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public System.String get_Path()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public System.String get_Value()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public System.Void set_Domain(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public System.Void set_Name(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public System.Void set_Path(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.SetCookieHeaderValue",
+    "MemberId": "public System.Void set_Value(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.EntityTagHeaderValue",
+    "MemberId": "public .ctor(System.String tag)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.EntityTagHeaderValue",
+    "MemberId": "public .ctor(System.String tag, System.Boolean isWeak)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.EntityTagHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.EntityTagHeaderValue Parse(System.String input)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.EntityTagHeaderValue",
+    "MemberId": "public static System.Boolean TryParse(System.String input, out Microsoft.Net.Http.Headers.EntityTagHeaderValue parsedValue)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.EntityTagHeaderValue",
+    "MemberId": "public System.String get_Tag()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.StringWithQualityHeaderValue",
+    "MemberId": "public .ctor(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.StringWithQualityHeaderValue",
+    "MemberId": "public .ctor(System.String value, System.Double quality)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.StringWithQualityHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.StringWithQualityHeaderValue Parse(System.String input)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.StringWithQualityHeaderValue",
+    "MemberId": "public static System.Boolean TryParse(System.String input, out Microsoft.Net.Http.Headers.StringWithQualityHeaderValue parsedValue)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.StringWithQualityHeaderValue",
+    "MemberId": "public System.String get_Value()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public static class Microsoft.Net.Http.Headers.HeaderNames",
+    "MemberId": "public const System.String ContentMD5 = \"ContentMD5\"",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CacheControlHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.CacheControlHeaderValue Parse(System.String input)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CacheControlHeaderValue",
+    "MemberId": "public static System.Boolean TryParse(System.String input, out Microsoft.Net.Http.Headers.CacheControlHeaderValue parsedValue)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CacheControlHeaderValue",
+    "MemberId": "public System.Collections.Generic.ICollection<System.String> get_NoCacheHeaders()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.CacheControlHeaderValue",
+    "MemberId": "public System.Collections.Generic.ICollection<System.String> get_PrivateHeaders()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentRangeHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.ContentRangeHeaderValue Parse(System.String input)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentRangeHeaderValue",
+    "MemberId": "public static System.Boolean TryParse(System.String input, out Microsoft.Net.Http.Headers.ContentRangeHeaderValue parsedValue)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentRangeHeaderValue",
+    "MemberId": "public System.String get_Unit()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.ContentRangeHeaderValue",
+    "MemberId": "public System.Void set_Unit(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.RangeConditionHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.RangeConditionHeaderValue Parse(System.String input)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.RangeConditionHeaderValue",
+    "MemberId": "public static System.Boolean TryParse(System.String input, out Microsoft.Net.Http.Headers.RangeConditionHeaderValue parsedValue)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.RangeHeaderValue",
+    "MemberId": "public static Microsoft.Net.Http.Headers.RangeHeaderValue Parse(System.String input)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.RangeHeaderValue",
+    "MemberId": "public static System.Boolean TryParse(System.String input, out Microsoft.Net.Http.Headers.RangeHeaderValue parsedValue)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.RangeHeaderValue",
+    "MemberId": "public System.String get_Unit()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.Net.Http.Headers.RangeHeaderValue",
+    "MemberId": "public System.Void set_Unit(System.String value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public static class Microsoft.Net.Http.Headers.HeaderUtilities",
+    "MemberId": "public static System.Boolean TryParseDate(System.String input, out System.DateTimeOffset result)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public static class Microsoft.Net.Http.Headers.HeaderUtilities",
+    "MemberId": "public static System.Boolean TryParseInt64(System.String value, out System.Int64 result)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public static class Microsoft.Net.Http.Headers.HeaderUtilities",
+    "MemberId": "public static System.String FormatInt64(System.Int64 value)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public static class Microsoft.Net.Http.Headers.HeaderUtilities",
+    "MemberId": "public static System.String RemoveQuotes(System.String input)",
+    "Kind": "Removal"
+  }
+]
