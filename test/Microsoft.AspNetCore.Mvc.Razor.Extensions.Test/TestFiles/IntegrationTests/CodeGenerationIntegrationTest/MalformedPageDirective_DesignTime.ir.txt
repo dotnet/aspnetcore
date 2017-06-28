@@ -28,7 +28,7 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
-                MalformedDirective - (0:0,0 [6] MalformedPageDirective.cshtml)
+                MalformedDirective - (0:0,0 [6] MalformedPageDirective.cshtml) - page
                 HtmlContent - (6:0,6 [49] MalformedPageDirective.cshtml)
                     IntermediateToken - (6:0,6 [8] MalformedPageDirective.cshtml) - Html - "foo\n\n
                     IntermediateToken - (14:2,0 [4] MalformedPageDirective.cshtml) - Html - <h1>

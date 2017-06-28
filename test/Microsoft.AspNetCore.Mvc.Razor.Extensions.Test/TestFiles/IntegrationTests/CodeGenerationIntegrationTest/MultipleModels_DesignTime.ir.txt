@@ -30,7 +30,7 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
-                MalformedDirective - (30:1,0 [39] MultipleModels.cshtml)
+                MalformedDirective - (30:1,0 [39] MultipleModels.cshtml) - model
                     DirectiveToken - (37:1,7 [30] MultipleModels.cshtml) - System.Collections.IEnumerable
             Inject - 
             Inject - 

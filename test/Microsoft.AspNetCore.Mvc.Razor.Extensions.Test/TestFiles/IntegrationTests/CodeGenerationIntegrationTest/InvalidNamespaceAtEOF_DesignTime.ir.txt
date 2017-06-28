@@ -28,7 +28,7 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
-                MalformedDirective - (0:0,0 [11] InvalidNamespaceAtEOF.cshtml)
+                MalformedDirective - (0:0,0 [11] InvalidNamespaceAtEOF.cshtml) - namespace
                 HtmlContent - (11:0,11 [5] InvalidNamespaceAtEOF.cshtml)
                     IntermediateToken - (11:0,11 [5] InvalidNamespaceAtEOF.cshtml) - Html - Test.
             Inject - 

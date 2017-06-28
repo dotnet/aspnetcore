@@ -50,6 +50,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             WriteContentNode(node, node.Kind.ToString(), node.Content);
         }
 
+        public override void VisitMalformedDirective(MalformedDirectiveIntermediateNode node)
+        {
+            WriteContentNode(node, node.Name);
+        }
+
         public override void VisitDirective(DirectiveIntermediateNode node)
         {
             WriteContentNode(node, node.Name);

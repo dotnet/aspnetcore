@@ -16,57 +16,57 @@ Document -
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                MalformedDirective - (100:2,13 [0] IncompleteDirectives.cshtml)
+                MalformedDirective - (100:2,13 [0] IncompleteDirectives.cshtml) - addTagHelper
                     DirectiveToken - (100:2,13 [0] IncompleteDirectives.cshtml) - 
                 HtmlContent - (100:2,13 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (100:2,13 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (116:3,14 [0] IncompleteDirectives.cshtml)
+                MalformedDirective - (116:3,14 [0] IncompleteDirectives.cshtml) - addTagHelper
                     DirectiveToken - (116:3,14 [0] IncompleteDirectives.cshtml) - 
                 HtmlContent - (116:3,14 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (116:3,14 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (132:4,14 [1] IncompleteDirectives.cshtml)
+                MalformedDirective - (132:4,14 [1] IncompleteDirectives.cshtml) - addTagHelper
                     DirectiveToken - (132:4,14 [1] IncompleteDirectives.cshtml) - "
                 HtmlContent - (133:4,15 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (133:4,15 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                MalformedDirective - (153:6,16 [0] IncompleteDirectives.cshtml)
+                MalformedDirective - (153:6,16 [0] IncompleteDirectives.cshtml) - removeTagHelper
                     DirectiveToken - (153:6,16 [0] IncompleteDirectives.cshtml) - 
                 HtmlContent - (153:6,16 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (153:6,16 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (172:7,17 [0] IncompleteDirectives.cshtml)
+                MalformedDirective - (172:7,17 [0] IncompleteDirectives.cshtml) - removeTagHelper
                     DirectiveToken - (172:7,17 [0] IncompleteDirectives.cshtml) - 
                 HtmlContent - (172:7,17 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (172:7,17 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (191:8,17 [1] IncompleteDirectives.cshtml)
+                MalformedDirective - (191:8,17 [1] IncompleteDirectives.cshtml) - removeTagHelper
                     DirectiveToken - (191:8,17 [1] IncompleteDirectives.cshtml) - "
                 HtmlContent - (192:8,18 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (192:8,18 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                MalformedDirective - (212:10,16 [0] IncompleteDirectives.cshtml)
+                MalformedDirective - (212:10,16 [0] IncompleteDirectives.cshtml) - tagHelperPrefix
                     DirectiveToken - (212:10,16 [0] IncompleteDirectives.cshtml) - 
                 HtmlContent - (212:10,16 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (212:10,16 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (231:11,17 [0] IncompleteDirectives.cshtml)
+                MalformedDirective - (231:11,17 [0] IncompleteDirectives.cshtml) - tagHelperPrefix
                     DirectiveToken - (231:11,17 [0] IncompleteDirectives.cshtml) - 
                 HtmlContent - (231:11,17 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (231:11,17 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (250:12,17 [1] IncompleteDirectives.cshtml)
+                MalformedDirective - (250:12,17 [1] IncompleteDirectives.cshtml) - tagHelperPrefix
                     DirectiveToken - (250:12,17 [1] IncompleteDirectives.cshtml) - "
                 HtmlContent - (251:12,18 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (251:12,18 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                MalformedDirective - (255:14,0 [9] IncompleteDirectives.cshtml)
+                MalformedDirective - (255:14,0 [9] IncompleteDirectives.cshtml) - inherits
                 HtmlContent - (264:14,9 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (264:14,9 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (266:15,0 [10] IncompleteDirectives.cshtml)
+                MalformedDirective - (266:15,0 [10] IncompleteDirectives.cshtml) - inherits
                 HtmlContent - (276:15,10 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (276:15,10 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                MalformedDirective - (280:17,0 [12] IncompleteDirectives.cshtml)
-                MalformedDirective - (292:18,0 [15] IncompleteDirectives.cshtml)
-                MalformedDirective - (307:20,0 [8] IncompleteDirectives.cshtml)
+                MalformedDirective - (280:17,0 [12] IncompleteDirectives.cshtml) - functions
+                MalformedDirective - (292:18,0 [15] IncompleteDirectives.cshtml) - functions
+                MalformedDirective - (307:20,0 [8] IncompleteDirectives.cshtml) - section
                 HtmlContent - (315:20,8 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (315:20,8 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (317:21,0 [9] IncompleteDirectives.cshtml)
+                MalformedDirective - (317:21,0 [9] IncompleteDirectives.cshtml) - section
                 HtmlContent - (326:21,9 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (326:21,9 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                MalformedDirective - (330:23,0 [9] IncompleteDirectives.cshtml)
+                MalformedDirective - (330:23,0 [9] IncompleteDirectives.cshtml) - section
                 HtmlContent - (339:23,9 [3] IncompleteDirectives.cshtml)
                     IntermediateToken - (339:23,9 [3] IncompleteDirectives.cshtml) - Html - {\n
-                MalformedDirective - (342:24,0 [12] IncompleteDirectives.cshtml)
+                MalformedDirective - (342:24,0 [12] IncompleteDirectives.cshtml) - functions

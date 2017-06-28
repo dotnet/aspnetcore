@@ -31,30 +31,30 @@ Document -
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                MalformedDirective - (94:3,0 [8] IncompleteDirectives.cshtml)
-                MalformedDirective - (102:4,0 [6] IncompleteDirectives.cshtml)
+                MalformedDirective - (94:3,0 [8] IncompleteDirectives.cshtml) - page
+                MalformedDirective - (102:4,0 [6] IncompleteDirectives.cshtml) - page
                 HtmlContent - (108:4,6 [5] IncompleteDirectives.cshtml)
                     IntermediateToken - (108:4,6 [5] IncompleteDirectives.cshtml) - Html - "\n\n
-                MalformedDirective - (113:6,0 [6] IncompleteDirectives.cshtml)
+                MalformedDirective - (113:6,0 [6] IncompleteDirectives.cshtml) - model
                 HtmlContent - (119:6,6 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (119:6,6 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (121:7,0 [7] IncompleteDirectives.cshtml)
+                MalformedDirective - (121:7,0 [7] IncompleteDirectives.cshtml) - model
                 HtmlContent - (128:7,7 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (128:7,7 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                MalformedDirective - (132:9,0 [7] IncompleteDirectives.cshtml)
+                MalformedDirective - (132:9,0 [7] IncompleteDirectives.cshtml) - inject
                 HtmlContent - (139:9,7 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (139:9,7 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (141:10,0 [8] IncompleteDirectives.cshtml)
+                MalformedDirective - (141:10,0 [8] IncompleteDirectives.cshtml) - inject
                 HtmlContent - (149:10,8 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (149:10,8 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (151:11,0 [25] IncompleteDirectives.cshtml)
+                MalformedDirective - (151:11,0 [25] IncompleteDirectives.cshtml) - inject
                     DirectiveToken - (159:11,8 [17] IncompleteDirectives.cshtml) - MyService<TModel>
                 HtmlContent - (176:11,25 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (176:11,25 [4] IncompleteDirectives.cshtml) - Html - \n\n
-                MalformedDirective - (180:13,0 [10] IncompleteDirectives.cshtml)
+                MalformedDirective - (180:13,0 [10] IncompleteDirectives.cshtml) - namespace
                 HtmlContent - (190:13,10 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (190:13,10 [2] IncompleteDirectives.cshtml) - Html - \n
-                MalformedDirective - (192:14,0 [11] IncompleteDirectives.cshtml)
+                MalformedDirective - (192:14,0 [11] IncompleteDirectives.cshtml) - namespace
                 HtmlContent - (203:14,11 [2] IncompleteDirectives.cshtml)
                     IntermediateToken - (203:14,11 [2] IncompleteDirectives.cshtml) - Html - \n
             Inject - 

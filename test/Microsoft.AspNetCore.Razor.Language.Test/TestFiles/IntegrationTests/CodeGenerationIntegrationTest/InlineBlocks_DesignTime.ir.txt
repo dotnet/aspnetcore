@@ -6,7 +6,7 @@ Document -
             CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
-                MalformedDirective - (0:0,0 [13] InlineBlocks.cshtml)
+                MalformedDirective - (0:0,0 [13] InlineBlocks.cshtml) - section
                     DirectiveToken - (9:0,9 [4] InlineBlocks.cshtml) - Link
                 HtmlContent - (13:0,13 [23] InlineBlocks.cshtml)
                     IntermediateToken - (13:0,13 [21] InlineBlocks.cshtml) - Html - (string link) {\n    
