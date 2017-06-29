@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
             var output = new MemoryStream(); // Use small chunks to test Advance/Enlarge and partial payload writing
             foreach (var message in messages)
             {
-                Assert.True(BinaryMessageFormatter.TryWriteMessage(message, output));
+                BinaryMessageFormatter.WriteMessage(message, output);
             }
 
             Assert.Equal(expectedEncoding, output.ToArray());
@@ -54,7 +54,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
                 output.Seek(offset, SeekOrigin.Begin);
             }
 
-            Assert.True(BinaryMessageFormatter.TryWriteMessage(payload, output));
+            BinaryMessageFormatter.WriteMessage(payload, output);
+
             Assert.Equal(encoded, output.ToArray().Slice(offset).ToArray());
         }
 
@@ -74,7 +75,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
                 output.Seek(offset, SeekOrigin.Begin);
             }
 
-            Assert.True(BinaryMessageFormatter.TryWriteMessage(message, output));
+            BinaryMessageFormatter.WriteMessage(message, output);
+
             Assert.Equal(encoded, output.ToArray().Slice(offset).ToArray());
         }
     }

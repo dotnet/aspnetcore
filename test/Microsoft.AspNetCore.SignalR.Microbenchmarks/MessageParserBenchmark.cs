@@ -27,20 +27,14 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
             var buffer = new byte[MessageLength];
             Random.NextBytes(buffer);
             var output = new MemoryStream();
-            if (!BinaryMessageFormatter.TryWriteMessage(buffer, output))
-            {
-                throw new InvalidOperationException("Failed to format message");
-            }
+            BinaryMessageFormatter.WriteMessage(buffer, output);
 
             _binaryInput = output.ToArray();
 
             buffer = new byte[MessageLength];
             Random.NextBytes(buffer);
             output = new MemoryStream();
-            if (!TextMessageFormatter.TryWriteMessage(buffer, output))
-            {
-                throw new InvalidOperationException("Failed to format message");
-            }
+            TextMessageFormatter.WriteMessage(buffer, output);
 
             _textInput = output.ToArray();
         }

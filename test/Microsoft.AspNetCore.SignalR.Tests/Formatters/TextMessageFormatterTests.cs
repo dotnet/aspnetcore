@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
             var output = new MemoryStream();
             foreach (var message in messages)
             {
-                Assert.True(TextMessageFormatter.TryWriteMessage(message, output));
+                TextMessageFormatter.WriteMessage(message, output);
             }
 
             Assert.Equal(expectedEncoding, Encoding.UTF8.GetString(output.ToArray()));
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
             var message = Encoding.UTF8.GetBytes(payload);
             var output = new MemoryStream();
 
-            Assert.True(TextMessageFormatter.TryWriteMessage(message, output));
+            TextMessageFormatter.WriteMessage(message, output);
 
             Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
         }

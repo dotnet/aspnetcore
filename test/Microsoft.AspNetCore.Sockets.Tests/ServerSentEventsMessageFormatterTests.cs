@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
         public void WriteTextMessage(string encoded, string payload)
         {
             var output = new MemoryStream();
-            Assert.True(ServerSentEventsMessageFormatter.TryWriteMessage(Encoding.UTF8.GetBytes(payload), output));
+            ServerSentEventsMessageFormatter.WriteMessage(Encoding.UTF8.GetBytes(payload), output);
 
             Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
         }

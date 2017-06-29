@@ -107,16 +107,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return new CompletionMessage(invocationId, error, result, hasResult);
         }
 
-        public bool TryWriteMessage(HubMessage message, Stream output)
+        public void WriteMessage(HubMessage message, Stream output)
         {
             using (var memoryStream = new MemoryStream())
             {
-                WriteMessage(message, memoryStream);
-                return BinaryMessageFormatter.TryWriteMessage(new ReadOnlySpan<byte>(memoryStream.ToArray()), output);
+                WriteMessageCore(message, memoryStream);
+                BinaryMessageFormatter.WriteMessage(new ReadOnlySpan<byte>(memoryStream.ToArray()), output);
             }
         }
 
-        private void WriteMessage(HubMessage message, Stream output)
+        private void WriteMessageCore(HubMessage message, Stream output)
         {
             var packer = Packer.Create(output);
             switch (message)

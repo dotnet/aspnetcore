@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 {
     public static class BinaryMessageFormatter
     {
-        public static bool TryWriteMessage(ReadOnlySpan<byte> payload, Stream output)
+        public static void WriteMessage(ReadOnlySpan<byte> payload, Stream output)
         {
             // TODO: Optimize for size - (e.g. use Varints)
             var length = sizeof(long);
@@ -23,8 +23,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             payload.CopyTo(buffer);
             output.Write(buffer, 0, payload.Length);
             ArrayPool<byte>.Shared.Return(buffer);
-
-            return true;
         }
     }
 }

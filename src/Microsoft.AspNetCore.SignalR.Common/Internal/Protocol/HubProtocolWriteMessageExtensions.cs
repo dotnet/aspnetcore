@@ -13,10 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             using (var output = new MemoryStream())
             {
                 // Encode the message
-                if (!protocol.TryWriteMessage(message, output))
-                {
-                    throw new InvalidOperationException("Failed to write message to the output stream");
-                }
+                protocol.WriteMessage(message, output);
 
                 return output.ToArray();
             }

@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
         internal const char FieldDelimiter = ':';
         internal const char MessageDelimiter = ';';
 
-        public static bool TryWriteMessage(ReadOnlySpan<byte> payload, Stream output)
+        public static void WriteMessage(ReadOnlySpan<byte> payload, Stream output)
         {
             // Calculate the length, it's the number of characters for text messages, but number of base64 characters for binary
 
@@ -39,8 +39,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
             // Terminator
             output.WriteByte((byte)MessageDelimiter);
-
-            return true;
         }
     }
 }

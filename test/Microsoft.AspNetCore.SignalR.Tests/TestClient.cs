@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             using (var memoryStream = new MemoryStream())
             {
-                NegotiationProtocol.TryWriteProtocolNegotiationMessage(new NegotiationMessage(_protocol.Name), memoryStream);
+                NegotiationProtocol.WriteMessage(new NegotiationMessage(_protocol.Name), memoryStream);
                 Application.Out.TryWrite(memoryStream.ToArray());
             }
         }

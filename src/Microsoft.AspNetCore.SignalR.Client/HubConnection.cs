@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             using (var memoryStream = new MemoryStream())
             {
-                NegotiationProtocol.TryWriteProtocolNegotiationMessage(new NegotiationMessage(_protocol.Name), memoryStream);
+                NegotiationProtocol.WriteMessage(new NegotiationMessage(_protocol.Name), memoryStream);
                 await _connection.SendAsync(memoryStream.ToArray(), _connectionActive.Token);
             }
         }

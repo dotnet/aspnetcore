@@ -50,16 +50,8 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                     while (_application.TryRead(out var buffer))
                     {
                         _logger.SSEWritingMessage(_connectionId, buffer.Length);
-                        if (!ServerSentEventsMessageFormatter.TryWriteMessage(buffer, ms))
-                        {
-                            // We ran out of space to write, even after trying to enlarge.
-                            // This should only happen in a significant lack-of-memory scenario.
 
-                            // IOutput doesn't really have a way to write incremental
-
-                            // Throwing InvalidOperationException here, but it's not quite an invalid operation...
-                            throw new InvalidOperationException("Ran out of space to format messages!");
-                        }
+                        ServerSentEventsMessageFormatter.WriteMessage(buffer, ms);
                     }
 
                     ms.Seek(0, SeekOrigin.Begin);

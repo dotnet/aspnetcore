@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
     {
         private const string ProtocolPropertyName = "protocol";
 
-        public static bool TryWriteProtocolNegotiationMessage(NegotiationMessage negotiationMessage, Stream output)
+        public static void WriteMessage(NegotiationMessage negotiationMessage, Stream output)
         {
             using (var memoryStream = new MemoryStream())
             {
@@ -25,12 +25,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     writer.WriteEndObject();
                 }
 
-                memoryStream.Flush();
-                return TextMessageFormatter.TryWriteMessage(new ReadOnlySpan<byte>(memoryStream.ToArray()), output);
+                TextMessageFormatter.WriteMessage(memoryStream.ToArray(), output);
             }
         }
 
-        public static bool TryReadProtocolNegotiationMessage(ReadOnlySpan<byte> input, out NegotiationMessage negotiationMessage)
+        public static bool TryParseMessage(ReadOnlySpan<byte> input, out NegotiationMessage negotiationMessage)
         {
             var parser = new TextMessageParser();
             if (!parser.TryParseMessage(ref input, out var payload))

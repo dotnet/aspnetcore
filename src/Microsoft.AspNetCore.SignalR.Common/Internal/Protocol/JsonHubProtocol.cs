@@ -63,14 +63,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return messages.Count > 0;
         }
 
-        public bool TryWriteMessage(HubMessage message, Stream output)
+        public void WriteMessage(HubMessage message, Stream output)
         {
             using (var memoryStream = new MemoryStream())
             {
-                WriteMessage(message, memoryStream);
+                WriteMessageCore(message, memoryStream);
                 memoryStream.Flush();
 
-                return TextMessageFormatter.TryWriteMessage(memoryStream.ToArray(), output);
+                TextMessageFormatter.WriteMessage(memoryStream.ToArray(), output);
             }
         }
 
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
-        private void WriteMessage(HubMessage message, Stream stream)
+        private void WriteMessageCore(HubMessage message, Stream stream)
         {
             using (var writer = new JsonTextWriter(new StreamWriter(stream)))
             {

@@ -14,25 +14,21 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
 
         private const byte LineFeed = (byte)'\n';
 
-        public static bool TryWriteMessage(ReadOnlySpan<byte> payload, MemoryStream output)
+        public static void WriteMessage(ReadOnlySpan<byte> payload, MemoryStream output)
         {
             // Write the payload
-            if (!TryWritePayload(payload, output))
-            {
-                return false;
-            }
+            WritePayload(payload, output);
 
+            // Write new \r\n
             output.Write(Newline, 0, Newline.Length);
-
-            return true;
         }
 
-        private static bool TryWritePayload(ReadOnlySpan<byte> payload, Stream output)
+        private static void WritePayload(ReadOnlySpan<byte> payload, Stream output)
         {
             // Short-cut for empty payload
             if (payload.Length == 0)
             {
-                return true;
+                return;
             }
 
             // We can't just use while(payload.Length > 0) because we need to write a blank final "data: " line
@@ -76,16 +72,11 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
                     payload = payload.Slice(nextSliceStart);
                 }
 
-                if (!TryWriteLine(slice, output))
-                {
-                    return false;
-                }
+                WriteLine(slice, output);
             }
-
-            return true;
         }
 
-        private static bool TryWriteLine(ReadOnlySpan<byte> payload, Stream output)
+        private static void WriteLine(ReadOnlySpan<byte> payload, Stream output)
         {
             output.Write(DataPrefix, 0, DataPrefix.Length);
 
@@ -95,8 +86,6 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
             ArrayPool<byte>.Shared.Return(buffer);
 
             output.Write(Newline, 0, Newline.Length);
-
-            return true;
         }
     }
 }

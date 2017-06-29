@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var negotiationMessage = new NegotiationMessage(protocol: "dummy");
             using (var ms = new MemoryStream())
             {
-                Assert.True(NegotiationProtocol.TryWriteProtocolNegotiationMessage(negotiationMessage, ms));
-                Assert.True(NegotiationProtocol.TryReadProtocolNegotiationMessage(ms.ToArray(), out var deserializedMessage));
+                NegotiationProtocol.WriteMessage(negotiationMessage, ms);
+                Assert.True(NegotiationProtocol.TryParseMessage(ms.ToArray(), out var deserializedMessage));
 
                 Assert.NotNull(deserializedMessage);
                 Assert.Equal(negotiationMessage.Protocol, deserializedMessage.Protocol);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var message = Encoding.UTF8.GetBytes(payload);
 
             var exception = Assert.Throws<FormatException>(() =>
-                Assert.True(NegotiationProtocol.TryReadProtocolNegotiationMessage(message, out var deserializedMessage)));
+                Assert.True(NegotiationProtocol.TryParseMessage(message, out var deserializedMessage)));
 
             Assert.Equal(expectedMessage, exception.Message);
         }

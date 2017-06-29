@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 while (connection.Transport.In.TryRead(out var buffer))
                 {
-                    if (NegotiationProtocol.TryReadProtocolNegotiationMessage(buffer, out var negotiationMessage))
+                    if (NegotiationProtocol.TryParseMessage(buffer, out var negotiationMessage))
                     {
                         // Resolve the Hub Protocol for the connection and store it in metadata
                         // Other components, outside the Hub, may need to know what protocol is in use

@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 throw new InvalidOperationException("No Parsed Message provided");
             }
 
-            public bool TryWriteMessage(HubMessage message, Stream output)
+            public void WriteMessage(HubMessage message, Stream output)
             {
                 WriteCalls += 1;
 
@@ -201,7 +201,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     throw _error;
                 }
-                return true;
             }
         }
     }

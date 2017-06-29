@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             {
                 foreach (var hubMessage in hubMessages)
                 {
-                    _hubProtocol.TryWriteMessage(hubMessage, memoryStream);
+                    _hubProtocol.WriteMessage(hubMessage, memoryStream);
                 }
 
                 _hubProtocol.TryParseMessages(
