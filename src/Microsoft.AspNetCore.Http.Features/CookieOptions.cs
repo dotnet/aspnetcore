@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Http
         /// <returns>true to transmit the cookie only over an SSL connection (HTTPS); otherwise, false.</returns>
         public bool Secure { get; set; }
 
-
         /// <summary>
         /// Gets or sets the value for the SameSite attribute of the cookie. The default value is <see cref="SameSiteMode.Lax"/>
         /// </summary>
