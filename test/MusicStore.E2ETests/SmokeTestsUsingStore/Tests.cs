@@ -19,9 +19,9 @@ namespace E2ETests.SmokeTestsUsingStore
             _output = output;
         }
 
-        [EnvironmentVariableSkipCondition(Store.MusicStoreAspNetCoreStoreFeed, null, SkipOnMatch = false)]
+        [SkipIfEnvironmentVariableNotEnabled("RUN_RUNTIME_STORE_TESTS")]
         [ConditionalFact]
-        [Trait("smoketests", "usestore1")]
+        [Trait("smoketests", "usestore")]
         public async Task DefaultLocation_Kestrel()
         {
             var tests = new TestHelper(_output);
@@ -32,7 +32,7 @@ namespace E2ETests.SmokeTestsUsingStore
 
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [EnvironmentVariableSkipCondition(Store.MusicStoreAspNetCoreStoreFeed, null, SkipOnMatch = false)]
+        [SkipIfEnvironmentVariableNotEnabled("RUN_RUNTIME_STORE_TESTS")]
         [ConditionalFact]
         [Trait("smoketests", "usestore")]
         public async Task DefaultLocation_WebListener()

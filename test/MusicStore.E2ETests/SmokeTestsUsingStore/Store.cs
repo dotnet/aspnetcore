@@ -3,25 +3,18 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Threading;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.Extensions.DependencyModel;
 using Microsoft.Extensions.Logging;
-using NuGet.Configuration;
-using NuGet.Packaging.Core;
-using NuGet.Protocol;
-using NuGet.Protocol.Core.Types;
-using NuGet.Versioning;
 
 namespace E2ETests
 {
     internal class Store : IDisposable
     {
-        public const string MusicStoreAspNetCoreStoreFeed = "MUSICSTORE_ASPNETCORE_STORE_FEED";
         private readonly ILogger _logger;
+        private string _storeParentDir;
         private string _storeDir;
-        private string _tempDir;
 
         public Store(ILoggerFactory loggerFactory)
         {
@@ -30,11 +23,11 @@ namespace E2ETests
 
         public string CreateStore()
         {
-            var storeParentDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+            _storeParentDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
-            InstallStore(storeParentDir);
+            InstallStore(_storeParentDir);
 
-            _storeDir = Path.Combine(storeParentDir, "store");
+            _storeDir = Path.Combine(_storeParentDir, "store");
 
             return _storeDir;
         }
@@ -52,16 +45,10 @@ namespace E2ETests
             }
             else
             {
-                _logger.LogInformation("Deleting the store...");
-
-                //RetryHelper.RetryOperation(
-                //        () => Directory.Delete(_storeDir, recursive: true),
-                //        e => _logger.LogError($"Failed to delete directory : {e.Message}"),
-                //        retryCount: 3,
-                //        retryDelayMilliseconds: 100);
+                _logger.LogInformation($"Deleting the store directory {_storeParentDir}...");
 
                 RetryHelper.RetryOperation(
-                        () => Directory.Delete(_tempDir, recursive: true),
+                        () => Directory.Delete(_storeParentDir, recursive: true),
                         e => _logger.LogError($"Failed to delete directory : {e.Message}"),
                         retryCount: 3,
                         retryDelayMilliseconds: 100);
@@ -70,80 +57,29 @@ namespace E2ETests
 
         public static bool IsEnabled()
         {
-            var storeFeed = Environment.GetEnvironmentVariable(MusicStoreAspNetCoreStoreFeed);
+            var storeFeed = Environment.GetEnvironmentVariable("RUN_RUNTIME_STORE_TESTS");
             return !string.IsNullOrEmpty(storeFeed);
         }
 
         private void InstallStore(string storeParentDir)
         {
             var packageId = "Build.RS";
-            var storeFeed = Environment.GetEnvironmentVariable(MusicStoreAspNetCoreStoreFeed);
-            if (string.IsNullOrEmpty(storeFeed))
-            {
-                _logger.LogError("The feed for the store package was not provided." +
-                    $"Set the environment variable '{MusicStoreAspNetCoreStoreFeed}' and try again.");
 
-                throw new InvalidOperationException(
-                    $"The environment variable '{MusicStoreAspNetCoreStoreFeed}' is not defined or is empty.");
-            }
-            else
+            var runtimeStoreLibrary = DependencyContext.Default.RuntimeLibraries
+                .Where(library => string.Equals("Build.RS", library.Name, StringComparison.OrdinalIgnoreCase))
+                .FirstOrDefault();
+            if (runtimeStoreLibrary == null)
             {
-                _logger.LogInformation($"Using the feed {storeFeed} for the store package");
+                throw new InvalidOperationException($"Could not find the package with id '{packageId}' in {nameof(DependencyContext)}.");
             }
 
-            // Get the version information from the attribute which is typically the same as the nuget package version
-            // Example:
-            // [assembly: AssemblyInformationalVersion("2.0.0-preview1-24847")]
-            var aspnetCoreHttpAssembly = typeof(Microsoft.AspNetCore.Http.FormCollection).Assembly;
-            var obj = aspnetCoreHttpAssembly.GetCustomAttributes(typeof(AssemblyInformationalVersionAttribute), inherit: false).FirstOrDefault();
-            var assemblyInformationVersionAttribute = obj as AssemblyInformationalVersionAttribute;
-            if (assemblyInformationVersionAttribute == null)
-            {
-                throw new InvalidOperationException($"Could not find {nameof(assemblyInformationVersionAttribute)} from the assembly {aspnetCoreHttpAssembly.FullName}");
-            }
-
-            _logger.LogInformation($"Downloading package with id {packageId} and version {assemblyInformationVersionAttribute.InformationalVersion} from feed {storeFeed}");
-
-            _tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            var sourceRepository = Repository.Factory.GetCoreV2(new PackageSource(storeFeed));
-            var downloadResource = sourceRepository.GetResource<DownloadResource>();
-            var result = downloadResource.GetDownloadResourceResultAsync(
-                new PackageIdentity(packageId, NuGetVersion.Parse(assemblyInformationVersionAttribute.InformationalVersion)),
-                new PackageDownloadContext(
-                    new SourceCacheContext() { NoCache = true, DirectDownload = true },
-                    _tempDir,
-                    directDownload: true),
-                null,
-                NuGet.Common.NullLogger.Instance,
-                CancellationToken.None)
-                .Result;
-
-            if (result.Status != DownloadResourceResultStatus.Available)
-            {
-                _logger.LogError($"Failed to download the package. Status: {result.Status}");
-                throw new InvalidOperationException("Unable to download the store package");
-            }
-
-            var zipFile = Path.Combine(_tempDir, "Build.RS.zip");
-            using (var targetStream = File.Create(zipFile))
-            {
-                using (result.PackageStream)
-                {
-                    result.PackageStream.CopyTo(targetStream);
-                }
-            }
-
-            _logger.LogInformation($"Package downloaded and saved as zip file at {zipFile}");
-
-            var zipFileExtracted = Path.Combine(_tempDir, "extracted");
-            ZipFile.ExtractToDirectory(zipFile, zipFileExtracted);
-
-            _logger.LogInformation($"Package extracted at {zipFileExtracted}");
+            var runtimeStoreVersion = runtimeStoreLibrary.Version;
+            var restoredRuntimeStorePackageDir = Path.Combine(GetNugetPackagesRoot(), runtimeStoreLibrary.Path);
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 string fileNameWithExtension = null;
-                foreach (var file in new DirectoryInfo(zipFileExtracted).GetFiles())
+                foreach (var file in new DirectoryInfo(restoredRuntimeStorePackageDir).GetFiles())
                 {
                     if (file.Name.StartsWith($"{packageId}.winx64"))
                     {
@@ -152,7 +88,7 @@ namespace E2ETests
                             var mvcCoreDllEntry = zipArchive.Entries
                                 .Where(entry => string.Equals(entry.Name, "Microsoft.AspNetCore.Mvc.Core.dll", StringComparison.OrdinalIgnoreCase))
                                 .FirstOrDefault();
-                            if (mvcCoreDllEntry != null && mvcCoreDllEntry.FullName.Contains(assemblyInformationVersionAttribute.InformationalVersion))
+                            if (mvcCoreDllEntry != null && mvcCoreDllEntry.FullName.Contains(runtimeStoreVersion))
                             {
                                 fileNameWithExtension = file.Name;
                                 break;
@@ -163,11 +99,10 @@ namespace E2ETests
 
                 if (string.IsNullOrEmpty(fileNameWithExtension))
                 {
-                    throw new InvalidOperationException(
-                        $"Could not find a store zip file with version {assemblyInformationVersionAttribute.InformationalVersion}");
+                    throw new InvalidOperationException($"Could not find a store zip file with version {runtimeStoreVersion}");
                 }
 
-                var storeZipFile = Path.Combine(zipFileExtracted, fileNameWithExtension);
+                var storeZipFile = Path.Combine(restoredRuntimeStorePackageDir, fileNameWithExtension);
                 ZipFile.ExtractToDirectory(storeZipFile, storeParentDir);
                 _logger.LogInformation($"Extracted the store zip file '{storeZipFile}' to '{storeParentDir}'");
             }
@@ -184,7 +119,7 @@ namespace E2ETests
                 }
 
                 string fileNameWithExtension = null;
-                foreach (var file in new DirectoryInfo(zipFileExtracted).GetFiles())
+                foreach (var file in new DirectoryInfo(restoredRuntimeStorePackageDir).GetFiles())
                 {
                     if (file.Name.StartsWith(packageIdPrefix)
                         && !string.Equals($"{packageIdPrefix}.tar.gz", file.Name, StringComparison.OrdinalIgnoreCase))
@@ -197,7 +132,7 @@ namespace E2ETests
                 if (string.IsNullOrEmpty(fileNameWithExtension))
                 {
                     throw new InvalidOperationException(
-                        $"Could not find a store zip file with version {assemblyInformationVersionAttribute.InformationalVersion}");
+                        $"Could not find a store zip file with version {runtimeStoreVersion}");
                 }
 
                 Directory.CreateDirectory(storeParentDir);
@@ -224,6 +159,32 @@ namespace E2ETests
                     throw new InvalidOperationException(message);
                 }
             }
+        }
+
+        private string GetNugetPackagesRoot()
+        {
+            var packageDirectory = Environment.GetEnvironmentVariable("NUGET_PACKAGES");
+            if (!string.IsNullOrEmpty(packageDirectory))
+            {
+                return packageDirectory;
+            }
+
+            string basePath;
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                basePath = Environment.GetEnvironmentVariable("USERPROFILE");
+            }
+            else
+            {
+                basePath = Environment.GetEnvironmentVariable("HOME");
+            }
+
+            if (string.IsNullOrEmpty(basePath))
+            {
+                return null;
+            }
+
+            return Path.Combine(basePath, ".nuget", "packages");
         }
     }
 }
