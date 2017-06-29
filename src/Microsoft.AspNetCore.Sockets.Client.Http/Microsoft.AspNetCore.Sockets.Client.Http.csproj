@@ -18,11 +18,14 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="System.Text.Formatting" Version="$(CoreFxLabsVersion)" />
+    <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
     <PackageReference Include="System.IO.Pipelines" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.IO.Pipelines.Extensions" Version="$(CoreFxLabsVersion)" />
+    <PackageReference Include="System.Memory" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Text.Formatting" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.Threading.Tasks.Channels" Version="$(CoreFxLabsVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
   </ItemGroup>
 
 </Project>
