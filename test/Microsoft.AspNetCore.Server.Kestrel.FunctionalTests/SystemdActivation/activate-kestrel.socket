@@ -1,7 +1,9 @@
 [Unit]
-Description=Kestrel Activation
+PartOf=activate-kestrel.service
 
 [Socket]
 ListenStream=8080
 NoDelay=true
 
+[Install]
+WantedBy=multi-user.target
