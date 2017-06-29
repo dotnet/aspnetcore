@@ -362,13 +362,65 @@
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
 
-    <!-- Update Date and Version -->
-    <Exec Command="sed -i -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/' $(RuntimeStoreInstallerLayoutTimestampDirectory)templates/changelog" />
-    <Exec Command="sed -i -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/' $(RuntimeStoreInstallerLayoutNoTimestampDirectory)templates/changelog" />
-    <Exec Command="sed -i -e 's/PACKAGE_VERSION/$(TimestampVersion)/' $(RuntimeStoreInstallerLayoutTimestampDirectory)templates/changelog" />
-    <Exec Command="sed -i -e 's/PACKAGE_VERSION/$(NoTimestampVersion)/' $(RuntimeStoreInstallerLayoutNoTimestampDirectory)templates/changelog" />
+    <!-- Common installer parameters -->
+    <JsonPeek Query="$.short_description" JsonInputPath="$(DebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_InstallerSummary" />
+    </JsonPeek>
+    <JsonPeek Query="$.long_description" JsonInputPath="$(DebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_InstallerDescription" />
+    </JsonPeek>
+    <JsonPeek Query="$.license.type" JsonInputPath="$(DebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_InstallerLicense" />
+    </JsonPeek>
+    <JsonPeek Query="$.release.package_revision" JsonInputPath="$(DebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_InstallerPackageRevision" />
+    </JsonPeek>
+    <JsonPeek Query="$.homepage" JsonInputPath="$(DebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_InstallerHomepage" />
+    </JsonPeek>
+    <JsonPeek Query="$.maintainer_name" JsonInputPath="$(DebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_InstallerMaintainerName" />
+    </JsonPeek>
+    <JsonPeek Query="$.maintainer_email" JsonInputPath="$(DebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_InstallerMaintainerEmail" />
+    </JsonPeek>
+    <JsonPeek Query="$.release.changelog_message" JsonInputPath="$(DebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_InstallerChangelogMessage" />
+    </JsonPeek>
 
-    <MSBuild Projects="$(ProjectPath)" Targets="BuildRuntimeStoreRPM" Properties="InstallerPlatform=rhel" />
+    <PropertyGroup>
+      <InstallerSummary>@(_InstallerSummary)</InstallerSummary>
+      <InstallerDescription>@(_InstallerDescription)</InstallerDescription>
+      <InstallerLicense>@(_InstallerLicense)</InstallerLicense>
+      <InstallerPackageRevision>@(_InstallerPackageRevision)</InstallerPackageRevision>
+      <InstallerHomepage>@(_InstallerHomepage)</InstallerHomepage>
+      <InstallerMaintainerName>@(_InstallerMaintainerName)</InstallerMaintainerName>
+      <InstallerMaintainerEmail>@(_InstallerMaintainerEmail)</InstallerMaintainerEmail>
+      <InstallerChangelogMessage>@(_InstallerChangelogMessage)</InstallerChangelogMessage>
+    </PropertyGroup>
+
+    <!-- Update Date, Maintainer, Version, Revision and Changelog Message -->
+    <Exec Command="sed -i
+      -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/'
+      -e 's/MAINTAINER_NAME/$(InstallerMaintainerName)/'
+      -e 's/MAINTAINER_EMAIL/$(InstallerMaintainerEmail)/'
+      -e 's/PACKAGE_VERSION/$(TimestampVersion)/'
+      -e 's/PACKAGE_REVISION/$(InstallerPackageRevision)/'
+      -e 's/CHANGELOG_MESSAGE/$(InstallerChangelogMessage)/'
+      $(RuntimeStoreInstallerLayoutTimestampDirectory)templates/changelog" />
+    <Exec Command="sed -i
+      -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/'
+      -e 's/MAINTAINER_NAME/$(InstallerMaintainerName)/'
+      -e 's/MAINTAINER_EMAIL/$(InstallerMaintainerEmail)/'
+      -e 's/PACKAGE_VERSION/$(NoTimestampVersion)/'
+      -e 's/PACKAGE_REVISION/$(InstallerPackageRevision)/'
+      -e 's/CHANGELOG_MESSAGE/$(InstallerChangelogMessage)/'
+      $(RuntimeStoreInstallerLayoutNoTimestampDirectory)templates/changelog" />
+
+    <MSBuild
+      Projects="$(ProjectPath)"
+      Targets="BuildRuntimeStoreRPM"
+      Properties="InstallerPlatform=rhel;InstallerSummary=$(InstallerSummary);InstallerDescription=$(InstallerDescription);InstallerLicense=$(InstallerLicense);InstallerPackageRevision=$(InstallerPackageRevision);InstallerHomepage=$(InstallerHomepage);InstallerMaintainerName=$(InstallerMaintainerName);InstallerMaintainerEmail=$(InstallerMaintainerEmail);InstallerChangelogMessage=$(InstallerChangelogMessage)" />
   </Target>
 
   <Target Name="BuildRuntimeStoreRPM">
@@ -378,17 +430,12 @@
     </ItemGroup>
 
     <PropertyGroup>
+      <!-- rpm unique installer parameters -->
       <RuntimeStoreTimestampRPMFileName>$(RuntimeStoreTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).rpm</RuntimeStoreTimestampRPMFileName>
       <RuntimeStoreNoTimestampRPMFileName>$(RuntimeStoreNoTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).rpm</RuntimeStoreNoTimestampRPMFileName>
       <RPMDirectoriesArguments>@(RPMDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RPMDirectoriesArguments>
-      <InstallerSummary>Microsoft ASP.NET Core Runtime Package Store 2.0.0 - Preview 2</InstallerSummary>
-      <InstalerDescription>Runtime package store for Microsoft ASP.NET Core. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub (https://github.com/aspnet/home). We happily accept issues and PRs.</InstalerDescription>
-      <InstallerMaintainerName>Microsoft</InstallerMaintainerName>
-      <InstallerMaintainerEmail>nugetaspnet@microsoft.com</InstallerMaintainerEmail>
+      <InstallerMaintainer>$(InstallerMaintainerName) &lt;$(InstallerMaintainerEmail)&gt;</InstallerMaintainer>
       <InstallerVendor>.NET Foundation</InstallerVendor>
-      <InstallerLicense>Apache-2.0</InstallerLicense>
-      <InstallerPackageRevision>1</InstallerPackageRevision>
-      <InstallerHomepage>https://www.asp.net/</InstallerHomepage>
       <InstallerInstallRoot>/opt/rh/rh-dotnet20/root/usr/lib64/dotnet</InstallerInstallRoot>
     </PropertyGroup>
 
@@ -416,14 +463,14 @@
         $(RPMDirectoriesArguments)
         --rpm-changelog $(DockerRootDirectory)artifacts/itLayout/templates/changelog
         --rpm-summary &quot;$(InstallerSummary)&quot;
-        --description &quot;$(InstalerDescription)&quot;
-        --maintainer &quot;$(InstallerMaintainerName) &lt;$(InstallerMaintainerEmail)&gt;&quot;
+        --description &quot;$(InstallerDescription)&quot;
+        --maintainer &quot;$(InstallerMaintainer)&quot;
         --vendor &quot;$(InstallerVendor)&quot;
         -p $(DockerRootDirectory)artifacts/itOutput/$(RuntimeStoreTimestampRPMFileName)
         --license &quot;$(InstallerLicense)&quot;
         --iteration $(InstallerPackageRevision)
         --url &quot;$(InstallerHomepage)&quot;
-        $(DockerRootDirectory)artifacts/itLayout/package_root/=$(InstallerInstallRoot)" />
+        $(DockerRootDirectory)artifacts/itLayout/package_root/=&quot;$(InstallerInstallRoot)&quot;" />
     <Exec Command="docker run
       --rm
       -v $(RepositoryRoot):$(DockerRootDirectory)
@@ -438,8 +485,8 @@
         $(RPMDirectoriesArguments)
         --rpm-changelog $(DockerRootDirectory)artifacts/inLayout/templates/changelog
         --rpm-summary &quot;$(InstallerSummary)&quot;
-        --description &quot;$(InstalerDescription)&quot;
-        --maintainer &quot;$(InstallerMaintainerName) %3C$(InstallerMaintainerEmail)%3E&quot;
+        --description &quot;$(InstallerDescription)&quot;
+        --maintainer &quot;$(InstallerMaintainer)&quot;
         --vendor &quot;$(InstallerVendor)&quot;
         -p $(DockerRootDirectory)artifacts/inOutput/$(RuntimeStoreNoTimestampRPMFileName)
         --license &quot;$(InstallerLicense)&quot;
