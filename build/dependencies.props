@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <AzureKeyVaultVersion>2.2.1-preview</AzureKeyVaultVersion>
@@ -7,8 +7,8 @@
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <IdentityEFCompatVersion>2.2.1</IdentityEFCompatVersion>
     <InternalAspNetCoreSdkVersion>2.1.0-*</InternalAspNetCoreSdkVersion>
-    <MoqVersion>4.7.1</MoqVersion>
-
+    <MoqVersion>4.7.49</MoqVersion>
+    <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
     <OwinSecurityVersion>3.0.1</OwinSecurityVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
