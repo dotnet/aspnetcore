@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
@@ -48,6 +49,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public TagMode TagMode { get; set; }
 
         public ICollection<TagHelperDescriptor> TagHelpers { get; } = new List<TagHelperDescriptor>();
+
+        public TagHelperBodyIntermediateNode Body => Children.OfType<TagHelperBodyIntermediateNode>().SingleOrDefault();
+
+        public IEnumerable<SetTagHelperPropertyIntermediateNode> SetTagHelperProperties
+        {
+            get
+            {
+                return Children.OfType<SetTagHelperPropertyIntermediateNode>();
+            }
+        }
+
+        public IEnumerable<AddTagHelperHtmlAttributeIntermediateNode> AddTagHelperHtmlAttributes
+        {
+            get
+            {
+                return Children.OfType<AddTagHelperHtmlAttributeIntermediateNode>();
+            }
+        }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {
