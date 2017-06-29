@@ -9,10 +9,6 @@
     <PreserveCompilationContext>true</PreserveCompilationContext>
   </PropertyGroup>
 
-  <PropertyGroup Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">
-    <AssetTargetFallback>$(AssetTargetFallback);portable-net45+win8+wp8+wpa81;</AssetTargetFallback>
-  </PropertyGroup>
-
   <ItemGroup>
     <EmbeddedResource Include="TestFiles\**\*" />
     <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
