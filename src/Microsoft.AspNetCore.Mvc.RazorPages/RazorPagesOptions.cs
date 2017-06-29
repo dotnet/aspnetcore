@@ -4,8 +4,6 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.RazorPages.Internal;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
@@ -17,16 +15,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         private string _root = "/Pages";
 
         /// <summary>
-        /// Gets a list of <see cref="IPageRouteModelConvention"/> instances that will be applied to
-        /// the <see cref="PageModel"/> when discovering Razor Pages.
+        /// Gets a collection of <see cref="IPageConvention"/> instances that are applied during
+        /// route and page model construction.
         /// </summary>
-        public IList<IPageRouteModelConvention> RouteModelConventions { get; } = new List<IPageRouteModelConvention>();
-
-        /// <summary>
-        /// Gets a list of <see cref="IPageRouteModelConvention"/> instances that will be applied to
-        /// the <see cref="PageModel"/> when discovering Razor Pages.
-        /// </summary>
-        public IList<IPageApplicationModelConvention> ApplicationModelConventions { get; } = new List<IPageApplicationModelConvention>();
+        public PageConventionCollection Conventions { get; } = new PageConventionCollection();
 
         /// <summary>
         /// Application relative path used as the root of discovery for Razor Page files.
@@ -44,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
                 if (value[0] != '/')
                 {
-                    throw new ArgumentException(Resources.PathMustBeAnAppRelativePath, nameof(value));
+                    throw new ArgumentException(Resources.PathMustBeRootRelativePath, nameof(value));
                 }
 
                 _root = value;

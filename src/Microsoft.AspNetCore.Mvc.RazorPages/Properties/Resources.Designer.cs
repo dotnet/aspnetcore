@@ -109,18 +109,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousHandler"), p0, p1);
 
         /// <summary>
-        /// Path must be an application relative path that starts with a forward slash '/'.
+        /// Path must be a root relative path that starts with a forward slash '/'.
         /// </summary>
-        internal static string PathMustBeAnAppRelativePath
+        internal static string PathMustBeRootRelativePath
         {
-            get => GetString("PathMustBeAnAppRelativePath");
+            get => GetString("PathMustBeRootRelativePath");
         }
 
         /// <summary>
-        /// Path must be an application relative path that starts with a forward slash '/'.
+        /// Path must be a root relative path that starts with a forward slash '/'.
         /// </summary>
-        internal static string FormatPathMustBeAnAppRelativePath()
-            => GetString("PathMustBeAnAppRelativePath");
+        internal static string FormatPathMustBeRootRelativePath()
+            => GetString("PathMustBeRootRelativePath");
 
         /// <summary>
         /// If an {0} provides a result value by setting the {1} property of {2} to a non-null value, then it cannot call the next filter by invoking {3}.
@@ -163,6 +163,20 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         /// </summary>
         internal static string FormatInvalidPageType_NoModelProperty(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidPageType_NoModelProperty"), p0, p1);
+
+        /// <summary>
+        /// '{0}' is not a valid page name. A page name is path relative to the Razor Pages root directory that starts with a leading forward slash ('/') and does not contain the file extension e.g "/Users/Edit".
+        /// </summary>
+        internal static string InvalidValidPageName
+        {
+            get => GetString("InvalidValidPageName");
+        }
+
+        /// <summary>
+        /// '{0}' is not a valid page name. A page name is path relative to the Razor Pages root directory that starts with a leading forward slash ('/') and does not contain the file extension e.g "/Users/Edit".
+        /// </summary>
+        internal static string FormatInvalidValidPageName(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidValidPageName"), p0);
 
         private static string GetString(string name, params string[] formatterNames)
         {

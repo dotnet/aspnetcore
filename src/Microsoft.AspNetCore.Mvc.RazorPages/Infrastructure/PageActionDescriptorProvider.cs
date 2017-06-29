@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         private readonly IPageRouteModelProvider[] _routeModelProviders;
         private readonly MvcOptions _mvcOptions;
-        private readonly RazorPagesOptions _pagesOptions;
+        private readonly IPageRouteModelConvention[] _conventions;
 
         public PageActionDescriptorProvider(
             IEnumerable<IPageRouteModelProvider> pageRouteModelProviders,
@@ -25,7 +25,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             _routeModelProviders = pageRouteModelProviders.OrderBy(p => p.Order).ToArray();
             _mvcOptions = mvcOptionsAccessor.Value;
-            _pagesOptions = pagesOptionsAccessor.Value;
+
+            _conventions = pagesOptionsAccessor.Value.Conventions
+                .OfType<IPageRouteModelConvention>()
+                .ToArray();
         }
 
         public int Order { get; set; } = -900; // Run after the default MVC provider, but before others.
@@ -63,9 +66,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private void AddActionDescriptors(IList<ActionDescriptor> actions, PageRouteModel model)
         {
-            for (var i = 0; i < _pagesOptions.RouteModelConventions.Count; i++)
+            for (var i = 0; i < _conventions.Length; i++)
             {
-                _pagesOptions.RouteModelConventions[i].Apply(model);
+                _conventions[i].Apply(model);
             }
 
             foreach (var selector in model.Selectors)

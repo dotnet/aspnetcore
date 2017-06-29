@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 {
                     Assert.Same(model, m);
                 });
-            options.Value.ApplicationModelConventions.Add(convention.Object);
+            options.Value.Conventions.Add(convention.Object);
 
             var loader = new DefaultPageLoader(
                 providers,

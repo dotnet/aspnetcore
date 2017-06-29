@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     {
         private readonly IPageApplicationModelProvider[] _applicationModelProviders;
         private readonly IViewCompilerProvider _viewCompilerProvider;
-        private readonly RazorPagesOptions _options;
+        private readonly IPageApplicationModelConvention[] _conventions;
 
         public DefaultPageLoader(
             IEnumerable<IPageApplicationModelProvider> applicationModelProviders,
@@ -25,7 +25,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             _applicationModelProviders = applicationModelProviders.ToArray();
             _viewCompilerProvider = viewCompilerProvider;
-            _options = pageOptions.Value;
+            _conventions = pageOptions.Value.Conventions
+                .OfType<IPageApplicationModelConvention>()
+                .ToArray();
         }
 
         private IViewCompiler Compiler => _viewCompilerProvider.GetCompiler();
@@ -52,9 +54,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 _applicationModelProviders[i].OnProvidersExecuted(context);
             }
 
-            for (var i = 0; i < _options.ApplicationModelConventions.Count; i++)
+            for (var i = 0; i < _conventions.Length; i++)
             {
-                _options.ApplicationModelConventions[i].Apply(context.PageApplicationModel);
+                _conventions[i].Apply(context.PageApplicationModel);
             }
 
             return CompiledPageActionDescriptorBuilder.Build(context.PageApplicationModel);

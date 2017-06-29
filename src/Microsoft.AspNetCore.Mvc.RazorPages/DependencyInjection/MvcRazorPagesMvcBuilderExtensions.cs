@@ -57,7 +57,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (rootDirectory[0] != '/')
             {
-                throw new ArgumentException(Resources.PathMustBeAnAppRelativePath, nameof(rootDirectory));
+                throw new ArgumentException(Resources.PathMustBeRootRelativePath, nameof(rootDirectory));
             }
 
             builder.Services.Configure<RazorPagesOptions>(options => options.RootDirectory = rootDirectory);

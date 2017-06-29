@@ -16,11 +16,11 @@ namespace RazorPagesWebSite
                 .AddCookieTempDataProvider()
                 .AddRazorPagesOptions(options =>
                 {
-                    options.AuthorizePage("/HelloWorldWithAuth");
-                    options.AuthorizeFolder("/Pages/Admin");
-                    options.AllowAnonymousToPage("/Pages/Admin/Login");
-                    options.AddPageRoute("/HelloWorldWithRoute", "Different-Route/{text}");
-                    options.AddPageRoute("/Pages/NotTheRoot", string.Empty);
+                    options.Conventions.AuthorizePage("/HelloWorldWithAuth");
+                    options.Conventions.AuthorizeFolder("/Pages/Admin");
+                    options.Conventions.AllowAnonymousToPage("/Pages/Admin/Login");
+                    options.Conventions.AddPageRoute("/HelloWorldWithRoute", "Different-Route/{text}");
+                    options.Conventions.AddPageRoute("/Pages/NotTheRoot", string.Empty);
                 })
                 .WithRazorPagesAtContentRoot();
         }
