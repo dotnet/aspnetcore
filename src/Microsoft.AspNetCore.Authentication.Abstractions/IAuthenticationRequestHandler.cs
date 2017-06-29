@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Authentication
     /// </summary>
     public interface IAuthenticationRequestHandler : IAuthenticationHandler
     {
-
         /// <summary>
         /// Returns true if request processing should stop.
         /// </summary>

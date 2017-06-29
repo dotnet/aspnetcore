@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Authentication
             context.ForbidAsync(scheme, properties: null);
 
         /// <summary>
-        /// Extension method for Forbid.
+        /// Extension method for Forbid using the <see cref="AuthenticationOptions.DefaultForbidScheme"/> scheme..
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/> context.</param>
         /// <returns>The task.</returns>
@@ -141,6 +141,21 @@ namespace Microsoft.AspNetCore.Authentication
         /// <returns>The task.</returns>
         public static Task SignInAsync(this HttpContext context, string scheme, ClaimsPrincipal principal, AuthenticationProperties properties) =>
             context.RequestServices.GetRequiredService<IAuthenticationService>().SignInAsync(context, scheme, principal, properties);
+
+        /// <summary>
+        /// Extension method for SignOut using the <see cref="AuthenticationOptions.DefaultSignOutScheme"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> context.</param>
+        /// <returns>The task.</returns>
+        public static Task SignOutAsync(this HttpContext context) => context.SignOutAsync(scheme: null, properties: null);
+
+        /// <summary>
+        /// Extension method for SignOut using the <see cref="AuthenticationOptions.DefaultSignOutScheme"/>.
+        /// </summary>
+        /// <param name="context">The <see cref="HttpContext"/> context.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/> properties.</param>
+        /// <returns>The task.</returns>
+        public static Task SignOutAsync(this HttpContext context, AuthenticationProperties properties) => context.SignOutAsync(scheme: null, properties: properties);
 
         /// <summary>
         /// Extension method for SignOut.

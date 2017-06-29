@@ -1,3 +1,4 @@
+
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication
         {
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
             {
-                o.AddScheme<Handler>("signin", "whatever");
+                o.AddScheme<SignInHandler>("signin", "whatever");
                 o.AddScheme<Handler>("foobly", "whatever");
                 o.DefaultSignInScheme = "signin";
             }).BuildServiceProvider();
@@ -49,7 +50,7 @@ namespace Microsoft.AspNetCore.Authentication
         {
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
             {
-                o.AddScheme<Handler>("single", "whatever");
+                o.AddScheme<SignInHandler>("single", "whatever");
             }).BuildServiceProvider();
 
             var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
@@ -61,13 +62,31 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         [Fact]
+        public async Task DefaultSchemesFallbackToAuthenticateScheme()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.DefaultAuthenticateScheme = "B";
+                o.AddScheme<Handler>("A", "whatever");
+                o.AddScheme<SignInHandler>("B", "whatever");
+            }).BuildServiceProvider();
+
+            var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
+            Assert.Equal("B", (await provider.GetDefaultForbidSchemeAsync()).Name);
+            Assert.Equal("B", (await provider.GetDefaultAuthenticateSchemeAsync()).Name);
+            Assert.Equal("B", (await provider.GetDefaultChallengeSchemeAsync()).Name);
+            Assert.Equal("B", (await provider.GetDefaultSignInSchemeAsync()).Name);
+            Assert.Equal("B", (await provider.GetDefaultSignOutSchemeAsync()).Name);
+        }
+
+        [Fact]
         public async Task DefaultSchemesAreSet()
         {
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
             {
-                o.AddScheme<Handler>("A", "whatever");
-                o.AddScheme<Handler>("B", "whatever");
-                o.AddScheme<Handler>("C", "whatever");
+                o.AddScheme<SignInHandler>("A", "whatever");
+                o.AddScheme<SignInHandler>("B", "whatever");
+                o.AddScheme<SignInHandler>("C", "whatever");
                 o.DefaultChallengeScheme = "A";
                 o.DefaultForbidScheme = "B";
                 o.DefaultSignInScheme = "C";
@@ -81,6 +100,38 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Equal("A", (await provider.GetDefaultChallengeSchemeAsync()).Name);
             Assert.Equal("C", (await provider.GetDefaultSignInSchemeAsync()).Name);
             Assert.Equal("A", (await provider.GetDefaultSignOutSchemeAsync()).Name);
+        }
+
+        [Fact]
+        public async Task SignInSignOutDefaultsToOnlyOne()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<Handler>("basic", "whatever");
+                o.AddScheme<SignOutHandler>("signout", "whatever");
+                o.AddScheme<SignInHandler>("signin", "whatever");
+                o.DefaultAuthenticateScheme = "basic";
+            }).BuildServiceProvider();
+
+            var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
+            Assert.Equal("basic", (await provider.GetDefaultForbidSchemeAsync()).Name);
+            Assert.Equal("basic", (await provider.GetDefaultAuthenticateSchemeAsync()).Name);
+            Assert.Equal("basic", (await provider.GetDefaultChallengeSchemeAsync()).Name);
+            Assert.Equal("signin", (await provider.GetDefaultSignInSchemeAsync()).Name);
+            Assert.Equal("signin", (await provider.GetDefaultSignOutSchemeAsync()).Name); // Defaults to single sign in scheme
+        }
+
+        [Fact]
+        public async Task SignOutWillDefaultsToSignInThatDoesNotSignOut()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<Handler>("signin", "whatever");
+                o.DefaultSignInScheme = "signin";
+            }).BuildServiceProvider();
+
+            var provider = services.GetRequiredService<IAuthenticationSchemeProvider>();
+            Assert.NotNull(await provider.GetDefaultSignOutSchemeAsync());
         }
 
         private class Handler : IAuthenticationHandler
@@ -104,7 +155,10 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 throw new NotImplementedException();
             }
+        }
 
+        private class SignInHandler : Handler, IAuthenticationSignInHandler
+        {
             public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
             {
                 throw new NotImplementedException();
@@ -116,5 +170,12 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
+        private class SignOutHandler : Handler, IAuthenticationSignOutHandler
+        {
+            public Task SignOutAsync(AuthenticationProperties properties)
+            {
+                throw new NotImplementedException();
+            }
+        }
     }
 }

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
@@ -36,6 +35,8 @@ namespace Microsoft.AspNetCore.Authentication
 
         private IDictionary<string, AuthenticationScheme> _map = new Dictionary<string, AuthenticationScheme>(StringComparer.Ordinal);
         private List<AuthenticationScheme> _requestHandlers = new List<AuthenticationScheme>();
+        private List<AuthenticationScheme> _signOutHandlers = new List<AuthenticationScheme>();
+        private List<AuthenticationScheme> _signInHandlers = new List<AuthenticationScheme>();
 
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
@@ -43,7 +44,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Otherwise, if only a single scheme exists, that will be used, if more than one exists, null will be returned.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.</returns>
-        public Task<AuthenticationScheme> GetDefaultAuthenticateSchemeAsync()
+        public virtual Task<AuthenticationScheme> GetDefaultAuthenticateSchemeAsync()
         {
             if (_options.DefaultAuthenticateScheme != null)
             {
@@ -59,20 +60,16 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// This is typically specified via <see cref="AuthenticationOptions.DefaultChallengeScheme"/>.
-        /// Otherwise, if only a single scheme exists, that will be used, if more than one exists, null will be returned.
+        /// Otherwise, this will fallback to <see cref="GetDefaultAuthenticateSchemeAsync"/>.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
-        public Task<AuthenticationScheme> GetDefaultChallengeSchemeAsync()
+        public virtual Task<AuthenticationScheme> GetDefaultChallengeSchemeAsync()
         {
             if (_options.DefaultChallengeScheme != null)
             {
                 return GetSchemeAsync(_options.DefaultChallengeScheme);
             }
-            if (_map.Count == 1)
-            {
-                return Task.FromResult(_map.Values.First());
-            }
-            return Task.FromResult<AuthenticationScheme>(null);
+            return GetDefaultAuthenticateSchemeAsync();
         }
 
         /// <summary>
@@ -81,7 +78,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Otherwise, this will fallback to <see cref="GetDefaultChallengeSchemeAsync"/> .
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
-        public Task<AuthenticationScheme> GetDefaultForbidSchemeAsync()
+        public virtual Task<AuthenticationScheme> GetDefaultForbidSchemeAsync()
         {
             if (_options.DefaultForbidScheme != null)
             {
@@ -93,33 +90,39 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.
         /// This is typically specified via <see cref="AuthenticationOptions.DefaultSignInScheme"/>.
-        /// Otherwise, if only a single scheme exists, that will be used, if more than one exists, null will be returned.
+        /// If only a single sign in handler scheme exists, that will be used, if more than one exists,
+        /// this will fallback to <see cref="GetDefaultAuthenticateSchemeAsync"/>.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.</returns>
-        public Task<AuthenticationScheme> GetDefaultSignInSchemeAsync()
+        public virtual Task<AuthenticationScheme> GetDefaultSignInSchemeAsync()
         {
             if (_options.DefaultSignInScheme != null)
             {
                 return GetSchemeAsync(_options.DefaultSignInScheme);
             }
-            if (_map.Count == 1)
+            if (_signInHandlers.Count == 1)
             {
-                return Task.FromResult(_map.Values.First());
+                return Task.FromResult(_signInHandlers[0]);
             }
-            return Task.FromResult<AuthenticationScheme>(null);
+            return GetDefaultAuthenticateSchemeAsync();
         }
 
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// This is typically specified via <see cref="AuthenticationOptions.DefaultSignOutScheme"/>.
-        /// Otherwise, this will fallback to <see cref="GetDefaultSignInSchemeAsync"/> .
+        /// If only a single sign out handler scheme exists, that will be used, if more than one exists,
+        /// this will fallback to <see cref="GetDefaultSignInSchemeAsync"/> if that supoorts sign out.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
-        public Task<AuthenticationScheme> GetDefaultSignOutSchemeAsync()
+        public virtual Task<AuthenticationScheme> GetDefaultSignOutSchemeAsync()
         {
             if (_options.DefaultSignOutScheme != null)
             {
                 return GetSchemeAsync(_options.DefaultSignOutScheme);
+            }
+            if (_signOutHandlers.Count == 1)
+            {
+                return Task.FromResult(_signOutHandlers[0]);
             }
             return GetDefaultSignInSchemeAsync();
         }
@@ -129,7 +132,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// </summary>
         /// <param name="name">The name of the authenticationScheme.</param>
         /// <returns>The scheme or null if not found.</returns>
-        public Task<AuthenticationScheme> GetSchemeAsync(string name)
+        public virtual Task<AuthenticationScheme> GetSchemeAsync(string name)
         {
             if (_map.ContainsKey(name))
             {
@@ -142,7 +145,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Returns the schemes in priority order for request handling.
         /// </summary>
         /// <returns>The schemes in priority order for request handling</returns>
-        public Task<IEnumerable<AuthenticationScheme>> GetRequestHandlerSchemesAsync()
+        public virtual Task<IEnumerable<AuthenticationScheme>> GetRequestHandlerSchemesAsync()
         {
             return Task.FromResult<IEnumerable<AuthenticationScheme>>(_requestHandlers);
         }
@@ -151,7 +154,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Registers a scheme for use by <see cref="IAuthenticationService"/>. 
         /// </summary>
         /// <param name="scheme">The scheme.</param>
-        public void AddScheme(AuthenticationScheme scheme)
+        public virtual void AddScheme(AuthenticationScheme scheme)
         {
             if (_map.ContainsKey(scheme.Name))
             {
@@ -167,6 +170,14 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     _requestHandlers.Add(scheme);
                 }
+                if (typeof(IAuthenticationSignInHandler).IsAssignableFrom(scheme.HandlerType))
+                {
+                    _signInHandlers.Add(scheme);
+                }
+                if (typeof(IAuthenticationSignOutHandler).IsAssignableFrom(scheme.HandlerType))
+                {
+                    _signOutHandlers.Add(scheme);
+                }
                 _map[scheme.Name] = scheme;
             }
         }
@@ -175,7 +186,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// Removes a scheme, preventing it from being used by <see cref="IAuthenticationService"/>.
         /// </summary>
         /// <param name="name">The name of the authenticationScheme being removed.</param>
-        public void RemoveScheme(string name)
+        public virtual void RemoveScheme(string name)
         {
             if (!_map.ContainsKey(name))
             {
@@ -186,15 +197,15 @@ namespace Microsoft.AspNetCore.Authentication
                 if (_map.ContainsKey(name))
                 {
                     var scheme = _map[name];
-                    _requestHandlers.Remove(_requestHandlers.Where(s => s.Name == name).FirstOrDefault());
+                    _requestHandlers.Remove(scheme);
+                    _signInHandlers.Remove(scheme);
+                    _signOutHandlers.Remove(scheme);
                     _map.Remove(name);
                 }
             }
         }
 
-        public Task<IEnumerable<AuthenticationScheme>> GetAllSchemesAsync()
-        {
-            return Task.FromResult<IEnumerable<AuthenticationScheme>>(_map.Values);
-        }
+        public virtual Task<IEnumerable<AuthenticationScheme>> GetAllSchemesAsync()
+            => Task.FromResult<IEnumerable<AuthenticationScheme>>(_map.Values);
     }
 }
