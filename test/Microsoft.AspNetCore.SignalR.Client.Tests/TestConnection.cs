@@ -25,9 +25,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private CancellationTokenSource _receiveShutdownToken = new CancellationTokenSource();
         private Task _receiveLoop;
 
-        public event Action Connected;
+        public event Func<Task> Connected;
         public event Func<byte[], Task> Received;
-        public event Action<Exception> Closed;
+        public event Func<Exception, Task> Closed;
 
         public Task Started => _started.Task;
         public Task Disposed => _disposed.Task;

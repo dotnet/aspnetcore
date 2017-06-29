@@ -111,6 +111,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                             receiveTcs.TrySetResult(null);
                             closeTcs.TrySetResult(null);
                         }
+                        return Task.CompletedTask;
                     };
 
                     logger.LogInformation("Starting connection to {url}", url);
@@ -231,6 +232,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         {
                             closeTcs.TrySetResult(null);
                         }
+                        return Task.CompletedTask;
                     };
 
                     logger.LogInformation("Starting connection to {url}", url);

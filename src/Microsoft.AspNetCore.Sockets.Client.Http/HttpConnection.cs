@@ -34,9 +34,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public Uri Url { get; }
 
-        public event Action Connected;
+        public event Func<Task> Connected;
         public event Func<byte[], Task> Received;
-        public event Action<Exception> Closed;
+        public event Func<Exception, Task> Closed;
 
         public HttpConnection(Uri url)
             : this(url, TransportType.All)

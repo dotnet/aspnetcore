@@ -210,7 +210,11 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             try
             {
                 var connectedEventRaisedTcs = new TaskCompletionSource<object>();
-                connection.Connected += () => connectedEventRaisedTcs.SetResult(null);
+                connection.Connected += () =>
+                {
+                    connectedEventRaisedTcs.SetResult(null);
+                    return Task.CompletedTask;
+                };
 
                 await connection.StartAsync();
 
@@ -246,7 +250,11 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             try
             {
-                connection.Connected += () => connectedEventRaised = true;
+                connection.Connected += () =>
+                {
+                    connectedEventRaised = true;
+                    return Task.CompletedTask;
+                };
 
                 await Assert.ThrowsAsync<InvalidOperationException>(
                     async () => await connection.StartAsync());
@@ -277,7 +285,11 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             var connection = new HttpConnection(new Uri("http://fakeuri.org/"), TransportType.LongPolling, loggerFactory: null, httpMessageHandler: mockHttpHandler.Object);
 
             var closedEventTcs = new TaskCompletionSource<Exception>();
-            connection.Closed += e => closedEventTcs.SetResult(e);
+            connection.Closed += e =>
+            {
+                closedEventTcs.SetResult(e);
+                return Task.CompletedTask;
+            };
 
             await connection.StartAsync();
             await connection.DisposeAsync();
@@ -305,7 +317,11 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             var connection = new HttpConnection(new Uri("http://fakeuri.org/"), TransportType.LongPolling, loggerFactory: null, httpMessageHandler: mockHttpHandler.Object);
             var closedEventTcs = new TaskCompletionSource<Exception>();
-            connection.Closed += e => closedEventTcs.TrySetResult(e);
+            connection.Closed += e =>
+            {
+                closedEventTcs.TrySetResult(e);
+                return Task.CompletedTask;
+            };
 
             try
             {
@@ -426,7 +442,11 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             var connection = new HttpConnection(new Uri("http://fakeuri.org/"));
 
             bool closedEventRaised = false;
-            connection.Closed += e => closedEventRaised = true;
+            connection.Closed += e =>
+            {
+                closedEventRaised = true;
+                return Task.CompletedTask;
+            };
 
             await connection.DisposeAsync();
             Assert.False(closedEventRaised);
@@ -615,6 +635,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                         {
                             receiveTcs.TrySetCanceled();
                         }
+                        return Task.CompletedTask;
                     };
 
                 await connection.StartAsync();
@@ -648,7 +669,11 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             try
             {
                 var closeTcs = new TaskCompletionSource<Exception>();
-                connection.Closed += e => closeTcs.TrySetResult(e);
+                connection.Closed += e =>
+                {
+                    closeTcs.TrySetResult(e);
+                    return Task.CompletedTask;
+                };
 
                 await connection.StartAsync();
 

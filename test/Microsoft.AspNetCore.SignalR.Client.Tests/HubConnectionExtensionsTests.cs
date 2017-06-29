@@ -138,6 +138,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     closeTcs.TrySetException(e);
                 }
+                return Task.CompletedTask;
             };
 
             try
@@ -180,6 +181,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 {
                     closeTcs.TrySetException(e);
                 }
+                return Task.CompletedTask;
             };
 
             try

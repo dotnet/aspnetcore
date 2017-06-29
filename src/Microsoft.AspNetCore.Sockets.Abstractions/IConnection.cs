@@ -13,8 +13,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
         Task SendAsync(byte[] data, CancellationToken cancellationToken);
         Task DisposeAsync();
 
-        event Action Connected;
+        event Func<Task> Connected;
         event Func<byte[], Task> Received;
-        event Action<Exception> Closed;
+        event Func<Exception, Task> Closed;
     }
 }

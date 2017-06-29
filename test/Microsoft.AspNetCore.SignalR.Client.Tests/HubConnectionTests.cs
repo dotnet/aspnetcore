@@ -60,7 +60,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             try
             {
                 var connectedEventRaisedTcs = new TaskCompletionSource<object>();
-                hubConnection.Connected += () => connectedEventRaisedTcs.SetResult(null);
+                hubConnection.Connected += () =>
+                {
+                    connectedEventRaisedTcs.SetResult(null);
+                    return Task.CompletedTask;
+                };
 
                 await hubConnection.StartAsync();
 
@@ -77,7 +81,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var hubConnection = new HubConnection(new TestConnection());
             var closedEventTcs = new TaskCompletionSource<Exception>();
-            hubConnection.Closed += e => closedEventTcs.SetResult(e);
+            hubConnection.Closed += e =>
+            {
+                closedEventTcs.SetResult(e);
+                return Task.CompletedTask;
+            };
 
             await hubConnection.StartAsync();
             await hubConnection.DisposeAsync();

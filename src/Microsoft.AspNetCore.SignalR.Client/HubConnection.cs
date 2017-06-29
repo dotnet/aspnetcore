@@ -33,13 +33,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private int _nextId = 0;
 
-        public event Action Connected
+        public event Func<Task> Connected
         {
             add { _connection.Connected += value; }
             remove { _connection.Connected -= value; }
         }
 
-        public event Action<Exception> Closed
+        public event Func<Exception, Task> Closed
         {
             add { _connection.Closed += value; }
             remove { _connection.Closed -= value; }
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
         }
 
-        private void Shutdown(Exception ex = null)
+        private Task Shutdown(Exception ex = null)
         {
             _logger.LogTrace("Shutting down connection");
             if (ex != null)
@@ -240,6 +240,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
                 _pendingCalls.Clear();
             }
+            return Task.CompletedTask;
         }
 
         private Task DispatchInvocationAsync(InvocationMessage invocation, CancellationToken cancellationToken)
