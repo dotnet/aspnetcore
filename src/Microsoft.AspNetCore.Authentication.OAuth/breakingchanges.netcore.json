@@ -24,23 +24,12 @@
       "Kind": "Removal"
     },
     {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OAuth.OAuthRedirectToAuthorizationContext : Microsoft.AspNetCore.Authentication.BaseContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.OAuthOptions options, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties, System.String redirectUri)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OAuth.OAuthRedirectToAuthorizationContext : Microsoft.AspNetCore.Authentication.BaseContext",
-      "MemberId": "public Microsoft.AspNetCore.Builder.OAuthOptions get_Options()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OAuth.OAuthRedirectToAuthorizationContext : Microsoft.AspNetCore.Authentication.BaseContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
       "TypeId": "public static class Microsoft.AspNetCore.Builder.OAuthAppBuilderExtensions",
       "MemberId": "public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseOAuthAuthentication(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.OAuthOptions options)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.OAuth.OAuthRedirectToAuthorizationContext : Microsoft.AspNetCore.Authentication.BaseContext",
       "Kind": "Removal"
     }
   ]

@@ -5,12 +5,13 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
-    public class MessageReceivedContext : BaseJwtBearerContext
+    public class MessageReceivedContext : ResultContext<JwtBearerOptions>
     {
-        public MessageReceivedContext(HttpContext context, AuthenticationScheme scheme, JwtBearerOptions options)
-            : base(context, scheme, options)
-        {
-        }
+        public MessageReceivedContext(
+            HttpContext context,
+            AuthenticationScheme scheme,
+            JwtBearerOptions options)
+            : base(context, scheme, options) { }
 
         /// <summary>
         /// Bearer Token. This will give application an opportunity to retrieve token from an alternation location.

@@ -20,31 +20,6 @@
       "Kind": "Removal"
     },
     {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Twitter.TwitterRedirectToAuthorizationEndpointContext : Microsoft.AspNetCore.Authentication.Twitter.BaseTwitterContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.TwitterOptions options, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties, System.String redirectUri)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Twitter.TwitterRedirectToAuthorizationEndpointContext : Microsoft.AspNetCore.Authentication.Twitter.BaseTwitterContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Twitter.TwitterCreatingTicketContext : Microsoft.AspNetCore.Authentication.Twitter.BaseTwitterContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.TwitterOptions options, System.String userId, System.String screenName, System.String accessToken, System.String accessTokenSecret, Newtonsoft.Json.Linq.JObject user)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Twitter.TwitterCreatingTicketContext : Microsoft.AspNetCore.Authentication.Twitter.BaseTwitterContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Twitter.TwitterCreatingTicketContext : Microsoft.AspNetCore.Authentication.Twitter.BaseTwitterContext",
-      "MemberId": "public System.Void set_Properties(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties value)",
-      "Kind": "Removal"
-    },
-    {
       "TypeId": "public class Microsoft.AspNetCore.Authentication.Twitter.RequestToken",
       "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
       "Kind": "Removal"
@@ -57,6 +32,14 @@
     {
       "TypeId": "public static class Microsoft.AspNetCore.Builder.TwitterAppBuilderExtensions",
       "MemberId": "public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseTwitterAuthentication(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.TwitterOptions options)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.Twitter.TwitterCreatingTicketContext : Microsoft.AspNetCore.Authentication.Twitter.BaseTwitterContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.Twitter.TwitterRedirectToAuthorizationEndpointContext : Microsoft.AspNetCore.Authentication.Twitter.BaseTwitterContext",
       "Kind": "Removal"
     }
   ]

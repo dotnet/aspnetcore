@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
     /// <summary>
     /// Context object passed to the CookieAuthenticationEvents ValidatePrincipal method.
     /// </summary>
-    public class CookieValidatePrincipalContext : BaseCookieContext
+    public class CookieValidatePrincipalContext : PrincipalContext<CookieAuthenticationOptions>
     {
         /// <summary>
         /// Creates a new instance of the context object.
@@ -19,32 +19,16 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <param name="scheme"></param>
         /// <param name="ticket">Contains the initial values for identity and extra data</param>
         /// <param name="options"></param>
-        public CookieValidatePrincipalContext(HttpContext context, AuthenticationScheme scheme, AuthenticationTicket ticket, CookieAuthenticationOptions options)
+        public CookieValidatePrincipalContext(HttpContext context, AuthenticationScheme scheme, CookieAuthenticationOptions options, AuthenticationTicket ticket)
             : base(context, scheme, options, ticket?.Properties)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
             if (ticket == null)
             {
                 throw new ArgumentNullException(nameof(ticket));
             }
 
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
             Principal = ticket.Principal;
         }
-
-        /// <summary>
-        /// Contains the claims principal arriving with the request. May be altered to change the 
-        /// details of the authenticated user.
-        /// </summary>
-        public ClaimsPrincipal Principal { get; private set; }
 
         /// <summary>
         /// If true, the cookie will be renewed
@@ -56,18 +40,12 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// Principal property, which determines the identity of the authenticated request.
         /// </summary>
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> used as the replacement</param>
-        public void ReplacePrincipal(ClaimsPrincipal principal)
-        {
-            Principal = principal;
-        }
+        public void ReplacePrincipal(ClaimsPrincipal principal) => Principal = principal;
 
         /// <summary>
         /// Called to reject the incoming principal. This may be done if the application has determined the
         /// account is no longer active, and the request should be treated as if it was anonymous.
         /// </summary>
-        public void RejectPrincipal()
-        {
-            Principal = null;
-        }
+        public void RejectPrincipal() => Principal = null;
     }
 }

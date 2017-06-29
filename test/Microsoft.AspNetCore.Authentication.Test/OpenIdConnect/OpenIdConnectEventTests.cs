@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         private readonly Func<UserInformationReceivedContext, Task> UserNotImpl = context => { throw new NotImplementedException("User"); };
         private readonly Func<AuthenticationFailedContext, Task> FailedNotImpl = context => { throw new NotImplementedException("Failed", context.Exception); };
         private readonly Func<TicketReceivedContext, Task> TicketNotImpl = context => { throw new NotImplementedException("Ticket"); };
-        private readonly Func<FailureContext, Task> FailureNotImpl = context => { throw new NotImplementedException("Failure", context.Failure); };
+        private readonly Func<RemoteFailureContext, Task> FailureNotImpl = context => { throw new NotImplementedException("Failure", context.Failure); };
         private readonly Func<RedirectContext, Task> RedirectNotImpl = context => { throw new NotImplementedException("Redirect"); };
         private readonly Func<RemoteSignOutContext, Task> RemoteSignOutNotImpl = context => { throw new NotImplementedException("Remote"); };
         private readonly RequestDelegate AppNotImpl = context => { throw new NotImplementedException("App"); };
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnMessageReceived = context =>
                 {
                     messageReceived = true;
-                    context.Skip();
+                    context.SkipHandler();
                     return Task.FromResult(0);
                 },
                 OnTokenValidated = TokenNotImpl,
@@ -73,6 +73,51 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("/signin-oidc", await response.Content.ReadAsStringAsync());
             Assert.True(messageReceived);
+        }
+
+        [Fact]
+        public async Task OnMessageReceived_Reject_NoMoreEventsRun()
+        {
+            var messageReceived = false;
+            var remoteFailure = false;
+            var server = CreateServer(new OpenIdConnectEvents()
+            {
+                OnMessageReceived = context =>
+                {
+                    messageReceived = true;
+                    context.Fail("Authentication was aborted from user code.");
+                    return Task.FromResult(0);
+                },
+                OnRemoteFailure = context =>
+                {
+                    remoteFailure = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenValidated = TokenNotImpl,
+                OnAuthorizationCodeReceived = CodeNotImpl,
+                OnTokenResponseReceived = TokenResponseNotImpl,
+                OnUserInformationReceived = UserNotImpl,
+                OnAuthenticationFailed = FailedNotImpl,
+                OnTicketReceived = TicketNotImpl,
+
+                OnRedirectToIdentityProvider = RedirectNotImpl,
+                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
+                OnRemoteSignOut = RemoteSignOutNotImpl,
+            },
+            context =>
+            {
+                return context.Response.WriteAsync(context.Request.Path);
+            });
+
+            var exception = await Assert.ThrowsAsync<Exception>(delegate
+            {
+                return PostAsync(server, "signin-oidc", "");
+            });
+
+            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+
+            Assert.True(messageReceived);
+            Assert.True(remoteFailure);
         }
 
         [Fact]
@@ -124,7 +169,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnTokenValidated = context =>
                 {
                     tokenValidated = true;
-                    context.Skip();
+                    context.SkipHandler();
                     return Task.FromResult(0);
                 },
                 OnAuthorizationCodeReceived = CodeNotImpl,
@@ -152,6 +197,57 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
+        public async Task OnTokenValidated_Reject_NoMoreEventsRun()
+        {
+            var messageReceived = false;
+            var tokenValidated = false;
+            var remoteFailure = false;
+            var server = CreateServer(new OpenIdConnectEvents()
+            {
+                OnMessageReceived = context =>
+                {
+                    messageReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenValidated = context =>
+                {
+                    tokenValidated = true;
+                    context.Fail("Authentication was aborted from user code.");
+                    return Task.FromResult(0);
+                },
+                OnRemoteFailure = context =>
+                {
+                    remoteFailure = true;
+                    return Task.FromResult(0);
+                },
+                OnAuthorizationCodeReceived = CodeNotImpl,
+                OnTokenResponseReceived = TokenResponseNotImpl,
+                OnUserInformationReceived = UserNotImpl,
+                OnAuthenticationFailed = FailedNotImpl,
+                OnTicketReceived = TicketNotImpl,
+
+                OnRedirectToIdentityProvider = RedirectNotImpl,
+                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
+                OnRemoteSignOut = RemoteSignOutNotImpl,
+            },
+            context =>
+            {
+                return context.Response.WriteAsync(context.Request.Path);
+            });
+
+            var exception = await Assert.ThrowsAsync<Exception>(delegate
+            {
+                return PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state");
+            });
+
+            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+
+            Assert.True(messageReceived);
+            Assert.True(tokenValidated);
+            Assert.True(remoteFailure);
+        }
+
+        [Fact]
         public async Task OnTokenValidated_HandledWithoutTicket_NoMoreEventsRun()
         {
             var messageReceived = false;
@@ -167,7 +263,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     tokenValidated = true;
                     context.HandleResponse();
-                    context.Ticket = null;
+                    context.Principal = null;
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
                 },
@@ -209,8 +305,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnTokenValidated = context =>
                 {
                     tokenValidated = true;
-                    context.HandleResponse();
-                    // context.Ticket = null;
+                    context.Success();
                     return Task.FromResult(0);
                 },
                 OnAuthorizationCodeReceived = CodeNotImpl,
@@ -262,7 +357,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
-                    context.Skip();
+                    context.SkipHandler();
                     return Task.FromResult(0);
                 },
                 OnTokenResponseReceived = TokenResponseNotImpl,
@@ -290,6 +385,63 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
+        public async Task OnAuthorizationCodeReceived_Reject_NoMoreEventsRun()
+        {
+            var messageReceived = false;
+            var tokenValidated = false;
+            var codeReceived = false;
+            var remoteFailure = false;
+            var server = CreateServer(new OpenIdConnectEvents()
+            {
+                OnMessageReceived = context =>
+                {
+                    messageReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenValidated = context =>
+                {
+                    tokenValidated = true;
+                    return Task.FromResult(0);
+                },
+                OnAuthorizationCodeReceived = context =>
+                {
+                    codeReceived = true;
+                    context.Fail("Authentication was aborted from user code.");
+                    return Task.FromResult(0);
+                },
+                OnRemoteFailure = context =>
+                {
+                    remoteFailure = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenResponseReceived = TokenResponseNotImpl,
+                OnUserInformationReceived = UserNotImpl,
+                OnAuthenticationFailed = FailedNotImpl,
+                OnTicketReceived = TicketNotImpl,
+
+                OnRedirectToIdentityProvider = RedirectNotImpl,
+                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
+                OnRemoteSignOut = RemoteSignOutNotImpl,
+            },
+            context =>
+            {
+                return context.Response.WriteAsync(context.Request.Path);
+            });
+
+            var exception = await Assert.ThrowsAsync<Exception>(delegate
+            {
+                return PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
+            });
+
+            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+
+            Assert.True(messageReceived);
+            Assert.True(tokenValidated);
+            Assert.True(codeReceived);
+            Assert.True(remoteFailure);
+        }
+
+        [Fact]
         public async Task OnAuthorizationCodeReceived_HandledWithoutTicket_NoMoreEventsRun()
         {
             var messageReceived = false;
@@ -311,7 +463,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     codeReceived = true;
                     context.HandleResponse();
-                    context.Ticket = null;
+                    context.Principal = null;
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
                 },
@@ -358,8 +510,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
-                    context.HandleResponse();
-                    // context.Ticket = null;
+                    context.Success();
                     return Task.FromResult(0);
                 },
                 OnTokenResponseReceived = TokenResponseNotImpl,
@@ -417,7 +568,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
-                    context.Skip();
+                    context.SkipHandler();
                     return Task.FromResult(0);
                 },
                 OnUserInformationReceived = UserNotImpl,
@@ -442,6 +593,69 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.True(tokenValidated);
             Assert.True(codeReceived);
             Assert.True(tokenResponseReceived);
+        }
+
+        [Fact]
+        public async Task OnTokenResponseReceived_Reject_NoMoreEventsRun()
+        {
+            var messageReceived = false;
+            var tokenValidated = false;
+            var codeReceived = false;
+            var tokenResponseReceived = false;
+            var remoteFailure = false;
+            var server = CreateServer(new OpenIdConnectEvents()
+            {
+                OnMessageReceived = context =>
+                {
+                    messageReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenValidated = context =>
+                {
+                    tokenValidated = true;
+                    return Task.FromResult(0);
+                },
+                OnAuthorizationCodeReceived = context =>
+                {
+                    codeReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenResponseReceived = context =>
+                {
+                    tokenResponseReceived = true;
+                    context.Fail("Authentication was aborted from user code.");
+                    return Task.FromResult(0);
+                },
+                OnRemoteFailure = context =>
+                {
+                    remoteFailure = true;
+                    return Task.FromResult(0);
+                },
+                OnUserInformationReceived = UserNotImpl,
+                OnAuthenticationFailed = FailedNotImpl,
+                OnTicketReceived = TicketNotImpl,
+
+                OnRedirectToIdentityProvider = RedirectNotImpl,
+                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
+                OnRemoteSignOut = RemoteSignOutNotImpl,
+            },
+            context =>
+            {
+                return context.Response.WriteAsync(context.Request.Path);
+            });
+
+            var exception = await Assert.ThrowsAsync<Exception>(delegate
+            {
+                return PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
+            });
+
+            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+
+            Assert.True(messageReceived);
+            Assert.True(tokenValidated);
+            Assert.True(codeReceived);
+            Assert.True(tokenResponseReceived);
+            Assert.True(remoteFailure);
         }
 
         [Fact]
@@ -471,7 +685,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
-                    context.Ticket = null;
+                    context.Principal = null;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
@@ -525,8 +739,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
-                    // context.Ticket = null;
-                    context.HandleResponse();
+                    context.Success();
                     return Task.FromResult(0);
                 },
                 OnUserInformationReceived = UserNotImpl,
@@ -584,7 +797,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnTokenValidated = context =>
                 {
                     tokenValidated = true;
-                    context.Skip();
+                    context.SkipHandler();
                     return Task.FromResult(0);
                 },
                 OnUserInformationReceived = UserNotImpl,
@@ -609,6 +822,69 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.True(codeReceived);
             Assert.True(tokenResponseReceived);
             Assert.True(tokenValidated);
+        }
+
+        [Fact]
+        public async Task OnTokenValidatedBackchannel_Reject_NoMoreEventsRun()
+        {
+            var messageReceived = false;
+            var codeReceived = false;
+            var tokenResponseReceived = false;
+            var tokenValidated = false;
+            var remoteFailure = false;
+            var server = CreateServer(new OpenIdConnectEvents()
+            {
+                OnMessageReceived = context =>
+                {
+                    messageReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnAuthorizationCodeReceived = context =>
+                {
+                    codeReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenResponseReceived = context =>
+                {
+                    tokenResponseReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenValidated = context =>
+                {
+                    tokenValidated = true;
+                    context.Fail("Authentication was aborted from user code.");
+                    return Task.FromResult(0);
+                },
+                OnRemoteFailure = context =>
+                {
+                    remoteFailure = true;
+                    return Task.FromResult(0);
+                },
+                OnUserInformationReceived = UserNotImpl,
+                OnAuthenticationFailed = FailedNotImpl,
+                OnTicketReceived = TicketNotImpl,
+
+                OnRedirectToIdentityProvider = RedirectNotImpl,
+                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
+                OnRemoteSignOut = RemoteSignOutNotImpl,
+            },
+            context =>
+            {
+                return context.Response.WriteAsync(context.Request.Path);
+            });
+
+            var exception = await Assert.ThrowsAsync<Exception>(delegate
+            {
+                return PostAsync(server, "signin-oidc", "state=protected_state&code=my_code");
+            });
+
+            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+
+            Assert.True(messageReceived);
+            Assert.True(codeReceived);
+            Assert.True(tokenResponseReceived);
+            Assert.True(tokenValidated);
+            Assert.True(remoteFailure);
         }
 
         [Fact]
@@ -638,7 +914,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnTokenValidated = context =>
                 {
                     tokenValidated = true;
-                    context.Ticket = null;
+                    context.Principal = null;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
@@ -692,8 +968,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnTokenValidated = context =>
                 {
                     tokenValidated = true;
-                    // context.Ticket = null;
-                    context.HandleResponse();
+                    context.Success();
                     return Task.FromResult(0);
                 },
                 OnUserInformationReceived = UserNotImpl,
@@ -757,7 +1032,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
-                    context.Skip();
+                    context.SkipHandler();
                     return Task.FromResult(0);
                 },
                 OnAuthenticationFailed = FailedNotImpl,
@@ -782,6 +1057,75 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.True(codeReceived);
             Assert.True(tokenResponseReceived);
             Assert.True(userInfoReceived);
+        }
+
+        [Fact]
+        public async Task OnUserInformationReceived_Reject_NoMoreEventsRun()
+        {
+            var messageReceived = false;
+            var tokenValidated = false;
+            var codeReceived = false;
+            var tokenResponseReceived = false;
+            var userInfoReceived = false;
+            var remoteFailure = false;
+            var server = CreateServer(new OpenIdConnectEvents()
+            {
+                OnMessageReceived = context =>
+                {
+                    messageReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenValidated = context =>
+                {
+                    tokenValidated = true;
+                    return Task.FromResult(0);
+                },
+                OnAuthorizationCodeReceived = context =>
+                {
+                    codeReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenResponseReceived = context =>
+                {
+                    tokenResponseReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnUserInformationReceived = context =>
+                {
+                    userInfoReceived = true;
+                    context.Fail("Authentication was aborted from user code.");
+                    return Task.FromResult(0);
+                },
+                OnRemoteFailure = context =>
+                {
+                    remoteFailure = true;
+                    return Task.FromResult(0);
+                },
+                OnAuthenticationFailed = FailedNotImpl,
+                OnTicketReceived = TicketNotImpl,
+
+                OnRedirectToIdentityProvider = RedirectNotImpl,
+                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
+                OnRemoteSignOut = RemoteSignOutNotImpl,
+            },
+            context =>
+            {
+                return context.Response.WriteAsync(context.Request.Path);
+            });
+
+            var exception = await Assert.ThrowsAsync<Exception>(delegate
+            {
+                return PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
+            });
+
+            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+
+            Assert.True(messageReceived);
+            Assert.True(tokenValidated);
+            Assert.True(codeReceived);
+            Assert.True(tokenResponseReceived);
+            Assert.True(userInfoReceived);
+            Assert.True(remoteFailure);
         }
 
         [Fact]
@@ -817,7 +1161,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
-                    context.Ticket = null;
+                    context.Principal = null;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
@@ -878,7 +1222,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     userInfoReceived = true;
                     // context.Ticket = null;
-                    context.HandleResponse();
+                    context.Success();
                     return Task.FromResult(0);
                 },
                 OnAuthenticationFailed = FailedNotImpl,
@@ -949,7 +1293,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     authFailed = true;
                     Assert.Equal("TestException", context.Exception.Message);
-                    context.Skip();
+                    context.SkipHandler();
                     return Task.FromResult(0);
                 },
                 OnRemoteFailure = FailureNotImpl,
@@ -974,6 +1318,82 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.True(tokenResponseReceived);
             Assert.True(userInfoReceived);
             Assert.True(authFailed);
+        }
+
+        [Fact]
+        public async Task OnAuthenticationFailed_Reject_NoMoreEventsRun()
+        {
+            var messageReceived = false;
+            var tokenValidated = false;
+            var codeReceived = false;
+            var tokenResponseReceived = false;
+            var userInfoReceived = false;
+            var authFailed = false;
+            var remoteFailure = false;
+            var server = CreateServer(new OpenIdConnectEvents()
+            {
+                OnMessageReceived = context =>
+                {
+                    messageReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenValidated = context =>
+                {
+                    tokenValidated = true;
+                    return Task.FromResult(0);
+                },
+                OnAuthorizationCodeReceived = context =>
+                {
+                    codeReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnTokenResponseReceived = context =>
+                {
+                    tokenResponseReceived = true;
+                    return Task.FromResult(0);
+                },
+                OnUserInformationReceived = context =>
+                {
+                    userInfoReceived = true;
+                    throw new NotImplementedException("TestException");
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    authFailed = true;
+                    Assert.Equal("TestException", context.Exception.Message);
+                    context.Fail("Authentication was aborted from user code.");
+                    return Task.FromResult(0);
+                },
+                OnRemoteFailure = context =>
+                {
+                    remoteFailure = true;
+                    return Task.FromResult(0);
+                },
+                OnTicketReceived = TicketNotImpl,
+
+                OnRedirectToIdentityProvider = RedirectNotImpl,
+                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
+                OnRemoteSignOut = RemoteSignOutNotImpl,
+            },
+            context =>
+            {
+                return context.Response.WriteAsync(context.Request.Path);
+            });
+
+            var exception = await Assert.ThrowsAsync<Exception>(delegate
+            {
+                return PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
+            });
+
+            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+
+            Assert.True(messageReceived);
+            Assert.True(tokenValidated);
+            Assert.True(codeReceived);
+            Assert.True(tokenResponseReceived);
+            Assert.True(userInfoReceived);
+            Assert.True(authFailed);
+            Assert.True(remoteFailure);
         }
 
         [Fact]
@@ -1016,7 +1436,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     authFailed = true;
                     Assert.Equal("TestException", context.Exception.Message);
-                    Assert.Null(context.Ticket);
+                    Assert.Null(context.Principal);
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
@@ -1083,7 +1503,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     authFailed = true;
                     Assert.Equal("TestException", context.Exception.Message);
-                    Assert.Null(context.Ticket);
+                    Assert.Null(context.Principal);
 
                     var claims = new[]
                     {
@@ -1092,11 +1512,8 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                         new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
                     };
 
-                    context.Ticket = new AuthenticationTicket(
-                        new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name)),
-                        new AuthenticationProperties(), context.Scheme.Name);
-
-                    context.HandleResponse();
+                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                    context.Success();
                     return Task.FromResult(0);
                 },
                 OnRemoteFailure = FailureNotImpl,
@@ -1174,7 +1591,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     remoteFailure = true;
                     Assert.Equal("TestException", context.Failure.Message);
-                    context.Skip();
+                    context.SkipHandler();
                     return Task.FromResult(0);
                 },
                 OnTicketReceived = TicketNotImpl,
@@ -1314,7 +1731,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 OnTicketReceived = context =>
                 {
                     ticektReceived = true;
-                    context.Skip();
+                    context.SkipHandler();
                     return Task.FromResult(0);
                 },
 
@@ -1408,8 +1825,9 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddCookieAuthentication();
-                    services.AddOpenIdConnectAuthentication(o =>
+                    services.AddAuthentication()
+                        .AddCookie()
+                        .AddOpenIdConnect(o =>
                     {
                         o.Events = events;
                         o.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;

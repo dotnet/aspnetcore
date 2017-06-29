@@ -20,98 +20,44 @@
       "Kind": "Removal"
     },
     {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.AuthenticationFailedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.OpenIdConnectOptions options)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.AuthorizationCodeReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.OpenIdConnectOptions options)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.AuthorizationCodeReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.AuthorizationCodeReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public System.Void set_Properties(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties value)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.OpenIdConnectOptions options)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
-      "MemberId": "public Microsoft.AspNetCore.Builder.OpenIdConnectOptions get_Options()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.MessageReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.OpenIdConnectOptions options)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.MessageReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.MessageReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public System.Void set_Properties(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties value)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.TokenValidatedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.OpenIdConnectOptions options)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.TokenValidatedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.TokenValidatedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public System.Void set_Properties(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties value)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.UserInformationReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.OpenIdConnectOptions options)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.OpenIdConnectOptions options, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.TokenResponseReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.OpenIdConnectOptions options, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.TokenResponseReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.RemoteSignOutContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.OpenIdConnectOptions options, Microsoft.IdentityModel.Protocols.OpenIdConnect.OpenIdConnectMessage message)",
-      "Kind": "Removal"
-    },
-    {
       "TypeId": "public static class Microsoft.AspNetCore.Builder.OpenIdConnectAppBuilderExtensions",
       "MemberId": "public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseOpenIdConnectAuthentication(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.OpenIdConnectOptions options)",
       "Kind": "Removal"
-    }
+    },
+      {
+        "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.AuthenticationFailedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
+        "Kind": "Removal"
+      },
+      {
+        "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.AuthorizationCodeReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
+        "Kind": "Removal"
+      },
+      {
+        "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
+        "Kind": "Removal"
+      },
+      {
+        "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.MessageReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
+        "Kind": "Removal"
+      },
+      {
+        "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.RedirectContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
+        "Kind": "Removal"
+      },
+      {
+        "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.RemoteSignOutContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
+        "Kind": "Removal"
+      },
+      {
+        "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.TokenResponseReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
+        "Kind": "Removal"
+      },
+      {
+        "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.TokenValidatedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
+        "Kind": "Removal"
+      },
+      {
+        "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.UserInformationReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
+        "Kind": "Removal"
+      }
   ]

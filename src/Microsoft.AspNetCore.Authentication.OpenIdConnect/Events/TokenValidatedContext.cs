@@ -2,26 +2,23 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.Http;
-using Microsoft.AspNetCore.Builder;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 {
-    public class TokenValidatedContext : BaseOpenIdConnectContext
+    public class TokenValidatedContext : RemoteAuthenticationContext<OpenIdConnectOptions>
     {
         /// <summary>
         /// Creates a <see cref="TokenValidatedContext"/>
         /// </summary>
-        public TokenValidatedContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options)
-            : base(context, scheme, options)
-        {
-        }
+        public TokenValidatedContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options, ClaimsPrincipal principal, AuthenticationProperties properties)
+            : base(context, scheme, options, properties)
+            => Principal = principal;
 
-        public AuthenticationProperties Properties { get; set; }
-        
+        public OpenIdConnectMessage ProtocolMessage { get; set; }
+
         public JwtSecurityToken SecurityToken { get; set; }
 
         public OpenIdConnectMessage TokenEndpointResponse { get; set; }

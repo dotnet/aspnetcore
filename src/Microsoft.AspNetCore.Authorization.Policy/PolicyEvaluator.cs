@@ -52,13 +52,13 @@ namespace Microsoft.AspNetCore.Authorization.Policy
                 else
                 {
                     context.User = new ClaimsPrincipal(new ClaimsIdentity());
-                    return AuthenticateResult.None();
+                    return AuthenticateResult.NoResult();
                 }
             }
 
             return (context.User?.Identity?.IsAuthenticated ?? false) 
                 ? AuthenticateResult.Success(new AuthenticationTicket(context.User, "context.User"))
-                : AuthenticateResult.None();
+                : AuthenticateResult.NoResult();
         }
 
         /// <summary>

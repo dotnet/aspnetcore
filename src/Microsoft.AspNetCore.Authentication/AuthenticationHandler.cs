@@ -178,35 +178,6 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected abstract Task<AuthenticateResult> HandleAuthenticateAsync();
 
-        public async Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
-        {
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
-
-            properties = properties ?? new AuthenticationProperties();
-            await HandleSignInAsync(user, properties);
-            Logger.AuthenticationSchemeSignedIn(Scheme.Name);
-        }
-
-        protected virtual Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
-        {
-            return Task.CompletedTask;
-        }
-
-        public async Task SignOutAsync(AuthenticationProperties properties)
-        {
-            properties = properties ?? new AuthenticationProperties();
-            await HandleSignOutAsync(properties);
-            Logger.AuthenticationSchemeSignedOut(Scheme.Name);
-        }
-
-        protected virtual Task HandleSignOutAsync(AuthenticationProperties properties)
-        {
-            return Task.CompletedTask;
-        }
-
         /// <summary>
         /// Override this method to handle Forbid.
         /// </summary>

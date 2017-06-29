@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <returns>A new instance of the events instance.</returns>
         protected override Task<object> CreateEventsAsync() => Task.FromResult<object>(new OAuthEvents());
 
-        protected override async Task<AuthenticateResult> HandleRemoteAuthenticateAsync()
+        protected override async Task<HandleRequestResult> HandleRemoteAuthenticateAsync()
         {
             AuthenticationProperties properties = null;
             var query = Request.Query;
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     failureMessage.Append(";Uri=").Append(errorUri);
                 }
 
-                return AuthenticateResult.Fail(failureMessage.ToString());
+                return HandleRequestResult.Fail(failureMessage.ToString());
             }
 
             var code = query["code"];
@@ -72,30 +72,30 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             properties = Options.StateDataFormat.Unprotect(state);
             if (properties == null)
             {
-                return AuthenticateResult.Fail("The oauth state was missing or invalid.");
+                return HandleRequestResult.Fail("The oauth state was missing or invalid.");
             }
 
             // OAuth2 10.12 CSRF
             if (!ValidateCorrelationId(properties))
             {
-                return AuthenticateResult.Fail("Correlation failed.");
+                return HandleRequestResult.Fail("Correlation failed.");
             }
 
             if (StringValues.IsNullOrEmpty(code))
             {
-                return AuthenticateResult.Fail("Code was not found.");
+                return HandleRequestResult.Fail("Code was not found.");
             }
 
             var tokens = await ExchangeCodeAsync(code, BuildRedirectUri(Options.CallbackPath));
 
             if (tokens.Error != null)
             {
-                return AuthenticateResult.Fail(tokens.Error);
+                return HandleRequestResult.Fail(tokens.Error);
             }
 
             if (string.IsNullOrEmpty(tokens.AccessToken))
             {
-                return AuthenticateResult.Fail("Failed to retrieve access token.");
+                return HandleRequestResult.Fail("Failed to retrieve access token.");
             }
 
             var identity = new ClaimsIdentity(ClaimsIssuer);
@@ -137,11 +137,11 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var ticket = await CreateTicketAsync(identity, properties, tokens);
             if (ticket != null)
             {
-                return AuthenticateResult.Success(ticket);
+                return HandleRequestResult.Success(ticket);
             }
             else
             {
-                return AuthenticateResult.Fail("Failed to retrieve user information from remote server.");
+                return HandleRequestResult.Fail("Failed to retrieve user information from remote server.");
             }
         }
 
@@ -185,10 +185,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
         protected virtual async Task<AuthenticationTicket> CreateTicketAsync(ClaimsIdentity identity, AuthenticationProperties properties, OAuthTokenResponse tokens)
         {
-            var ticket = new AuthenticationTicket(new ClaimsPrincipal(identity), properties, Scheme.Name);
-            var context = new OAuthCreatingTicketContext(ticket, Context, Scheme, Options, Backchannel, tokens);
+            var context = new OAuthCreatingTicketContext(new ClaimsPrincipal(identity), properties, Context, Scheme, Options, Backchannel, tokens);
             await Events.CreatingTicket(context);
-            return context.Ticket;
+            return new AuthenticationTicket(context.Principal, context.Properties, Scheme.Name);
         }
 
         protected override async Task HandleChallengeAsync(AuthenticationProperties properties)
@@ -202,8 +201,8 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             GenerateCorrelationId(properties);
 
             var authorizationEndpoint = BuildChallengeUrl(properties, BuildRedirectUri(Options.CallbackPath));
-            var redirectContext = new OAuthRedirectToAuthorizationContext(
-                Context, Options,
+            var redirectContext = new RedirectContext<OAuthOptions>(
+                Context, Scheme, Options,
                 properties, authorizationEndpoint);
             await Events.RedirectToAuthorizationEndpoint(redirectContext);
         }

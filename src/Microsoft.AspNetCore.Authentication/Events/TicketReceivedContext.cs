@@ -3,30 +3,21 @@
 
 using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 
 namespace Microsoft.AspNetCore.Authentication
 {
     /// <summary>
     /// Provides context information to handler providers.
     /// </summary>
-    public class TicketReceivedContext : BaseControlContext
+    public class TicketReceivedContext : RemoteAuthenticationContext<RemoteAuthenticationOptions>
     {
-        public TicketReceivedContext(HttpContext context, RemoteAuthenticationOptions options, AuthenticationTicket ticket)
-            : base(context)
-        {
-            Options = options;
-            Ticket = ticket;
-            if (ticket != null)
-            {
-                Principal = ticket.Principal;
-                Properties = ticket.Properties;
-            }
-        }
-
-        public ClaimsPrincipal Principal { get; set; }
-        public AuthenticationProperties Properties { get; set; }
-        public RemoteAuthenticationOptions Options { get; set; }
+        public TicketReceivedContext(
+            HttpContext context,
+            AuthenticationScheme scheme,
+            RemoteAuthenticationOptions options,
+            AuthenticationTicket ticket)
+            : base(context, scheme, options, ticket?.Properties)
+            => Principal = ticket?.Principal;
 
         public string ReturnUri { get; set; }
     }

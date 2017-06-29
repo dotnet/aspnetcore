@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                     OnCreatingTicket = context =>
                     {
                         var refreshToken = context.RefreshToken;
-                        context.Ticket.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("RefreshToken", refreshToken, ClaimValueTypes.String, "Microsoft") }, "Microsoft"));
+                        context.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("RefreshToken", refreshToken, ClaimValueTypes.String, "Microsoft") }, "Microsoft"));
                         return Task.FromResult<object>(null);
                     }
                 };
@@ -205,15 +205,15 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                         }
                         else if (req.Path == new PathString("/signIn"))
                         {
-                            await Assert.ThrowsAsync<NotSupportedException>(() => context.SignInAsync("Microsoft", new ClaimsPrincipal()));
+                            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("Microsoft", new ClaimsPrincipal()));
                         }
                         else if (req.Path == new PathString("/signOut"))
                         {
-                            await Assert.ThrowsAsync<NotSupportedException>(() => context.SignOutAsync("Microsoft"));
+                            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync("Microsoft"));
                         }
                         else if (req.Path == new PathString("/forbid"))
                         {
-                            await Assert.ThrowsAsync<NotSupportedException>(() => context.ForbidAsync("Microsoft"));
+                            await Assert.ThrowsAsync<InvalidOperationException>(() => context.ForbidAsync("Microsoft"));
                         }
                         else
                         {
@@ -226,10 +226,10 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                     services.AddAuthentication(o =>
                     {
                         o.DefaultAuthenticateScheme = TestExtensions.CookieAuthenticationScheme;
-                        o.DefaultSignInScheme = TestExtensions.CookieAuthenticationScheme;
                     });
-                    services.AddCookieAuthentication(TestExtensions.CookieAuthenticationScheme, o => { });
-                    services.AddMicrosoftAccountAuthentication(configureOptions);
+                    services.AddAuthentication()
+                        .AddCookie(TestExtensions.CookieAuthenticationScheme, o => { })
+                        .AddMicrosoftAccount(configureOptions);
                 });
             return new TestServer(builder);
         }

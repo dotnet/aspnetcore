@@ -20,68 +20,28 @@
       "Kind": "Removal"
     },
     {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Authentication.AuthenticationTicket ticket, Microsoft.AspNetCore.Builder.CookieAuthenticationOptions options)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieSigningOutContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.CookieAuthenticationOptions options, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties, Microsoft.AspNetCore.Http.CookieOptions cookieOptions)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieSigningOutContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieSigningOutContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public System.Void set_Properties(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties value)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieSignedInContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.CookieAuthenticationOptions options, System.String authenticationScheme, System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieSignedInContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieSigningInContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.CookieAuthenticationOptions options, System.String authenticationScheme, System.Security.Claims.ClaimsPrincipal principal, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties, Microsoft.AspNetCore.Http.CookieOptions cookieOptions)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieSigningInContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieSigningInContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public System.Void set_Properties(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties value)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieRedirectContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.CookieAuthenticationOptions options, System.String redirectUri, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieRedirectContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
       "TypeId": "public static class Microsoft.AspNetCore.Builder.CookieAppBuilderExtensions",
       "MemberId": "public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseCookieAuthentication(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.CookieAuthenticationOptions options)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieRedirectContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieSignedInContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieSigningInContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieSigningOutContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.Cookies.CookieValidatePrincipalContext : Microsoft.AspNetCore.Authentication.Cookies.BaseCookieContext",
       "Kind": "Removal"
     }
   ]

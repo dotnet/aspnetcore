@@ -45,11 +45,9 @@ namespace OpenIdConnectSample
                 sharedOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-            });
-
-            services.AddCookieAuthentication();
-
-            services.AddOpenIdConnectAuthentication(o =>
+            })
+                .AddCookie()
+                .AddOpenIdConnect(o =>
             {
                 o.ClientId = Configuration["oidc:clientid"];
                 o.ClientSecret = Configuration["oidc:clientsecret"]; // for code flow

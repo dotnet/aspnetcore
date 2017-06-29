@@ -3,9 +3,7 @@
 
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
@@ -13,17 +11,19 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     /// <summary>
     /// This Context can be used to be informed when an 'AuthorizationCode' is received over the OpenIdConnect protocol.
     /// </summary>
-    public class AuthorizationCodeReceivedContext : BaseOpenIdConnectContext
+    public class AuthorizationCodeReceivedContext : RemoteAuthenticationContext<OpenIdConnectOptions>
     {
         /// <summary>
         /// Creates a <see cref="AuthorizationCodeReceivedContext"/>
         /// </summary>
-        public AuthorizationCodeReceivedContext(HttpContext context, AuthenticationScheme scheme, OpenIdConnectOptions options)
-            : base(context, scheme, options)
-        {
-        }
+        public AuthorizationCodeReceivedContext(
+            HttpContext context,
+            AuthenticationScheme scheme,
+            OpenIdConnectOptions options,
+            AuthenticationProperties properties)
+            : base(context, scheme, options, properties) { }
 
-        public AuthenticationProperties Properties { get; set; }
+        public OpenIdConnectMessage ProtocolMessage { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="JwtSecurityToken"/> that was received in the authentication response, if any.

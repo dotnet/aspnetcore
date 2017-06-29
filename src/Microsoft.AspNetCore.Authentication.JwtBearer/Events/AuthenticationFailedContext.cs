@@ -6,12 +6,13 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
-    public class AuthenticationFailedContext : BaseJwtBearerContext
+    public class AuthenticationFailedContext : ResultContext<JwtBearerOptions>
     {
-        public AuthenticationFailedContext(HttpContext context, AuthenticationScheme scheme, JwtBearerOptions options)
-            : base(context, scheme, options)
-        {
-        }
+        public AuthenticationFailedContext(
+            HttpContext context,
+            AuthenticationScheme scheme,
+            JwtBearerOptions options)
+            : base(context, scheme, options) { }
 
         public Exception Exception { get; set; }
     }

@@ -23,11 +23,6 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 throw new ArgumentException(Resources.FormatException_OptionMustBeProvided(nameof(CallbackPath)), nameof(CallbackPath));
             }
-
-            if (string.IsNullOrEmpty(SignInScheme))
-            {
-                throw new ArgumentException(Resources.FormatException_OptionMustBeProvided(nameof(SignInScheme)), nameof(SignInScheme));
-            }
         }
 
         /// <summary>

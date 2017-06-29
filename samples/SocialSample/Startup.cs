@@ -55,13 +55,11 @@ namespace SocialSample
                 options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            });
-
-            services.AddCookieAuthentication(o => o.LoginPath = new PathString("/login"));
-
-            // You must first create an app with Facebook and add its ID and Secret to your user-secrets.
-            // https://developers.facebook.com/apps/
-            services.AddFacebookAuthentication(o =>
+            })
+                .AddCookie(o => o.LoginPath = new PathString("/login"))
+                // You must first create an app with Facebook and add its ID and Secret to your user-secrets.
+                // https://developers.facebook.com/apps/
+                .AddFacebook(o =>
             {
                 o.AppId = Configuration["facebook:appid"];
                 o.AppSecret = Configuration["facebook:appsecret"];
@@ -69,11 +67,10 @@ namespace SocialSample
                 o.Fields.Add("name");
                 o.Fields.Add("email");
                 o.SaveTokens = true;
-            });
-
-            // You must first create an app with Google and add its ID and Secret to your user-secrets.
-            // https://console.developers.google.com/project
-            services.AddOAuthAuthentication("Google-AccessToken", o =>
+            })
+                // You must first create an app with Google and add its ID and Secret to your user-secrets.
+                // https://console.developers.google.com/project
+                .AddOAuth("Google-AccessToken", o =>
             {
                 o.ClientId = Configuration["google:clientid"];
                 o.ClientSecret = Configuration["google:clientsecret"];
@@ -84,11 +81,10 @@ namespace SocialSample
                 o.Scope.Add("profile");
                 o.Scope.Add("email");
                 o.SaveTokens = true;
-            });
-
-            // You must first create an app with Google and add its ID and Secret to your user-secrets.
-            // https://console.developers.google.com/project
-            services.AddGoogleAuthentication(o =>
+            })
+                // You must first create an app with Google and add its ID and Secret to your user-secrets.
+                // https://console.developers.google.com/project
+                .AddGoogle(o =>
             {
                 o.ClientId = Configuration["google:clientid"];
                 o.ClientSecret = Configuration["google:clientsecret"];
@@ -104,11 +100,10 @@ namespace SocialSample
                 };
                 o.ClaimActions.MapJsonSubKey("urn:google:image", "image", "url");
                 o.ClaimActions.Remove(ClaimTypes.GivenName);
-            });
-
-            // You must first create an app with Twitter and add its key and Secret to your user-secrets.
-            // https://apps.twitter.com/
-            services.AddTwitterAuthentication(o =>
+            })
+                // You must first create an app with Twitter and add its key and Secret to your user-secrets.
+                // https://apps.twitter.com/
+                .AddTwitter(o =>
             {
                 o.ConsumerKey = Configuration["twitter:consumerkey"];
                 o.ConsumerSecret = Configuration["twitter:consumersecret"];
@@ -126,15 +121,14 @@ namespace SocialSample
                         return Task.FromResult(0);
                     }
                 };
-            });
-
-            /* Azure AD app model v2 has restrictions that prevent the use of plain HTTP for redirect URLs.
-               Therefore, to authenticate through microsoft accounts, tryout the sample using the following URL:
-               https://localhost:44318/
-            */
-            // You must first create an app with Microsoft Account and add its ID and Secret to your user-secrets.
-            // https://apps.dev.microsoft.com/
-            services.AddOAuthAuthentication("Microsoft-AccessToken", o =>
+            })
+                /* Azure AD app model v2 has restrictions that prevent the use of plain HTTP for redirect URLs.
+                   Therefore, to authenticate through microsoft accounts, tryout the sample using the following URL:
+                   https://localhost:44318/
+                */
+                // You must first create an app with Microsoft Account and add its ID and Secret to your user-secrets.
+                // https://apps.dev.microsoft.com/
+                .AddOAuth("Microsoft-AccessToken", o =>
             {
                 o.ClientId = Configuration["microsoftaccount:clientid"];
                 o.ClientSecret = Configuration["microsoftaccount:clientsecret"];
@@ -143,20 +137,18 @@ namespace SocialSample
                 o.TokenEndpoint = MicrosoftAccountDefaults.TokenEndpoint;
                 o.Scope.Add("https://graph.microsoft.com/user.read");
                 o.SaveTokens = true;
-            });
-
-            // You must first create an app with Microsoft Account and add its ID and Secret to your user-secrets.
-            // https://azure.microsoft.com/en-us/documentation/articles/active-directory-v2-app-registration/
-            services.AddMicrosoftAccountAuthentication(o =>
+            })
+                // You must first create an app with Microsoft Account and add its ID and Secret to your user-secrets.
+                // https://azure.microsoft.com/en-us/documentation/articles/active-directory-v2-app-registration/
+                .AddMicrosoftAccount(o =>
             {
                 o.ClientId = Configuration["microsoftaccount:clientid"];
                 o.ClientSecret = Configuration["microsoftaccount:clientsecret"];
                 o.SaveTokens = true;
-            });
-
-            // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
-            // https://github.com/settings/applications/
-            services.AddOAuthAuthentication("GitHub-AccessToken", o =>
+            })
+                // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
+                // https://github.com/settings/applications/
+                .AddOAuth("GitHub-AccessToken", o =>
             {
                 o.ClientId = Configuration["github-token:clientid"];
                 o.ClientSecret = Configuration["github-token:clientsecret"];
@@ -164,11 +156,10 @@ namespace SocialSample
                 o.AuthorizationEndpoint = "https://github.com/login/oauth/authorize";
                 o.TokenEndpoint = "https://github.com/login/oauth/access_token";
                 o.SaveTokens = true;
-            });
-
-            // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
-            // https://github.com/settings/applications/
-            services.AddOAuthAuthentication("GitHub", o =>
+            })
+                // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
+                // https://github.com/settings/applications/
+                .AddOAuth("GitHub", o =>
             {
                 o.ClientId = Configuration["github:clientid"];
                 o.ClientSecret = Configuration["github:clientsecret"];

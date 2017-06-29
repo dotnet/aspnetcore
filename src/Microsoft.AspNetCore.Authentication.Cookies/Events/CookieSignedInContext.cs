@@ -9,32 +9,25 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
     /// <summary>
     /// Context object passed to the ICookieAuthenticationEvents method SignedIn.
     /// </summary>    
-    public class CookieSignedInContext : BaseCookieContext
+    public class CookieSignedInContext : PrincipalContext<CookieAuthenticationOptions>
     {
         /// <summary>
         /// Creates a new instance of the context object.
         /// </summary>
         /// <param name="context">The HTTP request context</param>
         /// <param name="scheme">The scheme data</param>
-        /// <param name="options">The handler options</param>
-        /// <param name="authenticationScheme">Initializes AuthenticationScheme property</param>
         /// <param name="principal">Initializes Principal property</param>
         /// <param name="properties">Initializes Properties property</param>
+        /// <param name="options">The handler options</param>
         public CookieSignedInContext(
             HttpContext context,
             AuthenticationScheme scheme,
-            CookieAuthenticationOptions options,
-            string authenticationScheme,
             ClaimsPrincipal principal,
-            AuthenticationProperties properties)
+            AuthenticationProperties properties,
+            CookieAuthenticationOptions options)
             : base(context, scheme, options, properties)
         {
             Principal = principal;
         }
-
-        /// <summary>
-        /// Contains the claims that were converted into the outgoing cookie.
-        /// </summary>
-        public ClaimsPrincipal Principal { get; }
     }
 }

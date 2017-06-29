@@ -48,9 +48,7 @@ namespace JwtBearerSample
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-            });
-
-            services.AddJwtBearerAuthentication(o =>
+            }).AddJwtBearer(o =>
             {
                 // You also need to update /wwwroot/app/scripts/app.js
                 o.Authority = Configuration["jwt:authority"];
@@ -59,7 +57,7 @@ namespace JwtBearerSample
                 {
                     OnAuthenticationFailed = c =>
                     {
-                        c.HandleResponse();
+                        c.NoResult();
 
                         c.Response.StatusCode = 500;
                         c.Response.ContentType = "text/plain";

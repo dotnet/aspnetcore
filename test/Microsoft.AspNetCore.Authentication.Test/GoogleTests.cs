@@ -516,7 +516,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                     OnCreatingTicket = context =>
                     {
                         var refreshToken = context.RefreshToken;
-                        context.Ticket.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("RefreshToken", refreshToken, ClaimValueTypes.String, "Google") }, "Google"));
+                        context.Principal.AddIdentity(new ClaimsIdentity(new Claim[] { new Claim("RefreshToken", refreshToken, ClaimValueTypes.String, "Google") }, "Google"));
                         return Task.FromResult(0);
                     }
                 };
@@ -595,7 +595,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                 {
                     OnTicketReceived = context =>
                     {
-                        context.Ticket.Properties.RedirectUri = null;
+                        context.Properties.RedirectUri = null;
                         return Task.FromResult(0);
                     }
                 };
@@ -985,7 +985,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         else if (req.Path == new PathString("/tokens"))
                         {
                             var result = await context.AuthenticateAsync(TestExtensions.CookieAuthenticationScheme);
-                            var tokens = result.Ticket.Properties.GetTokens();
+                            var tokens = result.Properties.GetTokens();
                             res.Describe(tokens);
                         }
                         else if (req.Path == new PathString("/me"))
@@ -995,17 +995,17 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         else if (req.Path == new PathString("/authenticate"))
                         {
                             var result = await context.AuthenticateAsync(TestExtensions.CookieAuthenticationScheme);
-                            res.Describe(result.Ticket.Principal);
+                            res.Describe(result.Principal);
                         }
                         else if (req.Path == new PathString("/authenticateGoogle"))
                         {
                             var result = await context.AuthenticateAsync("Google");
-                            res.Describe(result?.Ticket?.Principal);
+                            res.Describe(result?.Principal);
                         }
                         else if (req.Path == new PathString("/authenticateFacebook"))
                         {
                             var result = await context.AuthenticateAsync("Facebook");
-                            res.Describe(result?.Ticket?.Principal);
+                            res.Describe(result?.Principal);
                         }
                         else if (req.Path == new PathString("/unauthorized"))
                         {
@@ -1024,15 +1024,15 @@ namespace Microsoft.AspNetCore.Authentication.Google
                         }
                         else if (req.Path == new PathString("/signIn"))
                         {
-                            await Assert.ThrowsAsync<NotSupportedException>(() => context.SignInAsync("Google", new ClaimsPrincipal()));
+                            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync("Google", new ClaimsPrincipal()));
                         }
                         else if (req.Path == new PathString("/signOut"))
                         {
-                            await Assert.ThrowsAsync<NotSupportedException>(() => context.SignOutAsync("Google"));
+                            await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignOutAsync("Google"));
                         }
                         else if (req.Path == new PathString("/forbid"))
                         {
-                            await Assert.ThrowsAsync<NotSupportedException>(() => context.ForbidAsync("Google"));
+                            await Assert.ThrowsAsync<InvalidOperationException>(() => context.ForbidAsync("Google"));
                         }
                         else if (testpath != null)
                         {
@@ -1050,12 +1050,12 @@ namespace Microsoft.AspNetCore.Authentication.Google
                     services.AddAuthentication(o =>
                     {
                         o.DefaultAuthenticateScheme = TestExtensions.CookieAuthenticationScheme;
-                        o.DefaultSignInScheme = TestExtensions.CookieAuthenticationScheme;
                         o.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
                     });
-                    services.AddCookieAuthentication(TestExtensions.CookieAuthenticationScheme);
-                    services.AddGoogleAuthentication(configureOptions);
-                    services.AddFacebookAuthentication(o =>
+                    services.AddAuthentication()
+                        .AddCookie(TestExtensions.CookieAuthenticationScheme)
+                        .AddGoogle(configureOptions)
+                        .AddFacebook(o =>
                     {
                         o.AppId = "Test AppId";
                         o.AppSecret = "Test AppSecrent";

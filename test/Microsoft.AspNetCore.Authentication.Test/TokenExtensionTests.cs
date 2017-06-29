@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Authentication
         //        return Task.FromResult(0);
         //    }
 
-        //    public Task ChallengeAsync(ChallengeContext context)
+        //    public Task ChallengeAsync(AuthenticationProperties properties)
         //    {
         //        throw new NotImplementedException();
         //    }
@@ -144,12 +144,12 @@ namespace Microsoft.AspNetCore.Authentication
         //        throw new NotImplementedException();
         //    }
 
-        //    public Task SignInAsync(SignInContext context)
+        //    public Task SignInAsync(ClaimsPrincipal principal, AuthenticationProperties properties)
         //    {
         //        throw new NotImplementedException();
         //    }
 
-        //    public Task SignOutAsync(SignOutContext context)
+        //    public Task SignOutAsync(AuthenticationProperties properties)
         //    {
         //        throw new NotImplementedException();
         //    }

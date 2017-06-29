@@ -19,9 +19,7 @@ namespace CookieSessionSample
             {
                 options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-            });
-
-            services.AddCookieAuthentication(o => o.SessionStore = new MemoryCacheTicketStore());
+            }).AddCookie(o => o.SessionStore = new MemoryCacheTicketStore());
         }
 
         public void Configure(IApplicationBuilder app)

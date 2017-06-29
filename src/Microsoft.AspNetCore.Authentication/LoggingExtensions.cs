@@ -9,14 +9,8 @@ namespace Microsoft.Extensions.Logging
     {
         private static Action<ILogger, string, Exception> _authSchemeAuthenticated;
         private static Action<ILogger, string, Exception> _authSchemeNotAuthenticated;
-        private static Action<ILogger, string, string, Exception> _authSchemeNotAuthenticatedWithFailure;
-        private static Action<ILogger, string, Exception> _authSchemeSignedIn;
-        private static Action<ILogger, string, Exception> _authSchemeSignedOut;
         private static Action<ILogger, string, Exception> _authSchemeChallenged;
         private static Action<ILogger, string, Exception> _authSchemeForbidden;
-        private static Action<ILogger, string, Exception> _userAuthorizationFailed;
-        private static Action<ILogger, string, Exception> _userAuthorizationSucceeded;
-        private static Action<ILogger, string, Exception> _userPrincipalMerged;
         private static Action<ILogger, string, Exception> _remoteAuthenticationError;
         private static Action<ILogger, Exception> _signInHandled;
         private static Action<ILogger, Exception> _signInSkipped;
@@ -26,18 +20,6 @@ namespace Microsoft.Extensions.Logging
 
         static LoggingExtensions()
         {
-            _userAuthorizationSucceeded = LoggerMessage.Define<string>(
-                eventId: 1,
-                logLevel: LogLevel.Information,
-                formatString: "Authorization was successful for user: {UserName}.");
-            _userAuthorizationFailed = LoggerMessage.Define<string>(
-                eventId: 2,
-                logLevel: LogLevel.Information,
-                formatString: "Authorization failed for user: {UserName}.");
-            _userPrincipalMerged = LoggerMessage.Define<string>(
-                eventId: 3,
-                logLevel: LogLevel.Information,
-                formatString: "HttpContext.User merged via AutomaticAuthentication from authenticationScheme: {AuthenticationScheme}.");
             _remoteAuthenticationError = LoggerMessage.Define<string>(
                 eventId: 4,
                 logLevel: LogLevel.Information,
@@ -50,10 +32,6 @@ namespace Microsoft.Extensions.Logging
                 eventId: 6,
                 logLevel: LogLevel.Debug,
                 formatString: "The SigningIn event returned Skipped.");
-            _authSchemeNotAuthenticatedWithFailure = LoggerMessage.Define<string, string>(
-                eventId: 7,
-                logLevel: LogLevel.Information,
-                formatString: "{AuthenticationScheme} was not authenticated. Failure message: {FailureMessage}");
             _authSchemeAuthenticated = LoggerMessage.Define<string>(
                 eventId: 8,
                 logLevel: LogLevel.Information,
@@ -62,14 +40,6 @@ namespace Microsoft.Extensions.Logging
                 eventId: 9,
                 logLevel: LogLevel.Debug,
                 formatString: "AuthenticationScheme: {AuthenticationScheme} was not authenticated.");
-            _authSchemeSignedIn = LoggerMessage.Define<string>(
-                eventId: 10,
-                logLevel: LogLevel.Information,
-                formatString: "AuthenticationScheme: {AuthenticationScheme} signed in.");
-            _authSchemeSignedOut = LoggerMessage.Define<string>(
-                eventId: 11,
-                logLevel: LogLevel.Information,
-                formatString: "AuthenticationScheme: {AuthenticationScheme} signed out.");
             _authSchemeChallenged = LoggerMessage.Define<string>(
                 eventId: 12,
                 logLevel: LogLevel.Information,
@@ -102,21 +72,6 @@ namespace Microsoft.Extensions.Logging
             _authSchemeNotAuthenticated(logger, authenticationScheme, null);
         }
 
-        public static void AuthenticationSchemeNotAuthenticatedWithFailure(this ILogger logger, string authenticationScheme, string failureMessage)
-        {
-            _authSchemeNotAuthenticatedWithFailure(logger, authenticationScheme, failureMessage, null);
-        }
-
-        public static void AuthenticationSchemeSignedIn(this ILogger logger, string authenticationScheme)
-        {
-            _authSchemeSignedIn(logger, authenticationScheme, null);
-        }
-
-        public static void AuthenticationSchemeSignedOut(this ILogger logger, string authenticationScheme)
-        {
-            _authSchemeSignedOut(logger, authenticationScheme, null);
-        }
-
         public static void AuthenticationSchemeChallenged(this ILogger logger, string authenticationScheme)
         {
             _authSchemeChallenged(logger, authenticationScheme, null);
@@ -125,21 +80,6 @@ namespace Microsoft.Extensions.Logging
         public static void AuthenticationSchemeForbidden(this ILogger logger, string authenticationScheme)
         {
             _authSchemeForbidden(logger, authenticationScheme, null);
-        }
-
-        public static void UserAuthorizationSucceeded(this ILogger logger, string userName)
-        {
-            _userAuthorizationSucceeded(logger, userName, null);
-        }
-
-        public static void UserAuthorizationFailed(this ILogger logger, string userName)
-        {
-            _userAuthorizationFailed(logger, userName, null);
-        }
-
-        public static void UserPrinicpalMerged(this ILogger logger, string authenticationScheme)
-        {
-            _userPrincipalMerged(logger, authenticationScheme, null);
         }
 
         public static void RemoteAuthenticationError(this ILogger logger, string errorMessage)

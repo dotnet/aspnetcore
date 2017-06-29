@@ -8,9 +8,7 @@ namespace Microsoft.Extensions.Logging
     internal static class LoggingExtensions
     {
         private static Action<ILogger, Exception> _redirectToIdentityProviderForSignOutHandledResponse;
-        private static Action<ILogger, Exception> _redirectToIdentityProviderForSignOutSkipped;
         private static Action<ILogger, Exception> _redirectToIdentityProviderHandledResponse;
-        private static Action<ILogger, Exception> _redirectToIdentityProviderSkipped;
         private static Action<ILogger, Exception> _updatingConfiguration;
         private static Action<ILogger, Exception> _receivedIdToken;
         private static Action<ILogger, Exception> _redeemingCodeForTokens;
@@ -55,6 +53,7 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, Exception> _remoteSignOut;
         private static Action<ILogger, Exception> _remoteSignOutSessionIdMissing;
         private static Action<ILogger, Exception> _remoteSignOutSessionIdInvalid;
+        private static Action<ILogger, string, Exception> _signOut;
 
         static LoggingExtensions()
         {
@@ -63,10 +62,6 @@ namespace Microsoft.Extensions.Logging
                 eventId: 1,
                 logLevel: LogLevel.Debug,
                 formatString: "RedirectToIdentityProviderForSignOut.HandledResponse");
-            _redirectToIdentityProviderForSignOutSkipped = LoggerMessage.Define(
-                eventId: 2,
-                logLevel: LogLevel.Debug,
-                formatString: "RedirectToIdentityProviderForSignOut.Skipped");
             _invalidLogoutQueryStringRedirectUrl = LoggerMessage.Define<string>(
                 eventId: 3,
                 logLevel: LogLevel.Warning,
@@ -87,10 +82,6 @@ namespace Microsoft.Extensions.Logging
                 eventId: 6,
                 logLevel: LogLevel.Debug,
                 formatString: "RedirectToIdentityProvider.HandledResponse");
-            _redirectToIdentityProviderSkipped = LoggerMessage.Define(
-                eventId: 7,
-                logLevel: LogLevel.Debug,
-                formatString: "RedirectToIdentityProvider.Skipped");
             _invalidAuthenticationRequestUrl = LoggerMessage.Define<string>(
                 eventId: 8,
                 logLevel: LogLevel.Warning,
@@ -253,6 +244,10 @@ namespace Microsoft.Extensions.Logging
                logLevel: LogLevel.Error,
                formatString: "The remote signout request was ignored because the 'sid' parameter didn't match " +
                              "the expected value, which may indicate an unsolicited logout.");
+            _signOut = LoggerMessage.Define<string>(
+                 eventId: 49,
+                 logLevel: LogLevel.Information,
+                 formatString: "AuthenticationScheme: {AuthenticationScheme} signed out.");
         }
 
         public static void UpdatingConfiguration(this ILogger logger)
@@ -345,19 +340,9 @@ namespace Microsoft.Extensions.Logging
             _redirectToIdentityProviderForSignOutHandledResponse(logger, null);
         }
 
-        public static void RedirectToIdentityProviderForSignOutSkipped(this ILogger logger)
-        {
-            _redirectToIdentityProviderForSignOutSkipped(logger, null);
-        }
-
         public static void RedirectToIdentityProviderHandledResponse(this ILogger logger)
         {
             _redirectToIdentityProviderHandledResponse(logger, null);
-        }
-
-        public static void RedirectToIdentityProviderSkipped(this ILogger logger)
-        {
-            _redirectToIdentityProviderSkipped(logger, null);
         }
 
         public static void UserInformationReceivedHandledResponse(this ILogger logger)
@@ -493,6 +478,11 @@ namespace Microsoft.Extensions.Logging
         public static void RemoteSignOutSessionIdInvalid(this ILogger logger)
         {
             _remoteSignOutSessionIdInvalid(logger, null);
+        }
+
+        public static void SignedOut(this ILogger logger, string authenticationScheme)
+        {
+            _signOut(logger, authenticationScheme, null);
         }
     }
 }

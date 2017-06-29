@@ -55,6 +55,5 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 options.AccessDeniedPath = CookieAuthenticationDefaults.AccessDeniedPath;
             }
         }
-
     }
 }

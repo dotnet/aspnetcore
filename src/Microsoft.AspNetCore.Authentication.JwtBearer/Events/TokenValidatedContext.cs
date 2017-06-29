@@ -6,12 +6,13 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
-    public class TokenValidatedContext : BaseJwtBearerContext
+    public class TokenValidatedContext : ResultContext<JwtBearerOptions>
     {
-        public TokenValidatedContext(HttpContext context, AuthenticationScheme scheme, JwtBearerOptions options)
-            : base(context, scheme, options)
-        {
-        }
+        public TokenValidatedContext(
+            HttpContext context,
+            AuthenticationScheme scheme,
+            JwtBearerOptions options)
+            : base(context, scheme, options) { }
 
         public SecurityToken SecurityToken { get; set; }
     }

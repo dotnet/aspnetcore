@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net.Http;
 using System.Security.Claims;
 using System.Text;
 using System.Text.Encodings.Web;
@@ -13,7 +12,6 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
@@ -47,7 +45,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
             string token = null;
-            AuthenticateResult result = null;
             try
             {
                 // Give application opportunity to find from a different location, adjust, or reject token
@@ -55,9 +52,9 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                 // event can set the token
                 await Events.MessageReceived(messageReceivedContext);
-                if (messageReceivedContext.IsProcessingComplete(out result))
+                if (messageReceivedContext.Result != null)
                 {
-                    return result;
+                    return messageReceivedContext.Result;
                 }
 
                 // If application retrieved token from somewhere else, use that.
@@ -70,7 +67,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     // If no authorization header found, nothing to process further
                     if (string.IsNullOrEmpty(authorization))
                     {
-                        return AuthenticateResult.None();
+                        return AuthenticateResult.NoResult();
                     }
 
                     if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
@@ -81,7 +78,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     // If no token found, no further work possible
                     if (string.IsNullOrEmpty(token))
                     {
-                        return AuthenticateResult.None();
+                        return AuthenticateResult.NoResult();
                     }
                 }
 
@@ -138,29 +135,28 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
 
                         Logger.TokenValidationSucceeded();
 
-                        var ticket = new AuthenticationTicket(principal, new AuthenticationProperties(), Scheme.Name);
                         var tokenValidatedContext = new TokenValidatedContext(Context, Scheme, Options)
                         {
-                            Ticket = ticket,
-                            SecurityToken = validatedToken,
+                            Principal = principal,
+                            SecurityToken = validatedToken
                         };
 
                         await Events.TokenValidated(tokenValidatedContext);
-                        if (tokenValidatedContext.IsProcessingComplete(out result))
+                        if (tokenValidatedContext.Result != null)
                         {
-                            return result;
+                            return tokenValidatedContext.Result;
                         }
-                        ticket = tokenValidatedContext.Ticket;
 
                         if (Options.SaveToken)
                         {
-                            ticket.Properties.StoreTokens(new[]
+                            tokenValidatedContext.Properties.StoreTokens(new[]
                             {
                                 new AuthenticationToken { Name = "access_token", Value = token }
                             });
                         }
 
-                        return AuthenticateResult.Success(ticket);
+                        tokenValidatedContext.Success();
+                        return tokenValidatedContext.Result;
                     }
                 }
 
@@ -172,9 +168,9 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                     };
 
                     await Events.AuthenticationFailed(authenticationFailedContext);
-                    if (authenticationFailedContext.IsProcessingComplete(out result))
+                    if (authenticationFailedContext.Result != null)
                     {
-                        return result;
+                        return authenticationFailedContext.Result;
                     }
 
                     return AuthenticateResult.Fail(authenticationFailedContext.Exception);
@@ -192,9 +188,9 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                 };
 
                 await Events.AuthenticationFailed(authenticationFailedContext);
-                if (authenticationFailedContext.IsProcessingComplete(out result))
+                if (authenticationFailedContext.Result != null)
                 {
-                    return result;
+                    return authenticationFailedContext.Result;
                 }
 
                 throw;
@@ -217,7 +213,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
 
             await Events.Challenge(eventContext);
-            if (eventContext.IsProcessingComplete(out var ignored))
+            if (eventContext.Handled)
             {
                 return;
             }
@@ -328,16 +324,6 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             }
 
             return string.Join("; ", messages);
-        }
-
-        protected override Task HandleSignOutAsync(AuthenticationProperties properties)
-        {
-            throw new NotSupportedException();
-        }
-
-        protected override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
-        {
-            throw new NotSupportedException();
         }
     }
 }

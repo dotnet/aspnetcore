@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
@@ -35,19 +34,13 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         protected RemoteAuthenticationHandler(IOptionsSnapshot<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
-            : base(options, logger, encoder, clock)
-        {
-        }
+            : base(options, logger, encoder, clock) { }
 
         protected override Task<object> CreateEventsAsync()
-        {
-            return Task.FromResult<object>(new RemoteAuthenticationEvents());
-        }
+            => Task.FromResult<object>(new RemoteAuthenticationEvents());
 
         public virtual Task<bool> ShouldHandleRequestAsync()
-        {
-            return Task.FromResult(Options.CallbackPath == Request.Path);
-        }
+            => Task.FromResult(Options.CallbackPath == Request.Path);
 
         public virtual async Task<bool> HandleRequestAsync()
         {
@@ -69,7 +62,7 @@ namespace Microsoft.AspNetCore.Authentication
                 {
                     return true;
                 }
-                else if (authResult.Nothing)
+                else if (authResult.Skipped || authResult.None)
                 {
                     return false;
                 }
@@ -89,25 +82,28 @@ namespace Microsoft.AspNetCore.Authentication
             if (exception != null)
             {
                 Logger.RemoteAuthenticationError(exception.Message);
-                var errorContext = new FailureContext(Context, exception);
+                var errorContext = new RemoteFailureContext(Context, Scheme, Options, exception);
                 await Events.RemoteFailure(errorContext);
 
-                if (errorContext.HandledResponse)
+                if (errorContext.Result != null)
                 {
-                    return true;
-                }
-                else if (errorContext.Skipped)
-                {
-                    return false;
+                    if (errorContext.Result.Handled)
+                    {
+                        return true;
+                    }
+                    else if (errorContext.Result.Skipped)
+                    {
+                        return false;
+                    }
                 }
 
-                throw new AggregateException("Unhandled remote failure.", exception);
+                throw exception;
             }
 
             // We have a ticket if we get here
-            var ticketContext = new TicketReceivedContext(Context, Options, ticket)
+            var ticketContext = new TicketReceivedContext(Context, Scheme, Options, ticket)
             {
-                ReturnUri = ticket.Properties.RedirectUri,
+                ReturnUri = ticket.Properties.RedirectUri
             };
             // REVIEW: is this safe or good?
             ticket.Properties.RedirectUri = null;
@@ -117,15 +113,18 @@ namespace Microsoft.AspNetCore.Authentication
 
             await Events.TicketReceived(ticketContext);
 
-            if (ticketContext.HandledResponse)
+            if (ticketContext.Result != null)
             {
-                Logger.SigninHandled();
-                return true;
-            }
-            else if (ticketContext.Skipped)
-            {
-                Logger.SigninSkipped();
-                return false;
+                if (ticketContext.Result.Handled)
+                {
+                    Logger.SigninHandled();
+                    return true;
+                }
+                else if (ticketContext.Result.Skipped)
+                {
+                    Logger.SigninSkipped();
+                    return false;
+                }
             }
 
             await Context.SignInAsync(SignInScheme, ticketContext.Principal, ticketContext.Properties);
@@ -145,7 +144,7 @@ namespace Microsoft.AspNetCore.Authentication
         ///
         /// The method process the request on the endpoint defined by CallbackPath.
         /// </summary>
-        protected abstract Task<AuthenticateResult> HandleRemoteAuthenticateAsync();
+        protected abstract Task<HandleRequestResult> HandleRemoteAuthenticateAsync();
 
         protected override async Task<AuthenticateResult> HandleAuthenticateAsync()
         {
@@ -174,20 +173,8 @@ namespace Microsoft.AspNetCore.Authentication
             return AuthenticateResult.Fail("Remote authentication does not directly support AuthenticateAsync");
         }
 
-        protected override Task HandleSignOutAsync(AuthenticationProperties properties)
-        {
-            throw new NotSupportedException();
-        }
-
-        protected override Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
-        {
-            throw new NotSupportedException();
-        }
-
         protected override Task HandleForbiddenAsync(AuthenticationProperties properties)
-        {
-            return Context.ForbidAsync(SignInScheme);
-        }
+            => Context.ForbidAsync(SignInScheme);
 
         protected virtual void GenerateCorrelationId(AuthenticationProperties properties)
         {

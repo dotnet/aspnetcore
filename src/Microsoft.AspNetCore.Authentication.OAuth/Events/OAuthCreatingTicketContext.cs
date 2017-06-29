@@ -13,32 +13,34 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
     /// <summary>
     /// Contains information about the login session as well as the user <see cref="System.Security.Claims.ClaimsIdentity"/>.
     /// </summary>
-    public class OAuthCreatingTicketContext : BaseAuthenticationContext
+    public class OAuthCreatingTicketContext : ResultContext<OAuthOptions>
     {
         /// <summary>
         /// Initializes a new <see cref="OAuthCreatingTicketContext"/>.
         /// </summary>
-        /// <param name="ticket">The <see cref="AuthenticationTicket"/>.</param>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/>.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         /// <param name="context">The HTTP environment.</param>
         /// <param name="scheme">The authentication scheme.</param>
         /// <param name="options">The options used by the authentication middleware.</param>
         /// <param name="backchannel">The HTTP client used by the authentication middleware</param>
         /// <param name="tokens">The tokens returned from the token endpoint.</param>
         public OAuthCreatingTicketContext(
-            AuthenticationTicket ticket,
+            ClaimsPrincipal principal,
+            AuthenticationProperties properties,
             HttpContext context,
             AuthenticationScheme scheme,
             OAuthOptions options,
             HttpClient backchannel,
             OAuthTokenResponse tokens)
-            : this(ticket, context, scheme, options, backchannel, tokens, user: new JObject())
-        {
-        }
+            : this(principal, properties, context, scheme, options, backchannel, tokens, user: new JObject())
+        { }
 
         /// <summary>
         /// Initializes a new <see cref="OAuthCreatingTicketContext"/>.
         /// </summary>
-        /// <param name="ticket">The <see cref="AuthenticationTicket"/>.</param>
+        /// <param name="principal">The <see cref="ClaimsPrincipal"/>.</param>
+        /// <param name="properties">The <see cref="AuthenticationProperties"/>.</param>
         /// <param name="context">The HTTP environment.</param>
         /// <param name="scheme">The authentication scheme.</param>
         /// <param name="options">The options used by the authentication middleware.</param>
@@ -46,25 +48,16 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         /// <param name="tokens">The tokens returned from the token endpoint.</param>
         /// <param name="user">The JSON-serialized user.</param>
         public OAuthCreatingTicketContext(
-            AuthenticationTicket ticket,
+            ClaimsPrincipal principal,
+            AuthenticationProperties properties,
             HttpContext context,
             AuthenticationScheme scheme,
             OAuthOptions options,
             HttpClient backchannel,
             OAuthTokenResponse tokens,
             JObject user)
-            : base(context, scheme.Name, ticket.Properties)
+            : base(context, scheme, options)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
             if (backchannel == null)
             {
                 throw new ArgumentNullException(nameof(backchannel));
@@ -80,22 +73,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 throw new ArgumentNullException(nameof(user));
             }
 
-            if (scheme == null)
-            {
-                throw new ArgumentNullException(nameof(scheme));
-            }
-
             TokenResponse = tokens;
             Backchannel = backchannel;
             User = user;
-            Options = options;
-            Scheme = scheme;
-            Ticket = ticket;
+            Principal = principal;
+            Properties = properties;
         }
-
-        public OAuthOptions Options { get; }
-
-        public AuthenticationScheme Scheme { get; }
 
         /// <summary>
         /// Gets the JSON-serialized user or an empty
@@ -146,20 +129,12 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         public HttpClient Backchannel { get; }
 
         /// <summary>
-        /// The <see cref="AuthenticationTicket"/> that will be created.
+        /// Gets the main identity exposed by the authentication ticket.
+        /// This property returns <c>null</c> when the ticket is <c>null</c>.
         /// </summary>
-        public AuthenticationTicket Ticket { get; set; }
+        public ClaimsIdentity Identity => Principal?.Identity as ClaimsIdentity;
 
-        /// <summary>
-        /// Gets the main identity exposed by <see cref="Ticket"/>.
-        /// This property returns <c>null</c> when <see cref="Ticket"/> is <c>null</c>.
-        /// </summary>
-        public ClaimsIdentity Identity => Ticket?.Principal.Identity as ClaimsIdentity;
-
-        public void RunClaimActions()
-        {
-            RunClaimActions(User);
-        }
+        public void RunClaimActions() => RunClaimActions(User);
 
         public void RunClaimActions(JObject userData)
         {

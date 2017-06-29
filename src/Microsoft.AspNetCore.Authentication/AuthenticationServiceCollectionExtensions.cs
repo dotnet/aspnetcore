@@ -13,7 +13,7 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class AuthenticationServiceCollectionExtensions
     {
-        public static IServiceCollection AddAuthentication(this IServiceCollection services)
+        public static AuthenticationBuilder AddAuthentication(this IServiceCollection services)
         {
             if (services == null)
             {
@@ -24,10 +24,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddDataProtection();
             services.AddWebEncoders();
             services.TryAddSingleton<ISystemClock, SystemClock>();
-            return services;
+            return new AuthenticationBuilder(services);
         }
 
-        public static IServiceCollection AddAuthentication(this IServiceCollection services, Action<AuthenticationOptions> configureOptions) {
+        public static AuthenticationBuilder AddAuthentication(this IServiceCollection services, Action<AuthenticationOptions> configureOptions) {
             if (services == null)
             {
                 throw new ArgumentNullException(nameof(services));
@@ -38,11 +38,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(configureOptions));
             }
 
-            services.AddAuthentication();
+            var builder = services.AddAuthentication();
             services.Configure(configureOptions);
-            return services;
+            return builder;
         }
 
+        // REMOVE below once callers have been updated
         public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, string displayName, Action<AuthenticationSchemeBuilder> configureScheme, Action<TOptions> configureOptions)
             where TOptions : AuthenticationSchemeOptions, new()
             where THandler : AuthenticationHandler<TOptions>

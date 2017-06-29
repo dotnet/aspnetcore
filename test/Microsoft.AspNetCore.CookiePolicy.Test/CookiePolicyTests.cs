@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddCookieAuthentication(o =>
+                    services.AddAuthentication().AddCookie(o =>
                     {
                         o.CookieName = "TestCookie";
                         o.CookieHttpOnly = false;
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddCookieAuthentication(o =>
+                    services.AddAuthentication().AddCookie(o =>
                     {
                         o.CookieName = "TestCookie";
                         o.CookieHttpOnly = false;

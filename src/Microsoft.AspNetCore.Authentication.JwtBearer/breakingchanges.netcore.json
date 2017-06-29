@@ -16,43 +16,28 @@
       "Kind": "Removal"
     },
     {
+      "TypeId": "public static class Microsoft.AspNetCore.Builder.JwtBearerAppBuilderExtensions",
+      "MemberId": "public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseJwtBearerAuthentication(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.JwtBearerOptions options)",
+      "Kind": "Removal"
+    },
+    {
       "TypeId": "public class Microsoft.AspNetCore.Authentication.JwtBearer.AuthenticationFailedContext : Microsoft.AspNetCore.Authentication.JwtBearer.BaseJwtBearerContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.JwtBearerOptions options)",
       "Kind": "Removal"
     },
     {
       "TypeId": "public class Microsoft.AspNetCore.Authentication.JwtBearer.BaseJwtBearerContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.JwtBearerOptions options)",
       "Kind": "Removal"
     },
     {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.JwtBearer.BaseJwtBearerContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
-      "MemberId": "public Microsoft.AspNetCore.Builder.JwtBearerOptions get_Options()",
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerChallengeContext : Microsoft.AspNetCore.Authentication.JwtBearer.BaseJwtBearerContext",
       "Kind": "Removal"
     },
     {
       "TypeId": "public class Microsoft.AspNetCore.Authentication.JwtBearer.MessageReceivedContext : Microsoft.AspNetCore.Authentication.JwtBearer.BaseJwtBearerContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.JwtBearerOptions options)",
       "Kind": "Removal"
     },
     {
       "TypeId": "public class Microsoft.AspNetCore.Authentication.JwtBearer.TokenValidatedContext : Microsoft.AspNetCore.Authentication.JwtBearer.BaseJwtBearerContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.JwtBearerOptions options)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerChallengeContext : Microsoft.AspNetCore.Authentication.JwtBearer.BaseJwtBearerContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.JwtBearerOptions options, Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties properties)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerChallengeContext : Microsoft.AspNetCore.Authentication.JwtBearer.BaseJwtBearerContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public static class Microsoft.AspNetCore.Builder.JwtBearerAppBuilderExtensions",
-      "MemberId": "public static Microsoft.AspNetCore.Builder.IApplicationBuilder UseJwtBearerAuthentication(this Microsoft.AspNetCore.Builder.IApplicationBuilder app, Microsoft.AspNetCore.Builder.JwtBearerOptions options)",
       "Kind": "Removal"
     }
   ]

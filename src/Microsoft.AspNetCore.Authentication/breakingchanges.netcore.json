@@ -84,43 +84,33 @@
       "Kind": "Removal"
     },
     {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.TicketReceivedContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
-      "MemberId": "public .ctor(Microsoft.AspNetCore.Http.HttpContext context, Microsoft.AspNetCore.Builder.RemoteAuthenticationOptions options, Microsoft.AspNetCore.Authentication.AuthenticationTicket ticket)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.TicketReceivedContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
-      "MemberId": "public Microsoft.AspNetCore.Builder.RemoteAuthenticationOptions get_Options()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.TicketReceivedContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
-      "MemberId": "public Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties get_Properties()",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.TicketReceivedContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
-      "MemberId": "public System.Void set_Options(Microsoft.AspNetCore.Builder.RemoteAuthenticationOptions value)",
-      "Kind": "Removal"
-    },
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.TicketReceivedContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
-      "MemberId": "public System.Void set_Properties(Microsoft.AspNetCore.Http.Authentication.AuthenticationProperties value)",
-      "Kind": "Removal"
-    },
-    {
       "TypeId": "public static class Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions",
       "MemberId": "public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddAuthentication(this Microsoft.Extensions.DependencyInjection.IServiceCollection services, System.Action<Microsoft.AspNetCore.Authentication.SharedAuthenticationOptions> configureOptions)",
       "Kind": "Removal"
     },
     {
-      "TypeId": "public class Microsoft.AspNetCore.Authentication.BaseControlContext : Microsoft.AspNetCore.Authentication.BaseContext",
-      "MemberId": "public System.Boolean CheckEventResult(out Microsoft.AspNetCore.Authentication.AuthenticateResult result)",
+      "TypeId": "public abstract class Microsoft.AspNetCore.Authentication.BaseContext",
       "Kind": "Removal"
     },
     {
       "TypeId": "public class Microsoft.AspNetCore.Authentication.BaseControlContext : Microsoft.AspNetCore.Authentication.BaseContext",
-      "MemberId": "public System.Void SkipToNextMiddleware()",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.FailureContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Authentication.TicketReceivedContext : Microsoft.AspNetCore.Authentication.BaseControlContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.Extensions.DependencyInjection.AuthenticationServiceCollectionExtensions",
+      "MemberId": "public static Microsoft.Extensions.DependencyInjection.IServiceCollection AddAuthentication(this Microsoft.Extensions.DependencyInjection.IServiceCollection services)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Authentication.EventResultState",
       "Kind": "Removal"
     }
   ]

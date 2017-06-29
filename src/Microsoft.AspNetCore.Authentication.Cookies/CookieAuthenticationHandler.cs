@@ -14,7 +14,10 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
-    public class CookieAuthenticationHandler : AuthenticationHandler<CookieAuthenticationOptions>
+    public class CookieAuthenticationHandler : 
+        AuthenticationHandler<CookieAuthenticationOptions>, 
+        IAuthenticationSignInHandler, 
+        IAuthenticationSignOutHandler
     {
         private const string HeaderValueNoCache = "no-cache";
         private const string HeaderValueMinusOne = "-1";
@@ -104,7 +107,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var cookie = Options.CookieManager.GetRequestCookie(Context, Options.CookieName);
             if (string.IsNullOrEmpty(cookie))
             {
-                return AuthenticateResult.None();
+                return AuthenticateResult.NoResult();
             }
 
             var ticket = Options.TicketDataFormat.Unprotect(cookie, GetTlsTokenBinding());
@@ -155,7 +158,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 return result;
             }
 
-            var context = new CookieValidatePrincipalContext(Context, Scheme, result.Ticket, Options);
+            var context = new CookieValidatePrincipalContext(Context, Scheme, Options, result.Ticket);
             await Events.ValidatePrincipal(context);
 
             if (context.Principal == null)
@@ -244,8 +247,15 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
         }
 
-        protected override async Task HandleSignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+        public async virtual Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
         {
+            if (user == null)
+            {
+                throw new ArgumentNullException(nameof(user));
+            }
+
+            properties = properties ?? new AuthenticationProperties();
+
             _signInCalled = true;
 
             // Process the request cookie to initialize members like _sessionKey.
@@ -284,7 +294,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 signInContext.CookieOptions.Expires = expiresUtc.ToUniversalTime();
             }
 
-            var ticket = new AuthenticationTicket(signInContext.Principal, signInContext.Properties, signInContext.AuthenticationScheme);
+            var ticket = new AuthenticationTicket(signInContext.Principal, signInContext.Properties, signInContext.Scheme.Name);
+
             if (Options.SessionStore != null)
             {
                 if (_sessionKey != null)
@@ -310,20 +321,23 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var signedInContext = new CookieSignedInContext(
                 Context,
                 Scheme,
-                Options,
-                Scheme.Name,
                 signInContext.Principal,
-                signInContext.Properties);
+                signInContext.Properties,
+                Options);
 
             await Events.SignedIn(signedInContext);
 
             // Only redirect on the login path
             var shouldRedirect = Options.LoginPath.HasValue && OriginalPath == Options.LoginPath;
             await ApplyHeaders(shouldRedirect, signedInContext.Properties);
+
+            Logger.SignedIn(Scheme.Name);
         }
 
-        protected override async Task HandleSignOutAsync(AuthenticationProperties properties)
+        public async virtual Task SignOutAsync(AuthenticationProperties properties)
         {
+            properties = properties ?? new AuthenticationProperties();
+
             _signOutCalled = true;
 
             // Process the request cookie to initialize members like _sessionKey.
@@ -351,6 +365,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             // Only redirect on the logout path
             var shouldRedirect = Options.LogoutPath.HasValue && OriginalPath == Options.LogoutPath;
             await ApplyHeaders(shouldRedirect, context.Properties);
+
+            Logger.SignedOut(Scheme.Name);
         }
 
         private async Task ApplyHeaders(bool shouldRedirectToReturnUrl, AuthenticationProperties properties)
@@ -380,7 +396,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 if (redirectUri != null)
                 {
                     await Events.RedirectToReturnUrl(
-                        new CookieRedirectContext(Context, Scheme, Options, redirectUri, properties));
+                        new RedirectContext<CookieAuthenticationOptions>(Context, Scheme, Options, properties, redirectUri));
                 }
             }
         }
@@ -406,7 +422,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 returnUrl = OriginalPathBase + Request.Path + Request.QueryString;
             }
             var accessDeniedUri = Options.AccessDeniedPath + QueryString.Create(Options.ReturnUrlParameter, returnUrl);
-            var redirectContext = new CookieRedirectContext(Context, Scheme, Options, BuildRedirectUri(accessDeniedUri), properties);
+            var redirectContext = new RedirectContext<CookieAuthenticationOptions>(Context, Scheme, Options, properties, BuildRedirectUri(accessDeniedUri));
             await Events.RedirectToAccessDenied(redirectContext);
         }
 
@@ -419,7 +435,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
 
             var loginUri = Options.LoginPath + QueryString.Create(Options.ReturnUrlParameter, redirectUri);
-            var redirectContext = new CookieRedirectContext(Context, Scheme, Options, BuildRedirectUri(loginUri), properties);
+            var redirectContext = new RedirectContext<CookieAuthenticationOptions>(Context, Scheme, Options, properties, BuildRedirectUri(loginUri));
             await Events.RedirectToLogin(redirectContext);
         }
 

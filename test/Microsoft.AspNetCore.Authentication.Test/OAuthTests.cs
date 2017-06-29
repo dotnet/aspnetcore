@@ -144,29 +144,6 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         }
 
         [Fact]
-        public async Task ThrowsIfSignInSchemeMissing()
-        {
-            var server = CreateServer(
-                app => { },
-                services => services.AddOAuthAuthentication("weeblie", o =>
-                {
-                    o.ClientId = "Whatever;";
-                    o.ClientSecret = "Whatever;";
-                    o.CallbackPath = "/";
-                    o.TokenEndpoint = "/";
-                    o.AuthorizationEndpoint = "/";
-                }),
-                context =>
-                {
-                    // REVIEW: Gross.
-                    Assert.Throws<ArgumentException>("SignInScheme", () => context.ChallengeAsync("weeblie").GetAwaiter().GetResult());
-                    return true;
-                });
-            var transaction = await server.SendAsync("http://example.com/challenge");
-            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
-        }
-
-        [Fact]
         public async Task RedirectToIdentityProvider_SetsCorrelationIdCookiePath_ToCallBackPath()
         {
             var server = CreateServer(

@@ -22,8 +22,9 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddCookieAuthentication();
-                    services.AddOpenIdConnectAuthentication(o =>
+                    services.AddAuthentication()
+                        .AddCookie()
+                        .AddOpenIdConnect(o =>
                     {
                         o.Authority = TestServerBuilder.DefaultAuthority;
                         o.ClientId = Guid.NewGuid().ToString();
@@ -43,19 +44,6 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var server = new TestServer(builder);
             var transaction = await server.SendAsync(@"https://example.com");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
-        }
-
-        [Fact]
-        public Task ThrowsWhenSignInSchemeIsMissing()
-        {
-            return TestConfigurationException<ArgumentException>(
-                o =>
-                {
-                    o.ClientId = "Test Id";
-                    o.Authority = TestServerBuilder.DefaultAuthority;
-                    o.CallbackPath = "/";
-                },
-                ex => Assert.Equal("SignInScheme", ex.ParamName));
         }
 
         [Fact]
@@ -119,8 +107,9 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddCookieAuthentication();
-                    services.AddOpenIdConnectAuthentication(options);
+                    services.AddAuthentication()
+                        .AddCookie()
+                        .AddOpenIdConnect(options);
                 })
                 .Configure(app => app.UseAuthentication());
 
