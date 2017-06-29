@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Authentication.Internal;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Protocols;
@@ -17,6 +18,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
     /// </summary>
     public class OpenIdConnectOptions : RemoteAuthenticationOptions
     {
+        private CookieBuilder _nonceCookieBuilder;
+
         /// <summary>
         /// Initializes a new <see cref="OpenIdConnectOptions"/>
         /// </summary>
@@ -65,6 +68,14 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             ClaimActions.MapUniqueJsonKey("family_name", "family_name");
             ClaimActions.MapUniqueJsonKey("profile", "profile");
             ClaimActions.MapUniqueJsonKey("email", "email");
+
+            _nonceCookieBuilder = new OpenIdConnectNonceCookieBuilder(this)
+            {
+                Name = OpenIdConnectDefaults.CookieNoncePrefix,
+                HttpOnly = true,
+                SameSite = SameSiteMode.None,
+                SecurePolicy = CookieSecurePolicy.SameAsRequest,
+            };
         }
 
         /// <summary>
@@ -145,8 +156,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// </summary>
         public new OpenIdConnectEvents Events
         {
-            get { return (OpenIdConnectEvents)base.Events; }
-            set { base.Events = value; }
+            get => (OpenIdConnectEvents)base.Events;
+            set => base.Events = value;
         }
 
         /// <summary>
@@ -259,9 +270,40 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public bool DisableTelemetry { get; set; }
 
         /// <summary>
-        /// Gets or sets an action that can override the nonce cookie options before the
+        /// Determines the settings used to create the nonce cookie before the
         /// cookie gets added to the response.
         /// </summary>
-        public Action<HttpContext, CookieOptions> ConfigureNonceCookie { get; set; }
+        /// <remarks>
+        /// The value of <see cref="CookieBuilder.Name"/> is treated as the prefix to the cookie name, and defaults to <seealso cref="OpenIdConnectDefaults.CookieNoncePrefix"/>.
+        /// </remarks>
+        public CookieBuilder NonceCookie
+        {
+            get => _nonceCookieBuilder;
+            set => _nonceCookieBuilder = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        private class OpenIdConnectNonceCookieBuilder : RequestPathBaseCookieBuilder
+        {
+            private readonly OpenIdConnectOptions _options;
+
+            public OpenIdConnectNonceCookieBuilder(OpenIdConnectOptions oidcOptions)
+            {
+                _options = oidcOptions;
+            }
+
+            protected override string AdditionalPath => _options.CallbackPath;
+
+            public override CookieOptions Build(HttpContext context, DateTimeOffset expiresFrom)
+            {
+                var cookieOptions = base.Build(context, expiresFrom);
+
+                if (!Expiration.HasValue || !cookieOptions.Expires.HasValue)
+                {
+                    cookieOptions.Expires = expiresFrom.Add(_options.ProtocolValidator.NonceLifetime);
+                }
+
+                return cookieOptions;
+            }
+        }
     }
 }

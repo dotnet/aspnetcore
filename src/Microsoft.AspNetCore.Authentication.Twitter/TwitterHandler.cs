@@ -10,7 +10,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
@@ -23,7 +22,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     internal class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
     {
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
-        private const string StateCookie = "__TwitterState";
         private const string RequestTokenEndpoint = "https://api.twitter.com/oauth/request_token";
         private const string AuthenticationEndpoint = "https://api.twitter.com/oauth/authenticate?oauth_token=";
         private const string AccessTokenEndpoint = "https://api.twitter.com/oauth/access_token";
@@ -50,7 +48,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         {
             AuthenticationProperties properties = null;
             var query = Request.Query;
-            var protectedRequestToken = Request.Cookies[StateCookie];
+            var protectedRequestToken = Request.Cookies[Options.StateCookie.Name];
 
             var requestToken = Options.StateDataFormat.Unprotect(protectedRequestToken);
 
@@ -80,16 +78,9 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 return HandleRequestResult.Fail("Missing or blank oauth_verifier");
             }
 
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                SameSite = SameSiteMode.Lax,
-                Secure = Request.IsHttps
-            };
+            var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
 
-            Options.ConfigureStateCookie?.Invoke(Context, cookieOptions);
-
-            Response.Cookies.Delete(StateCookie, cookieOptions);
+            Response.Cookies.Delete(Options.StateCookie.Name, cookieOptions);
 
             var accessToken = await ObtainAccessTokenAsync(requestToken, oauthVerifier);
 
@@ -144,17 +135,9 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             var requestToken = await ObtainRequestTokenAsync(BuildRedirectUri(Options.CallbackPath), properties);
             var twitterAuthenticationEndpoint = AuthenticationEndpoint + requestToken.Token;
 
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                SameSite = SameSiteMode.Lax,
-                Secure = Request.IsHttps,
-                Expires = Clock.UtcNow.Add(Options.RemoteAuthenticationTimeout),
-            };
+            var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);
 
-            Options.ConfigureStateCookie?.Invoke(Context, cookieOptions);
-
-            Response.Cookies.Append(StateCookie, Options.StateDataFormat.Protect(requestToken), cookieOptions);
+            Response.Cookies.Append(Options.StateCookie.Name, Options.StateDataFormat.Protect(requestToken), cookieOptions);
 
             var redirectContext = new RedirectContext<TwitterOptions>(Context, Scheme, Options, properties, twitterAuthenticationEndpoint);
             await Events.RedirectToAuthorizationEndpoint(redirectContext);

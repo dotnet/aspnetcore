@@ -5,7 +5,6 @@ using System;
 using System.Security.Cryptography;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
@@ -14,7 +13,6 @@ namespace Microsoft.AspNetCore.Authentication
     public abstract class RemoteAuthenticationHandler<TOptions> : AuthenticationHandler<TOptions>, IAuthenticationRequestHandler
         where TOptions : RemoteAuthenticationOptions, new()
     {
-        private const string CorrelationPrefix = ".AspNetCore.Correlation.";
         private const string CorrelationProperty = ".xsrf";
         private const string CorrelationMarker = "N";
         private const string AuthSchemeKey = ".AuthScheme";
@@ -187,20 +185,11 @@ namespace Microsoft.AspNetCore.Authentication
             CryptoRandom.GetBytes(bytes);
             var correlationId = Base64UrlTextEncoder.Encode(bytes);
 
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                SameSite = SameSiteMode.None,
-                Secure = Request.IsHttps,
-                Path = OriginalPathBase + Options.CallbackPath,
-                Expires = Clock.UtcNow.Add(Options.RemoteAuthenticationTimeout),
-            };
-
-            Options.ConfigureCorrelationIdCookie?.Invoke(Context, cookieOptions);
+            var cookieOptions = Options.CorrelationCookie.Build(Context, Clock.UtcNow);
 
             properties.Items[CorrelationProperty] = correlationId;
 
-            var cookieName = CorrelationPrefix + Scheme.Name + "." + correlationId;
+            var cookieName = Options.CorrelationCookie.Name + Scheme.Name + "." + correlationId;
 
             Response.Cookies.Append(cookieName, CorrelationMarker, cookieOptions);
         }
@@ -212,16 +201,15 @@ namespace Microsoft.AspNetCore.Authentication
                 throw new ArgumentNullException(nameof(properties));
             }
 
-            string correlationId;
-            if (!properties.Items.TryGetValue(CorrelationProperty, out correlationId))
+            if (!properties.Items.TryGetValue(CorrelationProperty, out string correlationId))
             {
-                Logger.CorrelationPropertyNotFound(CorrelationPrefix);
+                Logger.CorrelationPropertyNotFound(Options.CorrelationCookie.Name);
                 return false;
             }
 
             properties.Items.Remove(CorrelationProperty);
 
-            var cookieName = CorrelationPrefix + Scheme.Name + "." + correlationId;
+            var cookieName = Options.CorrelationCookie.Name + Scheme.Name + "." + correlationId;
 
             var correlationCookie = Request.Cookies[cookieName];
             if (string.IsNullOrEmpty(correlationCookie))
@@ -230,15 +218,7 @@ namespace Microsoft.AspNetCore.Authentication
                 return false;
             }
 
-            var cookieOptions = new CookieOptions
-            {
-                HttpOnly = true,
-                Path = OriginalPathBase + Options.CallbackPath,
-                SameSite = SameSiteMode.None,
-                Secure = Request.IsHttps
-            };
-
-            Options.ConfigureCorrelationIdCookie?.Invoke(Context, cookieOptions);
+            var cookieOptions = Options.CorrelationCookie.Build(Context, Clock.UtcNow);
 
             Response.Cookies.Delete(cookieName, cookieOptions);
 

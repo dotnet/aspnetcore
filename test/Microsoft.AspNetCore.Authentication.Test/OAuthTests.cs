@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                         opt.AuthorizationEndpoint = "https://example.com/provider/login";
                         opt.TokenEndpoint = "https://example.com/provider/token";
                         opt.CallbackPath = "/oauth-callback";
-                        opt.ConfigureCorrelationIdCookie = (ctx, options) => options.Path = "/";
+                        opt.CorrelationCookie.Path = "/";
                     }),
                 ctx =>
                 {

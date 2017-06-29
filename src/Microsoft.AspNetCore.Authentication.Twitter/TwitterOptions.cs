@@ -3,10 +3,7 @@
 
 using System;
 using System.Security.Claims;
-using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OAuth.Claims;
-using Microsoft.AspNetCore.Authentication.Twitter;
-using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
@@ -16,6 +13,10 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     /// </summary>
     public class TwitterOptions : RemoteAuthenticationOptions
     {
+        private const string DefaultStateCookieName = "__TwitterState";
+
+        private CookieBuilder _stateCookieBuilder;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="TwitterOptions"/> class.
         /// </summary>
@@ -26,6 +27,14 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             Events = new TwitterEvents();
 
             ClaimActions.MapJsonKey(ClaimTypes.Email, "email", ClaimValueTypes.Email);
+
+            _stateCookieBuilder = new TwitterCookieBuilder(this)
+            {
+                Name = DefaultStateCookieName,
+                SecurePolicy = CookieSecurePolicy.SameAsRequest,
+                HttpOnly = true,
+                SameSite = SameSiteMode.Lax,
+            };
         }
 
         /// <summary>
@@ -59,18 +68,42 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         public ISecureDataFormat<RequestToken> StateDataFormat { get; set; }
 
         /// <summary>
-        /// Gets or sets an action that can override the state cookie options before the
-        /// cookie gets added to the response.
-        /// </summary>
-        public Action<HttpContext, CookieOptions> ConfigureStateCookie { get; set; }
-
-        /// <summary>
         /// Gets or sets the <see cref="TwitterEvents"/> used to handle authentication events.
         /// </summary>
         public new TwitterEvents Events
         {
-            get { return (TwitterEvents)base.Events; }
-            set { base.Events = value; }
+            get => (TwitterEvents)base.Events;
+            set => base.Events = value;
+        }
+
+        /// <summary>
+        /// Determines the settings used to create the state cookie before the
+        /// cookie gets added to the response.
+        /// </summary>
+        public CookieBuilder StateCookie
+        {
+            get => _stateCookieBuilder;
+            set => _stateCookieBuilder = value ?? throw new ArgumentNullException(nameof(value));
+        }
+
+        private class TwitterCookieBuilder : CookieBuilder
+        {
+            private readonly TwitterOptions _twitterOptions;
+
+            public TwitterCookieBuilder(TwitterOptions twitterOptions)
+            {
+                _twitterOptions = twitterOptions;
+            }
+
+            public override CookieOptions Build(HttpContext context, DateTimeOffset expiresFrom)
+            {
+                var options = base.Build(context, expiresFrom);
+                if (!Expiration.HasValue)
+                {
+                    options.Expires = expiresFrom.Add(_twitterOptions.RemoteAuthenticationTimeout);
+                }
+                return options;
+            }
         }
     }
 }

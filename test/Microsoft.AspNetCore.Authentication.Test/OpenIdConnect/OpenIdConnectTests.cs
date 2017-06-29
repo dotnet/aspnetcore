@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     AuthorizationEndpoint = "https://example.com/provider/login"
                 };
-                opt.ConfigureNonceCookie = (ctx, options) => options.Path = "/";
+                opt.NonceCookie.Path = "/";
             });
 
             var server = setting.CreateTestServer();
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     AuthorizationEndpoint = "https://example.com/provider/login"
                 };
-                opt.ConfigureCorrelationIdCookie = (ctx, options) => options.Path = "/";
+                opt.CorrelationCookie.Path = "/";
             });
 
             var server = setting.CreateTestServer();

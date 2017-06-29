@@ -275,8 +275,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// <returns>A task executing the callback procedure</returns>
         protected virtual Task<bool> HandleSignOutCallbackAsync()
         {
-            StringValues protectedState;
-            if (Request.Query.TryGetValue(OpenIdConnectParameterNames.State, out protectedState))
+            if (Request.Query.TryGetValue(OpenIdConnectParameterNames.State, out StringValues protectedState))
             {
                 var properties = Options.StateDataFormat.Unprotect(protectedState);
                 if (!string.IsNullOrEmpty(properties?.RedirectUri))
@@ -505,8 +504,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     return HandleRequestResult.Fail(Resources.MessageStateIsInvalid);
                 }
 
-                string userstate = null;
-                properties.Items.TryGetValue(OpenIdConnectDefaults.UserstatePropertiesKey, out userstate);
+                properties.Items.TryGetValue(OpenIdConnectDefaults.UserstatePropertiesKey, out string userstate);
                 authorizationResponse.State = userstate;
 
                 if (!ValidateCorrelationId(properties))
@@ -859,8 +857,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             if (!string.IsNullOrEmpty(message.ExpiresIn))
             {
-                int value;
-                if (int.TryParse(message.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out value))
+                if (int.TryParse(message.ExpiresIn, NumberStyles.Integer, CultureInfo.InvariantCulture, out int value))
                 {
                     var expiresAt = Clock.UtcNow + TimeSpan.FromSeconds(value);
                     // https://www.w3.org/TR/xmlschema-2/#dateTime
@@ -885,21 +882,12 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 throw new ArgumentNullException(nameof(nonce));
             }
 
-            var options = new CookieOptions
-            {
-                HttpOnly = true,
-                SameSite = Http.SameSiteMode.None,
-                Path = OriginalPathBase + Options.CallbackPath,
-                Secure = Request.IsHttps,
-                Expires = Clock.UtcNow.Add(Options.ProtocolValidator.NonceLifetime)
-            };
-
-            Options.ConfigureNonceCookie?.Invoke(Context, options);
+            var cookieOptions = Options.NonceCookie.Build(Context, Clock.UtcNow);
 
             Response.Cookies.Append(
-                OpenIdConnectDefaults.CookieNoncePrefix + Options.StringDataFormat.Protect(nonce),
+                Options.NonceCookie.Name + Options.StringDataFormat.Protect(nonce),
                 NonceProperty,
-                options);
+                cookieOptions);
         }
 
         /// <summary>
@@ -918,23 +906,14 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             foreach (var nonceKey in Request.Cookies.Keys)
             {
-                if (nonceKey.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix))
+                if (nonceKey.StartsWith(Options.NonceCookie.Name))
                 {
                     try
                     {
-                        var nonceDecodedValue = Options.StringDataFormat.Unprotect(nonceKey.Substring(OpenIdConnectDefaults.CookieNoncePrefix.Length, nonceKey.Length - OpenIdConnectDefaults.CookieNoncePrefix.Length));
+                        var nonceDecodedValue = Options.StringDataFormat.Unprotect(nonceKey.Substring(Options.NonceCookie.Name.Length, nonceKey.Length - Options.NonceCookie.Name.Length));
                         if (nonceDecodedValue == nonce)
                         {
-                            var cookieOptions = new CookieOptions
-                            {
-                                HttpOnly = true,
-                                Path = OriginalPathBase + Options.CallbackPath,
-                                SameSite = Http.SameSiteMode.None,
-                                Secure = Request.IsHttps
-                            };
-
-                            Options.ConfigureNonceCookie?.Invoke(Context, cookieOptions);
-
+                            var cookieOptions = Options.NonceCookie.Build(Context, Clock.UtcNow);
                             Response.Cookies.Delete(nonceKey, cookieOptions);
                             return nonce;
                         }
@@ -1170,8 +1149,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 validationParameters.IssuerSigningKeys = validationParameters.IssuerSigningKeys?.Concat(_configuration.SigningKeys) ?? _configuration.SigningKeys;
             }
 
-            SecurityToken validatedToken = null;
-            var principal = Options.SecurityTokenValidator.ValidateToken(idToken, validationParameters, out validatedToken);
+            var principal = Options.SecurityTokenValidator.ValidateToken(idToken, validationParameters, out SecurityToken validatedToken);
             jwt = validatedToken as JwtSecurityToken;
             if (jwt == null)
             {
