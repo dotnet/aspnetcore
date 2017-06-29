@@ -6,7 +6,6 @@
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <AssetTargetFallback Condition=" '$(TargetFramework)' == 'netcoreapp2.0' ">$(AssetTargetFallback);dnxcore50;portable-net451+win8</AssetTargetFallback>
   </PropertyGroup>
 
   <ItemGroup>
