@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Hosting.Tests
@@ -262,19 +263,18 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         private static HostingApplication CreateApplication(out FeatureCollection features,
             DiagnosticListener diagnosticSource = null)
         {
-            var httpContextFactory = new HttpContextFactory(
-                new DefaultObjectPoolProvider(),
-                Options.Create(new FormOptions()),
-                new HttpContextAccessor());
+            var httpContextFactory = new Mock<IHttpContextFactory>();
+
+            features = new FeatureCollection();
+            features.Set<IHttpRequestFeature>(new HttpRequestFeature());
+            httpContextFactory.Setup(s => s.Create(It.IsAny<IFeatureCollection>())).Returns(new DefaultHttpContext(features));
+            httpContextFactory.Setup(s => s.Dispose(It.IsAny<HttpContext>()));
 
             var hostingApplication = new HostingApplication(
                 ctx => Task.FromResult(0),
                 new NullScopeLogger(),
                 diagnosticSource ?? new NoopDiagnosticSource(),
-                httpContextFactory);
-
-            features = new FeatureCollection();
-            features.Set<IHttpRequestFeature>(new HttpRequestFeature());
+                httpContextFactory.Object);
 
             return hostingApplication;
         }
