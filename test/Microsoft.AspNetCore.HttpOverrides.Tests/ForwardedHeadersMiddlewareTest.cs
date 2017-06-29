@@ -437,7 +437,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData("h2, h1", "", "::1", true, "http")]
         [InlineData("h2, h1", "F::, D::", "::1", true, "h1")]
         [InlineData("h2, h1", "E::, D::", "F::", true, "http")]
-        [InlineData("h2, h1", "E::, D::", "F::", true, "http")]
         public async Task XForwardedProtoOverrideLimitedByLoopback(string protoHeader, string forHeader, string remoteIp, bool loopback, string expected)
         {
             var assertsExecuted = false;
