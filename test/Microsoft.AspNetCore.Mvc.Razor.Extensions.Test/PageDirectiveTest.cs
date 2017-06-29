@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
@@ -15,6 +14,24 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         {
             // Arrange
             var content = "Hello world";
+            var sourceDocument = RazorSourceDocument.Create(content, "file");
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var engine = CreateEngine();
+            var irDocument = CreateIRDocument(engine, codeDocument);
+
+            // Act
+            var result = PageDirective.TryGetPageDirective(irDocument, out var pageDirective);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(pageDirective);
+        }
+
+        [Fact]
+        public void TryGetPageDirective_ReturnsFalse_IfPageDoesStartWithDirective()
+        {
+            // Arrange
+            var content = "Hello @page";
             var sourceDocument = RazorSourceDocument.Create(content, "file");
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
             var engine = CreateEngine();
