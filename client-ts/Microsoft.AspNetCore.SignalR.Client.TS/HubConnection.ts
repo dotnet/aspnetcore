@@ -102,7 +102,7 @@ export class HubConnection {
     }
 
     stream<T>(methodName: string, ...args: any[]): Observable<T> {
-        let invocationDescriptor = this.createInvocation(methodName, args);
+        let invocationDescriptor = this.createInvocation(methodName, args, false);
 
         let subject = new Subject<T>();
 
@@ -136,8 +136,16 @@ export class HubConnection {
         return subject;
     }
 
+    send(methodName: string, ...args: any[]): Promise<void> {
+        let invocationDescriptor = this.createInvocation(methodName, args, true);
+
+        let message = this.protocol.writeMessage(invocationDescriptor);
+
+        return this.connection.send(message);
+    }
+
     invoke(methodName: string, ...args: any[]): Promise<any> {
-        let invocationDescriptor = this.createInvocation(methodName, args);
+        let invocationDescriptor = this.createInvocation(methodName, args, false);
 
         let p = new Promise<any>((resolve, reject) => {
             this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: CompletionMessage | ResultMessage) => {
@@ -175,7 +183,7 @@ export class HubConnection {
         this.connectionClosedCallback = callback;
     }
 
-    private createInvocation(methodName: string, args: any[]): InvocationMessage {
+    private createInvocation(methodName: string, args: any[], nonblocking: boolean): InvocationMessage {
         let id = this.id;
         this.id++;
 
@@ -184,7 +192,7 @@ export class HubConnection {
             invocationId: id.toString(),
             target: methodName,
             arguments: args,
-            nonblocking: false
+            nonblocking: nonblocking
         };
     }
 }

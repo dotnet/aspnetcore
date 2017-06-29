@@ -101,29 +101,46 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public ReadableChannel<object> Stream(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
         {
             var irq = InvocationRequest.Stream(cancellationToken, returnType, GetNextId(), _loggerFactory, out var channel);
-            InvokeCore(methodName, irq, args);
+            _ = InvokeCore(methodName, irq, args, nonBlocking: false);
             return channel;
         }
 
-        public Task<object> Invoke(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
+        public async Task<object> InvokeAsync(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
         {
             var irq = InvocationRequest.Invoke(cancellationToken, returnType, GetNextId(), _loggerFactory, out var task);
-            InvokeCore(methodName, irq, args);
-            return task;
+            await InvokeCore(methodName, irq, args, nonBlocking: false);
+            return await task;
         }
 
-        private void InvokeCore(string methodName, InvocationRequest irq, object[] args)
+        public Task SendAsync(string methodName, CancellationToken cancellationToken, params object[] args)
+        {
+            var irq = InvocationRequest.Invoke(cancellationToken, typeof(void), GetNextId(), _loggerFactory, out _);
+            return InvokeCore(methodName, irq, args, nonBlocking: true);
+        }
+
+        private Task InvokeCore(string methodName, InvocationRequest irq, object[] args, bool nonBlocking)
         {
             ThrowIfConnectionTerminated();
-            _logger.LogTrace("Preparing invocation of '{target}', with return type '{returnType}' and {argumentCount} args", methodName, irq.ResultType.AssemblyQualifiedName, args.Length);
+            if (nonBlocking)
+            {
+                _logger.LogTrace("Preparing invocation of '{target}' and {argumentCount} args", methodName, irq.ResultType.AssemblyQualifiedName, args.Length);
+            }
+            else
+            {
+                _logger.LogTrace("Preparing invocation of '{target}', with return type '{returnType}' and {argumentCount} args", methodName, irq.ResultType.AssemblyQualifiedName, args.Length);
+            }
 
             // Create an invocation descriptor. Client invocations are always blocking
-            var invocationMessage = new InvocationMessage(irq.InvocationId, nonBlocking: false, target: methodName, arguments: args);
+            var invocationMessage = new InvocationMessage(irq.InvocationId, nonBlocking, methodName, args);
 
-            // I just want an excuse to use 'irq' as a variable name...
-            _logger.LogDebug("Registering Invocation ID '{invocationId}' for tracking", invocationMessage.InvocationId);
+            // We don't need to track invocations for fire an forget calls
+            if (!nonBlocking)
+            {
+                // I just want an excuse to use 'irq' as a variable name...
+                _logger.LogDebug("Registering Invocation ID '{invocationId}' for tracking", invocationMessage.InvocationId);
 
-            AddInvocation(irq);
+                AddInvocation(irq);
+            }
 
             // Trace the full invocation, but only if that logging level is enabled (because building the args list is a bit slow)
             if (_logger.IsEnabled(LogLevel.Trace))
@@ -133,7 +150,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
 
             // We don't need to wait for this to complete. It will signal back to the invocation request.
-            _ = SendInvocation(invocationMessage, irq);
+            return SendInvocation(invocationMessage, irq);
         }
 
         private async Task SendInvocation(InvocationMessage invocationMessage, InvocationRequest irq)

@@ -234,6 +234,32 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Theory]
+        [InlineData(nameof(MethodHub.VoidMethod))]
+        [InlineData(nameof(MethodHub.MethodThatThrows))]
+        public async Task NonBlockingInvocationDoesNotSendCompletion(string methodName)
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient(synchronousCallbacks: true))
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                // This invocation should be completely synchronous
+                await client.SendInvocationAsync(methodName, nonBlocking: true).OrTimeout();
+
+                // Nothing should have been written
+                Assert.False(client.Application.In.TryRead(out var buffer));
+
+                // kill the connection
+                client.Dispose();
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
         [Fact]
         public async Task HubMethodWithMultiParam()
         {

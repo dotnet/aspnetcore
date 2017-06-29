@@ -21,6 +21,32 @@ describe("HubConnection", () => {
         });
     });
 
+    describe("send", () => {
+        it("sends a non blocking invocation", async () => {
+            let connection = new TestConnection();
+
+            let hubConnection = new HubConnection(connection);
+            var invokePromise = hubConnection.send("testMethod", "arg", 42)
+                .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
+
+            // Verify the message is sent
+            expect(connection.sentData.length).toBe(1);
+            expect(JSON.parse(connection.sentData[0])).toEqual({
+                type: 1,
+                invocationId: connection.lastInvocationId,
+                target: "testMethod",
+                nonblocking: true,
+                arguments: [
+                    "arg",
+                    42
+                ]
+            });
+
+            // Close the connection
+            hubConnection.stop();
+        });
+    });
+
     describe("invoke", () => {
         it("sends an invocation", async () => {
             let connection = new TestConnection();

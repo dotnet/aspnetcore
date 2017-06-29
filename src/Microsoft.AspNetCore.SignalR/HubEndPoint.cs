@@ -274,7 +274,10 @@ namespace Microsoft.AspNetCore.SignalR
                 if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection.User, descriptor.Policies))
                 {
                     _logger.LogDebug("Failed to invoke {hubMethod} because user is unauthorized", invocationMessage.Target);
-                    await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationMessage.InvocationId, $"Failed to invoke '{invocationMessage.Target}' because user is unauthorized"));
+                    if (!invocationMessage.NonBlocking)
+                    {
+                        await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationMessage.InvocationId, $"Failed to invoke '{invocationMessage.Target}' because user is unauthorized"));
+                    }
                     return;
                 }
 
@@ -309,7 +312,7 @@ namespace Microsoft.AspNetCore.SignalR
                         _logger.LogTrace("[{connectionId}/{invocationId}] Streaming result of type {resultType}", connection.ConnectionId, invocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
                         await StreamResultsAsync(invocationMessage.InvocationId, connection, protocol, enumerator);
                     }
-                    else
+                    else if (!invocationMessage.NonBlocking)
                     {
                         _logger.LogTrace("[{connectionId}/{invocationId}] Sending result of type {resultType}", connection.ConnectionId, invocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
                         await SendMessageAsync(connection, protocol, CompletionMessage.WithResult(invocationMessage.InvocationId, result));
@@ -318,12 +321,18 @@ namespace Microsoft.AspNetCore.SignalR
                 catch (TargetInvocationException ex)
                 {
                     _logger.LogError(0, ex, "Failed to invoke hub method");
-                    await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationMessage.InvocationId, ex.InnerException.Message));
+                    if (!invocationMessage.NonBlocking)
+                    {
+                        await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationMessage.InvocationId, ex.InnerException.Message));
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(0, ex, "Failed to invoke hub method");
-                    await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationMessage.InvocationId, ex.Message));
+                    if (!invocationMessage.NonBlocking)
+                    {
+                        await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationMessage.InvocationId, ex.Message));
+                    }
                 }
                 finally
                 {

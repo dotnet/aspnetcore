@@ -18,6 +18,30 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
     public class HubConnectionProtocolTests
     {
         [Fact]
+        public async Task SendAsyncSendsANonBlockingInvocationMessage()
+        {
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(new JsonSerializer()), new LoggerFactory());
+            try
+            {
+                await hubConnection.StartAsync();
+
+                var invokeTask = hubConnection.SendAsync("Foo");
+
+                // skip negotiation
+                await connection.ReadSentTextMessageAsync().OrTimeout();
+                var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
+
+                Assert.Equal("78:{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"nonBlocking\":true,\"arguments\":[]};", invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().OrTimeout();
+            }
+        }
+
+        [Fact]
         public async Task ClientSendsNegotationMessageWhenStartingConnection()
         {
             var connection = new TestConnection();

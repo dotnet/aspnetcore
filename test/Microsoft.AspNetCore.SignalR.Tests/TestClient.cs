@@ -27,10 +27,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public Channel<byte[]> Application { get; }
         public Task Connected => Connection.Metadata.Get<TaskCompletionSource<bool>>("ConnectedTask").Task;
 
-        public TestClient()
+        public TestClient(bool synchronousCallbacks = false)
         {
-            var transportToApplication = Channel.CreateUnbounded<byte[]>();
-            var applicationToTransport = Channel.CreateUnbounded<byte[]>();
+            var options = new ChannelOptimizations { AllowSynchronousContinuations = synchronousCallbacks };
+            var transportToApplication = Channel.CreateUnbounded<byte[]>(options);
+            var applicationToTransport = Channel.CreateUnbounded<byte[]>(options);
 
             Application = ChannelConnection.Create<byte[]>(input: applicationToTransport, output: transportToApplication);
             _transport = ChannelConnection.Create<byte[]>(input: transportToApplication, output: applicationToTransport);
@@ -52,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public async Task<IList<HubMessage>> StreamAsync(string methodName, params object[] args)
         {
-            var invocationId = await SendInvocationAsync(methodName, args);
+            var invocationId = await SendInvocationAsync(methodName, nonBlocking: false, args: args);
 
             var messages = new List<HubMessage>();
             while (true)
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public async Task<CompletionMessage> InvokeAsync(string methodName, params object[] args)
         {
-            var invocationId = await SendInvocationAsync(methodName, args);
+            var invocationId = await SendInvocationAsync(methodName, nonBlocking: false, args: args);
 
             while (true)
             {
@@ -113,10 +114,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public async Task<string> SendInvocationAsync(string methodName, params object[] args)
+        public Task<string> SendInvocationAsync(string methodName, params object[] args)
+        {
+            return SendInvocationAsync(methodName, nonBlocking: false, args: args);
+        }
+
+        public async Task<string> SendInvocationAsync(string methodName, bool nonBlocking, params object[] args)
         {
             var invocationId = GetInvocationId();
-            var payload = _protocol.WriteToArray(new InvocationMessage(invocationId, nonBlocking: false, target: methodName, arguments: args));
+            var payload = _protocol.WriteToArray(new InvocationMessage(invocationId, nonBlocking, methodName, args));
 
             await Application.Out.WriteAsync(payload);
 

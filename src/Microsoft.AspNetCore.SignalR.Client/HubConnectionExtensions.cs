@@ -5,7 +5,6 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
-using static Microsoft.AspNetCore.SignalR.Client.HubConnection;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 throw new ArgumentNullException(nameof(hubConnection));
             }
 
-            return hubConnection.Invoke(methodName, typeof(object), cancellationToken, args);
+            return hubConnection.InvokeAsync(methodName, typeof(object), cancellationToken, args);
         }
 
         public static Task<TResult> Invoke<TResult>(this HubConnection hubConnection, string methodName, params object[] args) =>
@@ -34,7 +33,12 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 throw new ArgumentNullException(nameof(hubConnection));
             }
 
-            return (TResult)await hubConnection.Invoke(methodName, typeof(TResult), cancellationToken, args);
+            return (TResult)await hubConnection.InvokeAsync(methodName, typeof(TResult), cancellationToken, args);
+        }
+
+        public static Task SendAsync(this HubConnection hubConnection, string methodName, params object[] args)
+        {
+            return hubConnection.SendAsync(methodName, CancellationToken.None, args);
         }
 
         public static ReadableChannel<TResult> Stream<TResult>(this HubConnection hubConnection, string methodName, params object[] args) =>
