@@ -50,16 +50,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             _metadata = new Dictionary<string, string>();
         }
 
+        public override IDictionary<string, string> Metadata => _metadata;
+
         public override BoundAttributeDescriptorBuilder Name(string name)
         {
             _name = name;
-
-            return this;
-        }
-
-        public override BoundAttributeDescriptorBuilder PropertyName(string propertyName)
-        {
-            _metadata[TagHelperMetadata.Common.PropertyName] = propertyName;
 
             return this;
         }
@@ -153,9 +148,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return _displayName;
             }
 
+            var parentTypeName = _parent.GetTypeName();
+            var propertyName = this.GetPropertyName();
+
             if (_typeName != null &&
-                _metadata.ContainsKey(TagHelperMetadata.Common.PropertyName) &&
-                _parent.Metadata.ContainsKey(TagHelperMetadata.Common.TypeName))
+                propertyName != null &&
+                parentTypeName != null)
             {
                 // This looks like a normal c# property, so lets compute a display name based on that.
                 if (!PrimitiveDisplayTypeNameLookups.TryGetValue(_typeName, out var simpleTypeName))
@@ -163,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                     simpleTypeName = _typeName;
                 }
 
-                return $"{simpleTypeName} {_parent.Metadata[TagHelperMetadata.Common.TypeName]}.{_metadata[TagHelperMetadata.Common.PropertyName]}";
+                return $"{simpleTypeName} {parentTypeName}.{propertyName}";
             }
 
             return _name;

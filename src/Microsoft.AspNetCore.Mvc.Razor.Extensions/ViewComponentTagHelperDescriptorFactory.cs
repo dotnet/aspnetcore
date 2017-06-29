@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var typeName = $"__Generated__{shortName}ViewComponentTagHelper";
             var displayName = shortName + "ViewComponentTagHelper";
             var descriptorBuilder = TagHelperDescriptorBuilder.Create(ViewComponentTagHelperConventions.Kind, typeName, assemblyName)
-                .TypeName(typeName)
+                .SetTypeName(typeName)
                 .DisplayName(displayName);
             
             if (TryFindInvokeMethod(type, out var method, out var diagnostic))
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 {
                     attributeBuilder
                         .Name(lowerKebabName)
-                        .PropertyName(parameter.Name)
+                        .SetPropertyName(parameter.Name)
                         .TypeName(typeName)
                         .DisplayName($"{simpleName} {containingDisplayName}.{parameter.Name}");
 

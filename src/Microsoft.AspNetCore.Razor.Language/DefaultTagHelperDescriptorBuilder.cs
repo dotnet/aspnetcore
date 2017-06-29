@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             _metadata = new Dictionary<string, string>(StringComparer.Ordinal);
         }
 
-        public IDictionary<string, string> Metadata => _metadata;
+        public override IDictionary<string, string> Metadata => _metadata;
 
         public override TagHelperDescriptorBuilder BindAttribute(Action<BoundAttributeDescriptorBuilder> configure)
         {
@@ -114,17 +114,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             return this;
         }
 
-        public override TagHelperDescriptorBuilder TypeName(string typeName)
-        {
-            if (typeName == null)
-            {
-                throw new ArgumentNullException(nameof(typeName));
-            }
-
-            _metadata[TagHelperMetadata.Common.TypeName] = typeName;
-            return this;
-        }
-
         public override TagHelperDescriptor Build()
         {
             var validationDiagnostics = Validate();
@@ -192,7 +181,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return _displayName;
             }
 
-            return _metadata.ContainsKey(TagHelperMetadata.Common.TypeName) ? _metadata[TagHelperMetadata.Common.TypeName] : _name;
+            return this.GetTypeName() ?? _name;
         }
 
         private IEnumerable<RazorDiagnostic> Validate()

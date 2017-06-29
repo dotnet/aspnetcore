@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
@@ -41,6 +42,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             return new DefaultTagHelperDescriptorBuilder(kind, name, assemblyName);
         }
 
+        public abstract IDictionary<string, string> Metadata { get; }
+
         public abstract TagHelperDescriptorBuilder BindAttribute(Action<BoundAttributeDescriptorBuilder> configure);
 
         public abstract TagHelperDescriptorBuilder TagMatchingRule(Action<TagMatchingRuleDescriptorBuilder> configure);
@@ -56,8 +59,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract TagHelperDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic);
 
         public abstract TagHelperDescriptorBuilder DisplayName(string displayName);
-
-        public abstract TagHelperDescriptorBuilder TypeName(string typeName);
 
         public abstract TagHelperDescriptor Build();
 

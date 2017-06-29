@@ -58,7 +58,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var typeName = GetFullName(type);
             var assemblyName = type.ContainingAssembly.Identity.Name;
             var descriptorBuilder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
-            descriptorBuilder.TypeName(typeName);
+            descriptorBuilder.SetTypeName(typeName);
 
             AddBoundAttributes(type, descriptorBuilder);
             AddTagMatchingRules(type, descriptorBuilder);
@@ -210,7 +210,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var typeName = GetFullName(property.Type);
             builder
                 .TypeName(typeName)
-                .PropertyName(property.Name);
+                .SetPropertyName(property.Name);
 
             if (hasPublicSetter)
             {
