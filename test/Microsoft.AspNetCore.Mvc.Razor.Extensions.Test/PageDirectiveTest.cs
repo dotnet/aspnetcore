@@ -28,24 +28,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Null(pageDirective);
         }
 
-        [Fact(Skip = "https://github.com/aspnet/Razor/issues/1201")]
-        public void TryGetPageDirective_ReturnsFalse_IfPageDoesStartWithDirective()
-        {
-            // Arrange
-            var content = "Hello @page";
-            var sourceDocument = RazorSourceDocument.Create(content, "file");
-            var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var engine = CreateEngine();
-            var irDocument = CreateIRDocument(engine, codeDocument);
-
-            // Act
-            var result = PageDirective.TryGetPageDirective(irDocument, out var pageDirective);
-
-            // Assert
-            Assert.False(result);
-            Assert.Null(pageDirective);
-        }
-
         [Fact]
         public void TryGetPageDirective_ReturnsTrue_IfContentHasDirective()
         {
