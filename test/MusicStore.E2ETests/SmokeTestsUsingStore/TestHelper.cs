@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -6,21 +7,21 @@ using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace E2ETests
+namespace E2ETests.SmokeTestsUsingStore
 {
-    public class SmokeTestsUsingStoreHelper : LoggedTest
+    public class TestHelper : LoggedTest
     {
-        public SmokeTestsUsingStoreHelper(ITestOutputHelper output) : base(output)
+        public TestHelper(ITestOutputHelper output) : base(output)
         {
         }
 
-        public async Task SmokeTestSuite(ServerType serverType, bool isStoreInDefaultLocation, string storeDirectory)
+        public async Task SmokeTestSuite(ServerType serverType, string storeDirectory)
         {
             var targetFramework = "netcoreapp2.0";
             var testName = $"SmokeTestsUsingStore_{serverType}";
             using (StartLog(out var loggerFactory, testName))
             {
-                var logger = loggerFactory.CreateLogger(nameof(SmokeTestsUsingStoreHelper));
+                var logger = loggerFactory.CreateLogger(nameof(TestHelper));
                 var musicStoreDbName = DbUtils.GetUniqueName();
 
                 var deploymentParameters = new DeploymentParameters(
@@ -45,11 +46,8 @@ namespace E2ETests
                         MusicStoreConfig.ConnectionStringKey,
                         DbUtils.CreateConnectionString(musicStoreDbName)));
 
-                if (!isStoreInDefaultLocation)
-                {
-                    deploymentParameters.EnvironmentVariables.Add(
-                        new KeyValuePair<string, string>("DOTNET_SHARED_STORE", storeDirectory));
-                }
+                deploymentParameters.EnvironmentVariables.Add(
+                    new KeyValuePair<string, string>("DOTNET_SHARED_STORE", storeDirectory));
 
                 using (var deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory))
                 {

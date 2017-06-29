@@ -4,36 +4,31 @@ using Microsoft.Extensions.Logging.Testing;
 
 namespace E2ETests
 {
-    public class BaseStoreSetupFixture : IDisposable
+    public class StoreSetupFixture : IDisposable
     {
         private readonly IDisposable _logToken;
-        private readonly ILogger<BaseStoreSetupFixture> _logger;
+        private readonly ILogger<StoreSetupFixture> _logger;
         private readonly Store _store;
 
-        public BaseStoreSetupFixture(bool createInDefaultLocation, string loggerName)
+        public StoreSetupFixture()
         {
             if (!Store.IsEnabled())
             {
                 return;
             }
 
-            var testLog = AssemblyTestLog.ForAssembly(typeof(BaseStoreSetupFixture).Assembly);
+            var loggerName = nameof(StoreSetupFixture);
+            var testLog = AssemblyTestLog.ForAssembly(typeof(StoreSetupFixture).Assembly);
             ILoggerFactory loggerFactory;
             _logToken = testLog.StartTestLog(null, loggerName, out loggerFactory, testName: loggerName);
-            _logger = loggerFactory.CreateLogger<BaseStoreSetupFixture>();
-
-            CreateStoreInDefaultLocation = createInDefaultLocation;
-
-            _logger.LogInformation(
-                "Setting up store in the location: {location}",
-                createInDefaultLocation ? "default" : "custom");
-
+            _logger = loggerFactory.CreateLogger<StoreSetupFixture>();
+            
             _store = new Store(loggerFactory);
 
-            StoreDirectory = _store.CreateStore(createInDefaultLocation);
-        }
+            StoreDirectory = _store.CreateStore();
 
-        public bool CreateStoreInDefaultLocation { get; }
+            _logger.LogInformation($"Store was setup at {StoreDirectory}");
+        }
 
         public string StoreDirectory { get; }
 

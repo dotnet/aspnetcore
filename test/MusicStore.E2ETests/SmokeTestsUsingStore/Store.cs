@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Configuration;
 using NuGet.Packaging.Core;
@@ -29,9 +28,9 @@ namespace E2ETests
             _logger = loggerFactory.CreateLogger<Store>();
         }
 
-        public string CreateStore(bool createInDefaultLocation)
+        public string CreateStore()
         {
-            var storeParentDir = GetStoreParentDirectory(createInDefaultLocation);
+            var storeParentDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
 
             InstallStore(storeParentDir);
 
@@ -225,23 +224,6 @@ namespace E2ETests
                     throw new InvalidOperationException(message);
                 }
             }
-        }
-
-        private string GetStoreParentDirectory(bool createInDefaultLocation)
-        {
-            string storeParentDir;
-            if (createInDefaultLocation)
-            {
-                // On Windows: ..\.dotnet\x64\dotnet.exe
-                // On Linux  : ../.dotnet/dotnet
-                var dotnetDir = new FileInfo(DotNetMuxer.MuxerPath).Directory.FullName;
-                storeParentDir = dotnetDir;
-            }
-            else
-            {
-                storeParentDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-            }
-            return storeParentDir;
         }
     }
 }
