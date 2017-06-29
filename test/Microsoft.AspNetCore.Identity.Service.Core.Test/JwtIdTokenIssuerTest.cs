@@ -118,7 +118,6 @@ namespace Microsoft.AspNetCore.Identity.Service
         [InlineData("nonce", null, null)]
         [InlineData("nonce", "code", null)]
         [InlineData("nonce", "code", "accesstoken")]
-        [InlineData("nonce", "code", null)]
         [InlineData("nonce", null, "accesstoken")]
         public async Task JwtIdTokenIssuer_IncludesNonceAndTokenHashesWhenPresent(string nonce, string code, string accessToken)
         {
