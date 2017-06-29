@@ -1,0 +1,12 @@
+﻿  [
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Http.HttpContextFactory : Microsoft.AspNetCore.Http.IHttpContextFactory",
+      "MemberId": "public .ctor(Microsoft.Extensions.ObjectPool.ObjectPoolProvider poolProvider, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions> formOptions)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Http.HttpContextFactory : Microsoft.AspNetCore.Http.IHttpContextFactory",
+      "MemberId": "public .ctor(Microsoft.Extensions.ObjectPool.ObjectPoolProvider poolProvider, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions> formOptions, Microsoft.AspNetCore.Http.IHttpContextAccessor httpContextAccessor)",
+      "Kind": "Removal"
+    }
+  ]

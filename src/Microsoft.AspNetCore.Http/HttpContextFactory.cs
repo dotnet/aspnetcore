@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Http
@@ -13,17 +12,13 @@ namespace Microsoft.AspNetCore.Http
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly FormOptions _formOptions;
 
-        public HttpContextFactory(ObjectPoolProvider poolProvider, IOptions<FormOptions> formOptions)
-            : this(poolProvider, formOptions, httpContextAccessor: null)
+        public HttpContextFactory(IOptions<FormOptions> formOptions)
+            : this(formOptions, httpContextAccessor: null)
         {
         }
 
-        public HttpContextFactory(ObjectPoolProvider poolProvider, IOptions<FormOptions> formOptions, IHttpContextAccessor httpContextAccessor)
+        public HttpContextFactory(IOptions<FormOptions> formOptions, IHttpContextAccessor httpContextAccessor)
         {
-            if (poolProvider == null)
-            {
-                throw new ArgumentNullException(nameof(poolProvider));
-            }
             if (formOptions == null)
             {
                 throw new ArgumentNullException(nameof(formOptions));
