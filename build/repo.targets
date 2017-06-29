@@ -91,7 +91,6 @@
 
   <Target Name="PushPackages" DependsOnTargets="_FindDotNetPath">
     <Exec Command="$(DotNetPath) $(PackagePublisherNetCoreApp) -d $(CoherenceSignedDestinationDir)Packages -f $(PublishFeed)" />
-    <Exec Command="$(DotNetPath) $(PackagePublisherNetCoreApp) -d $(CoherenceSignedDestinationDir)PackageCache -f $(PublishFeed)" />
     <Exec Command="$(DotNetPath) $(PackagePublisherNetCoreApp) -d $(CoherenceSignedDestinationDir)OobPackages -f $(PublishFeed)" />
     <Exec Command="$(DotNetPath) $(PackagePublisherNetCoreApp) -d $(CoherenceDestinationDir)ext -f $(PublishFeed)" />
     <Exec Command="$(DotNetPath) $(PackagePublisherNetCoreApp) -d $(CoherenceDestinationDir)noship -f $(PublishFeed)" />
