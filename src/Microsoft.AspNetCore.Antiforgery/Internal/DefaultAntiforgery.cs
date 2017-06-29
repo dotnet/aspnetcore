@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var tokens = await _tokenStore.GetRequestTokensAsync(httpContext);
             if (tokens.CookieToken == null)
             {
-                _logger.MissingCookieToken(_options.CookieName);
+                _logger.MissingCookieToken(_options.Cookie.Name);
                 return false;
             }
 
@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             if (tokens.CookieToken == null)
             {
                 throw new AntiforgeryValidationException(
-                    Resources.FormatAntiforgery_CookieToken_MustBeProvided(_options.CookieName));
+                    Resources.FormatAntiforgery_CookieToken_MustBeProvided(_options.Cookie.Name));
             }
 
             if (tokens.RequestToken == null)
@@ -265,12 +265,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
         private void CheckSSLConfig(HttpContext context)
         {
-            if (_options.RequireSsl && !context.Request.IsHttps)
+            if (_options.Cookie.SecurePolicy == CookieSecurePolicy.Always && !context.Request.IsHttps)
             {
-                throw new InvalidOperationException(Resources.FormatAntiforgeryWorker_RequireSSL(
-                    nameof(AntiforgeryOptions),
-                    nameof(AntiforgeryOptions.RequireSsl),
-                    "true"));
+                throw new InvalidOperationException(Resources.FormatAntiforgery_RequiresSSL(
+                    string.Join(".", nameof(AntiforgeryOptions), nameof(AntiforgeryOptions.Cookie), nameof(CookieBuilder.SecurePolicy)),
+                    nameof(CookieSecurePolicy.Always)));
             }
         }
 

@@ -139,10 +139,6 @@
   <data name="AntiforgeryToken_UsernameMismatch" xml:space="preserve">
     <value>The provided antiforgery token was meant for user "{0}", but the current user is "{1}".</value>
   </data>
-  <data name="AntiforgeryWorker_RequireSSL" xml:space="preserve">
-    <value>The antiforgery system has the configuration value {0}.{1} = {2}, but the current request is not an SSL request.</value>
-    <comment>0 = nameof(AntiforgeryOptions), 1 = nameof(RequireSsl), 2 = bool.TrueString</comment>
-  </data>
   <data name="Antiforgery_CookieToken_IsInvalid" xml:space="preserve">
     <value>The antiforgery cookie token is invalid.</value>
   </data>
@@ -163,6 +159,9 @@
   </data>
   <data name="Antiforgery_RequestToken_MustBeProvided_Generic" xml:space="preserve">
     <value>The required antiforgery request token must be provided.</value>
+  </data>
+  <data name="Antiforgery_RequiresSSL" xml:space="preserve">
+    <value>The antiforgery system has the configuration value {optionName} = {value}, but the current request is not an SSL request.</value>
   </data>
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or empty.</value>

@@ -28,9 +28,12 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             // Arrange
             var httpContext = GetHttpContext();
-            var options = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions
             {
+#pragma warning disable CS0618
+                // obsolete property still forwards to correctly to the new API
                 RequireSsl = true
+#pragma warning restore CS0618
             };
             var antiforgery = GetAntiforgery(httpContext, options);
 
@@ -38,7 +41,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => antiforgery.ValidateRequestAsync(httpContext));
             Assert.Equal(
-                @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+                @"The antiforgery system has the configuration value AntiforgeryOptions.Cookie.SecurePolicy = Always, " +
                 "but the current request is not an SSL request.",
                 exception.Message);
         }
@@ -50,7 +53,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var httpContext = GetHttpContext();
             var options = new AntiforgeryOptions()
             {
-                RequireSsl = true
+                Cookie = { SecurePolicy = CookieSecurePolicy.Always }
             };
 
             var antiforgery = GetAntiforgery(httpContext, options);
@@ -59,7 +62,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(
                 () => antiforgery.IsRequestValidAsync(httpContext));
             Assert.Equal(
-                @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+                @"The antiforgery system has the configuration value AntiforgeryOptions.Cookie.SecurePolicy = Always, " +
                 "but the current request is not an SSL request.",
                 exception.Message);
         }
@@ -71,7 +74,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var httpContext = GetHttpContext();
             var options = new AntiforgeryOptions()
             {
-                RequireSsl = true
+                Cookie = { SecurePolicy = CookieSecurePolicy.Always }
             };
 
             var antiforgery = GetAntiforgery(httpContext, options);
@@ -80,7 +83,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var exception = Assert.Throws<InvalidOperationException>(
                 () => antiforgery.GetAndStoreTokens(httpContext));
             Assert.Equal(
-                 @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+                 @"The antiforgery system has the configuration value AntiforgeryOptions.Cookie.SecurePolicy = Always, " +
                  "but the current request is not an SSL request.",
                  exception.Message);
         }
@@ -92,7 +95,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var httpContext = GetHttpContext();
             var options = new AntiforgeryOptions()
             {
-                RequireSsl = true
+                Cookie = { SecurePolicy = CookieSecurePolicy.Always }
             };
 
             var antiforgery = GetAntiforgery(httpContext, options);
@@ -101,7 +104,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var exception = Assert.Throws<InvalidOperationException>(
                 () => antiforgery.GetTokens(httpContext));
             Assert.Equal(
-                 @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+                 @"The antiforgery system has the configuration value AntiforgeryOptions.Cookie.SecurePolicy = Always, " +
                  "but the current request is not an SSL request.",
                  exception.Message);
         }
@@ -113,7 +116,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var httpContext = GetHttpContext();
             var options = new AntiforgeryOptions()
             {
-                RequireSsl = true
+                Cookie = { SecurePolicy = CookieSecurePolicy.Always }
             };
 
             var antiforgery = GetAntiforgery(httpContext, options);
@@ -122,7 +125,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var exception = Assert.Throws<InvalidOperationException>(
                 () => antiforgery.SetCookieTokenAndHeader(httpContext));
             Assert.Equal(
-                 @"The antiforgery system has the configuration value AntiforgeryOptions.RequireSsl = true, " +
+                 @"The antiforgery system has the configuration value AntiforgeryOptions.Cookie.SecurePolicy = Always, " +
                  "but the current request is not an SSL request.",
                  exception.Message);
         }
@@ -745,7 +748,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Arrange
             var context = CreateMockContext(new AntiforgeryOptions()
             {
-                CookieName = "cookie-name",
+                Cookie = { Name = "cookie-name" },
                 FormFieldName = "form-field-name",
                 HeaderName = null,
             });
@@ -769,7 +772,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Arrange
             var context = CreateMockContext(new AntiforgeryOptions()
             {
-                CookieName = "cookie-name",
+                Cookie = { Name = "cookie-name" },
                 FormFieldName = "form-field-name",
                 HeaderName = null,
             });
@@ -793,7 +796,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Arrange
             var context = CreateMockContext(new AntiforgeryOptions()
             {
-                CookieName = "cookie-name",
+                Cookie = { Name = "cookie-name" },
                 FormFieldName = "form-field-name",
                 HeaderName = "header-name",
             });
@@ -819,7 +822,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Arrange
             var context = CreateMockContext(new AntiforgeryOptions()
             {
-                CookieName = "cookie-name",
+                Cookie = { Name = "cookie-name" },
                 FormFieldName = "form-field-name",
                 HeaderName = "header-name",
             });

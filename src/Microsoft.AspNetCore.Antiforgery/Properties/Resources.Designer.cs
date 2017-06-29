@@ -15,248 +15,224 @@ namespace Microsoft.AspNetCore.Antiforgery
         /// </summary>
         internal static string AntiforgeryTokenValidator_AuthenticatedUserWithoutUsername
         {
-            get { return GetString("AntiforgeryTokenValidator_AuthenticatedUserWithoutUsername"); }
+            get => GetString("AntiforgeryTokenValidator_AuthenticatedUserWithoutUsername");
         }
 
         /// <summary>
         /// The provided identity of type '{0}' is marked {1} = {2} but does not have a value for {3}. By default, the antiforgery system requires that all authenticated identities have a unique {3}. If it is not possible to provide a unique {3} for this identity, consider extending {4} by overriding the {5} or a custom type that can provide some form of unique identifier for the current user.
         /// </summary>
         internal static string FormatAntiforgeryTokenValidator_AuthenticatedUserWithoutUsername(object p0, object p1, object p2, object p3, object p4, object p5)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryTokenValidator_AuthenticatedUserWithoutUsername"), p0, p1, p2, p3, p4, p5);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryTokenValidator_AuthenticatedUserWithoutUsername"), p0, p1, p2, p3, p4, p5);
 
         /// <summary>
         /// The provided antiforgery token failed a custom data check.
         /// </summary>
         internal static string AntiforgeryToken_AdditionalDataCheckFailed
         {
-            get { return GetString("AntiforgeryToken_AdditionalDataCheckFailed"); }
+            get => GetString("AntiforgeryToken_AdditionalDataCheckFailed");
         }
 
         /// <summary>
         /// The provided antiforgery token failed a custom data check.
         /// </summary>
         internal static string FormatAntiforgeryToken_AdditionalDataCheckFailed()
-        {
-            return GetString("AntiforgeryToken_AdditionalDataCheckFailed");
-        }
+            => GetString("AntiforgeryToken_AdditionalDataCheckFailed");
 
         /// <summary>
         /// The provided antiforgery token was meant for a different claims-based user than the current user.
         /// </summary>
         internal static string AntiforgeryToken_ClaimUidMismatch
         {
-            get { return GetString("AntiforgeryToken_ClaimUidMismatch"); }
+            get => GetString("AntiforgeryToken_ClaimUidMismatch");
         }
 
         /// <summary>
         /// The provided antiforgery token was meant for a different claims-based user than the current user.
         /// </summary>
         internal static string FormatAntiforgeryToken_ClaimUidMismatch()
-        {
-            return GetString("AntiforgeryToken_ClaimUidMismatch");
-        }
+            => GetString("AntiforgeryToken_ClaimUidMismatch");
 
         /// <summary>
         /// The antiforgery token could not be decrypted.
         /// </summary>
         internal static string AntiforgeryToken_DeserializationFailed
         {
-            get { return GetString("AntiforgeryToken_DeserializationFailed"); }
+            get => GetString("AntiforgeryToken_DeserializationFailed");
         }
 
         /// <summary>
         /// The antiforgery token could not be decrypted.
         /// </summary>
         internal static string FormatAntiforgeryToken_DeserializationFailed()
-        {
-            return GetString("AntiforgeryToken_DeserializationFailed");
-        }
+            => GetString("AntiforgeryToken_DeserializationFailed");
 
         /// <summary>
         /// The antiforgery cookie token and request token do not match.
         /// </summary>
         internal static string AntiforgeryToken_SecurityTokenMismatch
         {
-            get { return GetString("AntiforgeryToken_SecurityTokenMismatch"); }
+            get => GetString("AntiforgeryToken_SecurityTokenMismatch");
         }
 
         /// <summary>
         /// The antiforgery cookie token and request token do not match.
         /// </summary>
         internal static string FormatAntiforgeryToken_SecurityTokenMismatch()
-        {
-            return GetString("AntiforgeryToken_SecurityTokenMismatch");
-        }
+            => GetString("AntiforgeryToken_SecurityTokenMismatch");
 
         /// <summary>
         /// Validation of the provided antiforgery token failed. The cookie token and the request token were swapped.
         /// </summary>
         internal static string AntiforgeryToken_TokensSwapped
         {
-            get { return GetString("AntiforgeryToken_TokensSwapped"); }
+            get => GetString("AntiforgeryToken_TokensSwapped");
         }
 
         /// <summary>
         /// Validation of the provided antiforgery token failed. The cookie token and the request token were swapped.
         /// </summary>
         internal static string FormatAntiforgeryToken_TokensSwapped()
-        {
-            return GetString("AntiforgeryToken_TokensSwapped");
-        }
+            => GetString("AntiforgeryToken_TokensSwapped");
 
         /// <summary>
         /// The provided antiforgery token was meant for user "{0}", but the current user is "{1}".
         /// </summary>
         internal static string AntiforgeryToken_UsernameMismatch
         {
-            get { return GetString("AntiforgeryToken_UsernameMismatch"); }
+            get => GetString("AntiforgeryToken_UsernameMismatch");
         }
 
         /// <summary>
         /// The provided antiforgery token was meant for user "{0}", but the current user is "{1}".
         /// </summary>
         internal static string FormatAntiforgeryToken_UsernameMismatch(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryToken_UsernameMismatch"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryToken_UsernameMismatch"), p0, p1);
 
         /// <summary>
-        /// The antiforgery system has the configuration value {0}.{1} = {2}, but the current request is not an SSL request.
-        /// </summary>
-        internal static string AntiforgeryWorker_RequireSSL
-        {
-            get { return GetString("AntiforgeryWorker_RequireSSL"); }
-        }
-
-        /// <summary>
-        /// The antiforgery system has the configuration value {0}.{1} = {2}, but the current request is not an SSL request.
-        /// </summary>
-        internal static string FormatAntiforgeryWorker_RequireSSL(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("AntiforgeryWorker_RequireSSL"), p0, p1, p2);
-        }
-
-        /// <summary>
-        /// The required antiforgery cookie "{0}" is not present.
+        /// The antiforgery cookie token is invalid.
         /// </summary>
         internal static string Antiforgery_CookieToken_IsInvalid
         {
-            get { return GetString("Antiforgery_CookieToken_IsInvalid"); }
+            get => GetString("Antiforgery_CookieToken_IsInvalid");
         }
+
+        /// <summary>
+        /// The antiforgery cookie token is invalid.
+        /// </summary>
+        internal static string FormatAntiforgery_CookieToken_IsInvalid()
+            => GetString("Antiforgery_CookieToken_IsInvalid");
 
         /// <summary>
         /// The required antiforgery cookie "{0}" is not present.
         /// </summary>
         internal static string Antiforgery_CookieToken_MustBeProvided
         {
-            get { return GetString("Antiforgery_CookieToken_MustBeProvided"); }
+            get => GetString("Antiforgery_CookieToken_MustBeProvided");
         }
 
         /// <summary>
         /// The required antiforgery cookie "{0}" is not present.
         /// </summary>
         internal static string FormatAntiforgery_CookieToken_MustBeProvided(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Antiforgery_CookieToken_MustBeProvided"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Antiforgery_CookieToken_MustBeProvided"), p0);
 
         /// <summary>
         /// The required antiforgery cookie token must be provided.
         /// </summary>
         internal static string Antiforgery_CookieToken_MustBeProvided_Generic
         {
-            get { return GetString("Antiforgery_CookieToken_MustBeProvided_Generic"); }
+            get => GetString("Antiforgery_CookieToken_MustBeProvided_Generic");
         }
 
         /// <summary>
         /// The required antiforgery cookie token must be provided.
         /// </summary>
         internal static string FormatAntiforgery_CookieToken_MustBeProvided_Generic()
-        {
-            return GetString("Antiforgery_CookieToken_MustBeProvided_Generic");
-        }
+            => GetString("Antiforgery_CookieToken_MustBeProvided_Generic");
 
         /// <summary>
         /// The required antiforgery form field "{0}" is not present.
         /// </summary>
         internal static string Antiforgery_FormToken_MustBeProvided
         {
-            get { return GetString("Antiforgery_FormToken_MustBeProvided"); }
+            get => GetString("Antiforgery_FormToken_MustBeProvided");
         }
 
         /// <summary>
         /// The required antiforgery form field "{0}" is not present.
         /// </summary>
         internal static string FormatAntiforgery_FormToken_MustBeProvided(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Antiforgery_FormToken_MustBeProvided"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Antiforgery_FormToken_MustBeProvided"), p0);
 
         /// <summary>
         /// The required antiforgery header value "{0}" is not present.
         /// </summary>
         internal static string Antiforgery_HeaderToken_MustBeProvided
         {
-            get { return GetString("Antiforgery_HeaderToken_MustBeProvided"); }
+            get => GetString("Antiforgery_HeaderToken_MustBeProvided");
         }
 
         /// <summary>
         /// The required antiforgery header value "{0}" is not present.
         /// </summary>
         internal static string FormatAntiforgery_HeaderToken_MustBeProvided(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Antiforgery_HeaderToken_MustBeProvided"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Antiforgery_HeaderToken_MustBeProvided"), p0);
 
         /// <summary>
         /// The required antiforgery request token was not provided in either form field "{0}" or header value "{1}".
         /// </summary>
         internal static string Antiforgery_RequestToken_MustBeProvided
         {
-            get { return GetString("Antiforgery_RequestToken_MustBeProvided"); }
+            get => GetString("Antiforgery_RequestToken_MustBeProvided");
         }
 
         /// <summary>
         /// The required antiforgery request token was not provided in either form field "{0}" or header value "{1}".
         /// </summary>
         internal static string FormatAntiforgery_RequestToken_MustBeProvided(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Antiforgery_RequestToken_MustBeProvided"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Antiforgery_RequestToken_MustBeProvided"), p0, p1);
 
         /// <summary>
         /// The required antiforgery request token must be provided.
         /// </summary>
         internal static string Antiforgery_RequestToken_MustBeProvided_Generic
         {
-            get { return GetString("Antiforgery_RequestToken_MustBeProvided_Generic"); }
+            get => GetString("Antiforgery_RequestToken_MustBeProvided_Generic");
         }
 
         /// <summary>
         /// The required antiforgery request token must be provided.
         /// </summary>
         internal static string FormatAntiforgery_RequestToken_MustBeProvided_Generic()
+            => GetString("Antiforgery_RequestToken_MustBeProvided_Generic");
+
+        /// <summary>
+        /// The antiforgery system has the configuration value {optionName} = {value}, but the current request is not an SSL request.
+        /// </summary>
+        internal static string Antiforgery_RequiresSSL
         {
-            return GetString("Antiforgery_RequestToken_MustBeProvided_Generic");
+            get => GetString("Antiforgery_RequiresSSL");
         }
+
+        /// <summary>
+        /// The antiforgery system has the configuration value {optionName} = {value}, but the current request is not an SSL request.
+        /// </summary>
+        internal static string FormatAntiforgery_RequiresSSL(object optionName, object value)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Antiforgery_RequiresSSL", "optionName", "value"), optionName, value);
 
         /// <summary>
         /// Value cannot be null or empty.
         /// </summary>
         internal static string ArgumentCannotBeNullOrEmpty
         {
-            get { return GetString("ArgumentCannotBeNullOrEmpty"); }
+            get => GetString("ArgumentCannotBeNullOrEmpty");
         }
 
         /// <summary>
         /// Value cannot be null or empty.
         /// </summary>
         internal static string FormatArgumentCannotBeNullOrEmpty()
-        {
-            return GetString("ArgumentCannotBeNullOrEmpty");
-        }
+            => GetString("ArgumentCannotBeNullOrEmpty");
 
         private static string GetString(string name, params string[] formatterNames)
         {

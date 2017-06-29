@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             Debug.Assert(httpContext != null);
 
-            var requestCookie = httpContext.Request.Cookies[_options.CookieName];
+            var requestCookie = httpContext.Request.Cookies[_options.Cookie.Name];
             if (string.IsNullOrEmpty(requestCookie))
             {
                 // unable to find the cookie.
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             Debug.Assert(httpContext != null);
 
-            var cookieToken = httpContext.Request.Cookies[_options.CookieName];
+            var cookieToken = httpContext.Request.Cookies[_options.Cookie.Name];
 
             // We want to delay reading the form as much as possible, for example in case of large file uploads,
             // request token could be part of the header.
@@ -69,22 +69,12 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             Debug.Assert(httpContext != null);
             Debug.Assert(token != null);
 
-            var options = new CookieOptions
-            {
-                HttpOnly = true,
-#pragma warning disable 618
-                Domain = _options.CookieDomain,
-#pragma warning restore 618
-                SameSite = SameSiteMode.Strict,
-                Secure = _options.RequireSsl
-            };
+            var options = _options.Cookie.Build(httpContext);
 
-#pragma warning disable 618
-            if (_options.CookiePath != null)
+            if (_options.Cookie.Path != null)
             {
-                options.Path = _options.CookiePath.ToString();
+                options.Path = _options.Cookie.Path.ToString();
             }
-#pragma warning restore 618
             else
             {
                 var pathBase = httpContext.Request.PathBase.ToString();
@@ -94,9 +84,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 }
             }
 
-            _options.ConfigureCookieOptions?.Invoke(httpContext, options);
-
-            httpContext.Response.Cookies.Append(_options.CookieName, token, options);
+            httpContext.Response.Cookies.Append(_options.Cookie.Name, token, options);
         }
     }
 }

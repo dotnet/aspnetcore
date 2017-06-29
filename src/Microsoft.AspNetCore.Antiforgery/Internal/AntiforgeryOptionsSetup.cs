@@ -18,10 +18,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
         public static void ConfigureOptions(AntiforgeryOptions options, DataProtectionOptions dataProtectionOptions)
         {
-            if (options.CookieName == null)
+            if (options.Cookie.Name == null)
             {
                 var applicationId = dataProtectionOptions.ApplicationDiscriminator ?? string.Empty;
-                options.CookieName = AntiforgeryOptions.DefaultCookiePrefix + ComputeCookieName(applicationId);
+                options.Cookie.Name = AntiforgeryOptions.DefaultCookiePrefix + ComputeCookieName(applicationId);
             }
         }
 

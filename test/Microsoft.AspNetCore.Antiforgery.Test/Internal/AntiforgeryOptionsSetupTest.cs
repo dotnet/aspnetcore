@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var options = services.GetRequiredService<IOptions<AntiforgeryOptions>>();
 
             // Act
-            var cookieName = options.Value.CookieName;
+            var cookieName = options.Value.Cookie.Name;
 
             // Assert
             Assert.Equal(expectedCookieName, cookieName);
@@ -41,8 +41,8 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var serviceCollection = new ServiceCollection();
             serviceCollection.Configure<AntiforgeryOptions>(o =>
             {
-                Assert.Null(o.CookieName);
-                o.CookieName = "antiforgery";
+                Assert.Null(o.Cookie.Name);
+                o.Cookie.Name = "antiforgery";
             });
             serviceCollection.AddAntiforgery();
             serviceCollection
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var options = services.GetRequiredService<IOptions<AntiforgeryOptions>>();
 
             // Act
-            var cookieName = options.Value.CookieName;
+            var cookieName = options.Value.Cookie.Name;
 
             // Assert
             Assert.Equal("antiforgery", cookieName);

@@ -21,9 +21,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             // Arrange
             var httpContext = GetHttpContext(new RequestCookieCollection());
-            var options = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions
             {
-                CookieName = _cookieName
+                Cookie = { Name = _cookieName }
             };
 
             var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         {
             // Arrange
             var httpContext = GetHttpContext(_cookieName, string.Empty);
-            var options = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions
             {
-                CookieName = _cookieName
+                Cookie = { Name = _cookieName }
             };
 
             var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
@@ -61,9 +61,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var expectedToken = "valid-value";
             var httpContext = GetHttpContext(_cookieName, expectedToken);
 
-            var options = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions
             {
-                CookieName = _cookieName
+                Cookie = { Name = _cookieName }
             };
 
             var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
@@ -82,9 +82,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var httpContext = GetHttpContext(new RequestCookieCollection());
             httpContext.Request.Form = FormCollection.Empty;
 
-            var options = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions
             {
-                CookieName = "cookie-name",
+                Cookie = { Name = "cookie-name" },
                 FormFieldName = "form-field-name",
             };
 
@@ -110,9 +110,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             }); // header value has priority.
             httpContext.Request.Headers.Add("header-name", "header-value");
 
-            var options = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions
             {
-                CookieName = "cookie-name",
+                Cookie = { Name = "cookie-name" },
                 FormFieldName = "form-field-name",
                 HeaderName = "header-name",
             };
@@ -138,9 +138,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
                 { "form-field-name", "form-value" },
             });
 
-            var options = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions
             {
-                CookieName = "cookie-name",
+                Cookie = { Name = "cookie-name" },
                 FormFieldName = "form-field-name",
                 HeaderName = "header-name",
             };
@@ -166,9 +166,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Will not be accessed
             httpContext.Request.Form = null;
 
-            var options = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions
             {
-                CookieName = "cookie-name",
+                Cookie = { Name = "cookie-name" },
                 FormFieldName = "form-field-name",
                 HeaderName = "header-name",
             };
@@ -193,9 +193,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             // Will not be accessed
             httpContext.Request.Form = null;
 
-            var options = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions
             {
-                CookieName = "cookie-name",
+                Cookie = { Name = "cookie-name" },
                 FormFieldName = "form-field-name",
                 HeaderName = "header-name",
             };
@@ -218,9 +218,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext.Request.ContentType = "application/x-www-form-urlencoded";
             httpContext.Request.Form = FormCollection.Empty;
 
-            var options = new AntiforgeryOptions()
+            var options = new AntiforgeryOptions
             {
-                CookieName = "cookie-name",
+                Cookie = { Name = "cookie-name" },
                 FormFieldName = "form-field-name",
                 HeaderName = "header-name",
             };
@@ -236,9 +236,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Theory]
-        [InlineData(true, true)]
-        [InlineData(false, null)]
-        public void SaveCookieToken(bool requireSsl, bool? expectedCookieSecureFlag)
+        [InlineData(CookieSecurePolicy.Always, true)]
+        [InlineData(CookieSecurePolicy.None, null)]
+        public void SaveCookieToken(CookieSecurePolicy policy, bool? expectedCookieSecureFlag)
         {
             // Arrange
             var token = "serialized-value";
@@ -255,8 +255,11 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             var options = new AntiforgeryOptions()
             {
-                CookieName = _cookieName,
-                RequireSsl = requireSsl
+                Cookie =
+                {
+                    Name = _cookieName,
+                    SecurePolicy = policy
+                },
             };
 
             var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
@@ -294,8 +297,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext
                 .SetupGet(hc => hc.Request.Path)
                 .Returns("/index.html");
-            var options = new AntiforgeryOptions();
-            options.CookieName = _cookieName;
+            var options = new AntiforgeryOptions
+            {
+                Cookie = { Name = _cookieName }
+            };
             var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
 
             // Act
@@ -328,9 +333,14 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext
                 .SetupGet(hc => hc.Request.Path)
                 .Returns("/index.html");
-            var options = new AntiforgeryOptions();
-            options.CookieName = _cookieName;
-            options.ConfigureCookieOptions = (context, cookieOptions) => cookieOptions.Path = expectedCookiePath;
+            var options = new AntiforgeryOptions
+            {
+                Cookie =
+                {
+                    Name = _cookieName,
+                    Path = expectedCookiePath
+                }
+            };
             var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
 
             // Act
@@ -362,9 +372,14 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             httpContext
                 .SetupGet(hc => hc.Request.Path)
                 .Returns("/index.html");
-            var options = new AntiforgeryOptions();
-            options.CookieName = _cookieName;
-            options.ConfigureCookieOptions = (context, cookieOptions) => cookieOptions.Domain = expectedCookieDomain;
+            var options = new AntiforgeryOptions
+            {
+                Cookie =
+                {
+                    Name = _cookieName,
+                    Domain = expectedCookieDomain
+                }
+            };
             var tokenStore = new DefaultAntiforgeryTokenStore(new TestOptionsManager(options));
 
             // Act
@@ -407,10 +422,10 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             public void Append(string key, string value, CookieOptions options)
             {
-                this.Key = key;
-                this.Value = value;
-                this.Options = options;
-                this.Count++;
+                Key = key;
+                Value = value;
+                Options = options;
+                Count++;
             }
 
             public void Append(string key, string value)
