@@ -237,4 +237,7 @@
   <data name="UnexpectedDirectiveKind" xml:space="preserve">
     <value>Unreachable code. This can happen when a new {0} is introduced.</value>
   </data>
+  <data name="RenderingContextRequiresDelegate" xml:space="preserve">
+    <value>The '{0}' requires a '{1}' delegate to be set.</value>
+  </data>
 </root>

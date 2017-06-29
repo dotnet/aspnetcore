@@ -20,9 +20,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public string FormatInvalidIndexerAssignmentMethodName { get; set; } = "InvalidTagHelperIndexerAssignment";
 
-        public void WriteDeclarePreallocatedTagHelperHtmlAttribute(CSharpRenderingContext context, DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode node)
+        public void WriteDeclarePreallocatedTagHelperHtmlAttribute(CodeRenderingContext context, DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode node)
         {
-            context.Writer
+            context.CodeWriter
                 .Write("private static readonly global::")
                 .Write(TagHelperAttributeTypeName)
                 .Write(" ")
@@ -33,11 +33,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             if (node.AttributeStructure == AttributeStructure.Minimized)
             {
-                context.Writer.WriteEndMethodInvocation();
+                context.CodeWriter.WriteEndMethodInvocation();
             }
             else
             {
-                context.Writer
+                context.CodeWriter
                     .WriteParameterSeparator()
                     .WriteStartNewObject("global::" + EncodedHtmlStringTypeName)
                     .WriteStringLiteral(node.Value)
@@ -48,17 +48,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
         }
 
-        public void WriteAddPreallocatedTagHelperHtmlAttribute(CSharpRenderingContext context, AddPreallocatedTagHelperHtmlAttributeIntermediateNode node)
+        public void WriteAddPreallocatedTagHelperHtmlAttribute(CodeRenderingContext context, AddPreallocatedTagHelperHtmlAttributeIntermediateNode node)
         {
-            context.Writer
+            context.CodeWriter
                 .WriteStartInstanceMethodInvocation(ExecutionContextVariableName, ExecutionContextAddHtmlAttributeMethodName)
                 .Write(node.VariableName)
                 .WriteEndMethodInvocation();
         }
 
-        public void WriteDeclarePreallocatedTagHelperAttribute(CSharpRenderingContext context, DeclarePreallocatedTagHelperAttributeIntermediateNode node)
+        public void WriteDeclarePreallocatedTagHelperAttribute(CodeRenderingContext context, DeclarePreallocatedTagHelperAttributeIntermediateNode node)
         {
-            context.Writer
+            context.CodeWriter
                 .Write("private static readonly global::")
                 .Write(TagHelperAttributeTypeName)
                 .Write(" ")
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .WriteEndMethodInvocation();
         }
 
-        public void WriteSetPreallocatedTagHelperProperty(CSharpRenderingContext context, SetPreallocatedTagHelperPropertyIntermediateNode node)
+        public void WriteSetPreallocatedTagHelperProperty(CodeRenderingContext context, SetPreallocatedTagHelperPropertyIntermediateNode node)
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
             var propertyName = node.Descriptor.GetPropertyName();
@@ -85,17 +85,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 context.TagHelperRenderingContext.VerifiedPropertyDictionaries.Add($"{node.TagHelperTypeName}.{propertyName}"))
             {
                 // Throw a reasonable Exception at runtime if the dictionary property is null.
-                context.Writer
+                context.CodeWriter
                     .Write("if (")
                     .Write(tagHelperVariableName)
                     .Write(".")
                     .Write(propertyName)
                     .WriteLine(" == null)");
-                using (context.Writer.BuildScope())
+                using (context.CodeWriter.BuildScope())
                 {
                     // System is in Host.NamespaceImports for all MVC scenarios. No need to generate FullName
                     // of InvalidOperationException type.
-                    context.Writer
+                    context.CodeWriter
                         .Write("throw ")
                         .WriteStartNewObject(nameof(InvalidOperationException))
                         .WriteStartMethodInvocation(FormatInvalidIndexerAssignmentMethodName)
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 }
             }
 
-            context.Writer
+            context.CodeWriter
                 .WriteStartAssignment(propertyValueAccessor)
                 .Write("(string)")
                 .Write(attributeValueAccessor)

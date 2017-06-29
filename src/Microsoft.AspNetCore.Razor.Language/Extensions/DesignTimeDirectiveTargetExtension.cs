@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         private const string DirectiveTokenHelperMethodName = "__RazorDirectiveTokenHelpers__";
         private const string TypeHelper = "__typeHelper";
 
-        public void WriteDesignTimeDirective(CSharpRenderingContext context, DesignTimeDirectiveIntermediateNode node)
+        public void WriteDesignTimeDirective(CodeRenderingContext context, DesignTimeDirectiveIntermediateNode node)
         {
-            context.Writer
+            context.CodeWriter
                 .WriteLine("#pragma warning disable 219")
                 .WriteLine($"private void {DirectiveTokenHelperMethodName}() {{");
 
@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 }
             }
 
-            context.Writer
+            context.CodeWriter
                 .WriteLine("}")
                 .WriteLine("#pragma warning restore 219");
         }
 
-        private void WriteDesignTimeDirectiveToken(CSharpRenderingContext context, DirectiveTokenIntermediateNode node)
+        private void WriteDesignTimeDirectiveToken(CodeRenderingContext context, DirectiveTokenIntermediateNode node)
         {
             var tokenKind = node.Descriptor.Kind;
             if (!node.Source.HasValue ||
@@ -45,14 +45,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
 
             // Wrap the directive token in a lambda to isolate variable names.
-            context.Writer
+            context.CodeWriter
                 .Write("((")
                 .Write(typeof(Action).FullName)
                 .Write(")(");
-            using (context.Writer.BuildLambda())
+            using (context.CodeWriter.BuildLambda())
             {
-                var originalIndent = context.Writer.CurrentIndent;
-                context.Writer.CurrentIndent = 0;
+                var originalIndent = context.CodeWriter.CurrentIndent;
+                context.CodeWriter.CurrentIndent = 0;
                 switch (tokenKind)
                 {
                     case DirectiveTokenKind.Type:
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         // {node.Content} __typeHelper = default({node.Content});
 
                         context.AddLineMappingFor(node);
-                        context.Writer
+                        context.CodeWriter
                             .Write(node.Content)
                             .Write(" ")
                             .WriteStartAssignment(TypeHelper)
@@ -73,13 +73,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
                         // global::System.Object {node.content} = null;
 
-                        context.Writer
+                        context.CodeWriter
                             .Write("global::")
                             .Write(typeof(object).FullName)
                             .Write(" ");
 
                         context.AddLineMappingFor(node);
-                        context.Writer
+                        context.CodeWriter
                             .Write(node.Content)
                             .WriteLine(" = null;");
                         break;
@@ -88,16 +88,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
                         // global::System.Object __typeHelper = nameof({node.Content});
 
-                        context.Writer
+                        context.CodeWriter
                             .Write("global::")
                             .Write(typeof(object).FullName)
                             .Write(" ")
                             .WriteStartAssignment(TypeHelper);
 
-                        context.Writer.Write("nameof(");
+                        context.CodeWriter.Write("nameof(");
 
                         context.AddLineMappingFor(node);
-                        context.Writer
+                        context.CodeWriter
                             .Write(node.Content)
                             .WriteLine(");");
                         break;
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
                         // global::System.Object __typeHelper = "{node.Content}";
 
-                        context.Writer
+                        context.CodeWriter
                             .Write("global::")
                             .Write(typeof(object).FullName)
                             .Write(" ")
@@ -115,23 +115,23 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         if (node.Content.StartsWith("\"", StringComparison.Ordinal))
                         {
                             context.AddLineMappingFor(node);
-                            context.Writer.Write(node.Content);
+                            context.CodeWriter.Write(node.Content);
                         }
                         else
                         {
-                            context.Writer.Write("\"");
+                            context.CodeWriter.Write("\"");
                             context.AddLineMappingFor(node);
-                            context.Writer
+                            context.CodeWriter
                                 .Write(node.Content)
                                 .Write("\"");
                         }
 
-                        context.Writer.WriteLine(";");
+                        context.CodeWriter.WriteLine(";");
                         break;
                 }
-                context.Writer.CurrentIndent = originalIndent;
+                context.CodeWriter.CurrentIndent = originalIndent;
             }
-            context.Writer.WriteLine("))();");
+            context.CodeWriter.WriteLine("))();");
         }
     }
 }

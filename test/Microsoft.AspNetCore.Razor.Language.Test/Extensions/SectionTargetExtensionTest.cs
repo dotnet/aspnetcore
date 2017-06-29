@@ -24,19 +24,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 SectionMethodName = "CreateSection"
             };
 
-            var context = new CSharpRenderingContext()
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new RuntimeNodeWriter();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options)
             { 
-                BasicWriter = new RuntimeBasicWriter(),
                 TagHelperWriter = new RuntimeTagHelperWriter(),
-                Writer = new CSharpCodeWriter(),
-                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
-            context.RenderChildren = (n) =>
+            context.SetRenderChildren((n) =>
             {
                 Assert.Same(node, n);
-                context.Writer.WriteLine(" var s = \"Inside\"");
-            };
+                context.CodeWriter.WriteLine(" var s = \"Inside\"");
+            });
 
             // Act
             extension.WriteSection(context, node);
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 );
 ";
 
-            var output = context.Writer.Builder.ToString();
+            var output = context.CodeWriter.Builder.ToString();
             Assert.Equal(expected, output);
         }
 
@@ -66,19 +66,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 SectionMethodName = "CreateSection"
             };
 
-            var context = new CSharpRenderingContext()
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new RuntimeNodeWriter();
+            var options = RazorCodeGenerationOptions.Create(false, 4, true, false);
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options)
             {
-                BasicWriter = new RuntimeBasicWriter(),
                 TagHelperWriter = new RuntimeTagHelperWriter(),
-                Writer = new CSharpCodeWriter(),
-                Options = RazorCodeGenerationOptions.Create(false, 4, true, false),
             };
 
-            context.RenderChildren = (n) =>
+            context.SetRenderChildren((n) =>
             {
                 Assert.Same(node, n);
-                context.Writer.WriteLine(" var s = \"Inside\"");
-            };
+                context.CodeWriter.WriteLine(" var s = \"Inside\"");
+            });
 
             // Act
             extension.WriteSection(context, node);
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 );
 ";
 
-            var output = context.Writer.Builder.ToString();
+            var output = context.CodeWriter.Builder.ToString();
             Assert.Equal(expected, output);
         }
     }

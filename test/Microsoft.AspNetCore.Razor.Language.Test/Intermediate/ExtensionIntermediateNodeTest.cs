@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 AcceptExtensionNode<TestExtensionIntermediateNode>(this, visitor);
             }
 
-            public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
+            public override void WriteNode(CodeTarget target, CodeRenderingContext context)
             {
                 throw new NotImplementedException();
             }

@@ -17,13 +17,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Arrange
             var node = new DeclareTagHelperFieldsIntermediateNode();
             var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer);
+            var context = GetCodeRenderingContext(writer);
 
             // Act
             writer.WriteDeclareTagHelperFields(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#line hidden
 #pragma warning disable 0414
@@ -57,13 +57,13 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeMana
             node.UsedTagHelperTypeNames.Add("MyTagHelper");
 
             var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer);
+            var context = GetCodeRenderingContext(writer);
 
             // Act
             writer.WriteDeclareTagHelperFields(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#line hidden
 #pragma warning disable 0414
@@ -96,8 +96,8 @@ private global::MyTagHelper __MyTagHelper = null;
             // Arrange
             var node = new TagHelperBodyIntermediateNode();
             var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer);
-            context.IdGenerator = () => "test";
+            var context = GetCodeRenderingContext(writer);
+            context.Items[CodeRenderingContext.SuppressUniqueIds] = "test";
             context.TagHelperRenderingContext = new TagHelperRenderingContext()
             {
                 TagName = "p",
@@ -108,7 +108,7 @@ private global::MyTagHelper __MyTagHelper = null;
             writer.WriteTagHelperBody(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"__tagHelperExecutionContext = __tagHelperScopeManager.Begin(""p"", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, ""test"", async() => {
     Render Children
@@ -128,13 +128,13 @@ private global::MyTagHelper __MyTagHelper = null;
                 TagHelperTypeName = "TestNamespace.MyTagHelper"
             };
             var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer);
+            var context = GetCodeRenderingContext(writer);
 
             // Act
             writer.WriteCreateTagHelper(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"__TestNamespace_MyTagHelper = CreateTagHelper<global::TestNamespace.MyTagHelper>();
 __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
@@ -149,13 +149,13 @@ __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
             // Arrange
             var node = new TagHelperIntermediateNode();
             var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer);
+            var context = GetCodeRenderingContext(writer);
 
             // Act
             writer.WriteTagHelper(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"Render Children
 await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
@@ -191,13 +191,13 @@ __tagHelperExecutionContext = __tagHelperScopeManager.End();
             var node = irDocument.Children.Last().Children[2] as AddTagHelperHtmlAttributeIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer, codeDocument);
+            var context = GetCodeRenderingContext(writer, codeDocument);
 
             // Act
             writer.WriteAddTagHelperHtmlAttribute(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"BeginWriteTagHelperAttribute();
 Render Children
@@ -229,13 +229,13 @@ __tagHelperExecutionContext.AddHtmlAttribute(""name"", Html.Raw(__tagHelperStrin
             var node = irDocument.Children.Last().Children[2] as AddTagHelperHtmlAttributeIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer, codeDocument);
+            var context = GetCodeRenderingContext(writer, codeDocument);
 
             // Act
             writer.WriteAddTagHelperHtmlAttribute(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"BeginWriteTagHelperAttribute();
 Render Children
@@ -267,13 +267,13 @@ __tagHelperExecutionContext.AddHtmlAttribute(""data-test"", Html.Raw(__tagHelper
             var node = irDocument.Children.Last().Children[2] as AddTagHelperHtmlAttributeIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer, codeDocument);
+            var context = GetCodeRenderingContext(writer, codeDocument);
 
             // Act
             writer.WriteAddTagHelperHtmlAttribute(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"BeginAddHtmlAttributeValues(__tagHelperExecutionContext, ""test"", 2, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 Render Children
@@ -311,13 +311,13 @@ EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             var node = irDocument.Children.Last().Children[2] as SetTagHelperPropertyIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer, codeDocument);
+            var context = GetCodeRenderingContext(writer, codeDocument);
 
             // Act
             writer.WriteSetTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
 
             // The attribute value is not rendered inline because we are not using the preallocated writer.
             Assert.Equal(
@@ -359,13 +359,13 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.Fo
             var node = irDocument.Children.Last().Children[2] as SetTagHelperPropertyIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer, codeDocument);
+            var context = GetCodeRenderingContext(writer, codeDocument);
 
             // Act
             writer.WriteSetTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#line 3 ""test.cshtml""
 __InputTagHelper.FooProp = 42;
@@ -407,13 +407,13 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.Fo
             var node = irDocument.Children.Last().Children[2] as SetTagHelperPropertyIntermediateNode;
 
             var writer = new RuntimeTagHelperWriter();
-            var context = GetCSharpRenderingContext(writer, codeDocument);
+            var context = GetCodeRenderingContext(writer, codeDocument);
 
             // Act
             writer.WriteSetTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"if (__InputTagHelper.FooProp == null)
 {
@@ -430,22 +430,20 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
                 ignoreLineEndingDifferences: true);
         }
 
-        private static CSharpRenderingContext GetCSharpRenderingContext(TagHelperWriter writer, RazorCodeDocument codeDocument = null)
+        private static CodeRenderingContext GetCodeRenderingContext(TagHelperWriter writer, RazorCodeDocument codeDocument = null)
         {
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new RuntimeNodeWriter();
             var options = RazorCodeGenerationOptions.CreateDefault();
-            var codeWriter = new CSharpCodeWriter();
-            var context = new CSharpRenderingContext()
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, codeDocument?.Source, options)
             {
-                Writer = codeWriter,
-                Options = options,
-                BasicWriter = new RuntimeBasicWriter(),
                 TagHelperWriter = writer,
-                TagHelperRenderingContext = new TagHelperRenderingContext(),
-                RenderChildren = n =>
-                {
-                    codeWriter.WriteLine("Render Children");
-                }
+                TagHelperRenderingContext = new TagHelperRenderingContext()
             };
+            context.SetRenderChildren(n =>
+            {
+                codeWriter.WriteLine("Render Children");
+            });
 
             return context;
         }

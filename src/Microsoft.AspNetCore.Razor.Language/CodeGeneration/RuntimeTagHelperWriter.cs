@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class RuntimeTagHelperWriter : TagHelperWriter
+    internal class RuntimeTagHelperWriter : TagHelperWriter
     {
         public virtual string WriteTagHelperOutputMethod { get; set; } = "Write";
 
@@ -68,26 +68,26 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public string FormatInvalidIndexerAssignmentMethodName { get; set; } = "InvalidTagHelperIndexerAssignment";
 
-        public override void WriteDeclareTagHelperFields(CSharpRenderingContext context, DeclareTagHelperFieldsIntermediateNode node)
+        public override void WriteDeclareTagHelperFields(CodeRenderingContext context, DeclareTagHelperFieldsIntermediateNode node)
         {
-            context.Writer.WriteLine("#line hidden");
+            context.CodeWriter.WriteLine("#line hidden");
 
             // Need to disable the warning "X is assigned to but never used." for the value buffer since
             // whether it's used depends on how a TagHelper is used.
-            context.Writer
+            context.CodeWriter
                 .WriteLine("#pragma warning disable 0414")
                 .Write("private ")
                 .WriteVariableDeclaration("string", StringValueBufferVariableName, value: null)
                 .WriteLine("#pragma warning restore 0414");
 
-            context.Writer
+            context.CodeWriter
             .Write("private ")
             .WriteVariableDeclaration(
                 ExecutionContextTypeName,
                 ExecutionContextVariableName,
                 value: null);
 
-            context.Writer
+            context.CodeWriter
             .Write("private ")
             .Write(RunnerTypeName)
             .Write(" ")
@@ -97,32 +97,32 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             .WriteLine("();");
 
             var backedScopeManageVariableName = "__backed" + ScopeManagerVariableName;
-            context.Writer
+            context.CodeWriter
                 .Write("private ")
                 .WriteVariableDeclaration(
                     ScopeManagerTypeName,
                     backedScopeManageVariableName,
                     value: null);
 
-            context.Writer
+            context.CodeWriter
             .Write("private ")
             .Write(ScopeManagerTypeName)
             .Write(" ")
             .WriteLine(ScopeManagerVariableName);
 
-            using (context.Writer.BuildScope())
+            using (context.CodeWriter.BuildScope())
             {
-                context.Writer.WriteLine("get");
-                using (context.Writer.BuildScope())
+                context.CodeWriter.WriteLine("get");
+                using (context.CodeWriter.BuildScope())
                 {
-                    context.Writer
+                    context.CodeWriter
                         .Write("if (")
                         .Write(backedScopeManageVariableName)
                         .WriteLine(" == null)");
 
-                    using (context.Writer.BuildScope())
+                    using (context.CodeWriter.BuildScope())
                     {
-                        context.Writer
+                        context.CodeWriter
                             .WriteStartAssignment(backedScopeManageVariableName)
                             .WriteStartNewObject(ScopeManagerTypeName)
                             .Write(StartTagHelperWritingScopeMethodName)
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                             .WriteEndMethodInvocation();
                     }
 
-                    context.Writer
+                    context.CodeWriter
                         .Write("return ")
                         .Write(backedScopeManageVariableName)
                         .WriteLine(";");
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             foreach (var tagHelperTypeName in node.UsedTagHelperTypeNames)
             {
                 var tagHelperVariableName = GetTagHelperVariableName(tagHelperTypeName);
-                context.Writer
+                context.CodeWriter
                     .Write("private global::")
                     .WriteVariableDeclaration(
                         tagHelperTypeName,
@@ -150,12 +150,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteTagHelper(CSharpRenderingContext context, TagHelperIntermediateNode node)
+        public override void WriteTagHelper(CodeRenderingContext context, TagHelperIntermediateNode node)
         {
             context.RenderChildren(node);
 
             // Execute tag helpers
-            context.Writer
+            context.CodeWriter
                 .Write("await ")
                 .WriteStartInstanceMethodInvocation(
                     RunnerVariableName,
@@ -165,23 +165,23 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var tagHelperOutputAccessor = $"{ExecutionContextVariableName}.{ExecutionContextOutputPropertyName}";
 
-            context.Writer
+            context.CodeWriter
                 .Write("if (!")
                 .Write(tagHelperOutputAccessor)
                 .Write(".")
                 .Write(TagHelperOutputIsContentModifiedPropertyName)
                 .WriteLine(")");
 
-            using (context.Writer.BuildScope())
+            using (context.CodeWriter.BuildScope())
             {
-                context.Writer
+                context.CodeWriter
                     .Write("await ")
                     .WriteInstanceMethodInvocation(
                         ExecutionContextVariableName,
                         ExecutionContextSetOutputContentAsyncMethodName);
             }
 
-            context.Writer
+            context.CodeWriter
                 .WriteStartMethodInvocation(WriteTagHelperOutputMethod)
                 .Write(tagHelperOutputAccessor)
                 .WriteEndMethodInvocation()
@@ -191,56 +191,62 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     ScopeManagerEndMethodName);
         }
 
-        public override void WriteTagHelperBody(CSharpRenderingContext context, TagHelperBodyIntermediateNode node)
+        public override void WriteTagHelperBody(CodeRenderingContext context, TagHelperBodyIntermediateNode node)
         {
             // Call into the tag helper scope manager to start a new tag helper scope.
             // Also capture the value as the current execution context.
-            context.Writer
+            context.CodeWriter
                 .WriteStartAssignment(ExecutionContextVariableName)
                 .WriteStartInstanceMethodInvocation(
                     ScopeManagerVariableName,
                     ScopeManagerBeginMethodName);
 
+            var uniqueId = context.Items[CodeRenderingContext.SuppressUniqueIds]?.ToString();
+            if (uniqueId == null)
+            {
+                uniqueId = Guid.NewGuid().ToString("N");
+            }
+
             // Assign a unique ID for this instance of the source HTML tag. This must be unique
             // per call site, e.g. if the tag is on the view twice, there should be two IDs.
-            context.Writer.WriteStringLiteral(context.TagHelperRenderingContext.TagName)
+            context.CodeWriter.WriteStringLiteral(context.TagHelperRenderingContext.TagName)
                 .WriteParameterSeparator()
                 .Write(TagModeTypeName)
                 .Write(".")
                 .Write(context.TagHelperRenderingContext.TagMode.ToString())
                 .WriteParameterSeparator()
-                .WriteStringLiteral(context.IdGenerator())
+                .WriteStringLiteral(uniqueId)
                 .WriteParameterSeparator();
 
             // We remove and redirect writers so TagHelper authors can retrieve content.
-            using (context.Push(new RuntimeBasicWriter()))
+            using (context.Push(new RuntimeNodeWriter()))
             using (context.Push(new RuntimeTagHelperWriter()))
             {
-                using (context.Writer.BuildAsyncLambda())
+                using (context.CodeWriter.BuildAsyncLambda())
                 {
                     context.RenderChildren(node);
                 }
             }
 
-            context.Writer.WriteEndMethodInvocation();
+            context.CodeWriter.WriteEndMethodInvocation();
         }
 
-        public override void WriteCreateTagHelper(CSharpRenderingContext context, CreateTagHelperIntermediateNode node)
+        public override void WriteCreateTagHelper(CodeRenderingContext context, CreateTagHelperIntermediateNode node)
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
 
-            context.Writer
+            context.CodeWriter
                 .WriteStartAssignment(tagHelperVariableName)
                 .Write(CreateTagHelperMethodName)
                 .WriteLine($"<global::{node.TagHelperTypeName}>();");
 
-            context.Writer.WriteInstanceMethodInvocation(
+            context.CodeWriter.WriteInstanceMethodInvocation(
                 ExecutionContextVariableName,
                 ExecutionContextAddMethodName,
                 tagHelperVariableName);
         }
 
-        public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIntermediateNode node)
+        public override void WriteAddTagHelperHtmlAttribute(CodeRenderingContext context, AddTagHelperHtmlAttributeIntermediateNode node)
         {
             var attributeValueStyleParameter = $"{HtmlAttributeValueStyleTypeName}.{node.AttributeStructure}";
             var isConditionalAttributeValue = node.Children.Any(
@@ -261,7 +267,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                         child is CSharpCodeAttributeValueIntermediateNode ||
                         child is ExtensionIntermediateNode);
 
-                context.Writer
+                context.CodeWriter
                     .WriteStartMethodInvocation(BeginAddHtmlAttributeValuesMethodName)
                     .Write(ExecutionContextVariableName)
                     .WriteParameterSeparator()
@@ -272,12 +278,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     .Write(attributeValueStyleParameter)
                     .WriteEndMethodInvocation();
 
-                using (context.Push(new TagHelperHtmlAttributeRuntimeBasicWriter()))
+                using (context.Push(new TagHelperHtmlAttributeRuntimeNodeWriter()))
                 {
                     context.RenderChildren(node);
                 }
 
-                context.Writer
+                context.CodeWriter
                     .WriteMethodInvocation(
                         EndAddHtmlAttributeValuesMethodName,
                         ExecutionContextVariableName);
@@ -289,18 +295,18 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 // determine its final value.
 
                 // Attribute value is not plain text, must be buffered to determine its final value.
-                context.Writer.WriteMethodInvocation(BeginWriteTagHelperAttributeMethodName);
+                context.CodeWriter.WriteMethodInvocation(BeginWriteTagHelperAttributeMethodName);
 
                 // We're building a writing scope around the provided chunks which captures everything written from the
                 // page. Therefore, we do not want to write to any other buffer since we're using the pages buffer to
                 // ensure we capture all content that's written, directly or indirectly.
-                using (context.Push(new RuntimeBasicWriter()))
+                using (context.Push(new RuntimeNodeWriter()))
                 using (context.Push(new RuntimeTagHelperWriter()))
                 {
                     context.RenderChildren(node);
                 }
 
-                context.Writer
+                context.CodeWriter
                     .WriteStartAssignment(StringValueBufferVariableName)
                     .WriteMethodInvocation(EndWriteTagHelperAttributeMethodName)
                     .WriteStartInstanceMethodInvocation(
@@ -317,7 +323,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteSetTagHelperProperty(CSharpRenderingContext context, SetTagHelperPropertyIntermediateNode node)
+        public override void WriteSetTagHelperProperty(CodeRenderingContext context, SetTagHelperPropertyIntermediateNode node)
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
             var tagHelperRenderingContext = context.TagHelperRenderingContext;
@@ -328,17 +334,17 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 tagHelperRenderingContext.VerifiedPropertyDictionaries.Add($"{node.TagHelperTypeName}.{propertyName}"))
             {
                 // Throw a reasonable Exception at runtime if the dictionary property is null.
-                context.Writer
+                context.CodeWriter
                     .Write("if (")
                     .Write(tagHelperVariableName)
                     .Write(".")
                     .Write(propertyName)
                     .WriteLine(" == null)");
-                using (context.Writer.BuildScope())
+                using (context.CodeWriter.BuildScope())
                 {
                     // System is in Host.NamespaceImports for all MVC scenarios. No need to generate FullName
                     // of InvalidOperationException type.
-                    context.Writer
+                    context.CodeWriter
                         .Write("throw ")
                         .WriteStartNewObject(nameof(InvalidOperationException))
                         .WriteStartMethodInvocation(FormatInvalidIndexerAssignmentMethodName)
@@ -356,7 +362,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             if (tagHelperRenderingContext.RenderedBoundAttributes.TryGetValue(node.AttributeName, out var previousValueAccessor))
             {
-                context.Writer
+                context.CodeWriter
                     .WriteStartAssignment(propertyValueAccessor)
                     .Write(previousValueAccessor)
                     .WriteLine(";");
@@ -370,14 +376,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             if (node.Descriptor.IsStringProperty || (node.IsIndexerNameMatch && node.Descriptor.IsIndexerStringProperty))
             {
-                context.Writer.WriteMethodInvocation(BeginWriteTagHelperAttributeMethodName);
+                context.CodeWriter.WriteMethodInvocation(BeginWriteTagHelperAttributeMethodName);
 
-                using (context.Push(new LiteralRuntimeBasicWriter()))
+                using (context.Push(new LiteralRuntimeNodeWriter()))
                 {
                     context.RenderChildren(node);
                 }
 
-                context.Writer
+                context.CodeWriter
                     .WriteStartAssignment(StringValueBufferVariableName)
                     .WriteMethodInvocation(EndWriteTagHelperAttributeMethodName)
                     .WriteStartAssignment(propertyValueAccessor)
@@ -386,16 +392,16 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
             else
             {
-                using (context.Writer.BuildLinePragma(node.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value))
                 {
-                    context.Writer.WriteStartAssignment(propertyValueAccessor);
+                    context.CodeWriter.WriteStartAssignment(propertyValueAccessor);
 
                     if (node.Descriptor.IsEnum &&
                         node.Children.Count == 1 &&
                         node.Children.First() is IntermediateToken token &&
                         token.IsCSharp)
                     {
-                        context.Writer
+                        context.CodeWriter
                             .Write("global::")
                             .Write(node.Descriptor.TypeName)
                             .Write(".");
@@ -403,12 +409,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
                     RenderTagHelperAttributeInline(context, node, node.Source.Value);
 
-                    context.Writer.WriteLine(";");
+                    context.CodeWriter.WriteLine(";");
                 }
             }
 
             // We need to inform the context of the attribute value.
-            context.Writer
+            context.CodeWriter
                 .WriteStartInstanceMethodInvocation(
                     ExecutionContextVariableName,
                     ExecutionContextAddTagHelperAttributeMethodName)
@@ -421,7 +427,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         private void RenderTagHelperAttributeInline(
-            CSharpRenderingContext context,
+            CodeRenderingContext context,
             SetTagHelperPropertyIntermediateNode property,
             SourceSpan documentLocation)
         {
@@ -432,7 +438,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         private void RenderTagHelperAttributeInline(
-            CSharpRenderingContext context,
+            CodeRenderingContext context,
             SetTagHelperPropertyIntermediateNode property,
             IntermediateNode node,
             SourceSpan documentLocation)
@@ -446,7 +452,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
             else if (node is IntermediateToken token)
             {
-                context.Writer.Write(token.Content);
+                context.CodeWriter.Write(token.Content);
             }
             else if (node is CSharpCodeIntermediateNode)
             {

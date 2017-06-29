@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             AcceptExtensionNode<DesignTimeDirectiveIntermediateNode>(this, visitor);
         }
 
-        public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
+        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
         {
             if (target == null)
             {
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var extension = target.GetExtension<IDesignTimeDirectiveTargetExtension>();
             if (extension == null)
             {
-                context.ReportMissingExtension<IDesignTimeDirectiveTargetExtension>();
+                ReportMissingCodeTargetExtension<IDesignTimeDirectiveTargetExtension>(context);
                 return;
             }
 

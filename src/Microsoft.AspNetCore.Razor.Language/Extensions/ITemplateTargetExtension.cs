@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     public interface ITemplateTargetExtension : ICodeTargetExtension
     {
-        void WriteTemplate(CSharpRenderingContext context, TemplateIntermediateNode node);
+        void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node);
     }
 }

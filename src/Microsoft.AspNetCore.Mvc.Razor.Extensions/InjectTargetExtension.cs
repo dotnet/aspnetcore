@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     {
         private const string RazorInjectAttribute = "[global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]";
 
-        public void WriteInjectProperty(CSharpRenderingContext context, InjectIntermediateNode node)
+        public void WriteInjectProperty(CodeRenderingContext context, InjectIntermediateNode node)
         {
             if (context == null)
             {
@@ -26,16 +26,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             if (node.Source.HasValue)
             {
-                using (context.Writer.BuildLinePragma(node.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value))
                 {
-                    context.Writer
+                    context.CodeWriter
                         .WriteLine(RazorInjectAttribute)
                         .WriteLine(property);
                 }
             }
             else
             {
-                context.Writer
+                context.CodeWriter
                     .WriteLine(RazorInjectAttribute)
                     .WriteLine(property);
             }

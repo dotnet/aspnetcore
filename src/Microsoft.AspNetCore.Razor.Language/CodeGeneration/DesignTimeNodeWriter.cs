@@ -7,25 +7,25 @@ using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class DesignTimeBasicWriter : BasicWriter
+    public class DesignTimeNodeWriter : IntermediateNodeWriter
     {
-        public override void WriteUsingDirective(CSharpRenderingContext context, UsingDirectiveIntermediateNode node)
+        public override void WriteUsingDirective(CodeRenderingContext context, UsingDirectiveIntermediateNode node)
         {
             if (node.Source.HasValue)
             {
-                using (context.Writer.BuildLinePragma(node.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value))
                 {
                     context.AddLineMappingFor(node);
-                    context.Writer.WriteUsing(node.Content);
+                    context.CodeWriter.WriteUsing(node.Content);
                 }
             }
             else
             {
-                context.Writer.WriteUsing(node.Content);
+                context.CodeWriter.WriteUsing(node.Content);
             }
         }
 
-        public override void WriteCSharpExpression(CSharpRenderingContext context, CSharpExpressionIntermediateNode node)
+        public override void WriteCSharpExpression(CodeRenderingContext context, CSharpExpressionIntermediateNode node)
         {
             if (context == null)
             {
@@ -44,18 +44,18 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             if (node.Source != null)
             {
-                using (context.Writer.BuildLinePragma(node.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value))
                 {
                     var offset = DesignTimeDirectivePass.DesignTimeVariable.Length + " = ".Length;
-                    context.Writer.WritePadding(offset, node.Source, context);
-                    context.Writer.WriteStartAssignment(DesignTimeDirectivePass.DesignTimeVariable);
+                    context.CodeWriter.WritePadding(offset, node.Source, context);
+                    context.CodeWriter.WriteStartAssignment(DesignTimeDirectivePass.DesignTimeVariable);
 
                     for (var i = 0; i < node.Children.Count; i++)
                     {
                         if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                         {
                             context.AddLineMappingFor(token);
-                            context.Writer.Write(token.Content);
+                            context.CodeWriter.Write(token.Content);
                         }
                         else
                         {
@@ -64,17 +64,17 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                         }
                     }
 
-                    context.Writer.WriteLine(";");
+                    context.CodeWriter.WriteLine(";");
                 }
             }
             else
             {
-                context.Writer.WriteStartAssignment(DesignTimeDirectivePass.DesignTimeVariable);
+                context.CodeWriter.WriteStartAssignment(DesignTimeDirectivePass.DesignTimeVariable);
                 for (var i = 0; i < node.Children.Count; i++)
                 {
                     if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                     {
-                        context.Writer.Write(token.Content);
+                        context.CodeWriter.Write(token.Content);
                     }
                     else
                     {
@@ -82,11 +82,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                         context.RenderNode(node.Children[i]);
                     }
                 }
-                context.Writer.WriteLine(";");
+                context.CodeWriter.WriteLine(";");
             }
         }
 
-        public override void WriteCSharpCode(CSharpRenderingContext context, CSharpCodeIntermediateNode node)
+        public override void WriteCSharpCode(CodeRenderingContext context, CSharpCodeIntermediateNode node)
         {
             var isWhitespaceStatement = true;
             for (var i = 0; i < node.Children.Count; i++)
@@ -104,10 +104,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 if (!isWhitespaceStatement)
                 {
-                    linePragmaScope = context.Writer.BuildLinePragma(node.Source.Value);
+                    linePragmaScope = context.CodeWriter.BuildLinePragma(node.Source.Value);
                 }
 
-                context.Writer.WritePadding(0, node.Source.Value, context);
+                context.CodeWriter.WritePadding(0, node.Source.Value, context);
             }
             else if (isWhitespaceStatement)
             {
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                 {
                     context.AddLineMappingFor(token);
-                    context.Writer.Write(token.Content);
+                    context.CodeWriter.Write(token.Content);
                 }
                 else
                 {
@@ -135,21 +135,21 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
             else
             {
-                context.Writer.WriteLine();
+                context.CodeWriter.WriteLine();
             }
         }
 
-        public override void WriteHtmlAttribute(CSharpRenderingContext context, HtmlAttributeIntermediateNode node)
+        public override void WriteHtmlAttribute(CodeRenderingContext context, HtmlAttributeIntermediateNode node)
         {
             context.RenderChildren(node);
         }
 
-        public override void WriteHtmlAttributeValue(CSharpRenderingContext context, HtmlAttributeValueIntermediateNode node)
+        public override void WriteHtmlAttributeValue(CodeRenderingContext context, HtmlAttributeValueIntermediateNode node)
         {
             context.RenderChildren(node);
         }
 
-        public override void WriteCSharpExpressionAttributeValue(CSharpRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
+        public override void WriteCSharpExpressionAttributeValue(CodeRenderingContext context, CSharpExpressionAttributeValueIntermediateNode node)
         {
             if (context == null)
             {
@@ -169,18 +169,18 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var firstChild = node.Children[0];
             if (firstChild.Source != null)
             {
-                using (context.Writer.BuildLinePragma(firstChild.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(firstChild.Source.Value))
                 {
                     var offset = DesignTimeDirectivePass.DesignTimeVariable.Length + " = ".Length;
-                    context.Writer.WritePadding(offset, firstChild.Source, context);
-                    context.Writer.WriteStartAssignment(DesignTimeDirectivePass.DesignTimeVariable);
+                    context.CodeWriter.WritePadding(offset, firstChild.Source, context);
+                    context.CodeWriter.WriteStartAssignment(DesignTimeDirectivePass.DesignTimeVariable);
 
                     for (var i = 0; i < node.Children.Count; i++)
                     {
                         if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                         {
                             context.AddLineMappingFor(token);
-                            context.Writer.Write(token.Content);
+                            context.CodeWriter.Write(token.Content);
                         }
                         else
                         {
@@ -189,12 +189,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                         }
                     }
 
-                    context.Writer.WriteLine(";");
+                    context.CodeWriter.WriteLine(";");
                 }
             }
             else
             {
-                context.Writer.WriteStartAssignment(DesignTimeDirectivePass.DesignTimeVariable);
+                context.CodeWriter.WriteStartAssignment(DesignTimeDirectivePass.DesignTimeVariable);
                 for (var i = 0; i < node.Children.Count; i++)
                 {
                     if (node.Children[i] is IntermediateToken token && token.IsCSharp)
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                             context.AddLineMappingFor(token);
                         }
 
-                        context.Writer.Write(token.Content);
+                        context.CodeWriter.Write(token.Content);
                     }
                     else
                     {
@@ -212,11 +212,11 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                         context.RenderNode(node.Children[i]);
                     }
                 }
-                context.Writer.WriteLine(";");
+                context.CodeWriter.WriteLine(";");
             }
         }
 
-        public override void WriteCSharpCodeAttributeValue(CSharpRenderingContext context, CSharpCodeAttributeValueIntermediateNode node)
+        public override void WriteCSharpCodeAttributeValue(CodeRenderingContext context, CSharpCodeAttributeValueIntermediateNode node)
         {
             for (var i = 0; i < node.Children.Count; i++)
             {
@@ -229,10 +229,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     {
                         if (!isWhitespaceStatement)
                         {
-                            linePragmaScope = context.Writer.BuildLinePragma(token.Source.Value);
+                            linePragmaScope = context.CodeWriter.BuildLinePragma(token.Source.Value);
                         }
 
-                        context.Writer.WritePadding(0, token.Source.Value, context);
+                        context.CodeWriter.WritePadding(0, token.Source.Value, context);
                     }
                     else if (isWhitespaceStatement)
                     {
@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     }
 
                     context.AddLineMappingFor(token);
-                    context.Writer.Write(token.Content);
+                    context.CodeWriter.Write(token.Content);
 
                     if (linePragmaScope != null)
                     {
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     }
                     else
                     {
-                        context.Writer.WriteLine();
+                        context.CodeWriter.WriteLine();
                     }
                 }
                 else
@@ -260,17 +260,17 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteHtmlContent(CSharpRenderingContext context, HtmlContentIntermediateNode node)
+        public override void WriteHtmlContent(CodeRenderingContext context, HtmlContentIntermediateNode node)
         {
             // Do nothing
         }
 
-        public override void BeginWriterScope(CSharpRenderingContext context, string writer)
+        public override void BeginWriterScope(CodeRenderingContext context, string writer)
         {
             // Do nothing
         }
 
-        public override void EndWriterScope(CSharpRenderingContext context)
+        public override void EndWriterScope(CodeRenderingContext context)
         {
             // Do nothing
         }

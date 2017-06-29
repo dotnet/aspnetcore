@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public string SectionMethodName { get; set; } = DefaultSectionMethodName;
 
-        public void WriteSection(CSharpRenderingContext context, SectionIntermediateNode node)
+        public void WriteSection(CodeRenderingContext context, SectionIntermediateNode node)
         {
             // Quirk Alert!
             //
@@ -26,18 +26,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             // design time, at least until we have multi-targeting.
             var writerName = context.Options.DesignTime ? DefaultWriterName : string.Empty;
 
-            context.Writer
+            context.CodeWriter
                 .WriteStartMethodInvocation(SectionMethodName)
                 .Write("\"")
                 .Write(node.Name)
                 .Write("\", ");
 
-            using (context.Writer.BuildAsyncLambda(writerName))
+            using (context.CodeWriter.BuildAsyncLambda(writerName))
             {
                 context.RenderChildren(node);
             }
 
-            context.Writer.WriteEndMethodInvocation(endLine: true);
+            context.CodeWriter.WriteEndMethodInvocation(endLine: true);
         }
     }
 }

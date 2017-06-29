@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
-using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAssert;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
@@ -15,29 +13,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var node = new TemplateIntermediateNode();
-
             var extension = new TemplateTargetExtension()
             {
                 TemplateTypeName = "global::TestTemplate"
             };
 
-            var context = new CSharpRenderingContext()
-            { 
-                BasicWriter = new RuntimeBasicWriter()
-                {
-                    PushWriterMethod = "TestPushWriter",
-                    PopWriterMethod = "TestPopWriter"
-                },
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new RuntimeNodeWriter()
+            {
+                PushWriterMethod = "TestPushWriter",
+                PopWriterMethod = "TestPopWriter"
+            };
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options)
+            {
                 TagHelperWriter = new RuntimeTagHelperWriter(),
-                Writer = new CSharpCodeWriter(),
-                Options = RazorCodeGenerationOptions.CreateDefault(),
             };
 
-            context.RenderChildren = (n) =>
+            context.SetRenderChildren((n) =>
             {
                 Assert.Same(node, n);
-                context.Writer.WriteLine(" var s = \"Inside\"");
-            };
+                context.CodeWriter.WriteLine(" var s = \"Inside\"");
+            });
 
             // Act
             extension.WriteTemplate(context, node);
@@ -50,7 +47,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 }
 )";
 
-            var output = context.Writer.Builder.ToString();
+            var output = context.CodeWriter.Builder.ToString();
             Assert.Equal(expected, output);
         }
     }

@@ -10,7 +10,7 @@ using System.Text;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public sealed class CSharpCodeWriter
+    public sealed class CodeWriter
     {
         private const string InstanceMethodFormat = "{0}.{1}";
 
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public SourceLocation Location => new SourceLocation(_absoluteIndex, _currentLineIndex, _currentLineCharacterIndex);
 
         // Internal for testing.
-        internal CSharpCodeWriter Indent(int size)
+        internal CodeWriter Indent(int size)
         {
             if (IsAfterNewLine)
             {
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return this;
         }
 
-        public CSharpCodeWriter Write(string data)
+        public CodeWriter Write(string data)
         {
             if (data == null)
             {
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return Write(data, 0, data.Length);
         }
 
-        public CSharpCodeWriter Write(string data, int index, int count)
+        public CodeWriter Write(string data, int index, int count)
         {
             if (data == null || count == 0)
             {
@@ -147,7 +147,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return this;
         }
 
-        public CSharpCodeWriter WriteLine()
+        public CodeWriter WriteLine()
         {
             Builder.Append(NewLine);
 
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return this;
         }
 
-        public CSharpCodeWriter WriteLine(string data)
+        public CodeWriter WriteLine(string data)
         {
             return Write(data).WriteLine();
         }
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return _cache;
         }
 
-        public CSharpCodeWriter WritePadding(int offset, SourceSpan? span, CSharpRenderingContext context)
+        public CodeWriter WritePadding(int offset, SourceSpan? span, CodeRenderingContext context)
         {
             if (span == null)
             {
@@ -237,7 +237,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public CSharpCodeWriter WriteVariableDeclaration(string type, string name, string value)
+        public CodeWriter WriteVariableDeclaration(string type, string name, string value)
         {
             Write(type).Write(" ").Write(name);
             if (!string.IsNullOrEmpty(value))
@@ -254,27 +254,27 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return this;
         }
 
-        public CSharpCodeWriter WriteBooleanLiteral(bool value)
+        public CodeWriter WriteBooleanLiteral(bool value)
         {
             return Write(value.ToString().ToLowerInvariant());
         }
 
-        public CSharpCodeWriter WriteStartAssignment(string name)
+        public CodeWriter WriteStartAssignment(string name)
         {
             return Write(name).Write(" = ");
         }
 
-        public CSharpCodeWriter WriteParameterSeparator()
+        public CodeWriter WriteParameterSeparator()
         {
             return Write(", ");
         }
 
-        public CSharpCodeWriter WriteStartNewObject(string typeName)
+        public CodeWriter WriteStartNewObject(string typeName)
         {
             return Write("new ").Write(typeName).Write("(");
         }
 
-        public CSharpCodeWriter WriteStringLiteral(string literal)
+        public CodeWriter WriteStringLiteral(string literal)
         {
             if (literal.Length >= 256 && literal.Length <= 1500 && literal.IndexOf('\0') == -1)
             {
@@ -288,12 +288,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return this;
         }
 
-        public CSharpCodeWriter WriteUsing(string name)
+        public CodeWriter WriteUsing(string name)
         {
             return WriteUsing(name, endLine: true);
         }
 
-        public CSharpCodeWriter WriteUsing(string name, bool endLine)
+        public CodeWriter WriteUsing(string name, bool endLine)
         {
             Write("using ");
             Write(name);
@@ -311,8 +311,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         /// </summary>
         /// <param name="location">The location to generate the line pragma for.</param>
         /// <param name="file">The file to generate the line pragma for.</param>
-        /// <returns>The current instance of <see cref="CSharpCodeWriter"/>.</returns>
-        public CSharpCodeWriter WriteLineNumberDirective(SourceSpan location, string file)
+        /// <returns>The current instance of <see cref="CodeWriter"/>.</returns>
+        public CodeWriter WriteLineNumberDirective(SourceSpan location, string file)
         {
             if (location.FilePath != null)
             {
@@ -328,19 +328,19 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return Write("#line ").Write(lineNumberAsString).Write(" \"").Write(file).WriteLine("\"");
         }
 
-        public CSharpCodeWriter WriteStartMethodInvocation(string methodName)
+        public CodeWriter WriteStartMethodInvocation(string methodName)
         {
             Write(methodName);
 
             return Write("(");
         }
 
-        public CSharpCodeWriter WriteEndMethodInvocation()
+        public CodeWriter WriteEndMethodInvocation()
         {
             return WriteEndMethodInvocation(endLine: true);
         }
 
-        public CSharpCodeWriter WriteEndMethodInvocation(bool endLine)
+        public CodeWriter WriteEndMethodInvocation(bool endLine)
         {
             Write(")");
             if (endLine)
@@ -352,7 +352,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         // Writes a method invocation for the given instance name.
-        public CSharpCodeWriter WriteInstanceMethodInvocation(
+        public CodeWriter WriteInstanceMethodInvocation(
             string instanceName,
             string methodName,
             params string[] parameters)
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         // Writes a method invocation for the given instance name.
-        public CSharpCodeWriter WriteInstanceMethodInvocation(
+        public CodeWriter WriteInstanceMethodInvocation(
             string instanceName,
             string methodName,
             bool endLine,
@@ -393,7 +393,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 parameters);
         }
 
-        public CSharpCodeWriter WriteStartInstanceMethodInvocation(string instanceName, string methodName)
+        public CodeWriter WriteStartInstanceMethodInvocation(string instanceName, string methodName)
         {
             if (instanceName == null)
             {
@@ -409,7 +409,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 string.Format(CultureInfo.InvariantCulture, InstanceMethodFormat, instanceName, methodName));
         }
 
-        public CSharpCodeWriter WriteField(IList<string> modifiers, string typeName, string fieldName)
+        public CodeWriter WriteField(IList<string> modifiers, string typeName, string fieldName)
         {
             if (modifiers == null)
             {
@@ -441,19 +441,19 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             return this;
         }
 
-        public CSharpCodeWriter WriteMethodInvocation(string methodName, params string[] parameters)
+        public CodeWriter WriteMethodInvocation(string methodName, params string[] parameters)
         {
             return WriteMethodInvocation(methodName, endLine: true, parameters: parameters);
         }
 
-        public CSharpCodeWriter WriteMethodInvocation(string methodName, bool endLine, params string[] parameters)
+        public CodeWriter WriteMethodInvocation(string methodName, bool endLine, params string[] parameters)
         {
             return WriteStartMethodInvocation(methodName)
                 .Write(string.Join(", ", parameters))
                 .WriteEndMethodInvocation(endLine);
         }
 
-        public CSharpCodeWriter WriteAutoPropertyDeclaration(IList<string> modifiers, string typeName, string propertyName)
+        public CodeWriter WriteAutoPropertyDeclaration(IList<string> modifiers, string typeName, string propertyName)
         {
             if (modifiers == null)
             {
@@ -675,12 +675,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public struct CSharpCodeWritingScope : IDisposable
         {
-            private CSharpCodeWriter _writer;
+            private CodeWriter _writer;
             private bool _autoSpace;
             private int _tabSize;
             private int _startIndent;
 
-            public CSharpCodeWritingScope(CSharpCodeWriter writer, int tabSize = 4, bool autoSpace = true)
+            public CSharpCodeWritingScope(CodeWriter writer, int tabSize = 4, bool autoSpace = true)
             {
                 _writer = writer;
                 _autoSpace = true;
@@ -730,10 +730,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         private class LinePragmaWriter : IDisposable
         {
-            private readonly CSharpCodeWriter _writer;
+            private readonly CodeWriter _writer;
             private readonly int _startIndent;
 
-            public LinePragmaWriter(CSharpCodeWriter writer, SourceSpan documentLocation)
+            public LinePragmaWriter(CodeWriter writer, SourceSpan documentLocation)
             {
                 if (writer == null)
                 {

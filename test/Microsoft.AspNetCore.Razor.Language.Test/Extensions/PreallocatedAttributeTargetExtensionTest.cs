@@ -13,10 +13,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter()
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new RuntimeNodeWriter();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
 
             var node = new DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode()
             {
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteDeclarePreallocatedTagHelperHtmlAttribute(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute MyProp = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute(""Foo"", new global::Microsoft.AspNetCore.Html.HtmlString(""Bar""), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 ",
@@ -43,10 +43,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter()
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new RuntimeNodeWriter();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
 
             var node = new DeclarePreallocatedTagHelperHtmlAttributeIntermediateNode()
             {
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteDeclarePreallocatedTagHelperHtmlAttribute(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute _tagHelper1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute(""Foo"");
 ",
@@ -73,10 +73,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter()
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new RuntimeNodeWriter();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
 
             var node = new AddPreallocatedTagHelperHtmlAttributeIntermediateNode()
             {
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteAddPreallocatedTagHelperHtmlAttribute(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"__tagHelperExecutionContext.AddHtmlAttribute(_tagHelper1);
 ",
@@ -100,10 +100,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter()
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new RuntimeNodeWriter();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
 
             var node = new DeclarePreallocatedTagHelperAttributeIntermediateNode()
             {
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteDeclarePreallocatedTagHelperAttribute(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute _tagHelper1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute(""Foo"", ""Bar"", global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 ",
@@ -130,10 +130,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter()
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new RuntimeNodeWriter();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
 
             var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "FooTagHelper", "Test");
             tagHelperBuilder.TypeName("FooTagHelper");
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .Name("Foo")
                 .TypeName("System.String")
                 .PropertyName("FooProp");
-            
+
             var descriptor = builder.Build();
 
             var node = new SetPreallocatedTagHelperPropertyIntermediateNode()
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteSetPreallocatedTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"__FooTagHelper.FooProp = (string)_tagHelper1.Value;
 __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
@@ -173,9 +173,11 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var context = new CSharpRenderingContext()
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new RuntimeNodeWriter();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options)
             {
-                Writer = new CSharpCodeWriter(),
                 TagHelperRenderingContext = new TagHelperRenderingContext()
             };
 
@@ -205,7 +207,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
             extension.WriteSetPreallocatedTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"if (__FooTagHelper.FooProp == null)
 {

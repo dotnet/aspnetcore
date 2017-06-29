@@ -31,12 +31,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CreateWriter_CreatesDefaultDocumentWriter()
         {
             // Arrange
+            var codeWriter = new CodeWriter();
+            var codeDocument = TestRazorCodeDocument.Create(string.Empty);
             var options = RazorCodeGenerationOptions.CreateDefault();
-
+            var context = CodeRenderingContext.Create(codeDocument, options);
             var target = new DefaultCodeTarget(options, Enumerable.Empty<ICodeTargetExtension>());
 
             // Act
-            var writer = target.CreateWriter(new CSharpRenderingContext());
+            var writer = target.CreateWriter(context);
 
             // Assert
             Assert.IsType<DefaultDocumentWriter>(writer);

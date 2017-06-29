@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal(
                 "[global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
                 "public PropertyType PropertyName { get; private set; }" + Environment.NewLine,
-                context.Writer.Builder.ToString());
+                context.CodeWriter.Builder.ToString());
         }
 
         [Fact]
@@ -61,15 +61,17 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 "public PropertyType<ModelType> PropertyName { get; private set; }" + Environment.NewLine + Environment.NewLine +
                 "#line default" + Environment.NewLine +
                 "#line hidden" + Environment.NewLine,
-                context.Writer.Builder.ToString());
+                context.CodeWriter.Builder.ToString());
         }
 
-        private CSharpRenderingContext GetRenderingContext()
+        private CodeRenderingContext GetRenderingContext()
         {
-            return new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter()
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new RuntimeNodeWriter();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
+
+            return context;
         }
     }
 }

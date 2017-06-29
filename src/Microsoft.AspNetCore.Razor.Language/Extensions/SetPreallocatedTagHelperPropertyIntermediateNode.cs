@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             AcceptExtensionNode<SetPreallocatedTagHelperPropertyIntermediateNode>(this, visitor);
         }
 
-        public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
+        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
         {
             if (target == null)
             {
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var extension = target.GetExtension<IPreallocatedAttributeTargetExtension>();
             if (extension == null)
             {
-                context.ReportMissingExtension<IPreallocatedAttributeTargetExtension>();
+                ReportMissingCodeTargetExtension<IPreallocatedAttributeTargetExtension>(context);
                 return;
             }
 

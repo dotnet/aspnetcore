@@ -570,6 +570,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatUnexpectedDirectiveKind(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("UnexpectedDirectiveKind"), p0);
 
+        /// <summary>
+        /// The '{0}' requires a '{1}' delegate to be set.
+        /// </summary>
+        internal static string RenderingContextRequiresDelegate
+        {
+            get => GetString("RenderingContextRequiresDelegate");
+        }
+
+        /// <summary>
+        /// The '{0}' requires a '{1}' delegate to be set.
+        /// </summary>
+        internal static string FormatRenderingContextRequiresDelegate(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("RenderingContextRequiresDelegate"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

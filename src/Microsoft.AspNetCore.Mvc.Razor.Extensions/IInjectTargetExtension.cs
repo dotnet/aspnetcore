@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
     public interface IInjectTargetExtension : ICodeTargetExtension
     {
-        void WriteInjectProperty(CSharpRenderingContext context, InjectIntermediateNode node);
+        void WriteInjectProperty(CodeRenderingContext context, InjectIntermediateNode node);
     }
 }

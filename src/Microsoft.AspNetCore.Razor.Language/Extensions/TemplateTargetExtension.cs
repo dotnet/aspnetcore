@@ -11,25 +11,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public string TemplateTypeName { get; set; } = DefaultTemplateTypeName;
 
-        public void WriteTemplate(CSharpRenderingContext context, TemplateIntermediateNode node)
+        public void WriteTemplate(CodeRenderingContext context, TemplateIntermediateNode node)
         {
             const string ItemParameterName = "item";
             const string TemplateWriterName = "__razor_template_writer";
 
-            context.Writer
+            context.CodeWriter
                 .Write(ItemParameterName).Write(" => ")
                 .WriteStartNewObject(TemplateTypeName);
 
-            using (context.Writer.BuildAsyncLambda(TemplateWriterName))
+            using (context.CodeWriter.BuildAsyncLambda(TemplateWriterName))
             {
-                context.BasicWriter.BeginWriterScope(context, TemplateWriterName);
+                context.NodeWriter.BeginWriterScope(context, TemplateWriterName);
 
                 context.RenderChildren(node);
 
-                context.BasicWriter.EndWriterScope(context);
+                context.NodeWriter.EndWriterScope(context);
             }
 
-            context.Writer.WriteEndMethodInvocation(endLine: false);
+            context.CodeWriter.WriteEndMethodInvocation(endLine: false);
         }
     }
 }

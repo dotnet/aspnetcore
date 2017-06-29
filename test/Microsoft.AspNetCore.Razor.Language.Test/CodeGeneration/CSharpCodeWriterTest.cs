@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithWrite()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.Write("1234");
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithIndent()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.WriteLine();
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithWriteLine()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.WriteLine("1234");
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithWriteLine_WithNewLineInContent(string newLine)
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.WriteLine("1234" + newLine + "12");
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithWrite_WithNewlineInContent(string newLine)
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.Write("1234" + newLine + "123" + newLine + "12");
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithWrite_WithNewlineInContent_RepeatedN()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.Write("1234\n\n123");
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithWrite_WithMixedNewlineInContent()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.Write("1234\r123\r\n12\n1");
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithNewline_SplitAcrossWrites()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.Write("1234\r");
@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithTwoNewline_SplitAcrossWrites_R()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.Write("1234\r");
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithTwoNewline_SplitAcrossWrites_N()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.Write("1234\n");
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithTwoNewline_SplitAcrossWrites_Reversed()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.Write("1234\n");
@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void CSharpCodeWriter_TracksPosition_WithNewline_SplitAcrossWrites_AtBeginning()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.Write("\r");
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             // Arrange
             var filePath = "some-path";
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
             var expected = $"#line 5 \"{filePath}\"" + writer.NewLine;
             var sourceLocation = new SourceLocation(10, 4, 3);
             var mappingLocation = new SourceSpan(sourceLocation, 9);
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             // Arrange
             var filePath = "some-path";
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
             var expected = $"#line 5 \"{sourceLocationFilePath}\"" + writer.NewLine;
             var sourceLocation = new SourceLocation(sourceLocationFilePath, 10, 4, 3);
             var mappingLocation = new SourceSpan(sourceLocation, 9);
@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void WriteField_WritesFieldDeclaration()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.WriteField(new[] { "private" }, "global::System.String", "_myString");
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void WriteField_WithModifiers_WritesFieldDeclaration()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.WriteField(new[] { "private", "readonly", "static" }, "global::System.String", "_myString");
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void WriteAutoPropertyDeclaration_WritesPropertyDeclaration()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.WriteAutoPropertyDeclaration(new[] { "public" }, "global::System.String", "MyString");
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public void WriteAutoPropertyDeclaration_WithModifiers_WritesPropertyDeclaration()
         {
             // Arrange
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
 
             // Act
             writer.WriteAutoPropertyDeclaration(new[] { "public", "static" }, "global::System.String", "MyString");

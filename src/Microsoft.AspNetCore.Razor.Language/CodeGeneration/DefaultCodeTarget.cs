@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public ICodeTargetExtension[] Extensions { get; }
 
-        public override DocumentWriter CreateWriter(CSharpRenderingContext context)
+        public override DocumentWriter CreateWriter(CodeRenderingContext context)
         {
             return new DefaultDocumentWriter(this, context);
         }

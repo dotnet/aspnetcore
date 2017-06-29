@@ -14,10 +14,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter()
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new DesignTimeNodeWriter();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
 
             var node = new DesignTimeDirectiveIntermediateNode();
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteDesignTimeDirective(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#pragma warning disable 219
 private void __RazorDirectiveTokenHelpers__() {
@@ -41,11 +41,11 @@ private void __RazorDirectiveTokenHelpers__() {
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter(),
-                CodeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("test content", "test.cshtml"))
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new DesignTimeNodeWriter();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var sourceDocument = RazorSourceDocument.Create("test content", "test.cshtml");
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument, options);
 
             var node = new DesignTimeDirectiveIntermediateNode();
             var token = new DirectiveTokenIntermediateNode()
@@ -60,7 +60,7 @@ private void __RazorDirectiveTokenHelpers__() {
             extension.WriteDesignTimeDirective(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#pragma warning disable 219
 private void __RazorDirectiveTokenHelpers__() {
@@ -80,11 +80,11 @@ System.String __typeHelper = default(System.String);
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter(),
-                CodeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("test content", "test.cshtml"))
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new DesignTimeNodeWriter();
+            var sourceDocument = RazorSourceDocument.Create("test content", "test.cshtml");
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument, options);
 
             var node = new DesignTimeDirectiveIntermediateNode();
             var token = new DirectiveTokenIntermediateNode()
@@ -99,7 +99,7 @@ System.String __typeHelper = default(System.String);
             extension.WriteDesignTimeDirective(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#pragma warning disable 219
 private void __RazorDirectiveTokenHelpers__() {
@@ -119,11 +119,11 @@ global::System.Object __typeHelper = nameof(System.Collections.Generic);
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter(),
-                CodeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("test content", "test.cshtml"))
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new DesignTimeNodeWriter();
+            var sourceDocument = RazorSourceDocument.Create("test content", "test.cshtml");
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument, options);
 
             var node = new DesignTimeDirectiveIntermediateNode();
             var token = new DirectiveTokenIntermediateNode()
@@ -138,7 +138,7 @@ global::System.Object __typeHelper = nameof(System.Collections.Generic);
             extension.WriteDesignTimeDirective(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#pragma warning disable 219
 private void __RazorDirectiveTokenHelpers__() {
@@ -158,11 +158,11 @@ global::System.Object Foo = null;
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter(),
-                CodeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("test content", "test.cshtml"))
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new DesignTimeNodeWriter();
+            var sourceDocument = RazorSourceDocument.Create("test content", "test.cshtml");
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument, options);
 
             var node = new DesignTimeDirectiveIntermediateNode();
             var token = new DirectiveTokenIntermediateNode()
@@ -184,7 +184,7 @@ global::System.Object Foo = null;
             extension.WriteDesignTimeDirective(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#pragma warning disable 219
 private void __RazorDirectiveTokenHelpers__() {
@@ -208,11 +208,11 @@ global::System.Object __typeHelper = ""Value"";
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var context = new CSharpRenderingContext()
-            {
-                Writer = new CSharpCodeWriter(),
-                CodeDocument = RazorCodeDocument.Create(RazorSourceDocument.Create("test content", "test.cshtml"))
-            };
+            var codeWriter = new CodeWriter();
+            var nodeWriter = new DesignTimeNodeWriter();
+            var sourceDocument = RazorSourceDocument.Create("test content", "test.cshtml");
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument, options);
 
             var node = new DesignTimeDirectiveIntermediateNode();
             var token = new DirectiveTokenIntermediateNode()
@@ -226,7 +226,7 @@ global::System.Object __typeHelper = ""Value"";
             extension.WriteDesignTimeDirective(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#pragma warning disable 219
 private void __RazorDirectiveTokenHelpers__() {

@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private void GenerateVCTHClass(ClassDeclarationIntermediateNode @class, TagHelperDescriptor tagHelper)
         {
-            var writer = new CSharpCodeWriter();
+            var writer = new CodeWriter();
             WriteClass(writer, tagHelper);
 
             var statement = new CSharpCodeIntermediateNode();
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return $"__Generated__{vcName}ViewComponentTagHelper";
         }
 
-        private void WriteClass(CSharpCodeWriter writer, TagHelperDescriptor descriptor)
+        private void WriteClass(CodeWriter writer, TagHelperDescriptor descriptor)
         {
             // Add target element.
             BuildTargetElementString(writer, descriptor);
@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
-        private void BuildConstructorString(CSharpCodeWriter writer, string className)
+        private void BuildConstructorString(CodeWriter writer, string className)
         {
             writer.Write("public ")
                 .Write(className)
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
-        private void BuildAttributeDeclarations(CSharpCodeWriter writer, TagHelperDescriptor descriptor)
+        private void BuildAttributeDeclarations(CodeWriter writer, TagHelperDescriptor descriptor)
         {
             writer.Write("[")
               .Write("Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute")
@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
         }
 
-        private void BuildProcessMethodString(CSharpCodeWriter writer, TagHelperDescriptor descriptor)
+        private void BuildProcessMethodString(CodeWriter writer, TagHelperDescriptor descriptor)
         {
             var contextVariable = "context";
             var outputVariable = "output";
@@ -210,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             return methodParameters;
         }
 
-        private void BuildTargetElementString(CSharpCodeWriter writer, TagHelperDescriptor descriptor)
+        private void BuildTargetElementString(CodeWriter writer, TagHelperDescriptor descriptor)
         {
             Debug.Assert(descriptor.TagMatchingRules.Count() == 1);
 

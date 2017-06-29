@@ -10,16 +10,16 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class DesignTimeTagHelperWriter : TagHelperWriter
+    internal class DesignTimeTagHelperWriter : TagHelperWriter
     {
         public string CreateTagHelperMethodName { get; set; } = "CreateTagHelper";
 
-        public override void WriteDeclareTagHelperFields(CSharpRenderingContext context, DeclareTagHelperFieldsIntermediateNode node)
+        public override void WriteDeclareTagHelperFields(CodeRenderingContext context, DeclareTagHelperFieldsIntermediateNode node)
         {
             foreach (var tagHelperTypeName in node.UsedTagHelperTypeNames)
             {
                 var tagHelperVariableName = GetTagHelperVariableName(tagHelperTypeName);
-                context.Writer
+                context.CodeWriter
                     .Write("private global::")
                     .WriteVariableDeclaration(
                         tagHelperTypeName,
@@ -28,32 +28,32 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
         }
 
-        public override void WriteTagHelper(CSharpRenderingContext context, TagHelperIntermediateNode node)
+        public override void WriteTagHelper(CodeRenderingContext context, TagHelperIntermediateNode node)
         {
             context.RenderChildren(node);
         }
 
-        public override void WriteTagHelperBody(CSharpRenderingContext context, TagHelperBodyIntermediateNode node)
+        public override void WriteTagHelperBody(CodeRenderingContext context, TagHelperBodyIntermediateNode node)
         {
             context.RenderChildren(node);
         }
 
-        public override void WriteCreateTagHelper(CSharpRenderingContext context, CreateTagHelperIntermediateNode node)
+        public override void WriteCreateTagHelper(CodeRenderingContext context, CreateTagHelperIntermediateNode node)
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
 
-            context.Writer
+            context.CodeWriter
                 .WriteStartAssignment(tagHelperVariableName)
                 .Write(CreateTagHelperMethodName)
                 .WriteLine($"<global::{node.TagHelperTypeName}>();");
         }
 
-        public override void WriteAddTagHelperHtmlAttribute(CSharpRenderingContext context, AddTagHelperHtmlAttributeIntermediateNode node)
+        public override void WriteAddTagHelperHtmlAttribute(CodeRenderingContext context, AddTagHelperHtmlAttributeIntermediateNode node)
         {
             context.RenderChildren(node);
         }
 
-        public override void WriteSetTagHelperProperty(CSharpRenderingContext context, SetTagHelperPropertyIntermediateNode node)
+        public override void WriteSetTagHelperProperty(CodeRenderingContext context, SetTagHelperPropertyIntermediateNode node)
         {
             var tagHelperVariableName = GetTagHelperVariableName(node.TagHelperTypeName);
             var tagHelperRenderingContext = context.TagHelperRenderingContext;
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             if (tagHelperRenderingContext.RenderedBoundAttributes.TryGetValue(node.AttributeName, out string previousValueAccessor))
             {
-                context.Writer
+                context.CodeWriter
                     .WriteStartAssignment(propertyValueAccessor)
                     .Write(previousValueAccessor)
                     .WriteLine(";");
@@ -77,24 +77,24 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 context.RenderChildren(node);
 
-                context.Writer.WriteStartAssignment(propertyValueAccessor);
+                context.CodeWriter.WriteStartAssignment(propertyValueAccessor);
                 if (node.Children.Count == 1 && node.Children.First() is HtmlContentIntermediateNode htmlNode)
                 {
                     var content = GetContent(htmlNode);
-                    context.Writer.WriteStringLiteral(content);
+                    context.CodeWriter.WriteStringLiteral(content);
                 }
                 else
                 {
-                    context.Writer.Write("string.Empty");
+                    context.CodeWriter.Write("string.Empty");
                 }
-                context.Writer.WriteLine(";");
+                context.CodeWriter.WriteLine(";");
             }
             else
             {
                 var firstMappedChild = node.Children.FirstOrDefault(child => child.Source != null) as IntermediateNode;
                 var valueStart = firstMappedChild?.Source;
 
-                using (context.Writer.BuildLinePragma(node.Source.Value))
+                using (context.CodeWriter.BuildLinePragma(node.Source.Value))
                 {
                     var assignmentPrefixLength = propertyValueAccessor.Length + " = ".Length;
                     if (node.Descriptor.IsEnum &&
@@ -106,10 +106,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
                         if (valueStart != null)
                         {
-                            context.Writer.WritePadding(assignmentPrefixLength, node.Source.Value, context);
+                            context.CodeWriter.WritePadding(assignmentPrefixLength, node.Source.Value, context);
                         }
 
-                        context.Writer
+                        context.CodeWriter
                             .WriteStartAssignment(propertyValueAccessor)
                             .Write("global::")
                             .Write(node.Descriptor.TypeName)
@@ -119,21 +119,21 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     {
                         if (valueStart != null)
                         {
-                            context.Writer.WritePadding(assignmentPrefixLength, node.Source.Value, context);
+                            context.CodeWriter.WritePadding(assignmentPrefixLength, node.Source.Value, context);
                         }
 
-                        context.Writer.WriteStartAssignment(propertyValueAccessor);
+                        context.CodeWriter.WriteStartAssignment(propertyValueAccessor);
                     }
 
                     RenderTagHelperAttributeInline(context, node, node.Source.Value);
 
-                    context.Writer.WriteLine(";");
+                    context.CodeWriter.WriteLine(";");
                 }
             }
         }
 
         private void RenderTagHelperAttributeInline(
-            CSharpRenderingContext context,
+            CodeRenderingContext context,
             SetTagHelperPropertyIntermediateNode property,
             SourceSpan documentLocation)
         {
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         private void RenderTagHelperAttributeInline(
-            CSharpRenderingContext context,
+            CodeRenderingContext context,
             SetTagHelperPropertyIntermediateNode property,
             IntermediateNode node,
             SourceSpan documentLocation)
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     context.AddLineMappingFor(node);
                 }
 
-                context.Writer.Write(token.Content);
+                context.CodeWriter.Write(token.Content);
             }
             else if (node is CSharpCodeIntermediateNode)
             {

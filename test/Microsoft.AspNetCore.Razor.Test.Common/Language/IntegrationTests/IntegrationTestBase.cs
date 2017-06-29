@@ -13,6 +13,7 @@ using System.Runtime.Remoting.Messaging;
 #else
 using System.Threading;
 #endif
+using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 using Xunit.Sdk;
@@ -94,10 +95,10 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var codeDocument = RazorCodeDocument.Create(source, imports);
 
             // This will ensure that we're not putting any randomly generated data in a baseline.
-            codeDocument.Items[DefaultRazorCSharpLoweringPhase.SuppressUniqueIds] = "test";
+            codeDocument.Items[CodeRenderingContext.SuppressUniqueIds] = "test";
 
             // This is to make tests work cross platform.
-            codeDocument.Items[DefaultRazorCSharpLoweringPhase.NewLineString] = "\r\n";
+            codeDocument.Items[CodeRenderingContext.NewLineString] = "\r\n";
 
             OnCreatedCodeDocument(ref codeDocument);
 

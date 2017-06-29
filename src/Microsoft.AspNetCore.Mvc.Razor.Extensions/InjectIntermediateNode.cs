@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             AcceptExtensionNode<InjectIntermediateNode>(this, visitor);
         }
 
-        public override void WriteNode(CodeTarget target, CSharpRenderingContext context)
+        public override void WriteNode(CodeTarget target, CodeRenderingContext context)
         {
             if (target == null)
             {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var extension = target.GetExtension<IInjectTargetExtension>();
             if (extension == null)
             {
-                context.ReportMissingExtension<IInjectTargetExtension>();
+                ReportMissingCodeTargetExtension<IInjectTargetExtension>(context);
                 return;
             }
 

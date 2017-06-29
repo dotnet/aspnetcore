@@ -6,19 +6,16 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    public class LiteralRuntimeBasicWriterTest
+    public class LiteralRuntimeNodeWriterTest
     {
         [Fact]
         public void WriteCSharpExpression_UsesWriteLiteral_WritesLinePragma_WithSource()
         {
             // Arrange
-            var writer = new LiteralRuntimeBasicWriter();
-
-            var context = new CSharpRenderingContext()
-            {
-                Options = RazorCodeGenerationOptions.CreateDefault(),
-                Writer = new CSharpCodeWriter(),
-            };
+            var writer = new LiteralRuntimeNodeWriter();
+            var codeWriter = new CodeWriter();
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
 
             var node = new CSharpExpressionIntermediateNode()
             {
@@ -35,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             writer.WriteCSharpExpression(context, node);
 
             // Assert
-            var csharp = context.Writer.Builder.ToString();
+            var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#line 1 ""test.cshtml""
 WriteLiteral(i++);
