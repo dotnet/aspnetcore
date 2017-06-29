@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             }
             else
             {
-                return Task.FromResult(AuthenticateResult.None());
+                return Task.FromResult(AuthenticateResult.NoResult());
             }
         }
 
@@ -75,16 +75,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         {
             Scheme = scheme;
             _context = context;
-            return Task.CompletedTask;
-        }
-
-        public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
-        {
-            throw new NotSupportedException();
-        }
-
-        public Task SignOutAsync(AuthenticationProperties properties)
-        {
             return Task.CompletedTask;
         }
     }
