@@ -177,6 +177,12 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Singleton<IFilterProvider, DefaultFilterProvider>());
 
             //
+            // Resource Filters
+            //
+            services.TryAddTransient<RequestSizeLimitResourceFilter>();
+            services.TryAddTransient<DisableRequestSizeLimitResourceFilter>();
+
+            //
             // ModelBinding, Validation
             //
             // The DefaultModelMetadataProvider does significant caching and should be a singleton.
