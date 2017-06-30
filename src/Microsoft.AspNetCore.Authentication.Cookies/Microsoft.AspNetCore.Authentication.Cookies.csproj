@@ -19,4 +19,8 @@
     <ProjectReference Include="..\Microsoft.AspNetCore.Authentication\Microsoft.AspNetCore.Authentication.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Properties\" />
+  </ItemGroup>
+
 </Project>

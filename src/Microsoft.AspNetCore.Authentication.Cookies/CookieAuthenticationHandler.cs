@@ -14,9 +14,9 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
 {
-    public class CookieAuthenticationHandler : 
-        AuthenticationHandler<CookieAuthenticationOptions>, 
-        IAuthenticationSignInHandler, 
+    public class CookieAuthenticationHandler :
+        AuthenticationHandler<CookieAuthenticationOptions>,
+        IAuthenticationSignInHandler,
         IAuthenticationSignOutHandler
     {
         private const string HeaderValueNoCache = "no-cache";
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         { }
 
         /// <summary>
-        /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
+        /// The handler calls methods on the events which give the application control at certain points where processing is occurring.
         /// If it is not provided a default instance is supplied which does nothing when the methods are called.
         /// </summary>
         protected new CookieAuthenticationEvents Events
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         private async Task<AuthenticateResult> ReadCookieTicket()
         {
-            var cookie = Options.CookieManager.GetRequestCookie(Context, Options.CookieName);
+            var cookie = Options.CookieManager.GetRequestCookie(Context, Options.Cookie.Name);
             if (string.IsNullOrEmpty(cookie))
             {
                 return AuthenticateResult.NoResult();
@@ -176,22 +176,9 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
         private CookieOptions BuildCookieOptions()
         {
-            var cookieOptions = new CookieOptions
-            {
-                Domain = Options.CookieDomain,
-                SameSite = Options.CookieSameSite,
-                HttpOnly = Options.CookieHttpOnly,
-                Path = Options.CookiePath ?? (OriginalPathBase.HasValue ? OriginalPathBase.ToString() : "/"),
-            };
-
-            if (Options.CookieSecure == CookieSecurePolicy.SameAsRequest)
-            {
-                cookieOptions.Secure = Request.IsHttps;
-            }
-            else
-            {
-                cookieOptions.Secure = Options.CookieSecure == CookieSecurePolicy.Always;
-            }
+            var cookieOptions = Options.Cookie.Build(Context);
+            // ignore the 'Expires' value as this will be computed elsewhere
+            cookieOptions.Expires = null;
 
             return cookieOptions;
         }
@@ -239,7 +226,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
                 Options.CookieManager.AppendResponseCookie(
                     Context,
-                    Options.CookieName,
+                    Options.Cookie.Name,
                     cookieValue,
                     cookieOptions);
 
@@ -283,14 +270,14 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             if (!signInContext.Properties.ExpiresUtc.HasValue)
             {
-                signInContext.Properties.ExpiresUtc = issuedUtc.Add(Options.ExpireTimeSpan);
+                signInContext.Properties.ExpiresUtc = issuedUtc.Add(Options.Cookie.Expiration ?? default(TimeSpan));
             }
 
             await Events.SigningIn(signInContext);
 
             if (signInContext.Properties.IsPersistent)
             {
-                var expiresUtc = signInContext.Properties.ExpiresUtc ?? issuedUtc.Add(Options.ExpireTimeSpan);
+                var expiresUtc = signInContext.Properties.ExpiresUtc ?? issuedUtc.Add(Options.Cookie.Expiration ?? default(TimeSpan));
                 signInContext.CookieOptions.Expires = expiresUtc.ToUniversalTime();
             }
 
@@ -314,7 +301,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             Options.CookieManager.AppendResponseCookie(
                 Context,
-                Options.CookieName,
+                Options.Cookie.Name,
                 cookieValue,
                 signInContext.CookieOptions);
 
@@ -359,7 +346,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             Options.CookieManager.DeleteCookie(
                 Context,
-                Options.CookieName,
+                Options.Cookie.Name,
                 context.CookieOptions);
 
             // Only redirect on the logout path

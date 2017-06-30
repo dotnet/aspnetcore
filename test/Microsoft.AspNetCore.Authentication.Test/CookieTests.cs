@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Cookies
@@ -129,7 +128,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var server = CreateServerWithServices(s => s.AddAuthentication().AddCookie(o =>
             {
                 o.LoginPath = new PathString("/login");
-                o.CookieName = "TestCookie";
+                o.Cookie.Name = "TestCookie";
             }), SignInAsAlice);
 
             var transaction = await SendAsync(server, "http://example.com/testpath");
@@ -150,7 +149,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var server = CreateServer(o =>
             {
                 o.LoginPath = new PathString("/login");
-                o.CookieName = "TestCookie";
+                o.Cookie.Name = "TestCookie";
             }, SignInAsWrong);
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await SendAsync(server, "http://example.com/testpath"));
@@ -162,7 +161,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var server = CreateServer(o =>
             {
                 o.LoginPath = new PathString("/login");
-                o.CookieName = "TestCookie";
+                o.Cookie.Name = "TestCookie";
             }, SignOutAsWrong);
 
             await Assert.ThrowsAsync<InvalidOperationException>(async () => await SendAsync(server, "http://example.com/testpath"));
@@ -183,8 +182,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var server = CreateServer(o =>
             {
                 o.LoginPath = new PathString("/login");
-                o.CookieName = "TestCookie";
-                o.CookieSecure = cookieSecurePolicy;
+                o.Cookie.Name = "TestCookie";
+                o.Cookie.SecurePolicy = cookieSecurePolicy;
             }, SignInAsAlice);
 
             var transaction = await SendAsync(server, requestUri);
@@ -205,12 +204,12 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             var server1 = CreateServer(o =>
             {
-                o.CookieName = "TestCookie";
-                o.CookiePath = "/foo";
-                o.CookieDomain = "another.com";
-                o.CookieSecure = CookieSecurePolicy.Always;
-                o.CookieSameSite = SameSiteMode.None;
-                o.CookieHttpOnly = true;
+                o.Cookie.Name = "TestCookie";
+                o.Cookie.Path = "/foo";
+                o.Cookie.Domain = "another.com";
+                o.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                o.Cookie.SameSite = SameSiteMode.None;
+                o.Cookie.HttpOnly = true;
             }, SignInAsAlice, baseAddress: new Uri("http://example.com/base"));
 
             var transaction1 = await SendAsync(server1, "http://example.com/base/testpath");
@@ -226,10 +225,10 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             var server2 = CreateServer(o =>
             {
-                o.CookieName = "SecondCookie";
-                o.CookieSecure = CookieSecurePolicy.None;
-                o.CookieSameSite = SameSiteMode.Strict;
-                o.CookieHttpOnly = false;
+                o.Cookie.Name = "SecondCookie";
+                o.Cookie.SecurePolicy = CookieSecurePolicy.None;
+                o.Cookie.SameSite = SameSiteMode.Strict;
+                o.Cookie.HttpOnly = false;
             }, SignInAsAlice, baseAddress: new Uri("http://example.com/base"));
 
             var transaction2 = await SendAsync(server2, "http://example.com/base/testpath");
@@ -278,7 +277,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             var server = CreateServer(o =>
             {
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Cookie.Expiration = TimeSpan.FromMinutes(10);
                 o.SlidingExpiration = false;
             }, SignInAsAlice);
 
@@ -307,7 +306,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             var server = CreateServer(o =>
             {
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Cookie.Expiration = TimeSpan.FromMinutes(10);
                 o.SlidingExpiration = false;
             },
             context =>
@@ -340,7 +339,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             var server = CreateServer(o =>
             {
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Cookie.Expiration = TimeSpan.FromMinutes(10);
                 o.Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
@@ -368,7 +367,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             var server = CreateServer(o =>
             {
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Cookie.Expiration = TimeSpan.FromMinutes(10);
                 o.SlidingExpiration = false;
                 o.Events = new CookieAuthenticationEvents
                 {
@@ -396,7 +395,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             var server = CreateServer(o =>
             {
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Cookie.Expiration = TimeSpan.FromMinutes(10);
                 o.SlidingExpiration = false;
                 o.Events = new CookieAuthenticationEvents
                 {
@@ -432,7 +431,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             var server = CreateServer(o =>
             {
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Cookie.Expiration = TimeSpan.FromMinutes(10);
                 o.SlidingExpiration = false;
                 o.Events = new CookieAuthenticationEvents
                 {
@@ -477,7 +476,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             var server = CreateServer(o =>
             {
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Cookie.Expiration = TimeSpan.FromMinutes(10);
                 o.Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = ctx =>
@@ -521,7 +520,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             var server = CreateServer(o =>
             {
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Cookie.Expiration = TimeSpan.FromMinutes(10);
                 o.SlidingExpiration = false;
                 o.Events = new CookieAuthenticationEvents
                 {
@@ -570,7 +569,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             DateTimeOffset? lastExpiresDate = null;
             var server = CreateServer(o =>
             {
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Cookie.Expiration = TimeSpan.FromMinutes(10);
                 o.SlidingExpiration = sliding;
                 o.Events = new CookieAuthenticationEvents
                 {
@@ -620,7 +619,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             var server = CreateServer(o =>
             {
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Cookie.Expiration = TimeSpan.FromMinutes(10);
                 o.SlidingExpiration = false;
                 o.Events = new CookieAuthenticationEvents()
                 {
@@ -657,7 +656,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             var server = CreateServer(o =>
             {
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                o.Cookie.Expiration = TimeSpan.FromMinutes(10);
                 o.SlidingExpiration = true;
             },
             SignInAsAlice);
@@ -825,7 +824,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 {
                     services.AddAuthentication().AddCookie();
                     services.Configure<CookieAuthenticationOptions>(CookieAuthenticationDefaults.AuthenticationScheme,
-                        o => o.CookieName = "One");
+                        o => o.Cookie.Name = "One");
                 });
             var server = new TestServer(builder);
 
@@ -848,7 +847,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 {
                     services.AddAuthentication().AddCookie("Cookie1");
                     services.Configure<CookieAuthenticationOptions>("Cookie1",
-                        o => o.CookieName = "One");
+                        o => o.Cookie.Name = "One");
                 });
             var server = new TestServer(builder);
 
@@ -984,7 +983,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var server = CreateServer(o =>
             {
                 o.LoginPath = "/testpath";
-                o.CookieName = "TestCookie";
+                o.Cookie.Name = "TestCookie";
             },
             async context =>
                 await context.SignInAsync(
@@ -1006,7 +1005,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 o.LoginPath = "/testpath";
                 o.ReturnUrlParameter = "return";
-                o.CookieName = "TestCookie";
+                o.Cookie.Name = "TestCookie";
             },
             async context =>
             {
@@ -1028,7 +1027,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 o.LoginPath = "/testpath";
                 o.ReturnUrlParameter = "return";
-                o.CookieName = "TestCookie";
+                o.Cookie.Name = "TestCookie";
             },
             async context =>
             {
@@ -1049,7 +1048,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             {
                 o.LoginPath = "/testpath";
                 o.ReturnUrlParameter = "return";
-                o.CookieName = "TestCookie";
+                o.Cookie.Name = "TestCookie";
             },
             async context =>
             {
@@ -1102,7 +1101,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 .ConfigureServices(services => services.AddAuthentication().AddCookie(o =>
                 {
                     o.TicketDataFormat = new TicketDataFormat(dp);
-                    o.CookieName = "Cookie";
+                    o.Cookie.Name = "Cookie";
                 }));
             var server1 = new TestServer(builder1);
 
@@ -1121,7 +1120,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
                 })
                 .ConfigureServices(services => services.AddAuthentication().AddCookie("Cookies", o =>
                 {
-                    o.CookieName = "Cookie";
+                    o.Cookie.Name = "Cookie";
                     o.TicketDataFormat = new TicketDataFormat(dp);
                 }));
             var server2 = new TestServer(builder2);

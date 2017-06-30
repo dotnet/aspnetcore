@@ -28,9 +28,9 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             options.DataProtectionProvider = options.DataProtectionProvider ?? _dp;
 
-            if (String.IsNullOrEmpty(options.CookieName))
+            if (string.IsNullOrEmpty(options.Cookie.Name))
             {
-                options.CookieName = CookieAuthenticationDefaults.CookiePrefix + name;
+                options.Cookie.Name = CookieAuthenticationDefaults.CookiePrefix + name;
             }
             if (options.TicketDataFormat == null)
             {

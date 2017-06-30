@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Authentication.Internal;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Http;
 
@@ -12,7 +13,16 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
     /// </summary>
     public class CookieAuthenticationOptions : AuthenticationSchemeOptions
     {
-        private string _cookieName;
+        private CookieBuilder _cookieBuilder = new RequestPathBaseCookieBuilder
+        {
+            // the default name is configured in PostConfigureCookieAuthenticationOptions
+
+            // To support OAuth authentication, a lax mode is required, see https://github.com/aspnet/Security/issues/1231.
+            SameSite = SameSiteMode.Lax,
+            HttpOnly = true,
+            SecurePolicy = CookieSecurePolicy.SameAsRequest,
+            Expiration = TimeSpan.FromDays(14),
+        };
 
         /// <summary>
         /// Create an instance of the options initialized with the default values
@@ -20,76 +30,51 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         public CookieAuthenticationOptions()
         {
             ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
-            ExpireTimeSpan = TimeSpan.FromDays(14);
             SlidingExpiration = true;
-            // To support OAuth authentication, a lax mode is required, see https://github.com/aspnet/Security/issues/1231.
-            CookieSameSite = SameSiteMode.Lax;
-            CookieHttpOnly = true;
-            CookieSecure = CookieSecurePolicy.SameAsRequest;
             Events = new CookieAuthenticationEvents();
         }
 
         /// <summary>
-        /// Determines the cookie name used to persist the identity. The default value is ".AspNetCore.Cookies".
+        /// <para>
+        /// Determines the settings used to create the cookie.
+        /// </para>
+        /// <para>
+        /// <seealso cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.
+        /// <seealso cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
+        /// <seealso cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.
+        /// <seealso cref="CookieBuilder.Expiration"/> defaults to 14 days.
+        /// </para>
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// The default value for cookie name is ".AspNetCore.Cookies".
         /// This value should be changed if you change the name of the AuthenticationScheme, especially if your
         /// system uses the cookie authentication handler multiple times.
-        /// </summary>
-        public string CookieName
+        /// </para>
+        /// <para>
+        /// <seealso cref="CookieBuilder.SameSite"/> determines if the browser should allow the cookie to be attached to same-site or cross-site requests.
+        /// The default is Lax, which means the cookie is only allowed to be attached to cross-site requests using safe HTTP methods and same-site requests.
+        /// </para>
+        /// <para>
+        /// <seealso cref="CookieBuilder.HttpOnly"/> determines if the browser should allow the cookie to be accessed by client-side javascript.
+        /// The default is true, which means the cookie will only be passed to http requests and is not made available to script on the page.
+        /// </para>
+        /// <para>
+        /// <seealso cref="CookieBuilder.Expiration"/> controls how much time the cookie will remain valid from the point it is created. The expiration
+        /// information is in the protected cookie ticket. Because of that an expired cookie will be ignored
+        /// even if it is passed to the server after the browser should have purged it
+        /// </para>
+        /// </remarks>
+        public CookieBuilder Cookie
         {
-            get { return _cookieName; }
-            set
-            {
-                if (value == null)
-                {
-                    throw new ArgumentNullException(nameof(value));
-                }
-
-                _cookieName = value;
-            }
+            get => _cookieBuilder;
+            set => _cookieBuilder = value ?? throw new ArgumentNullException(nameof(value));
         }
-
-        /// <summary>
-        /// Determines the domain used to create the cookie. Is not provided by default.
-        /// </summary>
-        public string CookieDomain { get; set; }
-
-        /// <summary>
-        /// Determines the path used to create the cookie. The default value is "/" for highest browser compatibility.
-        /// </summary>
-        public string CookiePath { get; set; }
-
-        /// <summary>
-        /// Determines if the browser should allow the cookie to be attached to same-site or cross-site requests. The
-        /// default is Lax, which means the cookie is only allowed to be attached to cross-site requests using safe
-        /// HTTP methods and same-site requests.
-        /// </summary>
-        public SameSiteMode CookieSameSite { get; set; }
-
-        /// <summary>
-        /// Determines if the browser should allow the cookie to be accessed by client-side javascript. The
-        /// default is true, which means the cookie will only be passed to http requests and is not made available
-        /// to script on the page.
-        /// </summary>
-        public bool CookieHttpOnly { get; set; }
-
-        /// <summary>
-        /// Determines if the cookie should only be transmitted on HTTPS request. The default is to limit the cookie
-        /// to HTTPS requests if the page which is doing the SignIn is also HTTPS. If you have an HTTPS sign in page
-        /// and portions of your site are HTTP you may need to change this value.
-        /// </summary>
-        public CookieSecurePolicy CookieSecure { get; set; }
 
         /// <summary>
         /// If set this will be used by the CookieAuthenticationHandler for data protection.
         /// </summary>
         public IDataProtectionProvider DataProtectionProvider { get; set; }
-
-        /// <summary>
-        /// Controls how much time the cookie will remain valid from the point it is created. The expiration
-        /// information is in the protected cookie ticket. Because of that an expired cookie will be ignored
-        /// even if it is passed to the server after the browser should have purged it
-        /// </summary>
-        public TimeSpan ExpireTimeSpan { get; set; }
 
         /// <summary>
         /// The SlidingExpiration is set to true to instruct the handler to re-issue a new cookie with a new
@@ -132,8 +117,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// </summary>
         public new CookieAuthenticationEvents Events
         {
-            get { return (CookieAuthenticationEvents)base.Events; }
-            set { base.Events = value; }
+            get => (CookieAuthenticationEvents)base.Events;
+            set => base.Events = value;
         }
 
         /// <summary>
@@ -154,5 +139,85 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// to the client. This can be used to mitigate potential problems with very large identities.
         /// </summary>
         public ITicketStore SessionStore { get; set; }
+
+        #region Obsolete API
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.Name"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Determines the cookie name used to persist the identity. The default value is ".AspNetCore.Cookies".
+        /// This value should be changed if you change the name of the AuthenticationScheme, especially if your
+        /// system uses the cookie authentication handler multiple times.
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Domain) + ".")]
+        public string CookieName { get => Cookie.Name; set => Cookie.Name = value; }
+
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.Domain"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Determines the domain used to create the cookie. Is not provided by default.
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Domain) + ".")]
+        public string CookieDomain { get => Cookie.Domain; set => Cookie.Domain = value; }
+
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.Path"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Determines the path used to create the cookie. The default value is "/" for highest browser compatibility.
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Path) + ".")]
+        public string CookiePath { get => Cookie.Path; set => Cookie.Path = value; }
+
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.HttpOnly"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Determines if the browser should allow the cookie to be accessed by client-side javascript. The
+        /// default is true, which means the cookie will only be passed to http requests and is not made available
+        /// to script on the page.
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.SameSite) + ".")]
+        public bool CookieHttpOnly { get => Cookie.HttpOnly; set => Cookie.HttpOnly = value; }
+
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.SecurePolicy"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Determines if the cookie should only be transmitted on HTTPS request. The default is to limit the cookie
+        /// to HTTPS requests if the page which is doing the SignIn is also HTTPS. If you have an HTTPS sign in page
+        /// and portions of your site are HTTP you may need to change this value.
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.SecurePolicy) + ".")]
+        public CookieSecurePolicy CookieSecure { get => Cookie.SecurePolicy; set => Cookie.SecurePolicy = value; }
+
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.Expiration"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Controls how much time the cookie will remain valid from the point it is created. The expiration
+        /// information is in the protected cookie ticket. Because of that an expired cookie will be ignored
+        /// even if it is passed to the server after the browser should have purged it
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Expiration) + ".")]
+        public TimeSpan ExpireTimeSpan
+        {
+            get => Cookie.Expiration ?? default(TimeSpan);
+            set => Cookie.Expiration = value;
+        }
+        #endregion
     }
 }

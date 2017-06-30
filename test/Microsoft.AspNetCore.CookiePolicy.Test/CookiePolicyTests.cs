@@ -314,9 +314,9 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 {
                     services.AddAuthentication().AddCookie(o =>
                     {
-                        o.CookieName = "TestCookie";
-                        o.CookieHttpOnly = false;
-                        o.CookieSecure = CookieSecurePolicy.None;
+                        o.Cookie.Name = "TestCookie";
+                        o.Cookie.HttpOnly = false;
+                        o.Cookie.SecurePolicy = CookieSecurePolicy.None;
                     });
                 })
                 .Configure(app =>
@@ -354,9 +354,9 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
                 {
                     services.AddAuthentication().AddCookie(o =>
                     {
-                        o.CookieName = "TestCookie";
-                        o.CookieHttpOnly = false;
-                        o.CookieSecure = CookieSecurePolicy.None;
+                        o.Cookie.Name = "TestCookie";
+                        o.Cookie.HttpOnly = false;
+                        o.Cookie.SecurePolicy = CookieSecurePolicy.None;
                     });
                 })
                 .Configure(app =>
