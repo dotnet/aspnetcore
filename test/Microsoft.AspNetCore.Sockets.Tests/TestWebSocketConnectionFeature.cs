@@ -62,6 +62,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 _state = WebSocketState.Aborted;
             }
 
+            public void SendAbort()
+            {
+                _output.TryComplete(new WebSocketException(WebSocketError.ConnectionClosedPrematurely));
+            }
+
             public override async Task CloseAsync(WebSocketCloseStatus closeStatus, string statusDescription, CancellationToken cancellationToken)
             {
                 await SendMessageAsync(new WebSocketMessage
@@ -100,20 +105,39 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
             public override async Task<WebSocketReceiveResult> ReceiveAsync(ArraySegment<byte> buffer, CancellationToken cancellationToken)
             {
-                var message = await _input.ReadAsync();
-
-                if (message.MessageType == WebSocketMessageType.Close)
+                try
                 {
-                    _state = WebSocketState.CloseReceived;
-                    _closeStatus = message.CloseStatus;
-                    _closeStatusDescription = message.CloseStatusDescription;
-                    return new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, message.CloseStatus, message.CloseStatusDescription);
+                    await _input.WaitToReadAsync();
+
+                    if (_input.TryRead(out var message))
+                    {
+                        if (message.MessageType == WebSocketMessageType.Close)
+                        {
+                            _state = WebSocketState.CloseReceived;
+                            _closeStatus = message.CloseStatus;
+                            _closeStatusDescription = message.CloseStatusDescription;
+                            return new WebSocketReceiveResult(0, WebSocketMessageType.Close, true, message.CloseStatus, message.CloseStatusDescription);
+                        }
+
+                        // REVIEW: This assumes the buffer passed in is > the buffer received
+                        Buffer.BlockCopy(message.Buffer, 0, buffer.Array, buffer.Offset, message.Buffer.Length);
+
+                        return new WebSocketReceiveResult(message.Buffer.Length, message.MessageType, message.EndOfMessage);
+                    }
+                }
+                catch (WebSocketException ex)
+                {
+                    switch (ex.WebSocketErrorCode)
+                    {
+                        case WebSocketError.ConnectionClosedPrematurely:
+                            _state = WebSocketState.Aborted;
+                            break;
+                    }
+
+                    throw;
                 }
 
-                // REVIEW: This assumes the buffer passed in is > the buffer received
-                Buffer.BlockCopy(message.Buffer, 0, buffer.Array, buffer.Offset, message.Buffer.Length);
-
-                return new WebSocketReceiveResult(message.Buffer.Length, message.MessageType, message.EndOfMessage);
+                throw new InvalidOperationException("Unexpected close");
             }
 
             public override Task SendAsync(ArraySegment<byte> buffer, WebSocketMessageType messageType, bool endOfMessage, CancellationToken cancellationToken)
