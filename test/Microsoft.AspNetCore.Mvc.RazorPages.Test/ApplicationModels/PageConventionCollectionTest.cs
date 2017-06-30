@@ -72,5 +72,49 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
                 "folderPath",
                 "Path must be a root relative path that starts with a forward slash '/'.");
         }
+
+        [Fact]
+        public void RemoveType_RemovesAllOfType()
+        {
+            // Arrange
+            var collection = new PageConventionCollection
+            {
+                new FooPageConvention(),
+                new BarPageConvention(),
+                new FooPageConvention()
+            };
+
+            // Act
+            collection.RemoveType(typeof(FooPageConvention));
+
+            // Assert
+            Assert.Collection(
+                collection,
+                convention => Assert.IsType<BarPageConvention>(convention));
+        }
+
+        [Fact]
+        public void GenericRemoveType_RemovesAllOfType()
+        {
+            // Arrange
+            var collection = new PageConventionCollection
+            {
+                new FooPageConvention(),
+                new BarPageConvention(),
+                new FooPageConvention()
+            };
+
+            // Act
+            collection.RemoveType<FooPageConvention>();
+
+            // Assert
+            Assert.Collection(
+               collection,
+               convention => Assert.IsType<BarPageConvention>(convention));
+        }
+
+        private class FooPageConvention : IPageConvention { }
+
+        private class BarPageConvention : IPageConvention { }
     }
 }
