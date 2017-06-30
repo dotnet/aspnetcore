@@ -14,7 +14,7 @@ namespace MusicStore.Mocks.MicrosoftAccount
     {
         internal static Task OnCreatingTicket(OAuthCreatingTicketContext context)
         {
-            if (context.Ticket.Principal != null)
+            if (context.Principal != null)
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "Access token is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.RefreshToken == "ValidRefreshToken", "Refresh token is not valid");
@@ -25,7 +25,7 @@ namespace MusicStore.Mocks.MicrosoftAccount
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(3600), "ExpiresIn is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.User != null, "User object is not valid");
                 Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value == context.User.SelectToken("id").ToString(), "User id is not valid");
-                context.Ticket.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
+                context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
             }
 
             return Task.FromResult(0);
@@ -48,7 +48,7 @@ namespace MusicStore.Mocks.MicrosoftAccount
             return Task.FromResult(0);
         }
 
-        internal static Task RedirectToAuthorizationEndpoint(OAuthRedirectToAuthorizationContext context)
+        internal static Task RedirectToAuthorizationEndpoint(RedirectContext<OAuthOptions> context)
         {
             context.Response.Redirect(context.RedirectUri + "&custom_redirect_uri=custom");
             return Task.FromResult(0);

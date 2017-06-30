@@ -21,10 +21,9 @@ namespace MusicStore.Mocks.OpenIdConnect
 
         internal static Task TokenValidated(TokenValidatedContext context)
         {
-            Helpers.ThrowIfConditionFailed(() => context.Ticket != null, "context.Ticket is null.");
-            Helpers.ThrowIfConditionFailed(() => context.Ticket.Principal != null, "context.Ticket.Principal is null.");
-            Helpers.ThrowIfConditionFailed(() => context.Ticket.Principal.Identity != null, "context.Ticket.Principal.Identity is null.");
-            Helpers.ThrowIfConditionFailed(() => !string.IsNullOrWhiteSpace(context.Ticket.Principal.Identity.Name), "context.Ticket.Principal.Identity.Name is null.");
+            Helpers.ThrowIfConditionFailed(() => context.Principal != null, "context.Principal is null.");
+            Helpers.ThrowIfConditionFailed(() => context.Principal.Identity != null, "context.Principal.Identity is null.");
+            Helpers.ThrowIfConditionFailed(() => !string.IsNullOrWhiteSpace(context.Principal.Identity.Name), "context.Principal.Identity.Name is null.");
             eventsFired.Add(nameof(TokenValidated));
             return Task.FromResult(0);
         }
@@ -41,7 +40,7 @@ namespace MusicStore.Mocks.OpenIdConnect
                 eventsFired.Contains(nameof(TokenValidated)) &&
                 eventsFired.Contains(nameof(AuthorizationCodeReceived)))
             {
-                ((ClaimsIdentity)context.Ticket.Principal.Identity).AddClaim(new Claim("ManageStore", "Allowed"));
+                ((ClaimsIdentity)context.Principal.Identity).AddClaim(new Claim("ManageStore", "Allowed"));
             }
 
             return Task.FromResult(0);

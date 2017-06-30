@@ -41,7 +41,7 @@ namespace MusicStore.Mocks.Twitter
             return Task.FromResult(0);
         }
 
-        internal static Task RedirectToAuthorizationEndpoint(TwitterRedirectToAuthorizationEndpointContext context)
+        internal static Task RedirectToAuthorizationEndpoint(RedirectContext<TwitterOptions> context)
         {
             context.Response.Redirect(context.RedirectUri + "&custom_redirect_uri=custom");
             return Task.FromResult(0);

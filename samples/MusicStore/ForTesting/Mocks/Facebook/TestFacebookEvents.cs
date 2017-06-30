@@ -14,7 +14,7 @@ namespace MusicStore.Mocks.Facebook
     {
         internal static Task OnCreatingTicket(OAuthCreatingTicketContext context)
         {
-            if (context.Ticket.Principal != null)
+            if (context.Principal != null)
             {
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "");
                 Helpers.ThrowIfConditionFailed(() => context.Identity.FindFirst(ClaimTypes.Email)?.Value == "AspnetvnextTest@test.com", "");
@@ -24,7 +24,7 @@ namespace MusicStore.Mocks.Facebook
                 Helpers.ThrowIfConditionFailed(() => context.User.SelectToken("id").ToString() == context.Identity.FindFirst(ClaimTypes.NameIdentifier)?.Value, "");
                 Helpers.ThrowIfConditionFailed(() => context.ExpiresIn.Value == TimeSpan.FromSeconds(100), "");
                 Helpers.ThrowIfConditionFailed(() => context.AccessToken == "ValidAccessToken", "");
-                context.Ticket.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
+                context.Principal.Identities.First().AddClaim(new Claim("ManageStore", "false"));
             }
 
             return Task.FromResult(0);
@@ -47,7 +47,7 @@ namespace MusicStore.Mocks.Facebook
             return Task.FromResult(0);
         }
 
-        internal static Task RedirectToAuthorizationEndpoint(OAuthRedirectToAuthorizationContext context)
+        internal static Task RedirectToAuthorizationEndpoint(RedirectContext<OAuthOptions> context)
         {
             context.Response.Redirect(context.RedirectUri + "&custom_redirect_uri=custom");
             return Task.FromResult(0);
