@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http.Abstractions;
 
 namespace Microsoft.AspNetCore.Http
 {
@@ -10,10 +11,18 @@ namespace Microsoft.AspNetCore.Http
     /// </summary>
     public class CookieBuilder
     {
+        private string _name;
+
         /// <summary>
         /// The name of the cookie.
         /// </summary>
-        public virtual string Name { get; set; }
+        public virtual string Name
+        {
+            get => _name;
+            set => _name = !string.IsNullOrEmpty(value)
+                ? value
+                : throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(value));
+        }
 
         /// <summary>
         /// The cookie path.

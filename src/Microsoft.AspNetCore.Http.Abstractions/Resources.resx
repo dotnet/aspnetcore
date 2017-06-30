@@ -153,4 +153,7 @@
   <data name="Exception_UseMiddlewareExplicitArgumentsNotSupported" xml:space="preserve">
     <value>Types that implement '{0}' do not support explicit arguments.</value>
   </data>
+  <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
+    <value>Argument cannot be null or empty.</value>
+  </data>
 </root>
