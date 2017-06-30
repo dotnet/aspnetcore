@@ -57,8 +57,7 @@ namespace ChatSample
             services.AddSignalR()
                  //.AddRedis()
                 ;
-            services.AddAuthentication();
-            services.AddCookieAuthentication();
+            services.AddAuthentication().AddCookie();
 
             services.AddSingleton(typeof(DefaultHubLifetimeManager<>), typeof(DefaultHubLifetimeManager<>));
             services.AddSingleton(typeof(HubLifetimeManager<>), typeof(DefaultPresenceHublifetimeManager<>));
