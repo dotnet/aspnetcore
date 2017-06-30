@@ -58,10 +58,9 @@ namespace Microsoft.AspNetCore.Http
 
         /// <summary>
         /// The policy that will be used to determine <seealso cref="CookieOptions.Secure"/>.
-        /// This is determined from the <see cref="HttpContext"/> passed to <see cref="Build(HttpContext)"/>.
+        /// This is determined from the <see cref="HttpContext"/> passed to <see cref="Build(HttpContext, DateTimeOffset)"/>.
         /// </summary>
         public virtual CookieSecurePolicy SecurePolicy { get; set; }
-
 
         /// <summary>
         /// Gets or sets the lifespan of a cookie.
@@ -73,7 +72,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
         /// <returns>The cookie options.</returns>
-        public virtual CookieOptions Build(HttpContext context) => Build(context, DateTimeOffset.Now);
+        public CookieOptions Build(HttpContext context) => Build(context, DateTimeOffset.Now);
 
         /// <summary>
         /// Creates the cookie options from the given <paramref name="context"/> with an expiration based on <paramref name="expiresFrom"/> and <see cref="Expiration"/>.
