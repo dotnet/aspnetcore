@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void MinRequestBodyDataRateDefault()
         {
             Assert.NotNull(new KestrelServerLimits().MinRequestBodyDataRate);
-            Assert.Equal(1, new KestrelServerLimits().MinRequestBodyDataRate.BytesPerSecond);
+            Assert.Equal(240, new KestrelServerLimits().MinRequestBodyDataRate.BytesPerSecond);
             Assert.Equal(TimeSpan.FromSeconds(5), new KestrelServerLimits().MinRequestBodyDataRate.GracePeriod);
         }
 

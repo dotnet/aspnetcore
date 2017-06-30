@@ -258,8 +258,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// This can be overridden per-request via <see cref="IHttpMinRequestBodyDataRateFeature"/>.
         /// </summary>
         /// <remarks>
-        /// Defaults to 1 byte/second with a 5 second grace period.
+        /// Defaults to 240 bytes/second with a 5 second grace period.
         /// </remarks>
-        public MinDataRate MinRequestBodyDataRate { get; set; } = new MinDataRate(bytesPerSecond: 1, gracePeriod: TimeSpan.FromSeconds(5));
+        public MinDataRate MinRequestBodyDataRate { get; set; } =
+            // Matches the default IIS minBytesPerSecond
+            new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(5));
     }
 }
