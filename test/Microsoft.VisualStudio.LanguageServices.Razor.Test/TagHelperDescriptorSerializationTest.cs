@@ -24,7 +24,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     builder => builder
                         .Name("test-attribute")
-                        .PropertyName("TestAttribute")
+                        .SetPropertyName("TestAttribute")
                         .TypeName("string"),
                 },
                 ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
@@ -67,7 +67,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     builder => builder
                         .Name("test-attribute")
-                        .PropertyName("TestAttribute")
+                        .SetPropertyName("TestAttribute")
                         .TypeName("string"),
                 },
                 ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
@@ -112,13 +112,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     builder => builder
                         .Name("test-attribute")
-                        .PropertyName("TestAttribute")
+                        .SetPropertyName("TestAttribute")
                         .TypeName("SomeEnum")
                         .AsEnum()
                         .Documentation("Summary"),
                     builder => builder
                         .Name("test-attribute2")
-                        .PropertyName("TestAttribute2")
+                        .SetPropertyName("TestAttribute2")
                         .TypeName("SomeDictionary")
                         .AsDictionary("dict-prefix-", "string"),
                 },
@@ -154,7 +154,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             Action<TagHelperDescriptorBuilder> configureAction = null)
         {
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
-            builder.TypeName(typeName);
+            builder.SetTypeName(typeName);
 
             if (attributes != null)
             {

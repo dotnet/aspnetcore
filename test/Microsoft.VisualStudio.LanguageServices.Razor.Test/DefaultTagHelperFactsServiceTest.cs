@@ -48,12 +48,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         attribute
                             .Name("asp-for")
                             .TypeName(typeof(string).FullName)
-                            .PropertyName("AspFor"))
+                            .SetPropertyName("AspFor"))
                     .BindAttribute(attribute =>
                         attribute
                             .Name("asp-route")
                             .TypeName(typeof(IDictionary<string, string>).Namespace + "IDictionary<string, string>")
-                            .PropertyName("AspRoute")
+                            .SetPropertyName("AspRoute")
                             .AsDictionary("asp-route-", typeof(string).FullName))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
@@ -62,7 +62,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         attribute
                             .Name("asp-for")
                             .TypeName(typeof(string).FullName)
-                            .PropertyName("AspFor"))
+                            .SetPropertyName("AspFor"))
                     .Build(),
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
@@ -94,12 +94,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         attribute
                             .Name("asp-for")
                             .TypeName(typeof(string).FullName)
-                            .PropertyName("AspFor"))
+                            .SetPropertyName("AspFor"))
                     .BindAttribute(attribute =>
                         attribute
                             .Name("asp-route")
                             .TypeName(typeof(IDictionary<string, string>).Namespace + "IDictionary<string, string>")
-                            .PropertyName("AspRoute")
+                            .SetPropertyName("AspRoute")
                             .AsDictionary("asp-route-", typeof(string).FullName))
                     .Build()
             };
@@ -130,12 +130,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         attribute
                             .Name("asp-for")
                             .TypeName(typeof(string).FullName)
-                            .PropertyName("AspFor"))
+                            .SetPropertyName("AspFor"))
                     .BindAttribute(attribute =>
                         attribute
                             .Name("asp-extra")
                             .TypeName(typeof(string).FullName)
-                            .PropertyName("AspExtra"))
+                            .SetPropertyName("AspExtra"))
                     .Build()
             };
             var expectedAttributeDescriptors = new[]

@@ -23,14 +23,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     .BindAttribute(attribute => attribute
                         .Name("visible")
                         .TypeName(typeof(bool).FullName)
-                        .PropertyName("Visible"))
+                        .SetPropertyName("Visible"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("*"))
                     .BindAttribute(attribute => attribute
                         .Name("class")
                         .TypeName(typeof(string).FullName)
-                        .PropertyName("Class"))
+                        .SetPropertyName("Class"))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -112,11 +112,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     .BindAttribute(attribute => attribute
                         .Name("repeat")
                         .TypeName(typeof(bool).FullName)
-                        .PropertyName("Repeat"))
+                        .SetPropertyName("Repeat"))
                     .BindAttribute(attribute => attribute
                         .Name("visible")
                         .TypeName(typeof(bool).FullName)
-                        .PropertyName("Visible"))
+                        .SetPropertyName("Visible"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
                     .TagMatchingRule(rule => rule
@@ -125,7 +125,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     .BindAttribute(attribute => attribute
                         .Name("class")
                         .TypeName(typeof(string).FullName)
-                        .PropertyName("Class"))
+                        .SetPropertyName("Class"))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -163,11 +163,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     .BindAttribute(attribute => attribute
                         .Name("repeat")
                         .TypeName(typeof(bool).FullName)
-                        .PropertyName("Repeat"))
+                        .SetPropertyName("Repeat"))
                     .BindAttribute(attribute => attribute
                         .Name("visible")
                         .TypeName(typeof(bool).FullName)
-                        .PropertyName("Visible"))
+                        .SetPropertyName("Visible"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
                     .TagMatchingRule(rule => rule
@@ -176,14 +176,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     .BindAttribute(attribute => attribute
                         .Name("class")
                         .TypeName(typeof(string).FullName)
-                        .PropertyName("Class"))
+                        .SetPropertyName("Class"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
                     .TagMatchingRule(rule => rule.RequireTagName("*"))
                     .BindAttribute(attribute => attribute
                         .Name("visible")
                         .TypeName(typeof(bool).FullName)
-                        .PropertyName("Visible"))
+                        .SetPropertyName("Visible"))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -226,7 +226,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     .BindAttribute(attribute => attribute
                         .Name("repeat")
                         .TypeName(typeof(bool).FullName)
-                        .PropertyName("Repeat"))
+                        .SetPropertyName("Repeat"))
                     .TagOutputHint("div")
                     .Build(),
             };
@@ -261,7 +261,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     .BindAttribute(attribute => attribute
                         .Name("repeat")
                         .TypeName(typeof(bool).FullName)
-                        .PropertyName("Repeat"))
+                        .SetPropertyName("Repeat"))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -294,7 +294,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                     .BindAttribute(attribute => attribute
                         .Name("repeat")
                         .TypeName(typeof(bool).FullName)
-                        .PropertyName("Repeat"))
+                        .SetPropertyName("Repeat"))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
