@@ -138,6 +138,54 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)]
+        public void ContainsPrefix_HasEntries_PartialAndPrefixMatch_WithDot(int partialMatches)
+        {
+            // Arrange
+            var keys = new string[partialMatches + 1];
+            for (var i = 0; i < partialMatches; i++)
+            {
+                keys[i] = $"aa[{i}]";
+            }
+            keys[partialMatches] = "a.b"; // Sorted before all "aa" keys.
+            var container = new PrefixContainer(keys);
+
+            // Act
+            var result = container.ContainsPrefix("a");
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData(1)]
+        [InlineData(2)]
+        [InlineData(3)]
+        [InlineData(4)]
+        [InlineData(5)]
+        public void ContainsPrefix_HasEntries_PartialAndPrefixMatch_WithSquareBrace(int partialMatches)
+        {
+            // Arrange
+            var keys = new string[partialMatches + 1];
+            for (var i = 0; i < partialMatches; i++)
+            {
+                keys[i] = $"aa[{i}]";
+            }
+            keys[partialMatches] = "a[0]"; // Sorted after all "aa" keys.
+            var container = new PrefixContainer(keys);
+
+            // Act
+            var result = container.ContainsPrefix("a");
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
         [InlineData("")]
         [InlineData("foo")]
         public void GetKeysFromPrefix_ReturnsEmptySequenceWhenContainerIsEmpty(string prefix)

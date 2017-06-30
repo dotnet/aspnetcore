@@ -193,7 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     Debug.Assert(candidate.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
 
-                    // Ok, so now we have a candiate that starts with the prefix. If the candidate is longer than
+                    // Okay, now we have a candidate that starts with the prefix. If the candidate is longer than
                     // the prefix, we need to look at the next character and see if it's a delimiter.
                     if (candidate.Length == prefix.Length)
                     {
@@ -208,15 +208,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         return pivot;
                     }
 
-                    // Ok, so the candidate has some extra text. We need to keep searching, but we know
-                    // the candidate string is considered "greater" than the prefix, so treat it as-if
-                    // the comparer returned a negative number.
+                    // Okay, so the candidate has some extra text. We need to keep searching.
                     //
-                    // Ex:
+                    // Can often assume the candidate string is greater than the prefix e.g. that works for
                     //  prefix: product
                     //  candidate: productId
+                    // most of the time because "product", "product.id", etc. will sort earlier than "productId". But,
+                    // the assumption isn't correct if "product[0]" is also in _sortedValues because that value will
+                    // sort later than "productId".
                     //
-                    compare = -1;
+                    // Fall back to brute force and cover all the cases.
+                    return LinearSearch(prefix, start, end);
                 }
 
                 if (compare > 0)
@@ -226,6 +228,50 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 else
                 {
                     end = pivot - 1;
+                }
+            }
+
+            return ~start;
+        }
+
+        private int LinearSearch(string prefix, int start, int end)
+        {
+            for (; start <= end; start++)
+            {
+                var candidate = _sortedValues[start];
+                var compare = string.Compare(
+                    prefix,
+                    0,
+                    candidate,
+                    0,
+                    prefix.Length,
+                    StringComparison.OrdinalIgnoreCase);
+                if (compare == 0)
+                {
+                    Debug.Assert(candidate.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
+
+                    // Okay, now we have a candidate that starts with the prefix. If the candidate is longer than
+                    // the prefix, we need to look at the next character and see if it's a delimiter.
+                    if (candidate.Length == prefix.Length)
+                    {
+                        // Exact match
+                        return start;
+                    }
+
+                    var c = candidate[prefix.Length];
+                    if (c == '.' || c == '[')
+                    {
+                        // Match, followed by delimiter
+                        return start;
+                    }
+
+                    // Keep checking until we've passed all StartsWith() matches.
+                }
+
+                if (compare < 0)
+                {
+                    // Prefix is less than the candidate. No potential matches left.
+                    break;
                 }
             }
 
