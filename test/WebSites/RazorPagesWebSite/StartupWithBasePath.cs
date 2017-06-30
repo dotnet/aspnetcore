@@ -23,8 +23,6 @@ namespace RazorPagesWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
             app.UseAuthentication();
 
             app.UseStaticFiles();

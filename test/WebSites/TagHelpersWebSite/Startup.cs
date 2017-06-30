@@ -18,8 +18,6 @@ namespace TagHelpersWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
             app.UseMvcWithDefaultRoute();
         }
 

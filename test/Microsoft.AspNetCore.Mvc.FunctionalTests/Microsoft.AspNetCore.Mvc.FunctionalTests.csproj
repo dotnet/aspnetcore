@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="..\..\build\common.props" />
   <Import Project="..\..\src\Microsoft.AspNetCore.Mvc.Testing\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.targets" />
-  <Import Project="..\..\src\Microsoft.AspNetCore.Mvc.Testing.Xunit\build\netstandard2.0\Microsoft.AspNetCore.Mvc.Testing.Xunit.targets" />
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
@@ -18,10 +17,11 @@
   <ItemGroup>
     <Compile Include="..\Microsoft.AspNetCore.Mvc.Formatters.Xml.Test\XmlAssert.cs" />
     <EmbeddedResource Include="compiler\resources\**\*" />
+    <None Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Testing.Xunit\Microsoft.AspNetCore.Mvc.Testing.Xunit.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Mvc.Testing\Microsoft.AspNetCore.Mvc.Testing.csproj" />
     <ProjectReference Include="..\WebSites\ApiExplorerWebSite\ApiExplorerWebSite.csproj" />
     <ProjectReference Include="..\WebSites\ApplicationModelWebSite\ApplicationModelWebSite.csproj" />
     <ProjectReference Include="..\WebSites\BasicWebSite\BasicWebSite.csproj" />
@@ -55,5 +55,4 @@
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
   </ItemGroup>
-
 </Project>

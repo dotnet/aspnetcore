@@ -28,8 +28,6 @@ namespace RazorPageExecutionInstrumentationWebSite
             var diagnosticSource = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
             diagnosticSource.SubscribeWithAdapter(listener);
 
-            app.UseCultureReplacer();
-
             app.Use(async (context, next) =>
             {
                 using (var writer = new StreamWriter(context.Response.Body))

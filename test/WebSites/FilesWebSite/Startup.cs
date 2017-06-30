@@ -18,8 +18,6 @@ namespace FilesWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute(name: null, template: "{controller}/{action}", defaults: null);

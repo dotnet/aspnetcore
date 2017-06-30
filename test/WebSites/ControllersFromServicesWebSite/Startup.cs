@@ -57,8 +57,6 @@ namespace ControllersFromServicesWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
             app.UseMvc(routes =>
             {
                 routes.MapRoute("default", "{controller}/{action}/{id}");

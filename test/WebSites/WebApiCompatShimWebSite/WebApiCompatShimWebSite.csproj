@@ -10,7 +10,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.TestConfiguration\Microsoft.AspNetCore.Mvc.TestConfiguration.csproj" />
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Mvc.WebApiCompatShim\Microsoft.AspNetCore.Mvc.WebApiCompatShim.csproj" />
 
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(AspNetCoreVersion)" />

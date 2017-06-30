@@ -22,8 +22,6 @@ namespace RoutingWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
             app.UseMvc(routes =>
             {
                 routes.MapAreaRoute(

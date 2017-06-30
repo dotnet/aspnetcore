@@ -1,10 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Mvc.Testing.Xunit.Internal
+namespace Microsoft.AspNetCore.Mvc.Testing.Internal
 {
     /// <summary>
     /// A middleware that ensures web sites run in a consistent culture. Currently useful for tests that format dates,
@@ -12,15 +13,20 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Xunit.Internal
     /// </summary>
     public class CultureReplacerMiddleware
     {
-        // Have no current need to use cultures other than the ReplaceCultureAttribute defaults (en-GB, en-US).
-        private readonly ReplaceCultureAttribute _replaceCulture = new ReplaceCultureAttribute();
-
         private readonly RequestDelegate _next;
 
-        public CultureReplacerMiddleware(RequestDelegate next)
+        private CultureInfo _originalCulture;
+        private CultureInfo _originalUICulture;
+
+        public CultureReplacerMiddleware(RequestDelegate next, TestCulture culture)
         {
+            Culture = new CultureInfo(culture.Culture);
+            UICulture = new CultureInfo(culture.UICulture);
             _next = next;
         }
+
+        public CultureInfo UICulture { get; }
+        public CultureInfo Culture { get; }
 
         public async Task Invoke(HttpContext context)
         {
@@ -30,12 +36,18 @@ namespace Microsoft.AspNetCore.Mvc.Testing.Xunit.Internal
             // AsyncLocal<CultureInfo>.
             try
             {
-                _replaceCulture.Before(methodUnderTest: null);
+                _originalCulture = CultureInfo.CurrentCulture;
+                _originalUICulture = CultureInfo.CurrentUICulture;
+
+                CultureInfo.CurrentCulture = Culture;
+                CultureInfo.CurrentUICulture = UICulture;
+
                 await _next(context);
             }
             finally
             {
-                _replaceCulture.After(methodUnderTest: null);
+                CultureInfo.CurrentCulture = _originalCulture;
+                CultureInfo.CurrentUICulture = _originalUICulture;
             }
         }
     }

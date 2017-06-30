@@ -68,9 +68,6 @@ namespace XmlFormattersWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
-            // Add MVC to the request pipeline
             app.UseMvc(routes =>
             {
                 routes.MapRoute("ActionAsMethod", "{controller}/{action}",

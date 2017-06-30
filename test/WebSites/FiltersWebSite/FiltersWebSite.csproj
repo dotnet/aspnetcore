@@ -9,7 +9,6 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj" />
     <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.Mvc.Formatters.Xml\Microsoft.AspNetCore.Mvc.Formatters.Xml.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.TestConfiguration\Microsoft.AspNetCore.Mvc.TestConfiguration.csproj" />
 
     <PackageReference Include="Microsoft.AspNetCore.Authentication" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Localization.Routing" Version="$(AspNetCoreVersion)" />

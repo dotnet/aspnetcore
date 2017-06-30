@@ -24,7 +24,6 @@ namespace HtmlGenerationWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
             app.UseStaticFiles();
             app.UseMvc(routes =>
             {

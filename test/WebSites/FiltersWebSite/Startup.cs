@@ -60,8 +60,6 @@ namespace FiltersWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
             app.UseMiddleware<ErrorReporterMiddleware>();
 
             app.UseMvcWithDefaultRoute();

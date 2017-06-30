@@ -6,18 +6,15 @@ using System.IO;
 using System.Net.Http;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.Mvc.Testing.Xunit.Internal;
+using Microsoft.AspNetCore.Mvc.Testing.Internal;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 
-namespace Microsoft.AspNetCore.Mvc.FunctionalTests
+namespace Microsoft.AspNetCore.Mvc.Testing
 {
     /// <summary>
-    /// XUnit fixture for bootstrapping an application in memory for functional end to end tests.
+    /// Fixture for bootstrapping an application in memory for functional end to end tests.
     /// </summary>
     /// <typeparam name="TStartup">The applications startup class.</typeparam>
     public class WebApplicationTestFixture<TStartup> : IDisposable where TStartup : class
@@ -43,30 +40,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var projectPath = Path.Combine(solutionRelativePath, projectName);
             var builder = new MvcWebApplicationBuilder<TStartup>()
                 .UseSolutionRelativeContentRoot(projectPath)
-                .UseApplicationAssemblies();
+                .UseApplicationAssemblies()
+                .UseRequestCulture("en-GB", "en-US")
+                .UseStartupCulture("en-GB", "en-US");
 
             ConfigureApplication(builder);
-
-            var xunitRunnerJson = new FileInfo(Path.Combine(Directory.GetCurrentDirectory(), "xunit.runner.json"));
-            if (!xunitRunnerJson.Exists)
-            {
-                Console.WriteLine("Can't find xunit.runner.json. " +
-                    "Functional tests require '\"shadowCopy\": false' to work properly. " +
-                    "Make sure your XUnit configuration has that setup.");
-            }
-
-            var content = JsonConvert.DeserializeObject<JObject>(File.ReadAllText(xunitRunnerJson.FullName));
-            if (!content.TryGetValue("shadowCopy", out var token) || !(bool)token)
-            {
-                Console.WriteLine("'shadowCopy' is not set to true on xunit.runner.json. " +
-                    "Functional tests require '\"shadowCopy\": false' to work properly. " +
-                    "Make sure your XUnit configuration has that setup.");
-            }
-
-            using (new CultureReplacer())
-            {
-                _server = builder.Build();
-            }
+            _server = builder.Build();
 
             Client = _server.CreateClient();
             Client.BaseAddress = new Uri("http://localhost");
@@ -81,8 +60,16 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             builder.ConfigureAfterStartup(s => s.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, CultureReplacerStartupFilter>()));
         }
 
+        /// <summary>
+        /// Gets an instance of the <see cref="HttpClient"/> used to send <see cref="HttpRequestMessage"/> to the server.
+        /// </summary>
         public HttpClient Client { get; }
 
+        /// <summary>
+        /// Creates a new instance of an <see cref="HttpClient"/> that can be used to
+        /// send <see cref="HttpRequestMessage"/> to the server.
+        /// </summary>
+        /// <returns>The <see cref="HttpClient"/></returns>
         public HttpClient CreateClient()
         {
             var client = _server.CreateClient();
@@ -91,9 +78,17 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             return client;
         }
 
+        /// <summary>
+        /// Creates a new instance of an <see cref="HttpClient"/> that can be used to
+        /// send <see cref="HttpRequestMessage"/> to the server.
+        /// </summary>
+        /// <param name="baseAddress">The base address of the <see cref="HttpClient"/> instance.</param>
+        /// <param name="handlers">A list of <see cref="DelegatingHandler"/> instances to setup on the
+        /// <see cref="HttpClient"/>.</param>
+        /// <returns>The <see cref="HttpClient"/>.</returns>
         public HttpClient CreateClient(Uri baseAddress, params DelegatingHandler[] handlers)
         {
-            if (handlers.Length == 0)
+            if (handlers == null || handlers.Length == 0)
             {
                 var client = _server.CreateClient();
                 client.BaseAddress = baseAddress;
@@ -117,6 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             }
         }
 
+        /// <inheritdoc />
         public void Dispose()
         {
             Client.Dispose();

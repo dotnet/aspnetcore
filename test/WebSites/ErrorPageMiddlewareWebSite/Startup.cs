@@ -18,8 +18,6 @@ namespace ErrorPageMiddlewareWebSite
 
         public void Configure(IApplicationBuilder app)
         {
-            app.UseCultureReplacer();
-
             app.UseDeveloperExceptionPage();
             app.UseMvc();
         }
