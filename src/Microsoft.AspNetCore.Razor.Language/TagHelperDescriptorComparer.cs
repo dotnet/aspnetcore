@@ -23,6 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private readonly StringComparer _stringComparer;
         private readonly StringComparison _stringComparison;
+        private readonly AllowedChildTagDescriptorComparer _AllowedChildTagDescriptorComparer;
         private readonly BoundAttributeDescriptorComparer _boundAttributeComparer;
         private readonly TagMatchingRuleDescriptorComparer _tagMatchingRuleComparer;
 
@@ -32,6 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 _stringComparer = StringComparer.Ordinal;
                 _stringComparison = StringComparison.Ordinal;
+                _AllowedChildTagDescriptorComparer = AllowedChildTagDescriptorComparer.CaseSensitive;
                 _boundAttributeComparer = BoundAttributeDescriptorComparer.CaseSensitive;
                 _tagMatchingRuleComparer = TagMatchingRuleDescriptorComparer.CaseSensitive;
             }
@@ -39,6 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 _stringComparer = StringComparer.OrdinalIgnoreCase;
                 _stringComparison = StringComparison.OrdinalIgnoreCase;
+                _AllowedChildTagDescriptorComparer = AllowedChildTagDescriptorComparer.Default;
                 _boundAttributeComparer = BoundAttributeDescriptorComparer.Default;
                 _tagMatchingRuleComparer = TagMatchingRuleDescriptorComparer.Default;
             }
@@ -71,9 +74,9 @@ namespace Microsoft.AspNetCore.Razor.Language
                 (descriptorX.AllowedChildTags != null &&
                 descriptorY.AllowedChildTags != null &&
                 Enumerable.SequenceEqual(
-                    descriptorX.AllowedChildTags.OrderBy(child => child, _stringComparer),
-                    descriptorY.AllowedChildTags.OrderBy(child => child, _stringComparer),
-                    _stringComparer))) &&
+                    descriptorX.AllowedChildTags.OrderBy(childTag => childTag.Name, _stringComparer),
+                    descriptorY.AllowedChildTags.OrderBy(childTag => childTag.Name, _stringComparer),
+                    _AllowedChildTagDescriptorComparer))) &&
                 string.Equals(descriptorX.Documentation, descriptorY.Documentation, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.DisplayName, descriptorY.DisplayName, StringComparison.Ordinal) &&
                 string.Equals(descriptorX.TagOutputHint, descriptorY.TagOutputHint, _stringComparison) &&
@@ -95,6 +98,12 @@ namespace Microsoft.AspNetCore.Razor.Language
             hashCodeCombiner.Add(descriptor.Kind);
             hashCodeCombiner.Add(descriptor.AssemblyName, StringComparer.Ordinal);
 
+            var childTags = descriptor.AllowedChildTags.OrderBy(childTag => childTag.Name, _stringComparer);
+            foreach (var childTag in childTags)
+            {
+                hashCodeCombiner.Add(_AllowedChildTagDescriptorComparer.GetHashCode(childTag));
+            }
+
             var boundAttributes = descriptor.BoundAttributes.OrderBy(attribute => attribute.Name, _stringComparer);
             foreach (var attribute in boundAttributes)
             {
@@ -110,15 +119,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             hashCodeCombiner.Add(descriptor.Documentation, StringComparer.Ordinal);
             hashCodeCombiner.Add(descriptor.DisplayName, StringComparer.Ordinal);
             hashCodeCombiner.Add(descriptor.TagOutputHint, _stringComparer);
-
-            if (descriptor.AllowedChildTags != null)
-            {
-                var allowedChildren = descriptor.AllowedChildTags.OrderBy(child => child, _stringComparer);
-                foreach (var child in allowedChildren)
-                {
-                    hashCodeCombiner.Add(child, _stringComparer);
-                }
-            }
 
             return hashCodeCombiner.CombinedHash;
         }

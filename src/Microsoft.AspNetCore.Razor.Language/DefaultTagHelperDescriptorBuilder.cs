@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         // Required values
         private readonly Dictionary<string, string> _metadata;
 
-        private HashSet<string> _allowedChildTags;
+        private List<DefaultAllowedChildTagDescriptorBuilder> _allowedChildTags;
         private List<DefaultBoundAttributeDescriptorBuilder> _attributeBuilders;
         private List<DefaultTagMatchingRuleDescriptorBuilder> _tagMatchingRuleBuilders;
         private DefaultRazorDiagnosticCollection _diagnostics;
@@ -38,19 +38,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override string DisplayName { get; set; }
 
-        public override ICollection<string> AllowedChildTags
-        {
-            get
-            {
-                if (_allowedChildTags == null)
-                {
-                    _allowedChildTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-                }
-
-                return _allowedChildTags;
-            }
-        }
-
         public override string TagOutputHint { get; set; }
 
         public override string Documentation { get; set; }
@@ -67,6 +54,16 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
 
                 return _diagnostics;
+            }
+        }
+
+        public override IReadOnlyList<AllowedChildTagDescriptorBuilder> AllowedChildTags
+        {
+            get
+            {
+                EnsureAllowedChildTags();
+
+                return _allowedChildTags;
             }
         }
 
@@ -88,6 +85,20 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 return _tagMatchingRuleBuilders;
             }
+        }
+
+        public override void AllowChildTag(Action<AllowedChildTagDescriptorBuilder> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            EnsureAllowedChildTags();
+
+            var builder = new DefaultAllowedChildTagDescriptorBuilder(this);
+            configure(builder);
+            _allowedChildTags.Add(builder);
         }
 
         public override void BindAttribute(Action<BoundAttributeDescriptorBuilder> configure)
@@ -120,11 +131,22 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override TagHelperDescriptor Build()
         {
-            var validationDiagnostics = Validate();
-            var diagnostics = new HashSet<RazorDiagnostic>(validationDiagnostics);
+            var diagnostics = new HashSet<RazorDiagnostic>();
             if (_diagnostics != null)
             {
                 diagnostics.UnionWith(_diagnostics);
+            }
+
+            var allowedChildTags = Array.Empty<AllowedChildTagDescriptor>();
+            if (_allowedChildTags != null)
+            {
+                var allowedChildTagsSet = new HashSet<AllowedChildTagDescriptor>(AllowedChildTagDescriptorComparer.Default);
+                for (var i = 0; i < _allowedChildTags.Count; i++)
+                {
+                    allowedChildTagsSet.Add(_allowedChildTags[i].Build());
+                }
+
+                allowedChildTags = allowedChildTagsSet.ToArray();
             }
 
             var tagMatchingRules = Array.Empty<TagMatchingRuleDescriptor>();
@@ -160,7 +182,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 TagOutputHint,
                 tagMatchingRules,
                 attributes,
-                _allowedChildTags?.ToArray() ?? Array.Empty<string>(),
+                allowedChildTags,
                 new Dictionary<string, string>(_metadata),
                 diagnostics.ToArray());
 
@@ -188,31 +210,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             return this.GetTypeName() ?? Name;
         }
 
-        private IEnumerable<RazorDiagnostic> Validate()
+        private void EnsureAllowedChildTags()
         {
-            if (_allowedChildTags != null)
+            if (_allowedChildTags == null)
             {
-                foreach (var name in _allowedChildTags)
-                {
-                    if (string.IsNullOrWhiteSpace(name))
-                    {
-                        var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRestrictedChildNullOrWhitespace(GetDisplayName());
-
-                        yield return diagnostic;
-                    }
-                    else if (name != TagHelperMatchingConventions.ElementCatchAllName)
-                    {
-                        foreach (var character in name)
-                        {
-                            if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
-                            {
-                                var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRestrictedChild(GetDisplayName(), name, character);
-
-                                yield return diagnostic;
-                            }
-                        }
-                    }
-                }
+                _allowedChildTags = new List<DefaultAllowedChildTagDescriptorBuilder>();
             }
         }
 

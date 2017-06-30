@@ -54,15 +54,17 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract string Documentation { get; set; }
 
-        public abstract ICollection<string> AllowedChildTags { get; }
-
         public abstract IDictionary<string, string> Metadata { get; }
 
         public abstract RazorDiagnosticCollection Diagnostics { get; }
 
+        public abstract IReadOnlyList<AllowedChildTagDescriptorBuilder> AllowedChildTags { get; }
+
         public abstract IReadOnlyList<BoundAttributeDescriptorBuilder> BoundAttributes { get; }
 
         public abstract IReadOnlyList<TagMatchingRuleDescriptorBuilder> TagMatchingRules { get; }
+
+        public abstract void AllowChildTag(Action<AllowedChildTagDescriptorBuilder> configure);
 
         public abstract void BindAttribute(Action<BoundAttributeDescriptorBuilder> configure);
 

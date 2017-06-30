@@ -855,7 +855,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     AllowedChildren = Builder.BindingResult.Descriptors
                         .Where(descriptor => descriptor.AllowedChildTags != null)
-                        .SelectMany(descriptor => descriptor.AllowedChildTags)
+                        .SelectMany(descriptor => descriptor.AllowedChildTags.Select(childTag => childTag.Name))
                         .Distinct(StringComparer.OrdinalIgnoreCase)
                         .ToList();
                 }

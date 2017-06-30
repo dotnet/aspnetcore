@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             string tagOutputHint,
             TagMatchingRuleDescriptor[] tagMatchingRules,
             BoundAttributeDescriptor[] attributeDescriptors,
-            string[] allowedChildTags,
+            AllowedChildTagDescriptor[] allowedChildTags,
             Dictionary<string, string> metadata,
             RazorDiagnostic[] diagnostics) 
             : base(kind)

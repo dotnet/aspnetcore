@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.AllowedChildTags.Add(allowedChild);
+            builder.AllowChildTag(childTagBuilder => childTagBuilder.Name = allowedChild);
 
             return builder;
         }

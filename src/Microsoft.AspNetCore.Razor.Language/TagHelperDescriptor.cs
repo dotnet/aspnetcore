@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public IEnumerable<BoundAttributeDescriptor> BoundAttributes { get; protected set; }
 
-        public IEnumerable<string> AllowedChildTags { get; protected set; }
+        public IEnumerable<AllowedChildTagDescriptor> AllowedChildTags { get; protected set; }
 
         public string Documentation { get; protected set; }
 
@@ -55,9 +55,13 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             if (_allDiagnostics == null)
             {
+                var allowedChildTagDiagnostics = AllowedChildTags.SelectMany(childTag => childTag.Diagnostics);
                 var attributeDiagnostics = BoundAttributes.SelectMany(attribute => attribute.Diagnostics);
                 var ruleDiagnostics = TagMatchingRules.SelectMany(rule => rule.GetAllDiagnostics());
-                var combinedDiagnostics = attributeDiagnostics.Concat(ruleDiagnostics).Concat(Diagnostics);
+                var combinedDiagnostics = allowedChildTagDiagnostics
+                    .Concat(attributeDiagnostics)
+                    .Concat(ruleDiagnostics)
+                    .Concat(Diagnostics);
                 _allDiagnostics = combinedDiagnostics.ToArray();
             }
 

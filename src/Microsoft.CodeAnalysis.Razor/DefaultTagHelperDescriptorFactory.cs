@@ -141,13 +141,13 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
-            builder.AllowedChildTags.Add((string)restrictChildrenAttribute.ConstructorArguments[0].Value);
+            builder.AllowChildTag(childTagBuilder => childTagBuilder.Name = (string)restrictChildrenAttribute.ConstructorArguments[0].Value);
 
             if (restrictChildrenAttribute.ConstructorArguments.Length == 2)
             {
                 foreach (var value in restrictChildrenAttribute.ConstructorArguments[1].Values)
                 {
-                    builder.AllowedChildTags.Add((string)value.Value);
+                    builder.AllowChildTag(childTagBuilder => childTagBuilder.Name = (string)value.Value);
                 }
             }
         }

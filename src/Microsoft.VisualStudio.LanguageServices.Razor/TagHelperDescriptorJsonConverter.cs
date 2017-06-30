@@ -58,8 +58,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             foreach (var childTag in childTags)
             {
-                var tagValue = childTag.Value<string>();
-                builder.AllowedChildTags.Add(tagValue);
+                var tag = childTag.Value<JObject>();
+                builder.AllowChildTag(childTagBuilder => ReadAllowedChildTag(childTagBuilder, tag, serializer));
             }
 
             foreach (var diagnostic in diagnostics)
@@ -124,6 +124,23 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             builder.NameComparisonMode = (RequiredAttributeDescriptor.NameComparisonMode)nameComparison;
             builder.Value = value;
             builder.ValueComparisonMode = (RequiredAttributeDescriptor.ValueComparisonMode)valueComparison;
+
+            foreach (var diagnostic in diagnostics)
+            {
+                var diagnosticReader = diagnostic.CreateReader();
+                var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
+                builder.Diagnostics.Add(diagnosticObject);
+            }
+        }
+
+        private void ReadAllowedChildTag(AllowedChildTagDescriptorBuilder builder, JObject childTag, JsonSerializer serializer)
+        {
+            var name = childTag[nameof(AllowedChildTagDescriptor.Name)].Value<string>();
+            var displayName = childTag[nameof(AllowedChildTagDescriptor.DisplayName)].Value<string>();
+            var diagnostics = childTag[nameof(AllowedChildTagDescriptor.Diagnostics)].Value<JArray>();
+
+            builder.Name = name;
+            builder.DisplayName = displayName;
 
             foreach (var diagnostic in diagnostics)
             {

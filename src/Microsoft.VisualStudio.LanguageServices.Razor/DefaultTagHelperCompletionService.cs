@@ -244,14 +244,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             foreach (var descriptor in binding.Descriptors)
             {
-                if (descriptor.AllowedChildTags == null)
-                {
-                    continue;
-                }
-
                 foreach (var childTag in descriptor.AllowedChildTags)
                 {
-                    var prefixedName = string.Concat(prefix, childTag);
+                    var prefixedName = string.Concat(prefix, childTag.Name);
                     var descriptors = _tagHelperFactsService.GetTagHelpersGivenTag(
                         completionContext.DocumentContext,
                         prefixedName,
