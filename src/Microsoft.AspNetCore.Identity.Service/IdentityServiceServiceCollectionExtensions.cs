@@ -55,20 +55,20 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddAuthentication().AddCookie(IdentityServiceOptions.CookieAuthenticationScheme, options =>
             {
-                options.CookieHttpOnly = true;
-                options.CookieSecure = CookieSecurePolicy.Always;
-                options.CookiePath = "/tfp/IdentityService/signinsignup";
-                options.CookieName = IdentityServiceOptions.AuthenticationCookieName;
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+                options.Cookie.Path = "/tfp/IdentityService/signinsignup";
+                options.Cookie.Name = IdentityServiceOptions.AuthenticationCookieName;
             });
             services.ConfigureApplicationCookie(options =>
             {
                 options.LoginPath = $"/tfp/IdentityService/Account/Login";
                 options.AccessDeniedPath = $"/tfp/IdentityService/Account/Denied";
-                options.CookiePath = $"/tfp/IdentityService";
+                options.Cookie.Path = $"/tfp/IdentityService";
             });
-            services.ConfigureApplicationCookie(options => options.CookiePath = $"/tfp/IdentityService");
-            services.Configure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorRememberMeScheme, options => options.CookiePath = $"/tfp/IdentityService");
-            services.Configure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorUserIdScheme, options => options.CookiePath = $"/tfp/IdentityService");
+            services.ConfigureApplicationCookie(options => options.Cookie.Path = $"/tfp/IdentityService");
+            services.Configure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorRememberMeScheme, options => options.Cookie.Path = $"/tfp/IdentityService");
+            services.Configure<CookieAuthenticationOptions>(IdentityConstants.TwoFactorUserIdScheme, options => options.Cookie.Path = $"/tfp/IdentityService");
 
             services.AddTransient<IConfigureOptions<AuthorizationOptions>, IdentityServiceAuthorizationOptionsSetup>();
 

@@ -68,23 +68,26 @@ namespace Microsoft.Extensions.DependencyInjection
                 options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
                 options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
                 options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-            }).AddCookie(IdentityConstants.ApplicationScheme, o =>
+            })
+			.AddCookie(IdentityConstants.ApplicationScheme, o =>
             {
                 o.LoginPath = new PathString("/Account/Login");
                 o.Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
                 };
-            }).AddCookie(IdentityConstants.ExternalScheme, o =>
+            })
+			.AddCookie(IdentityConstants.ExternalScheme, o =>
             {
-                o.CookieName = IdentityConstants.ExternalScheme;
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-            }).AddCookie(IdentityConstants.TwoFactorRememberMeScheme, 
-                o => o.CookieName = IdentityConstants.TwoFactorRememberMeScheme)
+                o.Cookie.Name = IdentityConstants.ExternalScheme;
+                o.Cookie.Expiration = TimeSpan.FromMinutes(5);
+            })
+			.AddCookie(IdentityConstants.TwoFactorRememberMeScheme,
+                o => o.Cookie.Name = IdentityConstants.TwoFactorRememberMeScheme)
             .AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
             {
-                o.CookieName = IdentityConstants.TwoFactorUserIdScheme;
-                o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+                o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
+                o.Cookie.Expiration = TimeSpan.FromMinutes(5);
             });
 
             // Hosting doesn't add IHttpContextAccessor by default

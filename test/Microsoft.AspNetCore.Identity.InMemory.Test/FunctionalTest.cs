@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory
             {
                 services.ConfigureApplicationCookie(options =>
                 {
-                    options.ExpireTimeSpan = TimeSpan.FromMinutes(10);
+                    options.Cookie.Expiration = TimeSpan.FromMinutes(10);
                     options.SlidingExpiration = false;
                 });
                 services.AddSingleton<ISystemClock>(clock);
