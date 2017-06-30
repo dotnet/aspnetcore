@@ -12,45 +12,117 @@ namespace Microsoft.AspNetCore.Builder
     /// </summary>
     public class SessionOptions
     {
-        /// <summary>
-        /// Determines the cookie name used to persist the session ID.
-        /// Defaults to <see cref="SessionDefaults.CookieName"/>.
-        /// </summary>
-        public string CookieName { get; set; } = SessionDefaults.CookieName;
+        private CookieBuilder _cookieBuilder = new SessionCookieBuilder();
 
         /// <summary>
-        /// Determines the domain used to create the cookie. Is not provided by default.
+        /// Determines the settings used to create the cookie.
+        /// <para>
+        /// <see cref="CookieBuilder.Name"/> defaults to <see cref="SessionDefaults.CookieName"/>.
+        /// <see cref="CookieBuilder.Path"/> defaults to <see cref="SessionDefaults.CookiePath"/>.
+        /// <see cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.
+        /// <see cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>
+        /// </para>
         /// </summary>
-        public string CookieDomain { get; set; }
-
-        /// <summary>
-        /// Determines the path used to create the cookie.
-        /// Defaults to <see cref="SessionDefaults.CookiePath"/>.
-        /// </summary>
-        public string CookiePath { get; set; } = SessionDefaults.CookiePath;
-
-        /// <summary>
-        /// Determines if the browser should allow the cookie to be accessed by client-side JavaScript. The
-        /// default is true, which means the cookie will only be passed to HTTP requests and is not made available
-        /// to script on the page.
-        /// </summary>
-        public bool CookieHttpOnly { get; set; } = true;
-
-        /// <summary>
-        /// Determines if the browser should allow the cookie to be attached to same-site or cross-site requests. The
-        /// default is Lax, which means the cookie is allowed to be attached to same-site and safe cross-site requests.
-        /// </summary>
-        public SameSiteMode SameSiteMode { get; set; } = SameSiteMode.Lax;
-
-        /// <summary>
-        /// Determines if the cookie should only be transmitted on HTTPS requests. 
-        /// </summary>
-        public CookieSecurePolicy CookieSecure { get; set; } = CookieSecurePolicy.None;
+        public CookieBuilder Cookie
+        {
+            get => _cookieBuilder;
+            set => _cookieBuilder = value ?? throw new ArgumentNullException(nameof(value));
+        }
 
         /// <summary>
         /// The IdleTimeout indicates how long the session can be idle before its contents are abandoned. Each session access
         /// resets the timeout. Note this only applies to the content of the session, not the cookie.
         /// </summary>
         public TimeSpan IdleTimeout { get; set; } = TimeSpan.FromMinutes(20);
+
+        #region Obsolete API
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.Name"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Determines the cookie name used to persist the session ID.
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Name) + ".")]
+        public string CookieName { get => Cookie.Name; set => Cookie.Name = value; }
+
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.Domain"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Determines the domain used to create the cookie. Is not provided by default.
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Domain) + ".")]
+        public string CookieDomain { get => Cookie.Domain; set => Cookie.Domain = value; }
+
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.Path"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Determines the path used to create the cookie.
+        /// Defaults to <see cref="SessionDefaults.CookiePath"/>.
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Path) + ".")]
+        public string CookiePath { get => Cookie.Path; set => Cookie.Path = value; }
+
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.HttpOnly"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Determines if the browser should allow the cookie to be accessed by client-side JavaScript. The
+        /// default is true, which means the cookie will only be passed to HTTP requests and is not made available
+        /// to script on the page.
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.HttpOnly) + ".")]
+        public bool CookieHttpOnly { get => Cookie.HttpOnly; set => Cookie.HttpOnly = value; }
+
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.SameSite"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Determines if the browser should allow the cookie to be attached to same-site or cross-site requests. The
+        /// default is Lax, which means the cookie is allowed to be attached to same-site and safe cross-site requests.
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.SameSite) + ".")]
+        public SameSiteMode SameSiteMode { get => Cookie.SameSite; set => Cookie.SameSite = value; }
+
+        /// <summary>
+        /// <para>
+        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.SecurePolicy"/> on <see cref="Cookie"/>.
+        /// </para>
+        /// <para>
+        /// Determines if the cookie should only be transmitted on HTTPS requests.
+        /// </para>
+        /// </summary>
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.SecurePolicy) + ".")]
+        public CookieSecurePolicy CookieSecure { get => Cookie.SecurePolicy; set => Cookie.SecurePolicy = value; }
+        #endregion
+
+        private class SessionCookieBuilder : CookieBuilder
+        {
+            public SessionCookieBuilder()
+            {
+                Name = SessionDefaults.CookieName;
+                Path = SessionDefaults.CookiePath;
+                SecurePolicy = CookieSecurePolicy.None;
+                SameSite = SameSiteMode.Lax;
+                HttpOnly = true;
+            }
+
+            public override TimeSpan? Expiration
+            {
+                get => null;
+                set => throw new InvalidOperationException(nameof(Expiration) + " cannot be set for the cookie defined by " + nameof(SessionOptions));
+            }
+        }
     }
 }

@@ -105,8 +105,11 @@ namespace Microsoft.AspNetCore.Session
                {
                    app.UseSession(new SessionOptions
                    {
-                       CookieName = "TestCookie",
-                       CookieSecure = cookieSecurePolicy
+                       Cookie =
+                       {
+                           Name = "TestCookie",
+                           SecurePolicy = cookieSecurePolicy
+                       }
                    });
                    app.Run(context =>
                    {

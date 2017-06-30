@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Session
         {
             var isNewSessionKey = false;
             Func<bool> tryEstablishSession = ReturnTrue;
-            var cookieValue = context.Request.Cookies[_options.CookieName];
+            var cookieValue = context.Request.Cookies[_options.Cookie.Name];
             var sessionKey = CookieProtection.Unprotect(_dataProtector, cookieValue, _logger);
             if (string.IsNullOrWhiteSpace(sessionKey) || sessionKey.Length != SessionKeyLength)
             {
@@ -150,23 +150,9 @@ namespace Microsoft.AspNetCore.Session
 
             private void SetCookie()
             {
-                var cookieOptions = new CookieOptions
-                {
-                    Domain = _options.CookieDomain,
-                    SameSite = _options.SameSiteMode,
-                    HttpOnly = _options.CookieHttpOnly,
-                    Path = _options.CookiePath ?? SessionDefaults.CookiePath,
-                };
-                if (_options.CookieSecure == CookieSecurePolicy.SameAsRequest)
-                {
-                    cookieOptions.Secure = _context.Request.IsHttps;
-                }
-                else
-                {
-                    cookieOptions.Secure = _options.CookieSecure == CookieSecurePolicy.Always;
-                }
+                var cookieOptions = _options.Cookie.Build(_context);
 
-                _context.Response.Cookies.Append(_options.CookieName, _cookieValue, cookieOptions);
+                _context.Response.Cookies.Append(_options.Cookie.Name, _cookieValue, cookieOptions);
 
                 _context.Response.Headers["Cache-Control"] = "no-cache";
                 _context.Response.Headers["Pragma"] = "no-cache";
