@@ -283,16 +283,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     if (_readTimingEnabled)
                     {
+                        // Reference in local var to avoid torn reads in case the min rate is changed via IHttpMinRequestBodyDataRateFeature
+                        var minRequestBodyDataRate = _frame.MinRequestBodyDataRate;
+
                         _readTimingElapsedTicks += timestamp - _lastTimestamp;
 
-                        if (_frame.MinRequestBodyDataRate?.BytesPerSecond > 0 && _readTimingElapsedTicks > _frame.MinRequestBodyDataRate.GracePeriod.Ticks)
+                        if (minRequestBodyDataRate?.BytesPerSecond > 0 && _readTimingElapsedTicks > minRequestBodyDataRate.GracePeriod.Ticks)
                         {
                             var elapsedSeconds = (double)_readTimingElapsedTicks / TimeSpan.TicksPerSecond;
                             var rate = Interlocked.Read(ref _readTimingBytesRead) / elapsedSeconds;
 
-                            if (rate < _frame.MinRequestBodyDataRate.BytesPerSecond && !Debugger.IsAttached)
+                            if (rate < minRequestBodyDataRate.BytesPerSecond && !Debugger.IsAttached)
                             {
-                                Log.RequestBodyMininumDataRateNotSatisfied(_context.ConnectionId, _frame.TraceIdentifier, _frame.MinRequestBodyDataRate.BytesPerSecond);
+                                Log.RequestBodyMininumDataRateNotSatisfied(_context.ConnectionId, _frame.TraceIdentifier, minRequestBodyDataRate.BytesPerSecond);
                                 Timeout();
                             }
                         }
