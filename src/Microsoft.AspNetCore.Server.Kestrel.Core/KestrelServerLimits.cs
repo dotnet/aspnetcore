@@ -255,11 +255,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// Gets or sets the request body minimum data rate in bytes/second.
         /// Setting this property to null indicates no minimum data rate should be enforced.
         /// This limit has no effect on upgraded connections which are always unlimited.
-        /// This can be overridden per-request via <see cref="IHttpRequestBodyMinimumDataRateFeature"/>.
+        /// This can be overridden per-request via <see cref="IHttpMinRequestBodyDataRateFeature"/>.
         /// </summary>
         /// <remarks>
         /// Defaults to 1 byte/second with a 5 second grace period.
         /// </remarks>
-        public MinimumDataRate RequestBodyMinimumDataRate { get; set; } = new MinimumDataRate(rate: 1, gracePeriod: TimeSpan.FromSeconds(5));
+        public MinDataRate MinRequestBodyDataRate { get; set; } = new MinDataRate(bytesPerSecond: 1, gracePeriod: TimeSpan.FromSeconds(5));
     }
 }

@@ -16,6 +16,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class HeartbeatTests
     {
         [Fact]
+        public void HeartbeatIntervalIsOneSecond()
+        {
+            Assert.Equal(TimeSpan.FromSeconds(1), Heartbeat.Interval);
+        }
+
+        [Fact]
         public void BlockedHeartbeatDoesntCauseOverlapsAndIsLoggedAsError()
         {
             var systemClock = new MockSystemClock();

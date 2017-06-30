@@ -333,4 +333,7 @@
   <data name="NonNegativeTimeSpanRequired" xml:space="preserve">
     <value>Value must be a non-negative TimeSpan.</value>
   </data>
+  <data name="MinimumGracePeriodRequired" xml:space="preserve">
+    <value>The request body rate enforcement grace period must be greater than {heartbeatInterval} second.</value>
+  </data>
 </root>

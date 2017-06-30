@@ -293,11 +293,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void RequestBodyMinimumDataRateDefault()
+        public void MinRequestBodyDataRateDefault()
         {
-            Assert.NotNull(new KestrelServerLimits().RequestBodyMinimumDataRate);
-            Assert.Equal(1, new KestrelServerLimits().RequestBodyMinimumDataRate.Rate);
-            Assert.Equal(TimeSpan.FromSeconds(5), new KestrelServerLimits().RequestBodyMinimumDataRate.GracePeriod);
+            Assert.NotNull(new KestrelServerLimits().MinRequestBodyDataRate);
+            Assert.Equal(1, new KestrelServerLimits().MinRequestBodyDataRate.BytesPerSecond);
+            Assert.Equal(TimeSpan.FromSeconds(5), new KestrelServerLimits().MinRequestBodyDataRate.GracePeriod);
         }
 
         public static TheoryData<TimeSpan> TimeoutValidData => new TheoryData<TimeSpan>

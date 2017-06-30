@@ -1018,6 +1018,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatNonNegativeTimeSpanRequired()
             => GetString("NonNegativeTimeSpanRequired");
 
+        /// <summary>
+        /// The request body rate enforcement grace period must be greater than {heartbeatInterval} seconds.
+        /// </summary>
+        internal static string MinimumGracePeriodRequired
+        {
+            get => GetString("MinimumGracePeriodRequired");
+        }
+
+        /// <summary>
+        /// The request body rate enforcement grace period must be greater than {heartbeatInterval} seconds.
+        /// </summary>
+        internal static string FormatMinimumGracePeriodRequired(object heartbeatInterval)
+            => string.Format(CultureInfo.CurrentCulture, GetString("MinimumGracePeriodRequired", "heartbeatInterval"), heartbeatInterval);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
