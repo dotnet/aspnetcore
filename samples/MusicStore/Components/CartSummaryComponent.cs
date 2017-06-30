@@ -20,10 +20,10 @@ namespace MusicStore.Components
         {
             var cart = ShoppingCart.GetCart(DbContext, HttpContext);
             
-            var cartItems = await cart.GetCartAlbumTitles();
+            var cartItems = await cart.GetCartItems();
 
-            ViewBag.CartCount = cartItems.Count;
-            ViewBag.CartSummary = string.Join("\n", cartItems.Distinct());
+            ViewBag.CartCount = cartItems.Sum(c => c.Count);
+            ViewBag.CartSummary = string.Join("\n", cartItems.Select(c => c.Album.Title).Distinct());
 
             return View();
         }
