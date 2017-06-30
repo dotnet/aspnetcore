@@ -335,8 +335,8 @@
       <RuntimeStoreNoTimestampArchive Include="$(RuntimeStoreSignedArchivesPath)**\Build.RS.linux.tar.gz"/>
     </ItemGroup>
 
-    <Error Text="@(RuntimeStoreTimestampArchive->Count()) timestamp linux archives found." Condition="'@(RuntimeStoreTimestampArchive->Count())' != 1" />
-    <Error Text="@(RuntimeStoreNoTimestampArchive->Count()) no timestamp linux archives found." Condition="'@(RuntimeStoreNoTimestampArchive->Count())' != 1" />
+    <Error Text="@(RuntimeStoreTimestampArchive->Count()) timestamp linux archives found at $(RuntimeStoreSignedArchivesPath)." Condition="'@(RuntimeStoreTimestampArchive->Count())' != 1" />
+    <Error Text="@(RuntimeStoreNoTimestampArchive->Count()) no timestamp linux archives found at $(RuntimeStoreSignedArchivesPath)." Condition="'@(RuntimeStoreNoTimestampArchive->Count())' != 1" />
   </Target>
 
   <Target Name="GenerateRpms" DependsOnTargets="EnsureInstallerPrerequisites">
