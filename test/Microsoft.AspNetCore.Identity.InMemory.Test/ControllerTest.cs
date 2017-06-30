@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Identity.InMemory.Test
 
             var context = new DefaultHttpContext();
             var auth = MockAuth(context);
-            auth.Setup(a => a.AuthenticateAsync(context, It.IsAny<string>())).Returns(Task.FromResult(AuthenticateResult.None()));
+            auth.Setup(a => a.AuthenticateAsync(context, It.IsAny<string>())).Returns(Task.FromResult(AuthenticateResult.NoResult()));
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(a => a.HttpContext).Returns(context);
             var services = new ServiceCollection()

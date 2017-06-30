@@ -507,7 +507,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             }
             // REVIEW: auth changes we lost the ability to mock is persistent
             //var properties = new AuthenticationProperties { IsPersistent = isPersistent };
-            var authResult = AuthenticateResult.None();
+            var authResult = AuthenticateResult.NoResult();
             auth.Setup(a => a.AuthenticateAsync(context, IdentityConstants.ApplicationScheme))
                 .Returns(Task.FromResult(authResult)).Verifiable();
             var manager = SetupUserManager(user);
