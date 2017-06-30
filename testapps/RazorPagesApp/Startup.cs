@@ -10,7 +10,7 @@ namespace RazorPagesApp
         public void ConfigureServices(IServiceCollection services)
         {
             var builder = services.AddMvc();
-            services.AddCookieAuthentication(options => options.LoginPath = "/Login");
+            services.AddAuthentication().AddCookie(options => options.LoginPath = "/Login");
             ConfigureMvc(builder);
         }
 
