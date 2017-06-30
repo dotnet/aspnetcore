@@ -26,7 +26,7 @@ namespace RazorPagesApp
             builder.AddRazorPagesOptions(options =>
             {
                 options.RootDirectory = "/Pages";
-                options.AuthorizeFolder("/Auth");
+                options.Conventions.AuthorizeFolder("/Auth");
             });
         }
     }
