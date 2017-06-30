@@ -20,7 +20,7 @@ namespace MvcSandbox
 
             services.Insert(0, ServiceDescriptor.Singleton(
                 typeof(IConfigureOptions<AntiforgeryOptions>),
-                new ConfigureOptions<AntiforgeryOptions>(options => options.CookieName = "<choose a name>")));
+                new ConfigureOptions<AntiforgeryOptions>(options => options.Cookie.Name = "<choose a name>")));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
