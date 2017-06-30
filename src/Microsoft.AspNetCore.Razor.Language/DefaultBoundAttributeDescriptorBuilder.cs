@@ -30,17 +30,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private readonly DefaultTagHelperDescriptorBuilder _parent;
         private readonly string _kind;
-
-        private string _displayName;
-        private bool _isEnum;
-        private bool _hasIndexer;
-        private string _indexerValueTypeName;
-        private string _name;
-        private string _typeName;
-        private string _documentation;
-        private string _indexerNamePrefix;
         private readonly Dictionary<string, string> _metadata;
-        private HashSet<RazorDiagnostic> _diagnostics;
+
+        private DefaultRazorDiagnosticCollection _diagnostics;
 
         public DefaultBoundAttributeDescriptorBuilder(DefaultTagHelperDescriptorBuilder parent, string kind)
         {
@@ -50,70 +42,35 @@ namespace Microsoft.AspNetCore.Razor.Language
             _metadata = new Dictionary<string, string>();
         }
 
+        public override string Name { get; set; }
+
+        public override string TypeName { get; set; }
+
+        public override bool IsEnum { get; set; }
+
+        public override bool IsDictionary { get; set; }
+
+        public override string IndexerAttributeNamePrefix { get; set; }
+
+        public override string IndexerValueTypeName { get; set; }
+
+        public override string Documentation { get; set; }
+
+        public override string DisplayName { get; set; }
+
         public override IDictionary<string, string> Metadata => _metadata;
 
-        public override BoundAttributeDescriptorBuilder Name(string name)
+        public override RazorDiagnosticCollection Diagnostics
         {
-            _name = name;
-
-            return this;
-        }
-
-        public override BoundAttributeDescriptorBuilder TypeName(string typeName)
-        {
-            _typeName = typeName;
-
-            return this;
-        }
-
-        public override BoundAttributeDescriptorBuilder AsEnum()
-        {
-            _isEnum = true;
-
-            return this;
-        }
-
-        public override BoundAttributeDescriptorBuilder AsDictionary(string attributeNamePrefix, string valueTypeName)
-        {
-            _indexerNamePrefix = attributeNamePrefix;
-            _indexerValueTypeName = valueTypeName;
-            _hasIndexer = true;
-
-            return this;
-        }
-
-        public override BoundAttributeDescriptorBuilder Documentation(string documentation)
-        {
-            _documentation = documentation;
-
-            return this;
-        }
-
-        public override BoundAttributeDescriptorBuilder AddMetadata(string key, string value)
-        {
-            _metadata[key] = value;
-
-            return this;
-        }
-
-        public override BoundAttributeDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic)
-        {
-            EnsureDiagnostics();
-            _diagnostics.Add(diagnostic);
-
-            return this;
-        }
-
-        public override BoundAttributeDescriptorBuilder DisplayName(string displayName)
-        {
-            if (displayName == null)
+            get
             {
-                throw new ArgumentNullException(nameof(displayName));
+                if (_diagnostics == null)
+                {
+                    _diagnostics = new DefaultRazorDiagnosticCollection();
+                }
+
+                return _diagnostics;
             }
-
-            _displayName = displayName;
-
-            return this;
         }
 
         public BoundAttributeDescriptor Build()
@@ -127,15 +84,15 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             var descriptor = new DefaultBoundAttributeDescriptor(
                 _kind,
-                _name,
-                _typeName,
-                _isEnum,
-                _hasIndexer,
-                _indexerNamePrefix,
-                _indexerValueTypeName,
-                _documentation,
+                Name,
+                TypeName,
+                IsEnum,
+                IsDictionary,
+                IndexerAttributeNamePrefix,
+                IndexerValueTypeName,
+                Documentation,
                 GetDisplayName(),
-                new Dictionary<string, string>(_metadata),
+                new Dictionary<string, string>(Metadata),
                 diagnostics.ToArray());
 
             return descriptor;
@@ -143,28 +100,28 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private string GetDisplayName()
         {
-            if (_displayName != null)
+            if (DisplayName != null)
             {
-                return _displayName;
+                return DisplayName;
             }
 
             var parentTypeName = _parent.GetTypeName();
             var propertyName = this.GetPropertyName();
 
-            if (_typeName != null &&
+            if (TypeName != null &&
                 propertyName != null &&
                 parentTypeName != null)
             {
                 // This looks like a normal c# property, so lets compute a display name based on that.
-                if (!PrimitiveDisplayTypeNameLookups.TryGetValue(_typeName, out var simpleTypeName))
+                if (!PrimitiveDisplayTypeNameLookups.TryGetValue(TypeName, out var simpleTypeName))
                 {
-                    simpleTypeName = _typeName;
+                    simpleTypeName = TypeName;
                 }
 
                 return $"{simpleTypeName} {parentTypeName}.{propertyName}";
             }
 
-            return _name;
+            return Name;
         }
 
         private IEnumerable<RazorDiagnostic> Validate()
@@ -173,9 +130,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             // the server; therefore it's invalid for TagHelpers to bind to them.
             const string DataDashPrefix = "data-";
 
-            if (string.IsNullOrWhiteSpace(_name))
+            if (string.IsNullOrWhiteSpace(Name))
             {
-                if (_indexerNamePrefix == null)
+                if (IndexerAttributeNamePrefix == null)
                 {
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNullOrWhitespace(
                         _parent.GetDisplayName(),
@@ -186,24 +143,24 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
             else
             {
-                if (_name.StartsWith(DataDashPrefix, StringComparison.OrdinalIgnoreCase))
+                if (Name.StartsWith(DataDashPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNameStartsWith(
                         _parent.GetDisplayName(),
                         GetDisplayName(),
-                        _name);
+                        Name);
 
                     yield return diagnostic;
                 }
 
-                foreach (var character in _name)
+                foreach (var character in Name)
                 {
                     if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeName(
                             _parent.GetDisplayName(),
                             GetDisplayName(),
-                            _name,
+                            Name,
                             character);
 
                         yield return diagnostic;
@@ -211,18 +168,18 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
             }
 
-            if (_indexerNamePrefix != null)
+            if (IndexerAttributeNamePrefix != null)
             {
-                if (_indexerNamePrefix.StartsWith(DataDashPrefix, StringComparison.OrdinalIgnoreCase))
+                if (IndexerAttributeNamePrefix.StartsWith(DataDashPrefix, StringComparison.OrdinalIgnoreCase))
                 {
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributePrefixStartsWith(
                         _parent.GetDisplayName(),
                         GetDisplayName(),
-                        _indexerNamePrefix);
+                        IndexerAttributeNamePrefix);
 
                     yield return diagnostic;
                 }
-                else if (_indexerNamePrefix.Length > 0 && string.IsNullOrWhiteSpace(_indexerNamePrefix))
+                else if (IndexerAttributeNamePrefix.Length > 0 && string.IsNullOrWhiteSpace(IndexerAttributeNamePrefix))
                 {
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributeNullOrWhitespace(
                         _parent.GetDisplayName(),
@@ -232,28 +189,20 @@ namespace Microsoft.AspNetCore.Razor.Language
                 }
                 else
                 {
-                    foreach (var character in _indexerNamePrefix)
+                    foreach (var character in IndexerAttributeNamePrefix)
                     {
                         if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                         {
                             var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidBoundAttributePrefix(
                                 _parent.GetDisplayName(),
                                 GetDisplayName(),
-                                _indexerNamePrefix,
+                                IndexerAttributeNamePrefix,
                                 character);
 
                             yield return diagnostic;
                         }
                     }
                 }
-            }
-        }
-
-        private void EnsureDiagnostics()
-        {
-            if (_diagnostics == null)
-            {
-                _diagnostics = new HashSet<RazorDiagnostic>();
             }
         }
     }

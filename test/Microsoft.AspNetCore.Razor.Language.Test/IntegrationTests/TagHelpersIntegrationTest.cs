@@ -110,11 +110,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 foreach (var attributeBuilder in attributes)
                 {
-                    builder.BindAttribute(attributeBuilder);
+                    builder.BoundAttributeDescriptor(attributeBuilder);
                 }
             }
 
-            builder.TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName));
+            builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
 
             var descriptor = builder.Build();
 

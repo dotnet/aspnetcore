@@ -9,46 +9,27 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRequiredAttributeDescriptorBuilder : RequiredAttributeDescriptorBuilder
     {
-        private string _name;
-        private RequiredAttributeDescriptor.NameComparisonMode _nameComparison;
-        private string _value;
-        private RequiredAttributeDescriptor.ValueComparisonMode _valueComparison;
-        private HashSet<RazorDiagnostic> _diagnostics;
+        private DefaultRazorDiagnosticCollection _diagnostics;
 
-        public override RequiredAttributeDescriptorBuilder Name(string name)
+        public override string Name { get; set; }
+
+        public override RequiredAttributeDescriptor.NameComparisonMode NameComparisonMode { get; set; }
+
+        public override string Value { get; set; }
+
+        public override RequiredAttributeDescriptor.ValueComparisonMode ValueComparisonMode { get; set; }
+
+        public override RazorDiagnosticCollection Diagnostics
         {
-            _name = name;
+            get
+            {
+                if (_diagnostics == null)
+                {
+                    _diagnostics = new DefaultRazorDiagnosticCollection();
+                }
 
-            return this;
-        }
-
-        public override RequiredAttributeDescriptorBuilder NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode nameComparison)
-        {
-            _nameComparison = nameComparison;
-
-            return this;
-        }
-
-        public override RequiredAttributeDescriptorBuilder Value(string value)
-        {
-            _value = value;
-
-            return this;
-        }
-
-        public override RequiredAttributeDescriptorBuilder ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode valueComparison)
-        {
-            _valueComparison = valueComparison;
-
-            return this;
-        }
-
-        public override RequiredAttributeDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic)
-        {
-            EnsureDiagnostics();
-            _diagnostics.Add(diagnostic);
-
-            return this;
+                return _diagnostics;
+            }
         }
 
         public RequiredAttributeDescriptor Build()
@@ -60,12 +41,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 diagnostics.UnionWith(_diagnostics);
             }
 
-            var displayName = _nameComparison == RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch ? string.Concat(_name, "...") : _name;
+            var displayName = NameComparisonMode == RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch ? string.Concat(Name, "...") : Name;
             var rule = new DefaultRequiredAttributeDescriptor(
-                _name,
-                _nameComparison,
-                _value,
-                _valueComparison,
+                Name,
+                NameComparisonMode,
+                Value,
+                ValueComparisonMode,
                 displayName,
                 diagnostics?.ToArray() ?? Array.Empty<RazorDiagnostic>());
 
@@ -74,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private IEnumerable<RazorDiagnostic> Validate()
         {
-            if (string.IsNullOrWhiteSpace(_name))
+            if (string.IsNullOrWhiteSpace(Name))
             {
                 var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeNameNullOrWhitespace();
 
@@ -82,23 +63,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
             else
             {
-                foreach (var character in _name)
+                foreach (var character in Name)
                 {
                     if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                     {
-                        var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName(_name, character);
+                        var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedAttributeName(Name, character);
 
                         yield return diagnostic;
                     }
                 }
-            }
-        }
-
-        private void EnsureDiagnostics()
-        {
-            if (_diagnostics == null)
-            {
-                _diagnostics = new HashSet<RazorDiagnostic>();
             }
         }
     }

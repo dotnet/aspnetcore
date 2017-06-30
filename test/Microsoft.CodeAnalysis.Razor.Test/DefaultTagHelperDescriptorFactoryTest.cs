@@ -324,13 +324,13 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(EnumTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(EnumTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(EnumTagHelper).FullName)
-                            .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("enum"))
-                            .BindAttribute(builder =>
+                            .TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName("enum"))
+                            .BoundAttributeDescriptor(builder =>
                                 builder
                                     .Name("non-enum-property")
                                     .PropertyName(nameof(EnumTagHelper.NonEnumProperty))
                                     .TypeName(typeof(int).FullName))
-                            .BindAttribute(builder =>
+                            .BoundAttributeDescriptor(builder =>
                                 builder
                                     .Name("enum-property")
                                     .PropertyName(nameof(EnumTagHelper.EnumProperty))
@@ -342,14 +342,14 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(MultiEnumTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiEnumTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(MultiEnumTagHelper).FullName)
-                            .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("p"))
-                            .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("input"))
-                            .BindAttribute(builder =>
+                            .TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName("p"))
+                            .TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName("input"))
+                            .BoundAttributeDescriptor(builder =>
                                 builder
                                     .Name("non-enum-property")
                                     .PropertyName(nameof(MultiEnumTagHelper.NonEnumProperty))
                                     .TypeName(typeof(int).FullName))
-                            .BindAttribute(builder =>
+                            .BoundAttributeDescriptor(builder =>
                                 builder
                                     .Name("enum-property")
                                     .PropertyName(nameof(MultiEnumTagHelper.EnumProperty))
@@ -361,19 +361,19 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(NestedEnumTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(NestedEnumTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(NestedEnumTagHelper).FullName)
-                            .TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName("nested-enum"))
-                            .BindAttribute(builder =>
+                            .TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName("nested-enum"))
+                            .BoundAttributeDescriptor(builder =>
                                 builder
                                     .Name("non-enum-property")
                                     .PropertyName(nameof(NestedEnumTagHelper.NonEnumProperty))
                                     .TypeName(typeof(int).FullName))
-                            .BindAttribute(builder =>
+                            .BoundAttributeDescriptor(builder =>
                                 builder
                                     .Name("enum-property")
                                     .PropertyName(nameof(NestedEnumTagHelper.EnumProperty))
                                     .TypeName(typeof(CustomEnum).FullName)
                                     .AsEnum())
-                            .BindAttribute(builder =>
+                            .BoundAttributeDescriptor(builder =>
                                 builder
                                     .Name("nested-enum-property")
                                     .PropertyName(nameof(NestedEnumTagHelper.NestedEnumProperty))
@@ -413,23 +413,23 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(RequiredParentTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(RequiredParentTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(RequiredParentTagHelper).FullName)
-                            .TagMatchingRule(builder => builder.RequireTagName("input").RequireParentTag("div"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("input").RequireParentTag("div"))
                             .Build()
                     },
                     {
                         typeof(MultiSpecifiedRequiredParentTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiSpecifiedRequiredParentTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(MultiSpecifiedRequiredParentTagHelper).FullName)
-                            .TagMatchingRule(builder => builder.RequireTagName("p").RequireParentTag("div"))
-                            .TagMatchingRule(builder => builder.RequireTagName("input").RequireParentTag("section"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("p").RequireParentTag("div"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("input").RequireParentTag("section"))
                             .Build()
                     },
                     {
                         typeof(MultiWithUnspecifiedRequiredParentTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiWithUnspecifiedRequiredParentTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(MultiWithUnspecifiedRequiredParentTagHelper).FullName)
-                            .TagMatchingRule(builder => builder.RequireTagName("p"))
-                            .TagMatchingRule(builder => builder.RequireTagName("input").RequireParentTag("div"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("p"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("input").RequireParentTag("div"))
                             .Build()
                     },
                 };
@@ -464,7 +464,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(RestrictChildrenTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(RestrictChildrenTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(RestrictChildrenTagHelper).FullName)
-                            .TagMatchingRule(builder => builder.RequireTagName("restrict-children"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("restrict-children"))
                             .AllowChildTag("p")
                             .Build()
                     },
@@ -472,7 +472,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(DoubleRestrictChildrenTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(DoubleRestrictChildrenTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(DoubleRestrictChildrenTagHelper).FullName)
-                            .TagMatchingRule(builder => builder.RequireTagName("double-restrict-children"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("double-restrict-children"))
                             .AllowChildTag("p")
                             .AllowChildTag("strong")
                             .Build()
@@ -481,8 +481,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(MultiTargetRestrictChildrenTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiTargetRestrictChildrenTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(MultiTargetRestrictChildrenTagHelper).FullName)
-                            .TagMatchingRule(builder => builder.RequireTagName("p"))
-                            .TagMatchingRule(builder => builder.RequireTagName("div"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("p"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("div"))
                             .AllowChildTag("p")
                             .AllowChildTag("strong")
                             .Build()
@@ -520,7 +520,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(TagStructureTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(TagStructureTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(TagStructureTagHelper).FullName)
-                            .TagMatchingRule(builder => builder
+                            .TagMatchingRuleDescriptor(builder => builder
                                 .RequireTagName("input")
                                 .RequireTagStructure(TagStructure.WithoutEndTag))
                             .Build()
@@ -529,10 +529,10 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(MultiSpecifiedTagStructureTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiSpecifiedTagStructureTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(MultiSpecifiedTagStructureTagHelper).FullName)
-                            .TagMatchingRule(builder => builder
+                            .TagMatchingRuleDescriptor(builder => builder
                                 .RequireTagName("p")
                                 .RequireTagStructure(TagStructure.NormalOrSelfClosing))
-                            .TagMatchingRule(builder => builder
+                            .TagMatchingRuleDescriptor(builder => builder
                                 .RequireTagName("input")
                                 .RequireTagStructure(TagStructure.WithoutEndTag))
                             .Build()
@@ -541,9 +541,9 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(MultiWithUnspecifiedTagStructureTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(MultiWithUnspecifiedTagStructureTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(MultiWithUnspecifiedTagStructureTagHelper).FullName)
-                            .TagMatchingRule(builder => builder
+                            .TagMatchingRuleDescriptor(builder => builder
                                 .RequireTagName("p"))
-                            .TagMatchingRule(builder => builder
+                            .TagMatchingRuleDescriptor(builder => builder
                                 .RequireTagName("input")
                                 .RequireTagStructure(TagStructure.WithoutEndTag))
                             .Build()
@@ -761,7 +761,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
-                                builder => builder.RequireAttribute(attribute => attribute.Name("class")),
+                                builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("class")),
                             })
                     },
                     {
@@ -775,8 +775,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 builder =>
                                 {
                                     builder
-                                        .RequireAttribute(attribute => attribute.Name("class"))
-                                        .RequireAttribute(attribute => attribute.Name("style"));
+                                        .RequireAttributeDescriptor(attribute => attribute.Name("class"))
+                                        .RequireAttributeDescriptor(attribute => attribute.Name("style"));
                                 },
                             })
                     },
@@ -788,12 +788,12 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
-                                builder => builder.RequireAttribute(attribute => attribute.Name("custom")),
+                                builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("custom")),
                                 builder =>
                                 {
                                     builder
-                                        .RequireAttribute(attribute => attribute.Name("class"))
-                                        .RequireAttribute(attribute => attribute.Name("style"));
+                                        .RequireAttributeDescriptor(attribute => attribute.Name("class"))
+                                        .RequireAttributeDescriptor(attribute => attribute.Name("style"));
                                 },
                             })
                     },
@@ -805,7 +805,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
-                                builder => builder.RequireAttribute(attribute => attribute.Name("style")),
+                                builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("style")),
                             })
                     },
                     {
@@ -816,7 +816,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
-                                builder => builder.RequireAttribute(attribute => attribute.Name("class")),
+                                builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("class")),
                             })
                     },
                     {
@@ -827,7 +827,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
-                                builder => builder.RequireAttribute(attribute => attribute.Name("class")),
+                                builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("class")),
                             })
                     },
                     {
@@ -840,10 +840,10 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             {
                                 builder => builder
                                     .RequireTagName("div")
-                                    .RequireAttribute(attribute => attribute.Name("class")),
+                                    .RequireAttributeDescriptor(attribute => attribute.Name("class")),
                                 builder => builder
                                     .RequireTagName("input")
-                                    .RequireAttribute(attribute => attribute.Name("class")),
+                                    .RequireAttributeDescriptor(attribute => attribute.Name("class")),
                             })
                     },
                     {
@@ -854,8 +854,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             AssemblyName,
                             ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
-                                builder => builder.RequireAttribute(attribute => attribute.Name("style")),
-                                builder => builder.RequireAttribute(attribute => attribute.Name("class")),
+                                builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("style")),
+                                builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("class")),
                             })
                     },
                     {
@@ -867,8 +867,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder
-                                    .RequireAttribute(attribute => attribute.Name("class"))
-                                    .RequireAttribute(attribute => attribute.Name("style")),
+                                    .RequireAttributeDescriptor(attribute => attribute.Name("class"))
+                                    .RequireAttributeDescriptor(attribute => attribute.Name("style")),
                             })
                     },
                     {
@@ -881,12 +881,12 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             {
                                 builder => builder
                                     .RequireTagName("div")
-                                    .RequireAttribute(attribute => attribute.Name("class"))
-                                    .RequireAttribute(attribute => attribute.Name("style")),
+                                    .RequireAttributeDescriptor(attribute => attribute.Name("class"))
+                                    .RequireAttributeDescriptor(attribute => attribute.Name("style")),
                                 builder => builder
                                     .RequireTagName("input")
-                                    .RequireAttribute(attribute => attribute.Name("class"))
-                                    .RequireAttribute(attribute => attribute.Name("style")),
+                                    .RequireAttributeDescriptor(attribute => attribute.Name("class"))
+                                    .RequireAttributeDescriptor(attribute => attribute.Name("style")),
                             })
                     },
                     {
@@ -898,7 +898,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder
-                                    .RequireAttribute(attribute => attribute
+                                    .RequireAttributeDescriptor(attribute => attribute
                                         .Name("class")
                                         .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)),
                             })
@@ -912,10 +912,10 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                             ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                             {
                                 builder => builder
-                                    .RequireAttribute(attribute => attribute
+                                    .RequireAttributeDescriptor(attribute => attribute
                                         .Name("class")
                                         .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch))
-                                    .RequireAttribute(attribute => attribute
+                                    .RequireAttributeDescriptor(attribute => attribute
                                         .Name("style")
                                         .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)),
                             })
@@ -1786,7 +1786,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .Name("dictionary-property")
                                 .PropertyName(nameof(DefaultValidHtmlAttributePrefix.DictionaryProperty))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
-                                .AsDictionary("dictionary-property-", typeof(string).FullName);
+                                .AsDictionaryAttribute("dictionary-property-", typeof(string).FullName);
                             }),
                         },
                         Enumerable.Empty<RazorDiagnostic>()
@@ -1801,7 +1801,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .Name("valid-name")
                                 .PropertyName(nameof(SingleValidHtmlAttributePrefix.DictionaryProperty))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
-                                .AsDictionary("valid-name-", typeof(string).FullName);
+                                .AsDictionaryAttribute("valid-name-", typeof(string).FullName);
                             }),
                         },
                         Enumerable.Empty<RazorDiagnostic>()
@@ -1816,7 +1816,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .Name("valid-name1")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.DictionaryProperty))
                                 .TypeName($"{typeof(Dictionary<,>).Namespace}.Dictionary<System.String, System.Object>")
-                                .AsDictionary("valid-prefix1-", typeof(object).FullName);
+                                .AsDictionaryAttribute("valid-prefix1-", typeof(object).FullName);
                             }),
                             CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
                             {
@@ -1824,7 +1824,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .Name("valid-name2")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.DictionarySubclassProperty))
                                 .TypeName(typeof(DictionarySubclass).FullName)
-                                .AsDictionary("valid-prefix2-", typeof(string).FullName);
+                                .AsDictionaryAttribute("valid-prefix2-", typeof(string).FullName);
                             }),
                             CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
                             {
@@ -1832,7 +1832,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .Name("valid-name3")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.DictionaryWithoutParameterlessConstructorProperty))
                                 .TypeName(typeof(DictionaryWithoutParameterlessConstructor).FullName)
-                                .AsDictionary("valid-prefix3-", typeof(string).FullName);
+                                .AsDictionaryAttribute("valid-prefix3-", typeof(string).FullName);
                             }),
                             CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
                             {
@@ -1840,7 +1840,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .Name("valid-name4")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.GenericDictionarySubclassProperty))
                                 .TypeName(typeof(GenericDictionarySubclass<object>).Namespace + ".GenericDictionarySubclass<System.Object>")
-                                .AsDictionary("valid-prefix4-", typeof(object).FullName);
+                                .AsDictionaryAttribute("valid-prefix4-", typeof(object).FullName);
                             }),
                             CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
                             {
@@ -1848,7 +1848,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .Name("valid-name5")
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.SortedDictionaryProperty))
                                 .TypeName(typeof(SortedDictionary<string, int>).Namespace + ".SortedDictionary<System.String, System.Int32>")
-                                .AsDictionary("valid-prefix5-", typeof(int).FullName);
+                                .AsDictionaryAttribute("valid-prefix5-", typeof(int).FullName);
                             }),
                             CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
                             {
@@ -1862,14 +1862,14 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 attribute
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.GetOnlyDictionaryProperty))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.Int32>")
-                                .AsDictionary("get-only-dictionary-property-", typeof(int).FullName);
+                                .AsDictionaryAttribute("get-only-dictionary-property-", typeof(int).FullName);
                             }),
                             CreateAttributeFor(typeof(MultipleValidHtmlAttributePrefix), attribute =>
                             {
                                 attribute
                                 .PropertyName(nameof(MultipleValidHtmlAttributePrefix.GetOnlyDictionaryPropertyWithAttributePrefix))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.String>")
-                                .AsDictionary("valid-prefix6", typeof(string).FullName);
+                                .AsDictionaryAttribute("valid-prefix6", typeof(string).FullName);
                             }),
                         },
                         Enumerable.Empty<RazorDiagnostic>()
@@ -1913,7 +1913,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .Name("valid-name2")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntProperty))
                                 .TypeName($"{typeof(Dictionary<,>).Namespace}.Dictionary<System.Int32, System.String>")
-                                .AsDictionary("valid-prefix2-", typeof(string).FullName)
+                                .AsDictionaryAttribute("valid-prefix2-", typeof(string).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
@@ -1947,7 +1947,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 .Name("valid-name5")
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.DictionaryOfIntSubclassProperty))
                                 .TypeName(typeof(DictionaryOfIntSubclass).FullName)
-                                .AsDictionary("valid-prefix5-", typeof(string).FullName)
+                                .AsDictionaryAttribute("valid-prefix5-", typeof(string).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
@@ -1958,7 +1958,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 attribute
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryAttributePrefix))
                                 .TypeName($"{dictionaryNamespace}<System.Int32, System.String>")
-                                .AsDictionary("valid-prefix6", typeof(string).FullName)
+                                .AsDictionaryAttribute("valid-prefix6", typeof(string).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
@@ -1969,7 +1969,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                                 attribute
                                 .PropertyName(nameof(MultipleInvalidHtmlAttributePrefix.GetOnlyDictionaryPropertyWithAttributeName))
                                 .TypeName($"{dictionaryNamespace}<System.String, System.Object>")
-                                .AsDictionary("invalid-name7-", typeof(object).FullName)
+                                .AsDictionaryAttribute("invalid-name7-", typeof(object).FullName)
                                 .AddDiagnostic(
                                     RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNull(
                                         typeof(MultipleInvalidHtmlAttributePrefix).FullName,
@@ -2035,8 +2035,8 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(MultipleDescriptorTagHelperWithOutputElementHint),
                         TagHelperDescriptorBuilder.Create(typeof(MultipleDescriptorTagHelperWithOutputElementHint).FullName, AssemblyName)
                             .TypeName(typeof(MultipleDescriptorTagHelperWithOutputElementHint).FullName)
-                            .TagMatchingRule(builder => builder.RequireTagName("a"))
-                            .TagMatchingRule(builder => builder.RequireTagName("p"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("a"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("p"))
                             .TagOutputHint("div")
                             .Build()
                     },
@@ -2044,14 +2044,14 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(InheritedOutputElementHintTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(InheritedOutputElementHintTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(InheritedOutputElementHintTagHelper).FullName)
-                            .TagMatchingRule(builder => builder.RequireTagName("inherited-output-element-hint"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("inherited-output-element-hint"))
                             .Build()
                     },
                     {
                         typeof(OutputElementHintTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(OutputElementHintTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(OutputElementHintTagHelper).FullName)
-                            .TagMatchingRule(builder => builder.RequireTagName("output-element-hint"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("output-element-hint"))
                             .TagOutputHint("hinted-value")
                             .Build()
                     },
@@ -2059,7 +2059,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
                         typeof(OverriddenOutputElementHintTagHelper),
                         TagHelperDescriptorBuilder.Create(typeof(OverriddenOutputElementHintTagHelper).FullName, AssemblyName)
                             .TypeName(typeof(OverriddenOutputElementHintTagHelper).FullName)
-                            .TagMatchingRule(builder => builder.RequireTagName("overridden-output-element-hint"))
+                            .TagMatchingRuleDescriptor(builder => builder.RequireTagName("overridden-output-element-hint"))
                             .TagOutputHint("overridden")
                             .Build()
                     },
@@ -2330,7 +2330,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             {
                 foreach (var attributeBuilder in attributes)
                 {
-                    builder.BindAttribute(attributeBuilder);
+                    builder.BoundAttributeDescriptor(attributeBuilder);
                 }
             }
 
@@ -2338,7 +2338,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             {
                 foreach (var ruleBuilder in ruleBuilders)
                 {
-                    builder.TagMatchingRule(innerRuleBuilder =>
+                    builder.TagMatchingRuleDescriptor(innerRuleBuilder =>
                     {
                         innerRuleBuilder.RequireTagName(tagName);
                         ruleBuilder(innerRuleBuilder);
@@ -2347,7 +2347,7 @@ namespace Microsoft.CodeAnalysis.Razor.Workspaces
             }
             else
             {
-                builder.TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName));
+                builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
             }
 
             var descriptor = builder.Build();

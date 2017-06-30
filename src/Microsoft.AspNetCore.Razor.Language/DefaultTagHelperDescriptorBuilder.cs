@@ -10,31 +10,83 @@ namespace Microsoft.AspNetCore.Razor.Language
     internal class DefaultTagHelperDescriptorBuilder : TagHelperDescriptorBuilder
     {
         // Required values
-        private readonly string _kind;
-        private readonly string _name;
-        private readonly string _assemblyName;
         private readonly Dictionary<string, string> _metadata;
 
-        private string _displayName;
-        private string _documentation;
-        private string _tagOutputHint;
         private HashSet<string> _allowedChildTags;
         private List<DefaultBoundAttributeDescriptorBuilder> _attributeBuilders;
         private List<DefaultTagMatchingRuleDescriptorBuilder> _tagMatchingRuleBuilders;
-        private HashSet<RazorDiagnostic> _diagnostics;
+        private DefaultRazorDiagnosticCollection _diagnostics;
 
         public DefaultTagHelperDescriptorBuilder(string kind, string name, string assemblyName)
         {
-            _kind = kind;
-            _name = name;
-            _assemblyName = assemblyName;
+            Kind = kind;
+            Name = name;
+            AssemblyName = assemblyName;
 
             _metadata = new Dictionary<string, string>(StringComparer.Ordinal);
         }
 
+        public override string Name { get; }
+
+        public override string AssemblyName { get; }
+
+        public override string Kind { get; }
+
+        public override string DisplayName { get; set; }
+
+        public override ICollection<string> AllowedChildTags
+        {
+            get
+            {
+                if (_allowedChildTags == null)
+                {
+                    _allowedChildTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                }
+
+                return _allowedChildTags;
+            }
+        }
+
+        public override string TagOutputHint { get; set; }
+
+        public override string Documentation { get; set; }
+
         public override IDictionary<string, string> Metadata => _metadata;
 
-        public override TagHelperDescriptorBuilder BindAttribute(Action<BoundAttributeDescriptorBuilder> configure)
+        public override RazorDiagnosticCollection Diagnostics
+        {
+            get
+            {
+                if (_diagnostics == null)
+                {
+                    _diagnostics = new DefaultRazorDiagnosticCollection();
+                }
+
+                return _diagnostics;
+            }
+        }
+
+        public override IReadOnlyList<BoundAttributeDescriptorBuilder> BoundAttributes
+        {
+            get
+            {
+                EnsureAttributeBuilders();
+
+                return _attributeBuilders;
+            }
+        }
+
+        public override IReadOnlyList<TagMatchingRuleDescriptorBuilder> TagMatchingRules
+        {
+            get
+            {
+                EnsureTagMatchingRuleBuilders();
+
+                return _tagMatchingRuleBuilders;
+            }
+        }
+
+        public override void BindAttribute(Action<BoundAttributeDescriptorBuilder> configure)
         {
             if (configure == null)
             {
@@ -43,13 +95,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             EnsureAttributeBuilders();
 
-            var builder = new DefaultBoundAttributeDescriptorBuilder(this, _kind);
+            var builder = new DefaultBoundAttributeDescriptorBuilder(this, Kind);
             configure(builder);
             _attributeBuilders.Add(builder);
-            return this;
         }
 
-        public override TagHelperDescriptorBuilder TagMatchingRule(Action<TagMatchingRuleDescriptorBuilder> configure)
+        public override void TagMatchingRule(Action<TagMatchingRuleDescriptorBuilder> configure)
         {
             if (configure == null)
             {
@@ -61,57 +112,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             var builder = new DefaultTagMatchingRuleDescriptorBuilder();
             configure(builder);
             _tagMatchingRuleBuilders.Add(builder);
-
-            return this;
-        }
-
-        public override TagHelperDescriptorBuilder AllowChildTag(string allowedChild)
-        {
-            EnsureAllowedChildTags();
-            _allowedChildTags.Add(allowedChild);
-
-            return this;
-        }
-
-        public override TagHelperDescriptorBuilder TagOutputHint(string hint)
-        {
-            _tagOutputHint = hint;
-
-            return this;
-        }
-
-        public override TagHelperDescriptorBuilder Documentation(string documentation)
-        {
-            _documentation = documentation;
-
-            return this;
-        }
-
-        public override TagHelperDescriptorBuilder AddMetadata(string key, string value)
-        {
-            _metadata[key] = value;
-
-            return this;
-        }
-
-        public override TagHelperDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic)
-        {
-            EnsureDiagnostics();
-            _diagnostics.Add(diagnostic);
-
-            return this;
-        }
-
-        public override TagHelperDescriptorBuilder DisplayName(string displayName)
-        {
-            if (displayName == null)
-            {
-                throw new ArgumentNullException(nameof(displayName));
-            }
-
-            _displayName = displayName;
-
-            return this;
         }
 
         public override TagHelperDescriptor Build()
@@ -148,12 +148,12 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var descriptor = new DefaultTagHelperDescriptor(
-                _kind,
-                _name,
-                _assemblyName,
+                Kind,
+                Name,
+                AssemblyName,
                 GetDisplayName(),
-                _documentation,
-                _tagOutputHint,
+                Documentation,
+                TagOutputHint,
                 tagMatchingRules,
                 attributes,
                 _allowedChildTags?.ToArray() ?? Array.Empty<string>(),
@@ -165,8 +165,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override void Reset()
         {
-            _documentation = null;
-            _tagOutputHint = null;
+            Documentation = null;
+            TagOutputHint = null;
             _allowedChildTags?.Clear();
             _attributeBuilders?.Clear();
             _tagMatchingRuleBuilders?.Clear();
@@ -176,12 +176,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public string GetDisplayName()
         {
-            if (_displayName != null)
+            if (DisplayName != null)
             {
-                return _displayName;
+                return DisplayName;
             }
 
-            return this.GetTypeName() ?? _name;
+            return this.GetTypeName() ?? Name;
         }
 
         private IEnumerable<RazorDiagnostic> Validate()
@@ -225,22 +225,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (_tagMatchingRuleBuilders == null)
             {
                 _tagMatchingRuleBuilders = new List<DefaultTagMatchingRuleDescriptorBuilder>();
-            }
-        }
-
-        private void EnsureAllowedChildTags()
-        {
-            if (_allowedChildTags == null)
-            {
-                _allowedChildTags = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            }
-        }
-
-        private void EnsureDiagnostics()
-        {
-            if (_diagnostics == null)
-            {
-                _diagnostics = new HashSet<RazorDiagnostic>();
             }
         }
     }

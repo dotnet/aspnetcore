@@ -56,16 +56,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var tagName = $"vc:{HtmlConventions.ToHtmlCase(shortName)}";
             var typeName = $"__Generated__{shortName}ViewComponentTagHelper";
             var displayName = shortName + "ViewComponentTagHelper";
-            var descriptorBuilder = TagHelperDescriptorBuilder.Create(ViewComponentTagHelperConventions.Kind, typeName, assemblyName)
-                .SetTypeName(typeName)
-                .DisplayName(displayName);
+            var descriptorBuilder = TagHelperDescriptorBuilder.Create(ViewComponentTagHelperConventions.Kind, typeName, assemblyName);
+            descriptorBuilder.SetTypeName(typeName);
+            descriptorBuilder.DisplayName = displayName;
             
             if (TryFindInvokeMethod(type, out var method, out var diagnostic))
             {
                 var methodParameters = method.Parameters;
                 descriptorBuilder.TagMatchingRule(ruleBuilder =>
                 {
-                    ruleBuilder.RequireTagName(tagName);
+                    ruleBuilder.TagName = tagName;
                     AddRequiredAttributes(methodParameters, ruleBuilder);
                 });
 
@@ -73,10 +73,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
             else
             {
-                descriptorBuilder.AddDiagnostic(diagnostic);
+                descriptorBuilder.Diagnostics.Add(diagnostic);
             }
 
-            descriptorBuilder.AddMetadata(ViewComponentTagHelperMetadata.Name, shortName);
+            descriptorBuilder.Metadata[ViewComponentTagHelperMetadata.Name] = shortName;
 
             var descriptor = descriptorBuilder.Build();
             return descriptor;
@@ -161,10 +161,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 {
                     // Set required attributes only for non-indexer attributes. Indexer attributes can't be required attributes
                     // because there are two ways of setting values for the attribute.
-                    builder.RequireAttribute(attributeBuilder =>
+                    builder.Attribute(attributeBuilder =>
                     {
                         var lowerKebabName = HtmlConventions.ToHtmlCase(parameter.Name);
-                        attributeBuilder.Name(lowerKebabName);
+                        attributeBuilder.Name =lowerKebabName;
                     });
                 }
             }
@@ -184,15 +184,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
                 builder.BindAttribute(attributeBuilder =>
                 {
-                    attributeBuilder
-                        .Name(lowerKebabName)
-                        .SetPropertyName(parameter.Name)
-                        .TypeName(typeName)
-                        .DisplayName($"{simpleName} {containingDisplayName}.{parameter.Name}");
+                    attributeBuilder.Name = lowerKebabName;
+                    attributeBuilder.TypeName = typeName;
+                    attributeBuilder.DisplayName = $"{simpleName} {containingDisplayName}.{parameter.Name}";
+                    attributeBuilder.SetPropertyName(parameter.Name);
 
                     if (parameter.Type.TypeKind == TypeKind.Enum)
                     {
-                        attributeBuilder.AsEnum();
+                        attributeBuilder.IsEnum = true;
                     }
                     else
                     {

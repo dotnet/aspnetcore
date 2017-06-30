@@ -59,7 +59,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 do
                 {
                     var successfulParse = true;
-                    ruleBuilder.RequireAttribute(attributeBuilder =>
+                    ruleBuilder.Attribute(attributeBuilder =>
                     {
                         if (At('['))
                         {
@@ -89,7 +89,7 @@ namespace Microsoft.CodeAnalysis.Razor
                         else if (!AtEnd)
                         {
                             var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeCharacter(Current, _requiredAttributes);
-                            attributeBuilder.AddDiagnostic(diagnostic);
+                            attributeBuilder.Diagnostics.Add(diagnostic);
                             successfulParse = false;
                             return;
                         }
@@ -130,8 +130,8 @@ namespace Microsoft.CodeAnalysis.Razor
                     }
                 }
 
-                attributeBuilder.Name(attributeName);
-                attributeBuilder.NameComparisonMode(nameComparison);
+                attributeBuilder.Name = attributeName;
+                attributeBuilder.NameComparisonMode = nameComparison;
             }
 
             private void ParseCssAttributeName(RequiredAttributeDescriptorBuilder builder)
@@ -143,7 +143,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 var attributeName = _requiredAttributes.Substring(nameStartIndex, nameEndIndex - nameStartIndex);
 
-                builder.Name(attributeName);
+                builder.Name = attributeName;
             }
 
             private bool TryParseCssValueComparison(RequiredAttributeDescriptorBuilder builder, out RequiredAttributeDescriptor.ValueComparisonMode valueComparison)
@@ -163,7 +163,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     else if (op != '=') // We're at an incomplete operator (ex: [foo^]
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_PartialRequiredAttributeOperator(op, _requiredAttributes);
-                        builder.AddDiagnostic(diagnostic);
+                        builder.Diagnostics.Add(diagnostic);
 
                         return false;
                     }
@@ -171,12 +171,12 @@ namespace Microsoft.CodeAnalysis.Razor
                 else if (!At(']'))
                 {
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeOperator(Current, _requiredAttributes);
-                    builder.AddDiagnostic(diagnostic);
+                    builder.Diagnostics.Add(diagnostic);
 
                     return false;
                 }
 
-                builder.ValueComparisonMode(valueComparison);
+                builder.ValueComparisonMode = valueComparison;
 
                 return true;
             }
@@ -197,7 +197,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     if (valueEnd == -1)
                     {
                         var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeMismatchedQuotes(quote, _requiredAttributes);
-                        builder.AddDiagnostic(diagnostic);
+                        builder.Diagnostics.Add(diagnostic);
 
                         return false;
                     }
@@ -213,7 +213,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 var value = _requiredAttributes.Substring(valueStart, valueEnd - valueStart);
 
-                builder.Value(value);
+                builder.Value = value;
 
                 return true;
             }
@@ -263,12 +263,12 @@ namespace Microsoft.CodeAnalysis.Razor
                 else if (AtEnd)
                 {
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace(_requiredAttributes);
-                    attributeBuilder.AddDiagnostic(diagnostic);
+                    attributeBuilder.Diagnostics.Add(diagnostic);
                 }
                 else
                 {
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidRequiredAttributeCharacter(Current, _requiredAttributes);
-                    attributeBuilder.AddDiagnostic(diagnostic);
+                    attributeBuilder.Diagnostics.Add(diagnostic);
                 }
 
                 return false;
@@ -279,7 +279,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 if (AtEnd)
                 {
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_CouldNotFindMatchingEndBrace(_requiredAttributes);
-                    builder.AddDiagnostic(diagnostic);
+                    builder.Diagnostics.Add(diagnostic);
 
                     return false;
                 }

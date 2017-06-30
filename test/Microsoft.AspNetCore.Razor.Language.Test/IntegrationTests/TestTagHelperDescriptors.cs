@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
-                                .RequireAttribute(attribute => attribute
+                                .RequireAttributeDescriptor(attribute => attribute
                                     .Name("href")
                                     .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                                     .Value("~/")
@@ -75,12 +75,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
-                                .RequireAttribute(attribute => attribute
+                                .RequireAttributeDescriptor(attribute => attribute
                                     .Name("href")
                                     .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                                     .Value("~/")
                                     .ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode.PrefixMatch))
-                                .RequireAttribute(attribute => attribute
+                                .RequireAttributeDescriptor(attribute => attribute
                                     .Name("href")
                                     .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                                     .Value("?hello=world")
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
-                                .RequireAttribute(attribute => attribute
+                                .RequireAttributeDescriptor(attribute => attribute
                                     .Name("type")
                                     .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                                     .Value("text")
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
-                                .RequireAttribute(attribute => attribute
+                                .RequireAttributeDescriptor(attribute => attribute
                                     .Name("ty")
                                     .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)),
                         }),
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
-                                .RequireAttribute(attribute => attribute
+                                .RequireAttributeDescriptor(attribute => attribute
                                     .Name("href")
                                     .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                                     .Value("~/")
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
-                                .RequireAttribute(attribute => attribute
+                                .RequireAttributeDescriptor(attribute => attribute
                                     .Name("type")
                                     .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)),
                         }),
@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         },
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
-                            builder => builder.RequireAttribute(attribute => attribute.Name("bound")),
+                            builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("bound")),
                         }),
                 };
             }
@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         },
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
-                            builder => builder.RequireAttribute(attribute => attribute.Name("catchall-unbound-required")),
+                            builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("catchall-unbound-required")),
                         }),
                     CreateTagHelperDescriptor(
                         tagName: "input",
@@ -264,8 +264,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
-                                .RequireAttribute(attribute => attribute.Name("input-bound-required-string"))
-                                .RequireAttribute(attribute => attribute.Name("input-unbound-required")),
+                                .RequireAttributeDescriptor(attribute => attribute.Name("input-bound-required-string"))
+                                .RequireAttributeDescriptor(attribute => attribute.Name("input-unbound-required")),
                         }),
                 };
             }
@@ -311,8 +311,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         },
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
-                            builder => builder.RequireAttribute(attribute => attribute.Name("type")),
-                            builder => builder.RequireAttribute(attribute => attribute.Name("checked"))
+                            builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("type")),
+                            builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("checked"))
                         }),
                     CreateTagHelperDescriptor(
                         tagName: "input",
@@ -325,8 +325,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         },
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
-                            builder => builder.RequireAttribute(attribute => attribute.Name("type")),
-                            builder => builder.RequireAttribute(attribute => attribute.Name("checked"))
+                            builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("type")),
+                            builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("checked"))
                         })
                 };
             }
@@ -346,7 +346,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         assemblyName: "TestAssembly",
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
-                            builder => builder.RequireAttribute(attribute => attribute.Name("class")),
+                            builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("class")),
                         }),
                     CreateTagHelperDescriptor(
                         tagName: "input",
@@ -358,7 +358,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         },
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
-                            builder => builder.RequireAttribute(attribute => attribute.Name("type")),
+                            builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("type")),
                         }),
                     CreateTagHelperDescriptor(
                         tagName: "input",
@@ -372,8 +372,8 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
                             builder => builder
-                                .RequireAttribute(attribute => attribute.Name("type"))
-                                .RequireAttribute(attribute => attribute.Name("checked")),
+                                .RequireAttributeDescriptor(attribute => attribute.Name("type"))
+                                .RequireAttributeDescriptor(attribute => attribute.Name("checked")),
                         }),
                     CreateTagHelperDescriptor(
                         tagName: "*",
@@ -381,7 +381,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                         assemblyName: "TestAssembly",
                         ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                         {
-                            builder => builder.RequireAttribute(attribute => attribute.Name("catchAll")),
+                            builder => builder.RequireAttributeDescriptor(attribute => attribute.Name("catchAll")),
                         }),
                 };
             }
@@ -407,7 +407,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .Name("int-dictionary")
                                 .PropertyName("IntDictionaryProperty")
                                 .TypeName(typeof(IDictionary<string, int>).FullName)
-                                .AsDictionary("int-prefix-", typeof(int).FullName),
+                                .AsDictionaryAttribute("int-prefix-", typeof(int).FullName),
                             builder => builder
                                 .Name("string-prefix-grabber")
                                 .PropertyName("StringProperty")
@@ -416,7 +416,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .Name("string-dictionary")
                                 .PropertyName("StringDictionaryProperty")
                                 .TypeName("Namespace.DictionaryWithoutParameterlessConstructor<string, string>")
-                                .AsDictionary("string-prefix-", typeof(string).FullName),
+                                .AsDictionaryAttribute("string-prefix-", typeof(string).FullName),
                         }),
                     CreateTagHelperDescriptor(
                         tagName: "input",
@@ -428,12 +428,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                                 .Name("int-dictionary")
                                 .PropertyName("IntDictionaryProperty")
                                 .TypeName(typeof(int).FullName)
-                                .AsDictionary("int-prefix-", typeof(int).FullName),
+                                .AsDictionaryAttribute("int-prefix-", typeof(int).FullName),
                             builder => builder
                                 .Name("string-dictionary")
                                 .PropertyName("StringDictionaryProperty")
                                 .TypeName("Namespace.DictionaryWithoutParameterlessConstructor<string, string>")
-                                .AsDictionary("string-prefix-", typeof(string).FullName),
+                                .AsDictionaryAttribute("string-prefix-", typeof(string).FullName),
                         }),
                 };
             }
@@ -523,7 +523,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 foreach (var attributeBuilder in attributes)
                 {
-                    builder.BindAttribute(attributeBuilder);
+                    builder.BoundAttributeDescriptor(attributeBuilder);
                 }
             }
 
@@ -531,7 +531,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 foreach (var ruleBuilder in ruleBuilders)
                 {
-                    builder.TagMatchingRule(innerRuleBuilder =>
+                    builder.TagMatchingRuleDescriptor(innerRuleBuilder =>
                     {
                         innerRuleBuilder.RequireTagName(tagName);
                         ruleBuilder(innerRuleBuilder);
@@ -540,7 +540,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
             else
             {
-                builder.TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName));
+                builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
             }
 
             var descriptor = builder.Build();

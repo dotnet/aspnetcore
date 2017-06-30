@@ -42,23 +42,31 @@ namespace Microsoft.AspNetCore.Razor.Language
             return new DefaultTagHelperDescriptorBuilder(kind, name, assemblyName);
         }
 
+        public abstract string Name { get; }
+
+        public abstract string AssemblyName { get; }
+
+        public abstract string Kind { get; }
+
+        public abstract string DisplayName { get; set; }
+
+        public abstract string TagOutputHint { get; set; }
+
+        public abstract string Documentation { get; set; }
+
+        public abstract ICollection<string> AllowedChildTags { get; }
+
         public abstract IDictionary<string, string> Metadata { get; }
 
-        public abstract TagHelperDescriptorBuilder BindAttribute(Action<BoundAttributeDescriptorBuilder> configure);
+        public abstract RazorDiagnosticCollection Diagnostics { get; }
 
-        public abstract TagHelperDescriptorBuilder TagMatchingRule(Action<TagMatchingRuleDescriptorBuilder> configure);
+        public abstract IReadOnlyList<BoundAttributeDescriptorBuilder> BoundAttributes { get; }
 
-        public abstract TagHelperDescriptorBuilder AllowChildTag(string allowedChild);
+        public abstract IReadOnlyList<TagMatchingRuleDescriptorBuilder> TagMatchingRules { get; }
 
-        public abstract TagHelperDescriptorBuilder TagOutputHint(string hint);
+        public abstract void BindAttribute(Action<BoundAttributeDescriptorBuilder> configure);
 
-        public abstract TagHelperDescriptorBuilder Documentation(string documentation);
-
-        public abstract TagHelperDescriptorBuilder AddMetadata(string key, string value);
-
-        public abstract TagHelperDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic);
-
-        public abstract TagHelperDescriptorBuilder DisplayName(string displayName);
+        public abstract void TagMatchingRule(Action<TagMatchingRuleDescriptorBuilder> configure);
 
         public abstract TagHelperDescriptor Build();
 

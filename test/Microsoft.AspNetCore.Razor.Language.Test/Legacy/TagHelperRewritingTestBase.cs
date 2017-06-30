@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             foreach (var tagName in tagNames)
             {
                 var descriptor = TagHelperDescriptorBuilder.Create(tagName + "taghelper", "SomeAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName(tagName))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName(tagName))
                     .Build();
                 descriptors.Add(descriptor);
             }

@@ -28,18 +28,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 typeof(StringParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
                 .TypeName("__Generated__StringParameterViewComponentTagHelper")
                 .DisplayName("StringParameterViewComponentTagHelper")
-                .TagMatchingRule(rule =>
+                .TagMatchingRuleDescriptor(rule =>
                     rule
                     .RequireTagName("vc:string-parameter")
-                    .RequireAttribute(attribute => attribute.Name("foo"))
-                    .RequireAttribute(attribute => attribute.Name("bar")))
-                .BindAttribute(attribute =>
+                    .RequireAttributeDescriptor(attribute => attribute.Name("foo"))
+                    .RequireAttributeDescriptor(attribute => attribute.Name("bar")))
+                .BoundAttributeDescriptor(attribute =>
                     attribute
                     .Name("foo")
                     .PropertyName("foo")
                     .TypeName(typeof(string).FullName)
                     .DisplayName("string StringParameterViewComponentTagHelper.foo"))
-                .BindAttribute(attribute =>
+                .BoundAttributeDescriptor(attribute =>
                     attribute
                     .Name("bar")
                     .PropertyName("bar")
@@ -69,26 +69,26 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 typeof(VariousParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
                 .TypeName("__Generated__VariousParameterViewComponentTagHelper")
                 .DisplayName("VariousParameterViewComponentTagHelper")
-                .TagMatchingRule(rule =>
+                .TagMatchingRuleDescriptor(rule =>
                     rule
                     .RequireTagName("vc:various-parameter")
-                    .RequireAttribute(attribute => attribute.Name("test-enum"))
-                    .RequireAttribute(attribute => attribute.Name("test-string"))
-                    .RequireAttribute(attribute => attribute.Name("baz")))
-                .BindAttribute(attribute =>
+                    .RequireAttributeDescriptor(attribute => attribute.Name("test-enum"))
+                    .RequireAttributeDescriptor(attribute => attribute.Name("test-string"))
+                    .RequireAttributeDescriptor(attribute => attribute.Name("baz")))
+                .BoundAttributeDescriptor(attribute =>
                     attribute
                     .Name("test-enum")
                     .PropertyName("testEnum")
                     .TypeName(typeof(VariousParameterViewComponent).FullName + "." + nameof(VariousParameterViewComponent.TestEnum))
                     .AsEnum()
                     .DisplayName(typeof(VariousParameterViewComponent).FullName + "." + nameof(VariousParameterViewComponent.TestEnum) + " VariousParameterViewComponentTagHelper.testEnum"))
-                .BindAttribute(attribute =>
+                .BoundAttributeDescriptor(attribute =>
                     attribute
                     .Name("test-string")
                     .PropertyName("testString")
                     .TypeName(typeof(string).FullName)
                     .DisplayName("string VariousParameterViewComponentTagHelper.testString"))
-                .BindAttribute(attribute =>
+                .BoundAttributeDescriptor(attribute =>
                     attribute
                     .Name("baz")
                     .PropertyName("baz")
@@ -118,22 +118,22 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 typeof(GenericParameterViewComponent).GetTypeInfo().Assembly.GetName().Name)
                 .TypeName("__Generated__GenericParameterViewComponentTagHelper")
                 .DisplayName("GenericParameterViewComponentTagHelper")
-                .TagMatchingRule(rule =>
+                .TagMatchingRuleDescriptor(rule =>
                     rule
                     .RequireTagName("vc:generic-parameter")
-                    .RequireAttribute(attribute => attribute.Name("foo")))
-                .BindAttribute(attribute =>
+                    .RequireAttributeDescriptor(attribute => attribute.Name("foo")))
+                .BoundAttributeDescriptor(attribute =>
                     attribute
                     .Name("foo")
                     .PropertyName("Foo")
                     .TypeName("System.Collections.Generic.List<System.String>")
                     .DisplayName("System.Collections.Generic.List<System.String> GenericParameterViewComponentTagHelper.Foo"))
-                .BindAttribute(attribute =>
+                .BoundAttributeDescriptor(attribute =>
                     attribute
                     .Name("bar")
                     .PropertyName("Bar")
                     .TypeName("System.Collections.Generic.Dictionary<System.String, System.Int32>")
-                    .AsDictionary("bar-", typeof(int).FullName)
+                    .AsDictionaryAttribute("bar-", typeof(int).FullName)
                     .DisplayName("System.Collections.Generic.Dictionary<System.String, System.Int32> GenericParameterViewComponentTagHelper.Bar"))
                 .AddMetadata(ViewComponentTagHelperMetadata.Name, "GenericParameter")
                 .Build();

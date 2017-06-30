@@ -7,23 +7,24 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class BoundAttributeDescriptorBuilder
     {
+        public abstract string Name { get; set; }
+
+        public abstract string TypeName { get; set; }
+
+        public abstract bool IsEnum { get; set; }
+
+        public abstract bool IsDictionary { get; set; }
+
+        public abstract string IndexerAttributeNamePrefix { get; set; }
+
+        public abstract string IndexerValueTypeName { get; set; }
+
+        public abstract string Documentation { get; set; }
+
+        public abstract string DisplayName { get; set; }
+
         public abstract IDictionary<string, string> Metadata { get; }
 
-        public abstract BoundAttributeDescriptorBuilder Name(string name);
-
-        public abstract BoundAttributeDescriptorBuilder TypeName(string typeName);
-
-        public abstract BoundAttributeDescriptorBuilder AsEnum();
-
-        public abstract BoundAttributeDescriptorBuilder AsDictionary(string attributeNamePrefix, string valueTypeName);
-
-        public abstract BoundAttributeDescriptorBuilder Documentation(string documentation);
-
-        public abstract BoundAttributeDescriptorBuilder AddMetadata(string key, string value);
-
-        public abstract BoundAttributeDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic);
-
-        public abstract BoundAttributeDescriptorBuilder DisplayName(string displayName);
-
+        public abstract RazorDiagnosticCollection Diagnostics { get; }
     }
 }

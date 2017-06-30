@@ -20,7 +20,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("*"))
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
@@ -40,29 +40,29 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                             .RequireTagName("a")
-                            .RequireAttribute(attribute => attribute.Name("asp-for")))
-                    .BindAttribute(attribute =>
+                            .RequireAttributeDescriptor(attribute => attribute.Name("asp-for")))
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                             .Name("asp-for")
                             .TypeName(typeof(string).FullName)
-                            .SetPropertyName("AspFor"))
-                    .BindAttribute(attribute =>
+                            .PropertyName("AspFor"))
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                             .Name("asp-route")
                             .TypeName(typeof(IDictionary<string, string>).Namespace + "IDictionary<string, string>")
-                            .SetPropertyName("AspRoute")
-                            .AsDictionary("asp-route-", typeof(string).FullName))
+                            .PropertyName("AspRoute")
+                            .AsDictionaryAttribute("asp-route-", typeof(string).FullName))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("input"))
-                    .BindAttribute(attribute =>
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("input"))
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                             .Name("asp-for")
                             .TypeName(typeof(string).FullName)
-                            .SetPropertyName("AspFor"))
+                            .PropertyName("AspFor"))
                     .Build(),
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
@@ -89,18 +89,18 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("a"))
-                    .BindAttribute(attribute =>
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("a"))
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                             .Name("asp-for")
                             .TypeName(typeof(string).FullName)
-                            .SetPropertyName("AspFor"))
-                    .BindAttribute(attribute =>
+                            .PropertyName("AspFor"))
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                             .Name("asp-route")
                             .TypeName(typeof(IDictionary<string, string>).Namespace + "IDictionary<string, string>")
-                            .SetPropertyName("AspRoute")
-                            .AsDictionary("asp-route-", typeof(string).FullName))
+                            .PropertyName("AspRoute")
+                            .AsDictionaryAttribute("asp-route-", typeof(string).FullName))
                     .Build()
             };
             var expectedAttributeDescriptors = new[]
@@ -125,17 +125,17 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("input"))
-                    .BindAttribute(attribute =>
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("input"))
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                             .Name("asp-for")
                             .TypeName(typeof(string).FullName)
-                            .SetPropertyName("AspFor"))
-                    .BindAttribute(attribute =>
+                            .PropertyName("AspFor"))
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                             .Name("asp-extra")
                             .TypeName(typeof(string).FullName)
-                            .SetPropertyName("AspExtra"))
+                            .PropertyName("AspExtra"))
                     .Build()
             };
             var expectedAttributeDescriptors = new[]
@@ -160,7 +160,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("*"))
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
@@ -180,7 +180,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("strong"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("strong"))
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
@@ -200,7 +200,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var expectedDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(
+                    .TagMatchingRuleDescriptor(
                         rule => rule
                             .RequireTagName("a")
                             .RequireParentTag("div"))
@@ -210,7 +210,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             {
                 expectedDescriptors[0],
                 TagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
-                    .TagMatchingRule(
+                    .TagMatchingRuleDescriptor(
                         rule => rule
                             .RequireTagName("strong")
                             .RequireParentTag("div"))
@@ -233,14 +233,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var expectedDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("strong"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("strong"))
                     .Build()
             };
             var documentDescriptors = new[]
             {
                 expectedDescriptors[0],
                 TagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("thstrong"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("thstrong"))
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create("th", documentDescriptors);
@@ -260,7 +260,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var expectedDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(
+                    .TagMatchingRuleDescriptor(
                         rule => rule
                             .RequireTagName("strong")
                             .RequireParentTag("div"))
@@ -270,7 +270,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             {
                 expectedDescriptors[0],
                 TagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
-                    .TagMatchingRule(
+                    .TagMatchingRuleDescriptor(
                         rule => rule
                             .RequireTagName("strong")
                             .RequireParentTag("p"))
@@ -293,7 +293,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
@@ -313,10 +313,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("PTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule
+                    .TagMatchingRuleDescriptor(rule => rule
                         .RequireTagName("p")
                         .RequireParentTag("body"))
                     .Build()
@@ -339,7 +339,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                     .Build()
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
@@ -359,7 +359,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var expectedDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestType", "TestAssembly")
-                    .TagMatchingRule(
+                    .TagMatchingRuleDescriptor(
                         rule => rule
                             .RequireTagName("p")
                             .RequireParentTag("div"))
@@ -369,7 +369,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             {
                 expectedDescriptors[0],
                 TagHelperDescriptorBuilder.Create("TestType2", "TestAssembly")
-                    .TagMatchingRule(
+                    .TagMatchingRuleDescriptor(
                         rule => rule
                             .RequireTagName("strong")
                             .RequireParentTag("p"))

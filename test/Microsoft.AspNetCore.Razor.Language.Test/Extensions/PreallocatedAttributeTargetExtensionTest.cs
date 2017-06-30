@@ -187,7 +187,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
             builder
                 .Name("Foo")
                 .TypeName("System.Collections.Generic.Dictionary<System.String, System.String>")
-                .AsDictionary("pre-", "System.String")
+                .AsDictionaryAttribute("pre-", "System.String")
                 .PropertyName("FooProp");
 
             var descriptor = builder.Build();

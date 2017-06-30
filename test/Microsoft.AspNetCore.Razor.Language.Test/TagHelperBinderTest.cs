@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var divTagHelper = TagHelperDescriptorBuilder.Create("DivTagHelper", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName("div"))
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                 .Build();
             var expectedDescriptors = new[] { divTagHelper };
             var expectedAttributes = new[]
@@ -44,17 +44,17 @@ namespace Microsoft.AspNetCore.Razor.Language
             get
             {
                 var strongPDivParent = TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("strong")
                         .RequireParentTag("p"))
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("strong")
                         .RequireParentTag("div"))
                     .Build();
                 var catchAllPParent = TagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("*")
                         .RequireParentTag("p"))
@@ -120,45 +120,45 @@ namespace Microsoft.AspNetCore.Razor.Language
             get
             {
                 var divDescriptor = TagHelperDescriptorBuilder.Create("DivTagHelper", "SomeAssembly")
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("div")
-                        .RequireAttribute(attribute => attribute.Name("style")))
+                        .RequireAttributeDescriptor(attribute => attribute.Name("style")))
                     .Build();
                 var inputDescriptor = TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("input")
-                        .RequireAttribute(attribute => attribute.Name("class"))
-                        .RequireAttribute(attribute => attribute.Name("style")))
+                        .RequireAttributeDescriptor(attribute => attribute.Name("class"))
+                        .RequireAttributeDescriptor(attribute => attribute.Name("style")))
                     .Build();
                 var inputWildcardPrefixDescriptor = TagHelperDescriptorBuilder.Create("InputWildCardAttribute", "SomeAssembly")
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("input")
-                        .RequireAttribute(attribute =>
+                        .RequireAttributeDescriptor(attribute =>
                             attribute
                             .Name("nodashprefix")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)))
                     .Build();
                 var catchAllDescriptor = TagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName(TagHelperMatchingConventions.ElementCatchAllName)
-                        .RequireAttribute(attribute => attribute.Name("class")))
+                        .RequireAttributeDescriptor(attribute => attribute.Name("class")))
                     .Build();
                 var catchAllDescriptor2 = TagHelperDescriptorBuilder.Create("CatchAllTagHelper2", "SomeAssembly")
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName(TagHelperMatchingConventions.ElementCatchAllName)
-                        .RequireAttribute(attribute => attribute.Name("custom"))
-                        .RequireAttribute(attribute => attribute.Name("class")))
+                        .RequireAttributeDescriptor(attribute => attribute.Name("custom"))
+                        .RequireAttributeDescriptor(attribute => attribute.Name("class")))
                     .Build();
                 var catchAllWildcardPrefixDescriptor = TagHelperDescriptorBuilder.Create("CatchAllWildCardAttribute", "SomeAssembly")
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName(TagHelperMatchingConventions.ElementCatchAllName)
-                        .RequireAttribute(attribute =>
+                        .RequireAttributeDescriptor(attribute =>
                             attribute
                             .Name("prefix-")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch)))
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var catchAllDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
                 .Build();
             var descriptors = new[] { catchAllDescriptor };
             var tagHelperBinder = new TagHelperBinder("th", descriptors);
@@ -303,7 +303,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var catchAllDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
                 .Build();
             var descriptors = new[] { catchAllDescriptor };
             var tagHelperBinder = new TagHelperBinder("th:", descriptors);
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var divDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName("div"))
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                 .Build();
             var descriptors = new[] { divDescriptor };
             var tagHelperBinder = new TagHelperBinder("th:", descriptors);
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var divDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName(tagName))
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName(tagName))
                 .Build();
             var descriptors = new[] { divDescriptor };
             var tagHelperBinder = new TagHelperBinder("th:", descriptors);
@@ -373,10 +373,10 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var divDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName("div"))
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                 .Build();
             var spanDescriptor = TagHelperDescriptorBuilder.Create("foo2", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName("span"))
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("span"))
                 .Build();
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor };
             var tagHelperBinder = new TagHelperBinder(null, descriptors);
@@ -396,13 +396,13 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var divDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName("div"))
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                 .Build();
             var spanDescriptor = TagHelperDescriptorBuilder.Create("foo2", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName("span"))
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("span"))
                 .Build();
             var catchAllDescriptor = TagHelperDescriptorBuilder.Create("foo3", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName(TagHelperMatchingConventions.ElementCatchAllName))
                 .Build();
             var descriptors = new TagHelperDescriptor[] { divDescriptor, spanDescriptor, catchAllDescriptor };
             var tagHelperBinder = new TagHelperBinder(null, descriptors);
@@ -434,7 +434,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var divDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
-                .TagMatchingRule(rule => rule.RequireTagName("div"))
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                 .Build();
             var descriptors = new TagHelperDescriptor[] { divDescriptor, divDescriptor };
             var tagHelperBinder = new TagHelperBinder(null, descriptors);
@@ -455,12 +455,12 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var multiRuleDescriptor = TagHelperDescriptorBuilder.Create("foo", "SomeAssembly")
-                .TagMatchingRule(rule => rule
+                .TagMatchingRuleDescriptor(rule => rule
                     .RequireTagName(TagHelperMatchingConventions.ElementCatchAllName)
                     .RequireParentTag("body"))
-                .TagMatchingRule(rule => rule
+                .TagMatchingRuleDescriptor(rule => rule
                     .RequireTagName("div"))
-                .TagMatchingRule(rule => rule
+                .TagMatchingRuleDescriptor(rule => rule
                     .RequireTagName("span"))
                 .Build();
             var descriptors = new TagHelperDescriptor[] { multiRuleDescriptor };

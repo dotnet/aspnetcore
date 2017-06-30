@@ -44,18 +44,18 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 TestCompilation.AssemblyName)
                 .TypeName("__Generated__StringParameterViewComponentTagHelper")
                 .DisplayName("StringParameterViewComponentTagHelper")
-                .TagMatchingRule(rule =>
+                .TagMatchingRuleDescriptor(rule =>
                     rule
                     .RequireTagName("vc:string-parameter")
-                    .RequireAttribute(attribute => attribute.Name("foo"))
-                    .RequireAttribute(attribute => attribute.Name("bar")))
-                .BindAttribute(attribute =>
+                    .RequireAttributeDescriptor(attribute => attribute.Name("foo"))
+                    .RequireAttributeDescriptor(attribute => attribute.Name("bar")))
+                .BoundAttributeDescriptor(attribute =>
                     attribute
                     .Name("foo")
                     .PropertyName("foo")
                     .TypeName(typeof(string).FullName)
                     .DisplayName("string StringParameterViewComponentTagHelper.foo"))
-                .BindAttribute(attribute =>
+                .BoundAttributeDescriptor(attribute =>
                     attribute
                     .Name("bar")
                     .PropertyName("bar")

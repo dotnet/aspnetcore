@@ -2,19 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class TagMatchingRuleDescriptorBuilder
     {
-        public abstract TagMatchingRuleDescriptorBuilder RequireTagName(string tagName);
+        public abstract string TagName { get; set; }
 
-        public abstract TagMatchingRuleDescriptorBuilder RequireParentTag(string parentTag);
+        public abstract string ParentTag { get; set; }
 
-        public abstract TagMatchingRuleDescriptorBuilder RequireTagStructure(TagStructure tagStructure);
+        public abstract TagStructure TagStructure { get; set; }
 
-        public abstract TagMatchingRuleDescriptorBuilder RequireAttribute(Action<RequiredAttributeDescriptorBuilder> configure);
+        public abstract RazorDiagnosticCollection Diagnostics { get; }
 
-        public abstract TagMatchingRuleDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic);
+        public abstract IReadOnlyList<RequiredAttributeDescriptorBuilder> Attributes { get; }
+
+        public abstract void Attribute(Action<RequiredAttributeDescriptorBuilder> configure);
     }
 }

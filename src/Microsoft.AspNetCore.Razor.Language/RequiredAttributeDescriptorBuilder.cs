@@ -5,14 +5,14 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RequiredAttributeDescriptorBuilder
     {
-        public abstract RequiredAttributeDescriptorBuilder Name(string name);
+        public abstract string Name { get; set; }
 
-        public abstract RequiredAttributeDescriptorBuilder NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode nameComparison);
+        public abstract RequiredAttributeDescriptor.NameComparisonMode NameComparisonMode { get; set; }
 
-        public abstract RequiredAttributeDescriptorBuilder Value(string value);
+        public abstract string Value { get; set; }
 
-        public abstract RequiredAttributeDescriptorBuilder ValueComparisonMode(RequiredAttributeDescriptor.ValueComparisonMode valueComparison);
+        public abstract RequiredAttributeDescriptor.ValueComparisonMode ValueComparisonMode { get; set; }
 
-        public abstract RequiredAttributeDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic);
+        public abstract RazorDiagnosticCollection Diagnostics { get; }
     }
 }

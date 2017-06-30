@@ -90,7 +90,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 descriptorBuilder.TagMatchingRule(ruleBuilder =>
                 {
                     var htmlCasedName = HtmlConventions.ToHtmlCase(name);
-                    ruleBuilder.RequireTagName(htmlCasedName);
+                    ruleBuilder.TagName = htmlCasedName;
                 });
 
                 return;
@@ -101,13 +101,13 @@ namespace Microsoft.CodeAnalysis.Razor
                 descriptorBuilder.TagMatchingRule(ruleBuilder =>
                 {
                     var tagName = HtmlTargetElementAttribute_Tag(targetElementAttribute);
-                    ruleBuilder.RequireTagName(tagName);
+                    ruleBuilder.TagName = tagName;
 
                     var parentTag = HtmlTargetElementAttribute_ParentTag(targetElementAttribute);
-                    ruleBuilder.RequireParentTag(parentTag);
+                    ruleBuilder.ParentTag = parentTag;
 
                     var tagStructure = HtmlTargetElementAttribute_TagStructure(targetElementAttribute);
-                    ruleBuilder.RequireTagStructure(tagStructure);
+                    ruleBuilder.TagStructure = tagStructure;
 
                     var requiredAttributeString = HtmlTargetElementAttribute_Attributes(targetElementAttribute);
                     RequiredAttributeParser.AddRequiredAttributes(requiredAttributeString, ruleBuilder);
@@ -140,13 +140,13 @@ namespace Microsoft.CodeAnalysis.Razor
                 return;
             }
 
-            builder.AllowChildTag((string)restrictChildrenAttribute.ConstructorArguments[0].Value);
+            builder.AllowedChildTags.Add((string)restrictChildrenAttribute.ConstructorArguments[0].Value);
 
             if (restrictChildrenAttribute.ConstructorArguments.Length == 2)
             {
                 foreach (var value in restrictChildrenAttribute.ConstructorArguments[1].Values)
                 {
-                    builder.AllowChildTag((string)value.Value);
+                    builder.AllowedChildTags.Add((string)value.Value);
                 }
             }
         }
@@ -162,7 +162,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             if (!string.IsNullOrEmpty(xml))
             {
-                builder.Documentation(xml);
+                builder.Documentation = xml;
             }
         }
 
@@ -177,7 +177,7 @@ namespace Microsoft.CodeAnalysis.Razor
             if (outputElementHintAttribute != null)
             {
                 outputElementHint = (string)(outputElementHintAttribute.ConstructorArguments[0]).Value;
-                builder.TagOutputHint(outputElementHint);
+                builder.TagOutputHint = outputElementHint;
             }
         }
 
@@ -208,17 +208,16 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var hasPublicSetter = property.SetMethod != null && property.SetMethod.DeclaredAccessibility == Accessibility.Public;
             var typeName = GetFullName(property.Type);
-            builder
-                .TypeName(typeName)
-                .SetPropertyName(property.Name);
+            builder.TypeName = typeName;
+            builder.SetPropertyName(property.Name);
 
             if (hasPublicSetter)
             {
-                builder.Name(attributeName);
+                builder.Name = attributeName;
 
                 if (property.Type.TypeKind == TypeKind.Enum)
                 {
-                    builder.AsEnum();
+                    builder.IsEnum = true;
                 }
 
                 if (DesignTime)
@@ -227,7 +226,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                     if (!string.IsNullOrEmpty(xml))
                     {
-                        builder.Documentation(xml);
+                        builder.Documentation = xml;
                     }
                 }
             }
@@ -235,18 +234,18 @@ namespace Microsoft.CodeAnalysis.Razor
             {
                 // Specified HtmlAttributeNameAttribute.Name though property has no public setter.
                 var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidAttributeNameNullOrEmpty(GetFullName(containingType), property.Name);
-                builder.AddDiagnostic(diagnostic);
+                builder.Diagnostics.Add(diagnostic);
             }
 
             ConfigureDictionaryBoundAttribute(builder, property, containingType, attributeNameAttribute, attributeName, hasPublicSetter);
         }
 
         private void ConfigureDictionaryBoundAttribute(
-            BoundAttributeDescriptorBuilder builder, 
-            IPropertySymbol property, 
-            INamedTypeSymbol containingType, 
-            AttributeData attributeNameAttribute, 
-            string attributeName, 
+            BoundAttributeDescriptorBuilder builder,
+            IPropertySymbol property,
+            INamedTypeSymbol containingType,
+            AttributeData attributeNameAttribute,
+            string attributeName,
             bool hasPublicSetter)
         {
             string dictionaryAttributePrefix = null;
@@ -291,7 +290,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     // DictionaryAttributePrefix is not supported unless associated with an
                     // IDictionary<string, TValue> property.
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNotNull(GetFullName(containingType), property.Name);
-                    builder.AddDiagnostic(diagnostic);
+                    builder.Diagnostics.Add(diagnostic);
                 }
 
                 return;
@@ -301,7 +300,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 // Must set DictionaryAttributePrefix when using HtmlAttributeNameAttribute with a dictionary property
                 // that lacks a public setter.
                 var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidAttributePrefixNull(GetFullName(containingType), property.Name);
-                builder.AddDiagnostic(diagnostic);
+                builder.Diagnostics.Add(diagnostic);
 
                 return;
             }

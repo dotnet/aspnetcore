@@ -24,16 +24,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     builder => builder
                         .Name("test-attribute")
-                        .SetPropertyName("TestAttribute")
+                        .PropertyName("TestAttribute")
                         .TypeName("string"),
                 },
                 ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                 {
                     builder => builder
-                        .RequireAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute
                             .Name("required-attribute-one")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch))
-                        .RequireAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute
                             .Name("required-attribute-two")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                             .Value("something")
@@ -67,16 +67,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     builder => builder
                         .Name("test-attribute")
-                        .SetPropertyName("TestAttribute")
+                        .PropertyName("TestAttribute")
                         .TypeName("string"),
                 },
                 ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                 {
                     builder => builder
-                        .RequireAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute
                             .Name("required-attribute-one")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch))
-                        .RequireAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute
                             .Name("required-attribute-two")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)
                             .Value("something")
@@ -112,20 +112,20 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     builder => builder
                         .Name("test-attribute")
-                        .SetPropertyName("TestAttribute")
+                        .PropertyName("TestAttribute")
                         .TypeName("SomeEnum")
                         .AsEnum()
                         .Documentation("Summary"),
                     builder => builder
                         .Name("test-attribute2")
-                        .SetPropertyName("TestAttribute2")
+                        .PropertyName("TestAttribute2")
                         .TypeName("SomeDictionary")
-                        .AsDictionary("dict-prefix-", "string"),
+                        .AsDictionaryAttribute("dict-prefix-", "string"),
                 },
                 ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                 {
                     builder => builder
-                        .RequireAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute
                             .Name("required-attribute-one")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.PrefixMatch))
                 },
@@ -160,7 +160,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             {
                 foreach (var attributeBuilder in attributes)
                 {
-                    builder.BindAttribute(attributeBuilder);
+                    builder.BoundAttributeDescriptor(attributeBuilder);
                 }
             }
 
@@ -168,7 +168,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             {
                 foreach (var ruleBuilder in ruleBuilders)
                 {
-                    builder.TagMatchingRule(innerRuleBuilder => {
+                    builder.TagMatchingRuleDescriptor(innerRuleBuilder => {
                         innerRuleBuilder.RequireTagName(tagName);
                         ruleBuilder(innerRuleBuilder);
                     });
@@ -176,7 +176,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
             else
             {
-                builder.TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName));
+                builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
             }
 
             configureAction?.Invoke(builder);

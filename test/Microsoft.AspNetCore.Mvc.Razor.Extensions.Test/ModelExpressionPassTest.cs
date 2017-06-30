@@ -24,11 +24,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var tagHelpers = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
-                    .BindAttribute(attribute =>
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                             .Name("Foo")
                             .TypeName("System.Int32"))
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule.RequireTagName("p"))
                     .Build()
             };
@@ -65,11 +65,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var tagHelpers = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
-                    .BindAttribute(attribute =>
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                             .Name("Foo")
                             .TypeName("Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression"))
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule.RequireTagName("p"))
                     .Build()
             };
@@ -110,11 +110,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var tagHelpers = new[]
             {
                 TagHelperDescriptorBuilder.Create("TestTagHelper", "TestAssembly")
-                    .BindAttribute(attribute =>
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                             .Name("Foo")
                             .TypeName("Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExpression"))
-                    .TagMatchingRule(rule =>
+                    .TagMatchingRuleDescriptor(rule =>
                         rule.RequireTagName("p"))
                     .Build()
             };

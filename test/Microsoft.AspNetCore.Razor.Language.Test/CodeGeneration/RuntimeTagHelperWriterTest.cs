@@ -394,7 +394,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.Fo
                             .Name("bound")
                             .PropertyName("FooProp")
                             .TypeName("System.Collections.Generic.Dictionary<System.String, System.Int32>")
-                            .AsDictionary("foo-", "System.Int32"),
+                            .AsDictionaryAttribute("foo-", "System.Int32"),
                     })
             };
             var engine = RazorEngine.Create(builder => builder.AddTagHelpers(descriptors));
@@ -489,11 +489,11 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             {
                 foreach (var attributeBuilder in attributes)
                 {
-                    builder.BindAttribute(attributeBuilder);
+                    builder.BoundAttributeDescriptor(attributeBuilder);
                 }
             }
 
-            builder.TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName));
+            builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
 
             var descriptor = builder.Build();
 

@@ -5,21 +5,45 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public static class TestTagHelperDescriptorBuilderExtensions
+    public static class TestBoundAttributeDescriptorBuilderExtensions
     {
-        public static TagHelperDescriptorBuilder TypeName(this TagHelperDescriptorBuilder builder, string typeName)
+        public static BoundAttributeDescriptorBuilder Name(this BoundAttributeDescriptorBuilder builder, string name)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.SetTypeName(typeName);
+            builder.Name = name;
 
             return builder;
         }
 
-        public static TagHelperDescriptorBuilder DisplayName(this TagHelperDescriptorBuilder builder, string displayName)
+        public static BoundAttributeDescriptorBuilder TypeName(this BoundAttributeDescriptorBuilder builder, string typeName)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.TypeName = typeName;
+
+            return builder;
+        }
+
+        public static BoundAttributeDescriptorBuilder PropertyName(this BoundAttributeDescriptorBuilder builder, string propertyName)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.SetPropertyName(propertyName);
+
+            return builder;
+        }
+
+        public static BoundAttributeDescriptorBuilder DisplayName(this BoundAttributeDescriptorBuilder builder, string displayName)
         {
             if (builder == null)
             {
@@ -31,31 +55,36 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
-        public static TagHelperDescriptorBuilder AllowChildTag(this TagHelperDescriptorBuilder builder, string allowedChild)
+        public static BoundAttributeDescriptorBuilder AsEnum(this BoundAttributeDescriptorBuilder builder)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.AllowedChildTags.Add(allowedChild);
+            builder.IsEnum = true;
 
             return builder;
         }
 
-        public static TagHelperDescriptorBuilder TagOutputHint(this TagHelperDescriptorBuilder builder, string hint)
+        public static BoundAttributeDescriptorBuilder AsDictionaryAttribute(
+            this BoundAttributeDescriptorBuilder builder,
+            string attributeNamePrefix,
+            string valueTypeName)
         {
             if (builder == null)
             {
                 throw new ArgumentNullException(nameof(builder));
             }
 
-            builder.TagOutputHint = hint;
+            builder.IsDictionary = true;
+            builder.IndexerAttributeNamePrefix = attributeNamePrefix;
+            builder.IndexerValueTypeName = valueTypeName;
 
             return builder;
         }
 
-        public static TagHelperDescriptorBuilder Documentation(this TagHelperDescriptorBuilder builder, string documentation)
+        public static BoundAttributeDescriptorBuilder Documentation(this BoundAttributeDescriptorBuilder builder, string documentation)
         {
             if (builder == null)
             {
@@ -67,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
-        public static TagHelperDescriptorBuilder AddMetadata(this TagHelperDescriptorBuilder builder, string key, string value)
+        public static BoundAttributeDescriptorBuilder AddMetadata(this BoundAttributeDescriptorBuilder builder, string key, string value)
         {
             if (builder == null)
             {
@@ -79,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             return builder;
         }
 
-        public static TagHelperDescriptorBuilder AddDiagnostic(this TagHelperDescriptorBuilder builder, RazorDiagnostic diagnostic)
+        public static BoundAttributeDescriptorBuilder AddDiagnostic(this BoundAttributeDescriptorBuilder builder, RazorDiagnostic diagnostic)
         {
             if (builder == null)
             {
@@ -87,34 +116,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             builder.Diagnostics.Add(diagnostic);
-
-            return builder;
-        }
-
-        public static TagHelperDescriptorBuilder BoundAttributeDescriptor(
-            this TagHelperDescriptorBuilder builder,
-            Action<BoundAttributeDescriptorBuilder> configure)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.BindAttribute(configure);
-
-            return builder;
-        }
-
-        public static TagHelperDescriptorBuilder TagMatchingRuleDescriptor(
-            this TagHelperDescriptorBuilder builder,
-            Action<TagMatchingRuleDescriptorBuilder> configure)
-        {
-            if (builder == null)
-            {
-                throw new ArgumentNullException(nameof(builder));
-            }
-
-            builder.TagMatchingRule(configure);
 
             return builder;
         }

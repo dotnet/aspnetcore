@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public static class TagHelperDescriptorBuilderExtensions
     {
-        public static TagHelperDescriptorBuilder SetTypeName(this TagHelperDescriptorBuilder builder, string typeName)
+        public static void SetTypeName(this TagHelperDescriptorBuilder builder, string typeName)
         {
             if (builder == null)
             {
@@ -19,9 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(typeName));
             }
 
-            builder.AddMetadata(TagHelperMetadata.Common.TypeName, typeName);
-
-            return builder;
+            builder.Metadata[TagHelperMetadata.Common.TypeName] = typeName;
         }
 
         public static string GetTypeName(this TagHelperDescriptorBuilder builder)

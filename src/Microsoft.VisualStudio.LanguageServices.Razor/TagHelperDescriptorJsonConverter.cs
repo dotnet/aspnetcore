@@ -41,9 +41,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             var builder = TagHelperDescriptorBuilder.Create(typeName, assemblyName);
 
-            builder
-                .Documentation(documentation)
-                .TagOutputHint(tagOutputHint);
+            builder.Documentation = documentation;
+            builder.TagOutputHint = tagOutputHint;
 
             foreach (var tagMatchingRule in tagMatchingRules)
             {
@@ -60,21 +59,21 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             foreach (var childTag in childTags)
             {
                 var tagValue = childTag.Value<string>();
-                builder.AllowChildTag(tagValue);
+                builder.AllowedChildTags.Add(tagValue);
             }
 
             foreach (var diagnostic in diagnostics)
             {
                 var diagnosticReader = diagnostic.CreateReader();
                 var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
-                builder.AddDiagnostic(diagnosticObject);
+                builder.Diagnostics.Add(diagnosticObject);
             }
 
             var metadataReader = metadata.CreateReader();
             var metadataValue = serializer.Deserialize<Dictionary<string, string>>(metadataReader);
             foreach (var item in metadataValue)
             {
-                builder.AddMetadata(item.Key, item.Value);
+                builder.Metadata[item.Key] = item.Value;
             }
 
             return builder.Build();
@@ -95,22 +94,21 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var tagStructure = rule[nameof(TagMatchingRuleDescriptor.TagStructure)].Value<int>();
             var diagnostics = rule[nameof(TagMatchingRuleDescriptor.Diagnostics)].Value<JArray>();
 
-            builder
-                .RequireTagName(tagName)
-                .RequireParentTag(parentTag)
-                .RequireTagStructure((TagStructure)tagStructure);
+            builder.TagName = tagName;
+            builder.ParentTag = parentTag;
+            builder.TagStructure = (TagStructure)tagStructure;
 
             foreach (var attribute in attributes)
             {
                 var attibuteValue = attribute.Value<JObject>();
-                builder.RequireAttribute(b => ReadRequiredAttribute(b, attibuteValue, serializer));
+                builder.Attribute(b => ReadRequiredAttribute(b, attibuteValue, serializer));
             }
 
             foreach (var diagnostic in diagnostics)
             {
                 var diagnosticReader = diagnostic.CreateReader();
                 var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
-                builder.AddDiagnostic(diagnosticObject);
+                builder.Diagnostics.Add(diagnosticObject);
             }
         }
 
@@ -122,17 +120,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var valueComparison = attribute[nameof(RequiredAttributeDescriptor.ValueComparison)].Value<int>();
             var diagnostics = attribute[nameof(RequiredAttributeDescriptor.Diagnostics)].Value<JArray>();
 
-            builder
-                .Name(name)
-                .NameComparisonMode((RequiredAttributeDescriptor.NameComparisonMode)nameComparison)
-                .Value(value)
-                .ValueComparisonMode((RequiredAttributeDescriptor.ValueComparisonMode)valueComparison);
+            builder.Name = name;
+            builder.NameComparisonMode = (RequiredAttributeDescriptor.NameComparisonMode)nameComparison;
+            builder.Value = value;
+            builder.ValueComparisonMode = (RequiredAttributeDescriptor.ValueComparisonMode)valueComparison;
 
             foreach (var diagnostic in diagnostics)
             {
                 var diagnosticReader = diagnostic.CreateReader();
                 var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
-                builder.AddDiagnostic(diagnosticObject);
+                builder.Diagnostics.Add(diagnosticObject);
             }
         }
 
@@ -148,10 +145,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var diagnostics = attribute[nameof(BoundAttributeDescriptor.Diagnostics)].Value<JArray>();
             var metadata = attribute[nameof(BoundAttributeDescriptor.Metadata)].Value<JObject>();
 
-            builder
-                .Name(name)
-                .TypeName(typeName)
-                .Documentation(documentation);
+            builder.Name = name;
+            builder.TypeName = typeName;
+            builder.Documentation = documentation;
 
             if (indexerNamePrefix != null)
             {
@@ -160,21 +156,21 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             if (isEnum)
             {
-                builder.AsEnum();
+                builder.IsEnum = true;
             }
 
             foreach (var diagnostic in diagnostics)
             {
                 var diagnosticReader = diagnostic.CreateReader();
                 var diagnosticObject = serializer.Deserialize<RazorDiagnostic>(diagnosticReader);
-                builder.AddDiagnostic(diagnosticObject);
+                builder.Diagnostics.Add(diagnosticObject);
             }
 
             var metadataReader = metadata.CreateReader();
             var metadataValue = serializer.Deserialize<Dictionary<string, string>>(metadataReader);
             foreach (var item in metadataValue)
             {
-                builder.AddMetadata(item.Key, item.Value);
+                builder.Metadata[item.Key] = item.Value;
             }
         }
     }

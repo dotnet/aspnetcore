@@ -204,11 +204,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                 {
                     ruleBuilder => ruleBuilder
-                        .RequireAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute
                             .Name("a")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)),
                     ruleBuilder => ruleBuilder
-                        .RequireAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute
                             .Name("b")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)),
                 });
@@ -257,11 +257,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                 ruleBuilders: new Action<TagMatchingRuleDescriptorBuilder>[]
                 {
                     ruleBuilder => ruleBuilder
-                        .RequireAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute
                             .Name("a")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)),
                     ruleBuilder => ruleBuilder
-                        .RequireAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute
                             .Name("b")
                             .NameComparisonMode(RequiredAttributeDescriptor.NameComparisonMode.FullMatch)),
                 });
@@ -1397,7 +1397,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 foreach (var attributeBuilder in attributes)
                 {
-                    builder.BindAttribute(attributeBuilder);
+                    builder.BoundAttributeDescriptor(attributeBuilder);
                 }
             }
 
@@ -1405,7 +1405,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 foreach (var ruleBuilder in ruleBuilders)
                 {
-                    builder.TagMatchingRule(innerRuleBuilder =>
+                    builder.TagMatchingRuleDescriptor(innerRuleBuilder =>
                     {
                         innerRuleBuilder.RequireTagName(tagName);
                         ruleBuilder(innerRuleBuilder);
@@ -1414,7 +1414,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
             else
             {
-                builder.TagMatchingRule(ruleBuilder => ruleBuilder.RequireTagName(tagName));
+                builder.TagMatchingRuleDescriptor(ruleBuilder => ruleBuilder.RequireTagName(tagName));
             }
 
             var descriptor = builder.Build();

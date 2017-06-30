@@ -17,20 +17,20 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule
+                    .TagMatchingRuleDescriptor(rule => rule
                         .RequireTagName("div")
-                        .RequireAttribute(attribute => attribute.Name("repeat")))
-                    .BindAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute.Name("repeat")))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("visible")
                         .TypeName(typeof(bool).FullName)
-                        .SetPropertyName("Visible"))
+                        .PropertyName("Visible"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("*"))
-                    .BindAttribute(attribute => attribute
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("*"))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("class")
                         .TypeName(typeof(string).FullName)
-                        .SetPropertyName("Class"))
+                        .PropertyName("Class"))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -68,14 +68,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule
+                    .TagMatchingRuleDescriptor(rule => rule
                         .RequireTagName("div")
-                        .RequireAttribute(attribute => attribute.Name("repeat")))
+                        .RequireAttributeDescriptor(attribute => attribute.Name("repeat")))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule
+                    .TagMatchingRuleDescriptor(rule => rule
                         .RequireTagName("*")
-                        .RequireAttribute(attribute => attribute.Name("class")))
+                        .RequireAttributeDescriptor(attribute => attribute.Name("class")))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -106,26 +106,26 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule
+                    .TagMatchingRuleDescriptor(rule => rule
                         .RequireTagName("div")
-                        .RequireAttribute(attribute => attribute.Name("repeat")))
-                    .BindAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute.Name("repeat")))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("repeat")
                         .TypeName(typeof(bool).FullName)
-                        .SetPropertyName("Repeat"))
-                    .BindAttribute(attribute => attribute
+                        .PropertyName("Repeat"))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("visible")
                         .TypeName(typeof(bool).FullName)
-                        .SetPropertyName("Visible"))
+                        .PropertyName("Visible"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule
+                    .TagMatchingRuleDescriptor(rule => rule
                         .RequireTagName("*")
-                        .RequireAttribute(attribute => attribute.Name("class")))
-                    .BindAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute.Name("class")))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("class")
                         .TypeName(typeof(string).FullName)
-                        .SetPropertyName("Class"))
+                        .PropertyName("Class"))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -159,31 +159,31 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("div"))
-                    .BindAttribute(attribute => attribute
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("repeat")
                         .TypeName(typeof(bool).FullName)
-                        .SetPropertyName("Repeat"))
-                    .BindAttribute(attribute => attribute
+                        .PropertyName("Repeat"))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("visible")
                         .TypeName(typeof(bool).FullName)
-                        .SetPropertyName("Visible"))
+                        .PropertyName("Visible"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule
+                    .TagMatchingRuleDescriptor(rule => rule
                         .RequireTagName("*")
-                        .RequireAttribute(attribute => attribute.Name("class")))
-                    .BindAttribute(attribute => attribute
+                        .RequireAttributeDescriptor(attribute => attribute.Name("class")))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("class")
                         .TypeName(typeof(string).FullName)
-                        .SetPropertyName("Class"))
+                        .PropertyName("Class"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("*"))
-                    .BindAttribute(attribute => attribute
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("*"))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("visible")
                         .TypeName(typeof(bool).FullName)
-                        .SetPropertyName("Visible"))
+                        .PropertyName("Visible"))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -222,11 +222,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("CustomTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("custom"))
-                    .BindAttribute(attribute => attribute
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("custom"))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("repeat")
                         .TypeName(typeof(bool).FullName)
-                        .SetPropertyName("Repeat"))
+                        .PropertyName("Repeat"))
                     .TagOutputHint("div")
                     .Build(),
             };
@@ -257,11 +257,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("CustomTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("custom"))
-                    .BindAttribute(attribute => attribute
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("custom"))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("repeat")
                         .TypeName(typeof(bool).FullName)
-                        .SetPropertyName("Repeat"))
+                        .PropertyName("Repeat"))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -290,11 +290,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("div"))
-                    .BindAttribute(attribute => attribute
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
+                    .BoundAttributeDescriptor(attribute => attribute
                         .Name("repeat")
                         .TypeName(typeof(bool).FullName)
-                        .SetPropertyName("Repeat"))
+                        .PropertyName("Repeat"))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -347,9 +347,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule
+                    .TagMatchingRuleDescriptor(rule => rule
                         .RequireTagName("div")
-                        .RequireAttribute(attribute => attribute.Name("special")))
+                        .RequireAttributeDescriptor(attribute => attribute.Name("special")))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -379,9 +379,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("MyTableTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule
+                    .TagMatchingRuleDescriptor(rule => rule
                         .RequireTagName("table")
-                        .RequireAttribute(attribute => attribute.Name("special")))
+                        .RequireAttributeDescriptor(attribute => attribute.Name("special")))
                     .Build(),
             };
             var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
@@ -410,11 +410,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("MyTableTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("my-table"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("my-table"))
                     .TagOutputHint("table")
                     .Build(),
                 TagHelperDescriptorBuilder.Create("MyTrTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("my-tr"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("my-tr"))
                     .TagOutputHint("tr")
                     .Build(),
             };
@@ -446,10 +446,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("CatchAllTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("*"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("LiTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("li"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("li"))
                     .Build(),
             };
             var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
@@ -480,10 +480,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("SuperLiTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("superli"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("superli"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("LiTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("li"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("li"))
                     .Build(),
             };
             var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
@@ -515,10 +515,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("SuperLiTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("superli"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("superli"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("CatchAll", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("*"))
                     .Build(),
             };
             var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
@@ -548,10 +548,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("SuperLiTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("superli"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("superli"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("CatchAll", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("*"))
                     .Build(),
             };
             var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
@@ -582,12 +582,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("BoldTagHelper1", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("strong"))
-                    .TagMatchingRule(rule => rule.RequireTagName("b"))
-                    .TagMatchingRule(rule => rule.RequireTagName("bold"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("strong"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("b"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("bold"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("BoldTagHelper2", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("strong"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("strong"))
                     .Build(),
             };
             var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
@@ -618,10 +618,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("LiTagHelper1", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("li"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("li"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("LiTagHelper2", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("li"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("li"))
                     .Build(),
             };
             var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
@@ -647,14 +647,14 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("SuperLiTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("superli"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("superli"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("LiTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("li"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("li"))
                     .TagOutputHint("strong")
                     .Build(),
                 TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                     .Build(),
             };
             var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
@@ -681,11 +681,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                     .TagOutputHint("li")
                     .Build(),
                 TagHelperDescriptorBuilder.Create("LiTagHelper", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("li"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("li"))
                     .TagOutputHint("strong")
                     .Build(),
             };
@@ -713,10 +713,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("LiTagHelper1", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("li"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("li"))
                     .Build(),
                 TagHelperDescriptorBuilder.Create("LiTagHelper2", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("li").RequireParentTag("ol"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("li").RequireParentTag("ol"))
                     .Build(),
             };
             var expectedCompletions = ElementCompletionResult.Create(new Dictionary<string, HashSet<TagHelperDescriptor>>()
@@ -742,7 +742,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("CatchAll", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("*"))
                     .AllowChildTag("b")
                     .AllowChildTag("bold")
                     .AllowChildTag("div")
@@ -772,7 +772,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("BoldParent", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                     .AllowChildTag("b")
                     .AllowChildTag("bold")
                     .AllowChildTag("div")
@@ -803,7 +803,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("BoldParent", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                     .AllowChildTag("b")
                     .AllowChildTag("bold")
                     .Build(),
@@ -831,7 +831,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("BoldParent", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                     .AllowChildTag("b")
                     .AllowChildTag("bold")
                     .AllowChildTag("div")
@@ -861,13 +861,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var documentDescriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("BoldParentCatchAll", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("*"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("*"))
                     .AllowChildTag("strong")
                     .AllowChildTag("div")
                     .AllowChildTag("b")
                     .Build(),
                 TagHelperDescriptorBuilder.Create("BoldParent", "TestAssembly")
-                    .TagMatchingRule(rule => rule.RequireTagName("div"))
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div"))
                     .AllowChildTag("b")
                     .AllowChildTag("bold")
                     .Build(),

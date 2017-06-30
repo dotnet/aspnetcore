@@ -10,38 +10,43 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultTagMatchingRuleDescriptorBuilder : TagMatchingRuleDescriptorBuilder
     {
-        private string _tagName;
-        private string _parentTag;
-        private TagStructure _tagStructure;
         private List<DefaultRequiredAttributeDescriptorBuilder> _requiredAttributeBuilders;
-        private HashSet<RazorDiagnostic> _diagnostics;
+        private DefaultRazorDiagnosticCollection _diagnostics;
 
         internal DefaultTagMatchingRuleDescriptorBuilder()
         {
         }
 
-        public override TagMatchingRuleDescriptorBuilder RequireTagName(string tagName)
-        {
-            _tagName = tagName;
+        public override string TagName { get; set; }
 
-            return this;
+        public override string ParentTag { get; set; }
+
+        public override TagStructure TagStructure { get; set; }
+
+        public override RazorDiagnosticCollection Diagnostics
+        {
+            get
+            {
+                if (_diagnostics == null)
+                {
+                    _diagnostics = new DefaultRazorDiagnosticCollection();
+                }
+
+                return _diagnostics;
+            }
         }
 
-        public override TagMatchingRuleDescriptorBuilder RequireParentTag(string parentTag)
+        public override IReadOnlyList<RequiredAttributeDescriptorBuilder> Attributes
         {
-            _parentTag = parentTag;
+            get
+            {
+                EnsureRequiredAttributeBuilders();
 
-            return this;
+                return _requiredAttributeBuilders;
+            }
         }
 
-        public override TagMatchingRuleDescriptorBuilder RequireTagStructure(TagStructure tagStructure)
-        {
-            _tagStructure = tagStructure;
-
-            return this;
-        }
-
-        public override TagMatchingRuleDescriptorBuilder RequireAttribute(Action<RequiredAttributeDescriptorBuilder> configure)
+        public override void Attribute(Action<RequiredAttributeDescriptorBuilder> configure)
         {
             if (configure == null)
             {
@@ -53,16 +58,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             var builder = new DefaultRequiredAttributeDescriptorBuilder();
             configure(builder);
             _requiredAttributeBuilders.Add(builder);
-
-            return this;
-        }
-
-        public override TagMatchingRuleDescriptorBuilder AddDiagnostic(RazorDiagnostic diagnostic)
-        {
-            EnsureDiagnostics();
-            _diagnostics.Add(diagnostic);
-
-            return this;
         }
 
         public TagMatchingRuleDescriptor Build()
@@ -87,9 +82,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var rule = new DefaultTagMatchingRuleDescriptor(
-                _tagName,
-                _parentTag,
-                _tagStructure,
+                TagName,
+                ParentTag,
+                TagStructure,
                 requiredAttributes,
                 diagnostics.ToArray());
 
@@ -98,42 +93,42 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private IEnumerable<RazorDiagnostic> Validate()
         {
-            if (string.IsNullOrWhiteSpace(_tagName))
+            if (string.IsNullOrWhiteSpace(TagName))
             {
                 var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedTagNameNullOrWhitespace();
 
                 yield return diagnostic;
             }
-            else if (_tagName != TagHelperMatchingConventions.ElementCatchAllName)
+            else if (TagName != TagHelperMatchingConventions.ElementCatchAllName)
             {
-                foreach (var character in _tagName)
+                foreach (var character in TagName)
                 {
                     if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                     {
-                        var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedTagName(_tagName, character);
+                        var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedTagName(TagName, character);
 
                         yield return diagnostic;
                     }
                 }
             }
 
-            if (_parentTag != null)
+            if (ParentTag != null)
             {
-                if (string.IsNullOrWhiteSpace(_parentTag))
+                if (string.IsNullOrWhiteSpace(ParentTag))
                 {
                     var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedParentTagNameNullOrWhitespace();
 
-                    AddDiagnostic(diagnostic);
+                    yield return diagnostic;
                 }
                 else
                 {
-                    foreach (var character in _parentTag)
+                    foreach (var character in ParentTag)
                     {
                         if (char.IsWhiteSpace(character) || HtmlConventions.InvalidNonWhitespaceHtmlCharacters.Contains(character))
                         {
-                            var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedParentTagName(_parentTag, character);
+                            var diagnostic = RazorDiagnosticFactory.CreateTagHelper_InvalidTargetedParentTagName(ParentTag, character);
 
-                            AddDiagnostic(diagnostic);
+                            yield return diagnostic;
                         }
                     }
                 }
@@ -145,14 +140,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             if (_requiredAttributeBuilders == null)
             {
                 _requiredAttributeBuilders = new List<DefaultRequiredAttributeDescriptorBuilder>();
-            }
-        }
-
-        private void EnsureDiagnostics()
-        {
-            if (_diagnostics == null)
-            {
-                _diagnostics = new HashSet<RazorDiagnostic>();
             }
         }
     }

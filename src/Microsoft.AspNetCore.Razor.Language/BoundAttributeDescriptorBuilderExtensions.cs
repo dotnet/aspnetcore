@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public static class BoundAttributeDescriptorBuilderExtensions
     {
-        public static BoundAttributeDescriptorBuilder SetPropertyName(this BoundAttributeDescriptorBuilder builder, string propertyName)
+        public static void SetPropertyName(this BoundAttributeDescriptorBuilder builder, string propertyName)
         {
             if (builder == null)
             {
@@ -19,9 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(propertyName));
             }
 
-            builder.AddMetadata(TagHelperMetadata.Common.PropertyName, propertyName);
-
-            return builder;
+            builder.Metadata[TagHelperMetadata.Common.PropertyName] = propertyName;
         }
 
         public static string GetPropertyName(this BoundAttributeDescriptorBuilder builder)
@@ -37,6 +35,21 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return null;
+        }
+
+        public static void AsDictionary(
+            this BoundAttributeDescriptorBuilder builder,
+            string attributeNamePrefix,
+            string valueTypeName)
+        {
+            if (builder == null)
+            {
+                throw new ArgumentNullException(nameof(builder));
+            }
+
+            builder.IsDictionary = true;
+            builder.IndexerAttributeNamePrefix = attributeNamePrefix;
+            builder.IndexerValueTypeName = valueTypeName;
         }
     }
 }
