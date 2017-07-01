@@ -42,6 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private static HubMessage ParseMessage(Stream input, IInvocationBinder binder)
         {
             var unpacker = Unpacker.Create(input);
+            _ = ReadArrayLength(unpacker, "elementCount");
             var messageType = ReadInt32(unpacker, "messageType");
 
             switch (messageType)
@@ -147,6 +148,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private static void WriteInvocationMessage(InvocationMessage invocationMessage, Packer packer, Stream output)
         {
+            packer.PackArrayHeader(5);
             packer.Pack(InvocationMessageType);
             packer.PackString(invocationMessage.InvocationId);
             packer.Pack(invocationMessage.NonBlocking);
@@ -156,6 +158,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private void WriteStremingItemMessage(StreamItemMessage streamItemMessage, Packer packer, Stream output)
         {
+            packer.PackArrayHeader(3);
             packer.Pack(StreamItemMessageType);
             packer.PackString(streamItemMessage.InvocationId);
             packer.PackObject(streamItemMessage.Item);
@@ -168,6 +171,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 completionMessage.HasResult ? NonVoidResult :
                 VoidResult;
 
+            packer.PackArrayHeader(2 + resultKind != VoidResult ? 1 : 0);
             packer.Pack(CompletionMessageType);
             packer.PackString(completionMessage.InvocationId);
             packer.Pack(resultKind);

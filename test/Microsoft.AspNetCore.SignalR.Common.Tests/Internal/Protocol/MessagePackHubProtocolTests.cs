@@ -73,41 +73,42 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public static IEnumerable<object[]> InvalidPayloads => new[]
         {
-            new object[] { new byte[0], "Reading 'messageType' as Int32 failed." },
-            new object[] { new byte[] { 0xc2 } , "Reading 'messageType' as Int32 failed." }, // message type is not int
-            new object[] { new byte[] { 0x0a } , "Invalid message type: 10." },
+            new object[] { new byte[0], "Reading array length for 'elementCount' failed." },
+            new object[] { new byte[] { 0x91 }, "Reading 'messageType' as Int32 failed." },
+            new object[] { new byte[] { 0x91, 0xc2 } , "Reading 'messageType' as Int32 failed." }, // message type is not int
+            new object[] { new byte[] { 0x91, 0x0a } , "Invalid message type: 10." },
 
             // InvocationMessage
-            new object[] { new byte[] { 0x01 }, "Reading 'invocationId' as String failed." }, // invocationId missing
-            new object[] { new byte[] { 0x01, 0xc2 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
-            new object[] { new byte[] { 0x01, 0xa3, 0x78, 0x79, 0x7a }, "Reading 'nonBlocking' as Boolean failed." }, // nonBlocking missing
-            new object[] { new byte[] { 0x01, 0xa3, 0x78, 0x79, 0x7a, 0x00 }, "Reading 'nonBlocking' as Boolean failed." }, // nonBlocking is not bool
-            new object[] { new byte[] { 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2 }, "Reading 'target' as String failed." }, // target missing
-            new object[] { new byte[] { 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0x00 }, "Reading 'target' as String failed." }, // 0x00 is Int
-            new object[] { new byte[] { 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1 }, "Reading 'target' as String failed." }, // string is cut
-            new object[] { new byte[] { 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78 }, "Reading array length for 'arguments' failed." }, // array is missing
-            new object[] { new byte[] { 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x00 }, "Reading array length for 'arguments' failed." }, // 0x00 is not array marker
-            new object[] { new byte[] { 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91 }, "Deserializing object of the `String` type for 'argument' failed." }, // array is missing elements
-            new object[] { new byte[] { 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91, 0xa2, 0x78 }, "Deserializing object of the `String` type for 'argument' failed." }, // array element is cut
-            new object[] { new byte[] { 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x92, 0xa0, 0x00 }, "Target method expects 1 arguments(s) but invocation has 2 argument(s)." }, // argument count does not match binder argument count
-            new object[] { new byte[] { 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91, 0x00 }, "Deserializing object of the `String` type for 'argument' failed." }, // argument type mismatch
+            new object[] { new byte[] { 0x95, 0x01 }, "Reading 'invocationId' as String failed." }, // invocationId missing
+            new object[] { new byte[] { 0x95, 0x01, 0xc2 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a }, "Reading 'nonBlocking' as Boolean failed." }, // nonBlocking missing
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0x00 }, "Reading 'nonBlocking' as Boolean failed." }, // nonBlocking is not bool
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2 }, "Reading 'target' as String failed." }, // target missing
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0x00 }, "Reading 'target' as String failed." }, // 0x00 is Int
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1 }, "Reading 'target' as String failed." }, // string is cut
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78 }, "Reading array length for 'arguments' failed." }, // array is missing
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x00 }, "Reading array length for 'arguments' failed." }, // 0x00 is not array marker
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91 }, "Deserializing object of the `String` type for 'argument' failed." }, // array is missing elements
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91, 0xa2, 0x78 }, "Deserializing object of the `String` type for 'argument' failed." }, // array element is cut
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x92, 0xa0, 0x00 }, "Target method expects 1 arguments(s) but invocation has 2 argument(s)." }, // argument count does not match binder argument count
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91, 0x00 }, "Deserializing object of the `String` type for 'argument' failed." }, // argument type mismatch
 
             // StreamItemMessage
-            new object[] { new byte[] { 0x02 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
-            new object[] { new byte[] { 0x02, 0xc2 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
-            new object[] { new byte[] { 0x02, 0xa3, 0x78, 0x79, 0x7a }, "Deserializing object of the `String` type for 'item' failed." }, // item is missing
-            new object[] { new byte[] { 0x02, 0xa3, 0x78, 0x79, 0x7a, 0x00 }, "Deserializing object of the `String` type for 'item' failed." }, // item type mismatch
+            new object[] { new byte[] { 0x93, 0x02 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
+            new object[] { new byte[] { 0x93, 0x02, 0xc2 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
+            new object[] { new byte[] { 0x93, 0x02, 0xa3, 0x78, 0x79, 0x7a }, "Deserializing object of the `String` type for 'item' failed." }, // item is missing
+            new object[] { new byte[] { 0x93, 0x02, 0xa3, 0x78, 0x79, 0x7a, 0x00 }, "Deserializing object of the `String` type for 'item' failed." }, // item type mismatch
 
             // CompletionMessage
-            new object[] { new byte[] { 0x03 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
-            new object[] { new byte[] { 0x03, 0xc2 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0xc2 }, "Reading 'resultKind' as Int32 failed." }, // result kind is not int
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x0f }, "Invalid invocation result kind." }, // result kind is out of range
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x01 }, "Reading 'error' as String failed." }, // error result but no error
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x01, 0xa1 }, "Reading 'error' as String failed." }, // error is cut
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x03 }, "Deserializing object of the `String` type for 'argument' failed." }, // non void result but result missing
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x03, 0xa9 }, "Deserializing object of the `String` type for 'argument' failed." }, // result is cut
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x03, 0x00 }, "Deserializing object of the `String` type for 'argument' failed." }, // return type mismatch
+            new object[] { new byte[] { 0x93, 0x03 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
+            new object[] { new byte[] { 0x93, 0x03, 0xc2 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
+            new object[] { new byte[] { 0x93, 0x03, 0xa3, 0x78, 0x79, 0x7a, 0xc2 }, "Reading 'resultKind' as Int32 failed." }, // result kind is not int
+            new object[] { new byte[] { 0x93, 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x0f }, "Invalid invocation result kind." }, // result kind is out of range
+            new object[] { new byte[] { 0x93, 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x01 }, "Reading 'error' as String failed." }, // error result but no error
+            new object[] { new byte[] { 0x93, 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x01, 0xa1 }, "Reading 'error' as String failed." }, // error is cut
+            new object[] { new byte[] { 0x93, 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x03 }, "Deserializing object of the `String` type for 'argument' failed." }, // non void result but result missing
+            new object[] { new byte[] { 0x93, 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x03, 0xa9 }, "Deserializing object of the `String` type for 'argument' failed." }, // result is cut
+            new object[] { new byte[] { 0x93, 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x03, 0x00 }, "Deserializing object of the `String` type for 'argument' failed." }, // return type mismatch
 
             // TODO: ReadAsInt32 and no int32 value
         };
@@ -135,9 +136,9 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData(new object[] {
             new byte[]
             {
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x03, 0xa1, 0x78, 0x02,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x03, 0xa1, 0x78, 0x02,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x03, 0xa1
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x93, 0x03, 0xa1, 0x78, 0x02,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x93, 0x03, 0xa1, 0x78, 0x02,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x93, 0x03, 0xa1
             }, 2 })]
         public void ParserDoesNotConsumePartialData(byte[] payload, int expectedMessagesCount)
         {
