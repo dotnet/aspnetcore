@@ -16,6 +16,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const int StreamItemMessageType = 2;
         private const int CompletionMessageType = 3;
 
+        private const int ErrorResult = 1;
+        private const int VoidResult = 2;
+        private const int NonVoidResult = 3;
+
         public string Name => "messagepack";
 
         public ProtocolType Type => ProtocolType.Binary;
@@ -38,10 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private static HubMessage ParseMessage(Stream input, IInvocationBinder binder)
         {
             var unpacker = Unpacker.Create(input);
-            if (!unpacker.ReadInt32(out var messageType))
-            {
-                throw new FormatException("Message type is missing.");
-            }
+            var messageType = ReadInt32(unpacker, "messageType");
 
             switch (messageType)
             {
@@ -90,18 +91,27 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private static CompletionMessage CreateCompletionMessage(Unpacker unpacker, IInvocationBinder binder)
         {
             var invocationId = ReadInvocationId(unpacker);
-            var error = ReadString(unpacker, "error");
+            var resultKind = ReadInt32(unpacker, "resultKind");
 
-            var hasResult = false;
+            string error = null;
             object result = null;
-            if (error == null)
+            var hasResult = false;
+
+            switch(resultKind)
             {
-                hasResult = ReadBoolean(unpacker, "hasResult");
-                if (hasResult)
-                {
+                case ErrorResult:
+                    error = ReadString(unpacker, "error");
+                    break;
+                case NonVoidResult:
                     var itemType = binder.GetReturnType(invocationId);
                     result = DeserializeObject(unpacker, itemType, "argument");
-                }
+                    hasResult = true;
+                    break;
+                case VoidResult:
+                    hasResult = false;
+                    break;
+                default:
+                    throw new FormatException("Invalid invocation result kind.");
             }
 
             return new CompletionMessage(invocationId, error, result, hasResult);
@@ -153,22 +163,46 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private void WriteCompletionMessage(CompletionMessage completionMessage, Packer packer, Stream output)
         {
+            var resultKind =
+                completionMessage.Error != null ? ErrorResult :
+                completionMessage.HasResult ? NonVoidResult :
+                VoidResult;
+
             packer.Pack(CompletionMessageType);
             packer.PackString(completionMessage.InvocationId);
-            packer.PackString(completionMessage.Error);
-            if (completionMessage.Error == null)
+            packer.Pack(resultKind);
+            switch (resultKind)
             {
-                packer.Pack(completionMessage.HasResult);
-                if (completionMessage.HasResult)
-                {
+                case ErrorResult:
+                    packer.PackString(completionMessage.Error);
+                    break;
+                case NonVoidResult:
                     packer.PackObject(completionMessage.Result);
-                }
+                    break;
             }
         }
 
         private static string ReadInvocationId(Unpacker unpacker)
         {
             return ReadString(unpacker, "invocationId");
+        }
+
+        private static int ReadInt32(Unpacker unpacker, string field)
+        {
+            Exception msgPackException = null;
+            try
+            {
+                if (unpacker.ReadInt32(out var value))
+                {
+                    return value;
+                }
+            }
+            catch (Exception e)
+            {
+                msgPackException = e;
+            }
+
+            throw new FormatException($"Reading '{field}' as Int32 failed.", msgPackException);
         }
 
         private static string ReadString(Unpacker unpacker, string field)

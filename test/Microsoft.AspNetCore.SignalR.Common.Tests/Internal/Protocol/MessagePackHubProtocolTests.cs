@@ -73,7 +73,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public static IEnumerable<object[]> InvalidPayloads => new[]
         {
-            new object[] { new byte[0], "Message type is missing." },
+            new object[] { new byte[0], "Reading 'messageType' as Int32 failed." },
+            new object[] { new byte[] { 0xc2 } , "Reading 'messageType' as Int32 failed." }, // message type is not int
             new object[] { new byte[] { 0x0a } , "Invalid message type: 10." },
 
             // InvocationMessage
@@ -100,13 +101,15 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             // CompletionMessage
             new object[] { new byte[] { 0x03 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
             new object[] { new byte[] { 0x03, 0xc2 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0xc2 }, "Reading 'error' as String failed." }, // 0xc2 is Bool false
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0xa1 }, "Reading 'error' as String failed." }, // error is cut
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0xc0 }, "Reading 'hasResult' as Boolean failed." }, // hasResult missing
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0xc0, 0xa0 }, "Reading 'hasResult' as Boolean failed." }, // 0xa0 is string
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0xc0, 0xc3 }, "Deserializing object of the `String` type for 'argument' failed." }, // result missing
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0xc0, 0xc3, 0xa9 }, "Deserializing object of the `String` type for 'argument' failed." }, // result is cut
-            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0xc0, 0xc3, 0x00 }, "Deserializing object of the `String` type for 'argument' failed." } // return type mismatch
+            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0xc2 }, "Reading 'resultKind' as Int32 failed." }, // result kind is not int
+            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x0f }, "Invalid invocation result kind." }, // result kind is out of range
+            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x01 }, "Reading 'error' as String failed." }, // error result but no error
+            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x01, 0xa1 }, "Reading 'error' as String failed." }, // error is cut
+            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x03 }, "Deserializing object of the `String` type for 'argument' failed." }, // non void result but result missing
+            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x03, 0xa9 }, "Deserializing object of the `String` type for 'argument' failed." }, // result is cut
+            new object[] { new byte[] { 0x03, 0xa3, 0x78, 0x79, 0x7a, 0x03, 0x00 }, "Deserializing object of the `String` type for 'argument' failed." }, // return type mismatch
+
+            // TODO: ReadAsInt32 and no int32 value
         };
 
         [Theory]
@@ -132,8 +135,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData(new object[] {
             new byte[]
             {
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x03, 0xa1, 0x78, 0xa1, 0x45,
-                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x03, 0xa1, 0x78, 0xa1, 0x45,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x03, 0xa1, 0x78, 0x02,
+                0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x04, 0x03, 0xa1, 0x78, 0x02,
                 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x03, 0xa1
             }, 2 })]
         public void ParserDoesNotConsumePartialData(byte[] payload, int expectedMessagesCount)
