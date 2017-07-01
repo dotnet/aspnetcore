@@ -31,7 +31,11 @@ Document -
                 DirectiveToken - (16:2,7 [8] RazorPages.cshtml) - NewModel
                 DirectiveToken - (40:3,14 [12] RazorPages.cshtml) - "*, AppCode"
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (7:1,0 [2] RazorPages.cshtml)
                     IntermediateToken - (7:1,0 [2] RazorPages.cshtml) - Html - \n

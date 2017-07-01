@@ -10,6 +10,6 @@ Generated Location: (602:15,38 [5] )
 
 Source Location: (86:3,23 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/TagHelpersWithPrefix.cshtml)
 |Hello|
-Generated Location: (1043:26,23 [5] )
+Generated Location: (1119:28,23 [5] )
 |Hello|
 

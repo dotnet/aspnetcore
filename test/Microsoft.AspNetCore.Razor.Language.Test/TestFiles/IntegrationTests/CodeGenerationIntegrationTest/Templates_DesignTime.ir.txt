@@ -3,7 +3,11 @@ Document -
         ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Templates_DesignTime -  - 
             DesignTimeDirective - 
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (278:8,1 [4] Templates.cshtml)
                     IntermediateToken - (278:8,1 [4] Templates.cshtml) - Html - \n\n

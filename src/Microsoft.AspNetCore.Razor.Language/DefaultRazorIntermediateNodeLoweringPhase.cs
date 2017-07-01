@@ -77,7 +77,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // The document should contain all errors that currently exist in the system. This involves
             // adding the errors from the primary and imported syntax trees.
-
             for (i = 0; i < syntaxTree.Diagnostics.Count; i++)
             {
                 document.Diagnostics.Add(syntaxTree.Diagnostics[i]);

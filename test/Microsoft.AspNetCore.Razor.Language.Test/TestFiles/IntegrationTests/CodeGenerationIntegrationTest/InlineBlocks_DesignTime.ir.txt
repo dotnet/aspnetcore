@@ -4,7 +4,11 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (9:0,9 [4] InlineBlocks.cshtml) - Link
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 MalformedDirective - (0:0,0 [13] InlineBlocks.cshtml) - section
                     DirectiveToken - (9:0,9 [4] InlineBlocks.cshtml) - Link

@@ -5,6 +5,6 @@ Generated Location: (526:11,37 [17] )
 
 Source Location: (67:3,28 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/SingleTagHelperWithNewlineBeforeAttributes.cshtml)
 |1337|
-Generated Location: (1030:22,33 [4] )
+Generated Location: (1106:24,33 [4] )
 |1337|
 

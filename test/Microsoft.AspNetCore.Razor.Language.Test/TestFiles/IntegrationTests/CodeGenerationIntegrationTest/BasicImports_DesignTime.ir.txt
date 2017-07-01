@@ -7,7 +7,11 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (69:2,10 [5] BasicImports_Imports0.cshtml) - Hello
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [18] BasicImports.cshtml)
                     IntermediateToken - (0:0,0 [3] BasicImports.cshtml) - Html - <p>

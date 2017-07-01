@@ -6,7 +6,11 @@ Document -
                 DirectiveToken - (172:10,9 [8] Sections.cshtml) - Section1
                 DirectiveToken - (235:14,9 [15] Sections.cshtml) - NestedDelegates
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 CSharpCode - (2:0,2 [44] Sections.cshtml)
                     IntermediateToken - (2:0,2 [44] Sections.cshtml) - CSharp - \n    Layout = "_SectionTestLayout.cshtml"\n

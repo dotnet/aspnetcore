@@ -9,7 +9,11 @@ Document -
                 DirectiveToken - (17:0,17 [5] BasicTagHelpers_Prefixed.cshtml) - "THS"
                 DirectiveToken - (38:1,14 [17] BasicTagHelpers_Prefixed.cshtml) - "*, TestAssembly"
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (22:0,22 [2] BasicTagHelpers_Prefixed.cshtml)
                     IntermediateToken - (22:0,22 [2] BasicTagHelpers_Prefixed.cshtml) - Html - \n

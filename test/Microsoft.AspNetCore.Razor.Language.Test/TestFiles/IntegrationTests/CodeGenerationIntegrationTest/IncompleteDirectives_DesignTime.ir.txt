@@ -12,7 +12,11 @@ Document -
                 DirectiveToken - (231:11,17 [0] IncompleteDirectives.cshtml) - 
                 DirectiveToken - (250:12,17 [1] IncompleteDirectives.cshtml) - "
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (83:0,83 [4] IncompleteDirectives.cshtml)
                     IntermediateToken - (83:0,83 [4] IncompleteDirectives.cshtml) - Html - \n\n

@@ -5,6 +5,6 @@ Generated Location: (401:10,0 [21] )
 
 Source Location: (36:2,1 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inherits.cshtml)
 |foo()|
-Generated Location: (799:20,6 [5] )
+Generated Location: (875:22,6 [5] )
 |foo()|
 

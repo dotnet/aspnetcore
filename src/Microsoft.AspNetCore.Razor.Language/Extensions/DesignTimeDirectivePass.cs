@@ -25,15 +25,39 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
-                var designTimeHelperDeclaration = new CSharpCodeIntermediateNode();
-                IntermediateNodeBuilder.Create(designTimeHelperDeclaration)
-                    .Add(new IntermediateToken()
+                node.Children.Insert(0, new CSharpCodeIntermediateNode()
+                {
+                    Children =
                     {
-                        Kind = IntermediateToken.TokenKind.CSharp,
-                        Content = $"private static {typeof(object).FullName} {DesignTimeVariable} = null;"
-                    });
-
-                node.Children.Insert(0, designTimeHelperDeclaration);
+                        new IntermediateToken()
+                        {
+                            Kind = IntermediateToken.TokenKind.CSharp,
+                            Content = "#pragma warning disable 0414",
+                        }
+                    }
+                });
+                node.Children.Insert(1, new CSharpCodeIntermediateNode()
+                {
+                    Children =
+                    {
+                        new IntermediateToken()
+                        {
+                            Kind = IntermediateToken.TokenKind.CSharp,
+                            Content = $"private static {typeof(object).FullName} {DesignTimeVariable} = null;",
+                        }
+                    }
+                });
+                node.Children.Insert(2, new CSharpCodeIntermediateNode()
+                {
+                    Children =
+                    {
+                        new IntermediateToken()
+                        {
+                            Kind = IntermediateToken.TokenKind.CSharp,
+                            Content = "#pragma warning restore 0414",
+                        }
+                    }
+                });
 
                 _directiveNode = new DesignTimeDirectiveIntermediateNode();
 

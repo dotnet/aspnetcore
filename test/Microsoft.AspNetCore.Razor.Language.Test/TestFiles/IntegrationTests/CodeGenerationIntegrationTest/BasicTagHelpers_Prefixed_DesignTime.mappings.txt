@@ -10,6 +10,6 @@ Generated Location: (787:17,37 [17] )
 
 Source Location: (226:7,43 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/BasicTagHelpers_Prefixed.cshtml)
 |true|
-Generated Location: (1548:31,43 [4] )
+Generated Location: (1624:33,43 [4] )
 |true|
 

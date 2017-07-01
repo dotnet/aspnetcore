@@ -39,7 +39,9 @@ using static global::System.Text.Encoding;
         private void __RazorDirectiveTokenHelpers__() {
         }
         #pragma warning restore 219
+        #pragma warning disable 0414
         private static System.Object __o = null;
+        #pragma warning restore 0414
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {

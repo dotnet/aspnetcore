@@ -5,6 +5,6 @@ Generated Location: (608:12,37 [17] )
 
 Source Location: (67:2,32 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/DuplicateTargetTagHelper.cshtml)
 |true|
-Generated Location: (1373:26,41 [4] )
+Generated Location: (1449:28,41 [4] )
 |true|
 

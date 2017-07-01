@@ -31,7 +31,11 @@ Document -
                 DirectiveToken - (54:2,8 [17] InjectWithModel.cshtml) - MyService<TModel>
                 DirectiveToken - (72:2,26 [4] InjectWithModel.cshtml) - Html
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
             Inject - 
             Inject - 

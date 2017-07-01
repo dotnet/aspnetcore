@@ -28,7 +28,11 @@ Document -
                 DirectiveToken - (10:0,10 [26] InheritsViewModel.cshtml) - MyBasePageForViews<TModel>
                 DirectiveToken - (45:1,7 [7] InheritsViewModel.cshtml) - MyModel
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async override - global::System.Threading.Tasks.Task - ExecuteAsync
             Inject - 
             Inject - 

@@ -437,11 +437,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             {
                 context.CodeWriter.WriteLine("#line hidden");
 
-                // Need to disable the warning "X is assigned to but never used." for the value buffer since
+                // Need to disable the warning "X is never used." for the value buffer since
                 // whether it's used depends on how a TagHelper is used.
-                context.CodeWriter.WriteLine("#pragma warning disable 0414");
+                context.CodeWriter.WriteLine("#pragma warning disable 0169");
                 context.CodeWriter.WriteField(PrivateModifiers, "string", StringValueBufferVariableName);
-                context.CodeWriter.WriteLine("#pragma warning restore 0414");
+                context.CodeWriter.WriteLine("#pragma warning restore 0169");
 
                 context.CodeWriter.WriteField(PrivateModifiers, ExecutionContextTypeName, ExecutionContextVariableName);
 

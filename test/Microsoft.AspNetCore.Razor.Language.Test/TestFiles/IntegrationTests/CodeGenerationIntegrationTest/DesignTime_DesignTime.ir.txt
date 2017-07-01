@@ -4,7 +4,11 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (173:11,9 [6] DesignTime.cshtml) - Footer
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (0:0,0 [19] DesignTime.cshtml)
                     IntermediateToken - (0:0,0 [5] DesignTime.cshtml) - Html - <div>

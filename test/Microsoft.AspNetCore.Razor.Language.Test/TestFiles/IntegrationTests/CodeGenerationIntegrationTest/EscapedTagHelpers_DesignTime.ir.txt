@@ -7,7 +7,11 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [15] EscapedTagHelpers.cshtml) - *, TestAssembly
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (29:0,29 [5] EscapedTagHelpers.cshtml)
                     IntermediateToken - (29:0,29 [4] EscapedTagHelpers.cshtml) - Html - \n\n

@@ -4,7 +4,11 @@ Document -
             DesignTimeDirective - 
                 DirectiveToken - (10:0,10 [21] Inherits.cshtml) - foo.bar<baz<biz>>.boz
             CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning disable 0414
+            CSharpCode - 
                 IntermediateToken -  - CSharp - private static System.Object __o = null;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - #pragma warning restore 0414
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (33:1,0 [2] Inherits.cshtml)
                     IntermediateToken - (33:1,0 [2] Inherits.cshtml) - Html - \n
