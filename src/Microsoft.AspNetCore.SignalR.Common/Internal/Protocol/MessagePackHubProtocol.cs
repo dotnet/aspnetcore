@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     WriteInvocationMessage(invocationMessage, packer, output);
                     break;
                 case StreamItemMessage streamItemMessage:
-                    WriteStremingItemMessage(streamItemMessage, packer, output);
+                    WriteStreamingItemMessage(streamItemMessage, packer, output);
                     break;
                 case CompletionMessage completionMessage:
                     WriteCompletionMessage(completionMessage, packer, output);
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             packer.PackObject(invocationMessage.Arguments);
         }
 
-        private void WriteStremingItemMessage(StreamItemMessage streamItemMessage, Packer packer, Stream output)
+        private void WriteStreamingItemMessage(StreamItemMessage streamItemMessage, Packer packer, Stream output)
         {
             packer.PackArrayHeader(3);
             packer.Pack(StreamItemMessageType);
@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 completionMessage.HasResult ? NonVoidResult :
                 VoidResult;
 
-            packer.PackArrayHeader(2 + resultKind != VoidResult ? 1 : 0);
+            packer.PackArrayHeader(3 + resultKind != VoidResult ? 1 : 0);
             packer.Pack(CompletionMessageType);
             packer.PackString(completionMessage.InvocationId);
             packer.Pack(resultKind);

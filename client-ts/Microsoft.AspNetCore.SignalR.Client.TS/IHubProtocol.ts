@@ -30,6 +30,6 @@ export interface NegotiationMessage {
 
 export interface IHubProtocol {
     name(): string;
-    parseMessages(input: string): HubMessage[];
-    writeMessage(message: HubMessage): string;
+    parseMessages(input: any): HubMessage[];
+    writeMessage(message: HubMessage): any;
 }

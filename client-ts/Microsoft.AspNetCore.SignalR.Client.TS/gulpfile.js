@@ -24,6 +24,7 @@ gulp.task('browserify-client', ['compile-ts-client'], () => {
         .pipe(gulp.dest(clientOutDir + '/../browser'));
 });
 
+
 gulp.task('build-ts-client', ['clean', 'compile-ts-client', 'browserify-client']);
 
 gulp.task('default', ['build-ts-client']);
