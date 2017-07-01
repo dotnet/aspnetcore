@@ -1,10 +1,5 @@
 [
   {
-    "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHost : System.IDisposable",
-    "MemberId": "System.Void Start()",
-    "Kind": "Removal"
-  },
-  {
     "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHostBuilder",
     "MemberId": "Microsoft.AspNetCore.Hosting.IWebHostBuilder ConfigureAppConfiguration(System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.Configuration.IConfigurationBuilder> configureDelegate)",
     "Kind": "Addition"
@@ -16,12 +11,12 @@
   },
   {
     "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHost : System.IDisposable",
-    "MemberId": "System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken)",
+    "MemberId": "System.Threading.Tasks.Task StartAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))",
     "Kind": "Addition"
   },
   {
     "TypeId": "public interface Microsoft.AspNetCore.Hosting.IWebHost : System.IDisposable",
-    "MemberId": "System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken)",
+    "MemberId": "System.Threading.Tasks.Task StopAsync(System.Threading.CancellationToken cancellationToken = default(System.Threading.CancellationToken))",
     "Kind": "Addition"
   },
   {

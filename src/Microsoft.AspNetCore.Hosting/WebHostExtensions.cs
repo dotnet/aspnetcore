@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server.Features;
@@ -12,36 +11,6 @@ namespace Microsoft.AspNetCore.Hosting
 {
     public static class WebHostExtensions
     {
-        /// <summary>
-        /// Starts the host.
-        /// </summary>
-        /// <param name="host"></param>
-        /// <returns></returns>
-        public static void Start(this IWebHost host)
-        {
-            host.StartAsync().GetAwaiter().GetResult();
-        }
-
-        /// <summary>
-        /// Starts the host.
-        /// </summary>
-        /// <param name="host"></param>
-        /// <returns></returns>
-        public static Task StartAsync(this IWebHost host)
-        {
-            return host.StartAsync(CancellationToken.None);
-        }
-
-        /// <summary>
-        /// Gracefully stops the host.
-        /// </summary>
-        /// <param name="host"></param>
-        /// <returns></returns>
-        public static Task StopAsync(this IWebHost host)
-        {
-            return host.StopAsync(CancellationToken.None);
-        }
-
         /// <summary>
         /// Attempts to gracefully stop the host with the given timeout.
         /// </summary>

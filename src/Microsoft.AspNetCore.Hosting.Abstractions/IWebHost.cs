@@ -26,13 +26,18 @@ namespace Microsoft.AspNetCore.Hosting
         /// <summary>
         /// Starts listening on the configured addresses.
         /// </summary>
-        Task StartAsync(CancellationToken cancellationToken);
+        void Start();
+
+        /// <summary>
+        /// Starts listening on the configured addresses.
+        /// </summary>
+        Task StartAsync(CancellationToken cancellationToken = default(CancellationToken));
 
         /// <summary>
         /// Attempt to gracefully stop the host.
         /// </summary>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        Task StopAsync(CancellationToken cancellationToken);
+        Task StopAsync(CancellationToken cancellationToken = default(CancellationToken));
     }
 }
