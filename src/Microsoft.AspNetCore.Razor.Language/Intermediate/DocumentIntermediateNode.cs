@@ -8,44 +8,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class DocumentIntermediateNode : IntermediateNode
     {
-        private ItemCollection _annotations;
-        private RazorDiagnosticCollection _diagnostics;
-
-        public override ItemCollection Annotations
-        {
-            get
-            {
-                if (_annotations == null)
-                {
-                    _annotations = new DefaultItemCollection();
-                }
-
-                return _annotations;
-            }
-        }
-
-        public override RazorDiagnosticCollection Diagnostics
-        {
-            get
-            {
-                if (_diagnostics == null)
-                {
-                    _diagnostics = new DefaultRazorDiagnosticCollection();
-                }
-
-                return _diagnostics;
-            }
-        }
-        
         public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
 
         public string DocumentKind { get; set; }
 
         public RazorCodeGenerationOptions Options { get; set; }
-
-        public override SourceSpan? Source { get; set; }
-
-        public override bool HasDiagnostics => _diagnostics != null && _diagnostics.Count > 0;
 
         public CodeTarget Target { get; set; }
 

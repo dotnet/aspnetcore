@@ -9,11 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     internal sealed class PreallocatedTagHelperPropertyValueIntermediateNode : ExtensionIntermediateNode
     {
-        public override RazorDiagnosticCollection Diagnostics { get; } = ReadOnlyDiagnosticCollection.Instance;
-
         public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
-
-        public override bool HasDiagnostics => false;
 
         public string VariableName { get; set; }
 

@@ -497,15 +497,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             public string Name { get; }
 
-            public override ItemCollection Annotations { get; } = new DefaultItemCollection();
-
-            public override RazorDiagnosticCollection Diagnostics => new DefaultRazorDiagnosticCollection();
-
             public override IntermediateNodeCollection Children { get; }
-
-            public override SourceSpan? Source { get; set; }
-
-            public override bool HasDiagnostics => Diagnostics.Count > 0;
 
             public override void Accept(IntermediateNodeVisitor visitor)
             {

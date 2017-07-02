@@ -30,11 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             TagHelper = propertyNode.TagHelper;
         }
 
-        public override RazorDiagnosticCollection Diagnostics => ReadOnlyDiagnosticCollection.Instance;
-
         public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
-
-        public override bool HasDiagnostics => false;
 
         public string AttributeName { get; set; }
 

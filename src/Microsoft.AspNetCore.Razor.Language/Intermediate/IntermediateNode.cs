@@ -5,16 +5,41 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public abstract class IntermediateNode
     {
-        public abstract ItemCollection Annotations { get; }
+        private ItemCollection _annotations;
+        private RazorDiagnosticCollection _diagnostics;
 
-        public abstract RazorDiagnosticCollection Diagnostics { get; }
-        
+        public ItemCollection Annotations
+        {
+            get
+            {
+                if (_annotations == null)
+                {
+                    _annotations = new DefaultItemCollection();
+                }
+
+                return _annotations;
+            }
+        }
+
         public abstract IntermediateNodeCollection Children { get; }
 
-        public abstract SourceSpan? Source { get; set; }
+        public RazorDiagnosticCollection Diagnostics
+        {
+            get
+            {
+                if (_diagnostics == null)
+                {
+                    _diagnostics = new DefaultRazorDiagnosticCollection();
+                }
 
-        public abstract bool HasDiagnostics { get; }
+                return _diagnostics;
+            }
+        }
 
+        public bool HasDiagnostics => _diagnostics != null && _diagnostics.Count > 0;
+
+        public SourceSpan? Source { get; set; }
+        
         public abstract void Accept(IntermediateNodeVisitor visitor);
     }
 }

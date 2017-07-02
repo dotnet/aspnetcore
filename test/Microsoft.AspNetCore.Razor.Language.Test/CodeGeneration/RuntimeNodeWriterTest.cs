@@ -609,8 +609,6 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
         {
             public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
 
-            public override SourceSpan? Source { get => throw new NotImplementedException(); set => throw new NotImplementedException(); }
-
             public override void Accept(IntermediateNodeVisitor visitor)
             {
                 throw new NotImplementedException();

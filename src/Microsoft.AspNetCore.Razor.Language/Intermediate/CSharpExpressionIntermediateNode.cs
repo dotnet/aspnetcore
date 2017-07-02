@@ -7,40 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class CSharpExpressionIntermediateNode : IntermediateNode
     {
-        private ItemCollection _annotations;
-        private RazorDiagnosticCollection _diagnostics;
-
-        public override ItemCollection Annotations
-        {
-            get
-            {
-                if (_annotations == null)
-                {
-                    _annotations = new DefaultItemCollection();
-                }
-
-                return _annotations;
-            }
-        }
-
-        public override RazorDiagnosticCollection Diagnostics
-        {
-            get
-            {
-                if (_diagnostics == null)
-                {
-                    _diagnostics = new DefaultRazorDiagnosticCollection();
-                }
-
-                return _diagnostics;
-            }
-        }
-
         public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
-
-        public override SourceSpan? Source { get; set; }
-
-        public override bool HasDiagnostics => _diagnostics != null && _diagnostics.Count > 0;
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {
