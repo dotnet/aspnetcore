@@ -29,10 +29,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
-        public static bool TryParseMessage(ReadOnlySpan<byte> input, out NegotiationMessage negotiationMessage)
+        public static bool TryParseMessage(ReadOnlyBuffer<byte> input, out NegotiationMessage negotiationMessage)
         {
-            var parser = new TextMessageParser();
-            if (!parser.TryParseMessage(ref input, out var payload))
+            if (!TextMessageParser.TryParseMessage(ref input, out var payload))
             {
                 throw new FormatException("Unable to parse payload as a negotiation message.");
             }

@@ -19,12 +19,10 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         [InlineData(4, "12:Hello, World;", "Hello, World")]
         public void ReadTextMessage(int chunkSize, string encoded, string payload)
         {
-            var parser = new TextMessageParser();
-            var buffer = Encoding.UTF8.GetBytes(encoded);
-            ReadOnlySpan<byte> span = buffer.AsSpan();
+            ReadOnlyBuffer<byte> buffer = Encoding.UTF8.GetBytes(encoded);
 
-            Assert.True(parser.TryParseMessage(ref span, out var message));
-            Assert.Equal(0, span.Length);
+            Assert.True(TextMessageParser.TryParseMessage(ref buffer, out var message));
+            Assert.Equal(0, buffer.Length);
             Assert.Equal(Encoding.UTF8.GetBytes(payload), message.ToArray());
         }
 
@@ -32,17 +30,15 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         public void ReadMultipleMessages()
         {
             const string encoded = "0:;14:Hello,\r\nWorld!;";
-            var parser = new TextMessageParser();
-            var data = Encoding.UTF8.GetBytes(encoded);
-            ReadOnlySpan<byte> span = data.AsSpan();
+            ReadOnlyBuffer<byte> buffer = Encoding.UTF8.GetBytes(encoded);
 
             var messages = new List<byte[]>();
-            while (parser.TryParseMessage(ref span, out var message))
+            while (TextMessageParser.TryParseMessage(ref buffer, out var message))
             {
                 messages.Add(message.ToArray());
             }
 
-            Assert.Equal(0, span.Length);
+            Assert.Equal(0, buffer.Length);
 
             Assert.Equal(2, messages.Count);
             Assert.Equal(new byte[0], messages[0]);
@@ -59,10 +55,8 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         [InlineData("5:ABCDE")]
         public void ReadIncompleteMessages(string encoded)
         {
-            var parser = new TextMessageParser();
-            var buffer = Encoding.UTF8.GetBytes(encoded);
-            ReadOnlySpan<byte> span = buffer.AsSpan();
-            Assert.False(parser.TryParseMessage(ref span, out _));
+            ReadOnlyBuffer<byte> buffer = Encoding.UTF8.GetBytes(encoded);
+            Assert.False(TextMessageParser.TryParseMessage(ref buffer, out _));
         }
 
         [Theory]
@@ -73,12 +67,10 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         [InlineData("5:ABCDEF", "Missing delimiter ';' after payload")]
         public void ReadInvalidMessages(string encoded, string expectedMessage)
         {
-            var parser = new TextMessageParser();
-            var buffer = Encoding.UTF8.GetBytes(encoded);
+            ReadOnlyBuffer<byte> buffer = Encoding.UTF8.GetBytes(encoded);
             var ex = Assert.Throws<FormatException>(() =>
             {
-                ReadOnlySpan<byte> span = buffer.AsSpan();
-                parser.TryParseMessage(ref span, out _);
+                TextMessageParser.TryParseMessage(ref buffer, out _);
             });
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -86,16 +78,13 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         [Fact]
         public void ReadInvalidEncodedMessage()
         {
-            var parser = new TextMessageParser();
-
             // Invalid because first character is a UTF-8 "continuation" character
             // We need to include the ':' so that
-            var buffer = new byte[] { 0x48, 0x65, 0x80, 0x6C, 0x6F, (byte)':' };
+            ReadOnlyBuffer<byte> buffer = new byte[] { 0x48, 0x65, 0x80, 0x6C, 0x6F, (byte)':' };
             var reader = new BytesReader(buffer);
             var ex = Assert.Throws<FormatException>(() =>
             {
-                ReadOnlySpan<byte> span = buffer.AsSpan();
-                parser.TryParseMessage(ref span, out _);
+                TextMessageParser.TryParseMessage(ref buffer, out _);
             });
             Assert.Equal("Invalid length: 'He�lo'", ex.Message);
         }

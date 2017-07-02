@@ -65,8 +65,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                     _hubProtocol.WriteMessage(hubMessage, memoryStream);
                 }
 
-                _hubProtocol.TryParseMessages(
-                    new ReadOnlySpan<byte>(memoryStream.ToArray()), new CompositeTestBinder(hubMessages), out var messages);
+                _hubProtocol.TryParseMessages(memoryStream.ToArray(), new CompositeTestBinder(hubMessages), out var messages);
 
                 Assert.Equal(hubMessages, messages, TestHubMessageEqualityComparer.Instance);
             }
@@ -123,8 +122,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Array.Copy(payload, 0, buffer, 8, payloadSize);
 
             var binder = new TestBinder(new[] { typeof(string) }, typeof(string));
-            var exception = Assert.Throws<FormatException>(() =>
-                _hubProtocol.TryParseMessages(new ReadOnlySpan<byte>(buffer), binder, out var messages));
+            var exception = Assert.Throws<FormatException>(() => _hubProtocol.TryParseMessages(buffer, binder, out var messages));
 
             Assert.Equal(expectedExceptionMessage, exception.Message);
         }

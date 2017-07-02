@@ -44,14 +44,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             _payloadSerializer = payloadSerializer;
         }
 
-        public string Name { get => "json"; }
+        public string Name => "json";
 
-        public bool TryParseMessages(ReadOnlySpan<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
+        public bool TryParseMessages(ReadOnlyBuffer<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
         {
             messages = new List<HubMessage>();
 
-            var parser = new TextMessageParser();
-            while (parser.TryParseMessage(ref input, out var payload))
+            while (TextMessageParser.TryParseMessage(ref input, out var payload))
             {
                 // TODO: Need a span-native JSON parser!
                 using (var memoryStream = new MemoryStream(payload.ToArray()))

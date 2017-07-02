@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Buffers;
 using System.IO;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
@@ -10,8 +9,6 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
     public class MessageParserBenchmark
     {
         private static readonly Random Random = new Random();
-        private readonly TextMessageParser _textMessageParser = new TextMessageParser();
-        private readonly BinaryMessageParser _binaryMessageParser = new BinaryMessageParser();
         private ReadOnlyBuffer<byte> _binaryInput;
         private ReadOnlyBuffer<byte> _textInput;
 
@@ -42,8 +39,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void SingleBinaryMessage()
         {
-            var buffer = _binaryInput.Span;
-            if (!_binaryMessageParser.TryParseMessage(ref buffer, out _))
+            var buffer = _binaryInput;
+            if (!BinaryMessageParser.TryParseMessage(ref buffer, out _))
             {
                 throw new InvalidOperationException("Failed to parse");
             }
@@ -52,8 +49,8 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Benchmark]
         public void SingleTextMessage()
         {
-            var buffer = _textInput.Span;
-            if (!_textMessageParser.TryParseMessage(ref buffer, out _))
+            var buffer = _textInput;
+            if (!TextMessageParser.TryParseMessage(ref buffer, out _))
             {
                 throw new InvalidOperationException("Failed to parse");
             }
