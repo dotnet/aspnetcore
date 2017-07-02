@@ -22,15 +22,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                 $"not be empty. At least one '{typeof(IFileProvider).FullName}' is required to locate a view for " +
                 "rendering.";
             var fileProvider = new NullFileProvider();
-            var accessor = new Mock<IRazorViewEngineFileProviderAccessor>();
-            var applicationManager = new ApplicationPartManager();
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+
+            var partManager = new ApplicationPartManager();
             var options = new TestOptionsManager<RazorViewEngineOptions>();
-            var referenceManager = new DefaultRazorReferenceManager(applicationManager, options);
-            accessor.Setup(a => a.FileProvider).Returns(fileProvider);
+
+            var referenceManager = new DefaultRazorReferenceManager(partManager, options);
+
             var provider = new RazorViewCompilerProvider(
-                applicationManager,
-                new RazorTemplateEngine(RazorEngine.Create(), new FileProviderRazorProject(fileProvider)),
-                accessor.Object,
+                partManager,
+                new RazorTemplateEngine(
+                    RazorEngine.Create(), 
+                    new FileProviderRazorProject(accessor)),
+                accessor,
                 new CSharpCompiler(referenceManager, options),
                 options,
                 NullLoggerFactory.Instance);

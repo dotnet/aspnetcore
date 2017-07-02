@@ -18,15 +18,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // Arrange
             var fileProvider = new Mock<IFileProvider>();
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider.Object);
+
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(fileProvider.Object));
+                new FileProviderRazorProject(accessor));
             var options = new TestOptionsManager<RazorPagesOptions>();
-            var fileProviderAccessor = new Mock<IRazorViewEngineFileProviderAccessor>();
-            fileProviderAccessor
-                .Setup(f => f.FileProvider)
-                .Returns(fileProvider.Object);
-            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, fileProviderAccessor.Object, options);
+            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
 
             // Act
             var changeToken = changeProvider.GetChangeToken();
@@ -42,16 +40,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // Arrange
             var fileProvider = new Mock<IFileProvider>();
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider.Object);
+
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(fileProvider.Object));
+                new FileProviderRazorProject(accessor));
             var options = new TestOptionsManager<RazorPagesOptions>();
             options.Value.RootDirectory = rootDirectory;
-            var fileProviderAccessor = new Mock<IRazorViewEngineFileProviderAccessor>();
-            fileProviderAccessor
-                .Setup(f => f.FileProvider)
-                .Returns(fileProvider.Object);
-            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, fileProviderAccessor.Object, options);
+
+            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
 
             // Act
             var changeToken = changeProvider.GetChangeToken();
@@ -65,17 +62,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         {
             // Arrange
             var fileProvider = new TestFileProvider();
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+
             var templateEngine = new RazorTemplateEngine(
                 RazorEngine.Create(),
-                new FileProviderRazorProject(fileProvider));
+                new FileProviderRazorProject(accessor));
             templateEngine.Options.ImportsFileName = "_ViewImports.cshtml";
             var options = new TestOptionsManager<RazorPagesOptions>();
             options.Value.RootDirectory = "/dir1/dir2";
-            var fileProviderAccessor = new Mock<IRazorViewEngineFileProviderAccessor>();
-            fileProviderAccessor
-                .Setup(f => f.FileProvider)
-                .Returns(fileProvider);
-            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, fileProviderAccessor.Object, options);
+
+            var changeProvider = new PageActionDescriptorChangeProvider(templateEngine, accessor, options);
 
             // Act & Assert
             var compositeChangeToken = Assert.IsType<CompositeChangeToken>(changeProvider.GetChangeToken());

@@ -3,6 +3,7 @@
 
 using System.Linq;
 using Microsoft.Extensions.FileProviders;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
@@ -18,7 +19,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var file2 = fileProvider.AddFile("File2.js", "content");
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { file1, file2 });
 
-            var razorProject = new FileProviderRazorProject(fileProvider);
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+
+            var razorProject = new FileProviderRazorProject(accessor);
 
             // Act
             var razorFiles = razorProject.EnumerateItems("/");
@@ -37,7 +40,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var file3 = fileProvider.AddFile("File3.cshtml", "content");
             fileProvider.AddDirectoryContent("/", new IFileInfo[] { file1, file2, file3 });
 
-            var razorProject = new FileProviderRazorProject(fileProvider);
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+
+            var razorProject = new FileProviderRazorProject(accessor);
 
             // Act
             var razorFiles = razorProject.EnumerateItems("/");
@@ -76,7 +81,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             fileProvider.AddDirectoryContent("/Level1-Dir2", new IFileInfo[] { file5 });
             fileProvider.AddDirectoryContent("/Level1/Level2", new IFileInfo[0]);
 
-            var razorProject = new FileProviderRazorProject(fileProvider);
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+
+            var razorProject = new FileProviderRazorProject(accessor);
 
             // Act
             var razorFiles = razorProject.EnumerateItems("/");
@@ -117,7 +124,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             fileProvider.AddDirectoryContent("/Level1-Dir2", new IFileInfo[] { file5 });
             fileProvider.AddDirectoryContent("/Level1/Level2", new IFileInfo[0]);
 
-            var razorProject = new FileProviderRazorProject(fileProvider);
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+
+            var razorProject = new FileProviderRazorProject(accessor);
 
             // Act
             var razorFiles = razorProject.EnumerateItems("/Level1-Dir1");

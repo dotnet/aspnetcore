@@ -15,13 +15,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         private readonly IFileProvider _provider;
 
         public FileProviderRazorProject(IRazorViewEngineFileProviderAccessor accessor)
-            : this(accessor.FileProvider)
         {
-        }
+            if (accessor == null)
+            {
+                throw new ArgumentNullException(nameof(accessor));
+            }
 
-        public FileProviderRazorProject(IFileProvider provider)
-        {
-            _provider = provider;
+            _provider = accessor.FileProvider;
         }
 
         public override RazorProjectItem GetItem(string path)

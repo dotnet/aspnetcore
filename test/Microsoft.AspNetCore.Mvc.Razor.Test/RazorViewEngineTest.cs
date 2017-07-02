@@ -934,7 +934,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
                .Returns(GetPageFactoryResult(() => viewStart));
 
             var fileProvider = new TestFileProvider();
-            var razorProject = new FileProviderRazorProject(fileProvider);
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+            var razorProject = new FileProviderRazorProject(accessor);
             var viewEngine = CreateViewEngine(pageFactory.Object, razorProject: razorProject);
             var context = GetActionContext(_controllerTestContext);
 
@@ -1384,7 +1385,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
                 Mock.Of<IRazorPageActivator>(),
                 new HtmlTestEncoder(),
                 GetOptionsAccessor(expanders: null),
-                new FileProviderRazorProject(new TestFileProvider()),
+                new FileProviderRazorProject(
+                    Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider())),
                 loggerFactory,
                 new DiagnosticListener("Microsoft.AspNetCore.Mvc.Razor"));
 
@@ -1822,7 +1824,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             pageFactory = pageFactory ?? Mock.Of<IRazorPageFactoryProvider>();
             if (razorProject == null)
             {
-                razorProject = new FileProviderRazorProject(new TestFileProvider());
+                var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider());
+                razorProject = new FileProviderRazorProject(accessor);
             }
             return new TestableRazorViewEngine(pageFactory, GetOptionsAccessor(expanders), razorProject);
         }
@@ -1923,9 +1926,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             public TestableRazorViewEngine(
                 IRazorPageFactoryProvider pageFactory,
                 IOptions<RazorViewEngineOptions> optionsAccessor)
-                : this(pageFactory, optionsAccessor, new FileProviderRazorProject(new TestFileProvider()))
-            {
-            }
+                : this(
+                      pageFactory,
+                      optionsAccessor,
+                      new FileProviderRazorProject(
+                          Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider())))
+                      {
+                      }
 
             public TestableRazorViewEngine(
                 IRazorPageFactoryProvider pageFactory,

@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Text;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
@@ -19,9 +20,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Arrange
             var viewPath = "/Views/Home/Index.cshtml";
             var razorEngine = RazorEngine.Create();
+
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(viewPath, "<span name=\"@(User.Id\">");
-            var razorProject = new FileProviderRazorProject(fileProvider);
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+
+            var razorProject = new FileProviderRazorProject(accessor);
 
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
@@ -48,13 +52,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Arrange
             var viewPath = "/Views/Home/Index.cshtml";
             var physicalPath = @"x:\myapp\views\home\index.cshtml";
-            var razorEngine = RazorEngine.Create();
+
             var fileProvider = new TestFileProvider();
             var file = fileProvider.AddFile(viewPath, "<span name=\"@(User.Id\">");
             file.PhysicalPath = physicalPath;
-            var razorProject = new FileProviderRazorProject(fileProvider);
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
+            var razorEngine = RazorEngine.Create();
+            var razorProject = new FileProviderRazorProject(accessor);
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
+
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
 
             // Act
@@ -82,9 +89,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var razorEngine = RazorEngine.Create();
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(viewPath, fileContent);
-            var razorProject = new FileProviderRazorProject(fileProvider);
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
+            var razorProject = new FileProviderRazorProject(accessor);
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject);
+
             var codeDocument = templateEngine.CreateCodeDocument(viewPath);
 
             // Act
@@ -105,13 +114,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var fileContent = "@ ";
             var importsContent = "@(abc";
 
-            var razorEngine = RazorEngine.Create();
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile(viewPath, fileContent);
             var importsFile = fileProvider.AddFile("/Views/_MyImports.cshtml", importsContent);
             importsFile.PhysicalPath = importsFilePath;
-            var razorProject = new FileProviderRazorProject(fileProvider);
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
+            var razorEngine = RazorEngine.Create();
+            var razorProject = new FileProviderRazorProject(accessor);
             var templateEngine = new MvcRazorTemplateEngine(razorEngine, razorProject)
             {
                 Options =

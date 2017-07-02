@@ -187,8 +187,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var fileProvider = new TestFileProvider();
             fileProvider.AddFile("/Home/Path1/_ViewStart.cshtml", "content1");
             fileProvider.AddFile("/_ViewStart.cshtml", "content2");
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
 
-            var defaultRazorProject = new FileProviderRazorProject(fileProvider);
+            var defaultRazorProject = new FileProviderRazorProject(accessor);
 
             var invokerProvider = CreateInvokerProvider(
                 loader.Object,

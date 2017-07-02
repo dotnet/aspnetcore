@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Internal
@@ -526,6 +527,8 @@ this should fail";
             IList<CompiledViewDescriptor> precompiledViews = null)
         {
             fileProvider = fileProvider ?? new TestFileProvider();
+            var accessor = Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == fileProvider);
+
             compilationCallback = compilationCallback ?? (_ => { });
             var options = new TestOptionsManager<RazorViewEngineOptions>();
             if (referenceManager == null)
@@ -540,7 +543,7 @@ this should fail";
 
             precompiledViews = precompiledViews ?? Array.Empty<CompiledViewDescriptor>();
 
-            var projectSystem = new FileProviderRazorProject(fileProvider);
+            var projectSystem = new FileProviderRazorProject(accessor);
             var templateEngine = new RazorTemplateEngine(RazorEngine.Create(), projectSystem)
             {
                 Options =
