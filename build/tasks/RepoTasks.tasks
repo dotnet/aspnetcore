@@ -1,0 +1,3 @@
+<Project>
+    <UsingTask TaskName="RepoTasks.CreateCommonManifest" AssemblyFile="$(MSBuildThisFileDirectory)bin\publish\RepoTasks.dll" />
+</Project>

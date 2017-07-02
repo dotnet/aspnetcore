@@ -175,8 +175,24 @@
     <Copy SourceFiles="$(RepositoryRoot)build\Build.RS.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)'=='Linux'" />
     <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionPrefix)-$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)'=='Linux'" />
 
-    <!-- Preview 2 Workaround: remove Microsoft.AspNetCore.Mvc.Razor.ViewCompilation from publish manifest -->
-    <Exec Command="sed -i -e '/microsoft.aspnetcore.mvc.razor.viewcompilation/d' $(ArtifactsDir)%(PackageStoreManifestFiles.TimestampDestinationFile)" Condition="'$(OS)' != 'Windows_NT'" />
+    <!-- Add a common manifest for package trimming -->
+    <MSBuild Projects="$(ProjectPath)" Targets="CreateCommonManifest" Condition="'$(OSPlatform)' == 'Windows' AND '$(PACKAGE_CACHE_PLATFORM)' == 'x64'"/>
+  </Target>
+
+  <Target Name="CreateCommonManifest">
+    <PropertyGroup>
+      <CommonManifestFileName>aspnetcore-store-$(TimestampVersion)-common.xml</CommonManifestFileName>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackageToTrim Include="runtime.win-arm64.runtime.native.system.data.sqlclient.sni" />
+    </ItemGroup>
+
+    <MSBuild Projects="$(RuntimeStoreReferenceDirectory)\Build.RuntimeStore.References.csproj" Targets="GetPackageDefinitions" >
+      <Output TaskParameter="TargetOutputs" ItemName="_PackageDefinitions" />
+    </MSBuild>
+
+    <RepoTasks.CreateCommonManifest DestinationFilePath="$(ArtifactsDir)$(CommonManifestFileName)" PackageDefinitions="@(_PackageDefinitions)" Packages="@(PackageToTrim)"/>
   </Target>
 
   <Target Name="ConvertZipToTGZ">
