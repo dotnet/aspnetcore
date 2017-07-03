@@ -18,6 +18,32 @@ namespace Microsoft.AspNetCore.Mvc
     public class SignOutResultTest
     {
         [Fact]
+        public async Task ExecuteResultAsync_NoArgsInvokesDefaultSignOut()
+        {
+            // Arrange
+            var httpContext = new Mock<HttpContext>();
+            var auth = new Mock<IAuthenticationService>();
+            auth
+                .Setup(c => c.SignOutAsync(httpContext.Object, null, null))
+                .Returns(Task.CompletedTask)
+                .Verifiable();
+            httpContext.Setup(c => c.RequestServices).Returns(CreateServices(auth.Object));
+            var result = new SignOutResult();
+            var routeData = new RouteData();
+
+            var actionContext = new ActionContext(
+                httpContext.Object,
+                routeData,
+                new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            auth.Verify();
+        }
+
+        [Fact]
         public async Task ExecuteResultAsync_InvokesSignOutAsyncOnAuthenticationManager()
         {
             // Arrange

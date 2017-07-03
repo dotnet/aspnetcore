@@ -14,7 +14,7 @@ namespace SecurityWebSite
             // Add framework services.
             services.AddMvc();
             services.AddAntiforgery();
-            services.AddCookieAuthentication(options => 
+            services.AddAuthentication().AddCookie(options => 
             {
                 options.LoginPath = "/Home/Login";
                 options.LogoutPath = "/Home/Logout";

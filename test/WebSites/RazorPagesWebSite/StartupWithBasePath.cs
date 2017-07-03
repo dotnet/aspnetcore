@@ -10,9 +10,9 @@ namespace RazorPagesWebSite
     {
         public void ConfigureServices(IServiceCollection services)
         {
-            services
-                .AddCookieAuthentication(options => options.LoginPath = "/Login")
-                .AddMvc()
+            services.AddAuthentication()
+                .AddCookie(options => options.LoginPath = "/Login");
+            services.AddMvc()
                 .AddCookieTempDataProvider()
                 .AddRazorPagesOptions(options =>
                 {

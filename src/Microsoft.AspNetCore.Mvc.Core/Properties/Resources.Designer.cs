@@ -1047,20 +1047,6 @@ namespace Microsoft.AspNetCore.Mvc.Core
             => string.Format(CultureInfo.CurrentCulture, GetString("Formatter_NoMediaTypes"), p0, p1);
 
         /// <summary>
-        /// At least one authentication scheme must be specified.
-        /// </summary>
-        internal static string MustSpecifyAtLeastOneAuthenticationScheme
-        {
-            get => GetString("MustSpecifyAtLeastOneAuthenticationScheme");
-        }
-
-        /// <summary>
-        /// At least one authentication scheme must be specified.
-        /// </summary>
-        internal static string FormatMustSpecifyAtLeastOneAuthenticationScheme()
-            => GetString("MustSpecifyAtLeastOneAuthenticationScheme");
-
-        /// <summary>
         /// Could not create a model binder for model object of type '{0}'.
         /// </summary>
         internal static string CouldNotCreateIModelBinder

@@ -349,9 +349,6 @@
   <data name="Formatter_NoMediaTypes" xml:space="preserve">
     <value>No media types found in '{0}.{1}'. Add at least one media type to the list of supported media types.</value>
   </data>
-  <data name="MustSpecifyAtLeastOneAuthenticationScheme" xml:space="preserve">
-    <value>At least one authentication scheme must be specified.</value>
-  </data>
   <data name="CouldNotCreateIModelBinder" xml:space="preserve">
     <value>Could not create a model binder for model object of type '{0}'.</value>
   </data>
