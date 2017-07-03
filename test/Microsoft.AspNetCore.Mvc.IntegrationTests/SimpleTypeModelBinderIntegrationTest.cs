@@ -396,13 +396,11 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(error.Exception);
         }
 
-        [Theory(Skip = "This test fails")]
+        [Theory]
         [InlineData(typeof(int?))]
         [InlineData(typeof(bool?))]
         [InlineData(typeof(string))]
-        [InlineData(typeof(object))]
-        [InlineData(typeof(IEnumerable))]
-        public async Task BindParameter_WithEmptyData_BindsMutableAndNullableObjects(Type parameterType)
+        public async Task BindParameter_WithEmptyData_BindsReferenceAndNullableObjects(Type parameterType)
         {
             // Arrange
             var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
@@ -435,7 +433,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var key = Assert.Single(modelState.Keys);
             Assert.Equal("Parameter1", key);
             Assert.Equal(string.Empty, modelState[key].AttemptedValue);
-            Assert.Equal(new string[] { string.Empty }, modelState[key].RawValue);
+            Assert.Equal(string.Empty, modelState[key].RawValue);
             Assert.Empty(modelState[key].Errors);
         }
 
