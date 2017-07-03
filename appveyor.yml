@@ -7,7 +7,7 @@ install:
    - ps: $urlCurrent = "https://dotnetcli.azureedge.net/dotnet/Sdk/2.0.0-preview2-006497/dotnet-sdk-2.0.0-preview2-006497-win-x64.zip"
    - ps: $env:DOTNET_INSTALL_DIR = "$pwd\.dotnetsdk"
    - ps: mkdir $env:DOTNET_INSTALL_DIR -Force | Out-Null
-   - ps: $tempFileCurrent = [System.IO.Path]::GetTempFileName()
+   - ps: $tempFileCurrent = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
    - ps: (New-Object System.Net.WebClient).DownloadFile($urlCurrent, $tempFileCurrent)
    - ps: Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory($tempFileCurrent, $env:DOTNET_INSTALL_DIR)
    - ps: $env:Path = "$env:DOTNET_INSTALL_DIR;$env:Path"
