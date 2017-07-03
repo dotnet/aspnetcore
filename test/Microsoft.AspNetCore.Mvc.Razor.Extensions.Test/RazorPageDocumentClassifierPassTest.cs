@@ -11,6 +11,32 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     public class RazorPageDocumentClassifierPassTest
     {
         [Fact]
+        public void RazorPageDocumentClassifierPass_LogsErrorForImportedPageDirectives()
+        {
+            // Arrange
+            var sourceSpan = new SourceSpan("import.cshtml", 0, 0, 0, 5);
+            var expectedDiagnostic = RazorExtensionsDiagnosticFactory.CreatePageDirective_CannotBeImported(sourceSpan);
+            var importDocument = RazorSourceDocument.Create("@page", "import.cshtml");
+            var sourceDocument = RazorSourceDocument.Create("<p>Hello World</p>", "main.cshtml");
+            var codeDocument = RazorCodeDocument.Create(sourceDocument, new[] { importDocument });
+            var engine = CreateEngine();
+            var irDocument = CreateIRDocument(engine, codeDocument);
+            var pass = new RazorPageDocumentClassifierPass
+            {
+                Engine = engine
+            };
+
+            // Act
+            pass.Execute(codeDocument, irDocument);
+
+            // Assert
+            var pageDirectives = irDocument.FindDirectiveReferences(PageDirective.Directive);
+            var directive = Assert.Single(pageDirectives);
+            var diagnostic = Assert.Single(directive.Node.Diagnostics);
+            Assert.Equal(expectedDiagnostic, diagnostic);
+        }
+
+        [Fact]
         public void RazorPageDocumentClassifierPass_SetsDocumentKind()
         {
             // Arrange

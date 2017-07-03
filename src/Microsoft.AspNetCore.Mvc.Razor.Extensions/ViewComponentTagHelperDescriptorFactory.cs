@@ -94,13 +94,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             if (methods.Length == 0)
             {
-                diagnostic =  ViewComponentDiagnosticFactory.CreateViewComponent_CannotFindMethod(type.ToDisplayString(FullNameTypeDisplayFormat));
+                diagnostic =  RazorExtensionsDiagnosticFactory.CreateViewComponent_CannotFindMethod(type.ToDisplayString(FullNameTypeDisplayFormat));
                 method = null;
                 return false;
             }
             else if (methods.Length > 1)
             {
-                diagnostic = ViewComponentDiagnosticFactory.CreateViewComponent_AmbiguousMethods(type.ToDisplayString(FullNameTypeDisplayFormat));
+                diagnostic = RazorExtensionsDiagnosticFactory.CreateViewComponent_AmbiguousMethods(type.ToDisplayString(FullNameTypeDisplayFormat));
                 method = null;
                 return false;
             }
@@ -120,7 +120,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
                 else
                 {
-                    diagnostic = ViewComponentDiagnosticFactory.CreateViewComponent_AsyncMethod_ShouldReturnTask(type.ToDisplayString(FullNameTypeDisplayFormat));
+                    diagnostic = RazorExtensionsDiagnosticFactory.CreateViewComponent_AsyncMethod_ShouldReturnTask(type.ToDisplayString(FullNameTypeDisplayFormat));
                     method = null;
                     return false;
                 }
@@ -130,19 +130,19 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 // Will invoke synchronously. Method must not return void, Task or Task<T>.
                 if (returnType.SpecialType == SpecialType.System_Void)
                 {
-                    diagnostic = ViewComponentDiagnosticFactory.CreateViewComponent_SyncMethod_ShouldReturnValue(type.ToDisplayString(FullNameTypeDisplayFormat));
+                    diagnostic = RazorExtensionsDiagnosticFactory.CreateViewComponent_SyncMethod_ShouldReturnValue(type.ToDisplayString(FullNameTypeDisplayFormat));
                     method = null;
                     return false;
                 }
                 else if (returnType == _taskSymbol)
                 {
-                    diagnostic = ViewComponentDiagnosticFactory.CreateViewComponent_SyncMethod_CannotReturnTask(type.ToDisplayString(FullNameTypeDisplayFormat));
+                    diagnostic = RazorExtensionsDiagnosticFactory.CreateViewComponent_SyncMethod_CannotReturnTask(type.ToDisplayString(FullNameTypeDisplayFormat));
                     method = null;
                     return false;
                 }
                 else if (returnType.IsGenericType && returnType.ConstructedFrom == _genericTaskSymbol)
                 {
-                    diagnostic = ViewComponentDiagnosticFactory.CreateViewComponent_SyncMethod_CannotReturnTask(type.ToDisplayString(FullNameTypeDisplayFormat));
+                    diagnostic = RazorExtensionsDiagnosticFactory.CreateViewComponent_SyncMethod_CannotReturnTask(type.ToDisplayString(FullNameTypeDisplayFormat));
                     method = null;
                     return false;
                 }

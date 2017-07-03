@@ -135,4 +135,7 @@
   <data name="MvcRazorParser_InvalidPropertyType" xml:space="preserve">
     <value>Invalid tag helper property '{0}.{1}'. Dictionary values must not be of type '{2}'.</value>
   </data>
+  <data name="PageDirectiveCannotBeImported" xml:space="preserve">
+    <value>The '@{0}' directive specified in {1} file will not be imported. The directive must appear at the top of each Razor cshtml file.</value>
+  </data>
 </root>

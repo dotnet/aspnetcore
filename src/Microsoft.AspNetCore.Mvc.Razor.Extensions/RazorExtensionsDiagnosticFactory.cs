@@ -1,12 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    internal class ViewComponentDiagnosticFactory
+    internal class RazorExtensionsDiagnosticFactory
     {
         private const string DiagnosticPrefix = "RZ";
 
@@ -95,6 +96,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 ViewComponentTypes.SyncMethodName,
                 tagHelperType,
                 nameof(Task));
+
+            return diagnostic;
+        }
+
+        public static readonly RazorDiagnosticDescriptor PageDirective_CannotBeImported =
+            new RazorDiagnosticDescriptor(
+                $"{DiagnosticPrefix}3905",
+                () => Resources.PageDirectiveCannotBeImported,
+                RazorDiagnosticSeverity.Error);
+
+        public static RazorDiagnostic CreatePageDirective_CannotBeImported(SourceSpan source)
+        {
+            var fileName = Path.GetFileName(source.FilePath);
+            var diagnostic = RazorDiagnostic.Create(PageDirective_CannotBeImported, source, PageDirective.Directive.Directive, fileName);
 
             return diagnostic;
         }

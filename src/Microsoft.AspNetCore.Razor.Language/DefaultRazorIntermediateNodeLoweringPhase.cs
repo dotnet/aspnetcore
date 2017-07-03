@@ -109,9 +109,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 var directive = (DirectiveIntermediateNode)reference.Node;
                 var descriptor = directive.Descriptor;
                 var seenDirective = !seenDirectives.Add(descriptor);
-                var imported = ReferenceEquals(directive.Annotations[CommonAnnotations.Imported], CommonAnnotations.Imported);
 
-                if (!imported)
+                if (!directive.IsImported())
                 {
                     continue;
                 }

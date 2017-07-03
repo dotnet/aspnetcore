@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -41,6 +42,34 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             method.Modifiers.Add("async");
             method.Modifiers.Add("override");
             method.ReturnType = $"global::{typeof(System.Threading.Tasks.Task).FullName}";
+
+            EnsureValidPageDirective(codeDocument);
+        }
+
+        private void EnsureValidPageDirective(RazorCodeDocument codeDocument)
+        {
+            var document = codeDocument.GetDocumentIntermediateNode();
+            var visitor = new Visitor();
+            visitor.VisitDocument(document);
+
+            if (visitor.DirectiveNode.IsImported())
+            {
+                visitor.DirectiveNode.Diagnostics.Add(
+                    RazorExtensionsDiagnosticFactory.CreatePageDirective_CannotBeImported(visitor.DirectiveNode.Source.Value));
+            }
+        }
+
+        private class Visitor : IntermediateNodeWalker
+        {
+            public DirectiveIntermediateNode DirectiveNode { get; private set; }
+
+            public override void VisitDirective(DirectiveIntermediateNode node)
+            {
+                if (node.Descriptor == PageDirective.Directive)
+                {
+                    DirectiveNode = node;
+                }
+            }
         }
     }
 }

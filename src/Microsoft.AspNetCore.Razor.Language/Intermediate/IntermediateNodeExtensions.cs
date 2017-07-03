@@ -11,6 +11,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
     {
         private static readonly IReadOnlyList<RazorDiagnostic> EmptyDiagnostics = Array.Empty<RazorDiagnostic>();
 
+        public static bool IsImported(this IntermediateNode node)
+        {
+            return ReferenceEquals(node.Annotations[CommonAnnotations.Imported], CommonAnnotations.Imported);
+        }
+
         public static IReadOnlyList<RazorDiagnostic> GetAllDiagnostics(this IntermediateNode node)
         {
             if (node == null)

@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
-            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_CannotFindMethod.Id, diagnostic.Id);
+            Assert.Equal(RazorExtensionsDiagnosticFactory.ViewComponent_CannotFindMethod.Id, diagnostic.Id);
         }
 
         [Fact]
@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
-            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_AsyncMethod_ShouldReturnTask.Id, diagnostic.Id);
+            Assert.Equal(RazorExtensionsDiagnosticFactory.ViewComponent_AsyncMethod_ShouldReturnTask.Id, diagnostic.Id);
         }
 
         [Fact]
@@ -225,7 +225,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
-            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_AsyncMethod_ShouldReturnTask.Id, diagnostic.Id);
+            Assert.Equal(RazorExtensionsDiagnosticFactory.ViewComponent_AsyncMethod_ShouldReturnTask.Id, diagnostic.Id);
         }
 
         [Fact]
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
-            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_SyncMethod_ShouldReturnValue.Id, diagnostic.Id);
+            Assert.Equal(RazorExtensionsDiagnosticFactory.ViewComponent_SyncMethod_ShouldReturnValue.Id, diagnostic.Id);
         }
 
         [Fact]
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
-            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_SyncMethod_CannotReturnTask.Id, diagnostic.Id);
+            Assert.Equal(RazorExtensionsDiagnosticFactory.ViewComponent_SyncMethod_CannotReturnTask.Id, diagnostic.Id);
         }
 
         [Fact]
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             var diagnostic = Assert.Single(descriptor.GetAllDiagnostics());
-            Assert.Equal(ViewComponentDiagnosticFactory.ViewComponent_SyncMethod_CannotReturnTask.Id, diagnostic.Id);
+            Assert.Equal(RazorExtensionsDiagnosticFactory.ViewComponent_SyncMethod_CannotReturnTask.Id, diagnostic.Id);
         }
     }
 

@@ -94,6 +94,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         internal static string FormatMvcRazorParser_InvalidPropertyType(object p0, object p1, object p2)
             => string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorParser_InvalidPropertyType"), p0, p1, p2);
 
+        /// <summary>
+        /// The '@{0}' directive specified in {1} file will not be imported. The directive must appear at the top of each Razor cshtml file.
+        /// </summary>
+        internal static string PageDirectiveCannotBeImported
+        {
+            get => GetString("PageDirectiveCannotBeImported");
+        }
+
+        /// <summary>
+        /// The '@{0}' directive specified in {1} file will not be imported. The directive must appear at the top of each Razor cshtml file.
+        /// </summary>
+        internal static string FormatPageDirectiveCannotBeImported(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("PageDirectiveCannotBeImported"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
