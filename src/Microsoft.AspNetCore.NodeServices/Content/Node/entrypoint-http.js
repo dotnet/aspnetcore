@@ -133,7 +133,10 @@
 	}
 	function respondWithError(res, errorValue) {
 	    res.statusCode = 500;
-	    res.end(errorValue.stack || errorValue.toString());
+	    res.end(JSON.stringify({
+	        errorMessage: errorValue.message || errorValue,
+	        errorDetails: errorValue.stack || null
+	    }));
 	}
 
 
