@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         }
 
-        public abstract DocumentWriter CreateWriter(CodeRenderingContext context);
+        public abstract IntermediateNodeWriter CreateNodeWriter();
 
         public abstract TExtension GetExtension<TExtension>() where TExtension : class, ICodeTargetExtension;
 

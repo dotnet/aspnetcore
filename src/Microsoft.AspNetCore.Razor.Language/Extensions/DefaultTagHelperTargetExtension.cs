@@ -107,8 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     .WriteParameterSeparator();
 
                 // We remove and redirect writers so TagHelper authors can retrieve content.
-                using (context.Push(new RuntimeNodeWriter()))
-                using (context.Push(new RuntimeTagHelperWriter()))
+                using (context.CreateScope(new RuntimeNodeWriter()))
                 {
                     using (context.CodeWriter.BuildAsyncLambda())
                     {
@@ -215,7 +214,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         .Write(attributeValueStyleParameter)
                         .WriteEndMethodInvocation();
 
-                    using (context.Push(new TagHelperHtmlAttributeRuntimeNodeWriter()))
+                    using (context.CreateScope(new TagHelperHtmlAttributeRuntimeNodeWriter()))
                     {
                         context.RenderChildren(node);
                     }
@@ -237,8 +236,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     // We're building a writing scope around the provided chunks which captures everything written from the
                     // page. Therefore, we do not want to write to any other buffer since we're using the pages buffer to
                     // ensure we capture all content that's written, directly or indirectly.
-                    using (context.Push(new RuntimeNodeWriter()))
-                    using (context.Push(new RuntimeTagHelperWriter()))
+                    using (context.CreateScope(new RuntimeNodeWriter()))
                     {
                         context.RenderChildren(node);
                     }
@@ -335,7 +333,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 {
                     context.CodeWriter.WriteMethodInvocation(BeginWriteTagHelperAttributeMethodName);
 
-                    using (context.Push(new LiteralRuntimeNodeWriter()))
+                    using (context.CreateScope(new LiteralRuntimeNodeWriter()))
                     {
                         context.RenderChildren(node);
                     }

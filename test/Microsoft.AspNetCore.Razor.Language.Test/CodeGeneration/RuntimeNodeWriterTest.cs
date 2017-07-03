@@ -16,8 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Arrange
             var codeWriter = new CodeWriter();
             var writer = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new UsingDirectiveIntermediateNode()
             {
@@ -42,8 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             // Arrange
             var codeWriter = new CodeWriter();
             var writer = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new UsingDirectiveIntermediateNode()
             {
@@ -76,8 +74,7 @@ using System;
             {
                 WriteCSharpExpressionMethod = "Test",
             };
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new CSharpExpressionIntermediateNode();
             var builder = IntermediateNodeBuilder.Create(node);
@@ -108,8 +105,7 @@ using System;
             {
                 WriteCSharpExpressionMethod = "Test",
             };
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new CSharpExpressionIntermediateNode()
             {
@@ -147,8 +143,7 @@ Test(i++);
             {
                 WriteCSharpExpressionMethod = "Test",
             };
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new CSharpExpressionIntermediateNode();
             var builder = IntermediateNodeBuilder.Create(node);
@@ -164,15 +159,14 @@ Test(i++);
                 Kind = IntermediateToken.TokenKind.CSharp,
             });
 
-            context.SetRenderNode((n) => Assert.IsType<MyExtensionIntermediateNode>(n));
-
             // Act
             writer.WriteCSharpExpression(context, node);
 
             // Assert
             var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
-@"Test(i++);
+@"Test(iRender Children
+++);
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
@@ -187,9 +181,7 @@ Test(i++);
             {
                 WriteCSharpExpressionMethod = "Test",
             };
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var sourceDocument = TestRazorSourceDocument.Create("       @i++");
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument, options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new CSharpExpressionIntermediateNode()
             {
@@ -208,8 +200,6 @@ Test(i++);
                 Kind = IntermediateToken.TokenKind.CSharp,
             });
 
-            context.SetRenderNode((n) => Assert.IsType<MyExtensionIntermediateNode>(n));
-
             // Act
             writer.WriteCSharpExpression(context, node);
 
@@ -217,7 +207,8 @@ Test(i++);
             var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#line 1 ""test.cshtml""
-   Test(i++);
+   Test(iRender Children
+++);
 
 #line default
 #line hidden
@@ -232,8 +223,7 @@ Test(i++);
             // Arrange
             var codeWriter = new CodeWriter();
             var writer = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new CSharpCodeIntermediateNode();
             IntermediateNodeBuilder.Create(node)
@@ -257,8 +247,7 @@ Test(i++);
             // Arrange
             var codeWriter = new CodeWriter();
             var writer = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new CSharpCodeIntermediateNode();
             IntermediateNodeBuilder.Create(node)
@@ -286,8 +275,7 @@ Test(i++);
             // Arrange
             var codeWriter = new CodeWriter();
             var writer = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new CSharpCodeIntermediateNode()
             {
@@ -322,8 +310,7 @@ if (true) { }
             // Arrange
             var codeWriter = new CodeWriter();
             var writer = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new CSharpCodeIntermediateNode()
             {
@@ -358,8 +345,7 @@ if (true) { }
             // Arrange
             var codeWriter = new CodeWriter();
             var writer = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new HtmlContentIntermediateNode();
             node.Children.Add(new IntermediateToken()
@@ -386,9 +372,7 @@ if (true) { }
             // Arrange
             var codeWriter = new CodeWriter();
             var writer = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
-
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new HtmlContentIntermediateNode();
             node.Children.Add(new IntermediateToken()
@@ -418,9 +402,10 @@ WriteLiteral(@""{1}"");
             var content = "<input checked=\"hello-world @false\" />";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var context = GetCodeRenderingContext(writer, sourceDocument);
-            var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single();
+            var documentNode = Lower(codeDocument);
+            var node = documentNode.Children.OfType<HtmlAttributeIntermediateNode>().Single();
+
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             // Act
             writer.WriteHtmlAttribute(context, node);
@@ -429,6 +414,7 @@ WriteLiteral(@""{1}"");
             var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"BeginWriteAttribute(""checked"", "" checked=\"""", 6, ""\"""", 34, 2);
+Render Children
 Render Children
 EndWriteAttribute();
 ",
@@ -444,9 +430,10 @@ EndWriteAttribute();
             var content = "<input checked=\"hello-world @false\" />";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var context = GetCodeRenderingContext(writer, sourceDocument);
-            var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[0] as HtmlAttributeValueIntermediateNode;
+            var documentNode = Lower(codeDocument);
+            var node = documentNode.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[0] as HtmlAttributeValueIntermediateNode;
+            
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             // Act
             writer.WriteHtmlAttributeValue(context, node);
@@ -468,9 +455,10 @@ EndWriteAttribute();
             var content = "<input checked=\"hello-world @false\" />";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var context = GetCodeRenderingContext(writer, sourceDocument);
-            var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpExpressionAttributeValueIntermediateNode;
+            var documentNode = Lower(codeDocument);
+            var node = documentNode.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpExpressionAttributeValueIntermediateNode;
+
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             // Act
             writer.WriteCSharpExpressionAttributeValue(context, node);
@@ -497,9 +485,10 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
             var content = "<input checked=\"hello-world @if(@true){ }\" />";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var context = GetCodeRenderingContext(writer, sourceDocument);
-            var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpCodeAttributeValueIntermediateNode;
+            var documentNode = Lower(codeDocument);
+            var node = documentNode.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpCodeAttributeValueIntermediateNode;
+
+            var context = TestCodeRenderingContext.CreateRuntime(source: sourceDocument);
 
             // Act
             writer.WriteCSharpCodeAttributeValue(context, node);
@@ -530,7 +519,7 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
             {
                 PushWriterMethod = "TestPushWriter"
             };
-            var context = GetCodeRenderingContext(writer, null);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             // Act
             writer.BeginWriterScope(context, "MyWriter");
@@ -552,7 +541,7 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
             {
                 PopWriterMethod = "TestPopWriter"
             };
-            var context = GetCodeRenderingContext(writer, null);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             // Act
             writer.EndWriterScope(context);
@@ -564,19 +553,6 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
-        }
-
-        private static CodeRenderingContext GetCodeRenderingContext(IntermediateNodeWriter writer, RazorSourceDocument sourceDocument)
-        {
-            var codeWriter = new CodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument, options);
-            context.SetRenderChildren(n =>
-            {
-                codeWriter.WriteLine("Render Children");
-            });
-
-            return context;
         }
 
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
@@ -611,7 +587,7 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
 
             public override void Accept(IntermediateNodeVisitor visitor)
             {
-                throw new NotImplementedException();
+                visitor.VisitDefault(this);
             }
 
             public override void WriteNode(CodeTarget target, CodeRenderingContext context)

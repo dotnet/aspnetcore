@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
 using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAssert;
@@ -16,6 +17,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             // Arrange
             var node = new SectionIntermediateNode()
             {
+                Children =
+                {
+                    new CSharpExpressionIntermediateNode(),
+                },
                 Name = "MySection"
             };
 
@@ -24,26 +29,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 SectionMethodName = "CreateSection"
             };
 
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options)
-            { 
-                TagHelperWriter = new RuntimeTagHelperWriter(),
-            };
-
-            context.SetRenderChildren((n) =>
-            {
-                Assert.Same(node, n);
-                context.CodeWriter.WriteLine(" var s = \"Inside\"");
-            });
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             // Act
             extension.WriteSection(context, node);
 
             // Assert
             var expected = @"CreateSection(""MySection"", async() => {
-     var s = ""Inside""
+    Render Children
 }
 );
 ";
@@ -58,6 +51,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             // Arrange
             var node = new SectionIntermediateNode()
             {
+                Children =
+                {
+                    new CSharpExpressionIntermediateNode(),
+                },
                 Name = "MySection"
             };
 
@@ -66,26 +63,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 SectionMethodName = "CreateSection"
             };
 
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.Create(false, 4, true, false);
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options)
-            {
-                TagHelperWriter = new RuntimeTagHelperWriter(),
-            };
-
-            context.SetRenderChildren((n) =>
-            {
-                Assert.Same(node, n);
-                context.CodeWriter.WriteLine(" var s = \"Inside\"");
-            });
+            var context = TestCodeRenderingContext.CreateDesignTime();
 
             // Act
             extension.WriteSection(context, node);
 
             // Assert
             var expected = @"CreateSection(""MySection"", async(__razor_section_writer) => {
-     var s = ""Inside""
+    Render Children
 }
 );
 ";

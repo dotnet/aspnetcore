@@ -13,10 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new PreallocatedTagHelperHtmlAttributeValueIntermediateNode()
             {
@@ -43,10 +40,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new PreallocatedTagHelperHtmlAttributeValueIntermediateNode()
             {
@@ -73,10 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new PreallocatedTagHelperHtmlAttributeIntermediateNode()
             {
@@ -100,10 +91,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new PreallocatedTagHelperPropertyValueIntermediateNode()
             {
@@ -130,10 +118,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "FooTagHelper", "Test");
             tagHelperBuilder.TypeName("FooTagHelper");
@@ -173,13 +158,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options)
-            {
-                TagHelperRenderingContext = new TagHelperRenderingContext()
-            };
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "FooTagHelper", "Test");
             tagHelperBuilder.TypeName("FooTagHelper");

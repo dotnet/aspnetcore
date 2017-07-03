@@ -12,34 +12,22 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
-            var irDocument = codeDocument.GetDocumentIntermediateNode();
-            ThrowForMissingDocumentDependency(irDocument);
+            var documentNode = codeDocument.GetDocumentIntermediateNode();
+            ThrowForMissingDocumentDependency(documentNode);
 
-            var target = irDocument.Target;
+            var target = documentNode.Target;
             if (target == null)
             {
                 var message = Resources.FormatDocumentMissingTarget(
-                    irDocument.DocumentKind,
+                    documentNode.DocumentKind,
                     nameof(CodeTarget),
                     nameof(DocumentIntermediateNode.Target));
                 throw new InvalidOperationException(message);
             }
 
-            var context = CodeRenderingContext.Create(codeDocument, irDocument.Options);
-            var documentWriter = target.CreateWriter(context);
-            documentWriter.WriteDocument(irDocument);
-
-            var diagnostics = new List<RazorDiagnostic>();
-            diagnostics.AddRange(irDocument.GetAllDiagnostics());
-            diagnostics.AddRange(context.Diagnostics);
-
-            var lineMappings = context.GetLineMappings();
-            var csharpDocument = RazorCSharpDocument.Create(
-                context.CodeWriter.GenerateCode(),
-                irDocument.Options,
-                diagnostics,
-                lineMappings);
-            codeDocument.SetCSharpDocument(csharpDocument);
+            var writer = new DefaultDocumentWriter(documentNode.Target, documentNode.Options);
+            var cSharpDocument = writer.WriteDocument(codeDocument, documentNode);
+            codeDocument.SetCSharpDocument(cSharpDocument);
         }
     }
 }

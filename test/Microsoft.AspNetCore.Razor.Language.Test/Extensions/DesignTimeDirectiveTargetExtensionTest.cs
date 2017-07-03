@@ -14,10 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new DesignTimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateDesignTime();
 
             var node = new DesignTimeDirectiveIntermediateNode();
 
@@ -41,11 +38,7 @@ private void __RazorDirectiveTokenHelpers__() {
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new DesignTimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var sourceDocument = RazorSourceDocument.Create("test content", "test.cshtml");
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument, options);
+            var context = TestCodeRenderingContext.CreateDesignTime();
 
             var node = new DesignTimeDirectiveIntermediateNode();
             var token = new DirectiveTokenIntermediateNode()
@@ -80,11 +73,7 @@ System.String __typeHelper = default(System.String);
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new DesignTimeNodeWriter();
-            var sourceDocument = RazorSourceDocument.Create("test content", "test.cshtml");
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument, options);
+            var context = TestCodeRenderingContext.CreateDesignTime();
 
             var node = new DesignTimeDirectiveIntermediateNode();
             var token = new DirectiveTokenIntermediateNode()
@@ -119,11 +108,7 @@ global::System.Object __typeHelper = nameof(System.Collections.Generic);
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new DesignTimeNodeWriter();
-            var sourceDocument = RazorSourceDocument.Create("test content", "test.cshtml");
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument, options);
+            var context = TestCodeRenderingContext.CreateDesignTime();
 
             var node = new DesignTimeDirectiveIntermediateNode();
             var token = new DirectiveTokenIntermediateNode()
@@ -158,11 +143,7 @@ global::System.Object Foo = null;
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new DesignTimeNodeWriter();
-            var sourceDocument = RazorSourceDocument.Create("test content", "test.cshtml");
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument, options);
+            var context = TestCodeRenderingContext.CreateDesignTime();
 
             var node = new DesignTimeDirectiveIntermediateNode();
             var token = new DirectiveTokenIntermediateNode()
@@ -208,11 +189,7 @@ global::System.Object __typeHelper = ""Value"";
         {
             // Arrange
             var extension = new DesignTimeDirectiveTargetExtension();
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new DesignTimeNodeWriter();
-            var sourceDocument = RazorSourceDocument.Create("test content", "test.cshtml");
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument, options);
+            var context = TestCodeRenderingContext.CreateDesignTime();
 
             var node = new DesignTimeDirectiveIntermediateNode();
             var token = new DirectiveTokenIntermediateNode()

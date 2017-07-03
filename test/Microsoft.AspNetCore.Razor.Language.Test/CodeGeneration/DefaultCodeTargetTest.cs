@@ -28,20 +28,31 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         [Fact]
-        public void CreateWriter_CreatesDefaultDocumentWriter()
+        public void CreateWriter_DesignTime_CreatesDesignTimeNodeWriter()
         {
             // Arrange
-            var codeWriter = new CodeWriter();
-            var codeDocument = TestRazorCodeDocument.Create(string.Empty);
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = CodeRenderingContext.Create(codeDocument, options);
+            var options = RazorCodeGenerationOptions.CreateDesignTimeDefault();
             var target = new DefaultCodeTarget(options, Enumerable.Empty<ICodeTargetExtension>());
 
             // Act
-            var writer = target.CreateWriter(context);
+            var writer = target.CreateNodeWriter();
 
             // Assert
-            Assert.IsType<DefaultDocumentWriter>(writer);
+            Assert.IsType<DesignTimeNodeWriter>(writer);
+        }
+
+        [Fact]
+        public void CreateWriter_Runtime_CreatesRuntimeNodeWriter()
+        {
+            // Arrange
+            var options = RazorCodeGenerationOptions.CreateDefault();
+            var target = new DefaultCodeTarget(options, Enumerable.Empty<ICodeTargetExtension>());
+
+            // Act
+            var writer = target.CreateNodeWriter();
+
+            // Assert
+            Assert.IsType<RuntimeNodeWriter>(writer);
         }
 
         [Fact]

@@ -17,9 +17,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var content = "<input checked=\"hello-world @false\" />";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var context = GetCodeRenderingContext(writer, sourceDocument);
-            var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[0] as HtmlAttributeValueIntermediateNode;
+            var documentNode = Lower(codeDocument);
+            var node = documentNode.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[0] as HtmlAttributeValueIntermediateNode;
+
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             // Act
             writer.WriteHtmlAttributeValue(context, node);
@@ -40,9 +41,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var content = "<input checked=\"hello-world @false\" />";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var context = GetCodeRenderingContext(writer, sourceDocument);
-            var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpExpressionAttributeValueIntermediateNode;
+            var documentNode = Lower(codeDocument);
+            var node = documentNode.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpExpressionAttributeValueIntermediateNode;
+
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             // Act
             writer.WriteCSharpExpressionAttributeValue(context, node);
@@ -68,9 +70,10 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
             var content = "<input checked=\"hello-world @if(@true){ }\" />";
             var sourceDocument = TestRazorSourceDocument.Create(content);
             var codeDocument = RazorCodeDocument.Create(sourceDocument);
-            var context = GetCodeRenderingContext(writer, sourceDocument);
-            var irDocument = Lower(codeDocument);
-            var node = irDocument.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpCodeAttributeValueIntermediateNode;
+            var documentNode = Lower(codeDocument);
+            var node = documentNode.Children.OfType<HtmlAttributeIntermediateNode>().Single().Children[1] as CSharpCodeAttributeValueIntermediateNode;
+
+            var context = TestCodeRenderingContext.CreateRuntime(source: sourceDocument);
 
             // Act
             writer.WriteCSharpCodeAttributeValue(context, node);
@@ -93,19 +96,6 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
                 ignoreLineEndingDifferences: true);
         }
 
-        private static CodeRenderingContext GetCodeRenderingContext(IntermediateNodeWriter writer, RazorSourceDocument sourceDocument)
-        {
-            var codeWriter = new CodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument, options);
-            context.SetRenderChildren(_ =>
-            {
-                codeWriter.WriteLine("Render Children");
-            });
-
-            return context;
-        }
-
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)
         {
             var engine = RazorEngine.Create();
@@ -126,10 +116,10 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
                 }
             }
 
-            var irDocument = codeDocument.GetDocumentIntermediateNode();
-            Assert.NotNull(irDocument);
+            var documentNode = codeDocument.GetDocumentIntermediateNode();
+            Assert.NotNull(documentNode);
 
-            return irDocument;
+            return documentNode;
         }
     }
 }

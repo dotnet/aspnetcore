@@ -13,9 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             // Arrange
             var writer = new LiteralRuntimeNodeWriter();
-            var codeWriter = new CodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, writer, sourceDocument: null, options: options);
+            var context = TestCodeRenderingContext.CreateRuntime();
 
             var node = new CSharpExpressionIntermediateNode()
             {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
@@ -12,29 +13,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         public void WriteTemplate_WritesTemplateCode()
         {
             // Arrange
-            var node = new TemplateIntermediateNode();
+            var node = new TemplateIntermediateNode()
+            {
+                Children =
+                {
+                    new CSharpExpressionIntermediateNode()
+                }
+            };
             var extension = new TemplateTargetExtension()
             {
                 TemplateTypeName = "global::TestTemplate"
             };
-
-            var codeWriter = new CodeWriter();
+            
             var nodeWriter = new RuntimeNodeWriter()
             {
                 PushWriterMethod = "TestPushWriter",
                 PopWriterMethod = "TestPopWriter"
             };
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options)
-            {
-                TagHelperWriter = new RuntimeTagHelperWriter(),
-            };
 
-            context.SetRenderChildren((n) =>
-            {
-                Assert.Same(node, n);
-                context.CodeWriter.WriteLine(" var s = \"Inside\"");
-            });
+            var context = TestCodeRenderingContext.CreateRuntime(nodeWriter: nodeWriter);
 
             // Act
             extension.WriteTemplate(context, node);
@@ -42,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             // Assert
             var expected = @"item => new global::TestTemplate(async(__razor_template_writer) => {
     TestPushWriter(__razor_template_writer);
-     var s = ""Inside""
+    Render Children
     TestPopWriter();
 }
 )";

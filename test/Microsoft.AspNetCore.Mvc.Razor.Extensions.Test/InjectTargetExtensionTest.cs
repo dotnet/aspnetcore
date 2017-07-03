@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
 
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InjectDirectiveTargetExtension_WritesProperty()
         {
             // Arrange
-            var context = GetRenderingContext();
+            var context = TestCodeRenderingContext.CreateRuntime();
             var target = new InjectTargetExtension();
             var node = new InjectIntermediateNode()
             {
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public void InjectDirectiveTargetExtension_WritesPropertyWithLinePragma_WhenSourceIsSet()
         {
             // Arrange
-            var context = GetRenderingContext();
+            var context = TestCodeRenderingContext.CreateRuntime();
             var target = new InjectTargetExtension();
             var node = new InjectIntermediateNode()
             {
@@ -62,16 +63,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 "#line default" + Environment.NewLine +
                 "#line hidden" + Environment.NewLine,
                 context.CodeWriter.Builder.ToString());
-        }
-
-        private CodeRenderingContext GetRenderingContext()
-        {
-            var codeWriter = new CodeWriter();
-            var nodeWriter = new RuntimeNodeWriter();
-            var options = RazorCodeGenerationOptions.CreateDefault();
-            var context = new DefaultCodeRenderingContext(codeWriter, nodeWriter, sourceDocument: null, options: options);
-
-            return context;
         }
     }
 }
