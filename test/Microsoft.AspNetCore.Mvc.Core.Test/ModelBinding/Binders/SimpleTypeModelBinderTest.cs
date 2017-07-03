@@ -109,13 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
         }
 
         [Theory]
-        [InlineData(typeof(byte))]
-        [InlineData(typeof(short))]
-        [InlineData(typeof(int))]
-        [InlineData(typeof(long))]
-        [InlineData(typeof(Guid))]
-        [InlineData(typeof(double))]
-        [InlineData(typeof(DayOfWeek))]
+        [MemberData(nameof(ConvertableTypeData))]
         public async Task BindModel_CreatesError_WhenTypeConversionIsNull(Type destinationType)
         {
             // Arrange
@@ -262,6 +256,55 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.True(bindingContext.ModelState.ContainsKey("theModelName"));
         }
 
+        public static TheoryData<Type> BiggerNumericTypes
+        {
+            get
+            {
+                // Data set does not include bool, byte, sbyte, or char because they do not need thousands separators.
+                return new TheoryData<Type>
+                {
+                    typeof(decimal),
+                    typeof(double),
+                    typeof(float),
+                    typeof(int),
+                    typeof(long),
+                    typeof(short),
+                    typeof(uint),
+                    typeof(ulong),
+                    typeof(ushort),
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(BiggerNumericTypes))]
+        public async Task BindModel_ThousandsSeparators_LeadToErrors(Type type)
+        {
+            // Arrange
+            var bindingContext = GetBindingContext(type);
+            bindingContext.ValueProvider = new SimpleValueProvider(new CultureInfo("en-GB"))
+            {
+                { "theModelName", "32,000" }
+            };
+
+            var binder = new SimpleTypeModelBinder(type);
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.False(bindingContext.Result.IsModelSet);
+
+            var entry = Assert.Single(bindingContext.ModelState);
+            Assert.Equal("theModelName", entry.Key);
+            Assert.Equal("32,000", entry.Value.AttemptedValue);
+            Assert.Equal(ModelValidationState.Invalid, entry.Value.ValidationState);
+
+            var error = Assert.Single(entry.Value.Errors);
+            Assert.Equal("The value '32,000' is not valid.", error.ErrorMessage);
+            Assert.Null(error.Exception);
+        }
+
         [Fact]
         public async Task BindModel_ValidValueProviderResultWithProvidedCulture_ReturnsModel()
         {
@@ -349,11 +392,49 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Assert.Equal(IntEnum.Value1, boundModel);
         }
 
+        public static TheoryData<string, int> EnumValues
+        {
+            get
+            {
+                return new TheoryData<string, int>
+                {
+                    { "0", 0 },
+                    { "1", 1 },
+                    { "13", 13 },
+                    { "Value1", 1 },
+                    { "Value1, Value2", 3 },
+                    // These two values look like big integers but are treated as two separate enum values that are
+                    // or'd together.
+                    { "32,015", 47 },
+                    { "32,128", 160 },
+                };
+            }
+        }
+
         [Theory]
-        [InlineData("0", 0)]
-        [InlineData("1", 1)]
-        [InlineData("13", 13)]
-        [InlineData("Value1", 1)]
+        [MemberData(nameof(EnumValues))]
+        public async Task BindModel_BindsIntEnumModels(string flagsEnumValue, int expected)
+        {
+            // Arrange
+            var bindingContext = GetBindingContext(typeof(IntEnum));
+            bindingContext.ValueProvider = new SimpleValueProvider
+            {
+                { "theModelName", flagsEnumValue }
+            };
+
+            var binder = new SimpleTypeModelBinder(typeof(IntEnum));
+
+            // Act
+            await binder.BindModelAsync(bindingContext);
+
+            // Assert
+            Assert.True(bindingContext.Result.IsModelSet);
+            var boundModel = Assert.IsType<IntEnum>(bindingContext.Result.Model);
+            Assert.Equal((IntEnum)expected, boundModel);
+        }
+
+        [Theory]
+        [MemberData(nameof(EnumValues))]
         [InlineData("Value8, Value4", 12)]
         public async Task BindModel_BindsFlagsEnumModels(string flagsEnumValue, int expected)
         {
@@ -396,13 +477,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
             Value1 = 1,
             Value2 = 2,
             Value4 = 4,
-            Value8 = 8
+            Value8 = 8,
         }
 
         private enum IntEnum
         {
             Value0 = 0,
             Value1 = 1,
+            Value2 = 2,
             MaxValue = int.MaxValue
         }
     }

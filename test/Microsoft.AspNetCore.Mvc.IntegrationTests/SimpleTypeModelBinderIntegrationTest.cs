@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
 using Xunit;
 
@@ -148,6 +149,50 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("Parameter1", key);
             Assert.Equal("someValue", modelState[key].AttemptedValue);
             Assert.Equal("someValue", modelState[key].RawValue);
+            Assert.Empty(modelState[key].Errors);
+            Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
+        }
+
+        [Fact]
+        [ReplaceCulture("en-GB", "en-GB")]
+        public async Task BindDecimalParameter_WithData_GetsBound()
+        {
+            // Arrange
+            var parameterBinder = ModelBindingTestHelper.GetParameterBinder();
+            var parameter = new ParameterDescriptor
+            {
+                Name = "Parameter1",
+                BindingInfo = new BindingInfo(),
+                ParameterType = typeof(decimal),
+            };
+
+            var testContext = ModelBindingTestHelper.GetTestContext(request =>
+            {
+                request.QueryString = QueryString.Create("Parameter1", "32,000.99");
+            });
+
+            var modelState = testContext.ModelState;
+
+            // Act
+            var modelBindingResult = await parameterBinder.BindModelAsync(parameter, testContext);
+
+            // Assert
+
+            // ModelBindingResult
+            Assert.True(modelBindingResult.IsModelSet);
+
+            // Model
+            var model = Assert.IsType<decimal>(modelBindingResult.Model);
+            Assert.Equal(32000.99M, model);
+
+            // ModelState
+            Assert.True(modelState.IsValid);
+
+            Assert.Equal(1, modelState.Keys.Count());
+            var key = Assert.Single(modelState.Keys);
+            Assert.Equal("Parameter1", key);
+            Assert.Equal("32,000.99", modelState[key].AttemptedValue);
+            Assert.Equal("32,000.99", modelState[key].RawValue);
             Assert.Empty(modelState[key].Errors);
             Assert.Equal(ModelValidationState.Valid, modelState[key].ValidationState);
         }
