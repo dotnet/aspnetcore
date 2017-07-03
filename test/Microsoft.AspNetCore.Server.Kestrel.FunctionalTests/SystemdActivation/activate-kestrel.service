@@ -1,7 +1,0 @@
-[Unit]
-Requires=activate-kestrel.socket
-
-[Service]
-ExecStart=/usr/bin/dotnet SampleApp.dll
-WorkingDirectory=/publish
-NonBlocking=true
