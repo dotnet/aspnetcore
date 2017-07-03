@@ -28,6 +28,7 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
@@ -36,6 +37,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private const int _connectionStartedEventId = 1;
         private const int _connectionResetEventId = 19;
         private const int _semaphoreWaitTimeout = 2500;
+
+        private readonly ITestOutputHelper _output;
+
+        public RequestTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
 
         public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
         {
@@ -385,6 +393,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var requestStarted = new SemaphoreSlim(0);
             var connectionReset = new SemaphoreSlim(0);
+            var connectionClosing = new SemaphoreSlim(0);
             var loggedHigherThanDebug = false;
 
             var mockLogger = new Mock<ILogger>();
@@ -395,6 +404,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
                 .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, exception, formatter) =>
                 {
+                    _output.WriteLine(logLevel + ": " + formatter(state, exception));
+
                     if (eventId.Id == _connectionResetEventId)
                     {
                         connectionReset.Release();
@@ -417,20 +428,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var server = new TestServer(async context =>
                 {
                     requestStarted.Release();
-                    await context.Request.Body.ReadAsync(new byte[1], 0, 1);
+                    await connectionClosing.WaitAsync();
                 },
                 new TestServiceContext(mockLoggerFactory.Object)))
             {
                 using (var connection = server.CreateConnection())
                 {
-                    await connection.Send(
-                        "GET / HTTP/1.1",
-                        "Host:",
-                        "",
-                        "");
+                    await connection.SendEmptyGet();
 
                     // Wait until connection is established
-                    Assert.True(await requestStarted.WaitAsync(TimeSpan.FromSeconds(10)));
+                    Assert.True(await requestStarted.WaitAsync(TimeSpan.FromSeconds(30)), "request should have started");
 
                     // Force a reset
                     connection.Socket.LingerState = new LingerOption(true, 0);
@@ -440,10 +447,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // This check MUST come before disposing the server, otherwise there's a race where the RST
                 // is still in flight when the connection is aborted, leading to the reset never being received
                 // and therefore not logged.
-                Assert.True(await connectionReset.WaitAsync(TimeSpan.FromSeconds(10)));
+                Assert.True(await connectionReset.WaitAsync(TimeSpan.FromSeconds(30)), "Connection reset event should have been logged");
+                connectionClosing.Release();
             }
 
-            Assert.False(loggedHigherThanDebug);
+            Assert.False(loggedHigherThanDebug, "Logged event should not have been higher than debug.");
         }
 
         [Fact]
