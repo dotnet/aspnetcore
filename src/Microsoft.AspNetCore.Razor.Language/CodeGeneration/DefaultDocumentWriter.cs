@@ -205,11 +205,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitTagHelper(TagHelperIntermediateNode node)
             {
-                var tagHelperRenderingContext = new TagHelperRenderingContext()
-                {
-                    TagName = node.TagName,
-                    TagMode = node.TagMode
-                };
+                var tagHelperRenderingContext = new TagHelperRenderingContext();
 
                 using (Context.Push(tagHelperRenderingContext))
                 {

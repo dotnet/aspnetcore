@@ -97,11 +97,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     uniqueId = Guid.NewGuid().ToString("N");
                 }
 
-                context.CodeWriter.WriteStringLiteral(context.TagHelperRenderingContext.TagName)
+                context.CodeWriter.WriteStringLiteral(node.TagName)
                     .WriteParameterSeparator()
                     .Write(TagModeTypeName)
                     .Write(".")
-                    .Write(context.TagHelperRenderingContext.TagMode.ToString())
+                    .Write(node.TagMode.ToString())
                     .WriteParameterSeparator()
                     .WriteStringLiteral(uniqueId)
                     .WriteParameterSeparator();

@@ -88,7 +88,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 if (node.Children[i] is TagHelperBodyIntermediateNode bodyNode)
                 {
                     // We only expect one body node.
-                    node.Children[i] = new DefaultTagHelperBodyIntermediateNode(bodyNode);
+                    node.Children[i] = new DefaultTagHelperBodyIntermediateNode(bodyNode)
+                    {
+                        TagMode = node.TagMode,
+                        TagName = node.TagName,
+                    };
                     break;
                 }
             }

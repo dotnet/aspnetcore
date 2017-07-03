@@ -11,10 +11,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
     {
         public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
 
+        public TagMode TagMode { get; set; }
+
         public string TagName { get; set; }
 
-        public TagMode TagMode { get; set; }
-        
         public ICollection<TagHelperDescriptor> TagHelpers { get; } = new List<TagHelperDescriptor>();
 
         public TagHelperBodyIntermediateNode Body => Children.OfType<TagHelperBodyIntermediateNode>().SingleOrDefault();

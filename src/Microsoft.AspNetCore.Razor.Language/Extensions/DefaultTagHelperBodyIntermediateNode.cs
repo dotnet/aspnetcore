@@ -9,8 +9,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
     public sealed class DefaultTagHelperBodyIntermediateNode : ExtensionIntermediateNode
     {
-        public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
-
         public DefaultTagHelperBodyIntermediateNode()
         {
         }
@@ -34,6 +32,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 Diagnostics.Add(bodyNode.Diagnostics[i]);
             }
         }
+
+        public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
+
+        public TagMode TagMode { get; set; }
+
+        public string TagName { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

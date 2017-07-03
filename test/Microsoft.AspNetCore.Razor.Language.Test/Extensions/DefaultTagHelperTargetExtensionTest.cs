@@ -92,10 +92,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var extension = new DefaultTagHelperTargetExtension();
             var context = GetRuntimeCodeRenderingContext();
 
-            context.TagHelperRenderingContext.TagMode = TagMode.SelfClosing;
-            context.TagHelperRenderingContext.TagName = "p";
-
-            var node = new DefaultTagHelperBodyIntermediateNode();
+            var node = new DefaultTagHelperBodyIntermediateNode()
+            {
+                TagMode = TagMode.SelfClosing,
+                TagName = "p",
+            };
 
             // Act
             extension.WriteTagHelperBody(context, node);
