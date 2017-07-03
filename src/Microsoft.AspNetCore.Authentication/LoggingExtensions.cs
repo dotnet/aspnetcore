@@ -9,6 +9,7 @@ namespace Microsoft.Extensions.Logging
     {
         private static Action<ILogger, string, Exception> _authSchemeAuthenticated;
         private static Action<ILogger, string, Exception> _authSchemeNotAuthenticated;
+        private static Action<ILogger, string, string, Exception> _authSchemeNotAuthenticatedWithFailure;
         private static Action<ILogger, string, Exception> _authSchemeChallenged;
         private static Action<ILogger, string, Exception> _authSchemeForbidden;
         private static Action<ILogger, string, Exception> _remoteAuthenticationError;
@@ -32,6 +33,10 @@ namespace Microsoft.Extensions.Logging
                 eventId: 6,
                 logLevel: LogLevel.Debug,
                 formatString: "The SigningIn event returned Skipped.");
+            _authSchemeNotAuthenticatedWithFailure = LoggerMessage.Define<string, string>(
+                eventId: 7,
+                logLevel: LogLevel.Information,
+                formatString: "{AuthenticationScheme} was not authenticated. Failure message: {FailureMessage}");
             _authSchemeAuthenticated = LoggerMessage.Define<string>(
                 eventId: 8,
                 logLevel: LogLevel.Information,
@@ -70,6 +75,11 @@ namespace Microsoft.Extensions.Logging
         public static void AuthenticationSchemeNotAuthenticated(this ILogger logger, string authenticationScheme)
         {
             _authSchemeNotAuthenticated(logger, authenticationScheme, null);
+        }
+
+        public static void AuthenticationSchemeNotAuthenticatedWithFailure(this ILogger logger, string authenticationScheme, string failureMessage)
+        {
+            _authSchemeNotAuthenticatedWithFailure(logger, authenticationScheme, failureMessage, null);
         }
 
         public static void AuthenticationSchemeChallenged(this ILogger logger, string authenticationScheme)
