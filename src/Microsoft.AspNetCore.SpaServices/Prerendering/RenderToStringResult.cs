@@ -1,4 +1,6 @@
+using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using System.Text;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
@@ -30,5 +32,29 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         /// If set, specifies the HTTP status code that should be sent back with the server response.
         /// </summary>
         public int? StatusCode { get; set; }
+
+        /// <summary>
+        /// Constructs a block of JavaScript code that assigns data from the
+        /// <see cref="Globals"/> property to the global namespace.
+        /// </summary>
+        /// <returns>A block of JavaScript code.</returns>
+        public string CreateGlobalsAssignmentScript()
+        {
+            if (Globals == null)
+            {
+                return string.Empty;
+            }
+
+            var stringBuilder = new StringBuilder();
+
+            foreach (var property in Globals.Properties())
+            {
+                stringBuilder.AppendFormat("window.{0} = {1};",
+                    property.Name,
+                    property.Value.ToString(Formatting.None));
+            }
+
+            return stringBuilder.ToString();
+        }
     }
 }

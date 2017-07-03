@@ -1,0 +1,21 @@
+<h1>Server-side prerendering</h1>
+
+<p>
+    This sample demonstrates how you can invoke a JavaScript module that contains
+    prerendering logic for a Single-Page Application framework.
+</p>
+</p>
+    Your prerendering boot function will receive parameters that describe the page
+    being rendered and any data supplied by the .NET code. The return value should be
+    a promise that resolves with data to be injected into the page, such as the
+    rendered HTML and any global data that should be made available to client-side code.
+</p>
+
+@Html.Raw(ViewData["PrerenderedHtml"])
+
+<script>@Html.Raw(ViewData["PrerenderedGlobals"])</script>
+
+<script>
+    // Demonstrates how client-side code can receive data from the prerendering process
+    console.log('Received Node version from prerendering logic: ' + sampleData.nodeVersion);
+</script>

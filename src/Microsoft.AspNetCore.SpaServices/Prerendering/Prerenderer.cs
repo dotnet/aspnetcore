@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.NodeServices;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.SpaServices.Prerendering
 {
@@ -13,6 +15,40 @@ namespace Microsoft.AspNetCore.SpaServices.Prerendering
         private static readonly object CreateNodeScriptLock = new object();
 
         private static StringAsTempFile NodeScript;
+
+        internal static Task<RenderToStringResult> RenderToString(
+            string applicationBasePath,
+            INodeServices nodeServices,
+            CancellationToken applicationStoppingToken,
+            JavaScriptModuleExport bootModule,
+            HttpContext httpContext,
+            object customDataParameter,
+            int timeoutMilliseconds)
+        {
+            // We want to pass the original, unencoded incoming URL data through to Node, so that
+            // server-side code has the same view of the URL as client-side code (on the client,
+            // location.pathname returns an unencoded string).
+            // The following logic handles special characters in URL paths in the same way that
+            // Node and client-side JS does. For example, the path "/a=b%20c" gets passed through
+            // unchanged (whereas other .NET APIs do change it - Path.Value will return it as
+            // "/a=b c" and Path.ToString() will return it as "/a%3db%20c")
+            var requestFeature = httpContext.Features.Get<IHttpRequestFeature>();
+            var unencodedPathAndQuery = requestFeature.RawTarget;
+
+            var request = httpContext.Request;
+            var unencodedAbsoluteUrl = $"{request.Scheme}://{request.Host}{unencodedPathAndQuery}";
+
+            return RenderToString(
+                applicationBasePath,
+                nodeServices,
+                applicationStoppingToken,
+                bootModule,
+                unencodedAbsoluteUrl,
+                unencodedPathAndQuery,
+                customDataParameter,
+                timeoutMilliseconds,
+                request.PathBase.ToString());
+        }
 
         /// <summary>
         /// Performs server-side prerendering by invoking code in Node.js.

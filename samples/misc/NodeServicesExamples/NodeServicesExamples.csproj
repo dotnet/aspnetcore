@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.NodeServices\Microsoft.AspNetCore.NodeServices.csproj" />
+    <ProjectReference Include="..\..\..\src\Microsoft.AspNetCore.SpaServices\Microsoft.AspNetCore.SpaServices.csproj" />
   </ItemGroup>
 
   <ItemGroup>
