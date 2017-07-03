@@ -85,24 +85,32 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         // Internal for unit testing
         internal DistributedCacheEntryOptions GetDistributedCacheEntryOptions()
         {
+            var hasEvictionCriteria = false;
             var options = new DistributedCacheEntryOptions();
             if (ExpiresOn != null)
             {
+                hasEvictionCriteria = true;
                 options.SetAbsoluteExpiration(ExpiresOn.Value);
             }
 
             if (ExpiresAfter != null)
             {
+                hasEvictionCriteria = true;
                 options.SetAbsoluteExpiration(ExpiresAfter.Value);
             }
 
             if (ExpiresSliding != null)
             {
+                hasEvictionCriteria = true;
                 options.SetSlidingExpiration(ExpiresSliding.Value);
+            }
+
+            if (!hasEvictionCriteria)
+            {
+                options.SetSlidingExpiration(DefaultExpiration);
             }
 
             return options;
         }
-
     }
 }

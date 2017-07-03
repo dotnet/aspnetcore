@@ -26,6 +26,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         private const string EnabledAttributeName = "enabled";
 
         /// <summary>
+        /// The default duration, from the time the cache entry was added, when it should be evicted.
+        /// This default duration will only be used if no other expiration criteria is specified.
+        /// The default expiration time is a sliding expiration of 30 seconds.
+        /// </summary>
+        public static readonly TimeSpan DefaultExpiration = TimeSpan.FromSeconds(30);
+
+        /// <summary>
         /// Creates a new <see cref="CacheTagHelperBase"/>.
         /// </summary>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
@@ -109,6 +116,5 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// </summary>
         [HtmlAttributeName(EnabledAttributeName)]
         public bool Enabled { get; set; } = true;
-
     }
 }

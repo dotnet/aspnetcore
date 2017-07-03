@@ -272,6 +272,29 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         [Fact]
+        public void UpdateCacheEntryOptions_DefaultsTo30SecondsSliding_IfNoEvictionCriteriaIsProvided()
+        {
+            // Arrange
+            var slidingExpiresIn = TimeSpan.FromSeconds(30);
+            var storage = GetStorage();
+            var service = new DistributedCacheTagHelperService(
+                storage,
+                Mock.Of<IDistributedCacheTagHelperFormatter>(),
+                new HtmlTestEncoder(),
+                NullLoggerFactory.Instance
+                );
+            var cacheTagHelper = new DistributedCacheTagHelper(
+                service,
+                new HtmlTestEncoder());
+
+            // Act
+            var cacheEntryOptions = cacheTagHelper.GetDistributedCacheEntryOptions();
+
+            // Assert
+            Assert.Equal(slidingExpiresIn, cacheEntryOptions.SlidingExpiration);
+        }
+
+        [Fact]
         public void UpdateCacheEntryOptions_SetsAbsoluteExpiration_IfExpiresAfterIsSet()
         {
             // Arrange
