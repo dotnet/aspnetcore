@@ -11,6 +11,25 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     public class PageDirectiveTest
     {
         [Fact]
+        public void TryGetPageDirective_ReturnsTrue_IfPageIsMalformed()
+        {
+            // Arrange
+            var content = "@page \"some-route-template\" Invalid";
+            var sourceDocument = RazorSourceDocument.Create(content, "file");
+            var codeDocument = RazorCodeDocument.Create(sourceDocument);
+            var engine = CreateEngine();
+            var irDocument = CreateIRDocument(engine, codeDocument);
+
+            // Act
+            var result = PageDirective.TryGetPageDirective(irDocument, out var pageDirective);
+
+            // Assert
+            Assert.True(result);
+            Assert.Equal("some-route-template", pageDirective.RouteTemplate);
+            Assert.NotNull(pageDirective.DirectiveNode);
+        }
+
+        [Fact]
         public void TryGetPageDirective_ReturnsTrue_IfPageIsImported()
         {
             // Arrange
@@ -48,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         [Fact]
-        public void TryGetPageDirective_ReturnsFalse_IfPageDoesStartWithDirective()
+        public void TryGetPageDirective_ReturnsTrue_IfPageDoesStartWithDirective()
         {
             // Arrange
             var content = "Hello @page";
@@ -61,8 +80,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var result = PageDirective.TryGetPageDirective(irDocument, out var pageDirective);
 
             // Assert
-            Assert.False(result);
-            Assert.Null(pageDirective);
+            Assert.True(result);
+            Assert.Null(pageDirective.RouteTemplate);
+            Assert.NotNull(pageDirective.DirectiveNode);
         }
 
         [Fact]

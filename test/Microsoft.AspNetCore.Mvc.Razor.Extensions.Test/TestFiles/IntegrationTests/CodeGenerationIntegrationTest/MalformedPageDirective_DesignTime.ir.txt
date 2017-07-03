@@ -1,6 +1,6 @@
 Document - 
     CSharpCode - 
-        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml))]
+        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml), null)]
     NamespaceDeclaration -  - AspNetCore
         UsingDirective -  - TModel = global::System.Object
         UsingDirective - (1:0,1 [12] ) - System
@@ -10,7 +10,7 @@ Document -
         UsingDirective - (102:4,1 [30] ) - Microsoft.AspNetCore.Mvc
         UsingDirective - (135:5,1 [40] ) - Microsoft.AspNetCore.Mvc.Rendering
         UsingDirective - (178:6,1 [43] ) - Microsoft.AspNetCore.Mvc.ViewFeatures
-        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml - global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic> - 
+        ClassDeclaration -  - public - TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml - global::Microsoft.AspNetCore.Mvc.RazorPages.Page - 
             DesignTimeDirective - 
                 DirectiveToken - (231:7,8 [62] ) - global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<TModel>
                 DirectiveToken - (294:7,71 [4] ) - Html
@@ -47,3 +47,7 @@ Document -
             Inject - 
             Inject - 
             Inject - 
+            CSharpCode - 
+                IntermediateToken -  - CSharp - public global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml> ViewData => (global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary<TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml>)PageContext?.ViewData;
+            CSharpCode - 
+                IntermediateToken -  - CSharp - public TestFiles_IntegrationTests_CodeGenerationIntegrationTest_MalformedPageDirective_cshtml Model => ViewData.Model;

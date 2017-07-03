@@ -1,7 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         protected override bool IsMatch(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
-            return PageDirective.TryGetPageDirective(documentNode, out var directive);
+            return PageDirective.TryGetPageDirective(documentNode, out var pageDirective);
         }
 
         protected override void OnDocumentStructureCreated(
@@ -49,26 +49,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         private void EnsureValidPageDirective(RazorCodeDocument codeDocument)
         {
             var document = codeDocument.GetDocumentIntermediateNode();
-            var visitor = new Visitor();
-            visitor.VisitDocument(document);
+            PageDirective.TryGetPageDirective(document, out var pageDirective);
 
-            if (visitor.DirectiveNode.IsImported())
+            Debug.Assert(pageDirective != null);
+
+            if (pageDirective.DirectiveNode.IsImported())
             {
-                visitor.DirectiveNode.Diagnostics.Add(
-                    RazorExtensionsDiagnosticFactory.CreatePageDirective_CannotBeImported(visitor.DirectiveNode.Source.Value));
-            }
-        }
-
-        private class Visitor : IntermediateNodeWalker
-        {
-            public DirectiveIntermediateNode DirectiveNode { get; private set; }
-
-            public override void VisitDirective(DirectiveIntermediateNode node)
-            {
-                if (node.Descriptor == PageDirective.Directive)
-                {
-                    DirectiveNode = node;
-                }
+                pageDirective.DirectiveNode.Diagnostics.Add(
+                    RazorExtensionsDiagnosticFactory.CreatePageDirective_CannotBeImported(pageDirective.DirectiveNode.Source.Value));
             }
         }
     }
