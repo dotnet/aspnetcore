@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
 
                 // Make sure the Node process is finished
                 // TODO: Is there a more graceful way to end it? Or does this still let it perform any cleanup?
-                if (!_nodeProcess.HasExited)
+                if (_nodeProcess != null && !_nodeProcess.HasExited)
                 {
                     _nodeProcess.Kill();
                 }
