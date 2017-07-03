@@ -1,4 +1,4 @@
-MusicStore (Sample ASP.NET Core application)
+MusicStore test application
 ============================================
 
 AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/ja8a7j6jscj7k3xa/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/MusicStore/branch/dev)
