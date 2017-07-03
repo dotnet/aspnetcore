@@ -17,16 +17,5 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static AuthenticationBuilder AddFacebook(this AuthenticationBuilder builder, string authenticationScheme, Action<FacebookOptions> configureOptions)
             => builder.AddOAuth<FacebookOptions, FacebookHandler>(authenticationScheme, configureOptions);
-
-
-        // REMOVE below once callers have been updated
-        public static IServiceCollection AddFacebookAuthentication(this IServiceCollection services) 
-            => services.AddFacebookAuthentication(FacebookDefaults.AuthenticationScheme, _ => { });
-
-        public static IServiceCollection AddFacebookAuthentication(this IServiceCollection services, Action<FacebookOptions> configureOptions) 
-            => services.AddFacebookAuthentication(FacebookDefaults.AuthenticationScheme, configureOptions);
-
-        public static IServiceCollection AddFacebookAuthentication(this IServiceCollection services, string authenticationScheme, Action<FacebookOptions> configureOptions)
-            => services.AddOAuthAuthentication<FacebookOptions, FacebookHandler>(authenticationScheme, configureOptions);
     }
 }

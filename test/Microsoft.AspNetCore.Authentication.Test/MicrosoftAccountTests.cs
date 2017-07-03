@@ -30,7 +30,8 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
         [Fact]
         public async Task VerifySchemeDefaults()
         {
-            var services = new ServiceCollection().AddMicrosoftAccountAuthentication().AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            var services = new ServiceCollection();
+            services.AddAuthentication().AddMicrosoftAccount();
             var sp = services.BuildServiceProvider();
             var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
             var scheme = await schemeProvider.GetSchemeAsync(MicrosoftAccountDefaults.AuthenticationScheme);

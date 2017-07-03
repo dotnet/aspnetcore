@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -21,7 +20,8 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
         [Fact]
         public async Task VerifySchemeDefaults()
         {
-            var services = new ServiceCollection().AddTwitterAuthentication().AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            var services = new ServiceCollection();
+            services.AddAuthentication().AddTwitter();
             var sp = services.BuildServiceProvider();
             var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
             var scheme = await schemeProvider.GetSchemeAsync(TwitterDefaults.AuthenticationScheme);

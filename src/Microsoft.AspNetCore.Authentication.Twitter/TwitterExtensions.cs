@@ -22,18 +22,5 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TwitterOptions>, TwitterPostConfigureOptions>());
             return builder.AddRemoteScheme<TwitterOptions, TwitterHandler>(authenticationScheme, authenticationScheme, configureOptions);
         }
-
-        // REMOVE below once callers have been updated.
-        public static IServiceCollection AddTwitterAuthentication(this IServiceCollection services)
-            => services.AddTwitterAuthentication(TwitterDefaults.AuthenticationScheme, _ => { });
-
-        public static IServiceCollection AddTwitterAuthentication(this IServiceCollection services, Action<TwitterOptions> configureOptions)
-            => services.AddTwitterAuthentication(TwitterDefaults.AuthenticationScheme, configureOptions);
-
-        public static IServiceCollection AddTwitterAuthentication(this IServiceCollection services, string authenticationScheme, Action<TwitterOptions> configureOptions)
-        {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TwitterOptions>, TwitterPostConfigureOptions>());
-            return services.AddRemoteScheme<TwitterOptions, TwitterHandler>(authenticationScheme, authenticationScheme, configureOptions);
-        }
     }
 }

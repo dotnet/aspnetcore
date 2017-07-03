@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -16,10 +15,8 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -30,7 +27,8 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         [Fact]
         public async Task VerifySchemeDefaults()
         {
-            var services = new ServiceCollection().AddFacebookAuthentication().AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            var services = new ServiceCollection();
+            services.AddAuthentication().AddFacebook();
             var sp = services.BuildServiceProvider();
             var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
             var scheme = await schemeProvider.GetSchemeAsync(FacebookDefaults.AuthenticationScheme);
@@ -44,7 +42,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         {
             var server = CreateServer(
                 app => { },
-                services => services.AddFacebookAuthentication(o => o.SignInScheme = "Whatever"),
+                services => services.AddAuthentication().AddFacebook(o => o.SignInScheme = "Whatever"),
                 context =>
                 {
                     // REVIEW: Gross.
@@ -60,7 +58,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         {
             var server = CreateServer(
                 app => { },
-                services => services.AddFacebookAuthentication(o => o.AppId = "Whatever"),
+                services => services.AddAuthentication().AddFacebook(o => o.AppId = "Whatever"),
                 context =>
                 {
                     // REVIEW: Gross.

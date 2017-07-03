@@ -19,7 +19,8 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         [Fact]
         public async Task VerifySchemeDefaults()
         {
-            var services = new ServiceCollection().AddOAuthAuthentication("oauth", o => { });
+            var services = new ServiceCollection();
+            services.AddAuthentication().AddOAuth("oauth", o => { });
             var sp = services.BuildServiceProvider();
             var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
             var scheme = await schemeProvider.GetSchemeAsync("oauth");
@@ -33,7 +34,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             var server = CreateServer(
                 app => { },
-                services => services.AddOAuthAuthentication("weeblie", o =>
+                services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.SignInScheme = "whatever";
                     o.CallbackPath = "/";
@@ -56,7 +57,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             var server = CreateServer(
                 app => { },
-                services => services.AddOAuthAuthentication("weeblie", o =>
+                services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.SignInScheme = "whatever";
                     o.ClientId = "Whatever;";
@@ -79,7 +80,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             var server = CreateServer(
                 app => { },
-                services => services.AddOAuthAuthentication("weeblie", o =>
+                services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.ClientId = "Whatever;";
                     o.ClientSecret = "Whatever;";
@@ -102,7 +103,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             var server = CreateServer(
                 app => { },
-                services => services.AddOAuthAuthentication("weeblie", o =>
+                services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.ClientId = "Whatever;";
                     o.ClientSecret = "Whatever;";
@@ -125,7 +126,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             var server = CreateServer(
                 app => { },
-                services => services.AddOAuthAuthentication("weeblie", o =>
+                services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.ClientId = "Whatever;";
                     o.ClientSecret = "Whatever;";
@@ -148,7 +149,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             var server = CreateServer(
                 app => { },
-                s => s.AddOAuthAuthentication(
+                s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
                     {
@@ -180,7 +181,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         {
             var server = CreateServer(
                 app => { },
-                s => s.AddOAuthAuthentication(
+                s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
                     {

@@ -17,17 +17,5 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static AuthenticationBuilder AddMicrosoftAccount(this AuthenticationBuilder builder, string authenticationScheme, Action<MicrosoftAccountOptions> configureOptions)
             => builder.AddOAuth<MicrosoftAccountOptions, MicrosoftAccountHandler>(authenticationScheme, configureOptions);
-
-
-        // REMOVE below once callers have been updated
-
-        public static IServiceCollection AddMicrosoftAccountAuthentication(this IServiceCollection services) 
-            => services.AddMicrosoftAccountAuthentication(MicrosoftAccountDefaults.AuthenticationScheme, _ => { });
-
-        public static IServiceCollection AddMicrosoftAccountAuthentication(this IServiceCollection services, Action<MicrosoftAccountOptions> configureOptions) 
-            => services.AddMicrosoftAccountAuthentication(MicrosoftAccountDefaults.AuthenticationScheme, configureOptions);
-
-        public static IServiceCollection AddMicrosoftAccountAuthentication(this IServiceCollection services, string authenticationScheme, Action<MicrosoftAccountOptions> configureOptions)
-            => services.AddOAuthAuthentication<MicrosoftAccountOptions, MicrosoftAccountHandler>(authenticationScheme, configureOptions);
     }
 }

@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
         [Fact]
         public async Task VerifySchemeDefaults()
         {
-            var services = new ServiceCollection().AddJwtBearerAuthentication().AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            var services = new ServiceCollection();
+            services.AddAuthentication().AddJwtBearer();
             var sp = services.BuildServiceProvider();
             var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
             var scheme = await schemeProvider.GetSchemeAsync(JwtBearerDefaults.AuthenticationScheme);
@@ -747,7 +748,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                         }
                     });
                 })
-                .ConfigureServices(services => services.AddJwtBearerAuthentication(options));
+                .ConfigureServices(services => services.AddAuthentication().AddJwtBearer(options));
 
             return new TestServer(builder);
         }

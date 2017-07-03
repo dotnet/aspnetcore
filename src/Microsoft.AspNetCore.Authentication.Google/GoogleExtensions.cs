@@ -17,17 +17,5 @@ namespace Microsoft.Extensions.DependencyInjection
 
         public static AuthenticationBuilder AddGoogle(this AuthenticationBuilder builder, string authenticationScheme, Action<GoogleOptions> configureOptions)
             => builder.AddOAuth<GoogleOptions, GoogleHandler>(authenticationScheme, configureOptions);
-
-
-        // REMOVE below once callers have been updated
-
-        public static IServiceCollection AddGoogleAuthentication(this IServiceCollection services) 
-            => services.AddGoogleAuthentication(GoogleDefaults.AuthenticationScheme, _ => { });
-
-        public static IServiceCollection AddGoogleAuthentication(this IServiceCollection services, Action<GoogleOptions> configureOptions) 
-            => services.AddGoogleAuthentication(GoogleDefaults.AuthenticationScheme, configureOptions);
-
-        public static IServiceCollection AddGoogleAuthentication(this IServiceCollection services, string authenticationScheme, Action<GoogleOptions> configureOptions)
-            => services.AddOAuthAuthentication<GoogleOptions, GoogleHandler>(authenticationScheme, configureOptions);
     }
 }

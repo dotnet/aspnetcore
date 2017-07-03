@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Authentication.Google
         [Fact]
         public async Task VerifySchemeDefaults()
         {
-            var services = new ServiceCollection().AddGoogleAuthentication().AddSingleton<IConfiguration>(new ConfigurationBuilder().Build());
+            var services = new ServiceCollection();
+            services.AddAuthentication().AddGoogle();
             var sp = services.BuildServiceProvider();
             var schemeProvider = sp.GetRequiredService<IAuthenticationSchemeProvider>();
             var scheme = await schemeProvider.GetSchemeAsync(GoogleDefaults.AuthenticationScheme);

@@ -22,19 +22,5 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, JwtBearerPostConfigureOptions>());
             return builder.AddScheme<JwtBearerOptions, JwtBearerHandler>(authenticationScheme, configureOptions);
         }
-
-
-        // REMOVE once callers updated
-        public static IServiceCollection AddJwtBearerAuthentication(this IServiceCollection services) 
-            => services.AddJwtBearerAuthentication(JwtBearerDefaults.AuthenticationScheme, _ => { });
-
-        public static IServiceCollection AddJwtBearerAuthentication(this IServiceCollection services, Action<JwtBearerOptions> configureOptions) 
-            => services.AddJwtBearerAuthentication(JwtBearerDefaults.AuthenticationScheme, configureOptions);
-
-        public static IServiceCollection AddJwtBearerAuthentication(this IServiceCollection services, string authenticationScheme, Action<JwtBearerOptions> configureOptions)
-        {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, JwtBearerPostConfigureOptions>());
-            return services.AddScheme<JwtBearerOptions, JwtBearerHandler>(authenticationScheme, configureOptions);
-        }
     }
 }

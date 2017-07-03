@@ -37,8 +37,6 @@ namespace Microsoft.AspNetCore.Authentication
                 OriginalPathBase = context.Request.PathBase
             });
 
-            // REVIEW: alternatively could depend on a routing middleware to do this
-
             // Give any IAuthenticationRequestHandler schemes a chance to handle the request
             var handlers = context.RequestServices.GetRequiredService<IAuthenticationHandlerProvider>();
             foreach (var scheme in await Schemes.GetRequestHandlerSchemesAsync())

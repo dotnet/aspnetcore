@@ -21,19 +21,5 @@ namespace Microsoft.Extensions.DependencyInjection
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TOptions>, OAuthPostConfigureOptions<TOptions, THandler>>());
             return builder.AddRemoteScheme<TOptions, THandler>(authenticationScheme, authenticationScheme, configureOptions);
         }
-
-        // REMOVE below once callers have been updated
-        public static IServiceCollection AddOAuthAuthentication(this IServiceCollection services, string authenticationScheme, Action<OAuthOptions> configureOptions)
-        {
-            return services.AddOAuthAuthentication<OAuthOptions, OAuthHandler<OAuthOptions>>(authenticationScheme, configureOptions);
-        }
-
-        public static IServiceCollection AddOAuthAuthentication<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, Action<TOptions> configureOptions)
-            where TOptions : OAuthOptions, new()
-            where THandler : OAuthHandler<TOptions>
-        {
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TOptions>, OAuthPostConfigureOptions<TOptions, THandler>>());
-            return services.AddRemoteScheme<TOptions, THandler>(authenticationScheme, authenticationScheme, configureOptions);
-        }
     }
 }
