@@ -94,7 +94,8 @@ namespace MusicStore
                 options.AddPolicy("ManageStore", new AuthorizationPolicyBuilder().RequireClaim("ManageStore", "Allowed").Build());
             });
 
-            services.AddFacebookAuthentication(options =>
+            services.AddAuthentication()
+                .AddFacebook(options =>
             {
                 options.AppId = "[AppId]";
                 options.AppSecret = "[AppSecret]";
@@ -109,9 +110,7 @@ namespace MusicStore
                 options.Scope.Add("email");
                 options.Scope.Add("read_friendlists");
                 options.Scope.Add("user_checkins");
-            });
-
-            services.AddGoogleAuthentication(options =>
+            }).AddGoogle(options =>
             {
                 options.ClientId = "[ClientId]";
                 options.ClientSecret = "[ClientSecret]";
@@ -124,9 +123,7 @@ namespace MusicStore
                 };
                 options.StateDataFormat = new CustomStateDataFormat();
                 options.BackchannelHttpHandler = new GoogleMockBackChannelHttpHandler();
-            });
-
-            services.AddTwitterAuthentication(options =>
+            }).AddTwitter(options =>
             {
                 options.ConsumerKey = "[ConsumerKey]";
                 options.ConsumerSecret = "[ConsumerSecret]";
@@ -138,9 +135,7 @@ namespace MusicStore
                 };
                 options.StateDataFormat = new CustomTwitterStateDataFormat();
                 options.BackchannelHttpHandler = new TwitterMockBackChannelHttpHandler();
-            });
-
-            services.AddMicrosoftAccountAuthentication(options =>
+            }).AddMicrosoftAccount(options =>
             {
                 options.ClientId = "[ClientId]";
                 options.ClientSecret = "[ClientSecret]";

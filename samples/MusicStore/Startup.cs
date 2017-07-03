@@ -89,24 +89,23 @@ namespace MusicStore
                     });
             });
 
-            services.AddFacebookAuthentication(options =>
+
+            services.AddAuthentication()
+                .AddFacebook(options =>
             {
                 options.AppId = "550624398330273";
                 options.AppSecret = "10e56a291d6b618da61b1e0dae3a8954";
-            });
-
-            services.AddGoogleAuthentication(options =>
+            })
+                .AddGoogle(options =>
             {
                 options.ClientId = "995291875932-0rt7417v5baevqrno24kv332b7d6d30a.apps.googleusercontent.com";
                 options.ClientSecret = "J_AT57H5KH_ItmMdu0r6PfXm";
-            });
-
-            services.AddTwitterAuthentication(options =>
+            })
+                .AddTwitter(options =>
             {
                 options.ConsumerKey = "lDSPIu480ocnXYZ9DumGCDw37";
                 options.ConsumerSecret = "fpo0oWRNc3vsZKlZSq1PyOSoeXlJd7NnG4Rfc94xbFXsdcc3nH";
-            });
-
+            })
             // The MicrosoftAccount service has restrictions that prevent the use of
             // http://localhost:5001/ for test applications.
             // As such, here is how to change this sample to uses http://ktesting.com:5001/ instead.
@@ -121,7 +120,7 @@ namespace MusicStore
 
             // The sample app can then be run via:
             // dnx . web
-            services.AddMicrosoftAccountAuthentication(options =>
+                .AddMicrosoftAccount(options =>
             {
                 // MicrosoftAccount requires project changes
                 options.ClientId = "000000004012C08A";
