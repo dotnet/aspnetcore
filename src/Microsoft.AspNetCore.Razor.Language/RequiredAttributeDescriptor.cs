@@ -9,7 +9,7 @@ using System.Linq;
 namespace Microsoft.AspNetCore.Razor.Language
 {
     [DebuggerDisplay("{DisplayName,nq}")]
-    public abstract class RequiredAttributeDescriptor
+    public abstract class RequiredAttributeDescriptor : IEquatable<RequiredAttributeDescriptor>
     {
         public string Name { get; protected set; }
 
@@ -31,6 +31,21 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 return errors;
             }
+        }
+        
+        public bool Equals(RequiredAttributeDescriptor other)
+        {
+            return RequiredAttributeDescriptorComparer.Default.Equals(this, other);
+        }
+
+        public override bool Equals(object obj)
+        {
+            return Equals(obj as RequiredAttributeDescriptor);
+        }
+
+        public override int GetHashCode()
+        {
+            return RequiredAttributeDescriptorComparer.Default.GetHashCode(this);
         }
 
         /// <summary>
