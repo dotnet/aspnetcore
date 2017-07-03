@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddTransient<IConfigureOptions<IdentityServiceOptions>, IdentityServiceOptionsDefaultSetup>();
             services.AddTransient<IConfigureOptions<IdentityServiceOptions>, IdentityServiceOptionsSetup>();
 
-            services.AddCookieAuthentication(IdentityServiceOptions.CookieAuthenticationScheme, options =>
+            services.AddAuthentication().AddCookie(IdentityServiceOptions.CookieAuthenticationScheme, options =>
             {
                 options.CookieHttpOnly = true;
                 options.CookieSecure = CookieSecurePolicy.Always;

@@ -21,10 +21,9 @@ namespace Microsoft.AspNetCore.Authentication.Extensions
                 sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
-            });
-
-            services.AddOpenIdConnectAuthentication();
-            services.AddCookieAuthentication();
+            })
+                .AddOpenIdConnect()
+                .AddCookie();
             return services;
         }
 

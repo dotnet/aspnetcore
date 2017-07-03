@@ -63,32 +63,25 @@ namespace Microsoft.Extensions.DependencyInjection
             where TRole : class
         {
             // Services used by identity
-            services.AddAuthenticationCore(options =>
+            services.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = IdentityConstants.ApplicationScheme;
                 options.DefaultChallengeScheme = IdentityConstants.ApplicationScheme;
                 options.DefaultSignInScheme = IdentityConstants.ExternalScheme;
-            });
-
-            services.AddCookieAuthentication(IdentityConstants.ApplicationScheme, o =>
+            }).AddCookie(IdentityConstants.ApplicationScheme, o =>
             {
                 o.LoginPath = new PathString("/Account/Login");
                 o.Events = new CookieAuthenticationEvents
                 {
                     OnValidatePrincipal = SecurityStampValidator.ValidatePrincipalAsync
                 };
-            });
-
-            services.AddCookieAuthentication(IdentityConstants.ExternalScheme, o =>
+            }).AddCookie(IdentityConstants.ExternalScheme, o =>
             {
                 o.CookieName = IdentityConstants.ExternalScheme;
                 o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
-            });
-
-            services.AddCookieAuthentication(IdentityConstants.TwoFactorRememberMeScheme, 
-                o => o.CookieName = IdentityConstants.TwoFactorRememberMeScheme);
-
-            services.AddCookieAuthentication(IdentityConstants.TwoFactorUserIdScheme, o =>
+            }).AddCookie(IdentityConstants.TwoFactorRememberMeScheme, 
+                o => o.CookieName = IdentityConstants.TwoFactorRememberMeScheme)
+            .AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
             {
                 o.CookieName = IdentityConstants.TwoFactorUserIdScheme;
                 o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
