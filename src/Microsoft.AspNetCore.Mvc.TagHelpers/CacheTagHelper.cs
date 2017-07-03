@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                         try
                         {
                             // The entry is set instead of assigning a value to the
-                            // task so that the expiration options are are not impacted
+                            // task so that the expiration options are not impacted
                             // by the time it took to compute it.
 
                             using (var entry = MemoryCache.CreateEntry(cacheKey))
@@ -108,18 +108,24 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
                                 content = await result;
                             }
+                            
+                            tcs.SetResult(content);
                         }
                         catch
                         {
                             // Remove the worker task from the cache in case it can't complete.
                             tokenSource.Cancel();
+                            
+                            // If an exception occurs, ensure the other awaiters
+                            // render the output by themselves.
+                            tcs.SetResult(null);
                             throw;
                         }
                         finally
                         {
-                            // If an exception occurs, ensure the other awaiters
-                            // render the output by themselves.
-                            tcs.SetResult(null);
+                            // The tokenSource needs to be disposed as the MemoryCache
+                            // will register a callback on the Token.
+                            tokenSource.Dispose();
                         }
                     }
                     else

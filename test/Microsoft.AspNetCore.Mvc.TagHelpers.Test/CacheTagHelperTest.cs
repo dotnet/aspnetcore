@@ -648,7 +648,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             Assert.Equal(2, calls);
         }
-        
 
         [Fact]
         public async Task ProcessAsync_ExceptionInProcessing_DoNotThrowInSubsequentRequests()
@@ -743,15 +742,63 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(childContent, tagHelperOutput4.Content.GetContent());
         }
 
+        [Fact]
+        public async Task ProcessAsync_WorksForNestedCacheTagHelpers()
+        {
+            // Arrange
+            var expected = "Hello world";
+            var cache = new MemoryCache(new MemoryCacheOptions());
+            var encoder = new HtmlTestEncoder();
+            var cacheTagHelper1 = new CacheTagHelper(cache, encoder)
+            {
+                ViewContext = GetViewContext(),
+                Enabled = true
+            };
+
+            var cacheTagHelper2 = new CacheTagHelper(cache, encoder)
+            {
+                ViewContext = GetViewContext(),
+                Enabled = true
+            };
+
+            var tagHelperOutput2 = new TagHelperOutput(
+                "cache",
+                new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, _) =>
+                {
+                    var content = new DefaultTagHelperContent();
+                    content.SetContent(expected);
+                    return Task.FromResult<TagHelperContent>(content);
+                });
+
+            var tagHelperOutput1 = new TagHelperOutput(
+                "cache",
+                new TagHelperAttributeList(),
+                getChildContentAsync: async (useCachedResult, _) =>
+                {
+                    var context = GetTagHelperContext("test2");
+                    var output = tagHelperOutput2;
+                    await cacheTagHelper2.ProcessAsync(context, output);
+                    return await output.GetChildContentAsync();
+                });
+
+            // Act
+            await cacheTagHelper1.ProcessAsync(GetTagHelperContext(), tagHelperOutput1);
+
+            // Assert
+            Assert.Equal(encoder.Encode(expected), tagHelperOutput1.Content.GetContent());
+        }
+
         private static ViewContext GetViewContext()
         {
             var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
-            return new ViewContext(actionContext,
-                                   Mock.Of<IView>(),
-                                   new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
-                                   Mock.Of<ITempDataDictionary>(),
-                                   TextWriter.Null,
-                                   new HtmlHelperOptions());
+            return new ViewContext(
+                actionContext,
+                Mock.Of<IView>(),
+                new ViewDataDictionary(new EmptyModelMetadataProvider(), new ModelStateDictionary()),
+                Mock.Of<ITempDataDictionary>(),
+                TextWriter.Null,
+                new HtmlHelperOptions());
         }
 
         private static TagHelperContext GetTagHelperContext(string id = "testid")
