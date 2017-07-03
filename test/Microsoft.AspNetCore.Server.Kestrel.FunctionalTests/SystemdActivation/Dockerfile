@@ -15,7 +15,7 @@ RUN ["ln", "-s", "/usr/share/dotnet/dotnet", "/usr/bin/dotnet"]
 ADD publish/ /publish/
 
 # Expose target ports.
-EXPOSE 8080 8081 8082
+EXPOSE 8080 8081 8082 8083 8084 8085
 
 # Set entrypoint.
 COPY ./docker-entrypoint.sh /

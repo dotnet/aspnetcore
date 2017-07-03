@@ -15,6 +15,9 @@ for i in {1..10}; do
     curl -f http://$(docker port $container 8080/tcp) \
     && curl -f http://$(docker port $container 8081/tcp) \
     && curl -fk https://$(docker port $container 8082/tcp) \
+    && curl -f http://$(docker port $container 8083/tcp) \
+    && curl -f http://$(docker port $container 8084/tcp) \
+    && curl -fk https://$(docker port $container 8085/tcp) \
     && exit 0 || sleep 1; 
 done
 

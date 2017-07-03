@@ -46,51 +46,101 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             switch (EndPointInformation.Type)
             {
                 case ListenType.IPEndPoint:
-                case ListenType.FileHandle:
-                    var socket = new UvTcpHandle(Log);
-
-                    try
-                    {
-                        socket.Init(Thread.Loop, Thread.QueueCloseHandle);
-                        socket.NoDelay(EndPointInformation.NoDelay);
-
-                        if (EndPointInformation.Type == ListenType.IPEndPoint)
-                        {
-                            socket.Bind(EndPointInformation.IPEndPoint);
-
-                            // If requested port was "0", replace with assigned dynamic port.
-                            EndPointInformation.IPEndPoint = socket.GetSockIPEndPoint();
-                        }
-                        else
-                        {
-                            socket.Open((IntPtr)EndPointInformation.FileHandle);
-                        }
-                    }
-                    catch
-                    {
-                        socket.Dispose();
-                        throw;
-                    }
-
-                    return socket;
+                    return ListenTcp(useFileHandle: false);
                 case ListenType.SocketPath:
-                    var pipe = new UvPipeHandle(Log);
-
-                    try
-                    {
-                        pipe.Init(Thread.Loop, Thread.QueueCloseHandle, false);
-                        pipe.Bind(EndPointInformation.SocketPath);
-                    }
-                    catch
-                    {
-                        pipe.Dispose();
-                        throw;
-                    }
-
-                    return pipe;
+                    return ListenPipe(useFileHandle: false);
+                case ListenType.FileHandle:
+                    return ListenHandle();
                 default:
                     throw new NotSupportedException();
             }
+        }
+
+        private UvTcpHandle ListenTcp(bool useFileHandle)
+        {
+            var socket = new UvTcpHandle(Log);
+
+            try
+            {
+                socket.Init(Thread.Loop, Thread.QueueCloseHandle);
+                socket.NoDelay(EndPointInformation.NoDelay);
+
+                if (!useFileHandle)
+                {
+                    socket.Bind(EndPointInformation.IPEndPoint);
+
+                    // If requested port was "0", replace with assigned dynamic port.
+                    EndPointInformation.IPEndPoint = socket.GetSockIPEndPoint();
+                }
+                else
+                {
+                    socket.Open((IntPtr)EndPointInformation.FileHandle);
+                }
+            }
+            catch
+            {
+                socket.Dispose();
+                throw;
+            }
+
+            return socket;
+        }
+
+        private UvPipeHandle ListenPipe(bool useFileHandle)
+        {
+            var pipe = new UvPipeHandle(Log);
+
+            try
+            {
+                pipe.Init(Thread.Loop, Thread.QueueCloseHandle, false);
+                
+                if (!useFileHandle)
+                {
+                    pipe.Bind(EndPointInformation.SocketPath);
+                }
+                else
+                {
+                    pipe.Open((IntPtr)EndPointInformation.FileHandle);
+                }
+            }
+            catch
+            {
+                pipe.Dispose();
+                throw;
+            }
+
+            return pipe;
+        }
+
+        private UvStreamHandle ListenHandle()
+        {
+            switch (EndPointInformation.HandleType)
+            {
+                case FileHandleType.Auto:
+                    break;
+                case FileHandleType.Tcp:
+                    return ListenTcp(useFileHandle: true);
+                case FileHandleType.Pipe:
+                    return ListenPipe(useFileHandle: true);
+                default:
+                    throw new NotSupportedException();
+            }
+
+            UvStreamHandle handle;
+            try
+            {
+                handle = ListenTcp(useFileHandle: true);
+                EndPointInformation.HandleType = FileHandleType.Tcp;
+                return handle;
+            }
+            catch (UvException exception) when (exception.StatusCode == LibuvConstants.ENOTSUP)
+            {
+                Log.LogDebug(0, exception, "Listener.ListenHandle");
+            }
+
+            handle = ListenPipe(useFileHandle: true);
+            EndPointInformation.HandleType = FileHandleType.Pipe;
+            return handle;
         }
 
         private static void ConnectionCallback(UvStreamHandle stream, int status, UvException error, object state)

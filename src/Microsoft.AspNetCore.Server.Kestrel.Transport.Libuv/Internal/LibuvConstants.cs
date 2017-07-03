@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public const int EOF = -4095;
         public static readonly int? ECONNRESET = GetECONNRESET();
         public static readonly int? EADDRINUSE = GetEADDRINUSE();
+        public static readonly int? ENOTSUP = GetENOTSUP();
 
         private static int? GetECONNRESET()
         {
@@ -43,6 +44,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return -48;
+            }
+            return null;
+        }
+
+        private static int? GetENOTSUP()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return -95;
+            }
+            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
+            {
+                return -45;
             }
             return null;
         }

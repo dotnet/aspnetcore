@@ -31,6 +31,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         /// </summary>
         ulong FileHandle { get; }
 
+        //  HandleType is mutable so it can be re-specified later.
+        /// <summary>
+        /// The type of file descriptor being used.
+        /// Only set if <see cref="Type"/> is <see cref="ListenType.FileHandle"/>.
+        /// </summary>
+        FileHandleType HandleType { get; set; }
+
         /// <summary>
         /// Set to false to enable Nagle's algorithm for all connections.
         /// </summary>

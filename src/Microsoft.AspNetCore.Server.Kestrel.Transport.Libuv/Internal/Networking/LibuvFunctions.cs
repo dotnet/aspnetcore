@@ -30,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             _uv_tcp_nodelay = NativeMethods.uv_tcp_nodelay;
             _uv_pipe_init = NativeMethods.uv_pipe_init;
             _uv_pipe_bind = NativeMethods.uv_pipe_bind;
+            _uv_pipe_open = NativeMethods.uv_pipe_open;
             _uv_listen = NativeMethods.uv_listen;
             _uv_accept = NativeMethods.uv_accept;
             _uv_pipe_connect = NativeMethods.uv_pipe_connect;
@@ -227,6 +228,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
         {
             handle.Validate();
             ThrowIfErrored(_uv_pipe_bind(handle, name));
+        }
+
+        protected Func<UvPipeHandle, IntPtr, int> _uv_pipe_open;
+        public void pipe_open(UvPipeHandle handle, IntPtr hSocket)
+        {
+            handle.Validate();
+            ThrowIfErrored(_uv_pipe_open(handle, hSocket));
         }
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -533,6 +541,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
             public static extern int uv_pipe_bind(UvPipeHandle loop, string name);
+
+            [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
+            public static extern int uv_pipe_open(UvPipeHandle handle, IntPtr hSocket);
 
             [DllImport("libuv", CallingConvention = CallingConvention.Cdecl)]
             public static extern int uv_listen(UvStreamHandle handle, int backlog, uv_connection_cb cb);

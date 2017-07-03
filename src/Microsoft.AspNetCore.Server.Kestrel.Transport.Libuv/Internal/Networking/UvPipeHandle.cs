@@ -21,6 +21,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             _uv.pipe_init(loop, this, ipc);
         }
 
+        public void Open(IntPtr fileDescriptor)
+        {
+            _uv.pipe_open(this, fileDescriptor);
+        }
+
         public void Bind(string name)
         {
             _uv.pipe_bind(this, name);

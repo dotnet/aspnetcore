@@ -16,6 +16,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// </summary>
     public class ListenOptions : IEndPointInformation
     {
+        private FileHandleType _handleType;
+
         internal ListenOptions(IPEndPoint endPoint)
         {
             Type = ListenType.IPEndPoint;
@@ -29,15 +31,56 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         internal ListenOptions(ulong fileHandle)
+            : this(fileHandle, FileHandleType.Auto)
+        {
+        }
+
+        internal ListenOptions(ulong fileHandle, FileHandleType handleType)
         {
             Type = ListenType.FileHandle;
             FileHandle = fileHandle;
+            switch (handleType)
+            {
+                case FileHandleType.Auto:
+                case FileHandleType.Tcp:
+                case FileHandleType.Pipe:
+                    _handleType = handleType;
+                    break;
+                default:
+                    throw new NotSupportedException();
+            }
         }
 
         /// <summary>
         /// The type of interface being described: either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor.
         /// </summary>
         public ListenType Type { get; }
+
+        public FileHandleType HandleType
+        {
+            get => _handleType;
+            set
+            {
+                if (value == _handleType)
+                {
+                    return;
+                }
+                if (Type != ListenType.FileHandle || _handleType != FileHandleType.Auto)
+                {
+                    throw new InvalidOperationException();
+                }
+
+                switch (value)
+                {
+                    case FileHandleType.Tcp:
+                    case FileHandleType.Pipe:
+                        _handleType = value;
+                        break;
+                    default:
+                        throw new ArgumentException(nameof(HandleType));
+                }
+            }
+        }
 
         // IPEndPoint is mutable so port 0 can be updated to the bound port.
         /// <summary>
