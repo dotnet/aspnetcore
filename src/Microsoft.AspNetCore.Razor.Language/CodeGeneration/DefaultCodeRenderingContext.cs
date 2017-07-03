@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
     internal class DefaultCodeRenderingContext : CodeRenderingContext
     {
+        private readonly Stack<IntermediateNode> _ancestors;
         private readonly RazorCodeDocument _codeDocument;
         private readonly DocumentIntermediateNode _documentNode;
-
         private readonly List<ScopeInternal> _scopes;
 
         public DefaultCodeRenderingContext(
@@ -52,11 +52,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             _documentNode = documentNode;
             Options = options;
 
+            _ancestors = new Stack<IntermediateNode>();
             Diagnostics = new RazorDiagnosticCollection();
             Items = new ItemCollection();
             LineMappings = new List<LineMapping>();
-
-            TagHelperRenderingContext = new TagHelperRenderingContext();
 
             var diagnostics = _documentNode.GetAllDiagnostics();
             for (var i = 0; i < diagnostics.Count; i++)
@@ -81,6 +80,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         // This will be initialized by the document writer when the context is 'live'.
         public IntermediateNodeVisitor Visitor { get; set; }
 
+        public override IEnumerable<IntermediateNode> Ancestors => _ancestors;
+
+        internal Stack<IntermediateNode> AncestorsInternal => _ancestors;
+
         public override CodeWriter CodeWriter { get; }
 
         public override RazorDiagnosticCollection Diagnostics { get; }
@@ -94,6 +97,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public override IntermediateNodeWriter NodeWriter => Current.Writer;
 
         public override RazorCodeGenerationOptions Options { get; }
+
+        public override IntermediateNode Parent => _ancestors.Count == 0 ? null : _ancestors.Peek();
 
         public override RazorSourceDocument SourceDocument => _codeDocument.Source;
 
@@ -154,10 +159,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 throw new ArgumentNullException(nameof(node));
             }
 
+            _ancestors.Push(node);
+
             for (var i = 0; i < node.Children.Count; i++)
             {
                 Visitor.Visit(node.Children[i]);
             }
+
+            _ancestors.Pop();
         }
 
         public override void RenderNode(IntermediateNode node)

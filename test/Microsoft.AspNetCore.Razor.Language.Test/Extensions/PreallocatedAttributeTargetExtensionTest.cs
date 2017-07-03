@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
+using Microsoft.AspNetCore.Razor.Language.Intermediate;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
@@ -9,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
     public class PreallocatedAttributeTargetExtensionTest
     {
         [Fact]
-        public void WriteDeclarePreallocatedTagHelperHtmlAttribute_RendersCorrectly()
+        public void WriteTagHelperHtmlAttributeValue_RendersCorrectly()
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
@@ -36,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         }
 
         [Fact]
-        public void WriteDeclarePreallocatedTagHelperHtmlAttribute_Minimized_RendersCorrectly()
+        public void WriteTagHelperHtmlAttributeValue_Minimized_RendersCorrectly()
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
@@ -63,16 +64,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         }
 
         [Fact]
-        public void WriteAddPreallocatedTagHelperHtmlAttribute_RendersCorrectly()
+        public void WriteTagHelperHtmlAttribute_RendersCorrectly()
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new PreallocatedTagHelperHtmlAttributeIntermediateNode()
             {
                 VariableName = "_tagHelper1"
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperHtmlAttribute(context, node);
@@ -87,12 +91,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         }
 
         [Fact]
-        public void WriteDeclarePreallocatedTagHelperAttribute_RendersCorrectly()
+        public void WriteTagHelperPropertyValue_RendersCorrectly()
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
-
+            
             var node = new PreallocatedTagHelperPropertyValueIntermediateNode()
             {
                 AttributeName = "Foo",
@@ -114,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         }
 
         [Fact]
-        public void WriteSetPreallocatedTagHelperProperty_RendersCorrectly()
+        public void WriteTagHelperProperty_RendersCorrectly()
         {
             // Arrange
             var extension = new PreallocatedAttributeTargetExtension();
@@ -124,7 +128,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             tagHelperBuilder.TypeName("FooTagHelper");
 
             var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
-
             builder
                 .Name("Foo")
                 .TypeName("System.String")
@@ -132,13 +135,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
             var descriptor = builder.Build();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new PreallocatedTagHelperPropertyIntermediateNode()
             {
                 AttributeName = descriptor.Name,
-                Field = "__FooTagHelper",
-                VariableName = "_tagHelper1",
                 BoundAttribute = descriptor,
+                Field = "__FooTagHelper",
+                Property = "FooProp",
+                VariableName = "_tagHelper1",
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -164,7 +171,6 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
             tagHelperBuilder.TypeName("FooTagHelper");
 
             var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
-
             builder
                 .Name("Foo")
                 .TypeName("System.Collections.Generic.Dictionary<System.String, System.String>")
@@ -173,6 +179,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
 
             var descriptor = builder.Build();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new PreallocatedTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "pre-Foo",
@@ -180,8 +187,11 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
                 VariableName = "_tagHelper1",
                 BoundAttribute = descriptor,
                 IsIndexerNameMatch = true,
+                Property = "FooProp",
                 TagHelper = tagHelperBuilder.Build(),
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -198,6 +208,69 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
+        }
+
+        [Fact]
+        public void WriteSetPreallocatedTagHelperProperty_IndexerAttribute_MultipleValues()
+        {
+            // Arrange
+            var extension = new PreallocatedAttributeTargetExtension();
+            var context = TestCodeRenderingContext.CreateRuntime();
+
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "FooTagHelper", "Test");
+            tagHelperBuilder.TypeName("FooTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            builder
+                .Name("Foo")
+                .TypeName("System.Collections.Generic.Dictionary<System.String, System.String>")
+                .AsDictionaryAttribute("pre-", "System.String")
+                .PropertyName("FooProp");
+
+            var boundAttribute = builder.Build();
+            var tagHelper = tagHelperBuilder.Build();
+
+            var tagHelperNode = new TagHelperIntermediateNode();
+            var node1 = new PreallocatedTagHelperPropertyIntermediateNode()
+            {
+                AttributeName = "pre-Bar",
+                Field = "__FooTagHelper",
+                VariableName = "_tagHelper0s",
+                BoundAttribute = boundAttribute,
+                IsIndexerNameMatch = true,
+                Property = "FooProp",
+                TagHelper = tagHelper,
+            };
+            var node2 = new PreallocatedTagHelperPropertyIntermediateNode()
+            {
+                AttributeName = "pre-Foo",
+                Field = "__FooTagHelper",
+                VariableName = "_tagHelper1",
+                BoundAttribute = boundAttribute,
+                IsIndexerNameMatch = true,
+                Property = "FooProp",
+                TagHelper = tagHelper,
+            };
+            tagHelperNode.Children.Add(node1);
+            tagHelperNode.Children.Add(node2);
+            Push(context, tagHelperNode);
+
+            // Act
+            extension.WriteTagHelperProperty(context, node2);
+
+            // Assert
+            var csharp = context.CodeWriter.Builder.ToString();
+            Assert.Equal(
+@"__FooTagHelper.FooProp[""Foo""] = (string)_tagHelper1.Value;
+__tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
+        private static void Push(CodeRenderingContext context, TagHelperIntermediateNode node)
+        {
+            ((DefaultCodeRenderingContext)context).AncestorsInternal.Push(node);
         }
     }
 }

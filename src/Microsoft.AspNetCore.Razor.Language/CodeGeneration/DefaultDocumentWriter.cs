@@ -200,12 +200,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitTagHelper(TagHelperIntermediateNode node)
             {
-                var tagHelperRenderingContext = new TagHelperRenderingContext();
-
-                using (Context.Push(tagHelperRenderingContext))
-                {
-                    VisitDefault(node);
-                }
+                VisitDefault(node);
             }
 
             public override void VisitDefault(IntermediateNode node)

@@ -240,4 +240,7 @@
   <data name="RenderingContextRequiresDelegate" xml:space="preserve">
     <value>The '{0}' requires a '{1}' delegate to be set.</value>
   </data>
+  <data name="IntermediateNodes_InvalidParentNode" xml:space="preserve">
+    <value>The '{0}' node type can only be used as a direct child of a '{1}' node.</value>
+  </data>
 </root>

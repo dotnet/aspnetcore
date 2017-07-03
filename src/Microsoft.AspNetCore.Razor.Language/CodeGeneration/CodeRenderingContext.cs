@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
@@ -18,10 +19,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public abstract string DocumentKind { get; }
 
         public abstract ItemCollection Items { get; }
+        
+        public abstract IEnumerable<IntermediateNode> Ancestors { get; }
 
         public abstract IntermediateNodeWriter NodeWriter { get; }
 
         public abstract RazorCodeGenerationOptions Options { get; }
+
+        public abstract IntermediateNode Parent { get; }
 
         public abstract RazorSourceDocument SourceDocument { get; }
 
@@ -56,48 +61,5 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 _context.EndScope();
             }
         }
-
-
-        // All bits below here are temporary
-
-        #region Temporary TagHelper bits
-
-        internal TagHelperRenderingContext TagHelperRenderingContext { get; set; }
-
-        internal TagHelperRenderingContextScope Push(TagHelperRenderingContext context)
-        {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            var scope = new TagHelperRenderingContextScope(this, TagHelperRenderingContext);
-            TagHelperRenderingContext = context;
-            return scope;
-        }
-
-        internal struct TagHelperRenderingContextScope : IDisposable
-        {
-            private readonly CodeRenderingContext _context;
-            private readonly TagHelperRenderingContext _renderingContext;
-
-            public TagHelperRenderingContextScope(CodeRenderingContext context, TagHelperRenderingContext renderingContext)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                _context = context;
-                _renderingContext = renderingContext;
-            }
-
-            public void Dispose()
-            {
-                _context.TagHelperRenderingContext = _renderingContext;
-            }
-        }
-
-        #endregion
     }
 }

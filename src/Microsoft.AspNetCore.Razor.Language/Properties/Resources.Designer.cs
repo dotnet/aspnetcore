@@ -584,6 +584,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatRenderingContextRequiresDelegate(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("RenderingContextRequiresDelegate"), p0, p1);
 
+        /// <summary>
+        /// The '{0}' node type can only be used as a direct child of a '{1}' node.
+        /// </summary>
+        internal static string IntermediateNodes_InvalidParentNode
+        {
+            get => GetString("IntermediateNodes_InvalidParentNode");
+        }
+
+        /// <summary>
+        /// The '{0}' node type can only be used as a direct child of a '{1}' node.
+        /// </summary>
+        internal static string FormatIntermediateNodes_InvalidParentNode(object p0, object p1)
+            => string.Format(CultureInfo.CurrentCulture, GetString("IntermediateNodes_InvalidParentNode"), p0, p1);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

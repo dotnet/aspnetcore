@@ -71,6 +71,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
             var context = TestCodeRenderingContext.CreateDesignTime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperBodyIntermediateNode()
             {
                 Children =
@@ -78,6 +79,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     new CSharpExpressionIntermediateNode(),
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperBody(context, node);
@@ -98,6 +101,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperBodyIntermediateNode()
             {
                 Children =
@@ -107,6 +111,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 TagMode = TagMode.SelfClosing,
                 TagName = "p",
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperBody(context, node);
@@ -130,11 +136,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
             var context = TestCodeRenderingContext.CreateDesignTime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperCreateIntermediateNode()
             {
                 Field = "__TestNamespace_MyTagHelper",
                 Type = "TestNamespace.MyTagHelper",
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperCreate(context, node);
@@ -155,11 +164,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperCreateIntermediateNode()
             {
                 Field = "__TestNamespace_MyTagHelper",
                 Type = "TestNamespace.MyTagHelper",
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperCreate(context, node);
@@ -181,7 +193,10 @@ __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
             var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
             var context = TestCodeRenderingContext.CreateDesignTime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperExecuteIntermediateNode();
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperExecute(context, node);
@@ -201,7 +216,10 @@ __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperExecuteIntermediateNode();
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperExecute(context, node);
@@ -228,6 +246,7 @@ __tagHelperExecutionContext = __tagHelperScopeManager.End();
             var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
             var context = TestCodeRenderingContext.CreateDesignTime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperHtmlAttributeIntermediateNode()
             {
                 AttributeName = "name",
@@ -244,6 +263,8 @@ __tagHelperExecutionContext = __tagHelperScopeManager.End();
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperHtmlAttribute(context, node);
@@ -265,6 +286,7 @@ Render Children
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperHtmlAttributeIntermediateNode()
             {
                 AttributeName = "name",
@@ -277,6 +299,8 @@ Render Children
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperHtmlAttribute(context, node);
@@ -300,6 +324,7 @@ __tagHelperExecutionContext.AddHtmlAttribute(""name"", Html.Raw(__tagHelperStrin
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperHtmlAttributeIntermediateNode()
             {
                 AttributeName = "name",
@@ -316,6 +341,8 @@ __tagHelperExecutionContext.AddHtmlAttribute(""name"", Html.Raw(__tagHelperStrin
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperHtmlAttribute(context, node);
@@ -339,6 +366,7 @@ EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
             var context = TestCodeRenderingContext.CreateDesignTime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "bound",
@@ -356,6 +384,8 @@ EndAddHtmlAttributeValues(__tagHelperExecutionContext);
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -377,6 +407,7 @@ __InputTagHelper.StringProp = ""value"";
             var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
             var context = TestCodeRenderingContext.CreateDesignTime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "bound",
@@ -394,6 +425,8 @@ __InputTagHelper.StringProp = ""value"";
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -415,6 +448,7 @@ __InputTagHelper.StringProp = string.Empty;
             var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
             var context = TestCodeRenderingContext.CreateDesignTime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "bound",
@@ -433,6 +467,8 @@ __InputTagHelper.StringProp = string.Empty;
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -450,6 +486,50 @@ __InputTagHelper.IntProp = 32;
                 ignoreLineEndingDifferences: true);
         }
 
+        // If a value is bound to multiple tag helpers, we want to make sure to only render the first
+        // occurrence of the expression due to side-effects.
+        [Fact]
+        public void WriteTagHelperProperty_DesignTime_NonStringProperty_SecondUseOfAttribute()
+        {
+            // Arrange
+            var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
+            var context = TestCodeRenderingContext.CreateDesignTime();
+
+            var tagHelperNode = new TagHelperIntermediateNode();
+            var node1 = new DefaultTagHelperPropertyIntermediateNode()
+            {
+                // We only look at the attribute name here.
+                AttributeName = "bound",
+                Field = "__OtherTagHelper",
+                Property = "IntProp",
+            };
+            var node2 = new DefaultTagHelperPropertyIntermediateNode()
+            {
+                AttributeName = "bound",
+                AttributeStructure = AttributeStructure.DoubleQuotes,
+                BoundAttribute = IntPropertyTagHelper.BoundAttributes.Single(),
+                Field = "__InputTagHelper",
+                IsIndexerNameMatch = false,
+                Property = "IntProp",
+                TagHelper = IntPropertyTagHelper,
+                Source = Span,
+            };
+            tagHelperNode.Children.Add(node1);
+            tagHelperNode.Children.Add(node2);
+            Push(context, tagHelperNode);
+
+            // Act
+            extension.WriteTagHelperProperty(context, node2);
+
+            // Assert
+            var csharp = context.CodeWriter.Builder.ToString();
+            Assert.Equal(
+@"__InputTagHelper.IntProp = __OtherTagHelper.IntProp;
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
         [Fact]
         public void WriteTagHelperProperty_DesignTime_NonStringProperty_RendersCorrectly_WithoutLocation()
         {
@@ -457,6 +537,7 @@ __InputTagHelper.IntProp = 32;
             var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
             var context = TestCodeRenderingContext.CreateDesignTime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "bound",
@@ -474,6 +555,8 @@ __InputTagHelper.IntProp = 32;
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -494,6 +577,7 @@ __InputTagHelper.IntProp = 32;
             var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
             var context = TestCodeRenderingContext.CreateDesignTime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "foo-bound",
@@ -512,6 +596,8 @@ __InputTagHelper.IntProp = 32;
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -536,6 +622,7 @@ __InputTagHelper.IntIndexer[""bound""] = 32;
             var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
             var context = TestCodeRenderingContext.CreateDesignTime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "foo-bound",
@@ -553,6 +640,8 @@ __InputTagHelper.IntIndexer[""bound""] = 32;
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -573,6 +662,7 @@ __InputTagHelper.IntIndexer[""bound""] = 32;
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "bound",
@@ -590,6 +680,8 @@ __InputTagHelper.IntIndexer[""bound""] = 32;
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -616,6 +708,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.St
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "bound",
@@ -634,6 +727,8 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.St
                     }
                 },
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -652,6 +747,50 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
                 ignoreLineEndingDifferences: true);
         }
 
+        // If a value is bound to multiple tag helpers, we want to make sure to only render the first
+        // occurrence of the expression due to side-effects.
+        [Fact]
+        public void WriteTagHelperProperty_Runtime_NonStringProperty_SecondUseOfAttribute()
+        {
+            // Arrange
+            var extension = new DefaultTagHelperTargetExtension();
+            var context = TestCodeRenderingContext.CreateRuntime();
+
+            var tagHelperNode = new TagHelperIntermediateNode();
+            var node1 = new DefaultTagHelperPropertyIntermediateNode()
+            {
+                // We only look at the attribute name here.
+                AttributeName = "bound",
+                Field = "__OtherTagHelper",
+                Property = "IntProp",
+            };
+            var node2 = new DefaultTagHelperPropertyIntermediateNode()
+            {
+                AttributeName = "bound",
+                AttributeStructure = AttributeStructure.DoubleQuotes,
+                BoundAttribute = IntPropertyTagHelper.BoundAttributes.Single(),
+                Field = "__InputTagHelper",
+                IsIndexerNameMatch = false,
+                Property = "IntProp",
+                TagHelper = IntPropertyTagHelper,
+                Source = Span,
+            };
+            tagHelperNode.Children.Add(node1);
+            tagHelperNode.Children.Add(node2);
+            Push(context, tagHelperNode);
+
+            // Act
+            extension.WriteTagHelperProperty(context, node2);
+
+            // Assert
+            var csharp = context.CodeWriter.Builder.ToString();
+            Assert.Equal(
+@"__InputTagHelper.IntProp = __OtherTagHelper.IntProp;
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
         [Fact]
         public void WriteTagHelperProperty_Runtime_NonStringProperty_RendersCorrectly_WithoutLocation()
         {
@@ -659,6 +798,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "bound",
@@ -676,6 +816,8 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -697,6 +839,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "foo-bound",
@@ -715,6 +858,8 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -737,6 +882,71 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
                 ignoreLineEndingDifferences: true);
         }
 
+        [Fact] // We should only emit the validation code for the first use of an indexer property.
+        public void WriteTagHelperProperty_Runtime_NonStringIndexer_MultipleValues()
+        {
+            // Arrange
+            var extension = new DefaultTagHelperTargetExtension();
+            var context = TestCodeRenderingContext.CreateRuntime();
+
+            var tagHelperNode = new TagHelperIntermediateNode();
+            var node1 = new DefaultTagHelperPropertyIntermediateNode()
+            {
+                AttributeName = "foo-first",
+                AttributeStructure = AttributeStructure.DoubleQuotes,
+                BoundAttribute = IntIndexerTagHelper.BoundAttributes.Single(),
+                Field = "__InputTagHelper",
+                IsIndexerNameMatch = true,
+                Property = "IntIndexer",
+                TagHelper = IntIndexerTagHelper,
+                Source = Span,
+                Children =
+                {
+                    new CSharpExpressionIntermediateNode()
+                    {
+                        Children = { new IntermediateToken { Kind = IntermediateToken.TokenKind.CSharp, Content = "17", } },
+                    }
+                }
+            };
+            var node2 = new DefaultTagHelperPropertyIntermediateNode()
+            {
+                AttributeName = "foo-bound",
+                AttributeStructure = AttributeStructure.DoubleQuotes,
+                BoundAttribute = IntIndexerTagHelper.BoundAttributes.Single(),
+                Field = "__InputTagHelper",
+                IsIndexerNameMatch = true,
+                Property = "IntIndexer",
+                TagHelper = IntIndexerTagHelper,
+                Source = Span,
+                Children =
+                {
+                    new CSharpExpressionIntermediateNode()
+                    {
+                        Children = { new IntermediateToken { Kind = IntermediateToken.TokenKind.CSharp, Content = "32", } },
+                    }
+                }
+            };
+            tagHelperNode.Children.Add(node1);
+            tagHelperNode.Children.Add(node2);
+            Push(context, tagHelperNode);
+
+            // Act
+            extension.WriteTagHelperProperty(context, node2);
+
+            // Assert
+            var csharp = context.CodeWriter.Builder.ToString();
+            Assert.Equal(
+@"#line 3 ""test.cshtml""
+__InputTagHelper.IntIndexer[""bound""] = 32;
+
+#line default
+#line hidden
+__tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelper.IntIndexer[""bound""], global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
+",
+                csharp,
+                ignoreLineEndingDifferences: true);
+        }
+
         [Fact]
         public void WriteTagHelperProperty_Runtime_NonStringIndexer_RendersCorrectly_WithoutLocation()
         {
@@ -744,6 +954,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
 
+            var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "foo-bound",
@@ -761,6 +972,8 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
                     }
                 }
             };
+            tagHelperNode.Children.Add(node);
+            Push(context, tagHelperNode);
 
             // Act
             extension.WriteTagHelperProperty(context, node);
@@ -785,7 +998,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             // Arrange
             var extension = new DefaultTagHelperTargetExtension() { DesignTime = true };
             var context = TestCodeRenderingContext.CreateDesignTime();
-
+            
             var node = new DefaultTagHelperRuntimeIntermediateNode();
 
             // Act
@@ -805,7 +1018,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             // Arrange
             var extension = new DefaultTagHelperTargetExtension();
             var context = TestCodeRenderingContext.CreateRuntime();
-
+            
             var node = new DefaultTagHelperRuntimeIntermediateNode();
 
             // Act
@@ -835,6 +1048,11 @@ private global::Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperScopeMana
 ",
                 csharp,
                 ignoreLineEndingDifferences: true);
+        }
+
+        private static void Push(CodeRenderingContext context, TagHelperIntermediateNode node)
+        {
+            ((DefaultCodeRenderingContext)context).AncestorsInternal.Push(node);
         }
 
         private static DocumentIntermediateNode Lower(RazorCodeDocument codeDocument)

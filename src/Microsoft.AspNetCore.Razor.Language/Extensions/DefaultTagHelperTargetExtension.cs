@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -75,6 +76,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public void WriteTagHelperBody(CodeRenderingContext context, DefaultTagHelperBodyIntermediateNode node)
         {
+            if (context.Parent as TagHelperIntermediateNode == null)
+            {
+                var message = Resources.FormatIntermediateNodes_InvalidParentNode(node.GetType(), typeof(TagHelperIntermediateNode));
+                throw new InvalidOperationException(message);
+            }
+
             if (DesignTime)
             {
                 context.RenderChildren(node);
@@ -121,6 +128,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public void WriteTagHelperCreate(CodeRenderingContext context, DefaultTagHelperCreateIntermediateNode node)
         {
+            if (context.Parent as TagHelperIntermediateNode == null)
+            {
+                var message = Resources.FormatIntermediateNodes_InvalidParentNode(node.GetType(), typeof(TagHelperIntermediateNode));
+                throw new InvalidOperationException(message);
+            }
+
             context.CodeWriter
                 .WriteStartAssignment(node.Field)
                 .Write(CreateTagHelperMethodName)
@@ -137,6 +150,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public void WriteTagHelperExecute(CodeRenderingContext context, DefaultTagHelperExecuteIntermediateNode node)
         {
+            if (context.Parent as TagHelperIntermediateNode == null)
+            {
+                var message = Resources.FormatIntermediateNodes_InvalidParentNode(node.GetType(), typeof(TagHelperIntermediateNode));
+                throw new InvalidOperationException(message);
+            }
+
             if (!DesignTime)
             {
                 context.CodeWriter
@@ -178,6 +197,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public void WriteTagHelperHtmlAttribute(CodeRenderingContext context, DefaultTagHelperHtmlAttributeIntermediateNode node)
         {
+            if (context.Parent as TagHelperIntermediateNode == null)
+            {
+                var message = Resources.FormatIntermediateNodes_InvalidParentNode(node.GetType(), typeof(TagHelperIntermediateNode));
+                throw new InvalidOperationException(message);
+            }
+
             if (DesignTime)
             {
                 context.RenderChildren(node);
@@ -261,22 +286,25 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public void WriteTagHelperProperty(CodeRenderingContext context, DefaultTagHelperPropertyIntermediateNode node)
         {
-            var tagHelperRenderingContext = context.TagHelperRenderingContext;
-            var propertyName = node.BoundAttribute.GetPropertyName();
-            var propertyValueAccessor = GetTagHelperPropertyAccessor(node.IsIndexerNameMatch, node.Field, node.AttributeName, node.BoundAttribute);
+            var tagHelperNode = context.Parent as TagHelperIntermediateNode;
+            if (context.Parent == null)
+            {
+                var message = Resources.FormatIntermediateNodes_InvalidParentNode(node.GetType(), typeof(TagHelperIntermediateNode));
+                throw new InvalidOperationException(message);
+            }
 
             if (!DesignTime)
             {
                 // Ensure that the property we're trying to set has initialized its dictionary bound properties.
                 if (node.IsIndexerNameMatch &&
-                    tagHelperRenderingContext.VerifiedPropertyDictionaries.Add($"{node.TagHelper.GetTypeName()}.{propertyName}"))
+                    object.ReferenceEquals(FindFirstUseOfIndexer(tagHelperNode, node), node))
                 {
                     // Throw a reasonable Exception at runtime if the dictionary property is null.
                     context.CodeWriter
                         .Write("if (")
                         .Write(node.Field)
                         .Write(".")
-                        .Write(propertyName)
+                        .Write(node.Property)
                         .WriteLine(" == null)");
                     using (context.CodeWriter.BuildScope())
                     {
@@ -290,34 +318,40 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                             .WriteParameterSeparator()
                             .WriteStringLiteral(node.TagHelper.GetTypeName())
                             .WriteParameterSeparator()
-                            .WriteStringLiteral(propertyName)
+                            .WriteStringLiteral(node.Property)
                             .WriteEndMethodInvocation(endLine: false)   // End of method call
                             .WriteEndMethodInvocation();   // End of new expression / throw statement
                     }
                 }
             }
 
-            if (tagHelperRenderingContext.RenderedBoundAttributes.TryGetValue(node.AttributeName, out var previousValueAccessor))
+            // If this is not the first use of the attribute value, we need to evaluate the expression and assign it to
+            // the tag helper property.
+            //
+            // Otherwise, the value has already been computed and assigned to another tag helper. We just need to
+            // copy from that tag helper to this one.
+            //
+            // This is important because we can't evaluate the expression twice due to side-effects.
+            var firstUseOfAttribute = FindFirstUseOfAttribute(tagHelperNode, node);
+            if (!object.ReferenceEquals(firstUseOfAttribute, node))
             {
+                // If we get here, this value has already been used. We just need to copy the value.
                 context.CodeWriter
-                    .WriteStartAssignment(propertyValueAccessor)
-                    .Write(previousValueAccessor)
+                    .WriteStartAssignment(GetPropertyAccessor(node))
+                    .Write(GetPropertyAccessor(firstUseOfAttribute))
                     .WriteLine(";");
 
                 return;
             }
-            else
-            {
-                tagHelperRenderingContext.RenderedBoundAttributes[node.AttributeName] = propertyValueAccessor;
-            }
 
+            // If we get there, this is the first time seeing this property so we need to evaluate the expression.
             if (node.BoundAttribute.IsStringProperty || (node.IsIndexerNameMatch && node.BoundAttribute.IsIndexerStringProperty))
             {
                 if (DesignTime)
                 {
                     context.RenderChildren(node);
 
-                    context.CodeWriter.WriteStartAssignment(propertyValueAccessor);
+                    context.CodeWriter.WriteStartAssignment(GetPropertyAccessor(node));
                     if (node.Children.Count == 1 && node.Children.First() is HtmlContentIntermediateNode htmlNode)
                     {
                         var content = GetContent(htmlNode);
@@ -341,7 +375,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     context.CodeWriter
                         .WriteStartAssignment(StringValueBufferVariableName)
                         .WriteMethodInvocation(EndWriteTagHelperAttributeMethodName)
-                        .WriteStartAssignment(propertyValueAccessor)
+                        .WriteStartAssignment(GetPropertyAccessor(node))
                         .Write(StringValueBufferVariableName)
                         .WriteLine(";");
                 }
@@ -355,7 +389,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
                     using (context.CodeWriter.BuildLinePragma(node.Source))
                     {
-                        var assignmentPrefixLength = propertyValueAccessor.Length + " = ".Length;
+                        var accessor = GetPropertyAccessor(node);
+                        var assignmentPrefixLength = accessor.Length + " = ".Length;
                         if (node.BoundAttribute.IsEnum &&
                             node.Children.Count == 1 &&
                             node.Children.First() is IntermediateToken token &&
@@ -369,7 +404,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                             }
 
                             context.CodeWriter
-                                .WriteStartAssignment(propertyValueAccessor)
+                                .WriteStartAssignment(accessor)
                                 .Write("global::")
                                 .Write(node.BoundAttribute.TypeName)
                                 .Write(".");
@@ -381,7 +416,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                                 context.CodeWriter.WritePadding(assignmentPrefixLength, node.Source, context);
                             }
 
-                            context.CodeWriter.WriteStartAssignment(propertyValueAccessor);
+                            context.CodeWriter.WriteStartAssignment(GetPropertyAccessor(node));
                         }
 
                         RenderTagHelperAttributeInline(context, node, node.Source);
@@ -393,7 +428,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 {
                     using (context.CodeWriter.BuildLinePragma(node.Source))
                     {
-                        context.CodeWriter.WriteStartAssignment(propertyValueAccessor);
+                        context.CodeWriter.WriteStartAssignment(GetPropertyAccessor(node));
 
                         if (node.BoundAttribute.IsEnum &&
                             node.Children.Count == 1 &&
@@ -422,7 +457,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         ExecutionContextAddTagHelperAttributeMethodName)
                     .WriteStringLiteral(node.AttributeName)
                     .WriteParameterSeparator()
-                    .Write(propertyValueAccessor)
+                    .Write(GetPropertyAccessor(node))
                     .WriteParameterSeparator()
                     .Write($"global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.{node.AttributeStructure}")
                     .WriteEndMethodInvocation();
@@ -548,6 +583,45 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
         }
 
+        private static DefaultTagHelperPropertyIntermediateNode FindFirstUseOfIndexer(
+            TagHelperIntermediateNode tagHelperNode,
+            DefaultTagHelperPropertyIntermediateNode propertyNode)
+        {
+            Debug.Assert(tagHelperNode.Children.Contains(propertyNode));
+            Debug.Assert(propertyNode.IsIndexerNameMatch);
+
+            for (var i = 0; i < tagHelperNode.Children.Count; i++)
+            {
+                if (tagHelperNode.Children[i] is DefaultTagHelperPropertyIntermediateNode otherPropertyNode &&
+                    otherPropertyNode.TagHelper.Equals(propertyNode.TagHelper) &&
+                    otherPropertyNode.BoundAttribute.Equals(propertyNode.BoundAttribute) &&
+                    otherPropertyNode.IsIndexerNameMatch)
+                {
+                    return otherPropertyNode;
+                }
+            }
+
+            // This is unreachable, we should find 'propertyNode' in the list of children.
+            throw new InvalidOperationException();
+        }
+
+        private static DefaultTagHelperPropertyIntermediateNode FindFirstUseOfAttribute(
+            TagHelperIntermediateNode tagHelperNode,
+            DefaultTagHelperPropertyIntermediateNode propertyNode)
+        {
+            for (var i = 0; i < tagHelperNode.Children.Count; i++)
+            {
+                if (tagHelperNode.Children[i] is DefaultTagHelperPropertyIntermediateNode otherPropertyNode &&
+                    string.Equals(otherPropertyNode.AttributeName, propertyNode.AttributeName, StringComparison.Ordinal))
+                {
+                    return otherPropertyNode;
+                }
+            }
+
+            // This is unreachable, we should find 'propertyNode' in the list of children.
+            throw new InvalidOperationException();
+        }
+
         private string GetContent(HtmlContentIntermediateNode node)
         {
             var builder = new StringBuilder();
@@ -562,17 +636,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             return builder.ToString();
         }
 
-        private static string GetTagHelperPropertyAccessor(
-            bool isIndexerNameMatch,
-            string tagHelperVariableName,
-            string attributeName,
-            BoundAttributeDescriptor descriptor)
+        private static string GetPropertyAccessor(DefaultTagHelperPropertyIntermediateNode node)
         {
-            var propertyAccessor = $"{tagHelperVariableName}.{descriptor.GetPropertyName()}";
+            var propertyAccessor = $"{node.Field}.{node.Property}";
 
-            if (isIndexerNameMatch)
+            if (node.IsIndexerNameMatch)
             {
-                var dictionaryKey = attributeName.Substring(descriptor.IndexerNamePrefix.Length);
+                var dictionaryKey = node.AttributeName.Substring(node.BoundAttribute.IndexerNamePrefix.Length);
                 propertyAccessor += $"[\"{dictionaryKey}\"]";
             }
 
