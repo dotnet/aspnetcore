@@ -4,9 +4,11 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using Microsoft.AspNetCore.Testing;
 using Moq;
 using Xunit;
 
@@ -17,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowAfterAbort()
         {
-            var streams = new Streams(Mock.Of<IFrameControl>());
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IFrameControl>());
             var (request, response) = streams.Start(new MockMessageBody());
 
             var ex = new Exception("My error");
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowOnAbortAfterUpgrade()
         {
-            var streams = new Streams(Mock.Of<IFrameControl>());
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IFrameControl>());
             var (request, response) = streams.Start(new MockMessageBody(upgradeable: true));
 
             var upgrade = streams.Upgrade();
@@ -53,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowOnUpgradeAfterAbort()
         {
-            var streams = new Streams(Mock.Of<IFrameControl>());
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IFrameControl>());
 
             var (request, response) = streams.Start(new MockMessageBody(upgradeable: true));
             var ex = new Exception("My error");

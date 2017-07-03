@@ -28,14 +28,14 @@ namespace CodeGenerator
                 typeof(IHttpRequestIdentifierFeature),
                 typeof(IServiceProvidersFeature),
                 typeof(IHttpRequestLifetimeFeature),
-                typeof(IHttpConnectionFeature)
+                typeof(IHttpConnectionFeature),
             };
 
             var commonFeatures = new[]
             {
                 typeof(IHttpAuthenticationFeature),
                 typeof(IQueryFeature),
-                typeof(IFormFeature)
+                typeof(IFormFeature),
             };
 
             var sometimesFeatures = new[]
@@ -48,6 +48,7 @@ namespace CodeGenerator
                 typeof(ISessionFeature),
                 typeof(IHttpMaxRequestBodySizeFeature),
                 typeof(IHttpMinRequestBodyDataRateFeature),
+                typeof(IHttpBodyControlFeature),
             };
 
             var rareFeatures = new[]
@@ -69,6 +70,7 @@ namespace CodeGenerator
                 typeof(IHttpConnectionFeature),
                 typeof(IHttpMaxRequestBodySizeFeature),
                 typeof(IHttpMinRequestBodyDataRateFeature),
+                typeof(IHttpBodyControlFeature),
             };
 
             return $@"// Copyright (c) .NET Foundation. All rights reserved.

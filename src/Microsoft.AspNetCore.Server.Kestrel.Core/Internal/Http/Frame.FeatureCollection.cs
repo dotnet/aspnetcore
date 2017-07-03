@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                  IHttpConnectionFeature,
                                  IHttpRequestLifetimeFeature,
                                  IHttpRequestIdentifierFeature,
+                                 IHttpBodyControlFeature,
                                  IHttpMaxRequestBodySizeFeature,
                                  IHttpMinRequestBodyDataRateFeature
     {
@@ -203,6 +204,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get => TraceIdentifier;
             set => TraceIdentifier = value;
+        }
+
+        bool IHttpBodyControlFeature.AllowSynchronousIO
+        {
+            get => AllowSynchronousIO;
+            set => AllowSynchronousIO = value;
         }
 
         bool IHttpMaxRequestBodySizeFeature.IsReadOnly => HasStartedConsumingRequestBody || _wasUpgraded;

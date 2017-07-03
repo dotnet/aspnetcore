@@ -3,6 +3,7 @@
 
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
@@ -17,11 +18,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         private readonly FrameRequestStream _emptyRequest;
         private readonly Stream _upgradeStream;
 
-        public Streams(IFrameControl frameControl)
+        public Streams(IHttpBodyControlFeature bodyControl, IFrameControl frameControl)
         {
-            _request = new FrameRequestStream();
-            _emptyRequest = new FrameRequestStream();
-            _response = new FrameResponseStream(frameControl);
+            _request = new FrameRequestStream(bodyControl);
+            _emptyRequest = new FrameRequestStream(bodyControl);
+            _response = new FrameResponseStream(bodyControl, frameControl);
             _upgradeableResponse = new WrappingStream(_response);
             _upgradeStream = new FrameDuplexStream(_request, _response);
         }

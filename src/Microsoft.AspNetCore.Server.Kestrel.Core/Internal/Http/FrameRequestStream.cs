@@ -7,17 +7,20 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     internal class FrameRequestStream : ReadOnlyStream
     {
+        private readonly IHttpBodyControlFeature _bodyControl;
         private MessageBody _body;
         private FrameStreamState _state;
         private Exception _error;
 
-        public FrameRequestStream()
+        public FrameRequestStream(IHttpBodyControlFeature bodyControl)
         {
+            _bodyControl = bodyControl;
             _state = FrameStreamState.Closed;
         }
 
@@ -34,13 +37,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override void Flush()
         {
-            // No-op.
+            throw new NotSupportedException();
         }
 
         public override Task FlushAsync(CancellationToken cancellationToken)
         {
-            // No-op.
-            return Task.CompletedTask;
+            throw new NotSupportedException();
         }
 
         public override long Seek(long offset, SeekOrigin origin)
@@ -55,8 +57,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            // ValueTask uses .GetAwaiter().GetResult() if necessary
-            return ReadAsync(buffer, offset, count).Result;
+            if (!_bodyControl.AllowSynchronousIO)
+            {
+                throw new InvalidOperationException(CoreStrings.SynchronousReadsDisallowed);
+            }
+
+            return ReadAsync(buffer, offset, count).GetAwaiter().GetResult();
         }
 
         public override IAsyncResult BeginRead(byte[] buffer, int offset, int count, AsyncCallback callback, object state)

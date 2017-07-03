@@ -1019,7 +1019,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             => GetString("NonNegativeTimeSpanRequired");
 
         /// <summary>
-        /// The request body rate enforcement grace period must be greater than {heartbeatInterval} seconds.
+        /// The request body rate enforcement grace period must be greater than {heartbeatInterval} second.
         /// </summary>
         internal static string MinimumGracePeriodRequired
         {
@@ -1027,10 +1027,38 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         /// <summary>
-        /// The request body rate enforcement grace period must be greater than {heartbeatInterval} seconds.
+        /// The request body rate enforcement grace period must be greater than {heartbeatInterval} second.
         /// </summary>
         internal static string FormatMinimumGracePeriodRequired(object heartbeatInterval)
             => string.Format(CultureInfo.CurrentCulture, GetString("MinimumGracePeriodRequired", "heartbeatInterval"), heartbeatInterval);
+
+        /// <summary>
+        /// Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.
+        /// </summary>
+        internal static string SynchronousReadsDisallowed
+        {
+            get => GetString("SynchronousReadsDisallowed");
+        }
+
+        /// <summary>
+        /// Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.
+        /// </summary>
+        internal static string FormatSynchronousReadsDisallowed()
+            => GetString("SynchronousReadsDisallowed");
+
+        /// <summary>
+        /// Synchronous operations are disallowed. Call WriteAsync or set AllowSynchronousIO to true instead.
+        /// </summary>
+        internal static string SynchronousWritesDisallowed
+        {
+            get => GetString("SynchronousWritesDisallowed");
+        }
+
+        /// <summary>
+        /// Synchronous operations are disallowed. Call WriteAsync or set AllowSynchronousIO to true instead.
+        /// </summary>
+        internal static string FormatSynchronousWritesDisallowed()
+            => GetString("SynchronousWritesDisallowed");
 
         private static string GetString(string name, params string[] formatterNames)
         {

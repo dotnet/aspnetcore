@@ -22,5 +22,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.True(o1.ListenOptions[0].NoDelay);
             Assert.False(o1.ListenOptions[1].NoDelay);
         }
+
+        [Fact]
+        public void AllowSynchronousIODefaultsToTrue()
+        {
+            var options = new KestrelServerOptions();
+
+            Assert.True(options.AllowSynchronousIO);
+        }
     }
 }

@@ -122,6 +122,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public string ConnectionIdFeature { get; set; }
         public bool HasStartedConsumingRequestBody { get; set; }
         public long? MaxRequestBodySize { get; set; }
+        public bool AllowSynchronousIO { get; set; }
 
         /// <summary>
         /// The request id. <seealso cref="HttpContext.TraceIdentifier"/>
@@ -305,7 +306,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (_frameStreams == null)
             {
-                _frameStreams = new Streams(this);
+                _frameStreams = new Streams(bodyControl: this, frameControl: this);
             }
 
             (RequestBody, ResponseBody) = _frameStreams.Start(messageBody);
@@ -329,6 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             HasStartedConsumingRequestBody = false;
             MaxRequestBodySize = ServerOptions.Limits.MaxRequestBodySize;
+            AllowSynchronousIO = ServerOptions.AllowSynchronousIO;
             TraceIdentifier = null;
             Scheme = null;
             Method = null;

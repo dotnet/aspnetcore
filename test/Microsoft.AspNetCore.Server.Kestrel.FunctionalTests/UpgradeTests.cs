@@ -32,12 +32,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 var feature = context.Features.Get<IHttpUpgradeFeature>();
                 var stream = await feature.UpgradeAsync();
 
-                var ex = Assert.Throws<InvalidOperationException>(() => context.Response.Body.WriteByte((byte)' '));
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => context.Response.Body.WriteAsync(new byte[1], 0, 1));
                 Assert.Equal(CoreStrings.ResponseStreamWasUpgraded, ex.Message);
 
                 using (var writer = new StreamWriter(stream))
                 {
-                    writer.WriteLine("New protocol data");
+                    await writer.WriteLineAsync("New protocol data");
+                    await writer.FlushAsync();
                 }
 
                 upgrade.TrySetResult(true);
@@ -82,6 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         var line = await reader.ReadLineAsync();
                         Assert.Equal(send, line);
                         await writer.WriteLineAsync(recv);
+                        await writer.FlushAsync();
                     }
 
                     upgrade.TrySetResult(true);

@@ -508,7 +508,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task ThrowsAndClosesConnectionWhenAppWritesMoreThanContentLengthWrite()
         {
             var testLogger = new TestApplicationErrorLogger();
-            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+            var serviceContext = new TestServiceContext
+            {
+                Log = new TestKestrelTrace(testLogger),
+                ServerOptions = { AllowSynchronousIO = true }
+            };
 
             using (var server = new TestServer(httpContext =>
             {
@@ -535,7 +539,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     await connection.WaitForConnectionClose().TimeoutAfter(TimeSpan.FromSeconds(30));
                 }
             }
-
 
             var logMessage = Assert.Single(testLogger.Messages, message => message.LogLevel == LogLevel.Error);
 
@@ -584,7 +587,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task InternalServerErrorAndConnectionClosedOnWriteWithMoreThanContentLengthAndResponseNotStarted()
         {
             var testLogger = new TestApplicationErrorLogger();
-            var serviceContext = new TestServiceContext { Log = new TestKestrelTrace(testLogger) };
+            var serviceContext = new TestServiceContext
+            {
+                Log = new TestKestrelTrace(testLogger),
+                ServerOptions = { AllowSynchronousIO = true }
+            };
 
             using (var server = new TestServer(httpContext =>
             {
@@ -966,6 +973,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task HeadResponseBodyNotWrittenWithSyncWrite()
         {
             var flushed = new SemaphoreSlim(0, 1);
+            var serviceContext = new TestServiceContext { ServerOptions = { AllowSynchronousIO = true } };
 
             using (var server = new TestServer(httpContext =>
             {
@@ -973,7 +981,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 httpContext.Response.Body.Write(Encoding.ASCII.GetBytes("hello, world"), 0, 12);
                 flushed.Wait();
                 return Task.CompletedTask;
-            }))
+            }, serviceContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1248,6 +1256,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task FirstWriteVerifiedAfterOnStarting()
         {
+            var serviceContext = new TestServiceContext { ServerOptions = { AllowSynchronousIO = true } };
+
             using (var server = new TestServer(httpContext =>
             {
                 httpContext.Response.OnStarting(() =>
@@ -1263,7 +1273,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 // If OnStarting is not run before verifying writes, an error response will be sent.
                 httpContext.Response.Body.Write(response, 0, response.Length);
                 return Task.CompletedTask;
-            }))
+            }, serviceContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -1289,6 +1299,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task SubsequentWriteVerifiedAfterOnStarting()
         {
+            var serviceContext = new TestServiceContext { ServerOptions = { AllowSynchronousIO = true } };
+
             using (var server = new TestServer(httpContext =>
             {
                 httpContext.Response.OnStarting(() =>
@@ -1305,7 +1317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 httpContext.Response.Body.Write(response, 0, response.Length / 2);
                 httpContext.Response.Body.Write(response, response.Length / 2, response.Length - response.Length / 2);
                 return Task.CompletedTask;
-            }))
+            }, serviceContext))
             {
                 using (var connection = server.CreateConnection())
                 {
@@ -2333,6 +2345,96 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             Assert.Equal(1, callOrder.Pop());
             Assert.Equal(2, callOrder.Pop());
+        }
+
+
+        [Fact]
+        public async Task SynchronousWritesAllowedByDefault()
+        {
+            var firstRequest = true;
+
+            using (var server = new TestServer(async context =>
+            {
+                var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
+                Assert.True(bodyControlFeature.AllowSynchronousIO);
+
+                context.Response.ContentLength = 6;
+
+                if (firstRequest)
+                {
+                    context.Response.Body.Write(Encoding.ASCII.GetBytes("Hello1"), 0, 6);
+                    firstRequest = false;
+                }
+                else
+                {
+                    bodyControlFeature.AllowSynchronousIO = false;
+
+                    // Synchronous writes now throw.
+                    var ioEx = Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(Encoding.ASCII.GetBytes("What!?"), 0, 6));
+                    Assert.Equal("Synchronous operations are disallowed. Call WriteAsync or set AllowSynchronousIO to true instead.", ioEx.Message);
+
+                    await context.Response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello2"), 0, 6);
+                }
+            }))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.SendEmptyGet();
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 6",
+                        "",
+                        "Hello1");
+
+                    await connection.SendEmptyGet();
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 6",
+                        "",
+                        "Hello2");
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SynchronousWritesCanBeDisallowedGlobally()
+        {
+            var testContext = new TestServiceContext
+            {
+                ServerOptions = { AllowSynchronousIO = false }
+            };
+
+            using (var server = new TestServer(context =>
+            {
+                var bodyControlFeature = context.Features.Get<IHttpBodyControlFeature>();
+                Assert.False(bodyControlFeature.AllowSynchronousIO);
+
+                context.Response.ContentLength = 6;
+
+                // Synchronous writes now throw.
+                var ioEx = Assert.Throws<InvalidOperationException>(() => context.Response.Body.Write(Encoding.ASCII.GetBytes("What!?"), 0, 6));
+                Assert.Equal("Synchronous operations are disallowed. Call WriteAsync or set AllowSynchronousIO to true instead.", ioEx.Message);
+
+                return context.Response.Body.WriteAsync(Encoding.ASCII.GetBytes("Hello!"), 0, 6);
+            }, testContext))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.1",
+                        "Host:",
+                        "",
+                        "");
+                    await connection.Receive(
+                        "HTTP/1.1 200 OK",
+                        $"Date: {server.Context.DateHeaderValue}",
+                        "Content-Length: 6",
+                        "",
+                        "Hello!");
+                }
+            }
         }
 
         public static TheoryData<string, StringValues, string> NullHeaderData
