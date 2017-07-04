@@ -1,7 +1,9 @@
+using System.Globalization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -114,6 +116,16 @@ namespace MusicStore
 
         public void Configure(IApplicationBuilder app)
         {
+            // force the en-US culture, so that the app behaves the same even on machines with different default culture
+            var supportedCultures = new[] { new CultureInfo("en-US") };
+
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("en-US"),
+                SupportedCultures = supportedCultures,
+                SupportedUICultures = supportedCultures
+            });
+
             app.UseStatusCodePagesWithRedirects("~/Home/StatusCodePage");
 
             // Display custom error page in production when error occurs

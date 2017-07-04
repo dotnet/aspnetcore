@@ -1,10 +1,12 @@
 using System;
+using System.Globalization;
 using System.Security.Claims;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -95,6 +97,16 @@ namespace MusicStore
 
         public void Configure(IApplicationBuilder app)
         {
+            // force the en-US culture, so that the app behaves the same even on machines with different default culture
+            var supportedCultures = new[] { new CultureInfo("en-US") };
+
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture("en-US"),
+                SupportedCultures = supportedCultures,
+                SupportedUICultures = supportedCultures
+            });
+
             app.UseStatusCodePagesWithRedirects("~/Home/StatusCodePage");
 
             // Error page middleware displays a nice formatted HTML page for any unhandled exceptions in the
