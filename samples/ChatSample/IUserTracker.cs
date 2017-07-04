@@ -4,15 +4,15 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ChatSample
 {
     public interface IUserTracker<out THub>
     {
         Task<IEnumerable<UserDetails>> UsersOnline();
-        Task AddUser(ConnectionContext connection, UserDetails userDetails);
-        Task RemoveUser(ConnectionContext connection);
+        Task AddUser(HubConnectionContext connection, UserDetails userDetails);
+        Task RemoveUser(HubConnectionContext connection);
 
         event Action<UserDetails[]> UsersJoined;
         event Action<UserDetails[]> UsersLeft;

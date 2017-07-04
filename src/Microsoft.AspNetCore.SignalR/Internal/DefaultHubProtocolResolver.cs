@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     public class DefaultHubProtocolResolver : IHubProtocolResolver
     {
-        public IHubProtocol GetProtocol(string protocolName, ConnectionContext connection)
+        public IHubProtocol GetProtocol(string protocolName, HubConnectionContext connection)
         {
             switch (protocolName?.ToLowerInvariant())
             {

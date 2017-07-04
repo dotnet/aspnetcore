@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var mockLifetimeManager = new Mock<HubLifetimeManager<Hub>>();
             mockLifetimeManager
-                .Setup(m => m.OnConnectedAsync(It.IsAny<ConnectionContext>()))
+                .Setup(m => m.OnConnectedAsync(It.IsAny<HubConnectionContext>()))
                 .Throws(new InvalidOperationException("Lifetime manager OnConnectedAsync failed."));
             var mockHubActivator = new Mock<IHubActivator<Hub, IClientProxy>>();
 
@@ -64,8 +64,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 client.Dispose();
 
-                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<ConnectionContext>()), Times.Once);
-                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<ConnectionContext>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<HubConnectionContext>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<HubConnectionContext>()), Times.Once);
                 // No hubs should be created since the connection is terminated
                 mockHubActivator.Verify(m => m.Create(), Times.Never);
                 mockHubActivator.Verify(m => m.Release(It.IsAny<Hub>()), Times.Never);
@@ -91,8 +91,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endPointTask);
                 Assert.Equal("Hub OnConnected failed.", exception.Message);
 
-                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<ConnectionContext>()), Times.Once);
-                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<ConnectionContext>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<HubConnectionContext>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<HubConnectionContext>()), Times.Once);
             }
         }
 
@@ -115,8 +115,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var exception = await Assert.ThrowsAsync<InvalidOperationException>(async () => await endPointTask);
                 Assert.Equal("Hub OnDisconnected failed.", exception.Message);
 
-                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<ConnectionContext>()), Times.Once);
-                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<ConnectionContext>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnConnectedAsync(It.IsAny<HubConnectionContext>()), Times.Once);
+                mockLifetimeManager.Verify(m => m.OnDisconnectedAsync(It.IsAny<HubConnectionContext>()), Times.Once);
             }
         }
 

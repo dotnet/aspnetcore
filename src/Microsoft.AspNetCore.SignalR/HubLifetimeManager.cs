@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.SignalR
 {
     public abstract class HubLifetimeManager<THub>
     {
-        public abstract Task OnConnectedAsync(ConnectionContext connection);
+        public abstract Task OnConnectedAsync(HubConnectionContext connection);
 
-        public abstract Task OnDisconnectedAsync(ConnectionContext connection);
+        public abstract Task OnDisconnectedAsync(HubConnectionContext connection);
 
         public abstract Task InvokeAllAsync(string methodName, object[] args);
 

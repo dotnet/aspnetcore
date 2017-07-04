@@ -9,8 +9,8 @@ using System.Net;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.AspNetCore.SignalR.Redis;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -129,7 +129,7 @@ namespace ChatSample
             }
         }
 
-        public async Task AddUser(ConnectionContext connection, UserDetails userDetails)
+        public async Task AddUser(HubConnectionContext connection, UserDetails userDetails)
         {
             var key = GetUserRedisKey(connection);
             var user = SerializeUser(connection);
@@ -156,7 +156,7 @@ namespace ChatSample
             }
         }
 
-        public async Task RemoveUser(ConnectionContext connection)
+        public async Task RemoveUser(HubConnectionContext connection)
         {
             await _userSyncSempaphore.WaitAsync();
             try
@@ -180,7 +180,7 @@ namespace ChatSample
             }
         }
 
-        private static string GetUserRedisKey(ConnectionContext connection) => $"user:{connection.ConnectionId}";
+        private static string GetUserRedisKey(HubConnectionContext connection) => $"user:{connection.ConnectionId}";
 
         private static void Scan(object state)
         {
@@ -319,7 +319,7 @@ namespace ChatSample
             }
         }
 
-        private static string SerializeUser(ConnectionContext connection) =>
+        private static string SerializeUser(HubConnectionContext connection) =>
             $"{{ \"ConnectionID\": \"{connection.ConnectionId}\", \"Name\": \"{connection.User.Identity.Name}\" }}";
 
         private static UserDetails DeserializerUser(string userJson) =>

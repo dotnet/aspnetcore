@@ -10,7 +10,6 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -22,7 +21,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
     {
         private const string RedisSubscriptionsMetadataName = "redis_subscriptions";
 
-        private readonly ConnectionList _connections = new ConnectionList();
+        private readonly HubConnectionList _connections = new HubConnectionList();
         // TODO: Investigate "memory leak" entries never get removed
         private readonly ConcurrentDictionary<string, GroupData> _groups = new ConcurrentDictionary<string, GroupData>();
         private readonly ConnectionMultiplexer _redisServerConnection;
@@ -128,7 +127,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             await _bus.PublishAsync(channel, payload);
         }
 
-        public override Task OnConnectedAsync(ConnectionContext connection)
+        public override Task OnConnectedAsync(HubConnectionContext connection)
         {
             var redisSubscriptions = connection.Metadata.GetOrAdd(RedisSubscriptionsMetadataName, _ => new HashSet<string>());
             var connectionTask = Task.CompletedTask;
@@ -173,7 +172,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return Task.WhenAll(connectionTask, userTask);
         }
 
-        public override Task OnDisconnectedAsync(ConnectionContext connection)
+        public override Task OnDisconnectedAsync(HubConnectionContext connection)
         {
             _connections.Remove(connection);
 
@@ -307,14 +306,13 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             _redisServerConnection.Dispose();
         }
 
-        private async Task WriteAsync(ConnectionContext connection, HubMessage hubMessage)
+        private async Task WriteAsync(HubConnectionContext connection, HubMessage hubMessage)
         {
-            var protocol = connection.Metadata.Get<IHubProtocol>(HubConnectionMetadataNames.HubProtocol);
-            var data = protocol.WriteToArray(hubMessage);
+            var data = connection.Protocol.WriteToArray(hubMessage);
 
-            while (await connection.Transport.Out.WaitToWriteAsync())
+            while (await connection.Output.WaitToWriteAsync())
             {
-                if (connection.Transport.Out.TryWrite(data))
+                if (connection.Output.TryWrite(data))
                 {
                     break;
                 }
@@ -363,7 +361,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         private class GroupData
         {
             public SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
-            public ConnectionList Connections = new ConnectionList();
+            public HubConnectionList Connections = new HubConnectionList();
         }
     }
 }

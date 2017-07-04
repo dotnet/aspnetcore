@@ -3,14 +3,14 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ChatSample
 {
     public class InMemoryUserTracker<THub> : IUserTracker<THub>
     {
-        private readonly ConcurrentDictionary<ConnectionContext, UserDetails> _usersOnline
-            = new ConcurrentDictionary<ConnectionContext, UserDetails>();
+        private readonly ConcurrentDictionary<HubConnectionContext, UserDetails> _usersOnline
+            = new ConcurrentDictionary<HubConnectionContext, UserDetails>();
 
         public event Action<UserDetails[]> UsersJoined;
         public event Action<UserDetails[]> UsersLeft;
@@ -18,7 +18,7 @@ namespace ChatSample
         public Task<IEnumerable<UserDetails>> UsersOnline()
             => Task.FromResult(_usersOnline.Values.AsEnumerable());
 
-        public Task AddUser(ConnectionContext connection, UserDetails userDetails)
+        public Task AddUser(HubConnectionContext connection, UserDetails userDetails)
         {
             _usersOnline.TryAdd(connection, userDetails);
             UsersJoined(new[] { userDetails });
@@ -26,7 +26,7 @@ namespace ChatSample
             return Task.CompletedTask;
         }
 
-        public Task RemoveUser(ConnectionContext connection)
+        public Task RemoveUser(HubConnectionContext connection)
         {
             if (_usersOnline.TryRemove(connection, out var userDetails))
             {

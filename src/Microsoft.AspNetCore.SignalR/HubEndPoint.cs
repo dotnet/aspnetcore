@@ -59,24 +59,54 @@ namespace Microsoft.AspNetCore.SignalR
 
         public async Task OnConnectedAsync(ConnectionContext connection)
         {
-            await ProcessNegotiate(connection);
+            var output = Channel.CreateUnbounded<byte[]>();
+            var connectionContext = new HubConnectionContext(output, connection);
+
+            await ProcessNegotiate(connectionContext);
+
+            // Hubs support multiple producers so we set up this loop to copy
+            // data written to the HubConnectionContext's channel to the transport channel
+            async Task WriteToTransport()
+            {
+                while (await output.In.WaitToReadAsync())
+                {
+                    while (output.In.TryRead(out var buffer))
+                    {
+                        while (await connection.Transport.Out.WaitToWriteAsync())
+                        {
+                            if (connection.Transport.Out.TryWrite(buffer))
+                            {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+
+            var writingOutputTask = WriteToTransport();
 
             try
             {
-                await _lifetimeManager.OnConnectedAsync(connection);
-                await RunHubAsync(connection);
+                await _lifetimeManager.OnConnectedAsync(connectionContext);
+                await RunHubAsync(connectionContext);
             }
             finally
             {
-                await _lifetimeManager.OnDisconnectedAsync(connection);
+                await _lifetimeManager.OnDisconnectedAsync(connectionContext);
+
+                // Nothing should be writing to the HubConnectionContext
+                output.Out.TryComplete();
+
+                // This should unwind once we complete the output 
+                await writingOutputTask;
             }
         }
 
-        private async Task ProcessNegotiate(ConnectionContext connection)
+        private async Task ProcessNegotiate(HubConnectionContext connection)
         {
-            while (await connection.Transport.In.WaitToReadAsync())
+            while (await connection.Input.WaitToReadAsync())
             {
-                while (connection.Transport.In.TryRead(out var buffer))
+                while (connection.Input.TryRead(out var buffer))
                 {
                     if (NegotiationProtocol.TryParseMessage(buffer, out var negotiationMessage))
                     {
@@ -92,7 +122,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task RunHubAsync(ConnectionContext connection)
+        private async Task RunHubAsync(HubConnectionContext connection)
         {
             await HubOnConnectedAsync(connection);
 
@@ -110,7 +140,7 @@ namespace Microsoft.AspNetCore.SignalR
             await HubOnDisconnectedAsync(connection, null);
         }
 
-        private async Task HubOnConnectedAsync(ConnectionContext connection)
+        private async Task HubOnConnectedAsync(HubConnectionContext connection)
         {
             try
             {
@@ -136,7 +166,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task HubOnDisconnectedAsync(ConnectionContext connection, Exception exception)
+        private async Task HubOnDisconnectedAsync(HubConnectionContext connection, Exception exception)
         {
             try
             {
@@ -162,7 +192,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task DispatchMessagesAsync(ConnectionContext connection)
+        private async Task DispatchMessagesAsync(HubConnectionContext connection)
         {
             // We use these for error handling. Since we dispatch multiple hub invocations
             // in parallel, we need a way to communicate failure back to the main processing loop. The
@@ -174,9 +204,9 @@ namespace Microsoft.AspNetCore.SignalR
 
             try
             {
-                while (await connection.Transport.In.WaitToReadAsync(cts.Token))
+                while (await connection.Input.WaitToReadAsync(cts.Token))
                 {
-                    while (connection.Transport.In.TryRead(out var buffer))
+                    while (connection.Input.TryRead(out var buffer))
                     {
                         if (protocol.TryParseMessages(buffer, this, out var hubMessages))
                         {
@@ -212,7 +242,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task ProcessInvocation(ConnectionContext connection,
+        private async Task ProcessInvocation(HubConnectionContext connection,
                                              IHubProtocol protocol,
                                              InvocationMessage invocationMessage,
                                              CancellationTokenSource dispatcherCancellation,
@@ -234,7 +264,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task Execute(ConnectionContext connection, IHubProtocol protocol, InvocationMessage invocationMessage)
+        private async Task Execute(HubConnectionContext connection, IHubProtocol protocol, InvocationMessage invocationMessage)
         {
             if (!_methods.TryGetValue(invocationMessage.Target, out var descriptor))
             {
@@ -248,13 +278,13 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task SendMessageAsync(ConnectionContext connection, IHubProtocol protocol, HubMessage hubMessage)
+        private async Task SendMessageAsync(HubConnectionContext connection, IHubProtocol protocol, HubMessage hubMessage)
         {
             var payload = protocol.WriteToArray(hubMessage);
 
-            while (await connection.Transport.Out.WaitToWriteAsync())
+            while (await connection.Output.WaitToWriteAsync())
             {
-                if (connection.Transport.Out.TryWrite(payload))
+                if (connection.Output.TryWrite(payload))
                 {
                     return;
                 }
@@ -265,7 +295,7 @@ namespace Microsoft.AspNetCore.SignalR
             throw new OperationCanceledException("Outbound channel was closed while trying to write hub message");
         }
 
-        private async Task Invoke(HubMethodDescriptor descriptor, ConnectionContext connection, IHubProtocol protocol, InvocationMessage invocationMessage)
+        private async Task Invoke(HubMethodDescriptor descriptor, HubConnectionContext connection, IHubProtocol protocol, InvocationMessage invocationMessage)
         {
             var methodExecutor = descriptor.MethodExecutor;
 
@@ -341,7 +371,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private void InitializeHub(THub hub, ConnectionContext connection)
+        private void InitializeHub(THub hub, HubConnectionContext connection)
         {
             hub.Clients = _hubContext.Clients;
             hub.Context = new HubCallerContext(connection);
@@ -363,7 +393,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task StreamResultsAsync(string invocationId, ConnectionContext connection, IHubProtocol protocol, IAsyncEnumerator<object> enumerator)
+        private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IHubProtocol protocol, IAsyncEnumerator<object> enumerator)
         {
             // TODO: Cancellation? See https://github.com/aspnet/SignalR/issues/481
             try

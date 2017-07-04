@@ -3,19 +3,16 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.Sockets;
 
 namespace Microsoft.AspNetCore.SignalR
 {
     public class DefaultHubLifetimeManager<THub> : HubLifetimeManager<THub>
     {
         private long _nextInvocationId = 0;
-        private readonly ConnectionList _connections = new ConnectionList();
+        private readonly HubConnectionList _connections = new HubConnectionList();
 
         public override Task AddGroupAsync(string connectionId, string groupName)
         {
@@ -62,7 +59,7 @@ namespace Microsoft.AspNetCore.SignalR
             return InvokeAllWhere(methodName, args, c => true);
         }
 
-        private Task InvokeAllWhere(string methodName, object[] args, Func<ConnectionContext, bool> include)
+        private Task InvokeAllWhere(string methodName, object[] args, Func<HubConnectionContext, bool> include)
         {
             var tasks = new List<Task>(_connections.Count);
             var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
@@ -107,26 +104,25 @@ namespace Microsoft.AspNetCore.SignalR
             });
         }
 
-        public override Task OnConnectedAsync(ConnectionContext connection)
+        public override Task OnConnectedAsync(HubConnectionContext connection)
         {
             _connections.Add(connection);
             return Task.CompletedTask;
         }
 
-        public override Task OnDisconnectedAsync(ConnectionContext connection)
+        public override Task OnDisconnectedAsync(HubConnectionContext connection)
         {
             _connections.Remove(connection);
             return Task.CompletedTask;
         }
 
-        private async Task WriteAsync(ConnectionContext connection, HubMessage hubMessage)
+        private async Task WriteAsync(HubConnectionContext connection, HubMessage hubMessage)
         {
-            var protocol = connection.Metadata.Get<IHubProtocol>(HubConnectionMetadataNames.HubProtocol);
-            var payload = protocol.WriteToArray(hubMessage);
+            var payload = connection.Protocol.WriteToArray(hubMessage);
 
-            while (await connection.Transport.Out.WaitToWriteAsync())
+            while (await connection.Output.WaitToWriteAsync())
             {
-                if (connection.Transport.Out.TryWrite(payload))
+                if (connection.Output.TryWrite(payload))
                 {
                     break;
                 }

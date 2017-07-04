@@ -36,7 +36,7 @@ namespace ChatSample
         where THubLifetimeManager : HubLifetimeManager<THub>
         where THub : HubWithPresence
     {
-        private readonly ConnectionList _connections = new ConnectionList();
+        private readonly HubConnectionList _connections = new HubConnectionList();
         private readonly IUserTracker<THub> _userTracker;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly ILogger _logger;
@@ -57,14 +57,14 @@ namespace ChatSample
             _wrappedHubLifetimeManager = serviceProvider.GetRequiredService<THubLifetimeManager>();
         }
 
-        public override async Task OnConnectedAsync(ConnectionContext connection)
+        public override async Task OnConnectedAsync(HubConnectionContext connection)
         {
             await _wrappedHubLifetimeManager.OnConnectedAsync(connection);
             _connections.Add(connection);
             await _userTracker.AddUser(connection, new UserDetails(connection.ConnectionId, connection.User.Identity.Name));
         }
 
-        public override async Task OnDisconnectedAsync(ConnectionContext connection)
+        public override async Task OnDisconnectedAsync(HubConnectionContext connection)
         {
             await _wrappedHubLifetimeManager.OnDisconnectedAsync(connection);
             _connections.Remove(connection);
