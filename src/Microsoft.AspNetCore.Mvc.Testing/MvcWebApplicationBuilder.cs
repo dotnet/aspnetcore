@@ -93,6 +93,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <returns>An instance of this <see cref="MvcWebApplicationBuilder{TStartup}"/></returns>
         public MvcWebApplicationBuilder<TStartup> UseRequestCulture(string culture, string uiCulture)
         {
+            if (culture == null)
+            {
+                throw new ArgumentNullException(nameof(culture));
+            }
+
+            if (uiCulture == null)
+            {
+                throw new ArgumentNullException(nameof(uiCulture));
+            }
+
             ConfigureBeforeStartup(services =>
             {
                 services.TryAddSingleton(new TestCulture
@@ -116,6 +126,16 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <returns>An instance of this <see cref="MvcWebApplicationBuilder{TStartup}"/></returns>
         public MvcWebApplicationBuilder<TStartup> UseStartupCulture(string culture, string uiCulture)
         {
+            if (culture == null)
+            {
+                throw new ArgumentNullException(nameof(culture));
+            }
+
+            if (uiCulture == null)
+            {
+                throw new ArgumentNullException(nameof(uiCulture));
+            }
+
             _systemCulture = new TestCulture { Culture = culture, UICulture = uiCulture };
             return this;
         }
@@ -130,6 +150,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             string solutionRelativePath,
             string solutionName = "*.sln")
         {
+            if (solutionRelativePath == null)
+            {
+                throw new ArgumentNullException(nameof(solutionRelativePath));
+            }
+
             var applicationBasePath = AppContext.BaseDirectory;
 
             var directoryInfo = new DirectoryInfo(applicationBasePath);
@@ -159,6 +184,11 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 .UseSetting(WebHostDefaults.ApplicationKey, typeof(TStartup).Assembly.GetName().Name)
                 .UseContentRoot(ContentRoot)
                 .ConfigureServices(InitializeServices);
+
+            if (_systemCulture == null)
+            {
+                return new TestServer(builder);
+            }
 
             var originalCulture = CultureInfo.CurrentCulture;
             var originalUICulture = CultureInfo.CurrentUICulture;
