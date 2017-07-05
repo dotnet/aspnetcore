@@ -233,35 +233,9 @@
     <Copy SourceFiles="@(_SignedSymbolsBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(_SignedSymbolsBinaries->'%(SymbolsBinaryFullName)')" />
   </Target>
 
-  <Target Name="UpdateLicenseURLs" DependsOnTargets="SignFiles">
-    <ItemGroup>
-      <NuSpecEULA
-          Include=
-                    "$(UnsignedPackagesPath)**\*.nuspec;
-                    $(UnsignedOobPackagesPath)**\*.nuspec;
-                    $(UnsignedSymbolPackagesPath)**\*.nuspec;"
-            />
-    </ItemGroup>
-
-    <MSBuild
-        Projects="$(MSBuildProjectFullPath)"
-        Properties="NuSpecFileToUpdate=%(NuSpecEULA.Identity);Sign=$(Sign);TestCodeSign=$(TestCodeSign);Configuration=$(Configuration)"
-        Targets="AddOrUpdateRequiredNuspecFields"/>
-  </Target>
-
-  <Target Name="AddOrUpdateRequiredNuspecFields">
-    <Message Text="Checking required NUSPEC fields in $(NuSpecFileToUpdate)..." />
-
-    <FixRequiredNuSpecInfo
-        NuSpec="$(NuSpecFileToUpdate)"
-        />
-
-  </Target>
-
   <PropertyGroup>
     <SignDependsOn>
       ReplaceUnsignedFiles;
-      UpdateLicenseURLs;
       RebuildPackages;
       RebuildVSIXes;
       RebuildPackageCaches;
