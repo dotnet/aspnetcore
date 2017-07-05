@@ -362,7 +362,6 @@ namespace Microsoft.AspNetCore.Mvc
                         new[]
                         {
                             typeof(RazorViewEngineOptionsSetup),
-                            typeof(DependencyContextRazorViewEngineOptionsSetup),
                             typeof(RazorPagesRazorViewEngineOptionsSetup),
                         }
                     },

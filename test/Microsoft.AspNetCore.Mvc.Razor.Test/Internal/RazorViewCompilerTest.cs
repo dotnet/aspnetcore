@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Razor.Language;
@@ -554,7 +555,7 @@ this should fail";
             var viewCompiler = new TestRazorViewCompiler(
                 fileProvider,
                 templateEngine,
-                new CSharpCompiler(referenceManager, options),
+                new CSharpCompiler(referenceManager, Mock.Of<IHostingEnvironment>()),
                 compilationCallback,
                 precompiledViews);
             return viewCompiler;

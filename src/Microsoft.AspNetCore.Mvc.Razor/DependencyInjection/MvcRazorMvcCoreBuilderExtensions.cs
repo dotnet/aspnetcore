@@ -134,14 +134,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcViewOptions>, MvcRazorMvcViewOptionsSetup>());
 
-            // DependencyContextRazorViewEngineOptionsSetup needs to run after RazorViewEngineOptionsSetup.
-            // The ordering of the following two lines is important to ensure this behavior.
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RazorViewEngineOptions>, RazorViewEngineOptionsSetup>());
-            services.TryAddEnumerable(
-                ServiceDescriptor.Transient<
-                    IConfigureOptions<RazorViewEngineOptions>,
-                    DependencyContextRazorViewEngineOptionsSetup>());
 
             services.TryAddSingleton<
                 IRazorViewEngineFileProviderAccessor,
