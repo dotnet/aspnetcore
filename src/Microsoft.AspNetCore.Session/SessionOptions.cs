@@ -85,18 +85,6 @@ namespace Microsoft.AspNetCore.Builder
 
         /// <summary>
         /// <para>
-        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.SameSite"/> on <see cref="Cookie"/>.
-        /// </para>
-        /// <para>
-        /// Determines if the browser should allow the cookie to be attached to same-site or cross-site requests. The
-        /// default is Lax, which means the cookie is allowed to be attached to same-site and safe cross-site requests.
-        /// </para>
-        /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.SameSite) + ".")]
-        public SameSiteMode SameSiteMode { get => Cookie.SameSite; set => Cookie.SameSite = value; }
-
-        /// <summary>
-        /// <para>
         /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.SecurePolicy"/> on <see cref="Cookie"/>.
         /// </para>
         /// <para>
