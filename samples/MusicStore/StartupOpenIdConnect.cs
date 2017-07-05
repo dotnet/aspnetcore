@@ -106,7 +106,7 @@ namespace MusicStore
             });
 
             // Create an Azure Active directory application and copy paste the following
-            services.AddOpenIdConnectAuthentication(options =>
+            services.AddAuthentication().AddOpenIdConnect(options =>
             {
                 options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
                 options.ClientId = "[ClientId]";

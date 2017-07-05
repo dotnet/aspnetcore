@@ -62,7 +62,7 @@ namespace MusicStore
                     .AddDefaultTokenProviders();
 
             // Create an Azure Active directory application and copy paste the following
-            services.AddOpenIdConnectAuthentication(options =>
+            services.AddAuthentication().AddOpenIdConnect(options =>
             {
                 options.Authority = "https://login.windows.net/[tenantName].onmicrosoft.com";
                 options.ClientId = "c99497aa-3ee2-4707-b8a8-c33f51323fef";
