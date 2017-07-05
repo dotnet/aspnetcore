@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 var clientId = application.FindFirstValue(IdentityServiceClaimTypes.ClientId);
                 var logoutUris = application.FindAll(IdentityServiceClaimTypes.LogoutRedirectUri);
 
-                var duration = _sessionCookieOptions.Cookie.Expiration ?? default(TimeSpan);
+                var duration = _sessionCookieOptions.ExpireTimeSpan;
                 var expiration = _timeStampManager.GetTimeStampInEpochTime(duration);
 
                 var identity = new ClaimsIdentity(

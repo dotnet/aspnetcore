@@ -80,14 +80,14 @@ namespace Microsoft.Extensions.DependencyInjection
 			.AddCookie(IdentityConstants.ExternalScheme, o =>
             {
                 o.Cookie.Name = IdentityConstants.ExternalScheme;
-                o.Cookie.Expiration = TimeSpan.FromMinutes(5);
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
             })
 			.AddCookie(IdentityConstants.TwoFactorRememberMeScheme,
                 o => o.Cookie.Name = IdentityConstants.TwoFactorRememberMeScheme)
             .AddCookie(IdentityConstants.TwoFactorUserIdScheme, o =>
             {
                 o.Cookie.Name = IdentityConstants.TwoFactorUserIdScheme;
-                o.Cookie.Expiration = TimeSpan.FromMinutes(5);
+                o.ExpireTimeSpan = TimeSpan.FromMinutes(5);
             });
 
             // Hosting doesn't add IHttpContextAccessor by default
