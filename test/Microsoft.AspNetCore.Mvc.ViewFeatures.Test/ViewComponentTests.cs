@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http;
@@ -276,12 +277,12 @@ namespace Microsoft.AspNetCore.Mvc
 
             public bool IsAvailable { get; } = true;
 
-            public Task LoadAsync()
+            public Task LoadAsync(CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task CommitAsync()
+            public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }

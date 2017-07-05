@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
@@ -305,12 +306,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             public bool IsAvailable { get; } = true;
 
-            public Task LoadAsync()
+            public Task LoadAsync(CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
 
-            public Task CommitAsync()
+            public Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))
             {
                 return Task.FromResult(0);
             }
