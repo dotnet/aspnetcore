@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
+using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -29,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var id = Guid.NewGuid().ToString();
             var tagHelperContext = GetTagHelperContext(id);
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext()
             };
@@ -49,13 +50,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var id = Guid.NewGuid().ToString();
             var tagHelperContext1 = GetTagHelperContext(id);
-            var cacheTagHelper1 = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper1 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext()
             };
 
             var tagHelperContext2 = GetTagHelperContext(id);
-            var cacheTagHelper2 = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper2 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext()
             };
@@ -73,13 +74,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperContext1 = GetTagHelperContext("some-id");
-            var cacheTagHelper1 = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper1 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext()
             };
 
             var tagHelperContext2 = GetTagHelperContext("some-other-id");
-            var cacheTagHelper2 = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper2 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext()
             };
@@ -97,13 +98,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperContext1 = GetTagHelperContext("some-id");
-            var cacheTagHelper1 = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper1 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext()
             };
 
             var tagHelperContext2 = GetTagHelperContext("some-id");
-            var cacheTagHelper2 = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper2 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext()
             };
@@ -124,13 +125,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperContext1 = GetTagHelperContext("some-id");
-            var cacheTagHelper1 = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper1 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext()
             };
 
             var tagHelperContext2 = GetTagHelperContext("some-other-id");
-            var cacheTagHelper2 = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper2 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext()
             };
@@ -177,7 +178,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 VaryBy = varyBy
@@ -206,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 VaryByCookie = varyByCookie
@@ -232,7 +233,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 VaryByHeader = varyByHeader
@@ -260,7 +261,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 VaryByQuery = varyByQuery
@@ -286,7 +287,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         {
             // Arrange
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 VaryByRoute = varyByRoute
@@ -308,7 +309,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var expected = "CacheTagHelper||testid||VaryByUser||";
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 VaryByUser = true
@@ -328,7 +329,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var expected = "CacheTagHelper||testid||VaryByUser||test_name";
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 VaryByUser = true
@@ -351,7 +352,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expected = "CacheTagHelper||testid||VaryBy||custom-value||" +
                 "VaryByHeader(content-type||text/html)||VaryByUser||someuser";
             var tagHelperContext = GetTagHelperContext();
-            var cacheTagHelper = new CacheTagHelper(Mock.Of<IMemoryCache>(), new HtmlTestEncoder())
+            var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(Mock.Of<IMemoryCache>()), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 VaryByUser = true,

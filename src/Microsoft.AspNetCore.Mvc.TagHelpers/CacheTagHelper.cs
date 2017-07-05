@@ -10,6 +10,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.TagHelpers.Cache;
+using Microsoft.AspNetCore.Mvc.TagHelpers.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Caching.Memory;
@@ -29,14 +30,22 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         private const string CachePriorityAttributeName = "priority";
 
+        // We need to come up with a value for the size of entries when storing a gating Task on the cache. Any value
+        // greater than 0 will suffice. We choose 56 bytes as an approximation of the size of the task that we store
+        // in the cache. This size got calculated as an upper bound for the size of an actual task on an x64 architecture
+        // and corresponds to 24 bytes for the object header block plus the 40 bytes added by the members of the task
+        // object.
+        private const int PlaceholderSize = 64;
+
         /// <summary>
         /// Creates a new <see cref="CacheTagHelper"/>.
         /// </summary>
-        /// <param name="memoryCache">The <see cref="IMemoryCache"/>.</param>
+        /// <param name="factory">The factory containing the private <see cref="IMemoryCache"/> instance
+        /// used by the <see cref="CacheTagHelper"/>.</param>
         /// <param name="htmlEncoder">The <see cref="HtmlEncoder"/> to use.</param>
-        public CacheTagHelper(IMemoryCache memoryCache, HtmlEncoder htmlEncoder) : base(htmlEncoder)
+        public CacheTagHelper(CacheTagHelperMemoryCacheFactory factory, HtmlEncoder htmlEncoder) : base(htmlEncoder)
         {
-            MemoryCache = memoryCache;
+            MemoryCache = factory.Cache;
         }
 
         /// <summary>
@@ -93,7 +102,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             var options = GetMemoryCacheEntryOptions();
             options.AddExpirationToken(new CancellationChangeToken(tokenSource.Token));
-
+            options.SetSize(PlaceholderSize);
             var tcs = new TaskCompletionSource<IHtmlContent>();
 
             // The returned value is ignored, we only do this so that
@@ -116,11 +125,11 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     // such that the tokens are inherited.
 
                     var result = ProcessContentAsync(output);
-
-                    entry.SetOptions(options);
-                    entry.Value = result;
-
                     content = await result;
+                    options.SetSize(GetSize(content));
+                    entry.SetOptions(options);
+
+                    entry.Value = result;
                 }
 
                 tcs.SetResult(content);
@@ -141,6 +150,22 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 // will register a callback on the Token.
                 tokenSource.Dispose();
             }
+        }
+
+        private long GetSize(IHtmlContent content)
+        {
+            if (content is CharBufferHtmlContent charBuffer)
+            {
+                // We need to multiply the size of the buffer
+                // by a factor of two due to the fact that
+                // characters in .NET are UTF-16 which means
+                // every character uses two bytes (surrogates
+                // are represented as two characters)
+                return charBuffer.Buffer.Length * sizeof(char);
+            }
+
+            Debug.Fail($"{nameof(content)} should be an {nameof(CharBufferHtmlContent)}.");
+            return -1;
         }
 
         // Internal for unit testing
@@ -226,17 +251,19 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 _buffer = buffer;
             }
 
+            public PagedCharBuffer Buffer => _buffer;
+
             public void WriteTo(TextWriter writer, HtmlEncoder encoder)
             {
-                var length = _buffer.Length;
+                var length = Buffer.Length;
                 if (length == 0)
                 {
                     return;
                 }
 
-                for (var i = 0; i < _buffer.Pages.Count; i++)
+                for (var i = 0; i < Buffer.Pages.Count; i++)
                 {
-                    var page = _buffer.Pages[i];
+                    var page = Buffer.Pages[i];
                     var pageLength = Math.Min(length, page.Length);
                     writer.Write(page, index: 0, count: pageLength);
                     length -= pageLength;
