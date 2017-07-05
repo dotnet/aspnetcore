@@ -21,7 +21,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             SameSite = SameSiteMode.Lax,
             HttpOnly = true,
             SecurePolicy = CookieSecurePolicy.SameAsRequest,
-            Expiration = TimeSpan.FromDays(14),
         };
 
         /// <summary>
@@ -29,6 +28,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// </summary>
         public CookieAuthenticationOptions()
         {
+            ExpireTimeSpan = TimeSpan.FromDays(14);
             ReturnUrlParameter = CookieAuthenticationDefaults.ReturnUrlParameter;
             SlidingExpiration = true;
             Events = new CookieAuthenticationEvents();
@@ -42,7 +42,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// <seealso cref="CookieBuilder.SameSite"/> defaults to <see cref="SameSiteMode.Lax"/>.
         /// <seealso cref="CookieBuilder.HttpOnly"/> defaults to <c>true</c>.
         /// <seealso cref="CookieBuilder.SecurePolicy"/> defaults to <see cref="CookieSecurePolicy.SameAsRequest"/>.
-        /// <seealso cref="CookieBuilder.Expiration"/> defaults to 14 days.
         /// </para>
         /// </summary>
         /// <remarks>
@@ -60,9 +59,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// The default is true, which means the cookie will only be passed to http requests and is not made available to script on the page.
         /// </para>
         /// <para>
-        /// <seealso cref="CookieBuilder.Expiration"/> controls how much time the cookie will remain valid from the point it is created. The expiration
-        /// information is in the protected cookie ticket. Because of that an expired cookie will be ignored
-        /// even if it is passed to the server after the browser should have purged it
+        /// <seealso cref="CookieBuilder.Expiration"/> is currently ignored. Use <see cref="ExpireTimeSpan"/> to control lifetime of cookie authentication.
         /// </para>
         /// </remarks>
         public CookieBuilder Cookie
@@ -140,6 +137,19 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// </summary>
         public ITicketStore SessionStore { get; set; }
 
+        /// <summary>
+        /// <para>
+        /// Controls how much time the authentication ticket stored in the cookie will remain valid from the point it is created
+        /// The expiration information is stored in the protected cookie ticket. Because of that an expired cookie will be ignored
+        /// even if it is passed to the server after the browser should have purged it.
+        /// </para>
+        /// <para>
+        /// This is separate from the value of <seealso cref="CookieOptions.Expires"/>, which specifies
+        /// how long the browser will keep the cookie.
+        /// </para>
+        /// </summary>
+        public TimeSpan ExpireTimeSpan { get; set; }
+
         #region Obsolete API
         /// <summary>
         /// <para>
@@ -201,23 +211,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// </summary>
         [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.SecurePolicy) + ".")]
         public CookieSecurePolicy CookieSecure { get => Cookie.SecurePolicy; set => Cookie.SecurePolicy = value; }
-
-        /// <summary>
-        /// <para>
-        /// This property is obsolete and will be removed in a future version. The recommended alternative is <seealso cref="CookieBuilder.Expiration"/> on <see cref="Cookie"/>.
-        /// </para>
-        /// <para>
-        /// Controls how much time the cookie will remain valid from the point it is created. The expiration
-        /// information is in the protected cookie ticket. Because of that an expired cookie will be ignored
-        /// even if it is passed to the server after the browser should have purged it
-        /// </para>
-        /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Expiration) + ".")]
-        public TimeSpan ExpireTimeSpan
-        {
-            get => Cookie.Expiration ?? default(TimeSpan);
-            set => Cookie.Expiration = value;
-        }
         #endregion
     }
 }

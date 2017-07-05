@@ -270,14 +270,14 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             if (!signInContext.Properties.ExpiresUtc.HasValue)
             {
-                signInContext.Properties.ExpiresUtc = issuedUtc.Add(Options.Cookie.Expiration ?? default(TimeSpan));
+                signInContext.Properties.ExpiresUtc = issuedUtc.Add(Options.ExpireTimeSpan);
             }
 
             await Events.SigningIn(signInContext);
 
             if (signInContext.Properties.IsPersistent)
             {
-                var expiresUtc = signInContext.Properties.ExpiresUtc ?? issuedUtc.Add(Options.Cookie.Expiration ?? default(TimeSpan));
+                var expiresUtc = signInContext.Properties.ExpiresUtc ?? issuedUtc.Add(Options.ExpireTimeSpan);
                 signInContext.CookieOptions.Expires = expiresUtc.ToUniversalTime();
             }
 
