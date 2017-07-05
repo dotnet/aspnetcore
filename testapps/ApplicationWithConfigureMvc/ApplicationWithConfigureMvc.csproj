@@ -4,6 +4,7 @@
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
     <RuntimeIdentifier Condition="!$(TargetFramework.StartsWith('netcoreapp'))">win7-x64</RuntimeIdentifier>
     <MvcRazorCompileOnPublish>true</MvcRazorCompileOnPublish>
+    <DefineConstants>$(DefineConstants);TEST123</DefineConstants>
   </PropertyGroup>
   <Import Project="..\..\build\common-testapps.props" />
   <ItemGroup>

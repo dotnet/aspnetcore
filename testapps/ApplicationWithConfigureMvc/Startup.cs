@@ -29,7 +29,6 @@ namespace ApplicationWithConfigureStartup
         {
             builder.AddRazorOptions(options =>
             {
-                options.ParseOptions = options.ParseOptions.WithPreprocessorSymbols(new[] { "TEST123" });
                 var callback = options.CompilationCallback;
                 options.CompilationCallback = context =>
                 {
