@@ -1,11 +1,16 @@
 import * as url from 'url';
 import * as domain from 'domain';
 import * as domainContext from 'domain-context';
+import * as isAbsoluteUrl from 'is-absolute-url';
 import { baseUrl } from './main';
 const isomorphicFetch = require('isomorphic-fetch');
 const isNode = typeof process === 'object' && process.versions && !!process.versions.node;
+const nodeHttps = isNode && require('https');
 
 function issueRequest(baseUrl: string, req: string | Request, init?: RequestInit): Promise<any> {
+    const reqUrl = (req instanceof Request) ? req.url : req;
+    const isRelativeUrl = reqUrl && !isAbsoluteUrl(reqUrl);
+
     // Resolve relative URLs
     if (baseUrl) {
         if (req instanceof Request) {
@@ -25,7 +30,40 @@ function issueRequest(baseUrl: string, req: string | Request, init?: RequestInit
         `);
     }
 
+    init = applyHttpsAgentPolicy(init, isRelativeUrl);
     return isomorphicFetch(req, init);
+}
+
+function applyHttpsAgentPolicy(init: RequestInit, isRelativeUrl: boolean): RequestInit {
+    // HTTPS is awkward in Node because it uses a built-in list of CAs, rather than recognizing
+    // the OS's system-level CA list. There are dozens of issues filed against Node about this,
+    // but still (as of v8.0.0) no resolution besides manually duplicating your CA config.
+    //
+    // The biggest problem for typical isomorphic-SPA development this causes is that if you're
+    // using a self-signed localhost cert in development, Node won't be able to make API calls
+    // to it (e.g., https://github.com/aspnet/JavaScriptServices/issues/1089). Developers could
+    // fix this by either manually configuring the cert in Node (which is extremely inconvenient,
+    // especially if multiple devs on a team have different self-signed localhost certs), or by
+    // disabling cert verification on their API requests.
+    //
+    // Fortunately, 'domain-task/fetch' knows when you're making a relative-URL request to your
+    // own web server (as opposed to an arbitrary request to anywhere else). In this specific case,
+    // there's no real point in cert verification, since the request never even leaves the machine
+    // so a MitM attack isn't meaningful. So by default, when your code is running in Node and
+    // is making a relative-URL request, *and* if you haven't explicitly configured any option
+    // for 'agent' (which would let you set up other HTTPS-handling policies), then we automatically
+    // disable cert verification for that request.
+    if (isNode && isRelativeUrl) {
+        const hasAgentConfig = init && ('agent' in init);
+        if (!hasAgentConfig) {
+            const agentForRequest = new (nodeHttps.Agent)({ rejectUnauthorized: false });
+
+            init = init || {};
+            (init as any).agent = agentForRequest;
+        }
+    }
+
+    return init;
 }
 
 export function fetch(url: string | Request, init?: RequestInit): Promise<any> {
