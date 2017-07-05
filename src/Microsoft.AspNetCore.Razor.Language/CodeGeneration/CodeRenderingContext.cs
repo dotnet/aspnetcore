@@ -10,7 +10,10 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
     public abstract class CodeRenderingContext
     {
         internal static readonly object NewLineString = "NewLineString";
+
         internal static readonly object SuppressUniqueIds = "SuppressUniqueIds";
+
+        public abstract IEnumerable<IntermediateNode> Ancestors { get; }
 
         public abstract CodeWriter CodeWriter { get; }
 
@@ -19,8 +22,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         public abstract string DocumentKind { get; }
 
         public abstract ItemCollection Items { get; }
-        
-        public abstract IEnumerable<IntermediateNode> Ancestors { get; }
 
         public abstract IntermediateNodeWriter NodeWriter { get; }
 
@@ -30,36 +31,14 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public abstract RazorSourceDocument SourceDocument { get; }
 
-        public abstract Scope CreateScope();
-
-        public abstract Scope CreateScope(IntermediateNodeWriter writer);
-
-        public abstract void EndScope();
+        public abstract void AddLineMappingFor(IntermediateNode node);
 
         public abstract void RenderNode(IntermediateNode node);
 
+        public abstract void RenderNode(IntermediateNode node, IntermediateNodeWriter writer);
+
         public abstract void RenderChildren(IntermediateNode node);
 
-        public abstract void AddLineMappingFor(IntermediateNode node);
-
-        public struct Scope : IDisposable
-        {
-            private readonly CodeRenderingContext _context;
-
-            public Scope(CodeRenderingContext context)
-            {
-                if (context == null)
-                {
-                    throw new ArgumentNullException(nameof(context));
-                }
-
-                _context = context;
-            }
-
-            public void Dispose()
-            {
-                _context.EndScope();
-            }
-        }
+        public abstract void RenderChildren(IntermediateNode node, IntermediateNodeWriter writer);
     }
 }

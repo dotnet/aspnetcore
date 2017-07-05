@@ -130,28 +130,6 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             LineMappings.Add(lineMapping);
         }
 
-        public override Scope CreateScope()
-        {
-            CreateScope(Current.Writer);
-            return new Scope(this);
-        }
-
-        public override Scope CreateScope(IntermediateNodeWriter writer)
-        {
-            if (writer == null)
-            {
-                throw new ArgumentNullException(nameof(writer));
-            }
-
-            _scopes.Add(new ScopeInternal(writer));
-            return new Scope(this);
-        }
-
-        public override void EndScope()
-        {
-            _scopes.RemoveAt(_scopes.Count - 1);
-        }
-
         public override void RenderChildren(IntermediateNode node)
         {
             if (node == null)
@@ -169,6 +147,30 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             _ancestors.Pop();
         }
 
+        public override void RenderChildren(IntermediateNode node, IntermediateNodeWriter writer)
+        {
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            _scopes.Add(new ScopeInternal(writer));
+            _ancestors.Push(node);
+
+            for (var i = 0; i < node.Children.Count; i++)
+            {
+                Visitor.Visit(node.Children[i]);
+            }
+
+            _ancestors.Pop();
+            _scopes.RemoveAt(_scopes.Count - 1);
+        }
+
         public override void RenderNode(IntermediateNode node)
         {
             if (node == null)
@@ -177,6 +179,25 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             }
 
             Visitor.Visit(node);
+        }
+
+        public override void RenderNode(IntermediateNode node, IntermediateNodeWriter writer)
+        {
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            if (writer == null)
+            {
+                throw new ArgumentNullException(nameof(writer));
+            }
+
+            _scopes.Add(new ScopeInternal(writer));
+
+            Visitor.Visit(node);
+
+            _scopes.RemoveAt(_scopes.Count - 1);
         }
 
         private struct ScopeInternal

@@ -113,13 +113,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     .WriteStringLiteral(uniqueId)
                     .WriteParameterSeparator();
 
-                // We remove and redirect writers so TagHelper authors can retrieve content.
-                using (context.CreateScope(new RuntimeNodeWriter()))
+                using (context.CodeWriter.BuildAsyncLambda())
                 {
-                    using (context.CodeWriter.BuildAsyncLambda())
-                    {
-                        context.RenderChildren(node);
-                    }
+                    // We remove and redirect writers so TagHelper authors can retrieve content.
+                    context.RenderChildren(node, new RuntimeNodeWriter());
                 }
 
                 context.CodeWriter.WriteEndMethodInvocation();
@@ -239,10 +236,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         .Write(attributeValueStyleParameter)
                         .WriteEndMethodInvocation();
 
-                    using (context.CreateScope(new TagHelperHtmlAttributeRuntimeNodeWriter()))
-                    {
-                        context.RenderChildren(node);
-                    }
+                    context.RenderChildren(node, new TagHelperHtmlAttributeRuntimeNodeWriter());
 
                     context.CodeWriter
                         .WriteMethodInvocation(
@@ -261,10 +255,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     // We're building a writing scope around the provided chunks which captures everything written from the
                     // page. Therefore, we do not want to write to any other buffer since we're using the pages buffer to
                     // ensure we capture all content that's written, directly or indirectly.
-                    using (context.CreateScope(new RuntimeNodeWriter()))
-                    {
-                        context.RenderChildren(node);
-                    }
+                    context.RenderChildren(node, new RuntimeNodeWriter());
 
                     context.CodeWriter
                         .WriteStartAssignment(StringValueBufferVariableName)
@@ -367,10 +358,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 {
                     context.CodeWriter.WriteMethodInvocation(BeginWriteTagHelperAttributeMethodName);
 
-                    using (context.CreateScope(new LiteralRuntimeNodeWriter()))
-                    {
-                        context.RenderChildren(node);
-                    }
+                    context.RenderChildren(node, new LiteralRuntimeNodeWriter());
 
                     context.CodeWriter
                         .WriteStartAssignment(StringValueBufferVariableName)
