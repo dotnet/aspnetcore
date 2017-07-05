@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class CSharpExpressionAttributeValueIntermediateNode : IntermediateNode
     {
-        public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
+        public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
         public string Prefix { get; set; }
 

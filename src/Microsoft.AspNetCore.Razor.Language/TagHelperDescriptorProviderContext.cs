@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 Results = results;
 
-                Items = new DefaultItemCollection();
+                Items = new ItemCollection();
             }
 
             public override ItemCollection Items { get; }

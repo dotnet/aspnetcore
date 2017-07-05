@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class MethodDeclarationIntermediateNode : MemberDeclarationIntermediateNode
     {
-        public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
+        public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
         public IList<string> Modifiers { get; } = new List<string>();
 

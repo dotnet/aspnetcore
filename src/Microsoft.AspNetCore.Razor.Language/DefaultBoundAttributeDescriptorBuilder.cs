@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private readonly string _kind;
         private readonly Dictionary<string, string> _metadata;
 
-        private DefaultRazorDiagnosticCollection _diagnostics;
+        private RazorDiagnosticCollection _diagnostics;
 
         public DefaultBoundAttributeDescriptorBuilder(DefaultTagHelperDescriptorBuilder parent, string kind)
         {
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 if (_diagnostics == null)
                 {
-                    _diagnostics = new DefaultRazorDiagnosticCollection();
+                    _diagnostics = new RazorDiagnosticCollection();
                 }
 
                 return _diagnostics;

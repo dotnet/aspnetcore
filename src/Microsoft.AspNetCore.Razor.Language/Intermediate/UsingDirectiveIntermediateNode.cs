@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class UsingDirectiveIntermediateNode : IntermediateNode
     {
-        public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
+        public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
 
         public string Content { get; set; }
 

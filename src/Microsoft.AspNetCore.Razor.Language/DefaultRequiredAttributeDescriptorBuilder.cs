@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRequiredAttributeDescriptorBuilder : RequiredAttributeDescriptorBuilder
     {
-        private DefaultRazorDiagnosticCollection _diagnostics;
+        private RazorDiagnosticCollection _diagnostics;
 
         public override string Name { get; set; }
 
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 if (_diagnostics == null)
                 {
-                    _diagnostics = new DefaultRazorDiagnosticCollection();
+                    _diagnostics = new RazorDiagnosticCollection();
                 }
 
                 return _diagnostics;

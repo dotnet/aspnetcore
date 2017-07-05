@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     internal class DefaultAllowedChildTagDescriptorBuilder : AllowedChildTagDescriptorBuilder
     {
         private readonly DefaultTagHelperDescriptorBuilder _parent;
-        private DefaultRazorDiagnosticCollection _diagnostics;
+        private RazorDiagnosticCollection _diagnostics;
 
         public DefaultAllowedChildTagDescriptorBuilder(DefaultTagHelperDescriptorBuilder parent)
         {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 if (_diagnostics == null)
                 {
-                    _diagnostics = new DefaultRazorDiagnosticCollection();
+                    _diagnostics = new RazorDiagnosticCollection();
                 }
 
                 return _diagnostics;

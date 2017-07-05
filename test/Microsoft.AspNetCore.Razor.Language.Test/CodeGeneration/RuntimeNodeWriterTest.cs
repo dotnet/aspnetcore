@@ -583,7 +583,7 @@ WriteAttributeValue("" "", 27, false, 28, 6, false);
 
         private class MyExtensionIntermediateNode : ExtensionIntermediateNode
         {
-            public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
+            public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
 
             public override void Accept(IntermediateNodeVisitor visitor)
             {

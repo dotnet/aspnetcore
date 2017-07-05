@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class TagHelperIntermediateNode : IntermediateNode
     {
-        public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
+        public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
         public TagMode TagMode { get; set; }
 

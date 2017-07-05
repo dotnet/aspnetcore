@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
         }
 
-        public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
+        public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
 
         public string VariableName { get; set; }
 

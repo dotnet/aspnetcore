@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         private class BasicIntermediateNode : IntermediateNode
         {
-            public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
+            public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
             public override void Accept(IntermediateNodeVisitor visitor)
             {

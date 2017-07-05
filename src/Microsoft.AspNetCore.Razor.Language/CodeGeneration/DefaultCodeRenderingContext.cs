@@ -52,8 +52,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             _documentNode = documentNode;
             Options = options;
 
-            Diagnostics = new DefaultRazorDiagnosticCollection();
-            Items = new DefaultItemCollection();
+            Diagnostics = new RazorDiagnosticCollection();
+            Items = new ItemCollection();
             LineMappings = new List<LineMapping>();
 
             TagHelperRenderingContext = new TagHelperRenderingContext();

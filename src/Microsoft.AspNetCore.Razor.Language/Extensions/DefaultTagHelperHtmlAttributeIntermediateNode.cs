@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public AttributeStructure AttributeStructure { get; set; }
 
-        public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
+        public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

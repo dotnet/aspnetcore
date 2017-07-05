@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Source = source;
             Imports = imports?.ToArray() ?? RazorSourceDocument.EmptyArray;
 
-            Items = new DefaultItemCollection();
+            Items = new ItemCollection();
         }
 
         public override IReadOnlyList<RazorSourceDocument> Imports { get; }

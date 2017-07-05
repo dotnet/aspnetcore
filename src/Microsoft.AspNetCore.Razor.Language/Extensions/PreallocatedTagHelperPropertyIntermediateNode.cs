@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             TagHelper = propertyNode.TagHelper;
         }
 
-        public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
+        public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
 
         public string AttributeName { get; set; }
 

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class PropertyDeclarationIntermediateNode : MemberDeclarationIntermediateNode
     {
-        public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
+        public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
 
         public IList<string> Modifiers { get; } = new List<string>();
 

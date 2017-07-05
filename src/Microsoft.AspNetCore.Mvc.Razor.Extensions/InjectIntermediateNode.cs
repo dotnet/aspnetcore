@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         public string MemberName { get; set; }
 
-        public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
+        public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public sealed class DirectiveIntermediateNode : IntermediateNode
     {
-        public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
+        public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
         public string Name { get; set; }
 

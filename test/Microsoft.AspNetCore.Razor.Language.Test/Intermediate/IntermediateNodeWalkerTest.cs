@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             public string Name { get; }
 
-            public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
+            public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
             public override void Accept(IntermediateNodeVisitor visitor)
             {

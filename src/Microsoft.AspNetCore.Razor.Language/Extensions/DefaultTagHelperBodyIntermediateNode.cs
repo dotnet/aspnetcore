@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
         }
 
-        public override IntermediateNodeCollection Children { get; } = new DefaultIntermediateNodeCollection();
+        public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
         public TagMode TagMode { get; set; }
 

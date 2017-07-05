@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         private class TestExtensionIntermediateNode : ExtensionIntermediateNode
         {
-            public override IntermediateNodeCollection Children => ReadOnlyIntermediateNodeCollection.Instance;
+            public override IntermediateNodeCollection Children => IntermediateNodeCollection.ReadOnly;
 
             public override void Accept(IntermediateNodeVisitor visitor)
             {

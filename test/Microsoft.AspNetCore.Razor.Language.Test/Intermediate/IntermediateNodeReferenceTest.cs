@@ -305,7 +305,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public void InsertAfter_SingleNode_ThrowsForReadOnlyCollection()
         {
             // Arrange
-            var parent = new BasicIntermediateNode("Parent", ReadOnlyIntermediateNodeCollection.Instance);
+            var parent = new BasicIntermediateNode("Parent", IntermediateNodeCollection.ReadOnly);
 
             var node1 = new BasicIntermediateNode("Node1");
 
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public void InsertAfter_MulipleNodes_ThrowsForReadOnlyCollection()
         {
             // Arrange
-            var parent = new BasicIntermediateNode("Parent", ReadOnlyIntermediateNodeCollection.Instance);
+            var parent = new BasicIntermediateNode("Parent", IntermediateNodeCollection.ReadOnly);
 
             var node1 = new BasicIntermediateNode("Node1");
 
@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public void InsertBefore_SingleNode_ThrowsForReadOnlyCollection()
         {
             // Arrange
-            var parent = new BasicIntermediateNode("Parent", ReadOnlyIntermediateNodeCollection.Instance);
+            var parent = new BasicIntermediateNode("Parent", IntermediateNodeCollection.ReadOnly);
 
             var node1 = new BasicIntermediateNode("Node1");
 
@@ -350,7 +350,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public void InsertBefore_MulipleNodes_ThrowsForReadOnlyCollection()
         {
             // Arrange
-            var parent = new BasicIntermediateNode("Parent", ReadOnlyIntermediateNodeCollection.Instance);
+            var parent = new BasicIntermediateNode("Parent", IntermediateNodeCollection.ReadOnly);
 
             var node1 = new BasicIntermediateNode("Node1");
 
@@ -365,7 +365,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public void Remove_ThrowsForReadOnlyCollection()
         {
             // Arrange
-            var parent = new BasicIntermediateNode("Parent", ReadOnlyIntermediateNodeCollection.Instance);
+            var parent = new BasicIntermediateNode("Parent", IntermediateNodeCollection.ReadOnly);
 
             var node1 = new BasicIntermediateNode("Node1");
 
@@ -380,7 +380,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         public void Replace_ThrowsForReadOnlyCollection()
         {
             // Arrange
-            var parent = new BasicIntermediateNode("Parent", ReadOnlyIntermediateNodeCollection.Instance);
+            var parent = new BasicIntermediateNode("Parent", IntermediateNodeCollection.ReadOnly);
 
             var node1 = new BasicIntermediateNode("Node1");
 
@@ -484,7 +484,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
         private class BasicIntermediateNode : IntermediateNode
         {
             public BasicIntermediateNode(string name)
-                : this(name, new DefaultIntermediateNodeCollection())
+                : this(name, new IntermediateNodeCollection())
             {
                 Name = name;
             }

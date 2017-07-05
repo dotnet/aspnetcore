@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             {
                 if (_annotations == null)
                 {
-                    _annotations = new DefaultItemCollection();
+                    _annotations = new ItemCollection();
                 }
 
                 return _annotations;
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             {
                 if (_diagnostics == null)
                 {
-                    _diagnostics = new DefaultRazorDiagnosticCollection();
+                    _diagnostics = new RazorDiagnosticCollection();
                 }
 
                 return _diagnostics;
