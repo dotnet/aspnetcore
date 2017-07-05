@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         public void SaveTempData_UsesCookieName_FromOptions()
         {
             // Arrange
-            var exepectedCookieName = "TestCookieName";
+            var expectedCookieName = "TestCookieName";
             var values = new Dictionary<string, object>();
             values.Add("int", 10);
 
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var expectedDataInCookie = Base64UrlTextEncoder.Encode(expectedDataToProtect);
             var tempDataProvider = GetProvider(dataProtector: null, options: new CookieTempDataProviderOptions()
             {
-                CookieName = exepectedCookieName
+                Cookie = { Name = expectedCookieName }
             });
 
             var responseCookies = new MockResponseCookieCollection();
@@ -46,8 +46,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             tempDataProvider.SaveTempData(httpContext.Object, values);
 
             // Assert
-            Assert.Contains(responseCookies, (cookie) => cookie.Key == exepectedCookieName);
-            var cookieInfo = responseCookies[exepectedCookieName];
+            Assert.Contains(responseCookies, (cookie) => cookie.Key == expectedCookieName);
+            var cookieInfo = responseCookies[expectedCookieName];
             Assert.Equal(expectedDataInCookie, cookieInfo.Value);
             Assert.Equal("/", cookieInfo.Options.Path);
         }
@@ -230,7 +230,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var dataProtector = new PassThroughDataProtector();
             var tempDataProvider = GetProvider(
                 dataProtector,
-                new CookieTempDataProviderOptions() { Path = optionsPath, Domain = optionsDomain });
+                new CookieTempDataProviderOptions
+                {
+                    Cookie =
+                    {
+                        Path = optionsPath,
+                        Domain = optionsDomain
+                    }
+                });
             var responseCookies = new MockResponseCookieCollection();
             var httpContext = new Mock<HttpContext>();
             httpContext

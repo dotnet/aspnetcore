@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (context.Request.Cookies.ContainsKey(_options.CookieName))
+            if (context.Request.Cookies.ContainsKey(_options.Cookie.Name))
             {
-                var encodedValue = _chunkingCookieManager.GetRequestCookie(context, _options.CookieName);
+                var encodedValue = _chunkingCookieManager.GetRequestCookie(context, _options.Cookie.Name);
                 if (!string.IsNullOrEmpty(encodedValue))
                 {
                     var protectedData = Base64UrlTextEncoder.Decode(encodedValue);
@@ -60,13 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var cookieOptions = new CookieOptions()
-            {
-                Domain = string.IsNullOrEmpty(_options.Domain) ? null : _options.Domain,
-                HttpOnly = true,
-                SameSite = SameSiteMode.Strict,
-                Secure = context.Request.IsHttps,
-            };
+            var cookieOptions = _options.Cookie.Build(context);
             SetCookiePath(context, cookieOptions);
 
             var hasValues = (values != null && values.Count > 0);
@@ -75,19 +69,19 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 var bytes = _tempDataSerializer.Serialize(values);
                 bytes = _dataProtector.Protect(bytes);
                 var encodedValue = Base64UrlTextEncoder.Encode(bytes);
-                _chunkingCookieManager.AppendResponseCookie(context, _options.CookieName, encodedValue, cookieOptions);
+                _chunkingCookieManager.AppendResponseCookie(context, _options.Cookie.Name, encodedValue, cookieOptions);
             }
             else
             {
-                _chunkingCookieManager.DeleteCookie(context, _options.CookieName, cookieOptions);
+                _chunkingCookieManager.DeleteCookie(context, _options.Cookie.Name, cookieOptions);
             }
         }
 
         private void SetCookiePath(HttpContext httpContext, CookieOptions cookieOptions)
         {
-            if (!string.IsNullOrEmpty(_options.Path))
+            if (!string.IsNullOrEmpty(_options.Cookie.Path))
             {
-                cookieOptions.Path = _options.Path;
+                cookieOptions.Path = _options.Cookie.Path;
             }
             else
             {
