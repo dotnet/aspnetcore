@@ -25,7 +25,7 @@
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(RoslynDevVersion)" />
 
-    <!-- All of the VS 'interop' assemblies have permandently fixed versions. -->
+    <!-- All of the VS 'interop' assemblies have permanently fixed versions. -->
     <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6070" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(VsShellVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" />

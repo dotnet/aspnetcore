@@ -14,8 +14,4 @@
     <PackageReference Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
-    <PackageReference Include="System.ValueTuple" Version="$(CoreFxVersion)" />
-  </ItemGroup>
-
 </Project>
