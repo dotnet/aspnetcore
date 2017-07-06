@@ -38,11 +38,16 @@
     DependsOnTargets="_CreateResponseFileForMvcRazorPrecompile"
     Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp'">
 
-    <GetDotNetHost Condition="'$(MvcRazorRunCommand)'==''">
+    <!--
+    GetDotNetHost attempts to locate the muxer path if the executing process is a .NET Core application i.e. dotnet msbuild.
+    If we know we're being launched from desktop MSBuild, avoid running the task. We'll use the dotnet that appears in the path.
+    -->
+    <GetDotNetHost Condition="'$(MSBuildRuntimeType)'=='Core' AND '$(MvcRazorRunCommand)'==''">
       <Output TaskParameter="MuxerPath" PropertyName="MvcRazorRunCommand" />
     </GetDotNetHost>
 
     <PropertyGroup>
+      <MvcRazorRunCommand Condition="'$(MvcRazorRunCommand)'==''">dotnet</MvcRazorRunCommand>
       <_MvcViewCompilationBinaryPath Condition="'$(_MvcViewCompilationBinaryPath)'==''">$(MSBuildThisFileDirectory)$(MSBuildThisFileName).dll</_MvcViewCompilationBinaryPath>
 
       <ExecArgs>&quot;$(MvcRazorRunCommand)&quot; exec</ExecArgs>
