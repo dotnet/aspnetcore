@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             public void Configure(RazorParserOptionsBuilder options)
             {
-                options.ParseOnlyLeadingDirectives = true;
+                options.ParseLeadingDirectives = true;
             }
         }
     }
