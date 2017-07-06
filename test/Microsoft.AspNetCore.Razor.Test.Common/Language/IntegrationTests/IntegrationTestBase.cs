@@ -193,11 +193,11 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.Equal(baselineDiagnostics, actualDiagnostics);
         }
 
-        protected void AssertLineMappingsMatchBaseline(RazorCodeDocument document)
+        protected void AssertSourceMappingsMatchBaseline(RazorCodeDocument document)
         {
             if (FileName == null)
             {
-                var message = $"{nameof(AssertLineMappingsMatchBaseline)} should only be called from an integration test ({nameof(FileName)} is null).";
+                var message = $"{nameof(AssertSourceMappingsMatchBaseline)} should only be called from an integration test ({nameof(FileName)} is null).";
                 throw new InvalidOperationException(message);
             }
 
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             Assert.NotNull(csharpDocument);
 
             var baselineFileName = Path.ChangeExtension(FileName, ".mappings.txt");
-            var serializedMappings = LineMappingsSerializer.Serialize(csharpDocument, document.Source);
+            var serializedMappings = SourceMappingsSerializer.Serialize(csharpDocument, document.Source);
 
             if (GenerateBaselines)
             {

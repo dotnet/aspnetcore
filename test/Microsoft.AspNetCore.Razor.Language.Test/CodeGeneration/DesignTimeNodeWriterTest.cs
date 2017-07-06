@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var originalSpan = new SourceSpan("test.cshtml", 0, 0, 0, 6);
             var generatedSpan = new SourceSpan(null, 21 + Environment.NewLine.Length, 1, 0, 6);
-            var expectedLineMapping = new LineMapping(originalSpan, generatedSpan);
+            var expectedSourceMapping = new SourceMapping(originalSpan, generatedSpan);
             var node = new UsingDirectiveIntermediateNode()
             {
                 Content = "System",
@@ -55,8 +55,8 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             writer.WriteUsingDirective(context, node);
 
             // Assert
-            var mapping = Assert.Single(((DefaultCodeRenderingContext)context).LineMappings);
-            Assert.Equal(expectedLineMapping, mapping);
+            var mapping = Assert.Single(((DefaultCodeRenderingContext)context).SourceMappings);
+            Assert.Equal(expectedSourceMapping, mapping);
             var csharp = context.CodeWriter.Builder.ToString();
             Assert.Equal(
 @"#line 1 ""test.cshtml""

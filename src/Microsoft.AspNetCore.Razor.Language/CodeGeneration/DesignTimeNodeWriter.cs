@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 using (context.CodeWriter.BuildLinePragma(node.Source.Value))
                 {
-                    context.AddLineMappingFor(node);
+                    context.AddSourceMappingFor(node);
                     context.CodeWriter.WriteUsing(node.Content);
                 }
             }
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     {
                         if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                         {
-                            context.AddLineMappingFor(token);
+                            context.AddSourceMappingFor(token);
                             context.CodeWriter.Write(token.Content);
                         }
                         else
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             {
                 if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                 {
-                    context.AddLineMappingFor(token);
+                    context.AddSourceMappingFor(token);
                     context.CodeWriter.Write(token.Content);
                 }
                 else
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     {
                         if (node.Children[i] is IntermediateToken token && token.IsCSharp)
                         {
-                            context.AddLineMappingFor(token);
+                            context.AddSourceMappingFor(token);
                             context.CodeWriter.Write(token.Content);
                         }
                         else
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                     {
                         if (token.Source != null)
                         {
-                            context.AddLineMappingFor(token);
+                            context.AddSourceMappingFor(token);
                         }
 
                         context.CodeWriter.Write(token.Content);
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                         continue;
                     }
 
-                    context.AddLineMappingFor(token);
+                    context.AddSourceMappingFor(token);
                     context.CodeWriter.Write(token.Content);
 
                     if (linePragmaScope != null)

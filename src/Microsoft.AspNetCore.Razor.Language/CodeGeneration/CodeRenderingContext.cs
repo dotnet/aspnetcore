@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public abstract RazorSourceDocument SourceDocument { get; }
 
-        public abstract void AddLineMappingFor(IntermediateNode node);
+        public abstract void AddSourceMappingFor(IntermediateNode node);
 
         public abstract void RenderNode(IntermediateNode node);
 

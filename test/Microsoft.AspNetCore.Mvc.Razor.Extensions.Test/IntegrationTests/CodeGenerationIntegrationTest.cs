@@ -538,7 +538,7 @@ public class AllTagHelper : {typeof(TagHelper).FullName}
             // Assert
             AssertDocumentNodeMatchesBaseline(document.GetDocumentIntermediateNode());
             AssertCSharpDocumentMatchesBaseline(document.GetCSharpDocument());
-            AssertLineMappingsMatchBaseline(document);
+            AssertSourceMappingsMatchBaseline(document);
             AssertDocumentCompiles(document, compilationReferences, expectedErrors);
         }
 

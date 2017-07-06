@@ -10,14 +10,14 @@ namespace Microsoft.AspNetCore.Razor.Language
     {
         private readonly string _generatedCode;
         private readonly RazorDiagnostic[] _diagnostics;
-        private readonly LineMapping[] _lineMappings;
+        private readonly SourceMapping[] _sourceMappings;
         private readonly RazorCodeGenerationOptions _options;
 
         public DefaultRazorCSharpDocument(
             string generatedCode,
             RazorCodeGenerationOptions options,
             RazorDiagnostic[] diagnostics,
-            LineMapping[] lineMappings)
+            SourceMapping[] sourceMappings)
         {
             if (generatedCode == null)
             {
@@ -33,14 +33,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             _options = options;
 
             _diagnostics = diagnostics ?? Array.Empty<RazorDiagnostic>();
-            _lineMappings = lineMappings ?? Array.Empty<LineMapping>();
+            _sourceMappings = sourceMappings ?? Array.Empty<SourceMapping>();
         }
 
         public override IReadOnlyList<RazorDiagnostic> Diagnostics => _diagnostics;
 
         public override string GeneratedCode => _generatedCode;
 
-        public override IReadOnlyList<LineMapping> LineMappings => _lineMappings;
+        public override IReadOnlyList<SourceMapping> SourceMappings => _sourceMappings;
 
         public override RazorCodeGenerationOptions Options => _options;
     }

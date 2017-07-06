@@ -1,35 +1,29 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Text;
-using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
+namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 {
-    public static class LineMappingsSerializer
+    public static class SourceMappingsSerializer
     {
         public static string Serialize(RazorCSharpDocument csharpDocument, RazorSourceDocument sourceDocument)
         {
             var builder = new StringBuilder();
-            var sourceFilePath = sourceDocument.FilePath;
             var charBuffer = new char[sourceDocument.Length];
             sourceDocument.CopyTo(0, charBuffer, 0, sourceDocument.Length);
             var sourceContent = new string(charBuffer);
 
-            for (var i = 0; i < csharpDocument.LineMappings.Count; i++)
+            for (var i = 0; i < csharpDocument.SourceMappings.Count; i++)
             {
-                var lineMapping = csharpDocument.LineMappings[i];
-                if (!string.Equals(lineMapping.OriginalSpan.FilePath, sourceFilePath, StringComparison.Ordinal))
-                {
-                    continue;
-                }
+                var sourceMapping = csharpDocument.SourceMappings[i];
 
                 builder.Append("Source Location: ");
-                AppendMappingLocation(builder, lineMapping.OriginalSpan, sourceContent);
+                AppendMappingLocation(builder, sourceMapping.OriginalSpan, sourceContent);
 
                 builder.Append("Generated Location: ");
-                AppendMappingLocation(builder, lineMapping.GeneratedSpan, csharpDocument.GeneratedCode);
+                AppendMappingLocation(builder, sourceMapping.GeneratedSpan, csharpDocument.GeneratedCode);
 
                 builder.AppendLine();
             }

@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 cSharp,
                 _options,
                 context.Diagnostics.ToArray(),
-                context.LineMappings.ToArray());
+                context.SourceMappings.ToArray());
         }
 
         private class Visitor : IntermediateNodeVisitor

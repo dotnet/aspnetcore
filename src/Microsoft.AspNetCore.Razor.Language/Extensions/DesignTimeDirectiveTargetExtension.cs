@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
                         // {node.Content} __typeHelper = default({node.Content});
 
-                        context.AddLineMappingFor(node);
+                        context.AddSourceMappingFor(node);
                         context.CodeWriter
                             .Write(node.Content)
                             .Write(" ")
@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                             .Write(typeof(object).FullName)
                             .Write(" ");
 
-                        context.AddLineMappingFor(node);
+                        context.AddSourceMappingFor(node);
                         context.CodeWriter
                             .Write(node.Content)
                             .WriteLine(" = null;");
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
                         context.CodeWriter.Write("nameof(");
 
-                        context.AddLineMappingFor(node);
+                        context.AddSourceMappingFor(node);
                         context.CodeWriter
                             .Write(node.Content)
                             .WriteLine(");");
@@ -114,13 +114,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
                         if (node.Content.StartsWith("\"", StringComparison.Ordinal))
                         {
-                            context.AddLineMappingFor(node);
+                            context.AddSourceMappingFor(node);
                             context.CodeWriter.Write(node.Content);
                         }
                         else
                         {
                             context.CodeWriter.Write("\"");
-                            context.AddLineMappingFor(node);
+                            context.AddSourceMappingFor(node);
                             context.CodeWriter
                                 .Write(node.Content)
                                 .Write("\"");

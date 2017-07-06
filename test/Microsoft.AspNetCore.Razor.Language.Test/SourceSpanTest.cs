@@ -12,16 +12,15 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GeneratedCodeMappingsAreEqualIfDataIsEqual()
         {
             // Arrange
-            var left = new LineMapping(
+            var left = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 2, 3), 4),
                 new SourceSpan(new SourceLocation(5, 6, 7), 8));
 
-            var right = new LineMapping(
+            var right = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 2, 3), 4),
                 new SourceSpan(new SourceLocation(5, 6, 7), 8));
 
             // Assert
-            Assert.True(left == right);
             Assert.True(left.Equals(right));
             Assert.True(right.Equals(left));
             Assert.True(Equals(left, right));
@@ -31,11 +30,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GeneratedCodeMappingsAreNotEqualIfCodeLengthIsNotEqual()
         {
             // Arrange
-            var left = new LineMapping(
+            var left = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 2, 3), 4),
                 new SourceSpan(new SourceLocation(5, 6, 7), 8));
 
-            var right = new LineMapping(
+            var right = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 2, 3), 5),
                 new SourceSpan(new SourceLocation(5, 6, 7), 9));
 
@@ -47,11 +46,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GeneratedCodeMappingsAreNotEqualIfStartGeneratedColumnIsNotEqual()
         {
             // Arrange
-            var left = new LineMapping(
+            var left = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 2, 3), 4),
                 new SourceSpan(new SourceLocation(5, 6, 7), 8));
 
-            var right = new LineMapping(
+            var right = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 2, 3), 4),
                 new SourceSpan(new SourceLocation(5, 6, 8), 8));
 
@@ -63,11 +62,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GeneratedCodeMappingsAreNotEqualIfStartColumnIsNotEqual()
         {
             // Arrange
-            var left = new LineMapping(
+            var left = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 2, 3), 4),
                 new SourceSpan(new SourceLocation(5, 6, 8), 8));
 
-            var right = new LineMapping(
+            var right = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 2, 3), 4),
                 new SourceSpan(new SourceLocation(5, 6, 7), 8));
 
@@ -79,11 +78,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GeneratedCodeMappingsAreNotEqualIfStartLineIsNotEqual()
         {
             // Arrange
-            var left = new LineMapping(
+            var left = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 2, 3), 4),
                 new SourceSpan(new SourceLocation(5, 5, 7), 8));
 
-            var right = new LineMapping(
+            var right = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 1, 3), 4),
                 new SourceSpan(new SourceLocation(5, 6, 7), 8));
 
@@ -95,11 +94,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void GeneratedCodeMappingsAreNotEqualIfAbsoluteIndexIsNotEqual()
         {
             // Arrange
-            var left = new LineMapping(
+            var left = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 2, 3), 4),
                 new SourceSpan(new SourceLocation(4, 6, 7), 8));
 
-            var right = new LineMapping(
+            var right = new SourceMapping(
                 new SourceSpan(new SourceLocation(1, 2, 3), 4),
                 new SourceSpan(new SourceLocation(5, 6, 7), 9));
 
@@ -107,7 +106,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             AssertNotEqual(left, right);
         }
 
-        private void AssertNotEqual(LineMapping left, LineMapping right)
+        private void AssertNotEqual(SourceMapping left, SourceMapping right)
         {
             Assert.False(left == right);
             Assert.False(left.Equals(right));

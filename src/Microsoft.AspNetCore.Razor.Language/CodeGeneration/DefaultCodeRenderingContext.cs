@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             _ancestors = new Stack<IntermediateNode>();
             Diagnostics = new RazorDiagnosticCollection();
             Items = new ItemCollection();
-            LineMappings = new List<LineMapping>();
+            SourceMappings = new List<SourceMapping>();
 
             var diagnostics = _documentNode.GetAllDiagnostics();
             for (var i = 0; i < diagnostics.Count; i++)
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         public override ItemCollection Items { get; }
 
-        public List<LineMapping> LineMappings { get; }
+        public List<SourceMapping> SourceMappings { get; }
 
         public override IntermediateNodeWriter NodeWriter => Current.Writer;
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
         private ScopeInternal Current => _scopes[_scopes.Count - 1];
 
-        public override void AddLineMappingFor(IntermediateNode node)
+        public override void AddSourceMappingFor(IntermediateNode node)
         {
             if (node == null)
             {
@@ -125,9 +125,9 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             var source = node.Source.Value;
             var generatedLocation = new SourceSpan(CodeWriter.Location, source.Length);
-            var lineMapping = new LineMapping(source, generatedLocation);
+            var sourceMapping = new SourceMapping(source, generatedLocation);
 
-            LineMappings.Add(lineMapping);
+            SourceMappings.Add(sourceMapping);
         }
 
         public override void RenderChildren(IntermediateNode node)

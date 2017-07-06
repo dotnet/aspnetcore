@@ -547,7 +547,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             {
                 if (DesignTime && node.Source != null)
                 {
-                    context.AddLineMappingFor(node);
+                    context.AddSourceMappingFor(node);
                 }
 
                 context.CodeWriter.Write(token.Content);

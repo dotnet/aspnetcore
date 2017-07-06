@@ -266,7 +266,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
 
             // Act
-            var actual = GetAllLineMappings(document);
+            var actual = GetAllSourceMappings(document);
 
             // Assert
             Assert.Equal(new int[] { 16, 5, 24 }, actual);
@@ -281,7 +281,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
 
             // Act
-            var actual = GetAllLineMappings(document);
+            var actual = GetAllSourceMappings(document);
 
             // Assert
             Assert.Equal(new int[] { 7, 6 }, actual);
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
 
             // Act
-            var actual = GetAllLineMappings(document);
+            var actual = GetAllSourceMappings(document);
 
             // Assert
             Assert.Equal(new int[] { 6, 6 }, actual);
@@ -312,7 +312,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
 
             // Act
-            var actual = GetAllLineMappings(document);
+            var actual = GetAllSourceMappings(document);
 
             // Assert
             Assert.Equal(new int[] { 6, 5, 6 }, actual);
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
 
             // Act
-            var actual = GetAllLineMappings(document);
+            var actual = GetAllSourceMappings(document);
 
             // Assert
             Assert.Equal(new int[] { 6, 6 }, actual);
@@ -342,7 +342,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
 
             // Act
-            var actual = GetAllLineMappings(document);
+            var actual = GetAllSourceMappings(document);
 
             // Assert
             Assert.Equal(new int[] { 6, 6 }, actual);
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
 
             // Act
-            var actual = GetAllLineMappings(document);
+            var actual = GetAllSourceMappings(document);
 
             // Assert
             Assert.Equal(new int[] { 6, 6 }, actual);
@@ -372,7 +372,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = new StringSourceDocument(content, Encoding.UTF8, filePath: null);
 
             // Act
-            var actual = GetAllLineMappings(document);
+            var actual = GetAllSourceMappings(document);
 
             // Assert
             Assert.Equal(new int[] { 6, 6 }, actual);
@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal(5, actual.CharacterIndex);
         }
 
-        private static int[] GetAllLineMappings(RazorSourceDocument source)
+        private static int[] GetAllSourceMappings(RazorSourceDocument source)
         {
             var lines = new int[source.Lines.Count];
             for (var i = 0; i < lines.Length; i++)
