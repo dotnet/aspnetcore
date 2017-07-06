@@ -5,19 +5,9 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DesignTimeOptionsFeature : RazorEngineFeatureBase, IRazorParserOptionsFeature, IRazorCodeGenerationOptionsFeature
+    internal class DesignTimeOptionsFeature : RazorEngineFeatureBase, IRazorCodeGenerationOptionsFeature
     {
         public int Order { get; set; }
-
-        public void Configure(RazorParserOptionsBuilder options)
-        {
-            if (options == null)
-            {
-                throw new ArgumentNullException(nameof(options));
-            }
-
-            options.DesignTime = true;
-        }
 
         public void Configure(RazorCodeGenerationOptionsBuilder options)
         {

@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -105,6 +104,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         internal static void AddRuntimeDefaults(IRazorEngineBuilder builder)
         {
+            // Configure options
+            builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false));
+
             // Intermediate Node Passes
             builder.Features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
 
@@ -116,6 +118,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static void AddDesignTimeDefaults(IRazorEngineBuilder builder)
         {
             // Configure options
+            builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: true));
             builder.Features.Add(new DesignTimeOptionsFeature());
 
             // Intermediate Node Passes

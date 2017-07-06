@@ -6,13 +6,13 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DefaultRazorDirectiveFeature : RazorEngineFeatureBase, IRazorDirectiveFeature, IRazorParserOptionsFeature
+    internal class DefaultRazorDirectiveFeature : RazorEngineFeatureBase, IRazorDirectiveFeature, IConfigureRazorParserOptionsFeature
     {
         public ICollection<DirectiveDescriptor> Directives { get; } = new List<DirectiveDescriptor>();
 
         public int Order => 100;
 
-        void IRazorParserOptionsFeature.Configure(RazorParserOptionsBuilder options)
+        void IConfigureRazorParserOptionsFeature.Configure(RazorParserOptionsBuilder options)
         {
             if (options == null)
             {

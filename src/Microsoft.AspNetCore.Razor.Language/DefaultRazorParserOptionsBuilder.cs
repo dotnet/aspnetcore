@@ -8,7 +8,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorParserOptionsBuilder : RazorParserOptionsBuilder
     {
-        public override bool DesignTime { get; set; }
+        public DefaultRazorParserOptionsBuilder(bool designTime)
+        {
+            DesignTime = designTime;
+        }
+
+        public override bool DesignTime { get; }
 
         public override ICollection<DirectiveDescriptor> Directives { get; } = new List<DirectiveDescriptor>();
 

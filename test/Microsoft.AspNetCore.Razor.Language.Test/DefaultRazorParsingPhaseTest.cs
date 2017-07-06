@@ -12,7 +12,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var phase = new DefaultRazorParsingPhase();
-            var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
+            var engine = RazorEngine.CreateEmpty(builder =>
+            {
+                builder.Phases.Add(phase);
+                builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false));
+            });
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
@@ -28,10 +32,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var phase = new DefaultRazorParsingPhase();
-            var engine = RazorEngine.CreateEmpty((b) =>
+            var engine = RazorEngine.CreateEmpty((builder) =>
             {
-                b.Phases.Add(phase);
-                b.Features.Add(new MyParserOptionsFeature());
+                builder.Phases.Add(phase);
+                builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false));
+                builder.Features.Add(new MyParserOptionsFeature());
             });
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
@@ -50,10 +55,12 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var phase = new DefaultRazorParsingPhase();
-            var engine = RazorEngine.CreateEmpty((b) =>
+            var engine = RazorEngine.CreateEmpty((builder) =>
             {
-                b.Phases.Add(phase);
-                b.Features.Add(new MyParserOptionsFeature());
+                builder.Phases.Add(phase);
+                builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false));
+                builder.Features.Add(new MyParserOptionsFeature());
+
             });
 
             var imports = new[]
@@ -74,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 t => { Assert.Same(t.Source, imports[1]); Assert.Equal("test", Assert.Single(t.Options.Directives).Directive); });
         }
 
-        private class MyParserOptionsFeature : RazorEngineFeatureBase, IRazorParserOptionsFeature
+        private class MyParserOptionsFeature : RazorEngineFeatureBase, IConfigureRazorParserOptionsFeature
         {
             public int Order { get; }
 

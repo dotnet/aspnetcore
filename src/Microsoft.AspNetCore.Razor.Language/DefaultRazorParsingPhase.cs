@@ -1,29 +1,20 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
-
 namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorParsingPhase : RazorEnginePhaseBase, IRazorParsingPhase
     {
-        private IRazorParserOptionsFeature[] _parserOptionsCallbacks;
+        private IRazorParserOptionsFeature _optionsFeature;
 
         protected override void OnIntialized()
         {
-            _parserOptionsCallbacks = Engine.Features.OfType<IRazorParserOptionsFeature>().ToArray();
+            _optionsFeature = GetRequiredFeature<IRazorParserOptionsFeature>();
         }
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
         {
-            var builder = new DefaultRazorParserOptionsBuilder();
-            for (var i = 0; i < _parserOptionsCallbacks.Length; i++)
-            {
-                _parserOptionsCallbacks[i].Configure(builder);
-            }
-
-            var options = builder.Build();
-
+            var options = _optionsFeature.GetOptions();
             var syntaxTree = RazorSyntaxTree.Parse(codeDocument.Source, options);
             codeDocument.SetSyntaxTree(syntaxTree);
 

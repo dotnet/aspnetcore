@@ -7,7 +7,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RazorParserOptionsBuilder
     {
-        public abstract bool DesignTime { get; set; }
+        public abstract bool DesignTime { get; }
 
         public abstract ICollection<DirectiveDescriptor> Directives { get; }
 
