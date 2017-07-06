@@ -1,9 +1,0 @@
-[
-    {
-        "OldTypeId": "public class Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory : Microsoft.Extensions.Localization.IStringLocalizerFactory",
-        "OldMemberId": "public .ctor(Microsoft.AspNetCore.Hosting.IHostingEnvironment hostingEnvironment, Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Localization.LocalizationOptions> localizationOptions)",
-        "NewTypeId": "public class Microsoft.Extensions.Localization.ResourceManagerStringLocalizerFactory : Microsoft.Extensions.Localization.IStringLocalizerFactory",
-        "NewMemberId": "public .ctor(Microsoft.Extensions.Options.IOptions<Microsoft.Extensions.Localization.LocalizationOptions> localizationOptions)",
-        "Kind": "Modification"
-    }
-]
