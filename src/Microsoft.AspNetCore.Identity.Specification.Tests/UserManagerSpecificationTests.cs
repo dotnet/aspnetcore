@@ -7,7 +7,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -1890,6 +1889,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             {
                 IdentityResultAssert.IsSuccess(await manager.RedeemTwoFactorRecoveryCodeAsync(user, code));
                 IdentityResultAssert.IsFailure(await manager.RedeemTwoFactorRecoveryCodeAsync(user, code));
+                Assert.Equal(--numCodes, await manager.CountRecoveryCodesAsync(user));
             }
             // One last time to be sure
             foreach (var code in newCodes)
