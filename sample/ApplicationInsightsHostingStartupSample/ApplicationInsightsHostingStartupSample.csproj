@@ -19,10 +19,6 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.ApplicationInsights.HostingStartup\Microsoft.AspNetCore.ApplicationInsights.HostingStartup.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
-     <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
-  </ItemGroup>
-
   <ItemGroup>
     <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

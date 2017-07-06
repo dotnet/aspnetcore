@@ -17,8 +17,4 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.AzureAppServices.HostingStartup\Microsoft.AspNetCore.AzureAppServices.HostingStartup.csproj" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
-     <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
-  </ItemGroup>
-
 </Project>
