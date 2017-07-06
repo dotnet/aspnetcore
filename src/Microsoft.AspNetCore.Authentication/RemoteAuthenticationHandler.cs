@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Authentication
             set { base.Events = value; }
         }
 
-        protected RemoteAuthenticationHandler(IOptionsSnapshot<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        protected RemoteAuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock) { }
 
         protected override Task<object> CreateEventsAsync()

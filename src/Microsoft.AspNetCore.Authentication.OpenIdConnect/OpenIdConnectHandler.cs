@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
         protected HtmlEncoder HtmlEncoder { get; }
 
-        public OpenIdConnectHandler(IOptionsSnapshot<OpenIdConnectOptions> options, ILoggerFactory logger, HtmlEncoder htmlEncoder, UrlEncoder encoder, ISystemClock clock)
+        public OpenIdConnectHandler(IOptionsMonitor<OpenIdConnectOptions> options, ILoggerFactory logger, HtmlEncoder htmlEncoder, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         {
             HtmlEncoder = htmlEncoder;

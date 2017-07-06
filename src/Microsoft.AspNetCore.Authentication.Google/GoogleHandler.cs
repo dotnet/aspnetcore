@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
 {
     internal class GoogleHandler : OAuthHandler<GoogleOptions>
     {
-        public GoogleHandler(IOptionsSnapshot<GoogleOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        public GoogleHandler(IOptionsMonitor<GoogleOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 

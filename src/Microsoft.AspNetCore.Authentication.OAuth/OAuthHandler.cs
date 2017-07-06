@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             set { base.Events = value; }
         }
 
-        public OAuthHandler(IOptionsSnapshot<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        public OAuthHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 

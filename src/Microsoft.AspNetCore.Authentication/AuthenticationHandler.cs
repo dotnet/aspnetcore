@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Authentication
 
         protected ISystemClock Clock { get; }
 
-        protected IOptionsSnapshot<TOptions> OptionsSnapshot { get; }
+        protected IOptionsMonitor<TOptions> OptionsMonitor { get; }
 
         /// <summary>
         /// The handler calls methods on the events which give the application control at certain points where processing is occurring. 
@@ -58,12 +58,12 @@ namespace Microsoft.AspNetCore.Authentication
             }
         }
 
-        protected AuthenticationHandler(IOptionsSnapshot<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        protected AuthenticationHandler(IOptionsMonitor<TOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
         {
             Logger = logger.CreateLogger(this.GetType().FullName);
             UrlEncoder = encoder;
             Clock = clock;
-            OptionsSnapshot = options;
+            OptionsMonitor = options;
         }
 
         /// <summary>
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Authentication
             Scheme = scheme;
             Context = context;
 
-            Options = OptionsSnapshot.Get(Scheme.Name) ?? new TOptions();
+            Options = OptionsMonitor.Get(Scheme.Name) ?? new TOptions();
             Options.Validate();
 
             await InitializeEventsAsync();
