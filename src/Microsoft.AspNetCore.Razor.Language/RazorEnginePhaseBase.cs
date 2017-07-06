@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var feature = Engine.Features.OfType<T>().FirstOrDefault();
-            ThrowForMissingEngineDependency<T>(feature);
+            ThrowForMissingFeatureDependency<T>(feature);
 
             return feature;
         }
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
         }
 
-        protected void ThrowForMissingEngineDependency<TEngineDependency>(TEngineDependency value)
+        protected void ThrowForMissingFeatureDependency<TEngineDependency>(TEngineDependency value)
         {
             if (value == null)
             {

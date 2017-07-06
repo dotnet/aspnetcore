@@ -25,15 +25,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
         }
 
-        protected T GetRequiredFeature<T>() where T : IRazorEngineFeature
+        protected TFeature GetRequiredFeature<TFeature>() where TFeature : IRazorEngineFeature
         {
             if (Engine == null)
             {
                 throw new InvalidOperationException(Resources.FormatFeatureMustBeInitialized(nameof(Engine)));
             }
 
-            var feature = Engine.Features.OfType<T>().FirstOrDefault();
-            ThrowForMissingEngineDependency<T>(feature);
+            var feature = Engine.Features.OfType<TFeature>().FirstOrDefault();
+            ThrowForMissingFeatureDependency<TFeature>(feature);
 
             return feature;
         }
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
         }
 
-        protected void ThrowForMissingEngineDependency<TEngineDependency>(TEngineDependency value)
+        protected void ThrowForMissingFeatureDependency<TEngineDependency>(TEngineDependency value)
         {
             if (value == null)
             {
