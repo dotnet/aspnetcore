@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
@@ -53,15 +55,36 @@ namespace E2ETests.SmokeTestsUsingStore
                 {
                     var deploymentResult = await deployer.DeployAsync();
 
-                    var mvcCoreDllPath = Path.Combine(deploymentResult.ContentRoot, "Microsoft.AspNetCore.Mvc.Core.dll");
+                    logger.LogInformation("Published output directory structure:");
+                    logger.LogInformation(GetDirectoryStructure(deploymentResult.ContentRoot));
+
+                    var mvcCoreDll = "Microsoft.AspNetCore.Mvc.Core.dll";
+                    logger.LogInformation(
+                        $"Checking if published output was trimmed by verifying that the dll '{mvcCoreDll}' is not present...");
+
+                    var mvcCoreDllPath = Path.Combine(deploymentResult.ContentRoot, mvcCoreDll);
                     var fileInfo = new FileInfo(mvcCoreDllPath);
                     Assert.False(
                         File.Exists(mvcCoreDllPath),
                         $"The file '{fileInfo.Name}.{fileInfo.Extension}' was not expected to be present in the publish directory");
 
+                    logger.LogInformation($"Published output does not have the dll '{mvcCoreDll}', so the output seems to be trimmed");
+
                     await SmokeTestRunner.RunTestsAsync(deploymentResult, logger);
                 }
             }
+        }
+
+        // Get the top level view of the published output directory
+        private string GetDirectoryStructure(string publishedOutputDir)
+        {
+            var directoryStructure = new StringBuilder();
+            var dir = new DirectoryInfo(publishedOutputDir);
+            foreach (var fileSystemInfo in dir.GetFileSystemInfos())
+            {
+                directoryStructure.AppendLine(fileSystemInfo.Name);
+            }
+            return directoryStructure.ToString();
         }
     }
 }

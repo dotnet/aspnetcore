@@ -66,7 +66,7 @@ namespace E2ETests
             var packageId = "Build.RS";
 
             var runtimeStoreLibrary = DependencyContext.Default.RuntimeLibraries
-                .Where(library => string.Equals("Build.RS", library.Name, StringComparison.OrdinalIgnoreCase))
+                .Where(library => string.Equals(packageId, library.Name, StringComparison.OrdinalIgnoreCase))
                 .FirstOrDefault();
             if (runtimeStoreLibrary == null)
             {
@@ -75,6 +75,8 @@ namespace E2ETests
 
             var runtimeStoreVersion = runtimeStoreLibrary.Version;
             var restoredRuntimeStorePackageDir = Path.Combine(GetNugetPackagesRoot(), runtimeStoreLibrary.Path);
+
+            _logger.LogInformation($"Location of the restored runtime store package '{packageId}': {restoredRuntimeStorePackageDir}");
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -119,10 +121,11 @@ namespace E2ETests
                 }
 
                 string fileNameWithExtension = null;
+                var tarFile = $"{packageIdPrefix}.tar.gz";
                 foreach (var file in new DirectoryInfo(restoredRuntimeStorePackageDir).GetFiles())
                 {
                     if (file.Name.StartsWith(packageIdPrefix)
-                        && !string.Equals($"{packageIdPrefix}.tar.gz", file.Name, StringComparison.OrdinalIgnoreCase))
+                        && !string.Equals(tarFile, file.Name, StringComparison.OrdinalIgnoreCase))
                     {
                         fileNameWithExtension = file.FullName;
                         break;
@@ -132,8 +135,10 @@ namespace E2ETests
                 if (string.IsNullOrEmpty(fileNameWithExtension))
                 {
                     throw new InvalidOperationException(
-                        $"Could not find a store zip file with version {runtimeStoreVersion}");
+                        $"Could not find a store tar file with version {runtimeStoreVersion}");
                 }
+
+                _logger.LogInformation($"Extracting the store tar file '{fileNameWithExtension}' to '{storeParentDir}' ...");
 
                 Directory.CreateDirectory(storeParentDir);
 

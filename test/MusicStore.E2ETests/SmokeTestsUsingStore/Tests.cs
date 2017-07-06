@@ -29,18 +29,5 @@ namespace E2ETests.SmokeTestsUsingStore
                 ServerType.Kestrel,
                 _testFixture.StoreDirectory);
         }
-
-        [OSSkipCondition(OperatingSystems.Linux)]
-        [OSSkipCondition(OperatingSystems.MacOSX)]
-        [SkipIfEnvironmentVariableNotEnabled("RUN_RUNTIME_STORE_TESTS")]
-        [ConditionalFact]
-        [Trait("smoketests", "usestore")]
-        public async Task DefaultLocation_WebListener()
-        {
-            var tests = new TestHelper(_output);
-            await tests.SmokeTestSuite(
-                ServerType.WebListener,
-                _testFixture.StoreDirectory);
-        }
     }
 }
