@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var bindingResult = tagHelperBinder.GetBinding(
                 tagName,
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
                 parentTagName: parentTagName);
 
             // Assert
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 return new TheoryData<
                     string, // tagName
-                    IEnumerable<KeyValuePair<string, string>>, // providedAttributes
+                    IReadOnlyList<KeyValuePair<string, string>>, // providedAttributes
                     IEnumerable<TagHelperDescriptor>, // availableDescriptors
                     IEnumerable<TagHelperDescriptor>> // expectedDescriptors
                 {
@@ -264,12 +264,12 @@ namespace Microsoft.AspNetCore.Razor.Language
         [MemberData(nameof(RequiredAttributeData))]
         public void GetBinding_ReturnsBindingResultDescriptorsWithRequiredAttributes(
             string tagName,
-            IEnumerable<KeyValuePair<string, string>> providedAttributes,
+            IReadOnlyList<KeyValuePair<string, string>> providedAttributes,
             object availableDescriptors,
             object expectedDescriptors)
         {
             // Arrange
-            var tagHelperBinder = new TagHelperBinder(null, (IEnumerable<TagHelperDescriptor>)availableDescriptors);
+            var tagHelperBinder = new TagHelperBinder(null, (IReadOnlyList<TagHelperDescriptor>)availableDescriptors);
 
             // Act
             var bindingResult = tagHelperBinder.GetBinding(tagName, providedAttributes, parentTagName: "p");
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "th",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -311,11 +311,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var bindingResultDiv = tagHelperBinder.GetBinding(
                 tagName: "th:div",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
             var bindingResultSpan = tagHelperBinder.GetBinding(
                 tagName: "th:span",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "th:div",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "div",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -384,7 +384,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var tagHelperBinding = tagHelperBinder.GetBinding(
                 tagName: "foo",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -410,11 +410,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var divBinding = tagHelperBinder.GetBinding(
                 tagName: "div",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
             var spanBinding = tagHelperBinder.GetBinding(
                 tagName: "span",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -442,7 +442,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "div",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert
@@ -469,7 +469,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Act
             var binding = tagHelperBinder.GetBinding(
                 tagName: "div",
-                attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
                 parentTagName: "p");
 
             // Assert

@@ -7,13 +7,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public sealed class TagHelperBinding
     {
-        private IReadOnlyDictionary<TagHelperDescriptor, IEnumerable<TagMatchingRuleDescriptor>> _mappings;
+        private IReadOnlyDictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>> _mappings;
 
         internal TagHelperBinding(
             string tagName,
-            IEnumerable<KeyValuePair<string, string>> attributes,
+            IReadOnlyList<KeyValuePair<string, string>> attributes,
             string parentTagName,
-            IReadOnlyDictionary<TagHelperDescriptor, IEnumerable<TagMatchingRuleDescriptor>> mappings,
+            IReadOnlyDictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>> mappings,
             string tagHelperPrefix)
         {
             TagName = tagName;
@@ -30,11 +30,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public string ParentTagName { get; }
 
-        public IEnumerable<KeyValuePair<string, string>> Attributes { get; }
+        public IReadOnlyList<KeyValuePair<string, string>> Attributes { get; }
 
         public string TagHelperPrefix { get; }
 
-        public IEnumerable<TagMatchingRuleDescriptor> GetBoundRules(TagHelperDescriptor descriptor)
+        public IReadOnlyList<TagMatchingRuleDescriptor> GetBoundRules(TagHelperDescriptor descriptor)
         {
             return _mappings[descriptor];
         }

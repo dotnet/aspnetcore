@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// Will return <c>null</c> if no <see cref="TagHelperDescriptor"/>s are a match.</returns>
         public TagHelperBinding GetBinding(
             string tagName,
-            IEnumerable<KeyValuePair<string, string>> attributes,
+            IReadOnlyList<KeyValuePair<string, string>> attributes,
             string parentTagName)
         {
             if (!string.IsNullOrEmpty(_tagHelperPrefix) &&
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var tagNameWithoutPrefix = _tagHelperPrefix != null ? tagName.Substring(_tagHelperPrefix.Length) : tagName;
-            Dictionary<TagHelperDescriptor, IEnumerable<TagMatchingRuleDescriptor>> applicableDescriptorMappings = null;
+            Dictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>> applicableDescriptorMappings = null;
             foreach (var descriptor in descriptors)
             {
                 var applicableRules = descriptor.TagMatchingRules.Where(
@@ -84,10 +84,10 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     if (applicableDescriptorMappings == null)
                     {
-                        applicableDescriptorMappings = new Dictionary<TagHelperDescriptor, IEnumerable<TagMatchingRuleDescriptor>>();
+                        applicableDescriptorMappings = new Dictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>>();
                     }
 
-                    applicableDescriptorMappings[descriptor] = applicableRules;
+                    applicableDescriptorMappings[descriptor] = applicableRules.ToList();
                 }
             }
 

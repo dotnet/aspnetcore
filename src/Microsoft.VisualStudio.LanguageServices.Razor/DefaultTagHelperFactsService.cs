@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.Composition;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 
@@ -41,7 +42,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             var prefix = documentContext.Prefix;
             var tagHelperBinder = new TagHelperBinder(prefix, descriptors);
-            var binding = tagHelperBinder.GetBinding(tagName, attributes, parentTag);
+            var binding = tagHelperBinder.GetBinding(tagName, attributes.ToList(), parentTag);
 
             return binding;
         }

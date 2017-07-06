@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     tagHelperBinding = _tagHelperBinder.GetBinding(
                         tagName,
-                        attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
+                        attributes: Array.Empty<KeyValuePair<string, string>>(),
                         parentTagName: _currentParentTagName);
 
                     // If there are not TagHelperDescriptors associated with the end tag block that also have no
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         // Internal for testing
-        internal IEnumerable<KeyValuePair<string, string>> GetAttributeNameValuePairs(Block tagBlock)
+        internal IReadOnlyList<KeyValuePair<string, string>> GetAttributeNameValuePairs(Block tagBlock)
         {
             // Need to calculate how many children we should take that represent the attributes.
             var childrenOffset = IsPartialTag(tagBlock) ? 0 : 1;
@@ -322,7 +322,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             if (childCount <= 1)
             {
-                return Enumerable.Empty<KeyValuePair<string, string>>();
+                return Array.Empty<KeyValuePair<string, string>>();
             }
 
             _htmlAttributeTracker.Clear();
