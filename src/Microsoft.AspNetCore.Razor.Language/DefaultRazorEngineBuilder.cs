@@ -8,8 +8,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorEngineBuilder : IRazorEngineBuilder
     {
-        public DefaultRazorEngineBuilder()
+        public DefaultRazorEngineBuilder(bool designTime)
         {
+            DesignTime = designTime;
             Features = new List<IRazorEngineFeature>();
             Phases = new List<IRazorEnginePhase>();
         }
@@ -18,7 +19,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public IList<IRazorEnginePhase> Phases { get; }
 
-        public bool DesignTime { get; set; }
+        public bool DesignTime { get; }
 
         public RazorEngine Build()
         {

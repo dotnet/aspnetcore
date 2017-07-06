@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static RazorEngine Create(Action<IRazorEngineBuilder> configure)
         {
-            var builder = new DefaultRazorEngineBuilder();
+            var builder = new DefaultRazorEngineBuilder(designTime: false);
             AddDefaults(builder);
             AddRuntimeDefaults(builder);
             configure?.Invoke(builder);
@@ -32,10 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static RazorEngine CreateDesignTime(Action<IRazorEngineBuilder> configure)
         {
-            var builder = new DefaultRazorEngineBuilder()
-            {
-                DesignTime = true,
-            };
+            var builder = new DefaultRazorEngineBuilder(designTime: true);
             AddDefaults(builder);
             AddDesignTimeDefaults(builder);
             configure?.Invoke(builder);
@@ -44,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static RazorEngine CreateEmpty(Action<IRazorEngineBuilder> configure)
         {
-            var builder = new DefaultRazorEngineBuilder();
+            var builder = new DefaultRazorEngineBuilder(designTime: false);
             configure?.Invoke(builder);
             return builder.Build();
         }

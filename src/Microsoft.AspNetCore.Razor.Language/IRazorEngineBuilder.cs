@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         IList<IRazorEnginePhase> Phases { get; }
 
-        bool DesignTime { get; set; }
+        bool DesignTime { get; }
 
         RazorEngine Build();
     }

@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public void Build_AddsFeaturesAndPhases()
         {
             // Arrange
-            var builder = new DefaultRazorEngineBuilder();
+            var builder = new DefaultRazorEngineBuilder(designTime: false);
 
             builder.Features.Add(Mock.Of<IRazorEngineFeature>());
             builder.Features.Add(Mock.Of<IRazorEngineFeature>());

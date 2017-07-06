@@ -11,15 +11,14 @@ namespace Microsoft.AspNetCore.Razor.Language
     public abstract class DocumentClassifierPassBase : IntermediateNodePassBase, IRazorDocumentClassifierPass
     {
         private static readonly ICodeTargetExtension[] EmptyExtensionArray = new ICodeTargetExtension[0];
+        private ICodeTargetExtension[] _targetExtensions;
 
         protected abstract string DocumentKind { get; }
-
-        protected ICodeTargetExtension[] TargetExtensions { get; private set; }
 
         protected override void OnInitialized()
         {
             var feature = Engine.Features.OfType<IRazorTargetExtensionFeature>();
-            TargetExtensions = feature.FirstOrDefault()?.TargetExtensions.ToArray() ?? EmptyExtensionArray;
+            _targetExtensions = feature.FirstOrDefault()?.TargetExtensions.ToArray() ?? EmptyExtensionArray;
         }
 
         protected sealed override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
@@ -85,9 +84,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             return CodeTarget.CreateDefault(codeDocument, options, (builder) =>
             {
-                for (var i = 0; i < TargetExtensions.Length; i++)
+                for (var i = 0; i < _targetExtensions.Length; i++)
                 {
-                    builder.TargetExtensions.Add(TargetExtensions[i]);
+                    builder.TargetExtensions.Add(_targetExtensions[i]);
                 }
 
                 ConfigureTarget(builder);
