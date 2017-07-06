@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public string TagName { get; protected set; }
 
-        public IEnumerable<RequiredAttributeDescriptor> Attributes { get; protected set; }
+        public IReadOnlyList<RequiredAttributeDescriptor> Attributes { get; protected set; }
 
         public string ParentTag { get; protected set; }
 

@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public string Name { get; protected set; }
 
-        public IEnumerable<TagMatchingRuleDescriptor> TagMatchingRules { get; protected set; }
+        public IReadOnlyList<TagMatchingRuleDescriptor> TagMatchingRules { get; protected set; }
 
         public string AssemblyName { get; protected set; }
 
-        public IEnumerable<BoundAttributeDescriptor> BoundAttributes { get; protected set; }
+        public IReadOnlyList<BoundAttributeDescriptor> BoundAttributes { get; protected set; }
 
-        public IEnumerable<AllowedChildTagDescriptor> AllowedChildTags { get; protected set; }
+        public IReadOnlyList<AllowedChildTagDescriptor> AllowedChildTags { get; protected set; }
 
         public string Documentation { get; protected set; }
 
