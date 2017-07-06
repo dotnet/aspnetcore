@@ -4,12 +4,7 @@
 using System;
 using System.IO;
 using System.Net.Http;
-using System.Reflection;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Mvc.Testing.Internal;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.Mvc.Testing
 {
@@ -21,34 +16,94 @@ namespace Microsoft.AspNetCore.Mvc.Testing
     {
         private readonly TestServer _server;
 
+        /// <summary>
+        /// <para>
+        /// Creates a TestServer instance using the MVC application defined by<typeparamref name="TStartup"/>.
+        /// The startup code defined in <typeparamref name = "TStartup" /> will be executed to configure the application.
+        /// </para>
+        /// <para>
+        /// This constructor will infer the application root directive by searching for a solution file (*.sln) and then
+        /// appending the path<c> src/{AssemblyName}</c> to the solution directory.The application root directory will be
+        /// used to discover views and content files.
+        /// </para>
+        /// <para>
+        /// The application assemblies will be loaded from the dependency context of the assembly containing
+        /// <typeparamref name = "TStartup" />.This means that project dependencies of the assembly containing
+        /// <typeparamref name = "TStartup" /> will be loaded as application assemblies.
+        /// </para>
+        /// </summary>
         public WebApplicationTestFixture()
-            : this("src")
+            : this(Path.Combine("src", typeof(TStartup).Assembly.GetName().Name))
         {
         }
 
+        /// <summary>
+        /// <para>
+        /// Creates a TestServer instance using the MVC application defined by<typeparamref name="TStartup"/>.
+        /// The startup code defined in <typeparamref name = "TStartup" /> will be executed to configure the application.
+        /// </para>
+        /// <para>
+        /// This constructor will infer the application root directive by searching for a solution file (*.sln) and then
+        /// appending the path <paramref name="solutionRelativePath"/> to the solution directory.The application root
+        /// directory will be used to discover views and content files.
+        /// </para>
+        /// <para>
+        /// The application assemblies will be loaded from the dependency context of the assembly containing
+        /// <typeparamref name = "TStartup" />.This means that project dependencies of the assembly containing
+        /// <typeparamref name = "TStartup" /> will be loaded as application assemblies.
+        /// </para>
+        /// </summary>
+        /// <param name="solutionRelativePath">The path to the project folder relative to the solution file of your
+        /// application. The folder of the first .sln file found traversing up the folder hierarchy from the test execution
+        /// folder is considered as the base path.</param>
         protected WebApplicationTestFixture(string solutionRelativePath)
             : this("*.sln", solutionRelativePath)
         {
         }
 
+        /// <summary>
+        /// <para>
+        /// Creates a TestServer instance using the MVC application defined by<typeparamref name="TStartup"/>.
+        /// The startup code defined in <typeparamref name = "TStartup" /> will be executed to configure the application.
+        /// </para>
+        /// <para>
+        /// This constructor will infer the application root directive by searching for a solution file tht matches the pattern
+        /// <paramref name="solutionSearchPattern"/> and then appending the path <paramref name="solutionRelativePath"/>
+        /// to the solution directory.The application root directory will be used to discover views and content files.
+        /// </para>
+        /// <para>
+        /// The application assemblies will be loaded from the dependency context of the assembly containing
+        /// <typeparamref name = "TStartup" />.This means that project dependencies of the assembly containing
+        /// <typeparamref name = "TStartup" /> will be loaded as application assemblies.
+        /// </para>
+        /// </summary>
+        /// <param name="solutionSearchPattern">The glob pattern to use when searching for a solution file by
+        /// traversing up the folder hierarchy from the test execution folder.</param>
+        /// <param name="solutionRelativePath">The path to the project folder relative to the solution file of your
+        /// application. The folder of the first sln file that matches the <paramref name="solutionSearchPattern"/>
+        /// found traversing up the folder hierarchy from the test execution folder is considered as the base path.</param>
         protected WebApplicationTestFixture(string solutionSearchPattern, string solutionRelativePath)
         {
-            var startupAssembly = typeof(TStartup).GetTypeInfo().Assembly;
-
-            // This step assumes project name = assembly name.
-            var projectName = startupAssembly.GetName().Name;
-            var projectPath = Path.Combine(solutionRelativePath, projectName);
             var builder = new MvcWebApplicationBuilder<TStartup>()
-                .UseSolutionRelativeContentRoot(projectPath)
-                .UseApplicationAssemblies()
-                .UseRequestCulture("en-GB", "en-US")
-                .UseStartupCulture("en-GB", "en-US");
+                .UseSolutionRelativeContentRoot(solutionRelativePath)
+                .UseApplicationAssemblies();
 
             ConfigureApplication(builder);
-            _server = builder.Build();
+            _server = CreateServer(builder);
 
             Client = _server.CreateClient();
             Client.BaseAddress = new Uri("http://localhost");
+        }
+
+        /// <summary>
+        /// Creates the <see cref="TestServer"/> with the bootstrapped application in <paramref name="builder"/>.
+        /// </summary>
+        /// <param name="builder">The <see cref="MvcWebApplicationBuilder{TStartup}"/> used to
+        /// create the server.</param>
+        /// <returns>The <see cref="TestServer"/> with the bootstrapped application.</returns>
+        protected virtual TestServer CreateServer(MvcWebApplicationBuilder<TStartup> builder)
+        {
+            return builder.Build();
         }
 
         /// <summary>
@@ -57,7 +112,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// <param name="builder">The <see cref="MvcWebApplicationBuilder{TStartup}"/> for the application.</param>
         protected virtual void ConfigureApplication(MvcWebApplicationBuilder<TStartup> builder)
         {
-            builder.ConfigureAfterStartup(s => s.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, CultureReplacerStartupFilter>()));
         }
 
         /// <summary>
@@ -98,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             else
             {
 
-                for (var i = handlers.Length - 1; i > 1; i++)
+                for (var i = handlers.Length - 1; i > 1; i--)
                 {
                     handlers[i - 1].InnerHandler = handlers[i];
                 }

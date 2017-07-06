@@ -5,7 +5,7 @@ using System.Globalization;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace Microsoft.AspNetCore.Mvc.Testing.Internal
+namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
     /// <summary>
     /// A middleware that ensures web sites run in a consistent culture. Currently useful for tests that format dates,

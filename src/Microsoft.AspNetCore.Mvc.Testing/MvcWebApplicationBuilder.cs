@@ -3,18 +3,15 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Testing.Internal;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection.Extensions;
 
 namespace Microsoft.AspNetCore.Mvc.Testing
 {
@@ -24,8 +21,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
     /// <typeparam name="TStartup">The application startup class.</typeparam>
     public class MvcWebApplicationBuilder<TStartup> where TStartup : class
     {
-        private TestCulture _systemCulture;
-
         public string ContentRoot { get; set; }
         public IList<Action<IServiceCollection>> ConfigureServicesBeforeStartup { get; set; } = new List<Action<IServiceCollection>>();
         public IList<Action<IServiceCollection>> ConfigureServicesAfterStartup { get; set; } = new List<Action<IServiceCollection>>();
@@ -83,64 +78,6 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         }
 
         /// <summary>
-        /// Sets up an <see cref="IStartupFilter"/> that configures the <see cref="CultureReplacerMiddleware"/> at the
-        /// beginning of the pipeline to change the <see cref="CultureInfo.CurrentCulture"/> and <see cref="CultureInfo.CurrentUICulture"/>
-        /// of the thread so that they match the cultures in <paramref name="culture"/> and <paramref name="uiCulture"/> for the rest of the
-        /// <see cref="HttpRequest"/>.
-        /// </summary>
-        /// <param name="culture">The culture to use when processing <see cref="HttpRequest"/>.</param>
-        /// <param name="uiCulture">The UI culture to use when processing <see cref="HttpRequest"/>.</param>
-        /// <returns>An instance of this <see cref="MvcWebApplicationBuilder{TStartup}"/></returns>
-        public MvcWebApplicationBuilder<TStartup> UseRequestCulture(string culture, string uiCulture)
-        {
-            if (culture == null)
-            {
-                throw new ArgumentNullException(nameof(culture));
-            }
-
-            if (uiCulture == null)
-            {
-                throw new ArgumentNullException(nameof(uiCulture));
-            }
-
-            ConfigureBeforeStartup(services =>
-            {
-                services.TryAddSingleton(new TestCulture
-                {
-                    Culture = culture,
-                    UICulture = uiCulture
-                });
-                services.TryAddSingleton<IStartupFilter, CultureReplacerStartupFilter>();
-            });
-
-            return this;
-        }
-
-        /// <summary>
-        /// Overrides the <see cref="CultureInfo.CurrentCulture"/> and the <see cref="CultureInfo.CurrentUICulture"/>
-        /// of the system during the initial configuration of the <see cref="TestHost"/> in case there is any middleware
-        /// that captures the current culture of the system when the pipeline is being constructed.
-        /// </summary>
-        /// <param name="culture">The culture to use when processing <see cref="HttpRequest"/>.</param>
-        /// <param name="uiCulture">The UI culture to use when processing <see cref="HttpRequest"/>.</param>
-        /// <returns>An instance of this <see cref="MvcWebApplicationBuilder{TStartup}"/></returns>
-        public MvcWebApplicationBuilder<TStartup> UseStartupCulture(string culture, string uiCulture)
-        {
-            if (culture == null)
-            {
-                throw new ArgumentNullException(nameof(culture));
-            }
-
-            if (uiCulture == null)
-            {
-                throw new ArgumentNullException(nameof(uiCulture));
-            }
-
-            _systemCulture = new TestCulture { Culture = culture, UICulture = uiCulture };
-            return this;
-        }
-
-        /// <summary>
         /// Configures the application content root.
         /// </summary>
         /// <param name="solutionName">The glob pattern to use for finding the solution.</param>
@@ -185,24 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                 .UseContentRoot(ContentRoot)
                 .ConfigureServices(InitializeServices);
 
-            if (_systemCulture == null)
-            {
-                return new TestServer(builder);
-            }
-
-            var originalCulture = CultureInfo.CurrentCulture;
-            var originalUICulture = CultureInfo.CurrentUICulture;
-            try
-            {
-                CultureInfo.CurrentCulture = new CultureInfo(_systemCulture.Culture);
-                CultureInfo.CurrentUICulture = new CultureInfo(_systemCulture.UICulture);
-                return new TestServer(builder);
-            }
-            finally
-            {
-                CultureInfo.CurrentCulture = originalCulture;
-                CultureInfo.CurrentUICulture = originalUICulture;
-            }
+            return new TestServer(builder);
         }
 
         protected virtual void InitializeServices(IServiceCollection services)
