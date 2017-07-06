@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public static class SignalRSocketBuilderExtensions
     {
-        public static ISocketBuilder UseHub<THub>(this ISocketBuilder socketBuilder) where THub : Hub<IClientProxy>
+        public static ISocketBuilder UseHub<THub>(this ISocketBuilder socketBuilder) where THub : Hub
         {
             var endpoint = socketBuilder.ApplicationServices.GetRequiredService<HubEndPoint<THub>>();
             return socketBuilder.Run(connection => endpoint.OnConnectedAsync(connection));

@@ -17,12 +17,12 @@ namespace Microsoft.AspNetCore.SignalR
             _routes = routes;
         }
 
-        public void MapHub<THub>(string path) where THub : Hub<IClientProxy>
+        public void MapHub<THub>(string path) where THub : Hub
         {
             MapHub<THub>(path, socketOptions: null);
         }
 
-        public void MapHub<THub>(string path, Action<HttpSocketOptions> socketOptions) where THub : Hub<IClientProxy>
+        public void MapHub<THub>(string path, Action<HttpSocketOptions> socketOptions) where THub : Hub
         {
             // find auth attributes
             var authorizeAttributes = typeof(THub).GetCustomAttributes<AuthorizeAttribute>(inherit: true);

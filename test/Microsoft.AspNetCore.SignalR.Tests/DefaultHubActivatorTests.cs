@@ -14,20 +14,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public void HubCreatedIfNotResolvedFromServiceProvider()
         {
             Assert.NotNull(
-                new DefaultHubActivator<Hub<object>, object>(Mock.Of<IServiceProvider>()).Create());
+                new DefaultHubActivator<Hub>(Mock.Of<IServiceProvider>()).Create());
         }
 
         [Fact]
         public void HubCanBeResolvedFromServiceProvider()
         {
-            var hub = Mock.Of<Hub<object>>();
+            var hub = Mock.Of<Hub>();
             var mockServiceProvider = new Mock<IServiceProvider>();
             mockServiceProvider
-                .Setup(sp => sp.GetService(typeof(Hub<object>)))
+                .Setup(sp => sp.GetService(typeof(Hub)))
                 .Returns(hub);
 
             Assert.Same(hub,
-                new DefaultHubActivator<Hub<object>, object>(mockServiceProvider.Object).Create());
+                new DefaultHubActivator<Hub>(mockServiceProvider.Object).Create());
         }
 
 
@@ -36,15 +36,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var mockServiceProvider = new Mock<IServiceProvider>();
             mockServiceProvider
-                .Setup(sp => sp.GetService(typeof(Hub<object>)))
+                .Setup(sp => sp.GetService(typeof(Hub)))
                 .Returns(() =>
                 {
-                    var m = new Mock<Hub<object>>();
+                    var m = new Mock<Hub>();
                     m.Protected().Setup("Dispose", ItExpr.IsAny<bool>());
                     return m.Object;
                 });
 
-            var hubActivator = new DefaultHubActivator<Hub<object>, object>(mockServiceProvider.Object);
+            var hubActivator = new DefaultHubActivator<Hub>(mockServiceProvider.Object);
             var hub = hubActivator.Create();
             hubActivator.Release(hub);
             Mock.Get(hub).Protected().Verify("Dispose", Times.Never(), ItExpr.IsAny<bool>());
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             Assert.Equal("hub",
                 Assert.Throws<ArgumentNullException>(
-                    () => new DefaultHubActivator<Hub<object>, object>(Mock.Of<IServiceProvider>()).Release(null)).ParamName);
+                    () => new DefaultHubActivator<Hub>(Mock.Of<IServiceProvider>()).Release(null)).ParamName);
         }
     }
 }

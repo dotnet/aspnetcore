@@ -1,14 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class HubContext<THub> : IHubContext<THub>, IHubConnectionContext<IClientProxy>
+    public class HubContext<THub> : IHubContext<THub>, IHubClients where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
         private readonly AllClientProxy<THub> _all;
@@ -19,7 +14,7 @@ namespace Microsoft.AspNetCore.SignalR
             _all = new AllClientProxy<THub>(_lifetimeManager);
         }
 
-        public IHubConnectionContext<IClientProxy> Clients => this;
+        public IHubClients Clients => this;
 
         public virtual IClientProxy All => _all;
 

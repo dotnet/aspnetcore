@@ -102,7 +102,7 @@ namespace ChatSample
             {
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
-                    var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub, IClientProxy>>();
+                    var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
                     var hub = hubActivator.Create();
 
                     if (_hubContext == null)

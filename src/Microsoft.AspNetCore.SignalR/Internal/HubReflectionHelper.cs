@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 {
     public static class HubReflectionHelper
     {
-        private static readonly Type[] _excludeInterfaces = new[] { typeof(Hub<>), typeof(IDisposable) };
+        private static readonly Type[] _excludeInterfaces = new[] { typeof(IDisposable) };
 
         public static IEnumerable<MethodInfo> GetHubMethods(Type hubType)
         {
@@ -38,9 +38,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 return false;
             }
 
-            // removes methods such as Hub<TClient>.OnConnectedAsync
             var baseType = baseDefinition.GetTypeInfo().IsGenericType ? baseDefinition.GetGenericTypeDefinition() : baseDefinition;
-            return typeof(Hub<>) != baseType;
+            return typeof(Hub) != baseType;
         }
     }
 }

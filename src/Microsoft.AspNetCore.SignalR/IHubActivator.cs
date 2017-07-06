@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public interface IHubActivator<THub, TClient> where THub : Hub<TClient>
+    public interface IHubActivator<THub> where THub : Hub
     {
         THub Create();
         void Release(THub hub);

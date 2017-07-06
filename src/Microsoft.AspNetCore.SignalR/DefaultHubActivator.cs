@@ -7,8 +7,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public class DefaultHubActivator<THub, TClient> : IHubActivator<THub, TClient>
-        where THub: Hub<TClient>
+    public class DefaultHubActivator<THub> : IHubActivator<THub> where THub: Hub
     {
         private readonly IServiceProvider _serviceProvider;
         private bool? _created;
