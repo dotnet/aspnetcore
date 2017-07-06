@@ -6,10 +6,6 @@
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
   </PropertyGroup>
 
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
-    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
-  </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Localization\Microsoft.AspNetCore.Localization.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.Extensions.Localization\Microsoft.Extensions.Localization.csproj" />
