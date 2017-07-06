@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         public CSharpCodeParser(IEnumerable<DirectiveDescriptor> directives, ParserContext context)
-            : base(context.ParseOnlyLeadingDirectives ? FirstDirectiveCSharpLanguageCharacteristics.Instance : CSharpLanguageCharacteristics.Instance, context)
+            : base(context.ParseLeadingDirectives ? FirstDirectiveCSharpLanguageCharacteristics.Instance : CSharpLanguageCharacteristics.Instance, context)
         {
             if (directives == null)
             {

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             Source = new SeekableTextReader(chars, source.FilePath);
             DesignTimeMode = options.DesignTime;
-            ParseOnlyLeadingDirectives = options.ParseOnlyLeadingDirectives;
+            ParseLeadingDirectives = options.ParseLeadingDirectives;
             Builder = new SyntaxTreeBuilder();
             ErrorSink = new ErrorSink();
             SeenDirectives = new HashSet<string>(StringComparer.Ordinal);
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public bool DesignTimeMode { get; }
 
-        public bool ParseOnlyLeadingDirectives { get; }
+        public bool ParseLeadingDirectives { get; }
 
         public bool WhiteSpaceIsSignificantToAncestorBlock { get; set; }
 

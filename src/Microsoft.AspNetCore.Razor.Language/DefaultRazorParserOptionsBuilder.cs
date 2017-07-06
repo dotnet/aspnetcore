@@ -17,11 +17,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override ICollection<DirectiveDescriptor> Directives { get; } = new List<DirectiveDescriptor>();
 
-        public override bool ParseOnlyLeadingDirectives { get; set; }
+        public override bool ParseLeadingDirectives { get; set; }
 
         public override RazorParserOptions Build()
         {
-            return new DefaultRazorParserOptions(Directives.ToArray(), DesignTime, ParseOnlyLeadingDirectives);
+            return new DefaultRazorParserOptions(Directives.ToArray(), DesignTime, ParseLeadingDirectives);
         }
     }
 }

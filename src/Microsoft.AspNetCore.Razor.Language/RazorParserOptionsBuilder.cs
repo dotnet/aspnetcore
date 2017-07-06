@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract ICollection<DirectiveDescriptor> Directives { get; }
 
-        public abstract bool ParseOnlyLeadingDirectives { get; set; }
+        public abstract bool ParseLeadingDirectives { get; set; }
 
         public abstract RazorParserOptions Build();
     }

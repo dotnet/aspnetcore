@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorParserOptions : RazorParserOptions
     {
-        public DefaultRazorParserOptions(DirectiveDescriptor[] directives, bool designTime, bool parseOnlyLeadingDirectives)
+        public DefaultRazorParserOptions(DirectiveDescriptor[] directives, bool designTime, bool parseLeadingDirectives)
         {
             if (directives == null)
             {
@@ -17,13 +17,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             Directives = directives;
             DesignTime = designTime;
-            ParseOnlyLeadingDirectives = parseOnlyLeadingDirectives;
+            ParseLeadingDirectives = parseLeadingDirectives;
         }
 
         public override bool DesignTime { get; }
 
         public override IReadOnlyCollection<DirectiveDescriptor> Directives { get; }
 
-        public override bool ParseOnlyLeadingDirectives { get; }
+        public override bool ParseLeadingDirectives { get; }
     }
 }

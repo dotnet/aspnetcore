@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         };
 
         public HtmlMarkupParser(ParserContext context)
-            : base(context.ParseOnlyLeadingDirectives ? FirstDirectiveHtmlLanguageCharacteristics.Instance : HtmlLanguageCharacteristics.Instance, context)
+            : base(context.ParseLeadingDirectives ? FirstDirectiveHtmlLanguageCharacteristics.Instance : HtmlLanguageCharacteristics.Instance, context)
         {
         }
 
