@@ -10,6 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="node_modules\**\*" />
     <EmbeddedResource Include="Content\**\*" />
   </ItemGroup>
 
