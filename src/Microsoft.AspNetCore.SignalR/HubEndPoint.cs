@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
@@ -48,6 +49,11 @@ namespace Microsoft.AspNetCore.SignalR
         public async Task OnConnectedAsync(ConnectionContext connection)
         {
             var output = Channel.CreateUnbounded<byte[]>();
+
+            // Set the hub feature before doing anything else. This stores
+            // all the relevant state for a SignalR Hub connection
+            connection.Features.Set<IHubFeature>(new HubFeature());
+
             var connectionContext = new HubConnectionContext(output, connection);
 
             await ProcessNegotiate(connectionContext);
@@ -101,8 +107,7 @@ namespace Microsoft.AspNetCore.SignalR
                         // Resolve the Hub Protocol for the connection and store it in metadata
                         // Other components, outside the Hub, may need to know what protocol is in use
                         // for a particular connection, so we store it here.
-                        connection.Metadata[HubConnectionMetadataNames.HubProtocol] =
-                            _protocolResolver.GetProtocol(negotiationMessage.Protocol, connection);
+                        connection.Protocol = _protocolResolver.GetProtocol(negotiationMessage.Protocol, connection);
 
                         return;
                     }
@@ -188,7 +193,7 @@ namespace Microsoft.AspNetCore.SignalR
             // is used to get the exception so we can bubble it up the stack
             var cts = new CancellationTokenSource();
             var completion = new TaskCompletionSource<object>();
-            var protocol = connection.Metadata.Get<IHubProtocol>(HubConnectionMetadataNames.HubProtocol);
+            var protocol = connection.Protocol;
 
             try
             {

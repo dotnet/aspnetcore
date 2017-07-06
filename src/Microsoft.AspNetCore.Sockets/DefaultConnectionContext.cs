@@ -2,15 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Sockets.Features;
 
 namespace Microsoft.AspNetCore.Sockets
 {
-    public class DefaultConnectionContext : ConnectionContext
+    public class DefaultConnectionContext : ConnectionContext,
+                                            IConnectionIdFeature,
+                                            IConnectionMetadataFeature,
+                                            IConnectionTransportFeature,
+                                            IConnectionUserFeature
     {
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
@@ -22,6 +28,13 @@ namespace Microsoft.AspNetCore.Sockets
             Application = application;
             ConnectionId = id;
             LastSeenUtc = DateTime.UtcNow;
+
+            // PERF: This type could just implement IFeatureCollection
+            Features = new FeatureCollection();
+            Features.Set<IConnectionUserFeature>(this);
+            Features.Set<IConnectionMetadataFeature>(this);
+            Features.Set<IConnectionIdFeature>(this);
+            Features.Set<IConnectionTransportFeature>(this);
         }
 
         public CancellationTokenSource Cancellation { get; set; }
@@ -36,13 +49,13 @@ namespace Microsoft.AspNetCore.Sockets
 
         public ConnectionStatus Status { get; set; } = ConnectionStatus.Inactive;
 
-        public override string ConnectionId { get; }
+        public override string ConnectionId { get; set; }
 
-        public override IFeatureCollection Features { get; } = new FeatureCollection();
+        public override IFeatureCollection Features { get; }
 
-        public override ClaimsPrincipal User { get; set; }
+        public ClaimsPrincipal User { get; set; }
 
-        public override ConnectionMetadata Metadata { get; } = new ConnectionMetadata();
+        public override IDictionary<object, object> Metadata { get; set; } = new ConnectionMetadata();
 
         public Channel<byte[]> Application { get; }
 
@@ -120,7 +133,6 @@ namespace Microsoft.AspNetCore.Sockets
                 throw;
             }
         }
-
 
         public enum ConnectionStatus
         {

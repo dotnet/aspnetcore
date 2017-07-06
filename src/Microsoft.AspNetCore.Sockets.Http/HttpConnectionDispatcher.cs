@@ -241,7 +241,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                             connection.Status = DefaultConnectionContext.ConnectionStatus.Inactive;
 
-                            connection.Metadata[ConnectionMetadataNames.HttpContext] = null;
+                            connection.SetHttpContext(null);
 
                             // Dispose the cancellation token
                             connection.Cancellation.Dispose();
@@ -403,7 +403,7 @@ namespace Microsoft.AspNetCore.Sockets
                 return false;
             }
 
-            var transport = connection.Metadata.Get<TransportType?>(ConnectionMetadataNames.Transport);
+            var transport = (TransportType?)connection.Metadata[ConnectionMetadataNames.Transport];
 
             if (transport == null)
             {
@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Sockets
 
             // Setup the connection state from the http context
             connection.User = context.User;
-            connection.Metadata[ConnectionMetadataNames.HttpContext] = context;
+            connection.SetHttpContext(context);
 
             return true;
         }

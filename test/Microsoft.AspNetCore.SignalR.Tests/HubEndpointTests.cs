@@ -954,7 +954,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             public override Task OnConnectedAsync()
             {
-                Context.Connection.Metadata.Get<TaskCompletionSource<bool>>("ConnectedTask")?.TrySetResult(true);
+                var tcs = (TaskCompletionSource<bool>)Context.Connection.Metadata["ConnectedTask"];
+                tcs?.TrySetResult(true);
                 return base.OnConnectedAsync();
             }
         }

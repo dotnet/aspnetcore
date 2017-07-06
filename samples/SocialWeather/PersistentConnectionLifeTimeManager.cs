@@ -21,6 +21,7 @@ namespace SocialWeather
 
         public void OnConnectedAsync(ConnectionContext connection)
         {
+            connection.Metadata["groups"] = new HashSet<string>();
             connection.Metadata["format"] = "json";
             _connectionList.Add(connection);
         }
@@ -35,7 +36,7 @@ namespace SocialWeather
             foreach (var connection in _connectionList)
             {
                 var context = connection.GetHttpContext();
-                var formatter = _formatterResolver.GetFormatter<T>(connection.Metadata.Get<string>("format"));
+                var formatter = _formatterResolver.GetFormatter<T>((string)connection.Metadata["format"]);
                 var ms = new MemoryStream();
                 await formatter.WriteAsync(data, ms);
 
@@ -60,7 +61,7 @@ namespace SocialWeather
 
         public void AddGroupAsync(ConnectionContext connection, string groupName)
         {
-            var groups = connection.Metadata.GetOrAdd("groups", _ => new HashSet<string>());
+            var groups = (HashSet<string>)connection.Metadata["groups"];
             lock (groups)
             {
                 groups.Add(groupName);
@@ -69,7 +70,7 @@ namespace SocialWeather
 
         public void RemoveGroupAsync(ConnectionContext connection, string groupName)
         {
-            var groups = connection.Metadata.Get<HashSet<string>>("groups");
+            var groups = (HashSet<string>)connection.Metadata["groups"];
             if (groups != null)
             {
                 lock (groups)

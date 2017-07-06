@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.SignalR.Features;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 
 namespace Microsoft.AspNetCore.SignalR
@@ -22,7 +23,9 @@ namespace Microsoft.AspNetCore.SignalR
                 return Task.CompletedTask;
             }
 
-            var groups = connection.Metadata.GetOrAdd(HubConnectionMetadataNames.Groups, _ => new HashSet<string>());
+            var feature = connection.Features.Get<IHubGroupsFeature>();
+            var groups = feature.Groups;
+
             lock (groups)
             {
                 groups.Add(groupName);
@@ -39,12 +42,8 @@ namespace Microsoft.AspNetCore.SignalR
                 return Task.CompletedTask;
             }
 
-            var groups = connection.Metadata.Get<HashSet<string>>(HubConnectionMetadataNames.Groups);
-
-            if (groups == null)
-            {
-                return Task.CompletedTask;
-            }
+            var feature = connection.Features.Get<IHubGroupsFeature>();
+            var groups = feature.Groups;
 
             lock (groups)
             {
@@ -91,8 +90,14 @@ namespace Microsoft.AspNetCore.SignalR
         {
             return InvokeAllWhere(methodName, args, connection =>
             {
-                var groups = connection.Metadata.Get<HashSet<string>>(HubConnectionMetadataNames.Groups);
-                return groups?.Contains(groupName) == true;
+                var feature = connection.Features.Get<IHubGroupsFeature>();
+                var groups = feature.Groups;
+
+                // PERF: ...
+                lock (groups)
+                {
+                    return groups.Contains(groupName) == true;
+                }
             });
         }
 
@@ -106,6 +111,9 @@ namespace Microsoft.AspNetCore.SignalR
 
         public override Task OnConnectedAsync(HubConnectionContext connection)
         {
+            // Set the hub groups feature
+            connection.Features.Set<IHubGroupsFeature>(new HubGroupsFeature());
+
             _connections.Add(connection);
             return Task.CompletedTask;
         }
@@ -133,6 +141,16 @@ namespace Microsoft.AspNetCore.SignalR
         {
             var invocationId = Interlocked.Increment(ref _nextInvocationId);
             return invocationId.ToString();
+        }
+
+        private interface IHubGroupsFeature
+        {
+            HashSet<string> Groups { get; }
+        }
+
+        private class HubGroupsFeature : IHubGroupsFeature
+        {
+            public HashSet<string> Groups { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }

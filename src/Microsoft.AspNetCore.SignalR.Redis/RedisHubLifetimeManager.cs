@@ -19,8 +19,6 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 {
     public class RedisHubLifetimeManager<THub> : HubLifetimeManager<THub>, IDisposable
     {
-        private const string RedisSubscriptionsMetadataName = "redis_subscriptions";
-
         private readonly HubConnectionList _connections = new HubConnectionList();
         // TODO: Investigate "memory leak" entries never get removed
         private readonly ConcurrentDictionary<string, GroupData> _groups = new ConcurrentDictionary<string, GroupData>();
@@ -129,7 +127,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
         public override Task OnConnectedAsync(HubConnectionContext connection)
         {
-            var redisSubscriptions = connection.Metadata.GetOrAdd(RedisSubscriptionsMetadataName, _ => new HashSet<string>());
+            var feature = new RedisFeature();
+            connection.Features.Set<IRedisFeature>(feature);
+
+            var redisSubscriptions = feature.Subscriptions;
             var connectionTask = Task.CompletedTask;
             var userTask = Task.CompletedTask;
 
@@ -178,7 +179,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             var tasks = new List<Task>();
 
-            var redisSubscriptions = connection.Metadata.Get<HashSet<string>>(RedisSubscriptionsMetadataName);
+            var feature = connection.Features.Get<IRedisFeature>();
+
+            var redisSubscriptions = feature.Subscriptions;
             if (redisSubscriptions != null)
             {
                 foreach (var subscription in redisSubscriptions)
@@ -188,7 +191,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 }
             }
 
-            var groupNames = connection.Metadata.Get<HashSet<string>>(HubConnectionMetadataNames.Groups);
+            var groupNames = feature.Groups;
 
             if (groupNames != null)
             {
@@ -211,7 +214,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             {
                 return;
             }
-            var groupNames = connection.Metadata.GetOrAdd(HubConnectionMetadataNames.Groups, _ => new HashSet<string>());
+
+            var feature = connection.Features.Get<IRedisFeature>();
+            var groupNames = feature.Groups;
 
             lock (groupNames)
             {
@@ -274,7 +279,8 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 return;
             }
 
-            var groupNames = connection.Metadata.Get<HashSet<string>>(HubConnectionMetadataNames.Groups);
+            var feature = connection.Features.Get<IRedisFeature>();
+            var groupNames = feature.Groups;
             if (groupNames != null)
             {
                 lock (groupNames)
@@ -362,6 +368,18 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         {
             public SemaphoreSlim Lock = new SemaphoreSlim(1, 1);
             public HubConnectionList Connections = new HubConnectionList();
+        }
+
+        private interface IRedisFeature
+        {
+            HashSet<string> Subscriptions { get; }
+            HashSet<string> Groups { get; }
+        }
+
+        private class RedisFeature : IRedisFeature
+        {
+            public HashSet<string> Subscriptions { get; } = new HashSet<string>();
+            public HashSet<string> Groups { get; } = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         }
     }
 }
