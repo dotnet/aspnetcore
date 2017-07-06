@@ -938,6 +938,275 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         }
 
         [Fact]
+        public void RedirectToPage_WithNoArguments()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+
+            // Act
+            var result = pageModel.RedirectToPage();
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Null(result.PageName);
+        }
+
+        [Fact]
+        public void RedirectToPage_WithPageName()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var pageName = "/Page";
+
+            // Act
+            var result = pageModel.RedirectToPage(pageName);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(pageName, result.PageName);
+        }
+
+        [Fact]
+        public void RedirectToPage_WithRouteValues()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var routeValues = new { key = "value" };
+
+            // Act
+            var result = pageModel.RedirectToPage(routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Null(result.PageName);
+            Assert.Collection(
+                result.RouteValues,
+                item =>
+                {
+                    Assert.Equal("key", item.Key);
+                    Assert.Equal("value", item.Value);
+                });
+        }
+
+        [Fact]
+        public void RedirectToPage_WithPageNameAndHandler()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var pageName = "/Page-Name";
+            var pageHandler = "page-handler";
+
+            // Act
+            var result = pageModel.RedirectToPage(pageName, pageHandler);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(pageName, result.PageName);
+            Assert.Equal(pageHandler, result.PageHandler);
+        }
+
+        [Fact]
+        public void RedirectToPage_WithPageNameAndRouteValues()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var pageName = "/Page-Name";
+            var routeVaues = new { key = "value" };
+
+            // Act
+            var result = pageModel.RedirectToPage(pageName, routeVaues);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(pageName, result.PageName);
+            Assert.Collection(
+                result.RouteValues,
+                item =>
+                {
+                    Assert.Equal("key", item.Key);
+                    Assert.Equal("value", item.Value);
+                });
+        }
+
+        [Fact]
+        public void RedirectToPage_WithPageNameHandlerAndFragment()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var pageName = "/Page-Name";
+            var pageHandler = "page-handler";
+            var fragment = "fragment";
+
+            // Act
+            var result = pageModel.RedirectToPage(pageName, pageHandler, fragment);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(pageName, result.PageName);
+            Assert.Equal(pageHandler, result.PageHandler);
+            Assert.Equal(fragment, result.Fragment);
+        }
+
+        [Fact]
+        public void RedirectToPage_WithPageNameRouteValuesHandlerAndFragment()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var pageName = "/Page-Name";
+            var pageHandler = "page-handler";
+            var fragment = "fragment";
+            var routeValues = new { key = "value" };
+
+            // Act
+            var result = pageModel.RedirectToPage(pageName, pageHandler, routeValues, fragment);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(pageName, result.PageName);
+            Assert.Equal(pageHandler, result.PageHandler);
+            Assert.Collection(
+                result.RouteValues,
+                item =>
+                {
+                    Assert.Equal("key", item.Key);
+                    Assert.Equal("value", item.Value);
+                });
+            Assert.Equal(fragment, result.Fragment);
+        }
+
+        [Fact]
+        public void RedirectToPagePermanent_WithPageName()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var pageName = "/Page-Name";
+
+            // Act
+            var result = pageModel.RedirectToPagePermanent(pageName);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(pageName, result.PageName);
+            Assert.True(result.Permanent);
+        }
+
+        [Fact]
+        public void RedirectToPagePermanent_WithPageNameAndPageHandler()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var pageName = "/Page-Name";
+            var pageHandler = "page-handler";
+
+            // Act
+            var result = pageModel.RedirectToPagePermanent(pageName, pageHandler);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(pageName, result.PageName);
+            Assert.Equal(pageHandler, result.PageHandler);
+            Assert.True(result.Permanent);
+        }
+
+        [Fact]
+        public void RedirectToPagePermanent_WithPageNameAndRouteValues()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var pageName = "/Page-Name";
+            var routeValues = new { key = "value" };
+
+            // Act
+            var result = pageModel.RedirectToPagePermanent(pageName, routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(pageName, result.PageName);
+            Assert.Collection(
+                result.RouteValues,
+                item =>
+                {
+                    Assert.Equal("key", item.Key);
+                    Assert.Equal("value", item.Value);
+                });
+            Assert.True(result.Permanent);
+        }
+
+        [Fact]
+        public void RedirectToPagePermanent_WithPageNamePageHandlerAndRouteValues()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var pageName = "/Page-Name";
+            var pageHandler = "page-handler";
+            var routeValues = new { key = "value" };
+
+            // Act
+            var result = pageModel.RedirectToPagePermanent(pageName, pageHandler, routeValues);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(pageName, result.PageName);
+            Assert.Equal(pageHandler, result.PageHandler);
+            Assert.Collection(
+                result.RouteValues,
+                item =>
+                {
+                    Assert.Equal("key", item.Key);
+                    Assert.Equal("value", item.Value);
+                });
+            Assert.True(result.Permanent);
+        }
+
+        [Fact]
+        public void RedirectToPagePermanent_WithPageNamePageHandlerAndFragment()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var pageName = "/Page-Name";
+            var pageHandler = "page-handler";
+            var fragment = "fragment";
+
+            // Act
+            var result = pageModel.RedirectToPagePermanent(pageName, pageHandler, fragment);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(pageName, result.PageName);
+            Assert.Equal(pageHandler, result.PageHandler);
+            Assert.Equal(fragment, result.Fragment);
+            Assert.True(result.Permanent);
+        }
+
+        [Fact]
+        public void RedirectToPagePermanent_WithPageNamePageHandlerRouteValuesAndFragment()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+            var pageName = "/Page-Name";
+            var pageHandler = "page-handler";
+            var routeValues = new { key = "value" };
+            var fragment = "fragment";
+
+            // Act
+            var result = pageModel.RedirectToPagePermanent(pageName, pageHandler, routeValues, fragment);
+
+            // Assert
+            Assert.IsType<RedirectToPageResult>(result);
+            Assert.Equal(pageName, result.PageName);
+            Assert.Equal(pageHandler, result.PageHandler);
+            Assert.Collection(
+                result.RouteValues,
+                item =>
+                {
+                    Assert.Equal("key", item.Key);
+                    Assert.Equal("value", item.Value);
+                });
+            Assert.Equal(fragment, result.Fragment);
+            Assert.True(result.Permanent);
+        }
+
+        [Fact]
         public void RedirectToPagePreserveMethod_WithParameterUrl_SetsRedirectResultPreserveMethod()
         {
             // Arrange

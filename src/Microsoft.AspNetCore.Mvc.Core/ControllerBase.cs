@@ -1002,7 +1002,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <returns>The <see cref="RedirectToPageResult"/> with <see cref="RedirectToPageResult.Permanent"/> set.</returns>
         [NonAction]
         public virtual RedirectToPageResult RedirectToPagePermanent(string pageName, string pageHandler)
-            => RedirectToPagePermanent(pageName, routeValues: null);
+            => RedirectToPagePermanent(pageName, pageHandler, routeValues: null, fragment: null);
 
         /// <summary>
         /// Redirects (<see cref="StatusCodes.Status301MovedPermanently"/>) to the specified <paramref name="pageName"/>
