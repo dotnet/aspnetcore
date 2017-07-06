@@ -81,7 +81,7 @@ using System;
             builder.Add(new IntermediateToken()
             {
                 Content = "i++",
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
             });
 
             // Act
@@ -111,7 +111,7 @@ using System;
             builder.Add(new IntermediateToken()
             {
                 Content = "i++",
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
             });
 
             // Act
@@ -142,13 +142,13 @@ __o = i++;
             builder.Add(new IntermediateToken()
             {
                 Content = "i",
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
             });
             builder.Add(new MyExtensionIntermediateNode());
             builder.Add(new IntermediateToken()
             {
                 Content = "++",
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
             });
 
             // Act
@@ -179,13 +179,13 @@ __o = i++;
             builder.Add(new IntermediateToken()
             {
                 Content = "i",
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
             });
             builder.Add(new MyExtensionIntermediateNode());
             builder.Add(new IntermediateToken()
             {
                 Content = "++",
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
             });
 
             // Act
@@ -216,7 +216,7 @@ __o = i++;
             IntermediateNodeBuilder.Create(node)
                 .Add(new IntermediateToken()
                 {
-                    Kind = IntermediateToken.TokenKind.CSharp,
+                    Kind = TokenKind.CSharp,
                     Content = "  \t"
                 });
 
@@ -242,7 +242,7 @@ __o = i++;
             IntermediateNodeBuilder.Create(node)
                 .Add(new IntermediateToken()
                 {
-                    Kind = IntermediateToken.TokenKind.CSharp,
+                    Kind = TokenKind.CSharp,
                     Content = "    "
                 });
 
@@ -269,7 +269,7 @@ __o = i++;
             IntermediateNodeBuilder.Create(node)
                 .Add(new IntermediateToken()
                 {
-                    Kind = IntermediateToken.TokenKind.CSharp,
+                    Kind = TokenKind.CSharp,
                     Content = "if (true) { }"
                 });
 
@@ -299,7 +299,7 @@ __o = i++;
             IntermediateNodeBuilder.Create(node)
                 .Add(new IntermediateToken()
                 {
-                    Kind = IntermediateToken.TokenKind.CSharp,
+                    Kind = TokenKind.CSharp,
                     Content = "if (true) { }",
                 });
 
@@ -333,7 +333,7 @@ if (true) { }
             IntermediateNodeBuilder.Create(node)
                 .Add(new IntermediateToken()
                 {
-                    Kind = IntermediateToken.TokenKind.CSharp,
+                    Kind = TokenKind.CSharp,
                     Content = "    if (true) { }",
                 });
 

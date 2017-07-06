@@ -440,7 +440,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _builder.Add(new IntermediateToken()
                 {
                     Content = chunkGenerator.Value,
-                    Kind = IntermediateToken.TokenKind.Html,
+                    Kind = TokenKind.Html,
                     Source = valueSpan
                 });
 
@@ -525,7 +525,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _builder.Add(new IntermediateToken()
                 {
                     Content = span.Content,
-                    Kind = IntermediateToken.TokenKind.CSharp,
+                    Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(span),
                 });
             }
@@ -546,7 +546,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _builder.Add(new IntermediateToken()
                 {
                     Content = span.Content,
-                    Kind = IntermediateToken.TokenKind.CSharp,
+                    Kind = TokenKind.CSharp,
                     Source = BuildSourceSpanFromNode(span),
                 });
 
@@ -601,7 +601,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _builder.Add(new IntermediateToken()
                 {
                     Content = span.Content,
-                    Kind = IntermediateToken.TokenKind.Html,
+                    Kind = TokenKind.Html,
                     Source = source,
                 });
 
@@ -652,7 +652,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 node.Children.Add(new IntermediateToken()
                 {
                     Content = span.Content,
-                    Kind = IntermediateToken.TokenKind.Html,
+                    Kind = TokenKind.Html,
                     Source = BuildSourceSpanFromNode(span),
                 });
 

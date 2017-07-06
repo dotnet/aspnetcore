@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var code = new CSharpCodeIntermediateNode();
             code.Children.Add(new IntermediateToken()
             {
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
                 Content = writer.GenerateCode()
             });
 

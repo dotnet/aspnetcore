@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 for (var i = 0; i < html.Children.Count; i++)
                 {
                     var token = Assert.IsType<IntermediateToken>(html.Children[i]);
-                    Assert.Equal(IntermediateToken.TokenKind.Html, token.Kind);
+                    Assert.Equal(TokenKind.Html, token.Kind);
                     content.Append(token.Content);
                 }
 
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 for (var i = 0; i < statement.Children.Count; i++)
                 {
                     var token = Assert.IsType<IntermediateToken>(statement.Children[i]);
-                    Assert.Equal(IntermediateToken.TokenKind.CSharp, token.Kind);
+                    Assert.Equal(TokenKind.CSharp, token.Kind);
                     content.Append(token.Content);
                 }
 
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 for (var i = 0; i < cSharp.Children.Count; i++)
                 {
                     var token = Assert.IsType<IntermediateToken>(cSharp.Children[i]);
-                    Assert.Equal(IntermediateToken.TokenKind.CSharp, token.Kind);
+                    Assert.Equal(TokenKind.CSharp, token.Kind);
                     content.Append(token.Content);
                 }
 
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 for (var i = 0; i < endNode.Children.Count; i++)
                 {
                     var token = Assert.IsType<IntermediateToken>(endNode.Children[i]);
-                    Assert.Equal(IntermediateToken.TokenKind.CSharp, token.Kind);
+                    Assert.Equal(TokenKind.CSharp, token.Kind);
                     content.Append(token.Content);
                 }
                 Assert.Equal("EndContext();", content.ToString());

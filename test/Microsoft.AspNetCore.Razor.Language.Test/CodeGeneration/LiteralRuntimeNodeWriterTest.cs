@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             builder.Add(new IntermediateToken()
             {
                 Content = "i++",
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
             });
 
             // Act

@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     {
                         new IntermediateToken()
                         {
-                            Kind = IntermediateToken.TokenKind.CSharp,
+                            Kind = TokenKind.CSharp,
                             Content = "#pragma warning disable 0414",
                         }
                     }
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     {
                         new IntermediateToken()
                         {
-                            Kind = IntermediateToken.TokenKind.CSharp,
+                            Kind = TokenKind.CSharp,
                             Content = $"private static {typeof(object).FullName} {DesignTimeVariable} = null;",
                         }
                     }
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     {
                         new IntermediateToken()
                         {
-                            Kind = IntermediateToken.TokenKind.CSharp,
+                            Kind = TokenKind.CSharp,
                             Content = "#pragma warning restore 0414",
                         }
                     }

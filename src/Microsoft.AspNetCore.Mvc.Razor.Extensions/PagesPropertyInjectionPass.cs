@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var vddProperty = new CSharpCodeIntermediateNode();
             vddProperty.Children.Add(new IntermediateToken()
             {
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
                 Content = $"public {viewDataType} ViewData => ({viewDataType})PageContext?.ViewData;",
             });
             @class.Children.Add(vddProperty);
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var modelProperty = new CSharpCodeIntermediateNode();
             modelProperty.Children.Add(new IntermediateToken()
             {
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
                 Content = $"public {modelType} Model => ViewData.Model;",
             });
             @class.Children.Add(modelProperty);

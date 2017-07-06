@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var beginNode = new CSharpCodeIntermediateNode();
             beginNode.Children.Add(new IntermediateToken()
             {
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
                 Content = string.Format("{0}({1}, {2}, {3});",
                     beginContextMethodName,
                     item.Source.AbsoluteIndex.ToString(CultureInfo.InvariantCulture),
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var endNode = new CSharpCodeIntermediateNode();
             endNode.Children.Add(new IntermediateToken()
             {
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
                 Content = string.Format("{0}();", endContextMethodName)
             });
 

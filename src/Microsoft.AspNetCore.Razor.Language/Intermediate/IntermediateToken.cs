@@ -26,13 +26,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             visitor.VisitToken(this);
         }
-
-        public enum TokenKind
-        {
-            Unknown,
-            CSharp,
-            Html,
-        }
     }
 }
 

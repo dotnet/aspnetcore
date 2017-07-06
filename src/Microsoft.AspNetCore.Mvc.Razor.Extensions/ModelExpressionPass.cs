@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
                     expression.Children.Add(new IntermediateToken()
                     {
-                        Kind = IntermediateToken.TokenKind.CSharp,
+                        Kind = TokenKind.CSharp,
                         Content = "ModelExpressionProvider.CreateModelExpression(ViewData, __model => ",
                     });
 
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
                         expression.Children.Add(new IntermediateToken()
                         {
-                            Kind = IntermediateToken.TokenKind.CSharp,
+                            Kind = TokenKind.CSharp,
                             Content = "__model."
                         });
 
@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
                     expression.Children.Add(new IntermediateToken()
                     {
-                        Kind = IntermediateToken.TokenKind.CSharp,
+                        Kind = TokenKind.CSharp,
                         Content = ")",
                     });
 

@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var pageAttribute = new CSharpCodeIntermediateNode();
             pageAttribute.Children.Add(new IntermediateToken()
             {
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
                 Content = attribute,
             });
 

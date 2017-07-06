@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             for (var i = 0; i < node.Children.Count; i++)
             {
                 var child = node.Children[i] as IntermediateToken;
-                if (child.Kind == IntermediateToken.TokenKind.CSharp)
+                if (child.Kind == TokenKind.CSharp)
                 {
                     builder.Append(child.Content);
                 }

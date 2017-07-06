@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Bar)", GetCSharpContent(expression));
 
             var originalNode = Assert.IsType<IntermediateToken>(expression.Children[2]);
-            Assert.Equal(IntermediateToken.TokenKind.CSharp, originalNode.Kind);
+            Assert.Equal(TokenKind.CSharp, originalNode.Kind);
             Assert.Equal("Bar", originalNode.Content);
             Assert.Equal(new SourceSpan("test.cshtml", 51, 1, 8, 3), originalNode.Source.Value);
         }
@@ -138,7 +138,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal("ModelExpressionProvider.CreateModelExpression(ViewData, __model => Bar)", GetCSharpContent(expression));
 
             var originalNode = Assert.IsType<IntermediateToken>(expression.Children[1]);
-            Assert.Equal(IntermediateToken.TokenKind.CSharp, originalNode.Kind);
+            Assert.Equal(TokenKind.CSharp, originalNode.Kind);
             Assert.Equal("Bar", originalNode.Content);
             Assert.Equal(new SourceSpan("test.cshtml", 52, 1, 9, 3), originalNode.Source.Value);
         }
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             for (var i = 0; i < node.Children.Count; i++)
             {
                 var child = node.Children[i] as IntermediateToken;
-                if (child.Kind == IntermediateToken.TokenKind.CSharp)
+                if (child.Kind == TokenKind.CSharp)
                 {
                     builder.Append(child.Content);
                 }

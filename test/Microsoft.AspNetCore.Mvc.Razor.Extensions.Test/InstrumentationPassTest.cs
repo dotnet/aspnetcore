@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = IntermediateToken.TokenKind.Html,
+                Kind = TokenKind.Html,
                 Source = CreateSource(1)
             });
             builder.Pop();
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = IntermediateToken.TokenKind.Html,
+                Kind = TokenKind.Html,
             });
             builder.Pop();
 
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
             });
 
             var pass = new InstrumentationPass()
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
             });
 
             var pass = new InstrumentationPass()
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
             });
 
             var pass = new InstrumentationPass()
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Add(new IntermediateToken()
             {
                 Content = "Hi",
-                Kind = IntermediateToken.TokenKind.CSharp,
+                Kind = TokenKind.CSharp,
             });
 
             var pass = new InstrumentationPass()

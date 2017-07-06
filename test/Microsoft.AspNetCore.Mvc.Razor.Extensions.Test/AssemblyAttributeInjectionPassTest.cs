@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 {
                     var csharpCode = Assert.IsType<CSharpCodeIntermediateNode>(node);
                     var token = Assert.IsType<IntermediateToken>(Assert.Single(csharpCode.Children));
-                    Assert.Equal(IntermediateToken.TokenKind.CSharp, token.Kind);
+                    Assert.Equal(TokenKind.CSharp, token.Kind);
                     Assert.Equal(expectedAttribute, token.Content);
                 },
                 node => Assert.Same(@namespace, node));
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 {
                     var csharpCode = Assert.IsType<CSharpCodeIntermediateNode>(node);
                     var token = Assert.IsType<IntermediateToken>(Assert.Single(csharpCode.Children));
-                    Assert.Equal(IntermediateToken.TokenKind.CSharp, token.Kind);
+                    Assert.Equal(TokenKind.CSharp, token.Kind);
                     Assert.Equal(expectedAttribute, token.Content);
                 },
                 node => Assert.Same(@namespace, node));
@@ -296,7 +296,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 {
                     var csharpCode = Assert.IsType<CSharpCodeIntermediateNode>(node);
                     var token = Assert.IsType<IntermediateToken>(Assert.Single(csharpCode.Children));
-                    Assert.Equal(IntermediateToken.TokenKind.CSharp, token.Kind);
+                    Assert.Equal(TokenKind.CSharp, token.Kind);
                     Assert.Equal(expectedAttribute, token.Content);
                 },
                 node => Assert.Same(@namespace, node));
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 {
                     var csharpCode = Assert.IsType<CSharpCodeIntermediateNode>(node);
                     var token = Assert.IsType<IntermediateToken>(Assert.Single(csharpCode.Children));
-                    Assert.Equal(IntermediateToken.TokenKind.CSharp, token.Kind);
+                    Assert.Equal(TokenKind.CSharp, token.Kind);
                     Assert.Equal(expectedAttribute, token.Content);
                 },
                 node => Assert.Same(@namespace, node));

@@ -119,7 +119,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 ",
                 tokenNode.Content,
                 ignoreLineEndingDifferences: true);
-            Assert.Equal(IntermediateToken.TokenKind.CSharp, tokenNode.Kind);
+            Assert.Equal(TokenKind.CSharp, tokenNode.Kind);
         }
 
         [Fact]
@@ -191,7 +191,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 ",
                 tokenNode.Content,
                 ignoreLineEndingDifferences: true);
-            Assert.Equal(IntermediateToken.TokenKind.CSharp, tokenNode.Kind);
+            Assert.Equal(TokenKind.CSharp, tokenNode.Kind);
         }
 
         [Fact]
@@ -274,7 +274,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 ",
                 tokenNode.Content,
                 ignoreLineEndingDifferences: true);
-            Assert.Equal(IntermediateToken.TokenKind.CSharp, tokenNode.Kind);
+            Assert.Equal(TokenKind.CSharp, tokenNode.Kind);
         }
 
         private RazorCodeDocument CreateDocument(string content)
@@ -335,7 +335,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             for (var i = 0; i < node.Children.Count; i++)
             {
                 var child = node.Children[i] as IntermediateToken;
-                if (child.Kind == IntermediateToken.TokenKind.CSharp)
+                if (child.Kind == TokenKind.CSharp)
                 {
                     builder.Append(child.Content);
                 }
