@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.ApplicationInsights.HostingStartup
         /// <param name="services">The <see cref="IServiceCollection"/> associated with the application.</param>
         private void InitializeServices(IServiceCollection services)
         {
-            services.AddSingleton<IConfigureOptions<LoggerFilterOptions>, DefaultApplicationInsightsLoggerFilters>();
             services.AddSingleton<IStartupFilter, ApplicationInsightsLoggerStartupFilter>();
             services.AddSingleton<ITagHelperComponent, JavaScriptSnippetTagHelperComponent>();
 
@@ -56,30 +55,6 @@ namespace Microsoft.AspNetCore.ApplicationInsights.HostingStartup
                 var configurationBuilder = new ConfigurationBuilder();
                 configurationBuilder.AddJsonFile(settingsFile, optional: true);
                 services.AddLogging(builder => builder.AddConfiguration(configurationBuilder.Build().GetSection("Logging")));
-            }
-        }
-    }
-
-    internal class DefaultApplicationInsightsLoggerFilters : IConfigureOptions<LoggerFilterOptions>
-    {
-        private const string ApplicationInsightsLoggerFactory = "Microsoft.ApplicationInsights.AspNetCore.Logging.ApplicationInsightsLoggerProvider";
-
-        private static readonly KeyValuePair<string, LogLevel>[] _defaultLoggingLevels = {
-            new KeyValuePair<string, LogLevel>("Microsoft", LogLevel.Warning),
-            new KeyValuePair<string, LogLevel>("System", LogLevel.Warning),
-            new KeyValuePair<string, LogLevel>(null, LogLevel.Information)
-        };
-
-        public void Configure(LoggerFilterOptions options)
-        {
-            foreach (var pair in _defaultLoggingLevels)
-            {
-                options.Rules.Add(new LoggerFilterRule(
-                    ApplicationInsightsLoggerFactory,
-                    pair.Key,
-                    null,
-                    (type, name, level) => Debugger.IsAttached || level >= pair.Value
-                ));
             }
         }
     }

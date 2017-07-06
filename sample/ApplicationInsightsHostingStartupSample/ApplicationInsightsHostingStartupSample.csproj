@@ -22,5 +22,8 @@
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
      <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
   </ItemGroup>
-  
+
+  <ItemGroup>
+    <None Include="appsettings.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
 </Project>

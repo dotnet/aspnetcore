@@ -19,14 +19,11 @@ namespace Microsoft.AspNetCore.ApplicationInsights.HostingStartup
 
                 // We need to disable filtering on logger, filtering would be done by LoggerFactory
                 var loggerEnabled = true;
-                Action disableCallback = () => loggerEnabled = false;
 
-                // We detected that logger settings got to LoggerFactory configuration and
-                // defaults would be applied
                 loggerFactory.AddApplicationInsights(
                     builder.ApplicationServices,
                     (s, level) => loggerEnabled,
-                    disableCallback);
+                    () => loggerEnabled = false);
 
                 next(builder);
             };
