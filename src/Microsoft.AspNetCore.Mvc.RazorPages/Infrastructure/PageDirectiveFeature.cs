@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
             return false;
         }
 
-        private class PageDirectiveParserOptionsFeature : RazorEngineFeatureBase, IRazorParserOptionsFeature
+        private class PageDirectiveParserOptionsFeature : RazorEngineFeatureBase, IConfigureRazorParserOptionsFeature
         {
             public int Order { get; }
 
