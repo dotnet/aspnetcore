@@ -3,35 +3,42 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RazorParserOptions
     {
-        public static RazorParserOptions Create(IEnumerable<DirectiveDescriptor> directives, bool designTime)
-        {
-            if (directives == null)
-            {
-                throw new ArgumentNullException(nameof(directives));
-            }
-
-            return new DefaultRazorParserOptions(directives.ToArray(), designTime, parseOnlyLeadingDirectives: false);
-        }
-
-        public static RazorParserOptions Create(IEnumerable<DirectiveDescriptor> directives, bool designTime, bool parseOnlyLeadingDirectives)
-        {
-            if (directives == null)
-            {
-                throw new ArgumentNullException(nameof(directives));
-            }
-
-            return new DefaultRazorParserOptions(directives.ToArray(), designTime, parseOnlyLeadingDirectives);
-        }
-
         public static RazorParserOptions CreateDefault()
         {
             return new DefaultRazorParserOptions(Array.Empty<DirectiveDescriptor>(), designTime: false, parseOnlyLeadingDirectives: false);
+        }
+
+        public static RazorParserOptions Create(Action<RazorParserOptionsBuilder> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            var builder = new DefaultRazorParserOptionsBuilder(designTime: false);
+            configure(builder);
+            var options = builder.Build();
+
+            return options;
+        }
+
+        public static RazorParserOptions CreateDesignTime(Action<RazorParserOptionsBuilder> configure)
+        {
+            if (configure == null)
+            {
+                throw new ArgumentNullException(nameof(configure));
+            }
+
+            var builder = new DefaultRazorParserOptionsBuilder(designTime: true);
+            configure(builder);
+            var options = builder.Build();
+
+            return options;
         }
 
         public abstract bool DesignTime { get; }

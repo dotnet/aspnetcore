@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
         {
             // Arrange
             var source = TestRazorSourceDocument.Create("\r\n  \r\n    @*SomeComment*@ \r\n  @tagHelperPrefix \"SomePrefix\"\r\n<html>\r\n@if (true) {\r\n @if(false) { <div>@something.</div> } \r\n}");
-            var options = RazorParserOptions.Create(Array.Empty<DirectiveDescriptor>(), designTime: false, parseOnlyLeadingDirectives: true);
+            var options = RazorParserOptions.Create(builder => builder.ParseOnlyLeadingDirectives = true);
 
             // Act
             var syntaxTree = RazorSyntaxTree.Parse(source, options);

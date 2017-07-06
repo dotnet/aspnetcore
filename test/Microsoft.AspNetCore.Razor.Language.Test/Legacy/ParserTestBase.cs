@@ -47,7 +47,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
             var source = TestRazorSourceDocument.Create(document, fileName: null);
-            var options = RazorParserOptions.Create(directives, designTime);
+
+            var options = CreateParserOptions(directives, designTime);
             var context = new ParserContext(source, options);
 
             var codeParser = new CSharpCodeParser(directives, context);
@@ -77,7 +78,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
             var source = TestRazorSourceDocument.Create(document, fileName: null);
-            var options = RazorParserOptions.Create(directives, designTime);
+            var options = CreateParserOptions(directives, designTime);
             var context = new ParserContext(source, options);
 
             var parser = new HtmlMarkupParser(context);
@@ -107,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             directives = directives ?? Array.Empty<DirectiveDescriptor>();
 
             var source = TestRazorSourceDocument.Create(document, fileName: null);
-            var options = RazorParserOptions.Create(directives, designTime);
+            var options = CreateParserOptions(directives, designTime);
             var context = new ParserContext(source, options);
 
             var parser = new CSharpCodeParser(directives, context);
@@ -601,6 +602,26 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             block.Children.Add(span);
             return block.Build();
+        }
+
+        private static RazorParserOptions CreateParserOptions(IEnumerable<DirectiveDescriptor> directives, bool designTime)
+        {
+            if (designTime)
+            {
+                return RazorParserOptions.CreateDesignTime(ConfigureOptions);
+            }
+            else
+            {
+                return RazorParserOptions.Create(ConfigureOptions);
+            }
+
+            void ConfigureOptions(RazorParserOptionsBuilder builder)
+            {
+                foreach (var directive in directives)
+                {
+                    builder.Directives.Add(directive);
+                }
+            }
         }
 
         private class IgnoreOutputBlock : Block
