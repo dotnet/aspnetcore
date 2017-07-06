@@ -9,10 +9,6 @@
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
- <ItemGroup Condition="'$(TargetFrameworkIdentifier)' == '.NETFramework'">
-     <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" PrivateAssets="All" />
- </ItemGroup>
-
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Redis\Microsoft.AspNetCore.SignalR.Redis.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.SignalR.Http\Microsoft.AspNetCore.SignalR.Http.csproj" />
