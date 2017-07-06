@@ -8,8 +8,10 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public interface IHubContext<THub> where THub: Hub
+    public interface IHubContext<THub> where THub : Hub
     {
         IHubClients Clients { get; }
+
+        IGroupManager Groups { get; }
     }
 }

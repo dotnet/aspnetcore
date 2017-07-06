@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
-using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR.Redis;
@@ -113,7 +112,7 @@ namespace ChatSample
 
                     hub.Clients = _hubContext.Clients;
                     hub.Context = new HubCallerContext(connection);
-                    hub.Groups = new GroupManager<THub>(this);
+                    hub.Groups = _hubContext.Groups;
 
                     try
                     {

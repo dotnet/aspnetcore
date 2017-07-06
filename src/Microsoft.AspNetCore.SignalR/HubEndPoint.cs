@@ -363,7 +363,7 @@ namespace Microsoft.AspNetCore.SignalR
         {
             hub.Clients = _hubContext.Clients;
             hub.Context = new HubCallerContext(connection);
-            hub.Groups = new GroupManager<THub>(_lifetimeManager);
+            hub.Groups = _hubContext.Groups;
         }
 
         private bool IsChannel(Type type, out Type payloadType)

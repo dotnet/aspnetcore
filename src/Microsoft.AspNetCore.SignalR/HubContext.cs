@@ -6,17 +6,19 @@ namespace Microsoft.AspNetCore.SignalR
     public class HubContext<THub> : IHubContext<THub>, IHubClients where THub : Hub
     {
         private readonly HubLifetimeManager<THub> _lifetimeManager;
-        private readonly AllClientProxy<THub> _all;
 
         public HubContext(HubLifetimeManager<THub> lifetimeManager)
         {
             _lifetimeManager = lifetimeManager;
-            _all = new AllClientProxy<THub>(_lifetimeManager);
+            All = new AllClientProxy<THub>(_lifetimeManager);
+            Groups = new GroupManager<THub>(lifetimeManager);
         }
 
         public IHubClients Clients => this;
 
-        public virtual IClientProxy All => _all;
+        public virtual IClientProxy All { get; }
+
+        public virtual IGroupManager Groups { get; }
 
         public virtual IClientProxy Client(string connectionId)
         {
