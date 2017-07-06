@@ -79,10 +79,19 @@ namespace E2ETests.SmokeTestsUsingStore
         private string GetDirectoryStructure(string publishedOutputDir)
         {
             var directoryStructure = new StringBuilder();
+            directoryStructure.AppendLine();
             var dir = new DirectoryInfo(publishedOutputDir);
             foreach (var fileSystemInfo in dir.GetFileSystemInfos())
             {
-                directoryStructure.AppendLine(fileSystemInfo.Name);
+                var isDirectory = fileSystemInfo as DirectoryInfo;
+                if (isDirectory != null)
+                {
+                    directoryStructure.AppendLine(fileSystemInfo.Name + "/");
+                }
+                else
+                {
+                    directoryStructure.AppendLine(fileSystemInfo.Name);
+                }
             }
             return directoryStructure.ToString();
         }
