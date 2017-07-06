@@ -19,6 +19,5 @@
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework'">
     <PackageReference Include="NETStandard.Library" Version="$(NETStandardImplicitPackageVersion)" />
-    <PackageReference Include="NETStandard.Library.NETFramework" Version="$(NETStandardLibraryNETFrameworkVersion)" />
   </ItemGroup>
 </Project>
