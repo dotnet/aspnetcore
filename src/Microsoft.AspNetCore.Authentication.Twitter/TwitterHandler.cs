@@ -46,7 +46,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
 
         protected override async Task<HandleRequestResult> HandleRemoteAuthenticateAsync()
         {
-            AuthenticationProperties properties = null;
             var query = Request.Query;
             var protectedRequestToken = Request.Cookies[Options.StateCookie.Name];
 
@@ -57,25 +56,25 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 return HandleRequestResult.Fail("Invalid state cookie.");
             }
 
-            properties = requestToken.Properties;
+            var properties = requestToken.Properties;
 
             // REVIEW: see which of these are really errors
 
             var returnedToken = query["oauth_token"];
             if (StringValues.IsNullOrEmpty(returnedToken))
             {
-                return HandleRequestResult.Fail("Missing oauth_token");
+                return HandleRequestResult.Fail("Missing oauth_token", properties);
             }
 
             if (!string.Equals(returnedToken, requestToken.Token, StringComparison.Ordinal))
             {
-                return HandleRequestResult.Fail("Unmatched token");
+                return HandleRequestResult.Fail("Unmatched token", properties);
             }
 
             var oauthVerifier = query["oauth_verifier"];
             if (StringValues.IsNullOrEmpty(oauthVerifier))
             {
-                return HandleRequestResult.Fail("Missing or blank oauth_verifier");
+                return HandleRequestResult.Fail("Missing or blank oauth_verifier", properties);
             }
 
             var cookieOptions = Options.StateCookie.Build(Context, Clock.UtcNow);

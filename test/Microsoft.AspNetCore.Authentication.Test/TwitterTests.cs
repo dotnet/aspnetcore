@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Claims;
@@ -11,6 +12,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
@@ -60,26 +62,12 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 };
                 o.BackchannelHttpHandler = new TestHttpMessageHandler
                 {
-                    Sender = req =>
-                    {
-                        if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
-                        {
-                            return new HttpResponseMessage(HttpStatusCode.OK)
-                            {
-                                Content =
-                                    new StringContent("oauth_callback_confirmed=true&oauth_token=test_oauth_token&oauth_token_secret=test_oauth_token_secret",
-                                        Encoding.UTF8,
-                                        "application/x-www-form-urlencoded")
-                            };
-                        }
-                        return null;
-                    }
+                    Sender = BackchannelRequestToken
                 };
             },
-            context =>
+            async context =>
             {
-                // REVIEW: Gross
-                context.ChallengeAsync("Twitter").GetAwaiter().GetResult();
+                await context.ChallengeAsync("Twitter");
                 return true;
             });
             var transaction = await server.SendAsync("http://example.com/challenge");
@@ -168,7 +156,6 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
         }
 
-
         [Fact]
         public async Task ChallengeWillTriggerRedirection()
         {
@@ -178,35 +165,70 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                 o.ConsumerSecret = "Test Consumer Secret";
                 o.BackchannelHttpHandler = new TestHttpMessageHandler
                 {
-                    Sender = req =>
-                    {
-                        if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
-                        {
-                            return new HttpResponseMessage(HttpStatusCode.OK)
-                            {
-                                Content =
-                                    new StringContent("oauth_callback_confirmed=true&oauth_token=test_oauth_token&oauth_token_secret=test_oauth_token_secret",
-                                        Encoding.UTF8,
-                                        "application/x-www-form-urlencoded")
-                            };
-                        }
-                        return null;
-                    }
+                    Sender = BackchannelRequestToken
                 };
             },
-                context =>
-                {
-                    // REVIEW: gross
-                    context.ChallengeAsync("Twitter").GetAwaiter().GetResult();
-                    return true;
-                });
+            async context =>
+            {
+                await context.ChallengeAsync("Twitter");
+                return true;
+            });
             var transaction = await server.SendAsync("http://example.com/challenge");
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var location = transaction.Response.Headers.Location.AbsoluteUri;
             Assert.Contains("https://api.twitter.com/oauth/authenticate?oauth_token=", location);
         }
 
-        private static TestServer CreateServer(Action<TwitterOptions> options, Func<HttpContext, bool> handler = null)
+        [Fact]
+        public async Task BadCallbackCallsRemoteAuthFailedWithState()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ConsumerKey = "Test Consumer Key";
+                o.ConsumerSecret = "Test Consumer Secret";
+                o.BackchannelHttpHandler = new TestHttpMessageHandler
+                {
+                    Sender = BackchannelRequestToken
+                };
+                o.Events = new TwitterEvents()
+                {
+                    OnRemoteFailure = context =>
+                    {
+                        Assert.NotNull(context.Failure);
+                        Assert.NotNull(context.Properties);
+                        Assert.Equal("testvalue", context.Properties.Items["testkey"]);
+                        context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+                        context.HandleResponse();
+                        return Task.CompletedTask;
+                    }
+                };
+            },
+            async context =>
+            {
+                var properties = new AuthenticationProperties();
+                properties.Items["testkey"] = "testvalue";
+                await context.ChallengeAsync("Twitter", properties);
+                return true;
+            });
+            var transaction = await server.SendAsync("http://example.com/challenge");
+            Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
+            var location = transaction.Response.Headers.Location.AbsoluteUri;
+            Assert.Contains("https://api.twitter.com/oauth/authenticate?oauth_token=", location);
+            Assert.True(transaction.Response.Headers.TryGetValues(HeaderNames.SetCookie, out var setCookie));
+            Assert.True(SetCookieHeaderValue.TryParseList(setCookie.ToList(), out var setCookieValues));
+            Assert.Single(setCookieValues);
+            var setCookieValue = setCookieValues.Single();
+            var cookie = new CookieHeaderValue(setCookieValue.Name, setCookieValue.Value);
+
+            var request = new HttpRequestMessage(HttpMethod.Get, "/signin-twitter");
+            request.Headers.Add(HeaderNames.Cookie, cookie.ToString());
+            var client = server.CreateClient();
+            var response = await client.SendAsync(request);
+
+            Assert.Equal(HttpStatusCode.NotAcceptable, response.StatusCode);
+        }
+
+        private static TestServer CreateServer(Action<TwitterOptions> options, Func<HttpContext, Task<bool>> handler = null)
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -228,7 +250,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                         {
                             await Assert.ThrowsAsync<InvalidOperationException>(() => context.ForbidAsync("Twitter"));
                         }
-                        else if (handler == null || !handler(context))
+                        else if (handler == null || ! await handler(context))
                         {
                             await next();
                         }
@@ -246,6 +268,21 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                         .AddTwitter(wrapOptions);
                 });
             return new TestServer(builder);
+        }
+
+        private HttpResponseMessage BackchannelRequestToken(HttpRequestMessage req)
+        {
+            if (req.RequestUri.AbsoluteUri == "https://api.twitter.com/oauth/request_token")
+            {
+                return new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content =
+                        new StringContent("oauth_callback_confirmed=true&oauth_token=test_oauth_token&oauth_token_secret=test_oauth_token_secret",
+                            Encoding.UTF8,
+                            "application/x-www-form-urlencoded")
+                };
+            }
+            throw new NotImplementedException(req.RequestUri.AbsoluteUri);
         }
     }
 }

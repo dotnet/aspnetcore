@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.OAuth
@@ -20,20 +22,13 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         public async Task VerifySignInSchemeCannotBeSetToSelf()
         {
             var server = CreateServer(
-                app => { },
                 services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.SignInScheme = "weeblie";
                     o.ClientId = "whatever";
                     o.ClientSecret = "whatever";
-                }),
-                context =>
-                {
-                    // REVIEW: Gross.
-                    context.ChallengeAsync("weeblie").GetAwaiter().GetResult();
-                    return true;
-                });
-            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("https://example.com/challenge"));
+                }));
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("https://example.com/"));
             Assert.Contains("cannot be set to itself", error.Message);
         }
 
@@ -54,7 +49,6 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         public async Task ThrowsIfClientIdMissing()
         {
             var server = CreateServer(
-                app => { },
                 services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.SignInScheme = "whatever";
@@ -62,22 +56,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     o.ClientSecret = "whatever";
                     o.TokenEndpoint = "/";
                     o.AuthorizationEndpoint = "/";
-                }),
-                context =>
-                {
-                    // REVIEW: Gross.
-                    Assert.Throws<ArgumentException>("ClientId", () => context.ChallengeAsync("weeblie").GetAwaiter().GetResult());
-                    return true;
-                });
-            var transaction = await server.SendAsync("http://example.com/challenge");
-            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+                }));
+            await Assert.ThrowsAsync<ArgumentException>("ClientId", () => server.SendAsync("http://example.com/"));
         }
 
         [Fact]
         public async Task ThrowsIfClientSecretMissing()
         {
             var server = CreateServer(
-                app => { },
                 services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.SignInScheme = "whatever";
@@ -85,22 +71,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     o.CallbackPath = "/";
                     o.TokenEndpoint = "/";
                     o.AuthorizationEndpoint = "/";
-                }),
-                context =>
-                {
-                    // REVIEW: Gross.
-                    Assert.Throws<ArgumentException>("ClientSecret", () => context.ChallengeAsync("weeblie").GetAwaiter().GetResult());
-                    return true;
-                });
-            var transaction = await server.SendAsync("http://example.com/challenge");
-            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+                }));
+            await Assert.ThrowsAsync<ArgumentException>("ClientSecret", () => server.SendAsync("http://example.com/"));
         }
 
         [Fact]
         public async Task ThrowsIfCallbackPathMissing()
         {
             var server = CreateServer(
-                app => { },
                 services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.ClientId = "Whatever;";
@@ -108,22 +86,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     o.TokenEndpoint = "/";
                     o.AuthorizationEndpoint = "/";
                     o.SignInScheme = "eh";
-                }),
-                context =>
-                {
-                    // REVIEW: Gross.
-                    Assert.Throws<ArgumentException>("CallbackPath", () => context.ChallengeAsync("weeblie").GetAwaiter().GetResult());
-                    return true;
-                });
-            var transaction = await server.SendAsync("http://example.com/challenge");
-            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+                }));
+            await Assert.ThrowsAsync<ArgumentException>("CallbackPath", () => server.SendAsync("http://example.com/"));
         }
 
         [Fact]
         public async Task ThrowsIfTokenEndpointMissing()
         {
             var server = CreateServer(
-                app => { },
                 services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.ClientId = "Whatever;";
@@ -131,22 +101,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     o.CallbackPath = "/";
                     o.AuthorizationEndpoint = "/";
                     o.SignInScheme = "eh";
-                }),
-                context =>
-                {
-                    // REVIEW: Gross.
-                    Assert.Throws<ArgumentException>("TokenEndpoint", () => context.ChallengeAsync("weeblie").GetAwaiter().GetResult());
-                    return true;
-                });
-            var transaction = await server.SendAsync("http://example.com/challenge");
-            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+                }));
+            await Assert.ThrowsAsync<ArgumentException>("TokenEndpoint", () => server.SendAsync("http://example.com/"));
         }
 
         [Fact]
         public async Task ThrowsIfAuthorizationEndpointMissing()
         {
             var server = CreateServer(
-                app => { },
                 services => services.AddAuthentication().AddOAuth("weeblie", o =>
                 {
                     o.ClientId = "Whatever;";
@@ -154,22 +116,14 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     o.CallbackPath = "/";
                     o.TokenEndpoint = "/";
                     o.SignInScheme = "eh";
-                }),
-                context =>
-                {
-                    // REVIEW: Gross.
-                    Assert.Throws<ArgumentException>("AuthorizationEndpoint", () => context.ChallengeAsync("weeblie").GetAwaiter().GetResult());
-                    return true;
-                });
-            var transaction = await server.SendAsync("http://example.com/challenge");
-            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+                }));
+            await Assert.ThrowsAsync<ArgumentException>("AuthorizationEndpoint", () => server.SendAsync("http://example.com/"));
         }
 
         [Fact]
         public async Task RedirectToIdentityProvider_SetsCorrelationIdCookiePath_ToCallBackPath()
         {
             var server = CreateServer(
-                app => { },
                 s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
@@ -181,9 +135,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                         opt.TokenEndpoint = "https://example.com/provider/token";
                         opt.CallbackPath = "/oauth-callback";
                     }),
-                ctx =>
+                async ctx =>
                 {
-                    ctx.ChallengeAsync("Weblie").ConfigureAwait(false).GetAwaiter().GetResult();
+                    await ctx.ChallengeAsync("Weblie");
                     return true;
                 });
 
@@ -201,7 +155,6 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
         public async Task RedirectToAuthorizeEndpoint_CorrelationIdCookieOptions_CanBeOverriden()
         {
             var server = CreateServer(
-                app => { },
                 s => s.AddAuthentication().AddOAuth(
                     "Weblie",
                     opt =>
@@ -214,9 +167,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                         opt.CallbackPath = "/oauth-callback";
                         opt.CorrelationCookie.Path = "/";
                     }),
-                ctx =>
+                async ctx =>
                 {
-                    ctx.ChallengeAsync("Weblie").ConfigureAwait(false).GetAwaiter().GetResult();
+                    await ctx.ChallengeAsync("Weblie");
                     return true;
                 });
 
@@ -230,15 +183,50 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             Assert.Contains("path=/", correlation);
         }
 
-        private static TestServer CreateServer(Action<IApplicationBuilder> configure, Action<IServiceCollection> configureServices, Func<HttpContext, bool> handler)
+        [Fact]
+        public async Task RemoteAuthenticationFailed_OAuthError_IncludesProperties()
+        {
+            var server = CreateServer(
+                s => s.AddAuthentication().AddOAuth(
+                    "Weblie",
+                    opt =>
+                    {
+                        opt.ClientId = "Test Id";
+                        opt.ClientSecret = "secret";
+                        opt.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        opt.AuthorizationEndpoint = "https://example.com/provider/login";
+                        opt.TokenEndpoint = "https://example.com/provider/token";
+                        opt.CallbackPath = "/oauth-callback";
+                        opt.StateDataFormat = new TestStateDataFormat();
+                        opt.Events = new OAuthEvents()
+                        {
+                            OnRemoteFailure = context =>
+                            {
+                                Assert.Contains("declined", context.Failure.Message);
+                                Assert.Equal("testvalue", context.Properties.Items["testkey"]);
+                                context.Response.StatusCode = StatusCodes.Status406NotAcceptable;
+                                context.HandleResponse();
+                                return Task.CompletedTask;
+                            }
+                        };
+                    }));
+
+            var transaction = await server.SendAsync("https://www.example.com/oauth-callback?error=declined&state=protected_state",
+                ".AspNetCore.Correlation.Weblie.corrilationId=N");
+
+            Assert.Equal(HttpStatusCode.NotAcceptable, transaction.Response.StatusCode);
+            Assert.Null(transaction.Response.Headers.Location);
+        }
+
+        private static TestServer CreateServer(Action<IServiceCollection> configureServices, Func<HttpContext, Task<bool>> handler = null)
         {
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    configure?.Invoke(app);
+                    app.UseAuthentication();
                     app.Use(async (context, next) =>
                     {
-                        if (handler == null || !handler(context))
+                        if (handler == null || ! await handler(context))
                         {
                             await next();
                         }
@@ -246,6 +234,38 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                 })
                 .ConfigureServices(configureServices);
             return new TestServer(builder);
+        }
+
+        private class TestStateDataFormat : ISecureDataFormat<AuthenticationProperties>
+        {
+            private AuthenticationProperties Data { get; set; }
+
+            public string Protect(AuthenticationProperties data)
+            {
+                return "protected_state";
+            }
+
+            public string Protect(AuthenticationProperties data, string purpose)
+            {
+                throw new NotImplementedException();
+            }
+
+            public AuthenticationProperties Unprotect(string protectedText)
+            {
+                Assert.Equal("protected_state", protectedText);
+                var properties = new AuthenticationProperties(new Dictionary<string, string>()
+                {
+                    { ".xsrf", "corrilationId" },
+                    { "testkey", "testvalue" }
+                });
+                properties.RedirectUri = "http://testhost/redirect";
+                return properties;
+            }
+
+            public AuthenticationProperties Unprotect(string protectedText, string purpose)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

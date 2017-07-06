@@ -491,13 +491,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 return HandleRequestResult.Fail("No message.");
             }
 
+            AuthenticationProperties properties = null;
             try
             {
-                AuthenticationProperties properties = null;
-                if (!string.IsNullOrEmpty(authorizationResponse.State))
-                {
-                    properties = Options.StateDataFormat.Unprotect(authorizationResponse.State);
-                }
+                properties = ReadPropertiesAndClearState(authorizationResponse);
 
                 var messageReceivedContext = await RunMessageReceivedEventAsync(authorizationResponse, properties);
                 if (messageReceivedContext.Result != null)
@@ -521,8 +518,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                         return HandleRequestResult.Fail(Resources.MessageStateIsNullOrEmpty);
                     }
 
-                    // if state exists and we failed to 'unprotect' this is not a message we should process.
-                    properties = Options.StateDataFormat.Unprotect(authorizationResponse.State);
+                    properties = ReadPropertiesAndClearState(authorizationResponse);
                 }
 
                 if (properties == null)
@@ -533,21 +529,20 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                         // Not for us?
                         return HandleRequestResult.SkipHandler();
                     }
+
+                    // if state exists and we failed to 'unprotect' this is not a message we should process.
                     return HandleRequestResult.Fail(Resources.MessageStateIsInvalid);
                 }
 
-                properties.Items.TryGetValue(OpenIdConnectDefaults.UserstatePropertiesKey, out string userstate);
-                authorizationResponse.State = userstate;
-
                 if (!ValidateCorrelationId(properties))
                 {
-                    return HandleRequestResult.Fail("Correlation failed.");
+                    return HandleRequestResult.Fail("Correlation failed.", properties);
                 }
 
                 // if any of the error fields are set, throw error null
                 if (!string.IsNullOrEmpty(authorizationResponse.Error))
                 {
-                    return HandleRequestResult.Fail(CreateOpenIdConnectProtocolException(authorizationResponse, response: null));
+                    return HandleRequestResult.Fail(CreateOpenIdConnectProtocolException(authorizationResponse, response: null), properties);
                 }
 
                 if (_configuration == null && Options.ConfigurationManager != null)
@@ -635,8 +630,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
                     // At least a cursory validation is required on the new IdToken, even if we've already validated the one from the authorization response.
                     // And we'll want to validate the new JWT in ValidateTokenResponse.
-                    JwtSecurityToken tokenEndpointJwt;
-                    var tokenEndpointUser = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out tokenEndpointJwt);
+                    var tokenEndpointUser = ValidateToken(tokenEndpointResponse.IdToken, properties, validationParameters, out var tokenEndpointJwt);
 
                     // Avoid reading & deleting the nonce cookie, running the event, etc, if it was already done as part of the authorization response validation.
                     if (user == null)
@@ -722,8 +716,25 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     return authenticationFailedContext.Result;
                 }
 
-                return HandleRequestResult.Fail(exception);
+                return HandleRequestResult.Fail(exception, properties);
             }
+        }
+
+        private AuthenticationProperties ReadPropertiesAndClearState(OpenIdConnectMessage message)
+        {
+            AuthenticationProperties properties = null;
+            if (!string.IsNullOrEmpty(message.State))
+            {
+                properties = Options.StateDataFormat.Unprotect(message.State);
+
+                if (properties != null)
+                {
+                    // If properties can be decoded from state, clear the message state.
+                    properties.Items.TryGetValue(OpenIdConnectDefaults.UserstatePropertiesKey, out var userstate);
+                    message.State = userstate;
+                }
+            }
+            return properties;
         }
 
         private void PopulateSessionProperties(OpenIdConnectMessage message, AuthenticationProperties properties)
@@ -830,7 +841,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             }
             else
             {
-                return HandleRequestResult.Fail("Unknown response type: " + contentType.MediaType);
+                return HandleRequestResult.Fail("Unknown response type: " + contentType.MediaType, properties);
             }
 
             var userInformationReceivedContext = await RunUserInformationReceivedEventAsync(principal, properties, message, user);

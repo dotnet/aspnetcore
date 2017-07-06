@@ -44,8 +44,21 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
 
         protected override async Task<HandleRequestResult> HandleRemoteAuthenticateAsync()
         {
-            AuthenticationProperties properties = null;
             var query = Request.Query;
+
+            var state = query["state"];
+            var properties = Options.StateDataFormat.Unprotect(state);
+
+            if (properties == null)
+            {
+                return HandleRequestResult.Fail("The oauth state was missing or invalid.");
+            }
+
+            // OAuth2 10.12 CSRF
+            if (!ValidateCorrelationId(properties))
+            {
+                return HandleRequestResult.Fail("Correlation failed.", properties);
+            }
 
             var error = query["error"];
             if (!StringValues.IsNullOrEmpty(error))
@@ -63,39 +76,26 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     failureMessage.Append(";Uri=").Append(errorUri);
                 }
 
-                return HandleRequestResult.Fail(failureMessage.ToString());
+                return HandleRequestResult.Fail(failureMessage.ToString(), properties);
             }
 
             var code = query["code"];
-            var state = query["state"];
-
-            properties = Options.StateDataFormat.Unprotect(state);
-            if (properties == null)
-            {
-                return HandleRequestResult.Fail("The oauth state was missing or invalid.");
-            }
-
-            // OAuth2 10.12 CSRF
-            if (!ValidateCorrelationId(properties))
-            {
-                return HandleRequestResult.Fail("Correlation failed.");
-            }
 
             if (StringValues.IsNullOrEmpty(code))
             {
-                return HandleRequestResult.Fail("Code was not found.");
+                return HandleRequestResult.Fail("Code was not found.", properties);
             }
 
             var tokens = await ExchangeCodeAsync(code, BuildRedirectUri(Options.CallbackPath));
 
             if (tokens.Error != null)
             {
-                return HandleRequestResult.Fail(tokens.Error);
+                return HandleRequestResult.Fail(tokens.Error, properties);
             }
 
             if (string.IsNullOrEmpty(tokens.AccessToken))
             {
-                return HandleRequestResult.Fail("Failed to retrieve access token.");
+                return HandleRequestResult.Fail("Failed to retrieve access token.", properties);
             }
 
             var identity = new ClaimsIdentity(ClaimsIssuer);
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             }
             else
             {
-                return HandleRequestResult.Fail("Failed to retrieve user information from remote server.");
+                return HandleRequestResult.Fail("Failed to retrieve user information from remote server.", properties);
             }
         }
 

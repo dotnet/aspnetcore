@@ -253,6 +253,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
             {
                 o.ClientId = "Test Id";
                 o.ClientSecret = "Test Secret";
+                o.StateDataFormat = new TestStateDataFormat();
                 o.Events = redirect ? new OAuthEvents()
                 {
                     OnRemoteFailure = ctx =>
@@ -263,7 +264,8 @@ namespace Microsoft.AspNetCore.Authentication.Google
                     }
                 } : new OAuthEvents();
             });
-            var sendTask = server.SendAsync("https://example.com/signin-google?error=OMG&error_description=SoBad&error_uri=foobar");
+            var sendTask = server.SendAsync("https://example.com/signin-google?error=OMG&error_description=SoBad&error_uri=foobar&state=protected_state",
+                ".AspNetCore.Correlation.Google.corrilationId=N");
             if (redirect)
             {
                 var transaction = await sendTask;
@@ -1074,6 +1076,38 @@ namespace Microsoft.AspNetCore.Authentication.Google
                     });
                 });
             return new TestServer(builder);
+        }
+
+        private class TestStateDataFormat : ISecureDataFormat<AuthenticationProperties>
+        {
+            private AuthenticationProperties Data { get; set; }
+
+            public string Protect(AuthenticationProperties data)
+            {
+                return "protected_state";
+            }
+
+            public string Protect(AuthenticationProperties data, string purpose)
+            {
+                throw new NotImplementedException();
+            }
+
+            public AuthenticationProperties Unprotect(string protectedText)
+            {
+                Assert.Equal("protected_state", protectedText);
+                var properties = new AuthenticationProperties(new Dictionary<string, string>()
+                {
+                    { ".xsrf", "corrilationId" },
+                    { "testkey", "testvalue" }
+                });
+                properties.RedirectUri = "http://testhost/redirect";
+                return properties;
+            }
+
+            public AuthenticationProperties Unprotect(string protectedText, string purpose)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }

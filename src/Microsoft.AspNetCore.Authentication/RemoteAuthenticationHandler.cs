@@ -49,6 +49,7 @@ namespace Microsoft.AspNetCore.Authentication
 
             AuthenticationTicket ticket = null;
             Exception exception = null;
+            AuthenticationProperties properties = null;
             try
             {
                 var authResult = await HandleRemoteAuthenticateAsync();
@@ -66,8 +67,8 @@ namespace Microsoft.AspNetCore.Authentication
                 }
                 else if (!authResult.Succeeded)
                 {
-                    exception = authResult.Failure ??
-                                new InvalidOperationException("Invalid return state, unable to redirect.");
+                    exception = authResult.Failure ?? new InvalidOperationException("Invalid return state, unable to redirect.");
+                    properties = authResult.Properties;
                 }
 
                 ticket = authResult?.Ticket;
@@ -80,7 +81,10 @@ namespace Microsoft.AspNetCore.Authentication
             if (exception != null)
             {
                 Logger.RemoteAuthenticationError(exception.Message);
-                var errorContext = new RemoteFailureContext(Context, Scheme, Options, exception);
+                var errorContext = new RemoteFailureContext(Context, Scheme, Options, exception)
+                {
+                    Properties = properties
+                };
                 await Events.RemoteFailure(errorContext);
 
                 if (errorContext.Result != null)
@@ -95,11 +99,14 @@ namespace Microsoft.AspNetCore.Authentication
                     }
                     else if (errorContext.Result.Failure != null)
                     {
-                        throw new InvalidOperationException("An error was returned from the RemoteFailure event.", errorContext.Result.Failure);
+                        throw new Exception("An error was returned from the RemoteFailure event.", errorContext.Result.Failure);
                     }
                 }
 
-                throw exception;
+                if (errorContext.Failure != null)
+                {
+                    throw new Exception("An error was encountered while handling the remote login.", errorContext.Failure);
+                }
             }
 
             // We have a ticket if we get here
@@ -107,7 +114,7 @@ namespace Microsoft.AspNetCore.Authentication
             {
                 ReturnUri = ticket.Properties.RedirectUri
             };
-            // REVIEW: is this safe or good?
+
             ticket.Properties.RedirectUri = null;
 
             // Mark which provider produced this identity so we can cross-check later in HandleAuthenticateAsync

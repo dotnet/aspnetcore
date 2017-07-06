@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 return PostAsync(server, "signin-oidc", "");
             });
 
-            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+            Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
 
             Assert.True(messageReceived);
             Assert.True(remoteFailure);
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 return PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state");
             });
 
-            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+            Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
 
             Assert.True(messageReceived);
             Assert.True(tokenValidated);
@@ -348,7 +348,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 return PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
             });
 
-            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+            Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
 
             Assert.True(messageReceived);
             Assert.True(tokenValidated);
@@ -532,7 +532,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 return PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
             });
 
-            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+            Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
 
             Assert.True(messageReceived);
             Assert.True(tokenValidated);
@@ -731,7 +731,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 return PostAsync(server, "signin-oidc", "state=protected_state&code=my_code");
             });
 
-            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+            Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
 
             Assert.True(messageReceived);
             Assert.True(codeReceived);
@@ -943,7 +943,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 return PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
             });
 
-            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+            Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
 
             Assert.True(messageReceived);
             Assert.True(tokenValidated);
@@ -1186,7 +1186,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 return PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
             });
 
-            Assert.Equal("Authentication was aborted from user code.", exception.Message);
+            Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
 
             Assert.True(messageReceived);
             Assert.True(tokenValidated);
@@ -1450,6 +1450,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 {
                     remoteFailure = true;
                     Assert.Equal("TestException", context.Failure.Message);
+                    Assert.Equal("testvalue", context.Properties.Items["testkey"]);
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
@@ -1877,7 +1878,8 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 var properties = new AuthenticationProperties(new Dictionary<string, string>()
                 {
                     { ".xsrf", "corrilationId" },
-                    { OpenIdConnectDefaults.RedirectUriForCodePropertiesKey, "redirect_uri" }
+                    { OpenIdConnectDefaults.RedirectUriForCodePropertiesKey, "redirect_uri" },
+                    { "testkey", "testvalue" }
                 });
                 properties.RedirectUri = "http://testhost/redirect";
                 return properties;
