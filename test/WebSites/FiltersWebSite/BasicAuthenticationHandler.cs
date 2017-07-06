@@ -14,7 +14,7 @@ namespace FiltersWebSite
 {
     public class BasicAuthenticationHandler : AuthenticationHandler<BasicOptions>
     {
-        public BasicAuthenticationHandler(IOptionsSnapshot<BasicOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
+        public BasicAuthenticationHandler(IOptionsMonitor<BasicOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)
         { }
 
