@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 RegexOptions.None,
                 TimeSpan.FromMilliseconds(500));
 
-        public static IReadOnlyCollection<char> InvalidNonWhitespaceHtmlCharacters { get; } = new HashSet<char>(
+        internal static IReadOnlyCollection<char> InvalidNonWhitespaceHtmlCharacters { get; } = new List<char>(
             new[] { '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*' });
 
         /// <summary>
