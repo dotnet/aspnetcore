@@ -10,10 +10,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
 {
     public static class HubConnectionExtensions
     {
-        public static Task Invoke(this HubConnection hubConnection, string methodName, params object[] args) =>
-            Invoke(hubConnection, methodName, CancellationToken.None, args);
+        public static Task InvokeAsync(this HubConnection hubConnection, string methodName, params object[] args) =>
+            InvokeAsync(hubConnection, methodName, CancellationToken.None, args);
 
-        public static Task Invoke(this HubConnection hubConnection, string methodName, CancellationToken cancellationToken, params object[] args)
+        public static Task InvokeAsync(this HubConnection hubConnection, string methodName, CancellationToken cancellationToken, params object[] args)
         {
             if (hubConnection == null)
             {
@@ -23,10 +23,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnection.InvokeAsync(methodName, typeof(object), cancellationToken, args);
         }
 
-        public static Task<TResult> Invoke<TResult>(this HubConnection hubConnection, string methodName, params object[] args) =>
-            Invoke<TResult>(hubConnection, methodName, CancellationToken.None, args);
+        public static Task<TResult> InvokeAsync<TResult>(this HubConnection hubConnection, string methodName, params object[] args) =>
+            InvokeAsync<TResult>(hubConnection, methodName, CancellationToken.None, args);
 
-        public async static Task<TResult> Invoke<TResult>(this HubConnection hubConnection, string methodName, CancellationToken cancellationToken, params object[] args)
+        public async static Task<TResult> InvokeAsync<TResult>(this HubConnection hubConnection, string methodName, CancellationToken cancellationToken, params object[] args)
         {
             if (hubConnection == null)
             {

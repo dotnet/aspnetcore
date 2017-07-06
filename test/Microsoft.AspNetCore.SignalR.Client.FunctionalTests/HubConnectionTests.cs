@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 await connection.StartAsync();
 
-                var result = await connection.Invoke<string>(nameof(TestHub.HelloWorld));
+                var result = await connection.InvokeAsync<string>(nameof(TestHub.HelloWorld));
 
                 Assert.Equal("Hello World!", result);
             }
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 await connection.StartAsync();
 
-                var result = await connection.Invoke<string>(nameof(TestHub.Echo), originalMessage);
+                var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo), originalMessage);
 
                 Assert.Equal(originalMessage, result);
             }
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 await connection.StartAsync();
 
-                var result = await connection.Invoke<string>(nameof(TestHub.Echo).ToLowerInvariant(), originalMessage);
+                var result = await connection.InvokeAsync<string>(nameof(TestHub.Echo).ToLowerInvariant(), originalMessage);
 
                 Assert.Equal(originalMessage, result);
             }
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 var tcs = new TaskCompletionSource<string>();
                 connection.On<string>("Echo", tcs.SetResult);
 
-                await connection.Invoke(nameof(TestHub.CallEcho), originalMessage).OrTimeout();
+                await connection.InvokeAsync(nameof(TestHub.CallEcho), originalMessage).OrTimeout();
 
                 Assert.Equal(originalMessage, await tcs.Task.OrTimeout());
             }
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 await connection.StartAsync();
 
                 var ex = await Assert.ThrowsAnyAsync<Exception>(
-                    async () => await connection.Invoke("!@#$%"));
+                    async () => await connection.InvokeAsync("!@#$%"));
 
                 Assert.Equal("Unknown hub method '!@#$%'", ex.Message);
             }
