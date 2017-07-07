@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace SecurityWebSite
@@ -14,7 +15,7 @@ namespace SecurityWebSite
             // Add framework services.
             services.AddMvc();
             services.AddAntiforgery();
-            services.AddAuthentication().AddCookie(options => 
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(options => 
             {
                 options.LoginPath = "/Home/Login";
                 options.LogoutPath = "/Home/Logout";
