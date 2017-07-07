@@ -16,7 +16,7 @@
 
   <ItemGroup>
     <Compile Include="..\shared\**\*.cs" />
-    <Content Include="..\shared\TestResources\testCert.pfx" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\shared\TestCertificates\*.pfx" CopyToOutputDirectory="PreserveNewest" />
     <None Update="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 

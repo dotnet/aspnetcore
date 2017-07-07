@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26621.2
+VisualStudioVersion = 15.0.26706.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{7972A5D6-3385-4127-9277-428506DD44FF}"
 	ProjectSection(SolutionItems) = preProject
@@ -52,9 +52,20 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Performance", "test\Microsoft.AspNetCore.Server.Kestrel.Performance\Microsoft.AspNetCore.Server.Kestrel.Performance.csproj", "{EBFE9719-A44B-4978-A71F-D5C254E7F35A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestResources", "TestResources", "{2822C132-BFFB-4D53-AC5B-E7E47DD81A6E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestCertificates", "TestCertificates", "{2822C132-BFFB-4D53-AC5B-E7E47DD81A6E}"
 	ProjectSection(SolutionItems) = preProject
-		test\shared\TestResources\testCert.pfx = test\shared\TestResources\testCert.pfx
+		test\shared\TestCertificates\eku.client.ini = test\shared\TestCertificates\eku.client.ini
+		test\shared\TestCertificates\eku.client.pfx = test\shared\TestCertificates\eku.client.pfx
+		test\shared\TestCertificates\eku.code_signing.ini = test\shared\TestCertificates\eku.code_signing.ini
+		test\shared\TestCertificates\eku.code_signing.pfx = test\shared\TestCertificates\eku.code_signing.pfx
+		test\shared\TestCertificates\eku.multiple_usages.ini = test\shared\TestCertificates\eku.multiple_usages.ini
+		test\shared\TestCertificates\eku.multiple_usages.pfx = test\shared\TestCertificates\eku.multiple_usages.pfx
+		test\shared\TestCertificates\eku.server.ini = test\shared\TestCertificates\eku.server.ini
+		test\shared\TestCertificates\eku.server.pfx = test\shared\TestCertificates\eku.server.pfx
+		test\shared\TestCertificates\make-test-certs.sh = test\shared\TestCertificates\make-test-certs.sh
+		test\shared\TestCertificates\no_extensions.ini = test\shared\TestCertificates\no_extensions.ini
+		test\shared\TestCertificates\no_extensions.pfx = test\shared\TestCertificates\no_extensions.pfx
+		test\shared\TestCertificates\testCert.pfx = test\shared\TestCertificates\testCert.pfx
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv", "src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj", "{A76B8C8C-0DC5-4DD3-9B1F-02E51A0915F4}"

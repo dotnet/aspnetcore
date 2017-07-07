@@ -25,6 +25,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
             => GetString("AuthenticationFailed");
 
         /// <summary>
+        /// Certificate {thumbprint} cannot be used as an SSL server certificate. It has an Extended Key Usage extension but the usages do not include Server Authentication (OID 1.3.6.1.5.5.7.3.1).
+        /// </summary>
+        internal static string InvalidServerCertificateEku
+        {
+            get => GetString("InvalidServerCertificateEku");
+        }
+
+        /// <summary>
+        /// Certificate {thumbprint} cannot be used as an SSL server certificate. It has an Extended Key Usage extension but the usages do not include Server Authentication (OID 1.3.6.1.5.5.7.3.1).
+        /// </summary>
+        internal static string FormatInvalidServerCertificateEku(object thumbprint)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidServerCertificateEku", "thumbprint"), thumbprint);
+
+        /// <summary>
         /// The server certificate parameter is required.
         /// </summary>
         internal static string ServiceCertificateRequired
