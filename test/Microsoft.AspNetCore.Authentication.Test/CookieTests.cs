@@ -1247,7 +1247,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             => CreateServerWithServices(s =>
             {
                 s.AddSingleton<ISystemClock>(_clock);
-                s.AddAuthentication().AddCookie(configureOptions);
+                s.AddAuthentication(o => o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme).AddCookie(configureOptions);
                 s.AddSingleton<IClaimsTransformation, ClaimsTransformer>();
             }, testpath, baseAddress);
 

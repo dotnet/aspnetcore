@@ -748,7 +748,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
                         }
                     });
                 })
-                .ConfigureServices(services => services.AddAuthentication().AddJwtBearer(options));
+                .ConfigureServices(services => services.AddAuthentication(o => o.DefaultScheme = JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options));
 
             return new TestServer(builder);
         }

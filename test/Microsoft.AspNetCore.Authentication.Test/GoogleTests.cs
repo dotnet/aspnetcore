@@ -1050,7 +1050,7 @@ namespace Microsoft.AspNetCore.Authentication.Google
                     services.AddTransient<IClaimsTransformation, ClaimsTransformer>();
                     services.AddAuthentication(o =>
                     {
-                        o.DefaultAuthenticateScheme = TestExtensions.CookieAuthenticationScheme;
+                        o.DefaultScheme = TestExtensions.CookieAuthenticationScheme;
                         o.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
                     });
                     services.AddAuthentication()

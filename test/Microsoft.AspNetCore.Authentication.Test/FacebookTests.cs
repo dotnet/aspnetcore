@@ -81,8 +81,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                 {
                     services.AddAuthentication(options =>
                     {
-                        options.DefaultSignInScheme = "External";
-                        options.DefaultAuthenticateScheme = "External";
+                        options.DefaultScheme = "External";
                     })
                         .AddCookie("External", o => { })
                         .AddFacebook(o =>
@@ -221,7 +220,7 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
                 {
                     services.AddAuthentication(options =>
                     {
-                        options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                     })
                         .AddCookie()
                         .AddFacebook(o => 

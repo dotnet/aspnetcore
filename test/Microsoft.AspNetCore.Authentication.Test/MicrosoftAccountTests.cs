@@ -226,7 +226,7 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
                 {
                     services.AddAuthentication(o =>
                     {
-                        o.DefaultAuthenticateScheme = TestExtensions.CookieAuthenticationScheme;
+                        o.DefaultScheme = TestExtensions.CookieAuthenticationScheme;
                     });
                     services.AddAuthentication()
                         .AddCookie(TestExtensions.CookieAuthenticationScheme, o => { })

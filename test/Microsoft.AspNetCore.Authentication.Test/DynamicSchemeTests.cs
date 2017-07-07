@@ -86,24 +86,6 @@ namespace Microsoft.AspNetCore.Authentication
             await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("http://example.com/auth/One"));
         }
 
-        [Fact]
-        public async Task VerifyDefaultBehavior()
-        {
-            var server = CreateServer();
-
-            await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("http://example.com/auth"));
-
-            var response = await server.CreateClient().GetAsync("http://example.com/add/One");
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            var transaction = await server.SendAsync("http://example.com/auth");
-            Assert.Equal("One", transaction.FindClaimValue(ClaimTypes.NameIdentifier, "One"));
-            response = await server.CreateClient().GetAsync("http://example.com/add/Two");
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-
-            // Default will blow up since now there's two
-            await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("http://example.com/auth"));
-        }
-
         public class TestOptions : AuthenticationSchemeOptions
         {
             public Singleton Instance { get; set; }
