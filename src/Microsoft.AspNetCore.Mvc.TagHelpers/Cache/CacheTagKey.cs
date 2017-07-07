@@ -33,7 +33,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
         private const string VaryByCookieName = "VaryByCookie";
         private const string VaryByUserName = "VaryByUser";
 
-        private readonly string _key;
         private readonly string _prefix;
         private readonly string _varyBy;
         private readonly DateTimeOffset? _expiresOn;
@@ -58,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
         public CacheTagKey(CacheTagHelper tagHelper, TagHelperContext context)
             : this(tagHelper)
         {
-            _key = context.UniqueId;
+            Key = context.UniqueId;
             _prefix = nameof(CacheTagHelper);
         }
 
@@ -70,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
         public CacheTagKey(DistributedCacheTagHelper tagHelper)
             : this((CacheTagHelperBase)tagHelper)
         {
-            _key = tagHelper.Name;
+            Key = tagHelper.Name;
             _prefix = nameof(DistributedCacheTagHelper);
         }
 
@@ -95,6 +94,9 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
             }
         }
 
+        // Internal for unit testing.
+        internal string Key { get; }
+
         /// <summary>
         /// Creates a <see cref="string"/> representation of the key.
         /// </summary>
@@ -110,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
             var builder = new StringBuilder(_prefix);
             builder
                 .Append(CacheKeyTokenSeparator)
-                .Append(_key);
+                .Append(Key);
 
             if (!string.IsNullOrEmpty(_varyBy))
             {
@@ -174,7 +176,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
         /// <inheritdoc />
         public bool Equals(CacheTagKey other)
         {
-            return string.Equals(other._key, _key, StringComparison.Ordinal) &&
+            return string.Equals(other.Key, Key, StringComparison.Ordinal) &&
                 other._expiresAfter == _expiresAfter &&
                 other._expiresOn == _expiresOn &&
                 other._expiresSliding == _expiresSliding &&
@@ -203,7 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers.Cache
 
             var hashCodeCombiner = new HashCodeCombiner();
 
-            hashCodeCombiner.Add(_key, StringComparer.Ordinal);
+            hashCodeCombiner.Add(Key, StringComparer.Ordinal);
             hashCodeCombiner.Add(_expiresAfter);
             hashCodeCombiner.Add(_expiresOn);
             hashCodeCombiner.Add(_expiresSliding);

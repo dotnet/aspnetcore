@@ -459,8 +459,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 new TagHelperAttributeList { { "attr", "value" } },
                 getChildContentAsync: (useCachedResult, encoder) =>
                 {
-                    TagHelperContent tagHelperContent;
-                    if (!cache.TryGetValue("key1", out tagHelperContent))
+                    if (!cache.TryGetValue("key1", out TagHelperContent tagHelperContent))
                     {
                         tagHelperContent = expectedContent;
                         cache.Set("key1", tagHelperContent, cacheEntryOptions);
@@ -480,8 +479,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
             // Act - 1
             await cacheTagHelper.ProcessAsync(tagHelperContext, tagHelperOutput);
-            Task<IHtmlContent> cachedValue;
-            var result = cache.TryGetValue(cacheTagKey, out cachedValue);
+            var result = cache.TryGetValue(cacheTagKey, out Task<IHtmlContent> cachedValue);
 
             // Assert - 1
             Assert.Equal("HtmlEncode[[some-content]]", tagHelperOutput.Content.GetContent());
@@ -804,6 +802,74 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(encoder.Encode(expected), tagHelperOutput1.Content.GetContent());
         }
 
+        [Fact]
+        public async Task ProcessAsync_ThrowsExceptionForAwaiters_IfExecutorEncountersAnException()
+        {
+            // Arrange
+            var expected = new DivideByZeroException();
+            var cache = new TestMemoryCache();
+            var cacheTagHelper = new CacheTagHelper(cache, new HtmlTestEncoder())
+            {
+                ViewContext = GetViewContext(),
+                Enabled = true
+            };
+
+            var invokeCount = 0;
+            var tagHelperOutput = new TagHelperOutput(
+                "cache",
+                new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, _) =>
+                {
+                    invokeCount++;
+                    throw expected;
+                });
+
+            // Act
+            var task1 = Task.Run(() => cacheTagHelper.ProcessAsync(GetTagHelperContext(cache.Key1), tagHelperOutput));
+            var task2 = Task.Run(() => cacheTagHelper.ProcessAsync(GetTagHelperContext(cache.Key2), tagHelperOutput));
+
+            // Assert
+            await Assert.ThrowsAsync<DivideByZeroException>(() => task1);
+            await Assert.ThrowsAsync<DivideByZeroException>(() => task2);
+            Assert.Equal(1, invokeCount);
+        }
+
+        [Fact]
+        public async Task ProcessAsync_AwaitersUseTheResultOfExecutor()
+        {
+            // Arrange
+            var expected = "Hello world";
+            var cache = new TestMemoryCache();
+            var encoder = new HtmlTestEncoder();
+            var cacheTagHelper = new CacheTagHelper(cache, encoder)
+            {
+                ViewContext = GetViewContext(),
+                Enabled = true
+            };
+
+            var invokeCount = 0;
+            var tagHelperOutput = new TagHelperOutput(
+                "cache",
+                new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, _) =>
+                {
+                    invokeCount++;
+
+                    var content = new DefaultTagHelperContent();
+                    content.SetContent(expected);
+                    return Task.FromResult<TagHelperContent>(content);
+                });
+
+            // Act
+            var task1 = Task.Run(() => cacheTagHelper.ProcessAsync(GetTagHelperContext(cache.Key1), tagHelperOutput));
+            var task2 = Task.Run(() => cacheTagHelper.ProcessAsync(GetTagHelperContext(cache.Key2), tagHelperOutput));
+
+            // Assert
+            await Task.WhenAll(task1, task2);
+            Assert.Equal(encoder.Encode(expected), tagHelperOutput.Content.GetContent());
+            Assert.Equal(1, invokeCount);
+        }
+
         private static ViewContext GetViewContext()
         {
             var actionContext = new ActionContext(new DefaultHttpContext(), new RouteData(), new ActionDescriptor());
@@ -841,6 +907,91 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     tagHelperContent.SetHtmlContent(childContent);
                     return Task.FromResult<TagHelperContent>(tagHelperContent);
                 });
+        }
+
+        private class TestCacheEntry : ICacheEntry
+        {
+            public object Key { get; set; }
+            public object Value { get; set; }
+            public DateTimeOffset? AbsoluteExpiration { get; set; }
+            public TimeSpan? AbsoluteExpirationRelativeToNow { get; set; }
+            public TimeSpan? SlidingExpiration { get; set; }
+
+            public IList<IChangeToken> ExpirationTokens { get; } = new List<IChangeToken>();
+
+            public IList<PostEvictionCallbackRegistration> PostEvictionCallbacks { get; } =
+                new List<PostEvictionCallbackRegistration>();
+
+            public CacheItemPriority Priority { get; set; }
+
+            public Action DisposeCallback { get; set; }
+
+            public void Dispose() => DisposeCallback();
+        }
+
+        // Simulates the scenario where a call to CacheTagHelper.ProcessAsync appears immediately after a prior one has assigned
+        // a TaskCancellationSource as an entry. We want to ensure that both calls use the results of the TCS as their output.
+        private class TestMemoryCache : IMemoryCache
+        {
+            private const int WaitTimeout = 3000;
+            public readonly string Key1 = "Key1";
+            public readonly string Key2 = "Key2";
+            public readonly ManualResetEventSlim ManualResetEvent1 = new ManualResetEventSlim();
+            public readonly ManualResetEventSlim ManualResetEvent2 = new ManualResetEventSlim();
+            public TestCacheEntry Entry { get; private set; }
+
+            public ICacheEntry CreateEntry(object key)
+            {
+                if (Entry != null)
+                {
+                    // We're being invoked in the inner "CreateEntry" call where the TCS is replaced by the GetChildContentAsync
+                    // Task. Wait for the other concurrent Task to grab the TCS before we proceed.
+                    Assert.True(ManualResetEvent1.Wait(WaitTimeout));
+                }
+
+                var cacheKey = Assert.IsType<CacheTagKey>(key);
+                Assert.Equal(Key1, cacheKey.Key);
+
+                Entry = new TestCacheEntry
+                {
+                    Key = key,
+                    DisposeCallback = ManualResetEvent2.Set,
+                };
+
+                return Entry;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public void Remove(object key)
+            {
+            }
+
+            public bool TryGetValue(object key, out object value)
+            {
+                var cacheKey = Assert.IsType<CacheTagKey>(key);
+                if (cacheKey.Key == Key2)
+                {
+                    Assert.True(ManualResetEvent2.Wait(WaitTimeout));
+
+                    Assert.NotNull(Entry);
+                    value = Entry.Value;
+                    Assert.NotNull(value);
+
+                    ManualResetEvent1.Set();
+
+                    return true;
+                }
+                else if (cacheKey.Key == Key1)
+                {
+                    value = null;
+                    return false;
+                }
+
+                throw new Exception();
+            }
         }
     }
 }
