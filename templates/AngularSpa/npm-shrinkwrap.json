@@ -17,6 +17,18 @@
       "from": "@angular/compiler@4.2.5",
       "resolved": "https://registry.npmjs.org/@angular/compiler/-/compiler-4.2.5.tgz"
     },
+    "@angular/compiler-cli": {
+      "version": "4.2.5",
+      "from": "@angular/compiler-cli@latest",
+      "resolved": "https://registry.npmjs.org/@angular/compiler-cli/-/compiler-cli-4.2.5.tgz",
+      "dependencies": {
+        "minimist": {
+          "version": "1.2.0",
+          "from": "minimist@>=1.2.0 <2.0.0",
+          "resolved": "https://registry.npmjs.org/minimist/-/minimist-1.2.0.tgz"
+        }
+      }
+    },
     "@angular/core": {
       "version": "4.2.5",
       "from": "@angular/core@4.2.5",
@@ -51,6 +63,23 @@
       "version": "4.2.5",
       "from": "@angular/router@4.2.5",
       "resolved": "https://registry.npmjs.org/@angular/router/-/router-4.2.5.tgz"
+    },
+    "@angular/tsc-wrapped": {
+      "version": "4.2.5",
+      "from": "@angular/tsc-wrapped@4.2.5",
+      "resolved": "https://registry.npmjs.org/@angular/tsc-wrapped/-/tsc-wrapped-4.2.5.tgz"
+    },
+    "@ngtools/webpack": {
+      "version": "1.5.0",
+      "from": "@ngtools/webpack@latest",
+      "resolved": "https://registry.npmjs.org/@ngtools/webpack/-/webpack-1.5.0.tgz",
+      "dependencies": {
+        "loader-utils": {
+          "version": "1.1.0",
+          "from": "loader-utils@>=1.0.2 <2.0.0",
+          "resolved": "https://registry.npmjs.org/loader-utils/-/loader-utils-1.1.0.tgz"
+        }
+      }
     },
     "@types/chai": {
       "version": "4.0.1",
@@ -1942,6 +1971,11 @@
       "from": "macaddress@>=0.2.8 <0.3.0",
       "resolved": "https://registry.npmjs.org/macaddress/-/macaddress-0.2.8.tgz"
     },
+    "magic-string": {
+      "version": "0.19.1",
+      "from": "magic-string@>=0.19.0 <0.20.0",
+      "resolved": "https://registry.npmjs.org/magic-string/-/magic-string-0.19.1.tgz"
+    },
     "map-cache": {
       "version": "0.2.2",
       "from": "map-cache@>=0.2.2 <0.3.0",
@@ -3288,6 +3322,18 @@
       "from": "to-string-loader@1.1.5",
       "resolved": "https://registry.npmjs.org/to-string-loader/-/to-string-loader-1.1.5.tgz"
     },
+    "tsickle": {
+      "version": "0.21.6",
+      "from": "tsickle@>=0.21.0 <0.22.0",
+      "resolved": "https://registry.npmjs.org/tsickle/-/tsickle-0.21.6.tgz",
+      "dependencies": {
+        "minimist": {
+          "version": "1.2.0",
+          "from": "minimist@^1.2.0",
+          "resolved": "https://registry.npmjs.org/minimist/-/minimist-1.2.0.tgz"
+        }
+      }
+    },
     "tslib": {
       "version": "1.7.1",
       "from": "tslib@>=1.7.1 <2.0.0",
@@ -3455,6 +3501,11 @@
       "version": "1.0.1",
       "from": "vendors@>=1.0.0 <2.0.0",
       "resolved": "https://registry.npmjs.org/vendors/-/vendors-1.0.1.tgz"
+    },
+    "vlq": {
+      "version": "0.2.2",
+      "from": "vlq@>=0.2.1 <0.3.0",
+      "resolved": "https://registry.npmjs.org/vlq/-/vlq-0.2.2.tgz"
     },
     "vm-browserify": {
       "version": "0.0.4",

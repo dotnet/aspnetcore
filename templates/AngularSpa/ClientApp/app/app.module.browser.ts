@@ -10,8 +10,12 @@ import { AppComponent } from './components/app/app.component';
         AppModuleShared
     ],
     providers: [
-        { provide: 'ORIGIN_URL', useValue: location.origin }
+        { provide: 'ORIGIN_URL', useFactory: getOriginUrl }
     ]
 })
 export class AppModule {
+}
+
+export function getOriginUrl() { 
+    return location.origin; 
 }
