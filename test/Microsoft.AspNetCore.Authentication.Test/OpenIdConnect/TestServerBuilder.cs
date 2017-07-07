@@ -109,11 +109,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                 })
                 .ConfigureServices(services =>
                 {
-                    services.AddAuthentication(o =>
-                    {
-                        o.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                    });
-                    services.AddAuthentication()
+                    services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                         .AddCookie()
                         .AddOpenIdConnect(options);
                 });

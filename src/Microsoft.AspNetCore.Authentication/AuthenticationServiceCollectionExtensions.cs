@@ -27,6 +27,9 @@ namespace Microsoft.Extensions.DependencyInjection
             return new AuthenticationBuilder(services);
         }
 
+        public static AuthenticationBuilder AddAuthentication(this IServiceCollection services, string defaultScheme)
+            => services.AddAuthentication(o => o.DefaultScheme = defaultScheme);
+
         public static AuthenticationBuilder AddAuthentication(this IServiceCollection services, Action<AuthenticationOptions> configureOptions) {
             if (services == null)
             {
