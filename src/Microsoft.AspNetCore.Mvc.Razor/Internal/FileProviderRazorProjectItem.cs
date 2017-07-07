@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             FileInfo = fileInfo;
             BasePath = basePath;
-            Path = path;
+            FilePath = path;
         }
 
         public IFileInfo FileInfo { get; }
 
         public override string BasePath { get; }
 
-        public override string Path { get; }
+        public override string FilePath { get; }
 
         public override bool Exists => FileInfo.Exists;
 
