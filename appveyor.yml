@@ -2,6 +2,9 @@
   - git config --global core.autocrlf true
 environment:
   AUTOBAHN_SUITES_LOG: 1
+  global:
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    DOTNET_CLI_TELEMETRY_OPTOUT: 1
 branches:
   only:
     - master
@@ -11,10 +14,6 @@ branches:
 build_script:
   - ps: .\build.ps1
 clone_depth: 1
-environment:
-  global:
-    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
-    DOTNET_CLI_TELEMETRY_OPTOUT: 1
 test: off
 deploy: off
 os: Visual Studio 2017
