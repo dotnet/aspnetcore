@@ -263,38 +263,17 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         }
 
         [Fact]
-        public void WriteLineNumberDirective_UsesFilePath_WhenFileInSourceLocationIsNull()
+        public void WriteLineNumberDirective_UsesFilePath_FromSourceLocation()
         {
             // Arrange
             var filePath = "some-path";
+            var mappingLocation = new SourceSpan(filePath, 10, 4, 3, 9);
+
             var writer = new CodeWriter();
             var expected = $"#line 5 \"{filePath}\"" + writer.NewLine;
-            var sourceLocation = new SourceLocation(10, 4, 3);
-            var mappingLocation = new SourceSpan(sourceLocation, 9);
 
             // Act
-            writer.WriteLineNumberDirective(mappingLocation, filePath);
-            var code = writer.GenerateCode();
-
-            // Assert
-            Assert.Equal(expected, code);
-        }
-
-        [Theory]
-        [InlineData("")]
-        [InlineData("source-location-file-path")]
-        public void WriteLineNumberDirective_UsesSourceLocationFilePath_IfAvailable(
-            string sourceLocationFilePath)
-        {
-            // Arrange
-            var filePath = "some-path";
-            var writer = new CodeWriter();
-            var expected = $"#line 5 \"{sourceLocationFilePath}\"" + writer.NewLine;
-            var sourceLocation = new SourceLocation(sourceLocationFilePath, 10, 4, 3);
-            var mappingLocation = new SourceSpan(sourceLocation, 9);
-
-            // Act
-            writer.WriteLineNumberDirective(mappingLocation, filePath);
+            writer.WriteLineNumberDirective(mappingLocation);
             var code = writer.GenerateCode();
 
             // Assert

@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteTagHelperHtmlAttributeValue(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute MyProp = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute(""Foo"", new global::Microsoft.AspNetCore.Html.HtmlString(""Bar""), global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 ",
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteTagHelperHtmlAttributeValue(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute _tagHelper1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute(""Foo"");
 ",
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteTagHelperHtmlAttribute(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"__tagHelperExecutionContext.AddHtmlAttribute(_tagHelper1);
 ",
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteTagHelperPropertyValue(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"private static readonly global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute _tagHelper1 = new global::Microsoft.AspNetCore.Razor.TagHelpers.TagHelperAttribute(""Foo"", ""Bar"", global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 ",
@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"__FooTagHelper.FooProp = (string)_tagHelper1.Value;
 __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
@@ -197,7 +197,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"if (__FooTagHelper.FooProp == null)
 {
@@ -259,7 +259,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
             extension.WriteTagHelperProperty(context, node2);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"__FooTagHelper.FooProp[""Foo""] = (string)_tagHelper1.Value;
 __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);

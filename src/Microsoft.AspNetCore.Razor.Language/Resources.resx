@@ -243,4 +243,7 @@
   <data name="IntermediateNodes_InvalidParentNode" xml:space="preserve">
     <value>The '{0}' node type can only be used as a direct child of a '{1}' node.</value>
   </data>
+  <data name="CodeWriter_InvalidNewLine" xml:space="preserve">
+    <value>Invalid newline sequence '{0}'. Support newline sequences are '\r\n' and '\n'.</value>
+  </data>
 </root>

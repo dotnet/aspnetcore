@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             writer.WriteHtmlAttributeValue(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"AddHtmlAttributeValue("""", 16, ""hello-world"", 16, 11, true);
 ",
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             writer.WriteCSharpExpressionAttributeValue(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"#line 1 ""test.cshtml""
 AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
@@ -79,7 +79,7 @@ AddHtmlAttributeValue("" "", 27, false, 28, 6, false);
             writer.WriteCSharpCodeAttributeValue(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"AddHtmlAttributeValue("" "", 27, new Microsoft.AspNetCore.Mvc.Razor.HelperResult(async(__razor_attribute_value_writer) => {
     PushWriter(__razor_attribute_value_writer);

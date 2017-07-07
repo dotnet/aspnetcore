@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             writer.WriteCSharpExpression(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"#line 1 ""test.cshtml""
 WriteLiteral(i++);

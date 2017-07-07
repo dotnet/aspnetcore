@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteTagHelperBody(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"Render Children
 ",
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteTagHelperBody(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"__tagHelperExecutionContext = __tagHelperScopeManager.Begin(""p"", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.SelfClosing, ""test"", async() => {
     Render Children
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteTagHelperCreate(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"__TestNamespace_MyTagHelper = CreateTagHelper<global::TestNamespace.MyTagHelper>();
 ",
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteTagHelperCreate(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"__TestNamespace_MyTagHelper = CreateTagHelper<global::TestNamespace.MyTagHelper>();
 __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
@@ -202,7 +202,7 @@ __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
             extension.WriteTagHelperExecute(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
                 @"",
                 csharp,
@@ -225,7 +225,7 @@ __tagHelperExecutionContext.Add(__TestNamespace_MyTagHelper);
             extension.WriteTagHelperExecute(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"await __tagHelperRunner.RunAsync(__tagHelperExecutionContext);
 if (!__tagHelperExecutionContext.Output.IsContentModified)
@@ -270,7 +270,7 @@ __tagHelperExecutionContext = __tagHelperScopeManager.End();
             extension.WriteTagHelperHtmlAttribute(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"Render Children
 Render Children
@@ -306,7 +306,7 @@ Render Children
             extension.WriteTagHelperHtmlAttribute(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"BeginWriteTagHelperAttribute();
 Render Children
@@ -348,7 +348,7 @@ __tagHelperExecutionContext.AddHtmlAttribute(""name"", Html.Raw(__tagHelperStrin
             extension.WriteTagHelperHtmlAttribute(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"BeginAddHtmlAttributeValues(__tagHelperExecutionContext, ""name"", 2, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
 Render Children
@@ -391,7 +391,7 @@ EndAddHtmlAttributeValues(__tagHelperExecutionContext);
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"Render Children
 __InputTagHelper.StringProp = ""value"";
@@ -432,7 +432,7 @@ __InputTagHelper.StringProp = ""value"";
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"Render Children
 __InputTagHelper.StringProp = string.Empty;
@@ -474,7 +474,7 @@ __InputTagHelper.StringProp = string.Empty;
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"#line 3 ""test.cshtml""
 __InputTagHelper.IntProp = 32;
@@ -522,7 +522,7 @@ __InputTagHelper.IntProp = 32;
             extension.WriteTagHelperProperty(context, node2);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"__InputTagHelper.IntProp = __OtherTagHelper.IntProp;
 ",
@@ -562,7 +562,7 @@ __InputTagHelper.IntProp = 32;
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"__InputTagHelper.IntProp = 32;
 ",
@@ -603,7 +603,7 @@ __InputTagHelper.IntProp = 32;
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"#line 3 ""test.cshtml""
 __InputTagHelper.IntIndexer[""bound""] = 32;
@@ -647,7 +647,7 @@ __InputTagHelper.IntIndexer[""bound""] = 32;
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"__InputTagHelper.IntIndexer[""bound""] = 32;
 ",
@@ -687,7 +687,7 @@ __InputTagHelper.IntIndexer[""bound""] = 32;
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
 
             // The attribute value is not rendered inline because we are not using the preallocated writer.
             Assert.Equal(
@@ -734,7 +734,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.St
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"#line 3 ""test.cshtml""
 __InputTagHelper.IntProp = 32;
@@ -783,7 +783,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
             extension.WriteTagHelperProperty(context, node2);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"__InputTagHelper.IntProp = __OtherTagHelper.IntProp;
 ",
@@ -823,7 +823,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"__InputTagHelper.IntProp = 32;
 __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.IntProp, global::Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeValueStyle.DoubleQuotes);
@@ -865,7 +865,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"if (__InputTagHelper.IntIndexer == null)
 {
@@ -934,7 +934,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             extension.WriteTagHelperProperty(context, node2);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"#line 3 ""test.cshtml""
 __InputTagHelper.IntIndexer[""bound""] = 32;
@@ -979,7 +979,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             extension.WriteTagHelperProperty(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"if (__InputTagHelper.IntIndexer == null)
 {
@@ -1005,7 +1005,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             extension.WriteTagHelperRuntime(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
                 @"",
                 csharp,
@@ -1025,7 +1025,7 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
             extension.WriteTagHelperRuntime(context, node);
 
             // Assert
-            var csharp = context.CodeWriter.Builder.ToString();
+            var csharp = context.CodeWriter.GenerateCode();
             Assert.Equal(
 @"#line hidden
 #pragma warning disable 0169

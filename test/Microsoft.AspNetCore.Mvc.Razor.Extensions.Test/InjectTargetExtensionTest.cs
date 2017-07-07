@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal(
                 "[global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]" + Environment.NewLine +
                 "public PropertyType PropertyName { get; private set; }" + Environment.NewLine,
-                context.CodeWriter.Builder.ToString());
+                context.CodeWriter.GenerateCode());
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 "public PropertyType<ModelType> PropertyName { get; private set; }" + Environment.NewLine + Environment.NewLine +
                 "#line default" + Environment.NewLine +
                 "#line hidden" + Environment.NewLine,
-                context.CodeWriter.Builder.ToString());
+                context.CodeWriter.GenerateCode());
         }
     }
 }

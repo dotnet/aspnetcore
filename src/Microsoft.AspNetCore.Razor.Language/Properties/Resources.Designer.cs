@@ -598,6 +598,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatIntermediateNodes_InvalidParentNode(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("IntermediateNodes_InvalidParentNode"), p0, p1);
 
+        /// <summary>
+        /// Invalid newline sequence '{0}'. Support newline sequences are '\r\n' and '\n'.
+        /// </summary>
+        internal static string CodeWriter_InvalidNewLine
+        {
+            get => GetString("CodeWriter_InvalidNewLine");
+        }
+
+        /// <summary>
+        /// Invalid newline sequence '{0}'. Support newline sequences are '\r\n' and '\n'.
+        /// </summary>
+        internal static string FormatCodeWriter_InvalidNewLine(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("CodeWriter_InvalidNewLine"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
