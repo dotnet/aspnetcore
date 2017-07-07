@@ -248,7 +248,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             public bool ShouldMatch { get; set; } = true;
 
-            public Action<ICodeTargetBuilder> CodeTargetCallback { get; set; }
+            public Action<CodeTargetBuilder> CodeTargetCallback { get; set; }
 
             public string Namespace { get; set;  }
 
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 @method.MethodName = Method;
             }
 
-            protected override void ConfigureTarget(ICodeTargetBuilder builder)
+            protected override void ConfigureTarget(CodeTargetBuilder builder)
             {
                 CodeTargetCallback?.Invoke(builder);
             }

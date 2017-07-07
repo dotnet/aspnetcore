@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             });
         }
 
-        protected virtual void ConfigureTarget(ICodeTargetBuilder builder)
+        protected virtual void ConfigureTarget(CodeTargetBuilder builder)
         {
             // Intentionally empty.
         }

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 {
-    internal class DefaultCodeTargetBuilder : ICodeTargetBuilder
+    internal class DefaultCodeTargetBuilder : CodeTargetBuilder
     {
         public DefaultCodeTargetBuilder(RazorCodeDocument codeDocument, RazorCodeGenerationOptions options)
         {
@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             TargetExtensions = new List<ICodeTargetExtension>();
         }
 
-        public RazorCodeDocument CodeDocument { get; }
+        public override RazorCodeDocument CodeDocument { get; }
 
-        public RazorCodeGenerationOptions Options { get; }
+        public override RazorCodeGenerationOptions Options { get; }
 
-        public ICollection<ICodeTargetExtension> TargetExtensions { get; }
+        public override ICollection<ICodeTargetExtension> TargetExtensions { get; }
 
-        public CodeTarget Build()
+        public override CodeTarget Build()
         {
             return new DefaultCodeTarget(Options, TargetExtensions);
         }

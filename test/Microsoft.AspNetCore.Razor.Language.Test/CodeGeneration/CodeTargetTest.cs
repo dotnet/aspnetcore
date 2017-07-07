@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
         {
             // Arrange
             var wasCalled = false;
-            Action<ICodeTargetBuilder> @delegate = (b) => { wasCalled = true; };
+            Action<CodeTargetBuilder> @delegate = (b) => { wasCalled = true; };
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             var options = RazorCodeGenerationOptions.CreateDefault();
