@@ -4,7 +4,7 @@ install:
    - ps: Install-Product node 6.9.2 x64
    # .NET Core SDK binaries
    # Download .NET Core 2.0 Preview 3 SDK and add to PATH
-   - ps: $urlCurrent = "https://dotnetcli.azureedge.net/dotnet/Sdk/2.0.0-preview3-006638/dotnet-sdk-2.0.0-preview3-006638-win-x64.zip"
+   - ps: $urlCurrent = "https://dotnetcli.azureedge.net/dotnet/Sdk/2.0.0-preview3-006670/dotnet-sdk-2.0.0-preview3-006670-win-x64.zip"
    - ps: $env:DOTNET_INSTALL_DIR = "$pwd\.dotnetsdk"
    - ps: mkdir $env:DOTNET_INSTALL_DIR -Force | Out-Null
    - ps: $tempFileCurrent = [System.IO.Path]::Combine([System.IO.Path]::GetTempPath(), [System.IO.Path]::GetRandomFileName())
