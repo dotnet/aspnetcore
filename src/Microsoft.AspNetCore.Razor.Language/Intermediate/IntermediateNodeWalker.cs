@@ -7,11 +7,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 {
     public abstract class IntermediateNodeWalker : IntermediateNodeVisitor
     {
-        private readonly Stack<IntermediateNode> _ancestors = new Stack<IntermediateNode>();
+        private readonly List<IntermediateNode> _ancestors = new List<IntermediateNode>();
 
-        protected IEnumerable<IntermediateNode> Ancestors => _ancestors;
+        protected IReadOnlyList<IntermediateNode> Ancestors => _ancestors;
 
-        protected IntermediateNode Parent => _ancestors.Count > 0 ? _ancestors.Peek() : null;
+        protected IntermediateNode Parent => _ancestors.Count > 0 ? _ancestors[0] : null;
 
         public override void VisitDefault(IntermediateNode node)
         {
@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
                 return;
             }
 
-            _ancestors.Push(node);
+            _ancestors.Insert(0, node);
 
             try
             {
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             }
             finally
             {
-                _ancestors.Pop();
+                _ancestors.RemoveAt(0);
             }
         }
     }

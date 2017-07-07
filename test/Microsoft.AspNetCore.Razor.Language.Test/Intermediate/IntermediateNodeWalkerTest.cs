@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         private class DerivedIntermediateNodeWalker : IntermediateNodeWalker
         {
-            public new IEnumerable<IntermediateNode> Ancestors => base.Ancestors;
+            public new IReadOnlyList<IntermediateNode> Ancestors => base.Ancestors;
 
             public new IntermediateNode Parent => base.Parent;
             
