@@ -48,7 +48,7 @@
 
   <Target Name="_BuildRepository" DependsOnTargets="_PinVersions">
     <PropertyGroup>
-      <BuildArguments>$(_RepositoryBuildTargets) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration)</BuildArguments>
+      <BuildArguments>$(_RepositoryBuildTargets) $(RepositoryBuildArguments)</BuildArguments>
       <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts</RepositoryArtifactsRoot>
       <RepositoryArtifactsBuildDirectory>$(RepositoryArtifactsRoot)\build\</RepositoryArtifactsBuildDirectory>
       <RepositoryArtifactsMSBuildDirectory>$(RepositoryArtifactsRoot)\msbuild\</RepositoryArtifactsMSBuildDirectory>

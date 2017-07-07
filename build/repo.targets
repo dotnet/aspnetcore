@@ -110,11 +110,13 @@
      DependsOnTargets="_FilterRepositories;_FindDotNetPath;_GenerateRestoreGraphSpecs;_GenerateBuildGraph;_UpdateNuGetConfig;_CreateRepositoriesListWithCommits">
 
     <PropertyGroup>
+      <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
+
       <_BuildRepositoryProperties>
         UniverseBuildDir=$(BuildDir);
         UniverseMSBuildDir=$(ArtifactsDir)msbuild;
         BuildInParallel=$(BuildInParallel);
-        BuildNumber=$(BuildNumber);
         Configuration=$(Configuration);
         DotNetPath=$(DotNetPath);
         KoreBuildDirectory=$(MSBuildProjectDirectory)\;
@@ -124,6 +126,7 @@
         _CloneRepositoryRoot=$(_CloneRepositoryRoot);
         _DependencyPackagesDirectory=$(_DependencyPackagesDirectory);
         _RepositoryBuildTargets=$(_RepositoryBuildTargets);
+        RepositoryBuildArguments=$(RepositoryBuildArguments);
         _RestoreGraphSpecsDirectory=$(_RestoreGraphSpecsDirectory);
         PackagePublisherPath=$(PackagePublisherNetCoreApp)
       </_BuildRepositoryProperties>
