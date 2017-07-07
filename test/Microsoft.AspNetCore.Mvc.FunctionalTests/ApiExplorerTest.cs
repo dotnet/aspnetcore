@@ -1,8 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -10,8 +11,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Testing.xunit;
 using Newtonsoft.Json;
 using Xunit;
-using Microsoft.AspNetCore.Http;
-using System.Net;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
@@ -571,7 +570,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var type1 = typeof(ApiExplorerWebSite.Product).FullName;
-            var type2 = typeof(ModelStateDictionary).FullName;
+            var type2 = typeof(SerializableError).FullName;
             var expectedMediaTypes = new[] { "application/json", "text/json", "application/xml", "text/xml" };
 
             // Act
@@ -603,7 +602,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var type1 = typeof(ApiExplorerWebSite.Product).FullName;
-            var type2 = typeof(ModelStateDictionary).FullName;
+            var type2 = typeof(SerializableError).FullName;
             var expectedMediaTypes = new[] { "text/xml" };
 
             // Act
@@ -635,7 +634,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var type1 = typeof(ApiExplorerWebSite.Product).FullName;
-            var type2 = typeof(ModelStateDictionary).FullName;
+            var type2 = typeof(SerializableError).FullName;
             var expectedMediaTypes = new[] { "application/json", "text/json", "application/xml", "text/xml" };
 
             // Act
@@ -667,7 +666,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
             // Arrange
             var type1 = typeof(ApiExplorerWebSite.Product).FullName;
-            var type2 = typeof(ModelStateDictionary).FullName;
+            var type2 = typeof(SerializableError).FullName;
             var expectedMediaTypes = new[] { "text/xml" };
 
             // Act
