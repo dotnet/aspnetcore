@@ -52,13 +52,13 @@ namespace TestSites
                     }
                     else
                     {
-                        return context.ChallengeAsync();
+                        return context.ChallengeAsync(IISDefaults.AuthenticationScheme);
                     }
                 }
 
                 if (context.Request.Path.Equals("/Forbidden"))
                 {
-                    return context.ForbidAsync();
+                    return context.ForbidAsync(IISDefaults.AuthenticationScheme);
                 }
 
                 if (context.Request.Path.Equals("/RestrictedNTLM"))
