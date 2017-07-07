@@ -1,0 +1,8 @@
+{
+    "default": { // Rules to run for packages not listed in any other set.
+        "rules": [
+            "SigningVerificationCompositeRule"
+        ],
+        "packages": { }
+    }
+}
