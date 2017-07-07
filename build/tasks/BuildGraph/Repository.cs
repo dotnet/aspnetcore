@@ -6,9 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using NuGet.LibraryModel;
 using NuGet.ProjectModel;
-using UniverseTools;
 
-namespace BuildGraph
+namespace RepoTools.BuildGraph
 {
     [DebuggerDisplay("{Name}")]
     public class Repository : IEquatable<Repository>
@@ -26,25 +25,17 @@ namespace BuildGraph
 
         public IEnumerable<Project> AllProjects => Projects.Concat(SupportProjects);
 
-        public static IList<Repository> ReadAllRepositories(string repositoriesRoot, DependencyGraphSpecProvider provider)
+        public static IList<Repository> ReadAllRepositories(IList<string> repositoryPaths, DependencyGraphSpecProvider provider)
         {
-            var directories = new DirectoryInfo(repositoriesRoot).GetDirectories();
-            var repositories = new Repository[directories.Length];
+            var repositories = new Repository[repositoryPaths.Count];
 
-            var sw = Stopwatch.StartNew();
-            Parallel.For(0, directories.Length, new ParallelOptions { MaxDegreeOfParallelism = 6 }, i =>
+            Parallel.For(0, repositoryPaths.Count, new ParallelOptions { MaxDegreeOfParallelism = 6 }, i =>
             {
-                var directoryInfo = directories[i];
-                Console.WriteLine($"Gathering dependency information from {directoryInfo.Name}.");
-
-                var repository = Read(provider, directoryInfo.Name, directoryInfo.FullName);
+                var repositoryPath = repositoryPaths[i];
+                var repositoryName = Path.GetFileName(repositoryPath);
+                var repository = Read(provider, repositoryName, repositoryPath);
                 repositories[i] = repository;
-
-                Console.WriteLine($"Done gathering dependency information from {directoryInfo.Name}.");
             });
-            sw.Stop();
-
-            Console.WriteLine($"Done reading dependency information for all repos in {sw.Elapsed}.");
 
             return repositories;
         }
@@ -58,7 +49,8 @@ namespace BuildGraph
             var repository = new Repository(name);
 
             ReadSharedSourceProjects(Path.Combine(repositoryPath, "shared"), repository, repository.Projects);
-            var srcDirectory = Path.Combine(repositoryPath, "src");
+            var srcDirectory = Path.GetFullPath(Path.Combine(repositoryPath, "src"))
+                .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
 
             var solutionFiles = Directory.EnumerateFiles(repositoryPath, "*.sln");
             foreach (var file in solutionFiles)
@@ -67,7 +59,8 @@ namespace BuildGraph
                 var projects = spec.Projects.OrderBy(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ? 0 : 1);
                 foreach (var specProject in projects)
                 {
-                    var projectPath = Path.GetFullPath(specProject.FilePath);
+                    var projectPath = Path.GetFullPath(specProject.FilePath)
+                        .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
 
                     var projectGroup = projectPath.StartsWith(srcDirectory, StringComparison.OrdinalIgnoreCase) ?
                         repository.Projects :

@@ -1,8 +1,9 @@
 <Project>
+  <Import Project="RepositoryBuild.targets" />
+
   <PropertyGroup>
     <NuGetPublishVolatileFeed>https://dotnet.myget.org/F/aspnetcore-volatile-dev/api/v2/package</NuGetPublishVolatileFeed>
 
-    <_BuildGraphFile>$(BuildDir)BuildGraph.proj</_BuildGraphFile>
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
     <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)</_DependencyPackagesDirectory>
@@ -33,7 +34,7 @@
     <RemoveDir Directories="$(_CloneRepositoryRoot)" Condition="Exists('$(_CloneRepositoryRoot)')" />
   </Target>
 
-  <Target Name="_FilterRepositories">
+  <Target Name="_PrepareRepositories">
     <ItemGroup Condition="'$(KOREBUILD_REPOSITORY_INCLUDE)'!=''">
       <_RepositoriesToInclude Include="$(KOREBUILD_REPOSITORY_INCLUDE)" />
       <Repository
@@ -49,10 +50,12 @@
     <Error Text="KOREBUILD_REPOSITORY_EXCLUDE AND KOREBUILD_REPOSITORY_INCLUDE are specified."
       Condition="'$(KOREBUILD_REPOSITORY_INCLUDE)' != '' AND '$(KOREBUILD_REPOSITORY_EXCLUDE)' != ''" />
 
-    <Message Text="%(Repository.CloneUrl)" />
+    <ItemGroup>
+      <Repository Update="%(Identity)" RepositoryPath="$(_CloneRepositoryRoot)%(Identity)" />
+    </ItemGroup>
   </Target>
 
-  <Target Name="CloneRepositories" DependsOnTargets="_FilterRepositories">
+  <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories">
     <ItemGroup>
       <_CloneRepository Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
@@ -72,6 +75,7 @@
     <MSBuild Projects="@(_CloneRepository)"
       Targets="_CloneRepository"
       BuildInParallel="$(BuildInParallel)" />
+
   </Target>
 
   <Target Name="_CloneRepository">
@@ -107,45 +111,9 @@
   </Target>
 
   <Target Name="BuildRepositories"
-     DependsOnTargets="_FilterRepositories;_FindDotNetPath;_GenerateRestoreGraphSpecs;_GenerateBuildGraph;_UpdateNuGetConfig;_CreateRepositoriesListWithCommits">
+     DependsOnTargets="_PrepareRepositories;_FindDotNetPath;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
 
-    <PropertyGroup>
-      <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
-
-      <_BuildRepositoryProperties>
-        UniverseBuildDir=$(BuildDir);
-        UniverseMSBuildDir=$(ArtifactsDir)msbuild;
-        BuildInParallel=$(BuildInParallel);
-        Configuration=$(Configuration);
-        DotNetPath=$(DotNetPath);
-        KoreBuildDirectory=$(MSBuildProjectDirectory)\;
-        KoreBuildProject=$(MSBuildProjectFile);
-        RepositoryRoot=$(RepositoryRoot);
-        _BuildGraphFile=$(_BuildGraphFile);
-        _CloneRepositoryRoot=$(_CloneRepositoryRoot);
-        _DependencyPackagesDirectory=$(_DependencyPackagesDirectory);
-        _RepositoryBuildTargets=$(_RepositoryBuildTargets);
-        RepositoryBuildArguments=$(RepositoryBuildArguments);
-        _RestoreGraphSpecsDirectory=$(_RestoreGraphSpecsDirectory);
-        PackagePublisherPath=$(PackagePublisherNetCoreApp)
-      </_BuildRepositoryProperties>
-
-      <_BuildRepositoryProperties Condition="'$(PublishPackages)'=='true'">
-        $(_BuildRepositoryProperties);
-        APIKey=$(APIKey);
-        NuGetPublishVolatileFeed=$(NuGetPublishVolatileFeed);
-        PublishPackages=$(PublishPackages)
-      </_BuildRepositoryProperties>
-    </PropertyGroup>
-
-    <MSBuild
-      Projects="$(MSBuildThisFileDirectory)RepositoryBuild.targets"
-      Targets="BuildRepositories"
-      Properties="$(_BuildRepositoryProperties)" />
-  </Target>
-
-  <Target Name="_GenerateRestoreGraphSpecs" DependsOnTargets="_FindDotNetPath">
+  <Target Name="_PrepareRestoreGraphSpecs" DependsOnTargets="_PrepareRepositories">
     <ItemGroup>
       <Solution Include="$(_CloneRepositoryRoot)%(Repository.Identity)\*.sln">
         <Repository>%(Repository.Identity)</Repository>
@@ -154,22 +122,26 @@
       <Solution>
         <AdditionalProperties>RestoreGraphOutputPath=$(_RestoreGraphSpecsDirectory)%(Solution.Repository)\%(Solution.FileName)%(Solution.Extension).json</AdditionalProperties>
       </Solution>
-    </ItemGroup>
 
+      <GraphSpecInputs Include="
+        @(Solution);
+        $(_CloneRepositoryRoot)**\*.csproj;
+        $(_CloneRepositoryRoot)**\dependencies.props" />
+      <GraphSpecOutputs Include="$(_RestoreGraphSpecsDirectory)%(Solution.Repository)\%(Solution.FileName)%(Solution.Extension).json" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_GenerateRestoreGraphSpecs" DependsOnTargets="_PrepareRestoreGraphSpecs" Inputs="@(GraphSpecInputs)" Outputs="@(GraphSpecOutputs)">
     <MSBuild
       Projects="@(Solution)"
       Targets="GenerateRestoreGraphFile"
       BuildInParallel="$(BuildInParallel)" />
   </Target>
 
-  <Target Name="_GenerateBuildGraph" DependsOnTargets="_FindDotNetPath">
-    <PropertyGroup>
-      <BuildGrapArgs>$(DotNetPath) run -r &quot;$(_CloneRepositoryRoot) &quot; --graph-specs-root &quot;$(_RestoreGraphSpecsDirectory) &quot; &quot;$(_BuildGraphFile)&quot;</BuildGrapArgs>
-      <BuildGrapArgs Condition="'$(BuildGraphOf)'!=''">$(BuildGrapArgs) --start-at $(BuildGraphOf)</BuildGrapArgs>
-    </PropertyGroup>
-    <Exec
-      Command="$(BuildGrapArgs)"
-      WorkingDirectory="$(RepositoryRoot)tools\BuildGraph\" />
+  <Target Name="_GenerateBuildGraph" DependsOnTargets="_GenerateRestoreGraphSpecs">
+    <RepoTasks.CalculateBuildGraph Repositories="@(Repository)" StartGraphAt="$(BuildGraphOf)" PackageSpecsDirectory="$(_RestoreGraphSpecsDirectory)">
+      <Output TaskParameter="RepositoriesToBuildInOrder" ItemName="RepositoryToBuildInOrder" />
+    </RepoTasks.CalculateBuildGraph>
   </Target>
 
   <Target Name="_UpdateNuGetConfig">
@@ -216,16 +188,14 @@
       -->
       <_CloneUrl>$([System.Environment]::GetEnvironmentVariable("vcsroot.%(Repository.Identity).url"))</_CloneUrl>
       <_CommitHash>$([System.Environment]::GetEnvironmentVariable("build.vcs.number.%(Repository.Identity)"))</_CommitHash>
-
-      <RepositoryCloneDirectory>$(_CloneRepositoryRoot)%(Repository.Identity)</RepositoryCloneDirectory>
     </PropertyGroup>
 
     <Warning Text="%(Repository.Identity) has not been cloned."
-      Condition="!Exists('$(RepositoryCloneDirectory)')" />
+      Condition="!Exists('%(Repository.RepositoryPath)')" />
 
     <GetGitCommitInfo
-      WorkingDirectory="$(RepositoryCloneDirectory)"
-      Condition="'$(_CommitHash)'=='' AND Exists('$(RepositoryCloneDirectory)')">
+      WorkingDirectory="%(Repository.RepositoryPath)"
+      Condition="'$(_CommitHash)'=='' AND Exists('%(Repository.RepositoryPath)')">
 
       <Output TaskParameter="CommitHash" PropertyName="_CommitHash" />
     </GetGitCommitInfo>
