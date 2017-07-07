@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public override void VisitDirective(DirectiveIntermediateNode node)
             {
-                if (node.Descriptor == Directive)
+                if (node.Directive == Directive)
                 {
                     DirectiveNode = node;
                     DirectiveTokens = node.Tokens;
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public override void VisitMalformedDirective(MalformedDirectiveIntermediateNode node)
             {
-                if (DirectiveTokens == null && node.Descriptor == Directive)
+                if (DirectiveTokens == null && node.Directive == Directive)
                 {
                     DirectiveNode = node;
                     DirectiveTokens = node.Tokens;

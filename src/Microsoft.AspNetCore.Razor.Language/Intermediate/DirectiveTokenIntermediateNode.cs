@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string Content { get; set; }
 
-        public DirectiveTokenDescriptor Descriptor { get; set; }
+        public DirectiveTokenDescriptor DirectiveToken { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

@@ -70,11 +70,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     var prefix = CSharpIdentifier.SanitizeClassName(Path.GetFileNameWithoutExtension(codeDocument.Source.FilePath));
                     if (@class != null && documentNode.DocumentKind == RazorPageDocumentClassifierPass.RazorPageDocumentKind)
                     {
-                        @class.Name = prefix + "_Page";
+                        @class.ClassName = prefix + "_Page";
                     }
                     else if (@class != null && documentNode.DocumentKind == MvcViewDocumentClassifierPass.MvcViewDocumentKind)
                     {
-                        @class.Name = prefix + "_View";
+                        @class.ClassName = prefix + "_View";
                     }
                 }
 
@@ -194,7 +194,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public override void VisitDirective(DirectiveIntermediateNode node)
             {
-                if (node.Descriptor == Directive)
+                if (node.Directive == Directive)
                 {
                     LastNamespaceDirective = node;
                 }

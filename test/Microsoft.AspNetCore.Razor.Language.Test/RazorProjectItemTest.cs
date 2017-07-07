@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var projectItem = new TestRazorProjectItem(path, basePath: "/");
 
             // Act
-            var fileName = projectItem.PathWithoutExtension;
+            var fileName = projectItem.FilePathWithoutExtension;
 
             // Assert
             Assert.Equal(expected, fileName);

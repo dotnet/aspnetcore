@@ -10,11 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
     {
         public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
-        public string Name { get; set; }
+        public string DirectiveName { get; set; }
 
         public IEnumerable<DirectiveTokenIntermediateNode> Tokens => Children.OfType<DirectiveTokenIntermediateNode>();
 
-        public DirectiveDescriptor Descriptor { get; set; }
+        public DirectiveDescriptor Directive { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

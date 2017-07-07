@@ -46,7 +46,7 @@ namespace RazorPageGenerator
                     .SetBaseType("Microsoft.Extensions.RazorViews.BaseView")
                     .ConfigureClass((document, @class) =>
                     {
-                        @class.Name = Path.GetFileNameWithoutExtension(document.Source.FilePath);
+                        @class.ClassName = Path.GetFileNameWithoutExtension(document.Source.FilePath);
                         @class.Modifiers.Clear();
                         @class.Modifiers.Add("internal");
                     });
@@ -134,7 +134,7 @@ namespace RazorPageGenerator
 
             public override string BasePath => _source.BasePath;
 
-            public override string Path => _source.Path;
+            public override string FilePath => _source.FilePath;
 
             // Mask the full name since we don't want a developer's local file paths to be commited.
             public override string PhysicalPath => _source.FileName;

@@ -76,19 +76,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             var match1 = new DirectiveIntermediateNode()
             {
-                Descriptor = directive,
+                Directive = directive,
             };
             builder.Add(match1);
 
             var nonMatch = new DirectiveIntermediateNode()
             {
-                Descriptor = directive2,
+                Directive = directive2,
             };
             builder.Add(nonMatch);
 
             var match2 = new DirectiveIntermediateNode()
             {
-                Descriptor = directive,
+                Directive = directive,
             };
             builder.Add(match2);
 

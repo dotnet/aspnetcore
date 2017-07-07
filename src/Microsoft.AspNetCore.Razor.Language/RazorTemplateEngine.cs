@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             if (!projectItem.Exists)
             {
-                throw new InvalidOperationException(Resources.FormatRazorTemplateEngine_ItemCouldNotBeFound(projectItem.Path));
+                throw new InvalidOperationException(Resources.FormatRazorTemplateEngine_ItemCouldNotBeFound(projectItem.FilePath));
             }
 
             var codeDocument = CreateCodeDocument(projectItem);
@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             if (!projectItem.Exists)
             {
-                throw new InvalidOperationException(Resources.FormatRazorTemplateEngine_ItemCouldNotBeFound(projectItem.Path));
+                throw new InvalidOperationException(Resources.FormatRazorTemplateEngine_ItemCouldNotBeFound(projectItem.FilePath));
             }
 
             var source = RazorSourceDocument.ReadFrom(projectItem);
@@ -233,7 +233,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var importsFileName = Options.ImportsFileName;
             if (!string.IsNullOrEmpty(importsFileName))
             {
-                return Project.FindHierarchicalItems(projectItem.Path, importsFileName);
+                return Project.FindHierarchicalItems(projectItem.FilePath, importsFileName);
             }
 
             return Enumerable.Empty<RazorProjectItem>();

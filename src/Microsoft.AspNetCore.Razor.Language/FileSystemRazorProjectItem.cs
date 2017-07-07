@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         public FileSystemRazorProjectItem(string basePath, string path, FileInfo file)
         {
             BasePath = basePath;
-            Path = path;
+            FilePath = path;
             File = file;
         }
 
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public override string BasePath { get; }
 
-        public override string Path { get; }
+        public override string FilePath { get; }
 
         public override bool Exists => File.Exists;
 

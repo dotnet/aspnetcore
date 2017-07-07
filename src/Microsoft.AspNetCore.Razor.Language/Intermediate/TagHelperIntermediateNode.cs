@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public string TagName { get; set; }
 
-        public ICollection<TagHelperDescriptor> TagHelpers { get; } = new List<TagHelperDescriptor>();
+        public IList<TagHelperDescriptor> TagHelpers { get; } = new List<TagHelperDescriptor>();
 
         public TagHelperBodyIntermediateNode Body => Children.OfType<TagHelperBodyIntermediateNode>().SingleOrDefault();
 

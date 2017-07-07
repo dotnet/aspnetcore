@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         private void WriteDesignTimeDirectiveToken(CodeRenderingContext context, DirectiveTokenIntermediateNode node)
         {
-            var tokenKind = node.Descriptor.Kind;
+            var tokenKind = node.DirectiveToken.Kind;
             if (!node.Source.HasValue ||
                 !string.Equals(
                     context.SourceDocument?.FilePath,

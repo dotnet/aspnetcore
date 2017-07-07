@@ -110,7 +110,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var path = projectItem.PhysicalPath;
             if (string.IsNullOrEmpty(path))
             {
-                path = projectItem.Path;
+                path = projectItem.FilePath;
             }
 
             using (var inputStream = projectItem.Read())

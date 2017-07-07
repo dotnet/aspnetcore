@@ -13,14 +13,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             string physicalPath = null,
             string basePath = "/")
         {
-            Path = path;
+            FilePath = path;
             PhysicalPath = physicalPath;
             BasePath = basePath;
         }
 
         public override string BasePath { get; }
 
-        public override string Path { get; }
+        public override string FilePath { get; }
 
         public override string PhysicalPath { get; }
 

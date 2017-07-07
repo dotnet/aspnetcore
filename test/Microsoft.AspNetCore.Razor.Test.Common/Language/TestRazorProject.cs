@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public TestRazorProject(IList<RazorProjectItem> items)
         {
-            _lookup = items.ToDictionary(item => item.Path);
+            _lookup = items.ToDictionary(item => item.FilePath);
         }
 
         public override IEnumerable<RazorProjectItem> EnumerateItems(string basePath)

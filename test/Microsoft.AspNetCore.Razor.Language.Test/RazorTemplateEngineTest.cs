@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             var import = Assert.Single(imports);
-            Assert.Equal(projectItem.Path, import.FilePath);
+            Assert.Equal(projectItem.FilePath, import.FilePath);
         }
 
         [Fact]
@@ -283,7 +283,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var imports = templateEngine.GetImportItems("/Views/Home/Index.cshtml");
 
             // Assert
-            var paths = imports.Select(i => i.Path);
+            var paths = imports.Select(i => i.FilePath);
             Assert.Equal(expected, paths);
         }
 
@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var imports = templateEngine.GetImportItems(projectItem);
 
             // Assert
-            var paths = imports.Select(i => i.Path);
+            var paths = imports.Select(i => i.FilePath);
             Assert.Equal(expected, paths);
         }
     }

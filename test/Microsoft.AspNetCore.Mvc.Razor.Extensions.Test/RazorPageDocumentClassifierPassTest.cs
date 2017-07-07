@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Assert
             Assert.Equal("global::Microsoft.AspNetCore.Mvc.RazorPages.Page", visitor.Class.BaseType);
             Assert.Equal(new[] { "public" }, visitor.Class.Modifiers);
-            Assert.Equal("Test_cshtml", visitor.Class.Name);
+            Assert.Equal("Test_cshtml", visitor.Class.ClassName);
         }
 
         [Theory]
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             visitor.Visit(irDocument);
 
             // Assert
-            Assert.Equal(expected, visitor.Class.Name);
+            Assert.Equal(expected, visitor.Class.ClassName);
         }
 
         [Fact]
@@ -184,7 +184,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             visitor.Visit(irDocument);
 
             // Assert
-            Assert.Equal(expected, visitor.Class.Name);
+            Assert.Equal(expected, visitor.Class.ClassName);
         }
 
         [Fact]
@@ -207,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             visitor.Visit(irDocument);
 
             // Assert
-            Assert.Equal(expected, visitor.Class.Name);
+            Assert.Equal(expected, visitor.Class.ClassName);
         }
 
         [Fact]
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             visitor.Visit(irDocument);
 
             // Assert
-            Assert.Equal("ExecuteAsync", visitor.Method.Name);
+            Assert.Equal("ExecuteAsync", visitor.Method.MethodName);
             Assert.Equal("global::System.Threading.Tasks.Task", visitor.Method.ReturnType);
             Assert.Equal(new[] { "public", "async", "override" }, visitor.Method.Modifiers);
         }

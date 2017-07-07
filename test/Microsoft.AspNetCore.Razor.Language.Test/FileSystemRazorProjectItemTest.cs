@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var projectItem = new FileSystemRazorProjectItem("/Views", "/Home.cshtml", fileInfo);
 
             // Assert
-            Assert.Equal("/Home.cshtml", projectItem.Path);
+            Assert.Equal("/Home.cshtml", projectItem.FilePath);
             Assert.Equal("/Views", projectItem.BasePath);
             Assert.True(projectItem.Exists);
             Assert.Equal("Home.cshtml", projectItem.FileName);

@@ -135,8 +135,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 {
                     "private",
                 },
-                Name = context.GetFieldName(tagHelper),
-                Type = "global::" + context.GetFullyQualifiedName(tagHelper),
+                FieldName = context.GetFieldName(tagHelper),
+                FieldType = "global::" + context.GetFullyQualifiedName(tagHelper),
             });
         }
 
@@ -310,7 +310,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                 }
 
                 var className = $"__Generated__{tagHelper.GetViewComponentName()}ViewComponentTagHelper";
-                var fullyQualifiedName = $"{Namespace.Content}.{Class.Name}.{className}";
+                var fullyQualifiedName = $"{Namespace.Content}.{Class.ClassName}.{className}";
                 var fieldName = GenerateFieldName(tagHelper);
 
                 _tagHelpers.Add(tagHelper, (className, fullyQualifiedName, fieldName));

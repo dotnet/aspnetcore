@@ -121,7 +121,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Push(@namespace);
             var @class = new ClassDeclarationIntermediateNode
             {
-                Name = "SomeName",
+                ClassName = "SomeName",
                 Annotations =
                 {
                     [CommonAnnotations.PrimaryClass] = CommonAnnotations.PrimaryClass,
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Push(@namespace);
             var @class = new ClassDeclarationIntermediateNode
             {
-                Name = "SomeName",
+                ClassName = "SomeName",
                 Annotations =
                 {
                     [CommonAnnotations.PrimaryClass] = CommonAnnotations.PrimaryClass,
@@ -214,7 +214,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Push(@namespace);
             var @class = new ClassDeclarationIntermediateNode
             {
-                Name = "SomeName",
+                ClassName = "SomeName",
                 Annotations =
                 {
                     [CommonAnnotations.PrimaryClass] = CommonAnnotations.PrimaryClass,
@@ -256,7 +256,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var builder = IntermediateNodeBuilder.Create(irDocument);
             var pageDirective = new DirectiveIntermediateNode
             {
-                Descriptor = PageDirective.Directive,
+                Directive = PageDirective.Directive,
             };
             builder.Add(pageDirective);
 
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Push(@namespace);
             var @class = new ClassDeclarationIntermediateNode
             {
-                Name = "SomeName",
+                ClassName = "SomeName",
                 Annotations =
                 {
                     [CommonAnnotations.PrimaryClass] = CommonAnnotations.PrimaryClass,
@@ -323,7 +323,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             builder.Push(@namespace);
             var @class = new ClassDeclarationIntermediateNode
             {
-                Name = "SomeName",
+                ClassName = "SomeName",
                 Annotations =
                 {
                     [CommonAnnotations.PrimaryClass] = CommonAnnotations.PrimaryClass,

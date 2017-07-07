@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public override void VisitDirective(DirectiveIntermediateNode node)
             {
-                if (node.Descriptor == Directive)
+                if (node.Directive == Directive)
                 {
                     Directives.Add(node);
                 }

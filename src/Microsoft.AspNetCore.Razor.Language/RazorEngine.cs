@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var configurationFeature = new DefaultDocumentClassifierPassFeature();
             configurationFeature.ConfigureClass.Add((document, @class) =>
             {
-                @class.Name = "Template";
+                @class.ClassName = "Template";
                 @class.Modifiers.Add("public");
             });
 
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             configurationFeature.ConfigureMethod.Add((document, method) =>
             {
-                method.Name = "ExecuteAsync";
+                method.MethodName = "ExecuteAsync";
                 method.ReturnType = $"global::{typeof(Task).FullName}";
 
                 method.Modifiers.Add("public");

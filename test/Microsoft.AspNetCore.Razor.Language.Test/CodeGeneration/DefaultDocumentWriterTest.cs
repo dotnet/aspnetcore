@@ -116,7 +116,7 @@ namespace TestNamespace
                 },
                 BaseType = "TestBase",
                 Interfaces = new List<string> { "IFoo", "IBar", },
-                Name = "TestClass",
+                ClassName = "TestClass",
             });
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
@@ -157,7 +157,7 @@ internal class TestClass : TestBase, IFoo, IBar
                     "virtual",
                     "async",
                 },
-                Name = "TestMethod",
+                MethodName = "TestMethod",
                 ReturnType = "string",
             });
 
@@ -200,8 +200,8 @@ internal virtual async string TestMethod()
                     "internal",
                     "readonly",
                 },
-                Name = "_foo",
-                Type = "string",
+                FieldName = "_foo",
+                FieldType = "string",
             });
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
@@ -239,8 +239,8 @@ internal readonly string _foo;
                     "internal",
                     "virtual",
                 },
-                Name = "Foo",
-                Type = "string",
+                PropertyName = "Foo",
+                PropertyType = "string",
             });
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();

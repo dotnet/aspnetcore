@@ -22,13 +22,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             }
 
             var @class = documentNode.FindPrimaryClass();
-            if (@class == null || string.IsNullOrEmpty(@class.Name))
+            if (@class == null || string.IsNullOrEmpty(@class.ClassName))
             {
                 // No class node or it's incomplete. Skip.
                 return;
             }
 
-            var generatedTypeName = $"{@namespace.Content}.{@class.Name}";
+            var generatedTypeName = $"{@namespace.Content}.{@class.ClassName}";
             var path = codeDocument.GetRelativePath();
             var escapedPath = EscapeAsVerbatimLiteral(path);
 

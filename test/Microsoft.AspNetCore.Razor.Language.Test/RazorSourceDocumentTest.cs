@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = RazorSourceDocument.ReadFrom(projectItem);
 
             // Assert
-            Assert.Equal(projectItem.Path, document.FilePath);
+            Assert.Equal(projectItem.FilePath, document.FilePath);
             Assert.Equal(projectItem.Content, ReadContent(document));
         }
 

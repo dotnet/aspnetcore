@@ -201,8 +201,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 {
                     "private",
                 },
-                Name = context.GetFieldName(tagHelper),
-                Type = "global::" + tagHelper.GetTypeName(),
+                FieldName = context.GetFieldName(tagHelper),
+                FieldType = "global::" + tagHelper.GetTypeName(),
             });
         }
 

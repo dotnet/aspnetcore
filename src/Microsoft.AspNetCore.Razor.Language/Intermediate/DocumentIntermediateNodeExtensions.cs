@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
             public override void VisitDirective(DirectiveIntermediateNode node)
             {
-                if (_directive == node.Descriptor)
+                if (_directive == node.Directive)
                 {
                     Directives.Add(new IntermediateNodeReference(Parent, node));
                 }

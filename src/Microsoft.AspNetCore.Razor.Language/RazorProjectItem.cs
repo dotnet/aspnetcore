@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.Razor.Language
         public abstract string BasePath { get; }
 
         /// <summary>
-        /// Path relative to <see cref="BasePath"/>.
+        /// File path relative to <see cref="BasePath"/>.
         /// </summary>
-        public abstract string Path { get; }
+        public abstract string FilePath { get; }
 
         /// <summary>
         /// The absolute path to the file, including the file name.
@@ -47,11 +47,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 if (BasePath == "/")
                 {
-                    return Path;
+                    return FilePath;
                 }
                 else
                 {
-                    return BasePath + Path;
+                    return BasePath + FilePath;
                 }
             }
         }
@@ -82,26 +82,26 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             get
             {
-                var index = Path.LastIndexOf('/');
-                return Path.Substring(index + 1);
+                var index = FilePath.LastIndexOf('/');
+                return FilePath.Substring(index + 1);
             }
         }
 
         /// <summary>
-        /// Path relative to <see cref="BasePath"/> without the extension.
+        /// File path relative to <see cref="BasePath"/> without the extension.
         /// </summary>
-        public string PathWithoutExtension
+        public string FilePathWithoutExtension
         {
             get
             {
-                var index = Path.LastIndexOf('.');
+                var index = FilePath.LastIndexOf('.');
                 if (index == -1)
                 {
-                    return Path;
+                    return FilePath;
                 }
                 else
                 {
-                    return Path.Substring(0, index);
+                    return FilePath.Substring(0, index);
                 }
             }
         }

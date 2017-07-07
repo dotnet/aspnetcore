@@ -140,7 +140,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             try
             {
                 var directive = Assert.IsType<DirectiveIntermediateNode>(node);
-                Assert.Equal(expectedName, directive.Name);
+                Assert.Equal(expectedName, directive.DirectiveName);
             }
             catch (XunitException e)
             {
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             try
             {
                 var token = Assert.IsType<DirectiveTokenIntermediateNode>(node);
-                Assert.Equal(expectedKind, token.Descriptor.Kind);
+                Assert.Equal(expectedKind, token.DirectiveToken.Kind);
                 Assert.Equal(expectedContent, token.Content);
             }
             catch (XunitException e)
@@ -314,7 +314,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             try
             {
                 var fieldNode = Assert.IsType<FieldDeclarationIntermediateNode>(node);
-                Assert.Equal(typeFullName, fieldNode.Type);
+                Assert.Equal(typeFullName, fieldNode.FieldType);
             }
             catch (XunitException e)
             {

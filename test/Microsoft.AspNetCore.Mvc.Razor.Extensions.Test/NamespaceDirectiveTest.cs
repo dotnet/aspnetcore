@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var imports = "c:\\foo\\baz\\bleh.cshtml";
             var node = new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan(imports, 0, 0, 0, 0),
             };
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var imports = "c:\\foo\\baz\\bleh.cshtml";
             var node = new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan(imports, 0, 0, 0, 0),
             };
             node.Children.Add(new DirectiveTokenIntermediateNode() { Content = string.Empty });
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Arrange
             var node = new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan(imports, 0, 0, 0, 0),
             };
 
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Arrange
             var node = new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan(imports, 0, 0, 0, 0),
             };
 
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             builder.Push(new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan("/Account/_ViewImports.cshtml", 0, 0, 0, 0),
             });
             builder.Add(new DirectiveTokenIntermediateNode() { Content = "WebApplication.Account" });
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var @namespace = new NamespaceDeclarationIntermediateNode() { Content = "default" };
             builder.Push(@namespace);
 
-            var @class = new ClassDeclarationIntermediateNode() { Name = "default" };
+            var @class = new ClassDeclarationIntermediateNode() { ClassName = "default" };
             builder.Add(@class);
             
             document.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("WebApplication.Account.Manage", @namespace.Content);
-            Assert.Equal("AddUser_Page", @class.Name);
+            Assert.Equal("AddUser_Page", @class.ClassName);
         }
 
         // This is the case where the source file sets the namespace.
@@ -157,7 +157,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // This will be ignored.
             builder.Push(new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan("/Account/_ViewImports.cshtml", 0, 0, 0, 0),
             });
             builder.Add(new DirectiveTokenIntermediateNode() { Content = "ignored" });
@@ -166,7 +166,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // This will be used.
             builder.Push(new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan("/Account/Manage/AddUser.cshtml", 0, 0, 0, 0),
             });
             builder.Add(new DirectiveTokenIntermediateNode() { Content = "WebApplication.Account.Manage" });
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var @namespace = new NamespaceDeclarationIntermediateNode() { Content = "default" };
             builder.Push(@namespace);
 
-            var @class = new ClassDeclarationIntermediateNode() { Name = "default" };
+            var @class = new ClassDeclarationIntermediateNode() { ClassName = "default" };
             builder.Add(@class);
             
             document.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("WebApplication.Account.Manage", @namespace.Content);
-            Assert.Equal("AddUser_Page", @class.Name);
+            Assert.Equal("AddUser_Page", @class.ClassName);
         }
 
         // Handles cases where invalid characters appears in FileNames. Note that we don't sanitize the part of
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             builder.Push(new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan("/Account/_ViewImports.cshtml", 0, 0, 0, 0),
             });
             builder.Add(new DirectiveTokenIntermediateNode() { Content = "WebApplication.Account" });
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var @namespace = new NamespaceDeclarationIntermediateNode() { Content = "default" };
             builder.Push(@namespace);
 
-            var @class = new ClassDeclarationIntermediateNode() { Name = "default" };
+            var @class = new ClassDeclarationIntermediateNode() { ClassName = "default" };
             builder.Add(@class);
 
             document.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("WebApplication.Account.Manage_Info", @namespace.Content);
-            Assert.Equal("Add_User_Page", @class.Name);
+            Assert.Equal("Add_User_Page", @class.ClassName);
         }
 
         // This is the case where the source file sets the namespace.
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // This will be ignored.
             builder.Push(new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan("/Account/_ViewImports.cshtml", 0, 0, 0, 0),
             });
             builder.Add(new DirectiveTokenIntermediateNode() { Content = "ignored" });
@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // This will be used.
             builder.Push(new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan("/Account/Manage/AddUser.cshtml", 0, 0, 0, 0),
             });
             builder.Add(new DirectiveTokenIntermediateNode() { Content = "WebApplication.Account.Manage" });
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var @namespace = new NamespaceDeclarationIntermediateNode() { Content = "default" };
             builder.Push(@namespace);
 
-            var @class = new ClassDeclarationIntermediateNode() { Name = "default" };
+            var @class = new ClassDeclarationIntermediateNode() { ClassName = "default" };
             builder.Add(@class);
             
             document.DocumentKind = MvcViewDocumentClassifierPass.MvcViewDocumentKind;
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("WebApplication.Account.Manage", @namespace.Content);
-            Assert.Equal("AddUser_View", @class.Name);
+            Assert.Equal("AddUser_View", @class.ClassName);
         }
 
         // This handles an error case where we can't determine the relationship between the
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             builder.Push(new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan(null, 0, 0, 0, 0),
             });
             builder.Add(new DirectiveTokenIntermediateNode() { Content = "WebApplication.Account" });
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var @namespace = new NamespaceDeclarationIntermediateNode() { Content = "default" };
             builder.Push(@namespace);
 
-            var @class = new ClassDeclarationIntermediateNode() { Name = "default" };
+            var @class = new ClassDeclarationIntermediateNode() { ClassName = "default" };
             builder.Add(@class);
             
             document.DocumentKind = RazorPageDocumentClassifierPass.RazorPageDocumentKind;
@@ -313,7 +313,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("WebApplication.Account", @namespace.Content);
-            Assert.Equal("default", @class.Name);
+            Assert.Equal("default", @class.ClassName);
         }
 
         [Fact]
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             builder.Push(new DirectiveIntermediateNode()
             {
-                Descriptor = NamespaceDirective.Directive,
+                Directive = NamespaceDirective.Directive,
                 Source = new SourceSpan(null, 0, 0, 0, 0),
             });
             builder.Add(new DirectiveTokenIntermediateNode() { Content = "WebApplication.Account" });
@@ -334,7 +334,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var @namespace = new NamespaceDeclarationIntermediateNode() { Content = "default" };
             builder.Push(@namespace);
 
-            var @class = new ClassDeclarationIntermediateNode() { Name = "default" };
+            var @class = new ClassDeclarationIntermediateNode() { ClassName = "default" };
             builder.Add(@class);
             
             document.DocumentKind = null;
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             Assert.Equal("default", @namespace.Content);
-            Assert.Equal("default", @class.Name);
+            Assert.Equal("default", @class.ClassName);
         }
     }
 }

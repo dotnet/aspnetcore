@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var templateEngine = new RazorTemplateEngine(razorEngine, project);
 
             // Act
-            var resultcSharpDocument = templateEngine.GenerateCode(projectItem.Path);
+            var resultcSharpDocument = templateEngine.GenerateCode(projectItem.FilePath);
 
             // Assert
             AssertCSharpDocumentMatchesBaseline(resultcSharpDocument);
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var templateEngine = new RazorTemplateEngine(razorEngine, project);
 
             // Act
-            var cSharpDocument = templateEngine.GenerateCode(projectItem.Path);
+            var cSharpDocument = templateEngine.GenerateCode(projectItem.FilePath);
 
             // Assert
             AssertCSharpDocumentMatchesBaseline(cSharpDocument);
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             {
                 engine.ConfigureClass((document, @class) =>
                 {
-                    @class.Name = "MyClass";
+                    @class.ClassName = "MyClass";
 
                     @class.Modifiers.Clear();
                     @class.Modifiers.Add("protected");
@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var templateEngine = new RazorTemplateEngine(razorEngine, project);
 
             // Act
-            var cSharpDocument = templateEngine.GenerateCode(projectItem.Path);
+            var cSharpDocument = templateEngine.GenerateCode(projectItem.FilePath);
 
             // Assert
             AssertCSharpDocumentMatchesBaseline(cSharpDocument);
@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             var templateEngine = new RazorTemplateEngine(razorEngine, project);
 
             // Act
-            var cSharpDocument = templateEngine.GenerateCode(projectItem.Path);
+            var cSharpDocument = templateEngine.GenerateCode(projectItem.FilePath);
 
             // Assert
             AssertCSharpDocumentMatchesBaseline(cSharpDocument);

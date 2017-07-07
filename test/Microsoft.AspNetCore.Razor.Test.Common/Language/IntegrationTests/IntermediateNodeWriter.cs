@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
         {
-            WriteContentNode(node, string.Join(" ", node.Modifiers), node.Name, node.BaseType, string.Join(", ", node.Interfaces ?? new List<string>()));
+            WriteContentNode(node, string.Join(" ", node.Modifiers), node.ClassName, node.BaseType, string.Join(", ", node.Interfaces ?? new List<string>()));
         }
 
         public override void VisitCSharpExpressionAttributeValue(CSharpExpressionAttributeValueIntermediateNode node)
@@ -52,12 +52,12 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitMalformedDirective(MalformedDirectiveIntermediateNode node)
         {
-            WriteContentNode(node, node.Name);
+            WriteContentNode(node, node.DirectiveName);
         }
 
         public override void VisitDirective(DirectiveIntermediateNode node)
         {
-            WriteContentNode(node, node.Name);
+            WriteContentNode(node, node.DirectiveName);
         }
 
         public override void VisitDirectiveToken(DirectiveTokenIntermediateNode node)
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitFieldDeclaration(FieldDeclarationIntermediateNode node)
         {
-            WriteContentNode(node, string.Join(" ", node.Modifiers), node.Type, node.Name);
+            WriteContentNode(node, string.Join(" ", node.Modifiers), node.FieldType, node.FieldName);
         }
 
         public override void VisitHtmlAttribute(HtmlAttributeIntermediateNode node)
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public override void VisitMethodDeclaration(MethodDeclarationIntermediateNode node)
         {
-            WriteContentNode(node, string.Join(" ", node.Modifiers), node.ReturnType, node.Name);
+            WriteContentNode(node, string.Join(" ", node.Modifiers), node.ReturnType, node.MethodName);
         }
 
         public override void VisitUsingDirective(UsingDirectiveIntermediateNode node)

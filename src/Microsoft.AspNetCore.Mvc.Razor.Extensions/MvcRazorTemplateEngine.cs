@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         public override RazorCodeDocument CreateCodeDocument(RazorProjectItem projectItem)
         {
             var codeDocument = base.CreateCodeDocument(projectItem);
-            codeDocument.SetRelativePath(projectItem.Path);
+            codeDocument.SetRelativePath(projectItem.FilePath);
 
             return codeDocument;
         }

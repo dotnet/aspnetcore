@@ -19,14 +19,14 @@ namespace Microsoft.AspNetCore.Razor.Language
         public NotFoundProjectItem(string basePath, string path)
         {
             BasePath = basePath;
-            Path = path;
+            FilePath = path;
         }
 
         /// <inheritdoc />
         public override string BasePath { get; }
 
         /// <inheritdoc />
-        public override string Path { get; }
+        public override string FilePath { get; }
 
         /// <inheritdoc />
         public override bool Exists => false;

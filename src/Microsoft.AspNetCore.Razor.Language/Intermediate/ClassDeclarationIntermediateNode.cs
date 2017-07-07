@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public IList<string> Modifiers { get; } = new List<string>();
 
-        public string Name { get; set; }
+        public string ClassName { get; set; }
 
         public string BaseType { get; set; }
 

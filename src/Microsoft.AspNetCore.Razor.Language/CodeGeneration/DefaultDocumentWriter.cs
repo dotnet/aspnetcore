@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitClassDeclaration(ClassDeclarationIntermediateNode node)
             {
-                using (Context.CodeWriter.BuildClassDeclaration(node.Modifiers, node.Name, node.BaseType, node.Interfaces))
+                using (Context.CodeWriter.BuildClassDeclaration(node.Modifiers, node.ClassName, node.BaseType, node.Interfaces))
                 {
                     VisitDefault(node);
                 }
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
                 Context.CodeWriter
                     .Write(node.ReturnType)
                     .Write(" ")
-                    .Write(node.Name)
+                    .Write(node.MethodName)
                     .WriteLine("()");
 
                 using (Context.CodeWriter.BuildScope())
@@ -150,12 +150,12 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
 
             public override void VisitFieldDeclaration(FieldDeclarationIntermediateNode node)
             {
-                Context.CodeWriter.WriteField(node.Modifiers, node.Type, node.Name);
+                Context.CodeWriter.WriteField(node.Modifiers, node.FieldType, node.FieldName);
             }
 
             public override void VisitPropertyDeclaration(PropertyDeclarationIntermediateNode node)
             {
-                Context.CodeWriter.WriteAutoPropertyDeclaration(node.Modifiers, node.Type, node.Name);
+                Context.CodeWriter.WriteAutoPropertyDeclaration(node.Modifiers, node.PropertyType, node.PropertyName);
             }
 
             public override void VisitExtension(ExtensionIntermediateNode node)

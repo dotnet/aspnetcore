@@ -31,12 +31,12 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             @namespace.Content = "AspNetCore";
 
             @class.BaseType = "global::Microsoft.AspNetCore.Mvc.RazorPages.Page";
-            @class.Name = CSharpIdentifier.GetClassNameFromPath(filePath);
+            @class.ClassName = CSharpIdentifier.GetClassNameFromPath(filePath);
 
             @class.Modifiers.Clear();
             @class.Modifiers.Add("public");
 
-            method.Name = "ExecuteAsync";
+            method.MethodName = "ExecuteAsync";
             method.Modifiers.Clear();
             method.Modifiers.Add("public");
             method.Modifiers.Add("async");

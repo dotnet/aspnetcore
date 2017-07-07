@@ -86,9 +86,9 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Assert.Collection(
                 result,
-                item => Assert.Equal($"/Views/Home/{fileName}", item.Path),
-                item => Assert.Equal($"/Views/{fileName}", item.Path),
-                item => Assert.Equal($"/{fileName}", item.Path));
+                item => Assert.Equal($"/Views/Home/{fileName}", item.FilePath),
+                item => Assert.Equal($"/Views/{fileName}", item.FilePath),
+                item => Assert.Equal($"/{fileName}", item.FilePath));
         }
 
         [Fact]
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Assert.Collection(
                 result,
-                item => Assert.Equal("/File.cshtml", item.Path));
+                item => Assert.Equal("/File.cshtml", item.FilePath));
         }
 
         [Fact]
@@ -132,10 +132,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Assert.Collection(
                 result,
-                item => Assert.Equal("/Areas/MyArea/Views/File.cshtml", item.Path),
-                item => Assert.Equal("/Areas/MyArea/File.cshtml", item.Path),
-                item => Assert.Equal("/Areas/File.cshtml", item.Path),
-                item => Assert.Equal("/File.cshtml", item.Path));
+                item => Assert.Equal("/Areas/MyArea/Views/File.cshtml", item.FilePath),
+                item => Assert.Equal("/Areas/MyArea/File.cshtml", item.FilePath),
+                item => Assert.Equal("/Areas/File.cshtml", item.FilePath),
+                item => Assert.Equal("/File.cshtml", item.FilePath));
         }
 
         [Fact]
@@ -176,27 +176,27 @@ namespace Microsoft.AspNetCore.Razor.Language
                 result,
                 item =>
                 {
-                    Assert.Equal("/Areas/MyArea/Views/Home/File.cshtml", item.Path);
+                    Assert.Equal("/Areas/MyArea/Views/Home/File.cshtml", item.FilePath);
                     Assert.False(item.Exists);
                 },
                 item =>
                 {
-                    Assert.Equal("/Areas/MyArea/Views/File.cshtml", item.Path);
+                    Assert.Equal("/Areas/MyArea/Views/File.cshtml", item.FilePath);
                     Assert.False(item.Exists);
                 },
                 item =>
                 {
-                    Assert.Equal("/Areas/MyArea/File.cshtml", item.Path);
+                    Assert.Equal("/Areas/MyArea/File.cshtml", item.FilePath);
                     Assert.True(item.Exists);
                 },
                 item =>
                 {
-                    Assert.Equal("/Areas/File.cshtml", item.Path);
+                    Assert.Equal("/Areas/File.cshtml", item.FilePath);
                     Assert.False(item.Exists);
                 },
                 item =>
                 {
-                    Assert.Equal("/File.cshtml", item.Path);
+                    Assert.Equal("/File.cshtml", item.FilePath);
                     Assert.True(item.Exists);
                 });
         }
@@ -223,22 +223,22 @@ namespace Microsoft.AspNetCore.Razor.Language
                 result,
                 item =>
                 {
-                    Assert.Equal("/Areas/MyArea/Views/Home/File.cshtml", item.Path);
+                    Assert.Equal("/Areas/MyArea/Views/Home/File.cshtml", item.FilePath);
                     Assert.False(item.Exists);
                 },
                 item =>
                 {
-                    Assert.Equal("/Areas/MyArea/Views/File.cshtml", item.Path);
+                    Assert.Equal("/Areas/MyArea/Views/File.cshtml", item.FilePath);
                     Assert.False(item.Exists);
                 },
                 item =>
                 {
-                    Assert.Equal("/Areas/MyArea/File.cshtml", item.Path);
+                    Assert.Equal("/Areas/MyArea/File.cshtml", item.FilePath);
                     Assert.True(item.Exists);
                 },
                 item =>
                 {
-                    Assert.Equal("/Areas/File.cshtml", item.Path);
+                    Assert.Equal("/Areas/File.cshtml", item.FilePath);
                     Assert.False(item.Exists);
                 });
         }
@@ -265,12 +265,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 result,
                 item =>
                 {
-                    Assert.Equal("/Areas/MyArea/Views/Home/File.cshtml", item.Path);
+                    Assert.Equal("/Areas/MyArea/Views/Home/File.cshtml", item.FilePath);
                     Assert.False(item.Exists);
                 },
                 item =>
                 {
-                    Assert.Equal("/Areas/MyArea/Views/File.cshtml", item.Path);
+                    Assert.Equal("/Areas/MyArea/Views/File.cshtml", item.FilePath);
                     Assert.False(item.Exists);
                 });
         }
@@ -297,7 +297,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 result,
                 item =>
                 {
-                    Assert.Equal("/Areas/MyArea/Views/Home/File.cshtml", item.Path);
+                    Assert.Equal("/Areas/MyArea/Views/Home/File.cshtml", item.FilePath);
                     Assert.False(item.Exists);
                 });
         }
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         private RazorProjectItem CreateProjectItem(string path)
         {
             var projectItem = new Mock<RazorProjectItem>();
-            projectItem.SetupGet(f => f.Path).Returns(path);
+            projectItem.SetupGet(f => f.FilePath).Returns(path);
             projectItem.SetupGet(f => f.Exists).Returns(true);
             return projectItem.Object;
         }

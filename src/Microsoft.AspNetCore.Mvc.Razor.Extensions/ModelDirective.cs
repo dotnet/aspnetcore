@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             if (document.DocumentKind == RazorPageDocumentClassifierPass.RazorPageDocumentKind)
             {
-                return visitor.Class.Name;
+                return visitor.Class.ClassName;
             }
             else
             {
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             public override void VisitDirective(DirectiveIntermediateNode node)
             {
-                if (node.Descriptor == Directive)
+                if (node.Directive == Directive)
                 {
                     ModelDirectives.Add(node);
                 }

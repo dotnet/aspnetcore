@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             {
                 var reference = visitor.Directives[i];
                 var directive = (DirectiveIntermediateNode)reference.Node;
-                var descriptor = directive.Descriptor;
+                var descriptor = directive.Directive;
                 var seenDirective = !seenDirectives.Add(descriptor);
 
                 if (!directive.IsImported())
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _builder.Add(new DirectiveTokenIntermediateNode()
                 {
                     Content = span.Content,
-                    Descriptor = chunkGenerator.Descriptor,
+                    DirectiveToken = chunkGenerator.Descriptor,
                     Source = BuildSourceSpanFromNode(span),
                 });
             }
@@ -189,8 +189,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     directiveNode = new MalformedDirectiveIntermediateNode()
                     {
-                        Name = chunkGenerator.Descriptor.Directive,
-                        Descriptor = chunkGenerator.Descriptor,
+                        DirectiveName = chunkGenerator.Descriptor.Directive,
+                        Directive = chunkGenerator.Descriptor,
                         Source = BuildSourceSpanFromNode(block),
                     };
                 }
@@ -198,8 +198,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     directiveNode = new DirectiveIntermediateNode()
                     {
-                        Name = chunkGenerator.Descriptor.Directive,
-                        Descriptor = chunkGenerator.Descriptor,
+                        DirectiveName = chunkGenerator.Descriptor.Directive,
+                        Directive = chunkGenerator.Descriptor,
                         Source = BuildSourceSpanFromNode(block),
                     };
                 }
@@ -230,8 +230,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     directiveNode = new MalformedDirectiveIntermediateNode()
                     {
-                        Name = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Directive,
-                        Descriptor = CSharpCodeParser.AddTagHelperDirectiveDescriptor,
+                        DirectiveName = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Directive,
+                        Directive = CSharpCodeParser.AddTagHelperDirectiveDescriptor,
                         Source = BuildSourceSpanFromNode(span),
                     };
                 }
@@ -239,8 +239,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     directiveNode = new DirectiveIntermediateNode()
                     {
-                        Name = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Directive,
-                        Descriptor = CSharpCodeParser.AddTagHelperDirectiveDescriptor,
+                        DirectiveName = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Directive,
+                        Directive = CSharpCodeParser.AddTagHelperDirectiveDescriptor,
                         Source = BuildSourceSpanFromNode(span),
                     };
                 }
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _builder.Add(new DirectiveTokenIntermediateNode()
                 {
                     Content = chunkGenerator.LookupText,
-                    Descriptor = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Tokens.First(),
+                    DirectiveToken = CSharpCodeParser.AddTagHelperDirectiveDescriptor.Tokens.First(),
                     Source = BuildSourceSpanFromNode(span),
                 });
 
@@ -269,8 +269,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     directiveNode = new MalformedDirectiveIntermediateNode()
                     {
-                        Name = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Directive,
-                        Descriptor = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor,
+                        DirectiveName = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Directive,
+                        Directive = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor,
                         Source = BuildSourceSpanFromNode(span),
                     };
                 }
@@ -278,8 +278,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     directiveNode = new DirectiveIntermediateNode()
                     {
-                        Name = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Directive,
-                        Descriptor = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor,
+                        DirectiveName = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Directive,
+                        Directive = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor,
                         Source = BuildSourceSpanFromNode(span),
                     };
                 }
@@ -294,7 +294,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _builder.Add(new DirectiveTokenIntermediateNode()
                 {
                     Content = chunkGenerator.LookupText,
-                    Descriptor = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Tokens.First(),
+                    DirectiveToken = CSharpCodeParser.RemoveTagHelperDirectiveDescriptor.Tokens.First(),
                     Source = BuildSourceSpanFromNode(span),
                 });
 
@@ -308,8 +308,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     directiveNode = new MalformedDirectiveIntermediateNode()
                     {
-                        Name = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Directive,
-                        Descriptor = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
+                        DirectiveName = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Directive,
+                        Directive = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
                         Source = BuildSourceSpanFromNode(span),
                     };
                 }
@@ -317,8 +317,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 {
                     directiveNode = new DirectiveIntermediateNode()
                     {
-                        Name = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Directive,
-                        Descriptor = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
+                        DirectiveName = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Directive,
+                        Directive = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
                         Source = BuildSourceSpanFromNode(span),
                     };
                 }
@@ -333,7 +333,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 _builder.Add(new DirectiveTokenIntermediateNode()
                 {
                     Content = chunkGenerator.Prefix,
-                    Descriptor = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Tokens.First(),
+                    DirectiveToken = CSharpCodeParser.TagHelperPrefixDirectiveDescriptor.Tokens.First(),
                     Source = BuildSourceSpanFromNode(span),
                 });
 

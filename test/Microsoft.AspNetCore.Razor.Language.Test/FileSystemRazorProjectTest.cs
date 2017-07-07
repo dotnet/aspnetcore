@@ -76,20 +76,20 @@ namespace Microsoft.AspNetCore.Razor.Language
             var files = fileSystemProject.EnumerateItems("/");
 
             // Assert
-            Assert.Collection(files.OrderBy(f => f.Path),
+            Assert.Collection(files.OrderBy(f => f.FilePath),
                 file =>
                 {
-                    Assert.Equal("/Home.cshtml", file.Path);
+                    Assert.Equal("/Home.cshtml", file.FilePath);
                     Assert.Equal("/", file.BasePath);
                 },
                 file =>
                 {
-                    Assert.Equal("/Views/About/About.cshtml", file.Path);
+                    Assert.Equal("/Views/About/About.cshtml", file.FilePath);
                     Assert.Equal("/", file.BasePath);
                 },
                 file =>
                 {
-                    Assert.Equal("/Views/Home/Index.cshtml", file.Path);
+                    Assert.Equal("/Views/Home/Index.cshtml", file.FilePath);
                     Assert.Equal("/", file.BasePath);
                 });
         }
@@ -104,15 +104,15 @@ namespace Microsoft.AspNetCore.Razor.Language
             var files = fileSystemProject.EnumerateItems("/Views");
 
             // Assert
-            Assert.Collection(files.OrderBy(f => f.Path),
+            Assert.Collection(files.OrderBy(f => f.FilePath),
                 file =>
                 {
-                    Assert.Equal("/About/About.cshtml", file.Path);
+                    Assert.Equal("/About/About.cshtml", file.FilePath);
                     Assert.Equal("/Views", file.BasePath);
                 },
                 file =>
                 {
-                    Assert.Equal("/Home/Index.cshtml", file.Path);
+                    Assert.Equal("/Home/Index.cshtml", file.FilePath);
                     Assert.Equal("/Views", file.BasePath);
                 });
         }
@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             // Assert
             Assert.True(file.Exists);
-            Assert.Equal(path, file.Path);
+            Assert.Equal(path, file.FilePath);
         }
 
         [Fact]

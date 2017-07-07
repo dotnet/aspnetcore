@@ -12,9 +12,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
 
         public IList<string> Modifiers { get; } = new List<string>();
 
-        public string Name { get; set; }
+        public string PropertyName { get; set; }
 
-        public string Type { get; set; }
+        public string PropertyType { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

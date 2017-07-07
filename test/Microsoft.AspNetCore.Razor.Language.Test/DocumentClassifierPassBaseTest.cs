@@ -201,10 +201,10 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal("TestNamespace", @namespace.Content);
 
             var @class = SingleChild<ClassDeclarationIntermediateNode>(@namespace);
-            Assert.Equal("TestClass", @class.Name);
+            Assert.Equal("TestClass", @class.ClassName);
 
             var method = SingleChild<MethodDeclarationIntermediateNode>(@class);
-            Assert.Equal("TestMethod", method.Name);
+            Assert.Equal("TestMethod", method.MethodName);
         }
 
         [Fact]
@@ -270,8 +270,8 @@ namespace Microsoft.AspNetCore.Razor.Language
                 MethodDeclarationIntermediateNode method)
             {
                 @namespace.Content = Namespace;
-                @class.Name = Class;
-                @method.Name = Method;
+                @class.ClassName = Class;
+                @method.MethodName = Method;
             }
 
             protected override void ConfigureTarget(ICodeTargetBuilder builder)
