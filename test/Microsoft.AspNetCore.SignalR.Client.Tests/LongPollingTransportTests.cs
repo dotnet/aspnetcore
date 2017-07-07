@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                var longPollingTransport = new LongPollingTransport(httpClient);
 
                 try
                 {
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Client.Tests
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
 
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
                     var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Client.Tests
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
 
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
                     var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
                     var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
                     var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
                     var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
                     var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
@@ -347,7 +347,7 @@ namespace Microsoft.AspNetCore.Client.Tests
 
             using (var httpClient = new HttpClient(mockHttpHandler.Object))
             {
-                var longPollingTransport = new LongPollingTransport(httpClient, new LoggerFactory());
+                var longPollingTransport = new LongPollingTransport(httpClient);
                 try
                 {
                     var connectionToTransport = Channel.CreateUnbounded<SendMessage>();

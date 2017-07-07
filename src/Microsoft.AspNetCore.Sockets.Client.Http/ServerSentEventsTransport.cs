@@ -71,25 +71,26 @@ namespace Microsoft.AspNetCore.Sockets.Client
             var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
             var stream = await response.Content.ReadAsStreamAsync();
-
-            var pipelineReader = stream.AsPipelineReader();
+            var pipelineReader = stream.AsPipelineReader(cancellationToken);
+            var readCancellationRegistration = cancellationToken.Register(
+                reader => ((IPipeReader)reader).CancelPendingRead(), pipelineReader);
             try
             {
                 while (true)
                 {
                     var result = await pipelineReader.ReadAsync();
                     var input = result.Buffer;
+                    if (result.IsCancelled || (input.IsEmpty && result.IsCompleted))
+                    {
+                        _logger.LogDebug("Server-Sent Event Stream ended");
+                        break;
+                    }
+
                     var consumed = input.Start;
                     var examined = input.End;
 
                     try
                     {
-                        if (input.IsEmpty && result.IsCompleted)
-                        {
-                            _logger.LogDebug("Server-Sent Event Stream ended");
-                            break;
-                        }
-
                         var parseResult = _parser.ParseMessage(input, out consumed, out examined, out var buffer);
 
                         switch (parseResult)
@@ -114,6 +115,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
             finally
             {
+                readCancellationRegistration.Dispose();
                 _transportCts.Cancel();
                 stream.Dispose();
             }

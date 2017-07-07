@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public static IEnumerable<object[]> TransportTypes() =>
+        public static IEnumerable<object[]> TransportTypes =>
             new[]
             {
                 new object[] { TransportType.WebSockets },
