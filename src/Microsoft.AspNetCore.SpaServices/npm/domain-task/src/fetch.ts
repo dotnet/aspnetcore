@@ -6,6 +6,7 @@ import { baseUrl } from './main';
 const isomorphicFetch = require('isomorphic-fetch');
 const isNode = typeof process === 'object' && process.versions && !!process.versions.node;
 const nodeHttps = isNode && require('https');
+const isHttpsRegex = /^https\:/;
 
 function issueRequest(baseUrl: string, req: string | Request, init?: RequestInit): Promise<any> {
     const reqUrl = (req instanceof Request) ? req.url : req;
@@ -30,11 +31,11 @@ function issueRequest(baseUrl: string, req: string | Request, init?: RequestInit
         `);
     }
 
-    init = applyHttpsAgentPolicy(init, isRelativeUrl);
+    init = applyHttpsAgentPolicy(init, isRelativeUrl, baseUrl);
     return isomorphicFetch(req, init);
 }
 
-function applyHttpsAgentPolicy(init: RequestInit, isRelativeUrl: boolean): RequestInit {
+function applyHttpsAgentPolicy(init: RequestInit, isRelativeUrl: boolean, baseUrl: string): RequestInit {
     // HTTPS is awkward in Node because it uses a built-in list of CAs, rather than recognizing
     // the OS's system-level CA list. There are dozens of issues filed against Node about this,
     // but still (as of v8.0.0) no resolution besides manually duplicating your CA config.
@@ -54,12 +55,15 @@ function applyHttpsAgentPolicy(init: RequestInit, isRelativeUrl: boolean): Reque
     // for 'agent' (which would let you set up other HTTPS-handling policies), then we automatically
     // disable cert verification for that request.
     if (isNode && isRelativeUrl) {
-        const hasAgentConfig = init && ('agent' in init);
-        if (!hasAgentConfig) {
-            const agentForRequest = new (nodeHttps.Agent)({ rejectUnauthorized: false });
+        const isHttps = baseUrl && isHttpsRegex.test(baseUrl);
+        if (isHttps) {
+            const hasAgentConfig = init && ('agent' in init);
+            if (!hasAgentConfig) {
+                const agentForRequest = new (nodeHttps.Agent)({ rejectUnauthorized: false });
 
-            init = init || {};
-            (init as any).agent = agentForRequest;
+                init = init || {};
+                (init as any).agent = agentForRequest;
+            }
         }
     }
 
