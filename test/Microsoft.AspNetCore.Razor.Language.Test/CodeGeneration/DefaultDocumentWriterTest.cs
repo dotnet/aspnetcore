@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Razor.Language.CodeGeneration
             var document = new DocumentIntermediateNode();
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
-            var optionsBuilder = new DefaultRazorCodeGenerationOptionsBuilder()
+            var optionsBuilder = new DefaultRazorCodeGenerationOptionsBuilder(designTime: false)
             {
                 SuppressChecksum = true
             };

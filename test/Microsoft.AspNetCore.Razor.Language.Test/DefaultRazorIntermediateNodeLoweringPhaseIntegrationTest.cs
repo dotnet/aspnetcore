@@ -36,22 +36,24 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
-            var callback = new Mock<IRazorCodeGenerationOptionsFeature>();
+            var callback = new Mock<IConfigureRazorCodeGenerationOptionsFeature>();
             callback
                 .Setup(c => c.Configure(It.IsAny<RazorCodeGenerationOptionsBuilder>()))
                 .Callback<RazorCodeGenerationOptionsBuilder>(o =>
                 {
-                    o.DesignTime = true;
                     o.IndentSize = 17;
                     o.IndentWithTabs = true;
                     o.SuppressChecksum = true;
                 });
 
             // Act
-            var documentNode = Lower(codeDocument, builder: b =>
-            {
-                b.Features.Add(callback.Object);
-            });
+            var documentNode = Lower(
+                codeDocument,
+                builder: b =>
+                {
+                    b.Features.Add(callback.Object);
+                },
+                designTime: true);
 
             // Assert
             Assert.NotNull(documentNode.Options);
@@ -431,18 +433,21 @@ namespace Microsoft.AspNetCore.Razor.Language
         private DocumentIntermediateNode Lower(
             RazorCodeDocument codeDocument,
             Action<IRazorEngineBuilder> builder = null,
-            IEnumerable<TagHelperDescriptor> tagHelpers = null)
+            IEnumerable<TagHelperDescriptor> tagHelpers = null,
+            bool designTime = false)
         {
             tagHelpers = tagHelpers ?? new TagHelperDescriptor[0];
 
-            var engine = RazorEngine.Create(b =>
+            Action<IRazorEngineBuilder> configureEngine = b =>
             {
                 builder?.Invoke(b);
 
                 FunctionsDirective.Register(b);
                 SectionDirective.Register(b);
                 b.AddTagHelpers(tagHelpers);
-            });
+            };
+
+            var engine = designTime ? RazorEngine.CreateDesignTime(configureEngine) : RazorEngine.Create(configureEngine);
 
             for (var i = 0; i < engine.Phases.Count; i++)
             {

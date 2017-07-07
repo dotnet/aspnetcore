@@ -5,7 +5,12 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorCodeGenerationOptionsBuilder : RazorCodeGenerationOptionsBuilder
     {
-        public override bool DesignTime { get; set; }
+        public DefaultRazorCodeGenerationOptionsBuilder(bool designTime)
+        {
+            DesignTime = designTime;
+        }
+
+        public override bool DesignTime { get; }
 
         public override int IndentSize { get; set; } = 4;
 

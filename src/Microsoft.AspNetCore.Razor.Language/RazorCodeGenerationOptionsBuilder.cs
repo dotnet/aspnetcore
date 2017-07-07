@@ -5,7 +5,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     public abstract class RazorCodeGenerationOptionsBuilder
     {
-        public abstract bool DesignTime { get; set; }
+        public abstract bool DesignTime { get; }
 
         public abstract int IndentSize { get; set; }
 

@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
+                b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
                 b.AddDirective(directive);
             });
             var options = RazorParserOptions.Create(builder => builder.Directives.Add(directive));
@@ -60,6 +61,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
+                b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
                 b.AddDirective(directive);
             });
             var options = RazorParserOptions.Create(builder => builder.Directives.Add(directive));
@@ -94,6 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
+                b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
                 b.AddDirective(directive);
             });
             var options = RazorParserOptions.Create(builder => builder.Directives.Add(directive));
@@ -124,6 +127,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
+                b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
                 b.AddDirective(codeBlockDirective);
                 b.AddDirective(razorBlockDirective);
             });
@@ -158,6 +162,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
+                b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
                 b.AddDirective(directive);
             });
             var options = RazorParserOptions.Create(builder => builder.Directives.Add(directive));
@@ -187,6 +192,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var engine = RazorEngine.CreateEmpty(b =>
             {
                 b.Phases.Add(phase);
+                b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
                 b.AddDirective(directive);
             });
             var options = RazorParserOptions.Create(builder => builder.Directives.Add(directive));
@@ -213,7 +219,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Arrange
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
 
-            var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
+            var engine = RazorEngine.CreateEmpty(b =>
+            {
+                b.Phases.Add(phase);
+                b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
+            });
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
 
@@ -229,7 +239,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
+            var engine = RazorEngine.CreateEmpty(b =>
+            {
+                b.Phases.Add(phase);
+                b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
+            });
             var codeDocument = TestRazorCodeDocument.Create("<p class=@(");
             codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source));
 
@@ -248,7 +262,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Arrange
             var phase = new DefaultRazorIntermediateNodeLoweringPhase();
-            var engine = RazorEngine.CreateEmpty(b => b.Phases.Add(phase));
+            var engine = RazorEngine.CreateEmpty(b =>
+            {
+                b.Phases.Add(phase);
+                b.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
+            });
 
             var codeDocument = TestRazorCodeDocument.CreateEmpty();
             codeDocument.SetSyntaxTree(RazorSyntaxTree.Parse(codeDocument.Source));

@@ -108,7 +108,7 @@ namespace RazorPageGenerator
             };
         }
 
-        private class SuppressChecksumOptionsFeature : RazorEngineFeatureBase, IRazorCodeGenerationOptionsFeature
+        private class SuppressChecksumOptionsFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
         {
             public int Order { get; set; }
 

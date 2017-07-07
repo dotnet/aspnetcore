@@ -3,8 +3,10 @@
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    public interface IRazorCodeGenerationOptionsFeature : IRazorEngineFeature
+    public interface IConfigureRazorCodeGenerationOptionsFeature : IRazorEngineFeature
     {
-        RazorCodeGenerationOptions GetOptions();
+        int Order { get; }
+
+        void Configure(RazorCodeGenerationOptionsBuilder options);
     }
 }

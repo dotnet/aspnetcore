@@ -103,6 +103,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Configure options
             builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: false));
+            builder.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: false));
 
             // Intermediate Node Passes
             builder.Features.Add(new PreallocatedTagHelperAttributeOptimizationPass());
@@ -116,7 +117,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             // Configure options
             builder.Features.Add(new DefaultRazorParserOptionsFeature(designTime: true));
-            builder.Features.Add(new DesignTimeOptionsFeature());
+            builder.Features.Add(new DefaultRazorCodeGenerationOptionsFeature(designTime: true));
+            builder.Features.Add(new SuppressChecksumOptionsFeature());
 
             // Intermediate Node Passes
             builder.Features.Add(new DesignTimeDirectivePass());

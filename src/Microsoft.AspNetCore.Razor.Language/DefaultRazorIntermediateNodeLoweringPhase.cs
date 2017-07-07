@@ -13,11 +13,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 {
     internal class DefaultRazorIntermediateNodeLoweringPhase : RazorEnginePhaseBase, IRazorIntermediateNodeLoweringPhase
     {
-        private IRazorCodeGenerationOptionsFeature[] _optionsCallbacks;
+        private IRazorCodeGenerationOptionsFeature _optionsFeature;
 
         protected override void OnIntialized()
         {
-            _optionsCallbacks = Engine.Features.OfType<IRazorCodeGenerationOptionsFeature>().OrderBy(f => f.Order).ToArray();
+            _optionsFeature = GetRequiredFeature<IRazorCodeGenerationOptionsFeature>();
         }
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument)
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var document = new DocumentIntermediateNode();
             var builder = IntermediateNodeBuilder.Create(document);
 
-            document.Options = CreateCodeGenerationOptions();
+            document.Options = _optionsFeature.GetOptions();
 
             var namespaces = new Dictionary<string, SourceSpan?>(StringComparer.Ordinal);
 
@@ -144,17 +144,6 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 reference.Remove();
             }
-        }
-
-        private RazorCodeGenerationOptions CreateCodeGenerationOptions()
-        {
-            var builder = new DefaultRazorCodeGenerationOptionsBuilder();
-            for (var i = 0; i < _optionsCallbacks.Length; i++)
-            {
-                _optionsCallbacks[i].Configure(builder);
-            }
-
-            return builder.Build();
         }
 
         private class LoweringVisitor : ParserVisitor

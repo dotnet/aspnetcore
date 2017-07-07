@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    internal class DesignTimeOptionsFeature : RazorEngineFeatureBase, IRazorCodeGenerationOptionsFeature
+    internal class SuppressChecksumOptionsFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
     {
         public int Order { get; set; }
 
@@ -16,7 +16,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                 throw new ArgumentNullException(nameof(options));
             }
 
-            options.DesignTime = true;
             options.SuppressChecksum = true;
         }
     }
