@@ -199,27 +199,45 @@
       XmlInputPath="$(RepositoryFileWithCommit)"
       Query="//Repository[@Include='%(Repository.Identity)']/@Commit"
       Value="%(Repository.Commit)" />
+
+    <XmlPoke
+      XmlInputPath="$(RepositoryFileWithCommit)"
+      Query="//Repository[@Include='%(Repository.Identity)']/@CloneUrl"
+      Value="%(Repository.CloneUrl)" />
   </Target>
 
   <!-- Based on the solution here: http://stackoverflow.com/a/11331566 -->
   <Target Name="_GetRepositoryCommits" Outputs="%(Repository.Identity)">
     <PropertyGroup>
+      <!--
+        Attempt to read environment variables set up by the CI's VCS Root if available.
+        * vcsroot.<RepositoryName>.url gives us the clone URL for a repository
+        * build.vcs.number.<RepositoryName> gives us the commit hash for a repository.
+      -->
+      <_CloneUrl>$([System.Environment]::GetEnvironmentVariable("vcsroot.%(Repository.Identity).url"))</_CloneUrl>
+      <_CommitHash>$([System.Environment]::GetEnvironmentVariable("build.vcs.number.%(Repository.Identity)"))</_CommitHash>
+
       <RepositoryCloneDirectory>$(_CloneRepositoryRoot)%(Repository.Identity)</RepositoryCloneDirectory>
     </PropertyGroup>
 
     <Warning Text="%(Repository.Identity) has not been cloned."
       Condition="!Exists('$(RepositoryCloneDirectory)')" />
 
-    <GetGitCommitInfo WorkingDirectory="$(RepositoryCloneDirectory)" Condition="Exists('$(RepositoryCloneDirectory)')">
-      <Output TaskParameter="CommitHash" PropertyName="_Hash" />
+    <GetGitCommitInfo
+      WorkingDirectory="$(RepositoryCloneDirectory)"
+      Condition="'$(_CommitHash)'=='' AND Exists('$(RepositoryCloneDirectory)')">
+
+      <Output TaskParameter="CommitHash" PropertyName="_CommitHash" />
     </GetGitCommitInfo>
 
     <ItemGroup>
-      <Repository Update="%(Identity)" Commit="$(_Hash)" />
+      <Repository Update="%(Identity)" Commit="$(_CommitHash)" />
+      <Repository Update="%(Identity)" CloneUrl="$(_CloneUrl)" Condition="'$(_CloneUrl)'!=''" />
     </ItemGroup>
 
     <PropertyGroup>
-      <_Hash></_Hash>
+      <_CommitHash></_CommitHash>
+      <_CloneUrl></_CloneUrl>
     </PropertyGroup>
   </Target>
 
