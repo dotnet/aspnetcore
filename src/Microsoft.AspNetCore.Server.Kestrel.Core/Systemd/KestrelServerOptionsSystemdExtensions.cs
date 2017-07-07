@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 
 namespace Microsoft.AspNetCore.Hosting
 {
-    public static class KesterlServerOptionsSystemdExtensions
+    public static class KestrelServerOptionsSystemdExtensions
     {
         // SD_LISTEN_FDS_START https://www.freedesktop.org/software/systemd/man/sd_listen_fds.html
         private const ulong SdListenFdsStart = 3;
