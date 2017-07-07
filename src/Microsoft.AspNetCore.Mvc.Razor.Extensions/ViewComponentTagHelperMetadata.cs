@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 {
-    public class ViewComponentTagHelperMetadata
+    public static class ViewComponentTagHelperMetadata
     {
         /// <summary>
         /// The key in a <see cref="Microsoft.AspNetCore.Razor.Language.TagHelperDescriptor.Metadata"/>  containing 
