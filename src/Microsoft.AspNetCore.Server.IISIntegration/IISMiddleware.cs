@@ -110,8 +110,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             if (_options.ForwardWindowsAuthentication)
             {
+                // We must always process and clean up the windows identity, even if we don't assign the User.
                 var result = await httpContext.AuthenticateAsync(IISDefaults.AuthenticationScheme);
-                if (result.Succeeded)
+                if (result.Succeeded && _options.AutomaticAuthentication)
                 {
                     httpContext.User = result.Principal;
                 }

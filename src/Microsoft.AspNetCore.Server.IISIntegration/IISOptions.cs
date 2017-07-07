@@ -6,8 +6,15 @@ namespace Microsoft.AspNetCore.Builder
     public class IISOptions
     {
         /// <summary>
-        /// If true authentication middleware will try to authenticate using AspNetCoreModule windows authentication
-        /// If false authentication components won't be added
+        /// If true the middleware should set HttpContext.User. If false the middleware will only provide an
+        /// identity when explicitly requested by the AuthenticationScheme.
+        /// Note Windows Authentication must also be enabled in IIS for this to work.
+        /// </summary>
+        public bool AutomaticAuthentication { get; set; } = true;
+
+        /// <summary>
+        /// Used to indicate if the authentication handler should be registered. This is only done if ANCM indicates
+        /// IIS has a non-anonymous authentication enabled, or for back compat with ANCMs that did not provide this information.
         /// </summary>
         internal bool ForwardWindowsAuthentication { get; set; } = true;
 
