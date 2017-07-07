@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
         /// This is typically specified via <see cref="AuthenticationOptions.DefaultAuthenticateScheme"/>.
-        /// Otherwise, if only a single scheme exists, that will be used, if more than one exists, null will be returned.
+        /// Otherwise, this will fallback to <see cref="AuthenticationOptions.DefaultScheme"/>.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.</returns>
         Task<AuthenticationScheme> GetDefaultAuthenticateSchemeAsync();
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// This is typically specified via <see cref="AuthenticationOptions.DefaultChallengeScheme"/>.
-        /// Otherwise, if only a single scheme exists, that will be used, if more than one exists, null will be returned.
+        /// Otherwise, this will fallback to <see cref="AuthenticationOptions.DefaultScheme"/>.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.</returns>
         Task<AuthenticationScheme> GetDefaultChallengeSchemeAsync();
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <summary>
         /// Returns the scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.
         /// This is typically specified via <see cref="AuthenticationOptions.DefaultSignInScheme"/>.
-        /// Otherwise, if only a single scheme exists, that will be used, if more than one exists, null will be returned.
+        /// Otherwise, this will fallback to <see cref="AuthenticationOptions.DefaultScheme"/>.
         /// </summary>
         /// <returns>The scheme that will be used by default for <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.</returns>
         Task<AuthenticationScheme> GetDefaultSignInSchemeAsync();

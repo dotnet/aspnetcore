@@ -56,6 +56,7 @@ namespace Microsoft.AspNetCore.Authentication
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
             {
                 o.AddScheme<BaseHandler>("base", "whatever");
+                o.DefaultScheme = "base";
             }).BuildServiceProvider();
             var context = new DefaultHttpContext();
             context.RequestServices = services;
@@ -73,6 +74,7 @@ namespace Microsoft.AspNetCore.Authentication
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
             {
                 o.AddScheme<UberHandler>("base", "whatever");
+                o.DefaultScheme = "base";
             }).BuildServiceProvider();
             var context = new DefaultHttpContext();
             context.RequestServices = services;
@@ -90,6 +92,7 @@ namespace Microsoft.AspNetCore.Authentication
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
             {
                 o.AddScheme<SignInHandler>("base", "whatever");
+                o.DefaultScheme = "base";
             }).BuildServiceProvider();
             var context = new DefaultHttpContext();
             context.RequestServices = services;
@@ -107,6 +110,7 @@ namespace Microsoft.AspNetCore.Authentication
             var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
             {
                 o.AddScheme<SignOutHandler>("base", "whatever");
+                o.DefaultScheme = "base";
             }).BuildServiceProvider();
             var context = new DefaultHttpContext();
             context.RequestServices = services;
