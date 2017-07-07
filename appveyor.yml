@@ -1,4 +1,4 @@
-image: Visual Studio 2015
+﻿image: Visual Studio 2015
 init:
   - git config --global core.autocrlf true
 branches:
@@ -13,6 +13,10 @@ build_script:
 install:
   - ps: Install-Product node 8
 clone_depth: 1
+environment:
+  global:
+    DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+    DOTNET_CLI_TELEMETRY_OPTOUT: 1
 test: off
 deploy: off
 os: Visual Studio 2017
