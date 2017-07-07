@@ -46,11 +46,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public BoundAttributeDescriptor BoundAttribute { get; set; }
 
-        public string Field { get; set; }
+        public string FieldName { get; set; }
 
         public bool IsIndexerNameMatch { get; set; }
 
-        public string Property { get; set; }
+        public string PropertyName { get; set; }
 
         public TagHelperDescriptor TagHelper { get; set; }
 

@@ -85,9 +85,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             // Now i has the right insertion point.
             node.Children.Insert(i, new DefaultTagHelperCreateIntermediateNode()
             {
-                Field = context.GetFieldName(tagHelper),
+                FieldName = context.GetFieldName(tagHelper),
                 TagHelper = tagHelper,
-                Type = context.GetFullyQualifiedName(tagHelper),
+                TypeName = context.GetFullyQualifiedName(tagHelper),
             });
 
             // Now we need to rewrite any set property nodes to use the default runtime.
@@ -100,8 +100,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
                     // that will use our field and property name.
                     node.Children[i] = new DefaultTagHelperPropertyIntermediateNode(propertyNode)
                     {
-                        Field = context.GetFieldName(tagHelper),
-                        Property = propertyNode.BoundAttribute.GetPropertyName(),
+                        FieldName = context.GetFieldName(tagHelper),
+                        PropertyName = propertyNode.BoundAttribute.GetPropertyName(),
                     };
                 }
             }

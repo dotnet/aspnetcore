@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 {
                     new CSharpExpressionIntermediateNode(),
                 },
-                Name = "MySection"
+                SectionName = "MySection"
             };
 
             var extension = new SectionTargetExtension()
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 {
                     new CSharpExpressionIntermediateNode(),
                 },
-                Name = "MySection"
+                SectionName = "MySection"
             };
 
             var extension = new SectionTargetExtension()

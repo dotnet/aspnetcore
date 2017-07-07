@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
     {
         public override IntermediateNodeCollection Children { get; } = new IntermediateNodeCollection();
 
-        public string Name { get; set; }
+        public string SectionName { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             context.CodeWriter
                 .WriteStartMethodInvocation(SectionMethodName)
                 .Write("\"")
-                .Write(node.Name)
+                .Write(node.SectionName)
                 .Write("\", ");
 
             using (context.CodeWriter.BuildAsyncLambda(writerName))

@@ -140,8 +140,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             {
                 AttributeName = descriptor.Name,
                 BoundAttribute = descriptor,
-                Field = "__FooTagHelper",
-                Property = "FooProp",
+                FieldName = "__FooTagHelper",
+                PropertyName = "FooProp",
                 VariableName = "_tagHelper1",
             };
             tagHelperNode.Children.Add(node);
@@ -183,11 +183,11 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
             var node = new PreallocatedTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "pre-Foo",
-                Field = "__FooTagHelper",
+                FieldName = "__FooTagHelper",
                 VariableName = "_tagHelper1",
                 BoundAttribute = descriptor,
                 IsIndexerNameMatch = true,
-                Property = "FooProp",
+                PropertyName = "FooProp",
                 TagHelper = tagHelperBuilder.Build(),
             };
             tagHelperNode.Children.Add(node);
@@ -234,21 +234,21 @@ __tagHelperExecutionContext.AddTagHelperAttribute(_tagHelper1);
             var node1 = new PreallocatedTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "pre-Bar",
-                Field = "__FooTagHelper",
+                FieldName = "__FooTagHelper",
                 VariableName = "_tagHelper0s",
                 BoundAttribute = boundAttribute,
                 IsIndexerNameMatch = true,
-                Property = "FooProp",
+                PropertyName = "FooProp",
                 TagHelper = tagHelper,
             };
             var node2 = new PreallocatedTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "pre-Foo",
-                Field = "__FooTagHelper",
+                FieldName = "__FooTagHelper",
                 VariableName = "_tagHelper1",
                 BoundAttribute = boundAttribute,
                 IsIndexerNameMatch = true,
-                Property = "FooProp",
+                PropertyName = "FooProp",
                 TagHelper = tagHelper,
             };
             tagHelperNode.Children.Add(node1);

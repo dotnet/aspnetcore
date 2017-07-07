@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Intermediate
             try
             {
                 Assert.Equal(attributeName, setPreallocatedTagHelperProperty.AttributeName);
-                Assert.Equal(propertyName, setPreallocatedTagHelperProperty.Property);
+                Assert.Equal(propertyName, setPreallocatedTagHelperProperty.PropertyName);
             }
             catch (XunitException e)
             {

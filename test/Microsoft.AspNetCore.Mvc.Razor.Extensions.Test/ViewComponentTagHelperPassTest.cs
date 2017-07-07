@@ -87,8 +87,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
             // Assert
             var tagHelper = FindTagHelperNode(irDocument);
-            Assert.Equal(vcthFullName, Assert.IsType<DefaultTagHelperCreateIntermediateNode>(tagHelper.Children[1]).Type);
-            Assert.Equal("Foo", Assert.IsType<DefaultTagHelperPropertyIntermediateNode>(tagHelper.Children[2]).Property);
+            Assert.Equal(vcthFullName, Assert.IsType<DefaultTagHelperCreateIntermediateNode>(tagHelper.Children[1]).TypeName);
+            Assert.Equal("Foo", Assert.IsType<DefaultTagHelperPropertyIntermediateNode>(tagHelper.Children[2]).PropertyName);
 
 
             var @class = FindClassNode(irDocument);
@@ -159,7 +159,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 
             // Assert
             var tagHelper = FindTagHelperNode(irDocument);
-            Assert.Equal(vcthFullName, Assert.IsType<DefaultTagHelperCreateIntermediateNode>(tagHelper.Children[1]).Type);
+            Assert.Equal(vcthFullName, Assert.IsType<DefaultTagHelperCreateIntermediateNode>(tagHelper.Children[1]).TypeName);
             Assert.IsType<DefaultTagHelperHtmlAttributeIntermediateNode>(tagHelper.Children[2]);
 
             var @class = FindClassNode(irDocument);
@@ -238,12 +238,12 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
 
             // Assert
             var outerTagHelper = FindTagHelperNode(irDocument);
-            Assert.Equal("PTestTagHelper", Assert.IsType<DefaultTagHelperCreateIntermediateNode>(outerTagHelper.Children[1]).Type);
-            Assert.Equal("Foo", Assert.IsType<DefaultTagHelperPropertyIntermediateNode>(outerTagHelper.Children[2]).Property);
+            Assert.Equal("PTestTagHelper", Assert.IsType<DefaultTagHelperCreateIntermediateNode>(outerTagHelper.Children[1]).TypeName);
+            Assert.Equal("Foo", Assert.IsType<DefaultTagHelperPropertyIntermediateNode>(outerTagHelper.Children[2]).PropertyName);
 
             var vcth = FindTagHelperNode(outerTagHelper.Children[0]);
-            Assert.Equal(vcthFullName, Assert.IsType<DefaultTagHelperCreateIntermediateNode>(vcth.Children[1]).Type);
-            Assert.Equal("Foo", Assert.IsType<DefaultTagHelperPropertyIntermediateNode>(vcth.Children[2]).Property);
+            Assert.Equal(vcthFullName, Assert.IsType<DefaultTagHelperCreateIntermediateNode>(vcth.Children[1]).TypeName);
+            Assert.Equal("Foo", Assert.IsType<DefaultTagHelperPropertyIntermediateNode>(vcth.Children[2]).PropertyName);
 
 
             var @class = FindClassNode(irDocument);

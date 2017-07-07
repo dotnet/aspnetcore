@@ -139,8 +139,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperCreateIntermediateNode()
             {
-                Field = "__TestNamespace_MyTagHelper",
-                Type = "TestNamespace.MyTagHelper",
+                FieldName = "__TestNamespace_MyTagHelper",
+                TypeName = "TestNamespace.MyTagHelper",
             };
             tagHelperNode.Children.Add(node);
             Push(context, tagHelperNode);
@@ -167,8 +167,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             var tagHelperNode = new TagHelperIntermediateNode();
             var node = new DefaultTagHelperCreateIntermediateNode()
             {
-                Field = "__TestNamespace_MyTagHelper",
-                Type = "TestNamespace.MyTagHelper",
+                FieldName = "__TestNamespace_MyTagHelper",
+                TypeName = "TestNamespace.MyTagHelper",
             };
             tagHelperNode.Children.Add(node);
             Push(context, tagHelperNode);
@@ -372,9 +372,9 @@ EndAddHtmlAttributeValues(__tagHelperExecutionContext);
                 AttributeName = "bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = StringPropertyTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = false,
-                Property = "StringProp",
+                PropertyName = "StringProp",
                 TagHelper = StringPropertyTagHelper,
                 Children =
                 {
@@ -413,9 +413,9 @@ __InputTagHelper.StringProp = ""value"";
                 AttributeName = "bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = StringPropertyTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = false,
-                Property = "StringProp",
+                PropertyName = "StringProp",
                 TagHelper = StringPropertyTagHelper,
                 Children =
                 {
@@ -454,9 +454,9 @@ __InputTagHelper.StringProp = string.Empty;
                 AttributeName = "bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntPropertyTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = false,
-                Property = "IntProp",
+                PropertyName = "IntProp",
                 TagHelper = IntPropertyTagHelper,
                 Source = Span,
                 Children =
@@ -500,17 +500,17 @@ __InputTagHelper.IntProp = 32;
             {
                 // We only look at the attribute name here.
                 AttributeName = "bound",
-                Field = "__OtherTagHelper",
-                Property = "IntProp",
+                FieldName = "__OtherTagHelper",
+                PropertyName = "IntProp",
             };
             var node2 = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntPropertyTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = false,
-                Property = "IntProp",
+                PropertyName = "IntProp",
                 TagHelper = IntPropertyTagHelper,
                 Source = Span,
             };
@@ -543,9 +543,9 @@ __InputTagHelper.IntProp = 32;
                 AttributeName = "bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntPropertyTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = false,
-                Property = "IntProp",
+                PropertyName = "IntProp",
                 TagHelper = IntPropertyTagHelper,
                 Children =
                 {
@@ -583,9 +583,9 @@ __InputTagHelper.IntProp = 32;
                 AttributeName = "foo-bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntIndexerTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = true,
-                Property = "IntIndexer",
+                PropertyName = "IntIndexer",
                 TagHelper = IntIndexerTagHelper,
                 Source = Span,
                 Children =
@@ -628,9 +628,9 @@ __InputTagHelper.IntIndexer[""bound""] = 32;
                 AttributeName = "foo-bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntIndexerTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = true,
-                Property = "IntIndexer",
+                PropertyName = "IntIndexer",
                 TagHelper = IntIndexerTagHelper,
                 Children =
                 {
@@ -668,9 +668,9 @@ __InputTagHelper.IntIndexer[""bound""] = 32;
                 AttributeName = "bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = StringPropertyTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = false,
-                Property = "StringProp",
+                PropertyName = "StringProp",
                 TagHelper = StringPropertyTagHelper,
                 Children =
                 {
@@ -714,9 +714,9 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.St
                 AttributeName = "bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntPropertyTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = false,
-                Property = "IntProp",
+                PropertyName = "IntProp",
                 TagHelper = IntPropertyTagHelper,
                 Source = Span,
                 Children =
@@ -761,17 +761,17 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
             {
                 // We only look at the attribute name here.
                 AttributeName = "bound",
-                Field = "__OtherTagHelper",
-                Property = "IntProp",
+                FieldName = "__OtherTagHelper",
+                PropertyName = "IntProp",
             };
             var node2 = new DefaultTagHelperPropertyIntermediateNode()
             {
                 AttributeName = "bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntPropertyTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = false,
-                Property = "IntProp",
+                PropertyName = "IntProp",
                 TagHelper = IntPropertyTagHelper,
                 Source = Span,
             };
@@ -804,9 +804,9 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
                 AttributeName = "bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntPropertyTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = false,
-                Property = "IntProp",
+                PropertyName = "IntProp",
                 TagHelper = IntPropertyTagHelper,
                 Children =
                 {
@@ -845,9 +845,9 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""bound"", __InputTagHelper.In
                 AttributeName = "foo-bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntIndexerTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = true,
-                Property = "IntIndexer",
+                PropertyName = "IntIndexer",
                 TagHelper = IntIndexerTagHelper,
                 Source = Span,
                 Children =
@@ -895,9 +895,9 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
                 AttributeName = "foo-first",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntIndexerTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = true,
-                Property = "IntIndexer",
+                PropertyName = "IntIndexer",
                 TagHelper = IntIndexerTagHelper,
                 Source = Span,
                 Children =
@@ -913,9 +913,9 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
                 AttributeName = "foo-bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntIndexerTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = true,
-                Property = "IntIndexer",
+                PropertyName = "IntIndexer",
                 TagHelper = IntIndexerTagHelper,
                 Source = Span,
                 Children =
@@ -960,9 +960,9 @@ __tagHelperExecutionContext.AddTagHelperAttribute(""foo-bound"", __InputTagHelpe
                 AttributeName = "foo-bound",
                 AttributeStructure = AttributeStructure.DoubleQuotes,
                 BoundAttribute = IntIndexerTagHelper.BoundAttributes.Single(),
-                Field = "__InputTagHelper",
+                FieldName = "__InputTagHelper",
                 IsIndexerNameMatch = true,
-                Property = "IntIndexer",
+                PropertyName = "IntIndexer",
                 TagHelper = IntIndexerTagHelper,
                 Children =
                 {

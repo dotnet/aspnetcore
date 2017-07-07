@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 node => Assert.IsType<SectionIntermediateNode>(node));
 
             var section = method.Children[1] as SectionIntermediateNode;
-            Assert.Equal("Header", section.Name);
+            Assert.Equal("Header", section.SectionName);
             Children(section, c => Html(" <p>Hello World</p> ", c));
         }
 

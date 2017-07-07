@@ -11,11 +11,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
     {
         public override IntermediateNodeCollection Children { get; } = IntermediateNodeCollection.ReadOnly;
 
-        public string Field { get; set; }
+        public string FieldName { get; set; }
 
         public TagHelperDescriptor TagHelper { get; set; }
 
-        public string Type { get; set; }
+        public string TypeName { get; set; }
 
         public override void Accept(IntermediateNodeVisitor visitor)
         {

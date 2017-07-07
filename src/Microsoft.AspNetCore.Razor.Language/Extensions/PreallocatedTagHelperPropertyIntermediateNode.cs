@@ -23,9 +23,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             AttributeName = propertyNode.AttributeName;
             AttributeStructure = propertyNode.AttributeStructure;
             BoundAttribute = propertyNode.BoundAttribute;
-            Field = propertyNode.Field;
+            FieldName = propertyNode.FieldName;
             IsIndexerNameMatch = propertyNode.IsIndexerNameMatch;
-            Property = propertyNode.Property;
+            PropertyName = propertyNode.PropertyName;
             Source = propertyNode.Source;
             TagHelper = propertyNode.TagHelper;
         }
@@ -38,11 +38,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
         public BoundAttributeDescriptor BoundAttribute { get; set; }
 
-        public string Field { get; set; }
+        public string FieldName { get; set; }
 
         public bool IsIndexerNameMatch { get; set; }
 
-        public string Property { get; set; }
+        public string PropertyName { get; set; }
 
         public TagHelperDescriptor TagHelper { get; set; }
 

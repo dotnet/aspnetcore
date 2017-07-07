@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
 
                 var section = new SectionIntermediateNode()
                 {
-                    Name = sectionName,
+                    SectionName = sectionName,
                 };
 
                 var i = 0;

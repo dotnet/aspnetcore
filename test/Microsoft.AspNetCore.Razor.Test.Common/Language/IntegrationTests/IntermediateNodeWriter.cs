@@ -121,13 +121,13 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                     WriteContentNode(n, n.VariableName, n.AttributeName, n.Value, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
                     break;
                 case PreallocatedTagHelperPropertyIntermediateNode n:
-                    WriteContentNode(n, n.VariableName, n.AttributeName, n.Property);
+                    WriteContentNode(n, n.VariableName, n.AttributeName, n.PropertyName);
                     break;
                 case PreallocatedTagHelperPropertyValueIntermediateNode n:
                     WriteContentNode(n, n.VariableName, n.AttributeName, n.Value, string.Format("HtmlAttributeValueStyle.{0}", n.AttributeStructure));
                     break;
                 case DefaultTagHelperCreateIntermediateNode n:
-                    WriteContentNode(n, n.Type);
+                    WriteContentNode(n, n.TypeName);
                     break;
                 case DefaultTagHelperExecuteIntermediateNode n:
                     WriteBasicNode(n);
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
 
         public void VisitExtension(SectionIntermediateNode node)
         {
-            WriteContentNode(node, node.Name);
+            WriteContentNode(node, node.SectionName);
         }
 
         protected void WriteBasicNode(IntermediateNode node)
