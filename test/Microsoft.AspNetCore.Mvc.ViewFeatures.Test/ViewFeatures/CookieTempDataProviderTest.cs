@@ -9,7 +9,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
+using Microsoft.Net.Http.Headers;
 using Moq;
 using Xunit;
 
@@ -64,6 +66,40 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             // Assert
             Assert.NotNull(tempDataDictionary);
             Assert.Empty(tempDataDictionary);
+        }
+
+        [Fact]
+        public void LoadTempData_ReturnsEmptyDictionary_AndClearsCookie_WhenDataIsInvalid()
+        {
+            // Arrange
+            var dataProtector = new Mock<IDataProtector>(MockBehavior.Strict);
+            dataProtector
+                .Setup(d => d.Unprotect(It.IsAny<byte[]>()))
+                .Throws(new Exception());
+
+            var tempDataProvider = GetProvider(dataProtector.Object);
+
+            var inputData = new Dictionary<string, object>();
+            inputData.Add("int", 10);
+            var tempDataProviderSerializer = new TempDataSerializer();
+            var expectedDataToUnprotect = tempDataProviderSerializer.Serialize(inputData);
+            var base64AndUrlEncodedDataInCookie = Base64UrlTextEncoder.Encode(expectedDataToUnprotect);
+
+            var context = new DefaultHttpContext();
+            context.Request.Cookies = new RequestCookieCollection(new Dictionary<string, string>()
+            {
+                { CookieTempDataProvider.CookieName, base64AndUrlEncodedDataInCookie }
+            });
+
+            // Act
+            var tempDataDictionary = tempDataProvider.LoadTempData(context);
+
+            // Assert
+            Assert.Empty(tempDataDictionary);
+
+            var setCookieHeader = SetCookieHeaderValue.Parse(context.Response.Headers["Set-Cookie"].ToString());
+            Assert.Equal(CookieTempDataProvider.CookieName, setCookieHeader.Name.ToString());
+            Assert.Equal(string.Empty, setCookieHeader.Value.ToString());
         }
 
         [Fact]
@@ -219,7 +255,11 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         [InlineData("/", "/vdir1", ".abc.com", "/vdir1", ".abc.com")]
         [InlineData("/vdir1", "/", ".abc.com", "/", ".abc.com")]
         public void SaveTempData_CustomProviderOptions_SetsCookie_WithAppropriateCookieOptions(
-            string requestPathBase, string optionsPath, string optionsDomain, string expectedCookiePath, string expectedDomain)
+            string requestPathBase,
+            string optionsPath,
+            string optionsDomain,
+            string expectedCookiePath,
+            string expectedDomain)
         {
             // Arrange
             var values = new Dictionary<string, object>();
@@ -637,7 +677,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var testOptions = new Mock<IOptions<CookieTempDataProviderOptions>>();
             testOptions.SetupGet(o => o.Value).Returns(options);
 
-            return new CookieTempDataProvider(new PassThroughDataProtectionProvider(dataProtector), testOptions.Object);
+            return new CookieTempDataProvider(new PassThroughDataProtectionProvider(dataProtector), NullLoggerFactory.Instance, testOptions.Object);
         }
 
         private class PassThroughDataProtectionProvider : IDataProtectionProvider

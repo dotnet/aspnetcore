@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
@@ -19,14 +20,20 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
     {
         public static readonly string CookieName = ".AspNetCore.Mvc.CookieTempDataProvider";
         private static readonly string Purpose = "Microsoft.AspNetCore.Mvc.CookieTempDataProviderToken.v1";
+
         private readonly IDataProtector _dataProtector;
+        private readonly ILogger _logger;
         private readonly TempDataSerializer _tempDataSerializer;
         private readonly ChunkingCookieManager _chunkingCookieManager;
         private readonly CookieTempDataProviderOptions _options;
 
-        public CookieTempDataProvider(IDataProtectionProvider dataProtectionProvider, IOptions<CookieTempDataProviderOptions> options)
+        public CookieTempDataProvider(
+            IDataProtectionProvider dataProtectionProvider,
+            ILoggerFactory loggerFactory,
+            IOptions<CookieTempDataProviderOptions> options)
         {
             _dataProtector = dataProtectionProvider.CreateProtector(Purpose);
+            _logger = loggerFactory.CreateLogger<CookieTempDataProvider>();
             _tempDataSerializer = new TempDataSerializer();
             _chunkingCookieManager = new ChunkingCookieManager();
             _options = options.Value;
@@ -41,15 +48,39 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             if (context.Request.Cookies.ContainsKey(_options.Cookie.Name))
             {
-                var encodedValue = _chunkingCookieManager.GetRequestCookie(context, _options.Cookie.Name);
-                if (!string.IsNullOrEmpty(encodedValue))
+                // The cookie we use for temp data is user input, and might be invalid in many ways.
+                //
+                // Since TempData is a best-effort system, we don't want to throw and get a 500 if the cookie is
+                // bad, we will just clear it and ignore the exception. The common case that we've identified for
+                // this is misconfigured data protection settings, which can cause the key used to create the 
+                // cookie to no longer be available.
+                try
                 {
-                    var protectedData = Base64UrlTextEncoder.Decode(encodedValue);
-                    var unprotectedData = _dataProtector.Unprotect(protectedData);
-                    return _tempDataSerializer.Deserialize(unprotectedData);
+                    var encodedValue = _chunkingCookieManager.GetRequestCookie(context, _options.Cookie.Name);
+                    if (!string.IsNullOrEmpty(encodedValue))
+                    {
+                        var protectedData = Base64UrlTextEncoder.Decode(encodedValue);
+                        var unprotectedData = _dataProtector.Unprotect(protectedData);
+                        var tempData = _tempDataSerializer.Deserialize(unprotectedData);
+
+                        _logger.TempDataCookieLoadSuccess(_options.Cookie.Name);
+                        return tempData;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.TempDataCookieLoadFailure(_options.Cookie.Name, ex);
+
+                    // If we've failed, we want to try and clear the cookie so that this won't keep happening
+                    // over and over.
+                    if (!context.Response.HasStarted)
+                    {
+                        _chunkingCookieManager.DeleteCookie(context, _options.Cookie.Name, _options.Cookie.Build(context));
+                    }
                 }
             }
 
+            _logger.TempDataCookieNotFound(_options.Cookie.Name);
             return new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
         }
 

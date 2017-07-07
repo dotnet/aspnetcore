@@ -30,6 +30,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         private static readonly Action<ILogger, string, Exception> _viewFound;
         private static readonly Action<ILogger, string, IEnumerable<string>, Exception> _viewNotFound;
 
+        private static readonly Action<ILogger, string, Exception> _tempDataCookieNotFound;
+        private static readonly Action<ILogger, string, Exception> _tempDataCookieLoadSuccess;
+        private static readonly Action<ILogger, string, Exception> _tempDataCookieLoadFailure;
+
         static MvcViewFeaturesLoggerExtensions()
         {
             _viewComponentExecuting = LoggerMessage.Define<string, string[]>(
@@ -82,6 +86,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 LogLevel.Error,
                 3,
                 "The view '{ViewName}' was not found. Searched locations: {SearchedViewLocations}");
+
+            _tempDataCookieNotFound = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                1,
+                "The temp data cookie {CookieName} was not found.");
+
+            _tempDataCookieLoadSuccess = LoggerMessage.Define<string>(
+                LogLevel.Debug,
+                2,
+                "The temp data cookie {CookieName} was used to successfully load temp data.");
+
+            _tempDataCookieLoadFailure = LoggerMessage.Define<string>(
+                LogLevel.Warning,
+                3,
+                "The temp data cookie {CookieName} could not be loaded.");
         }
 
         public static IDisposable ViewComponentScope(this ILogger logger, ViewComponentContext context)
@@ -190,6 +209,21 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             IEnumerable<string> searchedLocations)
         {
             _viewNotFound(logger, viewName, searchedLocations, null);
+        }
+
+        public static void TempDataCookieNotFound(this ILogger logger, string cookieName)
+        {
+            _tempDataCookieNotFound(logger, cookieName, null);
+        }
+
+        public static void TempDataCookieLoadSuccess(this ILogger logger, string cookieName)
+        {
+            _tempDataCookieLoadSuccess(logger, cookieName, null);
+        }
+
+        public static void TempDataCookieLoadFailure(this ILogger logger, string cookieName, Exception exception)
+        {
+            _tempDataCookieLoadFailure(logger, cookieName, exception);
         }
 
         private class ViewComponentLogScope : IReadOnlyList<KeyValuePair<string, object>>
