@@ -1,0 +1,38 @@
+[
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperDescriptorFactory : Microsoft.AspNetCore.Razor.Runtime.TagHelpers.ITagHelperDescriptorFactory",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperDescriptorResolver : Microsoft.AspNetCore.Razor.Compilation.TagHelpers.ITagHelperDescriptorResolver",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperDesignTimeDescriptorFactory",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperTypeResolver : Microsoft.AspNetCore.Razor.Runtime.TagHelpers.ITagHelperTypeResolver",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Runtime.TagHelpers.XmlDocumentationProvider",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.Runtime.TagHelpers.ITagHelperDescriptorFactory",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.Runtime.TagHelpers.ITagHelperTypeResolver",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.AspNetCore.Razor.Runtime.TagHelpers.TagHelperConventions",
+      "Kind": "Removal"
+    }
+  ]

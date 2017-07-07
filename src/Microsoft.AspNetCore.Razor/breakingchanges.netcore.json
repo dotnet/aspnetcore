@@ -1,0 +1,626 @@
+[
+    {
+      "TypeId": "protected class Microsoft.AspNetCore.Razor.Parser.CSharpCodeParser+Block",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "protected enum Microsoft.AspNetCore.Razor.Tokenizer.Tokenizer<T0, T1>+RazorCommentTokenizerState where T0 : Microsoft.AspNetCore.Razor.Tokenizer.Symbols.SymbolBase<T1> where T1 : struct",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "protected struct Microsoft.AspNetCore.Razor.Tokenizer.Tokenizer<T0, T1>+StateResult where T0 : Microsoft.AspNetCore.Razor.Tokenizer.Symbols.SymbolBase<T1> where T1 : struct",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.Chunks.Generators.ParentChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.IParentChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.Chunks.Generators.SpanChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.ISpanChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.CodeGenerators.CodeGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.ChunkVisitor<T0> : Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.IChunkVisitor where T0 : Microsoft.AspNetCore.Razor.CodeGenerators.CodeWriter",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.Parser.LanguageCharacteristics<T0, T1, T2> where T0 : Microsoft.AspNetCore.Razor.Tokenizer.Tokenizer<T1, T2> where T1 : Microsoft.AspNetCore.Razor.Tokenizer.Symbols.SymbolBase<T2> where T2 : struct",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.Parser.ParserBase",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.Parser.ParserVisitor",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.Parser.SyntaxTree.SyntaxTreeNode",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.Parser.TokenizerBackedParser<T0, T1, T2> : Microsoft.AspNetCore.Razor.Parser.ParserBase where T0 : Microsoft.AspNetCore.Razor.Tokenizer.Tokenizer<T1, T2> where T1 : Microsoft.AspNetCore.Razor.Tokenizer.Symbols.SymbolBase<T2> where T2 : struct",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.RazorCodeLanguage",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.Text.LookaheadTextReader : System.IO.TextReader",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.Tokenizer.Symbols.SymbolBase<T0> : Microsoft.AspNetCore.Razor.Tokenizer.Symbols.ISymbol where T0 : struct",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public abstract class Microsoft.AspNetCore.Razor.Tokenizer.Tokenizer<T0, T1> : Microsoft.AspNetCore.Razor.Tokenizer.ITokenizer where T0 : Microsoft.AspNetCore.Razor.Tokenizer.Symbols.SymbolBase<T1> where T1 : struct",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.AddTagHelperChunk : Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.ChunkTree : Microsoft.AspNetCore.Razor.Chunks.ParentChunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.ChunkTreeBuilder",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.CodeAttributeChunk : Microsoft.AspNetCore.Razor.Chunks.ParentChunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.DynamicCodeAttributeChunk : Microsoft.AspNetCore.Razor.Chunks.ParentChunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.ExpressionBlockChunk : Microsoft.AspNetCore.Razor.Chunks.ParentChunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.ExpressionChunk : Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.AddImportChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.SpanChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.AddTagHelperChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.SpanChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.AttributeBlockChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.ParentChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.ChunkGeneratorContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.DynamicAttributeBlockChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.ParentChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.ExpressionChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.ISpanChunkGenerator, Microsoft.AspNetCore.Razor.Chunks.Generators.IParentChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.LiteralAttributeChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.SpanChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.MarkupChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.SpanChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.RazorChunkGenerator : Microsoft.AspNetCore.Razor.Parser.ParserVisitor",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.RazorCommentChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.ParentChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.RemoveTagHelperChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.SpanChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.SectionChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.ParentChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.SetBaseTypeChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.SpanChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.StatementChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.SpanChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.TagHelperChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.ParentChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.TagHelperPrefixDirectiveChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.SpanChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.TemplateBlockChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.ParentChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.Generators.TypeMemberChunkGenerator : Microsoft.AspNetCore.Razor.Chunks.Generators.SpanChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.LiteralChunk : Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.LiteralCodeAttributeChunk : Microsoft.AspNetCore.Razor.Chunks.ParentChunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.ParentChunk : Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.ParentLiteralChunk : Microsoft.AspNetCore.Razor.Chunks.ParentChunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.PreallocatedTagHelperAttributeChunk : Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.RemoveTagHelperChunk : Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.SectionChunk : Microsoft.AspNetCore.Razor.Chunks.ParentChunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.SetBaseTypeChunk : Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.StatementChunk : Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.TagHelperChunk : Microsoft.AspNetCore.Razor.Chunks.ParentChunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.TagHelperPrefixDirectiveChunk : Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.TemplateChunk : Microsoft.AspNetCore.Razor.Chunks.ParentChunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.TypeMemberChunk : Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Chunks.UsingChunk : Microsoft.AspNetCore.Razor.Chunks.Chunk",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.CodeGeneratorContext : Microsoft.AspNetCore.Razor.Chunks.Generators.ChunkGeneratorContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.CodeGeneratorResult",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.CodeWriter : System.IDisposable",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.CSharpCodeGenerator : Microsoft.AspNetCore.Razor.CodeGenerators.CodeGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.CSharpCodeWriter : Microsoft.AspNetCore.Razor.CodeGenerators.CodeWriter",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.CSharpLineMappingWriter : System.IDisposable",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.CSharpPaddingBuilder",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.CSharpTagHelperCodeRenderer",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.GeneratedTagHelperContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.GeneratorResults : Microsoft.AspNetCore.Razor.ParserResults",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.LineMapping",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.LineMappingManager",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.MappingLocation",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.TagHelperAttributeValueCodeRenderer",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CodeVisitor<T0> : Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.ChunkVisitor<T0> where T0 : Microsoft.AspNetCore.Razor.CodeGenerators.CodeWriter",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CSharpBaseTypeVisitor : Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CodeVisitor<Microsoft.AspNetCore.Razor.CodeGenerators.CSharpCodeWriter>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CSharpCodeVisitor : Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CodeVisitor<Microsoft.AspNetCore.Razor.CodeGenerators.CSharpCodeWriter>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CSharpDesignTimeCodeVisitor : Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CodeVisitor<Microsoft.AspNetCore.Razor.CodeGenerators.CSharpCodeWriter>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CSharpTagHelperAttributeValueVisitor : Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CodeVisitor<Microsoft.AspNetCore.Razor.CodeGenerators.CSharpCodeWriter>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CSharpTagHelperFieldDeclarationVisitor : Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CodeVisitor<Microsoft.AspNetCore.Razor.CodeGenerators.CSharpCodeWriter>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CSharpTagHelperPropertyInitializationVisitor : Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CodeVisitor<Microsoft.AspNetCore.Razor.CodeGenerators.CSharpCodeWriter>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CSharpTypeMemberVisitor : Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CodeVisitor<Microsoft.AspNetCore.Razor.CodeGenerators.CSharpCodeWriter>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CSharpUsingVisitor : Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.CodeVisitor<Microsoft.AspNetCore.Razor.CodeGenerators.CSharpCodeWriter>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperAttributeDescriptor",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperAttributeDesignTimeDescriptor",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperDescriptor",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperDescriptorComparer : System.Collections.Generic.IEqualityComparer<Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperDescriptor>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperDescriptorProvider",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperDescriptorResolutionContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperDesignTimeDescriptor",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperDirectiveDescriptor",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperRequiredAttributeDescriptor",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperRequiredAttributeDescriptorComparer : System.Collections.Generic.IEqualityComparer<Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperRequiredAttributeDescriptor>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TypeBasedTagHelperDescriptorComparer : System.Collections.Generic.IEqualityComparer<Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperDescriptor>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.CSharpRazorCodeLanguage : Microsoft.AspNetCore.Razor.RazorCodeLanguage",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.DocumentParseCompleteEventArgs : System.EventArgs",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Editor.AutoCompleteEditHandler : Microsoft.AspNetCore.Razor.Editor.SpanEditHandler",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Editor.EditResult",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Editor.ImplicitExpressionEditHandler : Microsoft.AspNetCore.Razor.Editor.SpanEditHandler",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Editor.SingleLineMarkupEditHandler : Microsoft.AspNetCore.Razor.Editor.SpanEditHandler",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Editor.SpanEditHandler",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.ErrorSink",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.CSharpCodeParser : Microsoft.AspNetCore.Razor.Parser.TokenizerBackedParser<Microsoft.AspNetCore.Razor.Tokenizer.Internal.CSharpTokenizer, Microsoft.AspNetCore.Razor.Tokenizer.Symbols.CSharpSymbol, Microsoft.AspNetCore.Razor.Tokenizer.Symbols.CSharpSymbolType>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.CSharpLanguageCharacteristics : Microsoft.AspNetCore.Razor.Parser.LanguageCharacteristics<Microsoft.AspNetCore.Razor.Tokenizer.Internal.CSharpTokenizer, Microsoft.AspNetCore.Razor.Tokenizer.Symbols.CSharpSymbol, Microsoft.AspNetCore.Razor.Tokenizer.Symbols.CSharpSymbolType>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.ParserContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.RazorParser",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.RewritingContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.SyntaxTree.Block : Microsoft.AspNetCore.Razor.Parser.SyntaxTree.SyntaxTreeNode",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.SyntaxTree.BlockBuilder",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.SyntaxTree.Span : Microsoft.AspNetCore.Razor.Parser.SyntaxTree.SyntaxTreeNode",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.SyntaxTree.SpanBuilder",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.TagHelpers.TagHelperAttributeNode",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.TagHelpers.TagHelperBlock : Microsoft.AspNetCore.Razor.Parser.SyntaxTree.Block, System.IEquatable<Microsoft.AspNetCore.Razor.Parser.TagHelpers.TagHelperBlock>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.TagHelpers.TagHelperBlockBuilder : Microsoft.AspNetCore.Razor.Parser.SyntaxTree.BlockBuilder",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Parser.TagHelpers.TagHelperDirectiveSpanVisitor : Microsoft.AspNetCore.Razor.Parser.ParserVisitor",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.ParserResults",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.RazorEditorParser : System.IDisposable",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.RazorEngineHost",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.RazorError : System.IEquatable<Microsoft.AspNetCore.Razor.RazorError>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.RazorTemplateEngine",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Text.LocationTagged<T0> : System.IFormattable",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Text.SeekableTextReader : System.IO.TextReader, Microsoft.AspNetCore.Razor.Text.ITextDocument",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Text.SourceLocationTracker",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Text.TextDocumentReader : System.IO.TextReader, Microsoft.AspNetCore.Razor.Text.ITextDocument",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Tokenizer.Symbols.CSharpSymbol : Microsoft.AspNetCore.Razor.Tokenizer.Symbols.SymbolBase<Microsoft.AspNetCore.Razor.Tokenizer.Symbols.CSharpSymbolType>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Razor.Tokenizer.TokenizerView<T0, T1, T2> where T0 : Microsoft.AspNetCore.Razor.Tokenizer.Tokenizer<T1, T2> where T1 : Microsoft.AspNetCore.Razor.Tokenizer.Symbols.SymbolBase<T2> where T2 : struct",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.CodeGenerators.ExpressionRenderingMode",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperDirectiveType",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperRequiredAttributeNameComparison",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.Compilation.TagHelpers.TagHelperRequiredAttributeValueComparison",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.Editor.EditorHints",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.Parser.BalancingModes",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.Parser.SyntaxTree.AcceptedCharacters",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.Parser.SyntaxTree.BlockType",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.Parser.SyntaxTree.SpanKind",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.PartialParseResult",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.Tokenizer.Symbols.CSharpKeyword",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.Tokenizer.Symbols.CSharpSymbolType",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public enum Microsoft.AspNetCore.Razor.Tokenizer.Symbols.KnownSymbolType",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.Chunks.Generators.IParentChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.Chunks.Generators.ISpanChunkGenerator",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.CodeGenerators.Visitors.IChunkVisitor",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.Compilation.TagHelpers.ITagHelperDescriptorResolver",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.Parser.ISyntaxTreeRewriter",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.Text.ITextBuffer",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.Text.ITextDocument : Microsoft.AspNetCore.Razor.Text.ITextBuffer",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.Tokenizer.ITokenizer",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public interface Microsoft.AspNetCore.Razor.Tokenizer.Symbols.ISymbol",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.AspNetCore.Razor.Parser.ParserHelpers",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.AspNetCore.Razor.Parser.ParserVisitorExtensions",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.AspNetCore.Razor.Parser.SyntaxConstants",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.AspNetCore.Razor.Parser.SyntaxConstants+CSharp",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public static class Microsoft.AspNetCore.Razor.Tokenizer.Symbols.SymbolExtensions",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public struct Microsoft.AspNetCore.Razor.Chunks.TagHelperAttributeTracker",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public struct Microsoft.AspNetCore.Razor.CodeGenerators.CSharpCodeWritingScope : System.IDisposable",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public struct Microsoft.AspNetCore.Razor.CodeGenerators.CSharpDisableWarningScope : System.IDisposable",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public struct Microsoft.AspNetCore.Razor.CodeGenerators.GeneratedClassContext",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public struct Microsoft.AspNetCore.Razor.SourceLocation : System.IEquatable<Microsoft.AspNetCore.Razor.SourceLocation>, System.IComparable<Microsoft.AspNetCore.Razor.SourceLocation>",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public struct Microsoft.AspNetCore.Razor.Text.LookaheadToken : System.IDisposable",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public struct Microsoft.AspNetCore.Razor.Text.TextChange",
+      "Kind": "Removal"
+    }
+  ]
