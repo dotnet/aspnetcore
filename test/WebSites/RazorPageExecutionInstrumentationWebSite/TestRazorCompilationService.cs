@@ -24,7 +24,7 @@ namespace RazorPageExecutionInstrumentationWebSite
         private class TestRazorProjectItem : FileProviderRazorProjectItem
         {
             public TestRazorProjectItem(FileProviderRazorProjectItem projectItem)
-                : base(projectItem.FileInfo, projectItem.BasePath, projectItem.Path)
+                : base(projectItem.FileInfo, projectItem.BasePath, projectItem.FilePath)
             {
             }
 

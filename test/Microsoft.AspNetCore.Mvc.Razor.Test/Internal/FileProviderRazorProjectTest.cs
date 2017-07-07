@@ -48,9 +48,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var razorFiles = razorProject.EnumerateItems("/");
 
             // Assert
-            Assert.Collection(razorFiles.OrderBy(f => f.Path),
-                file => Assert.Equal("/File1.cshtml", file.Path),
-                file => Assert.Equal("/File3.cshtml", file.Path));
+            Assert.Collection(razorFiles.OrderBy(f => f.FilePath),
+                file => Assert.Equal("/File1.cshtml", file.FilePath),
+                file => Assert.Equal("/File3.cshtml", file.FilePath));
         }
 
         [Fact]
@@ -89,11 +89,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var razorFiles = razorProject.EnumerateItems("/");
 
             // Assert
-            Assert.Collection(razorFiles.OrderBy(f => f.Path),
-                file => Assert.Equal("/File1.cshtml", file.Path),
-                file => Assert.Equal("/Level1-Dir1/File2.cshtml", file.Path),
-                file => Assert.Equal("/Level1-Dir1/File3.cshtml", file.Path),
-                file => Assert.Equal("/Level1-Dir2/File5.cshtml", file.Path));
+            Assert.Collection(razorFiles.OrderBy(f => f.FilePath),
+                file => Assert.Equal("/File1.cshtml", file.FilePath),
+                file => Assert.Equal("/Level1-Dir1/File2.cshtml", file.FilePath),
+                file => Assert.Equal("/Level1-Dir1/File3.cshtml", file.FilePath),
+                file => Assert.Equal("/Level1-Dir2/File5.cshtml", file.FilePath));
         }
 
         [Fact]
@@ -132,9 +132,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             var razorFiles = razorProject.EnumerateItems("/Level1-Dir1");
 
             // Assert
-            Assert.Collection(razorFiles.OrderBy(f => f.Path),
-                file => Assert.Equal("/File2.cshtml", file.Path),
-                file => Assert.Equal("/File3.cshtml", file.Path));
+            Assert.Collection(razorFiles.OrderBy(f => f.FilePath),
+                file => Assert.Equal("/File2.cshtml", file.FilePath),
+                file => Assert.Equal("/File3.cshtml", file.FilePath));
         }
     }
 }

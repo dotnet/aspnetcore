@@ -170,7 +170,7 @@ Nobody will use it");
 
         public override bool Exists => throw new NotImplementedException();
 
-        public override string Path => "Test.cshtml";
+        public override string FilePath => "Test.cshtml";
 
         public override string PhysicalPath => null;
 

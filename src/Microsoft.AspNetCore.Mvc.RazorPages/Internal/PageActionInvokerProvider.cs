@@ -212,7 +212,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 ViewStartFileName);
             foreach (var item in viewStartItems)
             {
-                var factoryResult = _razorPageFactoryProvider.CreateFactory(item.Path);
+                var factoryResult = _razorPageFactoryProvider.CreateFactory(item.FilePath);
                 if (factoryResult.Success)
                 {
                     viewStartFactories.Insert(0, factoryResult.RazorPageFactory);

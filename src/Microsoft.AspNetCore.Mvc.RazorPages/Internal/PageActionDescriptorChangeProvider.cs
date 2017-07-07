@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var importFileAtPagesRoot = rootDirectory + "/" + templateEngine.Options.ImportsFileName;
             _additionalFilesToTrack = templateEngine.GetImportItems(importFileAtPagesRoot)
-                .Select(item => item.Path)
+                .Select(item => item.FilePath)
                 .ToArray();
 
             _searchPattern = rootDirectory + "/**/*.cshtml";

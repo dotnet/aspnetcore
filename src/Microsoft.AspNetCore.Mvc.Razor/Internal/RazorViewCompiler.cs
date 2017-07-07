@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
                     compilationTaskSource = new TaskCompletionSource<CompiledViewDescriptor>();
                     foreach (var importItem in _templateEngine.GetImportItems(projectItem))
                     {
-                        cacheEntryOptions.ExpirationTokens.Add(_fileProvider.Watch(importItem.Path));
+                        cacheEntryOptions.ExpirationTokens.Add(_fileProvider.Watch(importItem.FilePath));
                     }
                     cacheEntry = compilationTaskSource.Task;
                 }

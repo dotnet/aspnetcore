@@ -432,7 +432,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
 
             foreach (var viewStartProjectItem in _razorProject.FindHierarchicalItems(path, ViewStartFileName))
             {
-                var result = _pageFactory.CreateFactory(viewStartProjectItem.Path);
+                var result = _pageFactory.CreateFactory(viewStartProjectItem.FilePath);
                 var viewDescriptor = result.ViewDescriptor;
                 if (viewDescriptor?.ExpirationTokens != null)
                 {
@@ -447,7 +447,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     // Populate the viewStartPages list so that _ViewStarts appear in the order the need to be
                     // executed (closest last, furthest first). This is the reverse order in which
                     // ViewHierarchyUtility.GetViewStartLocations returns _ViewStarts.
-                    viewStartPages.Insert(0, new ViewLocationCacheItem(result.RazorPageFactory, viewStartProjectItem.Path));
+                    viewStartPages.Insert(0, new ViewLocationCacheItem(result.RazorPageFactory, viewStartProjectItem.FilePath));
                 }
             }
 

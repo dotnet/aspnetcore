@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
                 var routeModel = new PageRouteModel(
                     relativePath: item.CombinedPath,
-                    viewEnginePath: item.PathWithoutExtension);
+                    viewEnginePath: item.FilePathWithoutExtension);
                 PageSelectorModel.PopulateDefaults(routeModel, routeTemplate);
 
                 context.RouteModels.Add(routeModel);
