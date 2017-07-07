@@ -60,7 +60,18 @@
     <RenameEncodedFolders RootDirectory="$(UnsignedOobPackagesPath)" />
   </Target>
 
-  <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages">
+  <Target Name="VerifyPackages" Condition="'$(VerifySignatures)' != 'false'">
+    <PropertyGroup>
+      <CoherencePackagesDir>$(ArtifactsDir)coherence\ship\</CoherencePackagesDir>
+    </PropertyGroup>
+
+     <VerifyPackages
+       ArtifactDirectory="$(CoherencePackagesDir)"
+       RuleFile="$(RepositoryRoot)NuGetPackageVerifier.json"
+       Condition="Exists('$(CoherencePackagesDir)')" />
+  </Target>
+
+  <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages;VerifyPackages">
     <!-- Flatten the file names -->
     <ItemGroup>
       <_UnsignedBinaries

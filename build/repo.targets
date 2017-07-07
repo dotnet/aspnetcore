@@ -6,7 +6,7 @@
     <PublishDependsOn>VerifySignedPackages;PushPackages</PublishDependsOn>
   </PropertyGroup>
 
-  <Target Name="Build" DependsOnTargets="VerifyPackages;Restore;LegacyBuild;CreateTimestampFreePackages;Publish" />
+  <Target Name="Build" DependsOnTargets="Restore;LegacyBuild;CreateTimestampFreePackages;Publish" />
   <Target Name="Publish" DependsOnTargets="$(PublishDependsOn)" />
 
   <Target Name="LegacyBuild" DependsOnTargets="_LocateMSBuildExe">
@@ -39,17 +39,6 @@
     <PropertyGroup Condition="'@(MSBuild15ExePaths)'!=''">
       <MSBuildExePath>%(MSBuild15ExePaths.FullPath)</MSBuildExePath>
     </PropertyGroup>
-  </Target>
-
-  <Target Name="VerifyPackages" Condition="'$(VerifySignatures)' != 'false'">
-    <PropertyGroup>
-      <CoherencePackagesDir>$(ArtifactsDir)coherence\ship\</CoherencePackagesDir>
-    </PropertyGroup>
-
-     <VerifyPackages
-       ArtifactDirectory="$(CoherencePackagesDir)"
-       RuleFile="$(RepositoryRoot)NuGetPackageVerifier.json"
-       Condition="Exists('$(CoherencePackagesDir)')" />
   </Target>
 
   <Target Name="VerifySignedPackages" Condition="'$(VerifySignatures)' != 'false'">
