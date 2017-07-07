@@ -46,13 +46,13 @@ namespace ServerComparison.TestSites
                     }
                     else
                     {
-                        return context.ChallengeAsync();
+                        return context.ChallengeAsync("Windows");
                     }
                 }
 
                 if (context.Request.Path.Equals("/Forbidden"))
                 {
-                    return context.ForbidAsync();
+                    return context.ForbidAsync("Windows");
                 }
 
                 return context.Response.WriteAsync("Hello World");
