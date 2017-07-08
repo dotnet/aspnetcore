@@ -18,6 +18,7 @@ using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
+using Microsoft.Extensions.Options;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
@@ -720,7 +721,7 @@ namespace Microsoft.AspNetCore.Session
 
             public UnreliableCache(IMemoryCache memoryCache)
             {
-                _cache = new MemoryDistributedCache(memoryCache);
+                _cache = new MemoryDistributedCache(Options.Create(new MemoryDistributedCacheOptions()));
             }
 
             public byte[] Get(string key)
