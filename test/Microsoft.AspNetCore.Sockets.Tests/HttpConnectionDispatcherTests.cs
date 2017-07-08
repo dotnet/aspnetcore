@@ -599,7 +599,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             {
                 o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
             });
-            services.AddAuthenticationCore(o => o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler)));
+            services.AddAuthenticationCore(o => 
+            {
+                o.DefaultScheme = "Default";
+                o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
+            });
             services.AddLogging();
             var sp = services.BuildServiceProvider();
             context.Request.Path = "/foo";
@@ -637,7 +641,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             {
                 o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
             });
-            services.AddAuthenticationCore(o => o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler)));
+            services.AddAuthenticationCore(o => 
+            {
+                o.DefaultScheme = "Default";
+                o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
+            });
             services.AddLogging();
             var sp = services.BuildServiceProvider();
             context.Request.Path = "/foo";
@@ -682,7 +690,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 });
             });
             services.AddLogging();
-            services.AddAuthenticationCore(o => o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler)));
+            services.AddAuthenticationCore(o => 
+            {
+                o.DefaultScheme = "Default";
+                o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
+            });
             var sp = services.BuildServiceProvider();
             context.Request.Path = "/foo";
             context.Request.Method = "GET";
@@ -735,7 +747,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 });
             });
             services.AddLogging();
-            services.AddAuthenticationCore(o => o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler)));
+            services.AddAuthenticationCore(o => 
+            {
+                o.DefaultScheme = "Default";
+                o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
+            });
             var sp = services.BuildServiceProvider();
             context.Request.Path = "/foo";
             context.Request.Method = "GET";
@@ -806,7 +822,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             });
             services.AddAuthorizationPolicyEvaluator();
             services.AddLogging();
-            services.AddAuthenticationCore(o => o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler)));
+            services.AddAuthenticationCore(o => 
+            {
+                o.DefaultScheme = "Default";
+                o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
+            });
             var sp = services.BuildServiceProvider();
             context.Request.Path = "/foo";
             context.Request.Method = "GET";
@@ -855,7 +875,11 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             });
             services.AddAuthorizationPolicyEvaluator();
             services.AddLogging();
-            services.AddAuthenticationCore(o => o.AddScheme("Default", a => a.HandlerType = typeof(RejectHandler)));
+            services.AddAuthenticationCore(o => 
+            {
+                o.DefaultScheme = "Default";
+                o.AddScheme("Default", a => a.HandlerType = typeof(RejectHandler));
+            });
             var sp = services.BuildServiceProvider();
             context.Request.Path = "/foo";
             context.Request.Method = "GET";
