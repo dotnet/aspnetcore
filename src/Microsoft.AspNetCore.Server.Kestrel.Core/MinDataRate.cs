@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// starting at the time data is first read or written.</param>
         public MinDataRate(double bytesPerSecond, TimeSpan gracePeriod)
         {
-            if (bytesPerSecond < 0)
+            if (bytesPerSecond <= 0)
             {
-                throw new ArgumentOutOfRangeException(nameof(bytesPerSecond), CoreStrings.NonNegativeNumberRequired);
+                throw new ArgumentOutOfRangeException(nameof(bytesPerSecond), CoreStrings.PositiveNumberOrNullMinDataRateRequired);
             }
 
             if (gracePeriod <= Heartbeat.Interval)

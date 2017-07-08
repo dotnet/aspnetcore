@@ -10,7 +10,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
     public class MinDataRateTests
     {
         [Theory]
-        [InlineData(0)]
         [InlineData(double.Epsilon)]
         [InlineData(double.MaxValue)]
         public void BytesPerSecondValid(double value)
@@ -21,12 +20,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Theory]
         [InlineData(double.MinValue)]
         [InlineData(-double.Epsilon)]
+        [InlineData(0)]
         public void BytesPerSecondInvalid(double value)
         {
             var exception = Assert.Throws<ArgumentOutOfRangeException>(() => new MinDataRate(bytesPerSecond: value, gracePeriod: TimeSpan.MaxValue));
 
             Assert.Equal("bytesPerSecond", exception.ParamName);
-            Assert.StartsWith(CoreStrings.NonNegativeNumberRequired, exception.Message);
+            Assert.StartsWith(CoreStrings.PositiveNumberOrNullMinDataRateRequired, exception.Message);
         }
 
         [Theory]

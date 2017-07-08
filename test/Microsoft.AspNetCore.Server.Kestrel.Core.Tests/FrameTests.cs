@@ -147,7 +147,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _frame.Reset();
 
-            Assert.Equal(_serviceContext.ServerOptions.Limits.MinRequestBodyDataRate, _frame.MinRequestBodyDataRate);
+            Assert.Same(_serviceContext.ServerOptions.Limits.MinRequestBodyDataRate, _frame.MinRequestBodyDataRate);
+        }
+
+        [Fact]
+        public void ResetResetsMinResponseDataRate()
+        {
+            _frame.MinResponseDataRate = new MinDataRate(bytesPerSecond: 1, gracePeriod: TimeSpan.MaxValue);
+
+            _frame.Reset();
+
+            Assert.Same(_serviceContext.ServerOptions.Limits.MinResponseDataRate, _frame.MinResponseDataRate);
         }
 
         [Fact]
@@ -254,12 +264,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Theory]
-        [MemberData(nameof(MinRequestBodyDataRateData))]
+        [MemberData(nameof(MinDataRateData))]
         public void ConfiguringIHttpMinRequestBodyDataRateFeatureSetsMinRequestBodyDataRate(MinDataRate minDataRate)
         {
             ((IFeatureCollection)_frame).Get<IHttpMinRequestBodyDataRateFeature>().MinDataRate = minDataRate;
 
             Assert.Same(minDataRate, _frame.MinRequestBodyDataRate);
+        }
+
+        [Theory]
+        [MemberData(nameof(MinDataRateData))]
+        public void ConfiguringIHttpMinResponseDataRateFeatureSetsMinResponseDataRate(MinDataRate minDataRate)
+        {
+            ((IFeatureCollection)_frame).Get<IHttpMinResponseDataRateFeature>().MinDataRate = minDataRate;
+
+            Assert.Same(minDataRate, _frame.MinResponseDataRate);
         }
 
         [Fact]
@@ -878,7 +897,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             TimeSpan.Zero
         };
 
-        public static TheoryData<MinDataRate> MinRequestBodyDataRateData => new TheoryData<MinDataRate>
+        public static TheoryData<MinDataRate> MinDataRateData => new TheoryData<MinDataRate>
         {
             null,
             new MinDataRate(bytesPerSecond: 1, gracePeriod: TimeSpan.MaxValue)

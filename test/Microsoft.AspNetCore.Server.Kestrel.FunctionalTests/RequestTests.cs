@@ -1519,10 +1519,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                     // Synchronous reads now throw.
                     var ioEx = Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(new byte[1], 0, 1));
-                    Assert.Equal("Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.", ioEx.Message);
+                    Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx.Message);
 
                     var ioEx2 = Assert.Throws<InvalidOperationException>(() => context.Request.Body.CopyTo(Stream.Null));
-                    Assert.Equal("Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.", ioEx2.Message);
+                    Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx2.Message);
 
                     while (offset < 5)
                     {
@@ -1578,10 +1578,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
                 // Synchronous reads now throw.
                 var ioEx = Assert.Throws<InvalidOperationException>(() => context.Request.Body.Read(new byte[1], 0, 1));
-                Assert.Equal("Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.", ioEx.Message);
+                Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx.Message);
 
                 var ioEx2 = Assert.Throws<InvalidOperationException>(() => context.Request.Body.CopyTo(Stream.Null));
-                Assert.Equal("Synchronous operations are disallowed. Call ReadAsync or set AllowSynchronousIO to true instead.", ioEx2.Message);
+                Assert.Equal(CoreStrings.SynchronousReadsDisallowed, ioEx2.Message);
 
                 var buffer = new byte[5];
                 var offset = 0;

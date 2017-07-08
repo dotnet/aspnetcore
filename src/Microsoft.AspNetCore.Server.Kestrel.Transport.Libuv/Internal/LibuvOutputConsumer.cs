@@ -4,7 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
@@ -29,6 +28,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             _socket = socket;
             _connectionId = connectionId;
             _log = log;
+
+            _pipe.OnWriterCompleted(OnWriterCompleted, this);
         }
 
         public async Task WriteOutputAsync()
@@ -37,7 +38,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             while (true)
             {
-                var result = await _pipe.ReadAsync();
+                ReadResult result;
+
+                try
+                {
+                    result = await _pipe.ReadAsync();
+                }
+                catch
+                {
+                    // Handled in OnWriterCompleted
+                    return;
+                }
+
                 var buffer = result.Buffer;
                 var consumed = buffer.End;
 
@@ -54,6 +66,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                         try
                         {
+                            if (_socket.IsClosed)
+                            {
+                                break;
+                            }
+
                             var writeResult = await writeReq.WriteAsync(_socket, buffer);
 
                             LogWriteInfo(writeResult.Status, writeResult.Error);
@@ -79,6 +96,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 {
                     _pipe.Advance(consumed);
                 }
+            }
+        }
+
+        private static void OnWriterCompleted(Exception ex, object state)
+        {
+            // Cut off writes if the writer is completed with an error. If a write request is pending, this will cancel it.
+            if (ex != null)
+            {
+                var libuvOutputConsumer = (LibuvOutputConsumer)state;
+                libuvOutputConsumer._socket.Dispose();
             }
         }
 

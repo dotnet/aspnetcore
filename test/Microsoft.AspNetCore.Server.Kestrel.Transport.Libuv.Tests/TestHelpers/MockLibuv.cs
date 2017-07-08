@@ -38,18 +38,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
 
             _uv_async_send = postHandle =>
             {
-                lock (_postLock)
+                // Attempt to run the async send logic inline; this should succeed most of the time.
+                // In the rare cases where it fails to acquire the lock, use Task.Run() so this call
+                // never blocks, since the real libuv never blocks.
+                if (Monitor.TryEnter(_postLock))
                 {
-                    if (_completedOnPostTcs)
+                    try
                     {
-                        _onPostTcs = new TaskCompletionSource<object>();
-                        _completedOnPostTcs = false;
+                        UvAsyncSend();
                     }
-
-                    PostCount++;
-
-                    _sendCalled = true;
-                    _loopWh.Set();
+                    finally
+                    {
+                        Monitor.Exit(_postLock);
+                    }
+                }
+                else
+                {
+                    Task.Run(() =>
+                    {
+                        lock (_postLock)
+                        {
+                            UvAsyncSend();
+                        }
+                    });
                 }
 
                 return 0;
@@ -159,6 +170,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
         unsafe private int UvWrite(UvRequest req, UvStreamHandle handle, uv_buf_t* bufs, int nbufs, uv_write_cb cb)
         {
             return OnWrite(handle, nbufs, status => cb(req.InternalGetHandle(), status));
+        }
+
+        private void UvAsyncSend()
+        {
+            if (_completedOnPostTcs)
+            {
+                _onPostTcs = new TaskCompletionSource<object>();
+                _completedOnPostTcs = false;
+            }
+
+            PostCount++;
+
+            _sendCalled = true;
+            _loopWh.Set();
         }
     }
 }

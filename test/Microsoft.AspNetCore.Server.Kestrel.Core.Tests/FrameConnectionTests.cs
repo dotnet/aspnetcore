@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
@@ -129,7 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(context => Task.CompletedTask), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
             _frameConnection.Frame.Reset();
 
             // Initialize timestamp
@@ -171,7 +172,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(context => Task.CompletedTask), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
             _frameConnection.Frame.Reset();
 
             // Initialize timestamp
@@ -248,7 +249,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(context => Task.CompletedTask), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
             _frameConnection.Frame.Reset();
 
             // Initialize timestamp
@@ -316,7 +317,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(context => Task.CompletedTask), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
             _frameConnection.Frame.Reset();
 
             // Initialize timestamp
@@ -363,6 +364,170 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             mockLogger.Verify(
                 logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Once);
+        }
+
+        [Fact]
+        public void ReadTimingNotEnforcedWhenTimeoutIsSet()
+        {
+            var systemClock = new MockSystemClock();
+            var timeout = TimeSpan.FromSeconds(5);
+
+            _frameConnectionContext.ServiceContext.ServerOptions.Limits.MinRequestBodyDataRate =
+                new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
+            _frameConnectionContext.ServiceContext.SystemClock = systemClock;
+
+            var mockLogger = new Mock<IKestrelTrace>();
+            _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
+
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.Frame.Reset();
+
+            var startTime = systemClock.UtcNow;
+
+            // Initialize timestamp
+            _frameConnection.Tick(startTime);
+
+            _frameConnection.StartTimingReads();
+
+            _frameConnection.SetTimeout(timeout.Ticks, TimeoutAction.CloseConnection);
+
+            // Tick beyond grace period with low data rate
+            systemClock.UtcNow += TimeSpan.FromSeconds(3);
+            _frameConnection.BytesRead(1);
+            _frameConnection.Tick(systemClock.UtcNow);
+
+            // Not timed out
+            Assert.False(_frameConnection.TimedOut);
+
+            // Tick just past timeout period, adjusted by Heartbeat.Interval
+            systemClock.UtcNow = startTime + timeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
+            _frameConnection.Tick(systemClock.UtcNow);
+
+            // Timed out
+            Assert.True(_frameConnection.TimedOut);
+        }
+
+        [Fact]
+        public void WriteTimingAbortsConnectionWhenWriteDoesNotCompleteWithMinimumDataRate()
+        {
+            var systemClock = new MockSystemClock();
+            var aborted = new ManualResetEventSlim();
+
+            _frameConnectionContext.ServiceContext.ServerOptions.Limits.MinResponseDataRate =
+                new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
+            _frameConnectionContext.ServiceContext.SystemClock = systemClock;
+
+            var mockLogger = new Mock<IKestrelTrace>();
+            _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
+
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.Frame.Reset();
+            _frameConnection.Frame.RequestAborted.Register(() =>
+            {
+                aborted.Set();
+            });
+
+            // Initialize timestamp
+            _frameConnection.Tick(systemClock.UtcNow);
+
+            // Should complete within 4 seconds, but the timeout is adjusted by adding Heartbeat.Interval
+            _frameConnection.StartTimingWrite(400);
+
+            // Tick just past 4s plus Heartbeat.Interval
+            systemClock.UtcNow += TimeSpan.FromSeconds(4) + Heartbeat.Interval + TimeSpan.FromTicks(1);
+            _frameConnection.Tick(systemClock.UtcNow);
+
+            Assert.True(_frameConnection.TimedOut);
+            Assert.True(aborted.Wait(TimeSpan.FromSeconds(10)));
+        }
+
+        [Fact]
+        public void WriteTimingAbortsConnectionWhenSmallWriteDoesNotCompleteWithinGracePeriod()
+        {
+            var systemClock = new MockSystemClock();
+            var minResponseDataRate = new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(5));
+            var aborted = new ManualResetEventSlim();
+
+            _frameConnectionContext.ServiceContext.ServerOptions.Limits.MinResponseDataRate = minResponseDataRate;
+            _frameConnectionContext.ServiceContext.SystemClock = systemClock;
+
+            var mockLogger = new Mock<IKestrelTrace>();
+            _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
+
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.Frame.Reset();
+            _frameConnection.Frame.RequestAborted.Register(() =>
+            {
+                aborted.Set();
+            });
+
+            // Initialize timestamp
+            var startTime = systemClock.UtcNow;
+            _frameConnection.Tick(startTime);
+
+            // Should complete within 1 second, but the timeout is adjusted by adding Heartbeat.Interval
+            _frameConnection.StartTimingWrite(100);
+
+            // Tick just past 1s plus Heartbeat.Interval
+            systemClock.UtcNow += TimeSpan.FromSeconds(1) + Heartbeat.Interval + TimeSpan.FromTicks(1);
+            _frameConnection.Tick(systemClock.UtcNow);
+
+            // Still within grace period, not timed out
+            Assert.False(_frameConnection.TimedOut);
+
+            // Tick just past grace period (adjusted by Heartbeat.Interval)
+            systemClock.UtcNow = startTime + minResponseDataRate.GracePeriod + Heartbeat.Interval + TimeSpan.FromTicks(1);
+            _frameConnection.Tick(systemClock.UtcNow);
+
+            Assert.True(_frameConnection.TimedOut);
+            Assert.True(aborted.Wait(TimeSpan.FromSeconds(10)));
+        }
+
+        [Fact]
+        public void WriteTimingTimeoutPushedOnConcurrentWrite()
+        {
+            var systemClock = new MockSystemClock();
+            var aborted = new ManualResetEventSlim();
+
+            _frameConnectionContext.ServiceContext.ServerOptions.Limits.MinResponseDataRate =
+                new MinDataRate(bytesPerSecond: 100, gracePeriod: TimeSpan.FromSeconds(2));
+            _frameConnectionContext.ServiceContext.SystemClock = systemClock;
+
+            var mockLogger = new Mock<IKestrelTrace>();
+            _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
+
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.Frame.Reset();
+            _frameConnection.Frame.RequestAborted.Register(() =>
+            {
+                aborted.Set();
+            });
+
+            // Initialize timestamp
+            _frameConnection.Tick(systemClock.UtcNow);
+
+            // Should complete within 5 seconds, but the timeout is adjusted by adding Heartbeat.Interval
+            _frameConnection.StartTimingWrite(500);
+
+            // Start a concurrent write after 3 seconds, which should complete within 3 seconds (adjusted by Heartbeat.Interval)
+            _frameConnection.StartTimingWrite(300);
+
+            // Tick just past 5s plus Heartbeat.Interval, when the first write should have completed
+            systemClock.UtcNow += TimeSpan.FromSeconds(5) + Heartbeat.Interval + TimeSpan.FromTicks(1);
+            _frameConnection.Tick(systemClock.UtcNow);
+
+            // Not timed out because the timeout was pushed by the second write
+            Assert.False(_frameConnection.TimedOut);
+
+            // Complete the first write, this should have no effect on the timeout
+            _frameConnection.StopTimingWrite();
+
+            // Tick just past +3s, when the second write should have completed
+            systemClock.UtcNow += TimeSpan.FromSeconds(3) + TimeSpan.FromTicks(1);
+            _frameConnection.Tick(systemClock.UtcNow);
+
+            Assert.True(_frameConnection.TimedOut);
+            Assert.True(aborted.Wait(TimeSpan.FromSeconds(10)));
         }
     }
 }

@@ -263,5 +263,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         public MinDataRate MinRequestBodyDataRate { get; set; } =
             // Matches the default IIS minBytesPerSecond
             new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(5));
+
+        /// <summary>
+        /// Gets or sets the response minimum data rate in bytes/second.
+        /// Setting this property to null indicates no minimum data rate should be enforced.
+        /// This limit has no effect on upgraded connections which are always unlimited.
+        /// This can be overridden per-request via <see cref="IHttpMinResponseDataRateFeature"/>.
+        /// </summary>
+        /// <remarks>
+        /// <para>
+        /// Defaults to 240 bytes/second with a 5 second grace period.
+        /// </para>
+        /// <para>
+        /// Contrary to the request body minimum data rate, this rate applies to the response status line and headers as well.
+        /// </para>
+        /// <para>
+        /// This rate is enforced per write operation instead of being averaged over the life of the response. Whenever the server
+        /// writes a chunk of data, a timer is set to the maximum of the grace period set in this property or the length of the write in
+        /// bytes divided by the data rate (i.e. the maximum amount of time that write should take to complete with the specified data rate).
+        /// The connection is aborted if the write has not completed by the time that timer expires.
+        /// </para>
+        /// </remarks>
+        public MinDataRate MinResponseDataRate { get; set; } =
+            // Matches the default IIS minBytesPerSecond
+            new MinDataRate(bytesPerSecond: 240, gracePeriod: TimeSpan.FromSeconds(5));
     }
 }

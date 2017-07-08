@@ -300,6 +300,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(TimeSpan.FromSeconds(5), new KestrelServerLimits().MinRequestBodyDataRate.GracePeriod);
         }
 
+        [Fact]
+        public void MinResponseBodyDataRateDefault()
+        {
+            Assert.NotNull(new KestrelServerLimits().MinResponseDataRate);
+            Assert.Equal(240, new KestrelServerLimits().MinResponseDataRate.BytesPerSecond);
+            Assert.Equal(TimeSpan.FromSeconds(5), new KestrelServerLimits().MinResponseDataRate.GracePeriod);
+        }
+
         public static TheoryData<TimeSpan> TimeoutValidData => new TheoryData<TimeSpan>
         {
             TimeSpan.FromTicks(1),

@@ -61,7 +61,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             LoggerMessage.Define<string, string>(LogLevel.Debug, 26, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.");
 
         private static readonly Action<ILogger, string, string, double, Exception> _requestBodyMinimumDataRateNotSatisfied =
-            LoggerMessage.Define<string, string, double>(LogLevel.Information, 27, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": request body incoming data rate dropped below {Rate} bytes/second.");
+            LoggerMessage.Define<string, string, double>(LogLevel.Information, 27, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
+
+        private static readonly Action<ILogger, string, string, Exception> _responseMinimumDataRateNotSatisfied =
+            LoggerMessage.Define<string, string>(LogLevel.Information, 28, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed becuase the response was not read by the client at the specified minimum data rate.");
 
         protected readonly ILogger _logger;
 
@@ -158,6 +161,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public void RequestBodyMininumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate)
         {
             _requestBodyMinimumDataRateNotSatisfied(_logger, connectionId, traceIdentifier, rate, null);
+        }
+
+        public void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier)
+        {
+            _responseMinimumDataRateNotSatisfied(_logger, connectionId, traceIdentifier, null);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly Type ISessionFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.ISessionFeature);
         private static readonly Type IHttpMaxRequestBodySizeFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature);
         private static readonly Type IHttpMinRequestBodyDataRateFeatureType = typeof(global::Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinRequestBodyDataRateFeature);
+        private static readonly Type IHttpMinResponseDataRateFeatureType = typeof(global::Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature);
         private static readonly Type IHttpBodyControlFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature);
         private static readonly Type IHttpSendFileFeatureType = typeof(global::Microsoft.AspNetCore.Http.Features.IHttpSendFileFeature);
 
@@ -45,6 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private object _currentISessionFeature;
         private object _currentIHttpMaxRequestBodySizeFeature;
         private object _currentIHttpMinRequestBodyDataRateFeature;
+        private object _currentIHttpMinResponseDataRateFeature;
         private object _currentIHttpBodyControlFeature;
         private object _currentIHttpSendFileFeature;
 
@@ -58,6 +60,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _currentIHttpConnectionFeature = this;
             _currentIHttpMaxRequestBodySizeFeature = this;
             _currentIHttpMinRequestBodyDataRateFeature = this;
+            _currentIHttpMinResponseDataRateFeature = this;
             _currentIHttpBodyControlFeature = this;
             
             _currentIServiceProvidersFeature = null;
@@ -141,6 +144,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (key == IHttpMinRequestBodyDataRateFeatureType)
             {
                 return _currentIHttpMinRequestBodyDataRateFeature;
+            }
+            if (key == IHttpMinResponseDataRateFeatureType)
+            {
+                return _currentIHttpMinResponseDataRateFeature;
             }
             if (key == IHttpBodyControlFeatureType)
             {
@@ -242,6 +249,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _currentIHttpMinRequestBodyDataRateFeature = feature;
                 return;
             }
+            if (key == IHttpMinResponseDataRateFeatureType)
+            {
+                _currentIHttpMinResponseDataRateFeature = feature;
+                return;
+            }
             if (key == IHttpBodyControlFeatureType)
             {
                 _currentIHttpBodyControlFeature = feature;
@@ -324,6 +336,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             if (_currentIHttpMinRequestBodyDataRateFeature != null)
             {
                 yield return new KeyValuePair<Type, object>(IHttpMinRequestBodyDataRateFeatureType, _currentIHttpMinRequestBodyDataRateFeature as global::Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinRequestBodyDataRateFeature);
+            }
+            if (_currentIHttpMinResponseDataRateFeature != null)
+            {
+                yield return new KeyValuePair<Type, object>(IHttpMinResponseDataRateFeatureType, _currentIHttpMinResponseDataRateFeature as global::Microsoft.AspNetCore.Server.Kestrel.Core.Features.IHttpMinResponseDataRateFeature);
             }
             if (_currentIHttpBodyControlFeature != null)
             {

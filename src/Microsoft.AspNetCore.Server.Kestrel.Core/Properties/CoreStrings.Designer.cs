@@ -1060,6 +1060,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatSynchronousWritesDisallowed()
             => GetString("SynchronousWritesDisallowed");
 
+        /// <summary>
+        /// Value must be a positive number. To disable a minimum data rate, use null where a MinDataRate instance is expected.
+        /// </summary>
+        internal static string PositiveNumberOrNullMinDataRateRequired
+        {
+            get => GetString("PositiveNumberOrNullMinDataRateRequired");
+        }
+
+        /// <summary>
+        /// Value must be a positive number. To disable a minimum data rate, use null where a MinDataRate instance is expected.
+        /// </summary>
+        internal static string FormatPositiveNumberOrNullMinDataRateRequired()
+            => GetString("PositiveNumberOrNullMinDataRateRequired");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

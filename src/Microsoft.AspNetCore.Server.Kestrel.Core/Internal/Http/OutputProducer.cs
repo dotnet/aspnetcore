@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
 
         private readonly string _connectionId;
+        private readonly ITimeoutControl _timeoutControl;
         private readonly IKestrelTrace _log;
 
         // This locks access to to all of the below fields
@@ -30,10 +31,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private readonly object _flushLock = new object();
         private Action _flushCompleted;
 
-        public OutputProducer(IPipe pipe, string connectionId, IKestrelTrace log)
+        public OutputProducer(
+            IPipe pipe,
+            string connectionId,
+            IKestrelTrace log,
+            ITimeoutControl timeoutControl)
         {
             _pipe = pipe;
             _connectionId = connectionId;
+            _timeoutControl = timeoutControl;
             _log = log;
             _flushCompleted = OnFlushCompleted;
         }
@@ -83,7 +89,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void Abort()
+        public void Abort(Exception error)
         {
             lock (_contextLock)
             {
@@ -94,8 +100,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 _log.ConnectionDisconnect(_connectionId);
                 _completed = true;
+
                 _pipe.Reader.CancelPendingRead();
-                _pipe.Writer.Complete();
+                _pipe.Writer.Complete(error);
             }
         }
 
@@ -145,10 +152,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 // The flush task can't fail today
                 return Task.CompletedTask;
             }
-            return FlushAsyncAwaited(awaitable, cancellationToken);
+            return FlushAsyncAwaited(awaitable, writableBuffer.BytesWritten, cancellationToken);
         }
 
-        private async Task FlushAsyncAwaited(WritableBufferAwaitable awaitable, CancellationToken cancellationToken)
+        private async Task FlushAsyncAwaited(WritableBufferAwaitable awaitable, int count, CancellationToken cancellationToken)
         {
             // https://github.com/dotnet/corefxlab/issues/1334
             // Since the flush awaitable doesn't currently support multiple awaiters
@@ -163,7 +170,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     awaitable.OnCompleted(_flushCompleted);
                 }
             }
+
+            _timeoutControl.StartTimingWrite(count);
             await _flushTcs.Task;
+            _timeoutControl.StopTimingWrite();
 
             cancellationToken.ThrowIfCancellationRequested();
         }

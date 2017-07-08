@@ -342,4 +342,7 @@
   <data name="SynchronousWritesDisallowed" xml:space="preserve">
     <value>Synchronous operations are disallowed. Call WriteAsync or set AllowSynchronousIO to true instead.</value>
   </data>
+  <data name="PositiveNumberOrNullMinDataRateRequired" xml:space="preserve">
+    <value>Value must be a positive number. To disable a minimum data rate, use null where a MinDataRate instance is expected.</value>
+  </data>
 </root>

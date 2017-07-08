@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                                  IHttpRequestIdentifierFeature,
                                  IHttpBodyControlFeature,
                                  IHttpMaxRequestBodySizeFeature,
-                                 IHttpMinRequestBodyDataRateFeature
+                                 IHttpMinRequestBodyDataRateFeature,
+                                 IHttpMinResponseDataRateFeature
     {
         // NOTE: When feature interfaces are added to or removed from this Frame class implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -240,6 +241,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             get => MinRequestBodyDataRate;
             set => MinRequestBodyDataRate = value;
+        }
+
+        MinDataRate IHttpMinResponseDataRateFeature.MinDataRate
+        {
+            get => MinResponseDataRate;
+            set => MinResponseDataRate = value;
         }
 
         object IFeatureCollection.this[Type key]

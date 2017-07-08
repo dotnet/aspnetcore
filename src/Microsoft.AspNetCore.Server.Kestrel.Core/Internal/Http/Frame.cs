@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;
             _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
 
-            Output = new OutputProducer(frameContext.Output, frameContext.ConnectionId, frameContext.ServiceContext.Log);
+            Output = new OutputProducer(frameContext.Output, frameContext.ConnectionId, frameContext.ServiceContext.Log, TimeoutControl);
             RequestBodyPipe = CreateRequestBodyPipe();
         }
 
@@ -302,6 +302,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public MinDataRate MinRequestBodyDataRate { get; set; }
 
+        public MinDataRate MinResponseDataRate { get; set; }
+
         public void InitializeStreams(MessageBody messageBody)
         {
             if (_frameStreams == null)
@@ -381,6 +383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _requestCount++;
 
             MinRequestBodyDataRate = ServerOptions.Limits.MinRequestBodyDataRate;
+            MinResponseDataRate = ServerOptions.Limits.MinResponseDataRate;
         }
 
         /// <summary>
@@ -418,7 +421,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 _frameStreams?.Abort(error);
 
-                Output.Abort();
+                Output.Abort(error);
 
                 // Potentially calling user code. CancelRequestAbortedToken logs any exceptions.
                 ServiceContext.ThreadPool.UnsafeRun(state => ((Frame)state).CancelRequestAbortedToken(), this);

@@ -48,6 +48,7 @@ namespace CodeGenerator
                 typeof(ISessionFeature),
                 typeof(IHttpMaxRequestBodySizeFeature),
                 typeof(IHttpMinRequestBodyDataRateFeature),
+                typeof(IHttpMinResponseDataRateFeature),
                 typeof(IHttpBodyControlFeature),
             };
 
@@ -70,6 +71,7 @@ namespace CodeGenerator
                 typeof(IHttpConnectionFeature),
                 typeof(IHttpMaxRequestBodySizeFeature),
                 typeof(IHttpMinRequestBodyDataRateFeature),
+                typeof(IHttpMinResponseDataRateFeature),
                 typeof(IHttpBodyControlFeature),
             };
 

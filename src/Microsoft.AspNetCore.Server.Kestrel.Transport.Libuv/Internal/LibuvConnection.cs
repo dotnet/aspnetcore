@@ -60,28 +60,26 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
                 StartReading();
 
+                Exception error = null;
+
                 try
                 {
                     // This *must* happen after socket.ReadStart
                     // The socket output consumer is the only thing that can close the connection. If the
                     // output pipe is already closed by the time we start then it's fine since, it'll close gracefully afterwards.
                     await Output.WriteOutputAsync();
-
-                    // Now, complete the input so that no more reads can happen
-                    Input.Complete(new ConnectionAbortedException());
-                    _connectionContext.Output.Complete();
-                    _connectionContext.OnConnectionClosed(ex: null);
                 }
                 catch (UvException ex)
                 {
-                    var ioEx = new IOException(ex.Message, ex);
-
-                    Input.Complete(ioEx);
-                    _connectionContext.Output.Complete(ioEx);
-                    _connectionContext.OnConnectionClosed(ioEx);
+                    error = new IOException(ex.Message, ex);
                 }
                 finally
                 {
+                    // Now, complete the input so that no more reads can happen
+                    Input.Complete(error ?? new ConnectionAbortedException());
+                    _connectionContext.Output.Complete(error);
+                    _connectionContext.OnConnectionClosed(error);
+
                     // Make sure it isn't possible for a paused read to resume reading after calling uv_close
                     // on the stream handle
                     Input.CancelPendingFlush();

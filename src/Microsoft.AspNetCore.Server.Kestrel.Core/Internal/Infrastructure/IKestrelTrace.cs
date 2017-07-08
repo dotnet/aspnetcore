@@ -43,5 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         void RequestBodyDone(string connectionId, string traceIdentifier);
 
         void RequestBodyMininumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate);
+
+        void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier);
     }
 }

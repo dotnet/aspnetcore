@@ -39,5 +39,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void RequestBodyStart(string connectionId, string traceIdentifier) { }
         public void RequestBodyDone(string connectionId, string traceIdentifier) { }
         public void RequestBodyMininumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate) { }
+        public void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier) { }
     }
 }
