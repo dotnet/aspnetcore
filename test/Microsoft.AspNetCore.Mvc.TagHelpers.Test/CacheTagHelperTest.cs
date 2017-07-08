@@ -916,6 +916,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             public DateTimeOffset? AbsoluteExpiration { get; set; }
             public TimeSpan? AbsoluteExpirationRelativeToNow { get; set; }
             public TimeSpan? SlidingExpiration { get; set; }
+            public long? Size { get; set; }
 
             public IList<IChangeToken> ExpirationTokens { get; } = new List<IChangeToken>();
 
