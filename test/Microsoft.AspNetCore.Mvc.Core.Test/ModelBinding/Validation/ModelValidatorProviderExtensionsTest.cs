@@ -2,17 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 {
-    public class ModelValidatorProviderCollectionTests
+    public class ModelValidatorProviderExtensionsTest
     {
         [Fact]
         public void RemoveType_RemovesAllOfType()
         {
             // Arrange
-            var collection = new ModelValidatorProviderCollection
+            var list = new List<IModelValidatorProvider>
             {
                 new FooModelValidatorProvider(),
                 new BarModelValidatorProvider(),
@@ -20,10 +21,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             };
 
             // Act
-            collection.RemoveType(typeof(FooModelValidatorProvider));
+            list.RemoveType(typeof(FooModelValidatorProvider));
 
             // Assert
-            var provider = Assert.Single(collection);
+            var provider = Assert.Single(list);
             Assert.IsType<BarModelValidatorProvider>(provider);
         }
 
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         public void GenericRemoveType_RemovesAllOfType()
         {
             // Arrange
-            var collection = new ModelValidatorProviderCollection
+            var list = new List<IModelValidatorProvider>
             {
                 new FooModelValidatorProvider(),
                 new BarModelValidatorProvider(),
@@ -39,10 +40,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             };
 
             // Act
-            collection.RemoveType<FooModelValidatorProvider>();
+            list.RemoveType<FooModelValidatorProvider>();
 
             // Assert
-            var provider = Assert.Single(collection);
+            var provider = Assert.Single(list);
             Assert.IsType<BarModelValidatorProvider>(provider);
         }
 

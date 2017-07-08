@@ -1,18 +1,18 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 {
-    public class MetadataDetailsProviderCollectionTests
+    public class MetadataDetailsProviderExtensionsTest
     {
         [Fact]
         public void RemoveType_RemovesAllOfType()
         {
             // Arrange
-            var collection = new MetadataDetailsProviderCollection
+            var list = new List<IMetadataDetailsProvider>
             {
                 new FooMetadataDetailsProvider(),
                 new BarMetadataDetailsProvider(),
@@ -20,10 +20,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             };
 
             // Act
-            collection.RemoveType(typeof(FooMetadataDetailsProvider));
+            list.RemoveType(typeof(FooMetadataDetailsProvider));
 
             // Assert
-            var provider = Assert.Single(collection);
+            var provider = Assert.Single(list);
             Assert.IsType<BarMetadataDetailsProvider>(provider);
         }
 
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public void GenericRemoveType_RemovesAllOfType()
         {
             // Arrange
-            var collection = new MetadataDetailsProviderCollection
+            var list = new List<IMetadataDetailsProvider>
             {
                 new FooMetadataDetailsProvider(),
                 new BarMetadataDetailsProvider(),
@@ -39,10 +39,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             };
 
             // Act
-            collection.RemoveType<FooMetadataDetailsProvider>();
+            list.RemoveType<FooMetadataDetailsProvider>();
 
             // Assert
-            var provider = Assert.Single(collection);
+            var provider = Assert.Single(list);
             Assert.IsType<BarMetadataDetailsProvider>(provider);
         }
 

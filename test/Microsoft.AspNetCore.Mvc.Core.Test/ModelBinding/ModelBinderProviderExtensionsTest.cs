@@ -2,17 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
-    public class ModelBinderProviderCollectionTests
+    public class ModelBinderProviderExtensionsTest
     {
         [Fact]
         public void RemoveType_RemovesAllOfType()
         {
             // Arrange
-            var collection = new ModelBinderProviderCollection
+            var list = new List<IModelBinderProvider>
             {
                 new FooModelBinderProvider(),
                 new BarModelBinderProvider(),
@@ -20,10 +21,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             };
 
             // Act
-            collection.RemoveType(typeof(FooModelBinderProvider));
+            list.RemoveType(typeof(FooModelBinderProvider));
 
             // Assert
-            var provider = Assert.Single(collection);
+            var provider = Assert.Single(list);
             Assert.IsType<BarModelBinderProvider>(provider);
         }
 
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         public void GenericRemoveType_RemovesAllOfType()
         {
             // Arrange
-            var collection = new ModelBinderProviderCollection
+            var list = new List<IModelBinderProvider>
             {
                 new FooModelBinderProvider(),
                 new BarModelBinderProvider(),
@@ -39,10 +40,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             };
 
             // Act
-            collection.RemoveType<FooModelBinderProvider>();
+            list.RemoveType<FooModelBinderProvider>();
 
             // Assert
-            var provider = Assert.Single(collection);
+            var provider = Assert.Single(list);
             Assert.IsType<BarModelBinderProvider>(provider);
         }
 

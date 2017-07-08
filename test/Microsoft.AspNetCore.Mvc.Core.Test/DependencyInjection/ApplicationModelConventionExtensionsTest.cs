@@ -1,11 +1,11 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
-using Microsoft.Extensions.Internal;
 using Xunit;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -86,6 +86,60 @@ namespace Microsoft.Extensions.DependencyInjection
                 var kvp = Assert.Single(controller.Properties);
                 Assert.Equal("TestProperty", kvp.Key);
                 Assert.Equal("TestValue", kvp.Value);
+            }
+        }
+
+        [Fact]
+        public void RemoveType_RemovesAllOfType()
+        {
+            // Arrange
+            var list = new List<IApplicationModelConvention>
+            {
+                new FooApplicationModelConvention(),
+                new BarApplicationModelConvention(),
+                new FooApplicationModelConvention()
+            };
+
+            // Act
+            list.RemoveType(typeof(FooApplicationModelConvention));
+
+            // Assert
+            var convention = Assert.Single(list);
+            Assert.IsType<BarApplicationModelConvention>(convention);
+        }
+
+        [Fact]
+        public void GenericRemoveType_RemovesAllOfType()
+        {
+            // Arrange
+            var list = new List<IApplicationModelConvention>
+            {
+                new FooApplicationModelConvention(),
+                new BarApplicationModelConvention(),
+                new FooApplicationModelConvention()
+            };
+
+            // Act
+            list.RemoveType<FooApplicationModelConvention>();
+
+            // Assert
+            var convention = Assert.Single(list);
+            Assert.IsType<BarApplicationModelConvention>(convention);
+        }
+
+        private class FooApplicationModelConvention : IApplicationModelConvention
+        {
+            public void Apply(ApplicationModel application)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        private class BarApplicationModelConvention : IApplicationModelConvention
+        {
+            public void Apply(ApplicationModel application)
+            {
+                throw new NotImplementedException();
             }
         }
 

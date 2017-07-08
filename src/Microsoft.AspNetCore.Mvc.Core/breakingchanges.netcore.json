@@ -145,30 +145,5 @@
     "TypeId": "public class Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DefaultModelMetadata : Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata",
     "MemberId": "public override Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IModelBindingMessageProvider get_ModelBindingMessageProvider()",
     "Kind": "Removal"
-  },
-  {
-    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions",
-    "MemberId": "public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ApplicationModels.IApplicationModelConvention> get_Conventions()",
-    "Kind": "Removal"
-  },
-  {
-    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions",
-    "MemberId": "public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.IModelBinderProvider> get_ModelBinderProviders()",
-    "Kind": "Removal"
-  },
-  {
-    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions",
-    "MemberId": "public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.IValueProviderFactory> get_ValueProviderFactories()",
-    "Kind": "Removal"
-  },
-  {
-    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions",
-    "MemberId": "public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.IMetadataDetailsProvider> get_ModelMetadataDetailsProviders()",
-    "Kind": "Removal"
-  },
-  {
-    "TypeId": "public class Microsoft.AspNetCore.Mvc.MvcOptions",
-    "MemberId": "public System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidatorProvider> get_ModelValidatorProviders()",
-    "Kind": "Removal"
   }
 ]

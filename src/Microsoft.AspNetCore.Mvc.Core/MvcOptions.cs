@@ -22,16 +22,16 @@ namespace Microsoft.AspNetCore.Mvc
         public MvcOptions()
         {
             CacheProfiles = new Dictionary<string, CacheProfile>(StringComparer.OrdinalIgnoreCase);
-            Conventions = new ApplicationModelConventionCollection();
+            Conventions = new List<IApplicationModelConvention>();
             Filters = new FilterCollection();
             FormatterMappings = new FormatterMappings();
             InputFormatters = new FormatterCollection<IInputFormatter>();
             OutputFormatters = new FormatterCollection<IOutputFormatter>();
-            ModelBinderProviders = new ModelBinderProviderCollection();
+            ModelBinderProviders = new List<IModelBinderProvider>();
             ModelBindingMessageProvider = new DefaultModelBindingMessageProvider();
-            ModelMetadataDetailsProviders = new MetadataDetailsProviderCollection();
-            ModelValidatorProviders = new ModelValidatorProviderCollection();
-            ValueProviderFactories = new ValueProviderFactoryCollection();
+            ModelMetadataDetailsProviders = new List<IMetadataDetailsProvider>();
+            ModelValidatorProviders = new List<IModelValidatorProvider>();
+            ValueProviderFactories = new List<IValueProviderFactory>();
         }
 
         /// <summary>
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets a list of <see cref="IApplicationModelConvention"/> instances that will be applied to
         /// the <see cref="ApplicationModel"/> when discovering actions.
         /// </summary>
-        public ApplicationModelConventionCollection Conventions { get; }
+        public IList<IApplicationModelConvention> Conventions { get; }
 
         /// <summary>
         /// Gets a collection of <see cref="IFilterMetadata"/> which are used to construct filters that
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets a list of <see cref="IModelBinderProvider"/>s used by this application.
         /// </summary>
-        public ModelBinderProviderCollection ModelBinderProviders { get; }
+        public IList<IModelBinderProvider> ModelBinderProviders { get; }
 
         /// <summary>
         /// Gets the default <see cref="ModelBinding.Metadata.ModelBindingMessageProvider"/>. Changes here are copied to the
@@ -122,12 +122,12 @@ namespace Microsoft.AspNetCore.Mvc
         /// <li><see cref="IValidationMetadataProvider"/></li>
         /// </ul>
         /// </remarks>
-        public MetadataDetailsProviderCollection ModelMetadataDetailsProviders { get; }
+        public IList<IMetadataDetailsProvider> ModelMetadataDetailsProviders { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IModelValidatorProvider"/>s used by this application.
         /// </summary>
-        public ModelValidatorProviderCollection ModelValidatorProviders { get; }
+        public IList<IModelValidatorProvider> ModelValidatorProviders { get; }
 
         /// <summary>
         /// Gets a list of <see cref="IOutputFormatter"/>s that are used by this application.
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets a list of <see cref="IValueProviderFactory"/> used by this application.
         /// </summary>
-        public ValueProviderFactoryCollection ValueProviderFactories { get; }
+        public IList<IValueProviderFactory> ValueProviderFactories { get; }
 
         /// <summary>
         /// Gets or sets the SSL port that is used by this application when <see cref="RequireHttpsAttribute"/>
