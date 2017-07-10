@@ -63,7 +63,7 @@
   <!-- This should not be named VerifyPackages as it clashes with the one in Korebuild. -->
   <Target Name="VerifyUnsignedPackages" Condition="'$(VerifySignatures)' != 'false'">
     <PropertyGroup>
-      <CoherencePackagesDir>$(ArtifactsDir)coherence\ship\</CoherencePackagesDir>
+      <CoherencePackagesDir>$(RepositoryRoot)artifacts\coherence\ship\</CoherencePackagesDir>
     </PropertyGroup>
 
      <VerifyPackages
