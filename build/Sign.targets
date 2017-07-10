@@ -60,7 +60,8 @@
     <RenameEncodedFolders RootDirectory="$(UnsignedOobPackagesPath)" />
   </Target>
 
-  <Target Name="VerifyPackages" Condition="'$(VerifySignatures)' != 'false'">
+  <!-- This should not be named VerifyPackages as it clashes with the one in Korebuild. -->
+  <Target Name="VerifyUnsignedPackages" Condition="'$(VerifySignatures)' != 'false'">
     <PropertyGroup>
       <CoherencePackagesDir>$(ArtifactsDir)coherence\ship\</CoherencePackagesDir>
     </PropertyGroup>
@@ -71,7 +72,7 @@
        Condition="Exists('$(CoherencePackagesDir)')" />
   </Target>
 
-  <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages;VerifyPackages">
+  <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages;VerifyUnsignedPackages">
     <!-- Flatten the file names -->
     <ItemGroup>
       <_UnsignedBinaries
