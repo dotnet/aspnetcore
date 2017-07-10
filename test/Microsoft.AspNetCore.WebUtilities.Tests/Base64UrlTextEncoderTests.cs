@@ -55,7 +55,6 @@ namespace Microsoft.AspNetCore.WebUtilities
         [InlineData("a_b_c_d", "a/b/c/d=")]
         [InlineData("a-b_c", "a+b/c===")]
         [InlineData("a-b_c-d", "a+b/c+d=")]
-        [InlineData("a-b_c", "a+b/c===")]
         [InlineData("abcd", "abcd")]
         public void DecodeToBase64String_ReturnsValid_Base64String(string text, string expectedValue)
         {

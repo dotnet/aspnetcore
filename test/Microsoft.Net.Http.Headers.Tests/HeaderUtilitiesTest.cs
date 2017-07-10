@@ -33,12 +33,26 @@ namespace Microsoft.Net.Http.Headers
 
                 foreach (var quoted in new[] { true, false })
                 {
-                    for (var i = 0; i < 60; i++)
+                    data.Add(now, quoted);
+
+                    for (var i = 1; i < 60; i++)
                     {
                         data.Add(now.AddSeconds(i), quoted);
                         data.Add(now.AddMinutes(i), quoted);
+                    }
+
+                    for (var i = 1; i < DateTime.DaysInMonth(now.Year, now.Month); i++)
+                    {
                         data.Add(now.AddDays(i), quoted);
+                    }
+
+                    for (var i = 1; i < 11; i++)
+                    {
                         data.Add(now.AddMonths(i), quoted);
+                    }
+
+                    for (var i = 1; i < 5; i++)
+                    {
                         data.Add(now.AddYears(i), quoted);
                     }
                 }

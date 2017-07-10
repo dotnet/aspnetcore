@@ -83,7 +83,6 @@ namespace Microsoft.AspNetCore.Http.Extensions
         [InlineData("https://127.0.0.0:80/bar", "https", "127.0.0.0:80", "/bar", "", "")]
         [InlineData("http://[1080:0:0:0:8:800:200C:417A]/index.html", "http", "[1080:0:0:0:8:800:200C:417A]", "/index.html", "", "")]
         [InlineData("http://example.com///", "http", "example.com", "///", "", "")]
-        [InlineData("http://example.com///", "http", "example.com", "///", "", "")]
         public void FromAbsoluteUriParsingChecks(
             string uri, 
             string expectedScheme, 

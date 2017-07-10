@@ -20,9 +20,6 @@ namespace Microsoft.AspNetCore.Http.Tests
                     { "key=value", "key", "value" },
                     { "key%2C=%21value", "key,", "!value" },
                     { "ke%23y%2C=val%5Eue", "ke#y,", "val^ue" },
-                    { "key=value", "key", "value" },
-                    { "key%2C=%21value", "key,", "!value" },
-                    { "ke%23y%2C=val%5Eue", "ke#y,", "val^ue" },
                     { "base64=QUI%2BREU%2FRw%3D%3D", "base64", "QUI+REU/Rw==" },
                     { "base64=QUI+REU/Rw==", "base64", "QUI+REU/Rw==" },
                 };
