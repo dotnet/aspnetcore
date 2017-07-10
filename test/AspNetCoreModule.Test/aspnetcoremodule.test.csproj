@@ -20,6 +20,7 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0-*" />
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
     <PackageReference Include="Microsoft.Web.Administration" Version="7.0.0" />
