@@ -1,0 +1,22 @@
+[
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Server.IISIntegration.IISMiddleware",
+    "MemberId": "public .ctor(Microsoft.AspNetCore.Http.RequestDelegate next, Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.IISOptions> options, System.String pairingToken)",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Builder.IISOptions",
+    "MemberId": "public System.Boolean get_ForwardWindowsAuthentication()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Builder.IISOptions",
+    "MemberId": "public System.Collections.Generic.IList<Microsoft.AspNetCore.Http.Authentication.AuthenticationDescription> get_AuthenticationDescriptions()",
+    "Kind": "Removal"
+  },
+  {
+    "TypeId": "public class Microsoft.AspNetCore.Builder.IISOptions",
+    "MemberId": "public System.Void set_ForwardWindowsAuthentication(System.Boolean value)",
+    "Kind": "Removal"
+  }
+]
