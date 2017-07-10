@@ -13,7 +13,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
@@ -27,6 +29,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             $"Content-Length: {_dataLength}\r\n",
             "\r\n"
         };
+
+        private readonly Action<ILoggingBuilder> _configureLoggingDelegate;
+
+        public MaxRequestBufferSizeTests(ITestOutputHelper output)
+        {
+            _configureLoggingDelegate = builder => builder.AddXunit(output);
+        }
 
         public static IEnumerable<object[]> LargeUploadData
         {
@@ -243,13 +252,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private static IWebHost StartWebHost(long? maxRequestBufferSize,
+        private IWebHost StartWebHost(long? maxRequestBufferSize,
             byte[] expectedBody,
             bool useConnectionAdapter,
             TaskCompletionSource<object> startReadingRequestBody,
             TaskCompletionSource<object> clientFinishedSendingRequestBody)
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging(_configureLoggingDelegate)
                 .UseKestrel(options =>
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
@@ -279,7 +289,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Configure(app => app.Run(async context =>
                 {
-                    await startReadingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(30));
+                    await startReadingRequestBody.Task.TimeoutAfter(TimeSpan.FromSeconds(120));
 
                     var buffer = new byte[expectedBody.Length];
                     var bytesRead = 0;

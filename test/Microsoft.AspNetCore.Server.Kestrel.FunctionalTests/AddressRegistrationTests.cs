@@ -34,7 +34,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private readonly Action<ILoggingBuilder> _configureLoggingDelegate;
 
-        public AddressRegistrationTests(ITestOutputHelper output) => _configureLoggingDelegate = builder => builder.AddXunit(output);
+        public AddressRegistrationTests(ITestOutputHelper output)
+        {
+            _configureLoggingDelegate = builder => builder.AddXunit(output);
+        }
 
         [ConditionalFact]
         [NetworkIsReachable]
