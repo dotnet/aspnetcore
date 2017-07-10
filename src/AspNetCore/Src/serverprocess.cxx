@@ -647,7 +647,6 @@ SERVER_PROCESS::SetupCommandLine(
         goto Finished;
     }
 
-
 Finished:
     if (pszFullPath != NULL)
     {
@@ -1056,7 +1055,7 @@ Finished:
         pHashTable = NULL;
     }
 
-    if ( FAILED(hr) )
+    if (FAILED(hr))
     {
         if (strEventMsg.IsEmpty())
         {
@@ -1093,7 +1092,7 @@ Finished:
         }
     }
 
-    if (FAILED( hr ) || m_fReady == FALSE)
+    if (FAILED(hr) || m_fReady == FALSE)
     {
         if (m_hStdoutHandle != NULL)
         {
@@ -1448,93 +1447,70 @@ Finished:
     return hr;
 }
 
-// send ctrl-c signnal to the process to let it gracefully shutdown
+// send signal to the process to let it gracefully shutdown
 // if the process cannot shutdown within given time, terminate it
-// todo: allow user to config this shutdown timeout
-
 VOID
 SERVER_PROCESS::SendSignal(
     VOID
 )
 {
-    HANDLE    hProc = INVALID_HANDLE_VALUE;
-    BOOL      fIsSuccess = FALSE;
-    BOOL      fFreeConsole = FALSE;
-    LPCWSTR   apsz[1];
-    STACK_STRU(strEventMsg, 256);
+    HRESULT hr      = S_OK;
+    HANDLE  hThread = NULL;
 
     ReferenceServerProcess();
 
-    hProc = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, FALSE, m_dwProcessId);
-    if (hProc != INVALID_HANDLE_VALUE)
+    m_hShutdownHandle = OpenProcess(SYNCHRONIZE | PROCESS_TERMINATE, FALSE, m_dwProcessId);
+
+    if (m_hShutdownHandle == NULL)
     {
-        // free current console first, as we migh have one, e.g., hostedwebcore case
-        fFreeConsole = FreeConsole();
-
-        if (AttachConsole(m_dwProcessId))
-        {
-            // call ctrl-break instead of ctrl-c as child process may ignore ctrl-c
-            fIsSuccess = GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, m_dwProcessId);
-            FreeConsole();
-        }
-
-        if(fFreeConsole)
-        {
-            // IISExpress and hostedwebcore w3wp run as background process
-            // have to attach console back to ensure post app_offline scenario still work
-            AttachConsole(ATTACH_PARENT_PROCESS);
-        }
-    }
-       
-    if (!fIsSuccess || (WaitForSingleObject(hProc, m_dwShutdownTimeLimitInMS) != WAIT_OBJECT_0))
-    {
-        if (InterlockedCompareExchange(&m_lStopping, 1L, 0L) == 0L) 
-        {
-            //Backend process will be terminated, remove the waitcallback
-            if (m_hProcessWaitHandle != NULL)
-            {
-                UnregisterWait(m_hProcessWaitHandle);
-                m_hProcessWaitHandle = NULL;
-            }
-
-            // cannot gracefully shutdown or timeout, terminate the process
-            TerminateProcess(m_hProcessHandle, 0);
-
-            // as we skipped process exit callback (ProcessHandleCallback), 
-            // need to dereference the object otherwise memory leak
-            DereferenceServerProcess();
-
-            // log a warning for ungraceful shutdown
-            if (SUCCEEDED(strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE_MSG,
-                m_dwProcessId)))
-            {
-                apsz[0] = strEventMsg.QueryStr();
-                if (FORWARDING_HANDLER::QueryEventLog() != NULL)
-                {
-                    ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
-                        EVENTLOG_WARNING_TYPE,
-                        0,
-                        ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
-                        NULL,
-                        1,
-                        0,
-                        apsz,
-                        NULL);
-                }
-            }
-        }
+        // since we cannot open the process. let's terminate the process 
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
     }
 
-    if (hProc != INVALID_HANDLE_VALUE)
+    hThread = CreateThread(
+        NULL,       // default security attributes
+        0,          // default stack size
+        (LPTHREAD_START_ROUTINE)SendShutDownSignal,
+        this,       // thread function arguments
+        0,          // default creation flags
+        NULL);      // receive thread identifier
+
+    if (hThread == NULL)
     {
-        CloseHandle(hProc);
-        hProc = INVALID_HANDLE_VALUE;
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
     }
-    if (m_hProcessHandle != INVALID_HANDLE_VALUE)
+
+    if (WaitForSingleObject(m_hShutdownHandle, m_dwShutdownTimeLimitInMS) != WAIT_OBJECT_0)
     {
-        CloseHandle(m_hProcessHandle);
-        m_hProcessHandle = INVALID_HANDLE_VALUE;
+        hr = HRESULT_FROM_WIN32(ERROR_TIMEOUT);
+        goto Finished;
+    }
+
+
+Finished:
+    if (hThread != NULL)
+    {
+        // if the send shutdown message thread is still running, terminate it
+        DWORD dwThreadStatus = 0;
+        if (GetExitCodeThread(hThread, &dwThreadStatus)!= 0 && dwThreadStatus == STILL_ACTIVE)
+        {
+            TerminateThread(hThread, STATUS_CONTROL_C_EXIT);
+        }
+        CloseHandle(hThread);
+        hThread = NULL;
+    }
+
+    if (FAILED(hr))
+    {
+        TerminateBackendProcess();
+    }
+
+    if (m_hShutdownHandle != NULL && m_hShutdownHandle != INVALID_HANDLE_VALUE)
+    {
+        CloseHandle(m_hShutdownHandle);
+        m_hShutdownHandle = NULL;
     }
 
     DereferenceServerProcess();
@@ -1609,8 +1585,8 @@ SERVER_PROCESS::IsDebuggerIsAttached(
         }
 
         processList = (PJOBOBJECT_BASIC_PROCESS_ID_LIST) HeapAlloc(
-                            GetProcessHeap(), 
-                            0, 
+                            GetProcessHeap(),
+                            0,
                             cbNumBytes
                             );
         if (processList == NULL)
@@ -1619,14 +1595,14 @@ SERVER_PROCESS::IsDebuggerIsAttached(
             goto Finished;
         }
 
-        RtlZeroMemory( processList, cbNumBytes );
+        RtlZeroMemory(processList, cbNumBytes);
 
         if (!QueryInformationJobObject(
-                m_hJobObject, 
-                JobObjectBasicProcessIdList, 
-                processList, 
-                cbNumBytes, 
-                NULL) )
+                m_hJobObject,
+                JobObjectBasicProcessIdList,
+                processList,
+                cbNumBytes,
+                NULL))
         {
             dwError = GetLastError();
             if (dwError != ERROR_MORE_DATA)
@@ -1639,7 +1615,7 @@ SERVER_PROCESS::IsDebuggerIsAttached(
     } while (dwRetries++ < 5 &&
              processList != NULL &&
              (processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList ||
-              processList->NumberOfProcessIdsInList == 0 ) );
+              processList->NumberOfProcessIdsInList == 0));
 
     if (dwError == ERROR_MORE_DATA)
     {
@@ -1669,11 +1645,11 @@ SERVER_PROCESS::IsDebuggerIsAttached(
         if (dwPid != dwWorkerProcessPid)
         {
             HANDLE hProcess = OpenProcess(
-                                          PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
-                                           FALSE,
-                                           dwPid);
+                    PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
+                    FALSE,
+                    dwPid);
 
-            BOOL returnValue = CheckRemoteDebuggerPresent( hProcess, &fDebuggerPresent );
+            BOOL returnValue = CheckRemoteDebuggerPresent(hProcess, &fDebuggerPresent);
             if (!returnValue)
             {
                 goto Finished;
@@ -1725,8 +1701,8 @@ SERVER_PROCESS::GetChildProcessHandles(
         }
 
         processList = (PJOBOBJECT_BASIC_PROCESS_ID_LIST) HeapAlloc(
-                            GetProcessHeap(), 
-                            0, 
+                            GetProcessHeap(),
+                            0,
                             cbNumBytes
                             );
         if (processList == NULL)
@@ -1735,13 +1711,13 @@ SERVER_PROCESS::GetChildProcessHandles(
             goto Finished;
         }
 
-        RtlZeroMemory( processList, cbNumBytes );
+        RtlZeroMemory(processList, cbNumBytes);
 
         if (!QueryInformationJobObject(
-                m_hJobObject, 
-                JobObjectBasicProcessIdList, 
-                processList, 
-                cbNumBytes, 
+                m_hJobObject,
+                JobObjectBasicProcessIdList,
+                processList,
+                cbNumBytes,
                 NULL))
         {
             dwError = GetLastError();
@@ -1752,9 +1728,9 @@ SERVER_PROCESS::GetChildProcessHandles(
             }
         }
 
-    } while(dwRetries++ < 5 && 
-            processList != NULL && 
-            (processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0));
+    } while (dwRetries++ < 5 &&
+             processList != NULL &&
+             (processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0));
 
     if (dwError == ERROR_MORE_DATA)
     {
@@ -1780,9 +1756,9 @@ SERVER_PROCESS::GetChildProcessHandles(
     {
         dwPid = (DWORD)processList->ProcessIdList[i];
         if (dwPid != m_dwProcessId &&
-            dwPid != dwWorkerProcessPid)
+            dwPid != dwWorkerProcessPid )
         {
-            m_hChildProcessHandles[m_cChildProcess] = OpenProcess( 
+            m_hChildProcessHandles[m_cChildProcess] = OpenProcess(
                                             PROCESS_QUERY_INFORMATION | SYNCHRONIZE | PROCESS_TERMINATE | PROCESS_DUP_HANDLE,
                                             FALSE, 
                                             dwPid 
@@ -1828,23 +1804,23 @@ SERVER_PROCESS::StopAllProcessesInJobObject(
         }
 
         processList = (PJOBOBJECT_BASIC_PROCESS_ID_LIST) HeapAlloc(
-                            GetProcessHeap(), 
-                            0, 
+                            GetProcessHeap(),
+                            0,
                             cbNumBytes
                             );
-        if( processList == NULL )
+        if (processList == NULL)
         {
             hr = E_OUTOFMEMORY;
             goto Finished;
         }
 
-        RtlZeroMemory( processList, cbNumBytes );
+        RtlZeroMemory(processList, cbNumBytes);
 
         if (!QueryInformationJobObject(
-                m_hJobObject, 
-                JobObjectBasicProcessIdList, 
-                processList, 
-                cbNumBytes, 
+                m_hJobObject,
+                JobObjectBasicProcessIdList,
+                processList,
+                cbNumBytes,
                 NULL))
         {
             DWORD dwError = GetLastError();
@@ -1855,8 +1831,8 @@ SERVER_PROCESS::StopAllProcessesInJobObject(
             }
         }
 
-    } while (dwRetries++ < 5 && 
-             processList != NULL && 
+    } while (dwRetries++ < 5 &&
+             processList != NULL &&
              (processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0));
 
     if (processList == NULL || (processList->NumberOfAssignedProcesses > processList->NumberOfProcessIdsInList || processList->NumberOfProcessIdsInList == 0))
@@ -1916,12 +1892,13 @@ SERVER_PROCESS::SERVER_PROCESS() :
     m_hJobObject(NULL),
     m_pForwarderConnection(NULL),
     m_dwListeningProcessId(0),
-    m_hListeningProcessHandle(NULL)
+    m_hListeningProcessHandle(NULL),
+    m_hShutdownHandle(NULL)
 {
     InterlockedIncrement(&g_dwActiveServerProcesses);
     srand(GetTickCount());
 
-    for(INT i=0;i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
+    for (INT i=0; i<MAX_ACTIVE_CHILD_PROCESSES; ++i)
     {
         m_dwChildProcessIds[i] = 0;
         m_hChildProcessHandles[i] = NULL;
@@ -1933,7 +1910,7 @@ SERVER_PROCESS::~SERVER_PROCESS()
 {
     if (m_hProcessWaitHandle != NULL)
     {
-        UnregisterWait( m_hProcessWaitHandle );
+        UnregisterWait(m_hProcessWaitHandle);
         m_hProcessWaitHandle = NULL;
     }
 
@@ -1950,7 +1927,7 @@ SERVER_PROCESS::~SERVER_PROCESS()
     {
         if (m_hProcessHandle != INVALID_HANDLE_VALUE)
         {
-            CloseHandle( m_hProcessHandle );
+            CloseHandle(m_hProcessHandle);
         }
         m_hProcessHandle = NULL;
     }
@@ -2091,4 +2068,270 @@ SERVER_PROCESS::HandleProcessExit()
     }
 
     return hr;
+}
+
+HRESULT
+SERVER_PROCESS::SendShutdownHttpMessage()
+{
+    HRESULT    hr = S_OK;
+    HINTERNET  hSession = NULL;
+    HINTERNET  hConnect = NULL;
+    HINTERNET  hRequest = NULL;
+
+    STACK_STRU(strHeaders, 256);
+    STRU       strAppToken;
+    STRU       strUrl;
+    DWORD      dwStatusCode = 0;
+    DWORD      dwSize = sizeof(dwStatusCode);
+
+    LPCWSTR   apsz[1];
+    STACK_STRU(strEventMsg, 256);
+
+    hSession = WinHttpOpen(L"",
+        WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+        WINHTTP_NO_PROXY_NAME,
+        WINHTTP_NO_PROXY_BYPASS,
+        0);
+
+    if (hSession == NULL)
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
+    }
+
+    hConnect = WinHttpConnect(hSession,
+        L"127.0.0.1",
+        (USHORT)m_dwPort,
+        0);
+
+    if (hConnect == NULL)
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
+    }
+    if (m_struAppPath.QueryCCH() > 1)
+    {
+        // app path size is 1 means site root, i.e., "/"
+        // we don't want to add duplicated '/' to the request url
+        // otherwise the request will fail
+        strUrl.Copy(m_struAppPath);
+    }
+    strUrl.Append(L"/iisintegration");
+
+    hRequest = WinHttpOpenRequest(hConnect,
+        L"POST",
+        strUrl.QueryStr(),
+        NULL,
+        WINHTTP_NO_REFERER,
+        NULL,
+        0);
+
+    if (hRequest == NULL)
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
+    }
+
+    // set timeout
+    if (!WinHttpSetTimeouts(hRequest,
+        m_dwShutdownTimeLimitInMS,  // dwResolveTimeout
+        m_dwShutdownTimeLimitInMS,  // dwConnectTimeout
+        m_dwShutdownTimeLimitInMS,  // dwSendTimeout
+        m_dwShutdownTimeLimitInMS)) // dwReceiveTimeout
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
+    }
+
+    // set up the shutdown headers
+    if (FAILED(hr = strHeaders.Append(L"MS-ASPNETCORE-EVENT:shutdown \r\n")) ||
+        FAILED(hr = strAppToken.Append(L"MS-ASPNETCORE-TOKEN:")) ||
+        FAILED(hr = strAppToken.AppendA(m_straGuid.QueryStr())) ||
+        FAILED(hr = strHeaders.Append(strAppToken.QueryStr())))
+    {
+        goto Finished;
+    }
+
+    if (!WinHttpSendRequest(hRequest,
+        strHeaders.QueryStr(),  // pwszHeaders
+        strHeaders.QueryCCH(),  // dwHeadersLength
+        WINHTTP_NO_REQUEST_DATA,
+        0,   // dwOptionalLength
+        0,   // dwTotalLength
+        0))  // dwContext
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
+    }
+
+    if (!WinHttpReceiveResponse(hRequest , NULL))
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
+    }
+
+    if (!WinHttpQueryHeaders(hRequest,
+        WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+        WINHTTP_HEADER_NAME_BY_INDEX,
+        &dwStatusCode,
+        &dwSize,
+        WINHTTP_NO_HEADER_INDEX))
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
+    }
+
+    if (dwStatusCode != 202)
+    {
+        // not expected http status
+        hr = E_FAIL;
+    }
+
+    // log
+    if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+        ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST_MSG,
+        m_dwProcessId,
+        dwStatusCode)))
+    {
+        apsz[0] = strEventMsg.QueryStr();
+        if (FORWARDING_HANDLER::QueryEventLog() != NULL)
+        {
+            ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
+                EVENTLOG_INFORMATION_TYPE,
+                0,
+                ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST,
+                NULL,
+                1,
+                0,
+                apsz,
+                NULL);
+        }
+    }
+
+Finished:
+    if (hRequest)
+    {
+        WinHttpCloseHandle(hRequest);
+        hRequest = NULL;
+    }
+    if (hConnect)
+    {
+        WinHttpCloseHandle(hConnect);
+        hConnect = NULL;
+    }
+    if (hSession)
+    {
+        WinHttpCloseHandle(hSession);
+        hSession = NULL;
+    }
+    return hr;
+}
+
+//static
+VOID
+SERVER_PROCESS::SendShutDownSignal(
+    LPVOID lpParam
+)
+{
+    SERVER_PROCESS* pThis = static_cast<SERVER_PROCESS *>(lpParam);
+    DBG_ASSERT(pThis);
+    pThis->SendShutDownSignalInternal();
+}
+
+//
+// send shutdown message first, if fail then send
+// ctrl-c to the backend process to let it gracefully shutdown
+//
+VOID
+SERVER_PROCESS::SendShutDownSignalInternal(
+    VOID
+)
+{
+    ReferenceServerProcess();
+
+    if (FAILED(SendShutdownHttpMessage()))
+    {
+        //
+        // failed to send shutdown http message
+        // try send ctrl signal
+        //
+        HWND  hCurrentConsole = NULL;
+        BOOL  fFreeConsole = FALSE;
+        hCurrentConsole = GetConsoleWindow();
+        if (hCurrentConsole)
+        {
+            // free current console first, as we may have one, e.g., hostedwebcore case
+            fFreeConsole = FreeConsole();
+        }
+
+        if (AttachConsole(m_dwProcessId))
+        {
+            // call ctrl-break instead of ctrl-c as child process may ignore ctrl-c
+            if (!GenerateConsoleCtrlEvent(CTRL_BREAK_EVENT, m_dwProcessId))
+            {
+                // failed to send the ctrl signal. terminate the backend process immediately instead of waiting for timeout
+                TerminateBackendProcess();
+            }
+            FreeConsole();
+        }
+
+        if (fFreeConsole)
+        {
+            // IISExpress and hostedwebcore w3wp run as background process
+            // have to attach console back to ensure post app_offline scenario still works
+            AttachConsole(ATTACH_PARENT_PROCESS);
+        }
+    }
+
+    DereferenceServerProcess();
+}
+
+VOID
+SERVER_PROCESS::TerminateBackendProcess(
+    VOID
+)
+{
+    LPCWSTR   apsz[1];
+    STACK_STRU(strEventMsg, 256);
+
+    if (InterlockedCompareExchange(&m_lStopping, 1L, 0L) == 0L)
+    {
+        // backend process will be terminated, remove the waitcallback
+        if (m_hProcessWaitHandle != NULL)
+        {
+            UnregisterWait(m_hProcessWaitHandle);
+            m_hProcessWaitHandle = NULL;
+        }
+
+        // cannot gracefully shutdown or timeout, terminate the process
+        if (m_hProcessHandle != NULL && m_hProcessHandle != INVALID_HANDLE_VALUE)
+        {
+            TerminateProcess(m_hProcessHandle, 0);
+            m_hProcessHandle = NULL;
+        }
+
+        // as we skipped process exit callback (ProcessHandleCallback), 
+        // need to dereference the object otherwise memory leak
+        DereferenceServerProcess();
+
+        // log a warning for ungraceful shutdown
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE_MSG,
+            m_dwProcessId)))
+        {
+            apsz[0] = strEventMsg.QueryStr();
+            if (FORWARDING_HANDLER::QueryEventLog() != NULL)
+            {
+                ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
+                    EVENTLOG_WARNING_TYPE,
+                    0,
+                    ASPNETCORE_EVENT_GRACEFUL_SHUTDOWN_FAILURE,
+                    NULL,
+                    1,
+                    0,
+                    apsz,
+                    NULL);
+            }
+        }
+    }
 }

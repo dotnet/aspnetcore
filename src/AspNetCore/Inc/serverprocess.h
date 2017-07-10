@@ -252,6 +252,27 @@ private:
         return digits;
     }
 
+    static
+    VOID
+    SendShutDownSignal(
+        LPVOID lpParam
+        );
+
+    VOID
+    SendShutDownSignalInternal(
+        VOID
+    );
+
+    HRESULT
+    SendShutdownHttpMessage(
+        VOID
+    );
+
+    VOID
+    TerminateBackendProcess(
+        VOID
+    );
+
     FORWARDER_CONNECTION   *m_pForwarderConnection;
     BOOL                    m_fStdoutLogEnabled;
     BOOL                    m_fWindowsAuthEnabled;
@@ -291,6 +312,11 @@ private:
     HANDLE                  m_hProcessHandle;
     HANDLE                  m_hListeningProcessHandle;
     HANDLE                  m_hProcessWaitHandle;
+    HANDLE                  m_hShutdownHandle;
+    //
+    // m_hChildProcessHandle is the handle to process created by 
+    // m_hProcessHandle process if it does.
+
     //
     // m_hChildProcessHandle is the handle to process created by 
     // m_hProcessHandle process if it does.

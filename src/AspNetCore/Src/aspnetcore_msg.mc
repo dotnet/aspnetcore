@@ -61,6 +61,12 @@ Language=English
 %1
 .
 
+Messageid=1006
+SymbolicName=ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST
+Language=English
+%1
+.
+
 ;
 ;#endif     // _ASPNETCORE_MODULE_MSG_H_
 ;
