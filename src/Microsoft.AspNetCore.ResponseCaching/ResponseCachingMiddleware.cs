@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
@@ -26,6 +27,24 @@ namespace Microsoft.AspNetCore.ResponseCaching
         private readonly IResponseCachingKeyProvider _keyProvider;
 
         public ResponseCachingMiddleware(
+            RequestDelegate next,
+            IOptions<ResponseCachingOptions> options,
+            ILoggerFactory loggerFactory,
+            IResponseCachingPolicyProvider policyProvider,
+            IResponseCachingKeyProvider keyProvider)
+            : this(
+                next,
+                options,
+                loggerFactory,
+                policyProvider,
+                new MemoryResponseCache(new MemoryCache(new MemoryCacheOptions
+                {
+                    SizeLimit = options.Value.SizeLimit
+                })), keyProvider)
+        { }
+
+        // for testing
+        internal ResponseCachingMiddleware(
             RequestDelegate next,
             IOptions<ResponseCachingOptions> options,
             ILoggerFactory loggerFactory,

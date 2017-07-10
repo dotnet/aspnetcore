@@ -67,7 +67,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                     },
                     new MemoryCacheEntryOptions
                     {
-                        AbsoluteExpirationRelativeToNow = validFor
+                        AbsoluteExpirationRelativeToNow = validFor,
+                        Size = CacheEntryHelpers.EstimateCachedResponseSize(cachedResponse)
                     });
             }
             else
@@ -77,7 +78,8 @@ namespace Microsoft.AspNetCore.ResponseCaching.Internal
                     entry,
                     new MemoryCacheEntryOptions
                     {
-                        AbsoluteExpirationRelativeToNow = validFor
+                        AbsoluteExpirationRelativeToNow = validFor,
+                        Size = CacheEntryHelpers.EstimateCachedVaryByRulesySize(entry as CachedVaryByRules)
                     });
             }
         }

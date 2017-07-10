@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.ResponseCaching.Internal;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
@@ -821,6 +822,38 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             TestUtils.AssertLoggedMessages(
                 sink.Writes,
                 LoggedMessage.ResponseNotCached);
+        }
+
+        [Fact]
+        public async Task FinalizeCacheBody_DoNotCache_IfSizeTooBig()
+        {
+            var sink = new TestSink();
+            var middleware = TestUtils.CreateTestMiddleware(
+                testSink: sink,
+                keyProvider: new TestResponseCachingKeyProvider("BaseKey"),
+                cache: new MemoryResponseCache(new MemoryCache(new MemoryCacheOptions
+                {
+                    SizeLimit = 100
+                })));
+            var context = TestUtils.CreateTestContext();
+
+            context.ShouldCacheResponse = true;
+            middleware.ShimResponseStream(context);
+
+            await context.HttpContext.Response.WriteAsync(new string('0', 101));
+
+            context.CachedResponse = new CachedResponse() { Headers = new HeaderDictionary() };
+            context.CachedResponseValidFor = TimeSpan.FromSeconds(10);
+
+            await middleware.FinalizeCacheBodyAsync(context);
+
+            // The response cached message will be logged but the adding of the entry will no-op
+            TestUtils.AssertLoggedMessages(
+                sink.Writes,
+                LoggedMessage.ResponseCached);
+
+            // The entry cannot be retrieved
+            Assert.False(await middleware.TryServeFromCacheAsync(context));
         }
 
         [Fact]
