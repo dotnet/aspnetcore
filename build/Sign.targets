@@ -63,7 +63,7 @@
   <!-- This should not be named VerifyPackages as it clashes with the one in Korebuild. -->
   <Target Name="VerifyUnsignedPackages" Condition="'$(VerifySignatures)' != 'false'">
     <PropertyGroup>
-      <CoherencePackagesDir>$(RepositoryRoot)artifacts\coherence\ship\</CoherencePackagesDir>
+      <CoherencePackagesDir>$(ArtifactsPath)\coherence\ship\</CoherencePackagesDir>
     </PropertyGroup>
 
      <VerifyPackages
@@ -72,7 +72,7 @@
        Condition="Exists('$(CoherencePackagesDir)')" />
   </Target>
 
-  <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages;VerifyUnsignedPackages">
+  <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages">
     <!-- Flatten the file names -->
     <ItemGroup>
       <_UnsignedBinaries
