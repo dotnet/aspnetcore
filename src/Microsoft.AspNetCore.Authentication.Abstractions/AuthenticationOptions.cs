@@ -61,32 +61,32 @@ namespace Microsoft.AspNetCore.Authentication
             });
 
         /// <summary>
-        /// Used by as the fallback default scheme for all the other defaults.
+        /// Used as the fallback default scheme for all the other defaults.
         /// </summary>
         public string DefaultScheme { get; set; }
 
         /// <summary>
-        /// Used by as the default scheme by <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
+        /// Used as the default scheme by <see cref="IAuthenticationService.AuthenticateAsync(HttpContext, string)"/>.
         /// </summary>
         public string DefaultAuthenticateScheme { get; set; }
 
         /// <summary>
-        /// Used by as the default scheme by <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.
+        /// Used as the default scheme by <see cref="IAuthenticationService.SignInAsync(HttpContext, string, System.Security.Claims.ClaimsPrincipal, AuthenticationProperties)"/>.
         /// </summary>
         public string DefaultSignInScheme { get; set; }
 
         /// <summary>
-        /// Used by as the default scheme by <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.
+        /// Used as the default scheme by <see cref="IAuthenticationService.SignOutAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// </summary>
         public string DefaultSignOutScheme { get; set; }
 
         /// <summary>
-        /// Used by as the default scheme by <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.
+        /// Used as the default scheme by <see cref="IAuthenticationService.ChallengeAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// </summary>
         public string DefaultChallengeScheme { get; set; }
 
         /// <summary>
-        /// Used by as the default scheme by <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.
+        /// Used as the default scheme by <see cref="IAuthenticationService.ForbidAsync(HttpContext, string, AuthenticationProperties)"/>.
         /// </summary>
         public string DefaultForbidScheme { get; set; }
     }
