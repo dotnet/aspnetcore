@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Authentication
             });
 
         /// <summary>
-        /// Used by as the fallback default scheme for all the other defaults."/>.
+        /// Used by as the fallback default scheme for all the other defaults.
         /// </summary>
         public string DefaultScheme { get; set; }
 
