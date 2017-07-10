@@ -1,7 +1,7 @@
 <Project>
   <ItemDefinitionGroup>
     <Repository>
-      <Branch>dev</Branch>
+      <Branch>rel/2.0.0</Branch>
     </Repository>
   </ItemDefinitionGroup>
 
