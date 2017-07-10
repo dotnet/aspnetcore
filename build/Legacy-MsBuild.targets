@@ -5,7 +5,7 @@
   <Import Project="Policheck.targets" />
 
   <PropertyGroup>
-    <PublishFeed>https://dotnet.myget.org/F/aspnetcore-dev/</PublishFeed>
+    <PublishFeed>https://dotnet.myget.org/F/aspnetcore-release/</PublishFeed>
     <NuGetV3Feed>https://api.nuget.org/v3/index.json</NuGetV3Feed>
     <BuildToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v2</BuildToolsFeed>
     <CoherenceDestinationDir>$(ArtifactsPath)coherence\</CoherenceDestinationDir>
