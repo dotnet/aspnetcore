@@ -11,8 +11,8 @@
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
-    <RoslynVersion>2.3.0-beta3-*</RoslynVersion>
-    <RoslynDevVersion>2.3.0-beta3-*</RoslynDevVersion>
+    <RoslynVersion>2.3.0-beta4-*</RoslynVersion>
+    <RoslynDevVersion>2.3.0-beta4-*</RoslynDevVersion>
     <StreamJsonRpcVersion>1.1.92</StreamJsonRpcVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
     <VsShellVersion>15.0.26201</VsShellVersion>
