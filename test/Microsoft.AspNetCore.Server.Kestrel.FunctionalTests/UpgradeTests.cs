@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     "Content-Length: 1",
                     "Connection: Upgrade",
                     "",
-                    "1");
+                    "");
 
                 await connection.ReceiveForcedEnd(
                     "HTTP/1.1 400 Bad Request",
