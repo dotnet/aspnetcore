@@ -13,10 +13,9 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 {
     internal static class HostingLoggerExtensions
     {
-        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext)
+        public static IDisposable RequestScope(this ILogger logger, HttpContext httpContext, string correlationId)
         {
-
-            return logger.BeginScope(new HostingLogScope(httpContext));
+            return logger.BeginScope(new HostingLogScope(httpContext, correlationId));
         }
 
         public static void ApplicationError(this ILogger logger, Exception exception)
@@ -96,6 +95,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         private class HostingLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {
             private readonly HttpContext _httpContext;
+            private readonly string _correlationId;
 
             private string _cachedToString;
 
@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             {
                 get
                 {
-                    return 2;
+                    return 3;
                 }
             }
 
@@ -119,13 +119,19 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     {
                         return new KeyValuePair<string, object>("RequestPath", _httpContext.Request.Path.ToString());
                     }
-                    throw new IndexOutOfRangeException(nameof(index));
+                    else if (index == 2)
+                    {
+                        return new KeyValuePair<string, object>("CorrelationId", _correlationId);
+                    }
+
+                    throw new ArgumentOutOfRangeException(nameof(index));
                 }
             }
 
-            public HostingLogScope(HttpContext httpContext)
+            public HostingLogScope(HttpContext httpContext, string correlationId)
             {
                 _httpContext = httpContext;
+                _correlationId = correlationId;
             }
 
             public override string ToString()

@@ -46,12 +46,22 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 RecordRequestStartEventLog(httpContext);
             }
 
+            var diagnosticListenerEnabled = _diagnosticListener.IsEnabled();
+            var loggingEnabled = _logger.IsEnabled(LogLevel.Critical);
 
-            if (_diagnosticListener.IsEnabled())
+            // If logging is enabled or the diagnostic listener is enabled, try to get the correlation
+            // id from the header
+            StringValues correlationId;
+            if (diagnosticListenerEnabled || loggingEnabled)
+            {
+                httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out correlationId);
+            }
+
+            if (diagnosticListenerEnabled)
             {
                 if (_diagnosticListener.IsEnabled(ActivityName, httpContext))
                 {
-                    context.Activity = StartActivity(httpContext);
+                    context.Activity = StartActivity(httpContext, correlationId);
                 }
                 if (_diagnosticListener.IsEnabled(DeprecatedDiagnosticsBeginRequestKey))
                 {
@@ -61,12 +71,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
 
             // To avoid allocation, return a null scope if the logger is not on at least to some degree.
-            if (_logger.IsEnabled(LogLevel.Critical))
+            if (loggingEnabled)
             {
                 // Scope may be relevant for a different level of logging, so we always create it
                 // see: https://github.com/aspnet/Hosting/pull/944
                 // Scope can be null if logging is not on.
-                context.Scope = _logger.RequestScope(httpContext);
+                context.Scope = _logger.RequestScope(httpContext, correlationId);
 
                 if (_logger.IsEnabled(LogLevel.Information))
                 {
@@ -230,15 +240,15 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]
-        private Activity StartActivity(HttpContext httpContext)
+        private Activity StartActivity(HttpContext httpContext, StringValues requestId)
         {
             var activity = new Activity(ActivityName);
-            if (httpContext.Request.Headers.TryGetValue(RequestIdHeaderName, out var requestId))
+            if (!StringValues.IsNullOrEmpty(requestId))
             {
                 activity.SetParentId(requestId);
 
                 // We expect baggage to be empty by default
-                // Only very advanced users will be using it in near future, we encouradge them to keep baggage small (few items)
+                // Only very advanced users will be using it in near future, we encourage them to keep baggage small (few items)
                 string[] baggage = httpContext.Request.Headers.GetCommaSeparatedValues(CorrelationContextHeaderName);
                 if (baggage != StringValues.Empty)
                 {

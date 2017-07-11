@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Internal;
@@ -28,6 +29,22 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             // Act/Assert
             hostingApplication.DisposeContext(context, null);
+        }
+
+        [Fact]
+        public void CreateContextSetsCorrelationIdInScope()
+        {
+            // Arrange
+            var logger = new LoggerWithScopes();
+            var hostingApplication = CreateApplication(out var features, logger: logger);
+            features.Get<IHttpRequestFeature>().Headers["Request-Id"] = "some correlation id";
+
+            // Act
+            var context = hostingApplication.CreateContext(features);
+
+            Assert.Equal(1, logger.Scopes.Count);
+            var pairs = ((IReadOnlyList<KeyValuePair<string, object>>)logger.Scopes[0]).ToDictionary(p => p.Key, p => p.Value);
+            Assert.Equal("some correlation id", pairs["CorrelationId"].ToString());
         }
 
         [Fact]
@@ -60,7 +77,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             hostingApplication.CreateContext(features);
             Assert.Null(Activity.Current);
             Assert.True(isEnabledActivityFired);
-            Assert.False (isEnabledStartFired);
+            Assert.False(isEnabledStartFired);
             Assert.False(eventsFired);
         }
 
@@ -261,7 +278,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         }
 
         private static HostingApplication CreateApplication(out FeatureCollection features,
-            DiagnosticListener diagnosticSource = null)
+            DiagnosticListener diagnosticSource = null, ILogger logger = null)
         {
             var httpContextFactory = new Mock<IHttpContextFactory>();
 
@@ -272,7 +289,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             var hostingApplication = new HostingApplication(
                 ctx => Task.FromResult(0),
-                new NullScopeLogger(),
+                logger ?? new NullScopeLogger(),
                 diagnosticSource ?? new NoopDiagnosticSource(),
                 httpContextFactory.Object);
 
@@ -287,6 +304,31 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 
             public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
             {
+            }
+        }
+
+        private class LoggerWithScopes : ILogger
+        {
+            public IDisposable BeginScope<TState>(TState state)
+            {
+                Scopes.Add(state);
+                return new Scope();
+            }
+
+            public List<object> Scopes { get; set; } = new List<object>();
+
+            public bool IsEnabled(LogLevel logLevel) => true;
+
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)
+            {
+                
+            }
+
+            private class Scope : IDisposable
+            {
+                public void Dispose()
+                {
+                }
             }
         }
 
