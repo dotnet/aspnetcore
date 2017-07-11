@@ -16,13 +16,6 @@
 
   <Target Name="Build" DependsOnTargets="Sign;RunVSDrop;BinScope;" />
 
-  <Target Name="Clean">
-    <RemoveDir Directories="$(IntermediateOutputPath);$(UnsignedBinariesPath)" />
-    <RemoveDir Directories="$(IntermediateOutputPath);$(UnsignedOobBinariesPath)" />
-  </Target>
-
-  <Target Name="Rebuild" DependsOnTargets="Clean;Build" />
-
   <Target Name="RunVSDrop">
     <ItemGroup>
       <SignedRazorVSIX Include="$(SignedVSIXPath)*.vsix" />
@@ -38,45 +31,4 @@
                 ManifestBuildBranch=$(BUILD_BRANCH);
                 ManifestBuildNumber=$(BUILD_NUMBER)" />
   </Target>
-
-<UsingTask TaskName="RenameEncodedFolders" TaskFactory="CodeTaskFactory" AssemblyFile="$(MSBuildToolsPath)\Microsoft.Build.Tasks.v4.0.dll">
-  <ParameterGroup>
-    <RootDirectory ParameterType="System.String" Required="true" />
-  </ParameterGroup>
-  <Task>
-    <Reference Include="System.Xml" />
-    <Reference Include="System.Core" />
-    <Using Namespace="System" />
-    <Using Namespace="System.Collections.Generic" />
-    <Using Namespace="System.Diagnostics" />
-    <Using Namespace="System.IO" />
-    <Using Namespace="System.Xml" />
-    <Using Namespace="Microsoft.Build.Framework" />
-    <Using Namespace="Microsoft.Build.Utilities" />
-    <Code Type="Fragment" Language="cs">
-      <![CDATA[
-          try
-          {
-              Log.LogMessage(MessageImportance.Normal, RootDirectory);
-
-              foreach (var directory in Directory.EnumerateDirectories(RootDirectory, "*", SearchOption.AllDirectories))
-              {
-                  string unescapedDirectory = Uri.UnescapeDataString(directory);
-                  Log.LogMessage(MessageImportance.Normal, unescapedDirectory);
-                  if (!String.Equals(directory, unescapedDirectory))
-                  {
-                      Directory.Move(directory, unescapedDirectory);
-                  }
-              }
-          }
-          catch (Exception ex)
-          {
-              Log.LogErrorFromException(ex);
-          }
-
-          return !Log.HasLoggedErrors;
-      ]]>
-    </Code>
-  </Task>
-</UsingTask>
 </Project>

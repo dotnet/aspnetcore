@@ -1,12 +1,12 @@
 <Project>
   <UsingTask AssemblyFile="$(RepositoryRoot)tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.PoliCheck" />
 
-  <Target Name="PoliCheck" DependsOnTargets="CopyAndExtractUnsignedPackages">
+  <Target Name="PoliCheck">
     <ItemGroup>
-      <PoliCheckPackages Include="$(CoherenceDestinationDir)\symbols\*.nupkg;"/>
+      <PoliCheckPackages Include="$(CoherenceDestinationDir)symbols\*.nupkg;"/>
     </ItemGroup>
 
-    <Exec Command="$(ToolsPath)7za.exe x -y -scsUTF-8 -o@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)') %(PoliCheckPackages.Identity)" />
+    <Exec Command="$(ToolsPath)7za.exe x -y -scsUTF-8 -o@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)') %(PoliCheckPackages.Identity) > nul" />
 
     <RemoveDir Directories="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\_rels')" />
     <Delete Files="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
