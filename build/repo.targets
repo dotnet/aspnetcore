@@ -23,6 +23,7 @@
     <NoTimestampSuffix Condition="'$(NoTimestampSuffix)' == ''">final</NoTimestampSuffix>
 
     <NoTimestampVersion>$(VersionPrefix)-$(OriginalVersionSuffix)-$(NoTimestampSuffix)</NoTimestampVersion>
+    <NoTimestampVersion Condition="'$(OriginalVersionSuffix)' == 'rtm'">$(VersionPrefix)</NoTimestampVersion>
     <TimestampVersion>$(VersionPrefix)-$(OriginalVersionSuffix)-$(BuildNumber)</TimestampVersion>
 
     <RuntimeStoreTimestampInstallerPackageName>aspnetcore-store-$(TimestampVersion)</RuntimeStoreTimestampInstallerPackageName>
@@ -132,11 +133,11 @@
       </PackageStoreManifestFiles>
       <_RuntimeStoreFiles Include="$(RuntimeStoreOutputPath)**\*" Exclude="$(RuntimeStoreOutputPath)**\artifact.xml;$(RuntimeStoreOutputPath)symbols\**\*" />
       <RuntimeStoreFiles Include="@(_RuntimeStoreFiles)" >
-        <NoTimestampRecursiveDir>$([System.String]::new('%(RecursiveDir)').Replace('-$(BuildNumber)', '-final'))</NoTimestampRecursiveDir>
+        <NoTimestampRecursiveDir>$([System.String]::new('%(RecursiveDir)').Replace('$(TimestampVersion)', '$(NoTimestampVersion)'))</NoTimestampRecursiveDir>
       </RuntimeStoreFiles>
       <_RuntimeStoreSymbolFiles Include="$(RuntimeStoreOutputPath)symbols\**\*" />
       <RuntimeStoreSymbolFiles Include="@(_RuntimeStoreSymbolFiles )" >
-        <NoTimestampRecursiveDir>$([System.String]::new('%(RecursiveDir)').Replace('-$(BuildNumber)', '-final'))</NoTimestampRecursiveDir>
+        <NoTimestampRecursiveDir>$([System.String]::new('%(RecursiveDir)').Replace('$(TimestampVersion)', '$(NoTimestampVersion)'))</NoTimestampRecursiveDir>
       </RuntimeStoreSymbolFiles>
       <DepsFiles Include="$(DepsOutputPath)**\*" />
     </ItemGroup>
@@ -241,9 +242,9 @@
       <Output TaskParameter="PlatformName" PropertyName="OSPlatform" />
     </GetOSPlatform>
 
-    <Exec Command="powershell.exe -command &quot;(Get-Content $(DepsFile)).replace('-$(BuildNumber)','-final') | Set-Content $(DepsFile)&quot;" Condition="'$(OSPlatform)'=='Windows'"/>
-    <Exec Command="sed -i -e &quot;s/\-$(BuildNumber)/\-final/g&quot; $(DepsFile)" Condition="'$(OSPlatform)'=='macOS'"/>
-    <Exec Command="sed -i -e &quot;s/\-$(BuildNumber)/\-final/g&quot; $(DepsFile)" Condition="'$(OSPlatform)'=='Linux'"/>
+    <Exec Command="powershell.exe -command &quot;(Get-Content $(DepsFile)).replace('$(TimestampVersion)', '$(NoTimestampVersion)') | Set-Content $(DepsFile)&quot;" Condition="'$(OSPlatform)'=='Windows'"/>
+    <Exec Command="sed -i -e &quot;s/$(TimestampVersion)/$(NoTimestampVersion)/g&quot; $(DepsFile)" Condition="'$(OSPlatform)'=='macOS'"/>
+    <Exec Command="sed -i -e &quot;s/$(TimestampVersion)/$(NoTimestampVersion)/g&quot; $(DepsFile)" Condition="'$(OSPlatform)'=='Linux'"/>
   </Target>
 
   <Target Name="_BuildFallbackArchive">
