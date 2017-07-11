@@ -15,7 +15,10 @@
     <RoslynDevVersion>2.3.0-beta4-*</RoslynDevVersion>
     <StreamJsonRpcVersion>1.1.92</StreamJsonRpcVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
-    <VsShellVersion>15.0.26201</VsShellVersion>
+
+    <!-- Must keep in sync with tooling\Microsoft.VisualStudio.RazorExtension\project.json -->
+    <VsShellVersion>15.0.26606</VsShellVersion>
+    
     <XunitVersion>2.3.0-beta2-*</XunitVersion>
   </PropertyGroup>
 </Project>

@@ -7,7 +7,7 @@
             "Microsoft.VisualStudio.LanguageServices.Razor": {
                 "Exclusions": {
                     "WRONG_THIRDPARTY_DEPENDENCY_VERSION": {
-                        "Microsoft.VisualStudio.LanguageServices.Razor; .NETFramework,Version=v4.6": "This package intentionally depends on version 8.0.3 of Newtonsoft.Json because of the dependency on Visual Studio."
+                        "Microsoft.VisualStudio.LanguageServices.Razor; .NETFramework,Version=v4.6": "This package intentionally depends on version 9.0.1 of Newtonsoft.Json because of the dependency on Visual Studio."
                     }
                 }
             }
