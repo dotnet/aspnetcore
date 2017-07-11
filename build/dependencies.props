@@ -12,7 +12,7 @@
     <MoqVersion>4.7.49</MoqVersion>
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
-    <RoslynVersion>2.3.0-beta3-*</RoslynVersion>
+    <RoslynVersion>2.3.0-beta4-*</RoslynVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
     <WebApiClientVersion>5.2.2</WebApiClientVersion>
