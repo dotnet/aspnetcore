@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26606.0
+VisualStudioVersion = 15.0.26706.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DA69F624-5398-4884-87E4-B816698CDE65}"
 EndProject
@@ -53,6 +53,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{6CEC3DC2-5B01-45A8-8F0D-8531315DA90B}"
 	ProjectSection(SolutionItems) = preProject
 		test\Common\ChannelExtensions.cs = test\Common\ChannelExtensions.cs
+		test\Common\ServerFixture.cs = test\Common\ServerFixture.cs
 		test\Common\TaskExtensions.cs = test\Common\TaskExtensions.cs
 	EndProjectSection
 EndProject
@@ -202,5 +203,8 @@ Global
 		{9E403E93-3284-486F-9A5F-1E15FCE426A5} = {DA69F624-5398-4884-87E4-B816698CDE65}
 		{B0243F99-2D3F-4CC6-AD71-E3F891B64724} = {DA69F624-5398-4884-87E4-B816698CDE65}
 		{E081EE41-D95F-4AD2-BC0B-4B562C0A2A47} = {DA69F624-5398-4884-87E4-B816698CDE65}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {7945A4E4-ACDB-4F6E-95CA-6AC6E7C2CD59}
 	EndGlobalSection
 EndGlobal

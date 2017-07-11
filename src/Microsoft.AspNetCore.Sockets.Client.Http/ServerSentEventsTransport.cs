@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                             case ServerSentEventsMessageParser.ParseResult.Incomplete:
                                 if (result.IsCompleted)
                                 {
-                                    throw new FormatException("Incomplete message");
+                                    throw new FormatException("Incomplete message.");
                                 }
                                 break;
                         }

@@ -17,9 +17,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     [Collection(EndToEndTestsCollection.Name)]
     public class WebSocketsTransportTests : LoggedTest
     {
-        private readonly ServerFixture _serverFixture;
+        private readonly ServerFixture<Startup> _serverFixture;
 
-        public WebSocketsTransportTests(ServerFixture serverFixture, ITestOutputHelper output) : base(output)
+        public WebSocketsTransportTests(ServerFixture<Startup> serverFixture, ITestOutputHelper output) : base(output)
         {
             if (serverFixture == null)
             {

@@ -11,10 +11,11 @@
       Remove when fixed.
     -->
     <HasRuntimeOutput>true</HasRuntimeOutput>
-    <RuntimeIdentifier Condition="'$(TargetFramework)' != 'netcoreapp2.0'">win7-x64</RuntimeIdentifier>    
+    <RuntimeIdentifier Condition="'$(TargetFramework)' != 'netcoreapp2.0'">win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="..\Common\ServerFixture.cs" Link="ServerFixture.cs" />
     <Compile Include="..\Common\TaskExtensions.cs" Link="TaskExtensions.cs" />
   </ItemGroup>
 

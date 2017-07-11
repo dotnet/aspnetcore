@@ -2,19 +2,18 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Logging.Testing;
-using Xunit.Abstractions;
 
-namespace Microsoft.AspNetCore.SignalR.Tests
+
+namespace Microsoft.AspNetCore.SignalR.Tests.Common
 {
-    public class ServerFixture : IDisposable
+    public class ServerFixture<TStartup> : IDisposable
+        where TStartup : class
     {
         private ILoggerFactory _loggerFactory;
         private ILogger _logger;
@@ -28,37 +27,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public ServerFixture()
         {
-            var testLog = AssemblyTestLog.ForAssembly(typeof(ServerFixture).Assembly);
-            _logToken = testLog.StartTestLog(null, typeof(ServerFixture).FullName, out _loggerFactory, "ServerFixture");
-            _logger = _loggerFactory.CreateLogger<ServerFixture>();
+            var testLog = AssemblyTestLog.ForAssembly(typeof(ServerFixture<TStartup>).Assembly);
+            _logToken = testLog.StartTestLog(null, typeof(ServerFixture<TStartup>).FullName, out _loggerFactory, "ServerFixture");
+            _logger = _loggerFactory.CreateLogger<ServerFixture<TStartup>>();
 
             StartServer();
-        }
-
-        public class Startup
-        {
-            public void ConfigureServices(IServiceCollection services)
-            {
-                services.AddSockets();
-                services.AddSignalR();
-                services.AddEndPoint<EchoEndPoint>();
-            }
-
-            public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-            {
-                app.UseSockets(options => options.MapEndPoint<EchoEndPoint>("echo"));
-                app.UseSignalR(options => options.MapHub<UncreatableHub>("uncreatable"));
-            }
         }
 
         private void StartServer()
         {
             host = new WebHostBuilder()
                 .ConfigureLogging(builder => builder.AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
+                .UseStartup(typeof(TStartup))
                 .UseKestrel()
                 .UseUrls(BaseUrl)
                 .UseContentRoot(Directory.GetCurrentDirectory())
-                .UseStartup<Startup>()
                 .Build();
 
             var t = Task.Run(() => host.Start());
@@ -86,6 +69,26 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             _logger.LogInformation("Shutting down test server");
             host.Dispose();
+            _loggerFactory.Dispose();
+        }
+
+        private class ForwardingLoggerProvider : ILoggerProvider
+        {
+            private readonly ILoggerFactory _loggerFactory;
+
+            public ForwardingLoggerProvider(ILoggerFactory loggerFactory)
+            {
+                _loggerFactory = loggerFactory;
+            }
+
+            public void Dispose()
+            {
+            }
+
+            public ILogger CreateLogger(string categoryName)
+            {
+                return _loggerFactory.CreateLogger(categoryName);
+            }
         }
     }
 }

@@ -12,7 +12,6 @@ using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Sockets.Internal;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using Xunit;

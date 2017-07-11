@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.SignalR
                 // Nothing should be writing to the HubConnectionContext
                 output.Out.TryComplete();
 
-                // This should unwind once we complete the output 
+                // This should unwind once we complete the output
                 await writingOutputTask;
             }
         }

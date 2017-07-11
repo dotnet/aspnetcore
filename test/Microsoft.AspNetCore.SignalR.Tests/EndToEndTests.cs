@@ -21,7 +21,7 @@ using Xunit.Abstractions;
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
     [CollectionDefinition(Name)]
-    public class EndToEndTestsCollection : ICollectionFixture<ServerFixture>
+    public class EndToEndTestsCollection : ICollectionFixture<ServerFixture<Startup>>
     {
         public const string Name = "EndToEndTests";
     }
@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     [Collection(EndToEndTestsCollection.Name)]
     public class EndToEndTests : LoggedTest
     {
-        private readonly ServerFixture _serverFixture;
+        private readonly ServerFixture<Startup> _serverFixture;
 
-        public EndToEndTests(ServerFixture serverFixture, ITestOutputHelper output) : base(output)
+        public EndToEndTests(ServerFixture<Startup> serverFixture, ITestOutputHelper output) : base(output)
         {
             if (serverFixture == null)
             {
