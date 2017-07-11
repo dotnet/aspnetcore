@@ -28,6 +28,11 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
             string pathPrefix,
             ConditionalProxyMiddlewareOptions options)
         {
+            if (!pathPrefix.StartsWith("/"))
+            {
+                pathPrefix = "/" + pathPrefix;
+            }
+
             _next = next;
             _pathPrefix = pathPrefix;
             _options = options;
@@ -65,7 +70,7 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
 
             requestMessage.Headers.Host = _options.Host + ":" + _options.Port;
             var uriString =
-                $"{_options.Scheme}://{_options.Host}:{_options.Port}{context.Request.PathBase}{context.Request.Path}{context.Request.QueryString}";
+                $"{_options.Scheme}://{_options.Host}:{_options.Port}{context.Request.Path}{context.Request.QueryString}";
             requestMessage.RequestUri = new Uri(uriString);
             requestMessage.Method = new HttpMethod(context.Request.Method);
 

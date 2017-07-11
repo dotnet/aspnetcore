@@ -101,9 +101,9 @@ namespace Microsoft.AspNetCore.Builder
             // plus /__webpack_hmr is proxied with infinite timeout, because it's an EventSource (long-lived request).
             foreach (var publicPath in devServerInfo.PublicPaths)
             {
+                appBuilder.UseProxyToLocalWebpackDevMiddleware(publicPath + hmrEndpoint, devServerInfo.Port, Timeout.InfiniteTimeSpan);
                 appBuilder.UseProxyToLocalWebpackDevMiddleware(publicPath, devServerInfo.Port, TimeSpan.FromSeconds(100));
             }
-            appBuilder.UseProxyToLocalWebpackDevMiddleware(hmrEndpoint, devServerInfo.Port, Timeout.InfiniteTimeSpan);
         }
 
         private static void UseProxyToLocalWebpackDevMiddleware(this IApplicationBuilder appBuilder, string publicPath, int proxyToPort, TimeSpan requestTimeout)
