@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     /// Provisional may NOT be set with Rejected and SpanContextChanged may NOT be set with Accepted.
     /// </remarks>
     [Flags]
-    internal enum PartialParseResult
+    internal enum PartialParseResultInternal
     {
         /// <summary>
         /// Indicates that the edit could not be accepted and that a reparse is underway.
