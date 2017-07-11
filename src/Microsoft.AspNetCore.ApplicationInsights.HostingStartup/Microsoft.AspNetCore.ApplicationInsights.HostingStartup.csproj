@@ -7,7 +7,6 @@
     <Description>ASP.NET Core lightup integration with Application Insights.</Description>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <OutputType>Exe</OutputType>
     <PackageTags>aspnetcore;ApplicationInsights;Analytics;Telemetry;AppInsights</PackageTags>
   </PropertyGroup>
 
