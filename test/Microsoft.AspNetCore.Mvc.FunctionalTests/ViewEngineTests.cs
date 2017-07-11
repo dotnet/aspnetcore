@@ -253,6 +253,7 @@ ViewWithNestedLayout-Content
             var expected =
 @"<embdedded-layout>Hello from EmbeddedShared/_Partial
 Hello from Shared/_EmbeddedPartial
+<a href=""/EmbeddedViews"">Tag Helper Link</a>
 </embdedded-layout>";
 
             // Act
