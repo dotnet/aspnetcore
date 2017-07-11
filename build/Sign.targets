@@ -2,66 +2,7 @@
   <UsingTask AssemblyFile="$(RepositoryRoot)tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.SubmitCodeSignJob" />
   <UsingTask AssemblyFile="$(RepositoryRoot)tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.WaitForCodeSignJobs" />
 
-  <Target Name="CopyAndExtractUnsignedPackages" DependsOnTargets="Clean">
-    <MakeDir Directories="$(OutputPath)" />
-    <MakeDir Directories="$(CoherenceDestinationDir)" />
-    <MakeDir Directories="$(CoherencePackageCacheDestinationDir)" />
-    <MakeDir Directories="$(CoherenceDestinationDir)vsix" />
-
-    <ItemGroup>
-      <VSIXPaths Include="$(COHERENCE_DROP_LOCATION)\build\*.vsix" />
-      <PackageCaches Include="$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.zip;$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.tar.gz" />
-      <PackageCachesArtifacts
-        Include="$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.nuspec;
-                $(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.txt" />
-    </ItemGroup>
-
-    <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{build-number}"
-        Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
-    <Error Text="COHERENCE_PACKAGECACHE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence-PackageCache\{build-number}"
-        Condition=" '$(COHERENCE_PACKAGECACHE_DROP_LOCATION)' == '' " />
-
-    <Exec Command="(robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(COHERENCE_DROP_LOCATION) $(CoherenceDestinationDir) /XD build packages-expanded) ^&amp; IF %ERRORLEVEL% LEQ 3 exit 0" />
-
-    <Copy SourceFiles="@(VSIXPaths)" DestinationFolder="$(CoherenceDestinationDir)vsix" />
-    <Copy
-        SourceFiles="$([System.IO.Path]::ChangeExtension(%(VSIXPaths.FullPath), '.json'))"
-        DestinationFolder="$(CoherenceDestinationDir)vsix" />
-    <Copy SourceFiles="@(PackageCaches)" DestinationFolder="$(CoherencePackageCacheDestinationDir)" />
-    <Copy SourceFiles="@(PackageCachesArtifacts)" DestinationFolder="$(CoherencePackageCacheDestinationDir)" />
-
-    <ItemGroup>
-      <UnsignedPackages Include="$(CoherenceDestinationDir)ship\*.nupkg" />
-      <UnsignedOobPackages Include="$(CoherenceDestinationDir)shipoob\*.nupkg" />
-      <UnsignedSymbolPackages Include="$(CoherenceDestinationDir)symbols\Microsoft.Data.Sqlite*.nupkg" />
-      <UnsignedVSIX Include="$(CoherenceDestinationDir)vsix\*.vsix" />
-      <UnsignedPackageCaches Include="$(CoherencePackageCacheDestinationDir)Build.RS.*.zip" />
-    </ItemGroup>
-
-    <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
-    <Error Text="No OOB packages found for signing." Condition="'@(UnsignedOobPackages)'==''" />
-    <Error Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
-    <Error Text="No package cache found for signing." Condition="'@(UnsignedPackageCaches)'==''" />
-
-    <PropertyGroup>
-      <UnzipCommand>$(ToolsPath)7za.exe x -y -scsUTF-8</UnzipCommand>
-    </PropertyGroup>
-
-    <Exec Command="$(UnzipCommand) -o@(UnsignedPackages->'$(UnsignedPackagesPath)%(Filename)') %(UnsignedPackages.Identity) > nul" />
-    <Exec Command="$(UnzipCommand) -o@(UnsignedOobPackages->'$(UnsignedOobPackagesPath)%(Filename)') %(UnsignedOobPackages.Identity) > nul" />
-    <Exec Command="$(UnzipCommand) -o@(UnsignedSymbolPackages->'$(UnsignedSymbolPackagesPath)%(Filename)') %(UnsignedSymbolPackages.Identity) > nul"
-        Condition=" '@(UnsignedSymbolPackages)' != '' " />
-    <Exec Command="$(UnzipCommand) -o@(UnsignedVSIX->'$(UnsignedVSIXPath)%(Filename)') %(UnsignedVSIX.Identity) > nul" />
-    <Exec Command="$(UnzipCommand) -o@(UnsignedPackageCaches->'$(UnsignedPackageCachePath)%(Filename)') %(UnsignedPackageCaches.Identity) > nul" />
-
-    <Message Text="MSBuildPath:'$(MSBuildToolsPath)''" />
-
-    <RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
-    <RenameEncodedFolders RootDirectory="$(UnsignedOobPackagesPath)" />
-  </Target>
-
-  <!-- This should not be named VerifyPackages as it clashes with the one in Korebuild. -->
-  <Target Name="VerifyUnsignedPackages" Condition="'$(VerifySignatures)' != 'false'">
+  <Target Name="VerifyPackages" Condition="'$(VerifySignatures)' != 'false'">
     <PropertyGroup>
       <CoherencePackagesDir>$(ArtifactsPath)\coherence\ship\</CoherencePackagesDir>
     </PropertyGroup>
@@ -72,7 +13,7 @@
        Condition="Exists('$(CoherencePackagesDir)')" />
   </Target>
 
-  <Target Name="PrepareFilesForSigning" DependsOnTargets="CopyAndExtractUnsignedPackages">
+  <Target Name="PrepareFilesForSigning">
     <!-- Flatten the file names -->
     <ItemGroup>
       <_UnsignedBinaries

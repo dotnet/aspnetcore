@@ -9,8 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <IntermediateOutputPath Condition="'$(BuildWorkingDirectory)'!=''">$(BuildWorkingDirectory)</IntermediateOutputPath>
-    <IntermediateOutputPath Condition="'$(IntermediateOutputPath)'==''">$(RepositoryRoot)obj\</IntermediateOutputPath>
+    <IntermediateOutputPath>$(RepositoryRoot)obj\</IntermediateOutputPath>
     <SignedOutputPath>$(IntermediateOutputPath)Signed\</SignedOutputPath>
     <ArtifactsPath>$(RepositoryRoot)artifacts\</ArtifactsPath>
     <OutputPath Condition="'$(Sign)' == 'Sign'">$(SignedOutputPath)</OutputPath>
