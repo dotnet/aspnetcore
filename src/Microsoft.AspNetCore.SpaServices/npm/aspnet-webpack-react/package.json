@@ -1,6 +1,6 @@
 {
   "name": "aspnet-webpack-react",
-  "version": "3.0.0-beta.1",
+  "version": "3.0.0",
   "description": "Helpers for using Webpack with React in ASP.NET Core projects. Works in conjunction with the Microsoft.AspNetCore.SpaServices NuGet package.",
   "main": "index.js",
   "scripts": {
