@@ -13,17 +13,17 @@
         <div class='navbar-collapse collapse'>
             <ul class='nav navbar-nav'>
                 <li>
-                    <a href='/' data-bind='css: { active: route().page === "home-page" }'>
+                    <a data-bind='attr: { href: router.link("/") }, css: { active: route().page === "home-page" }'>
                         <span class='glyphicon glyphicon-home'></span> Home
                     </a>
                 </li>
                 <li>
-                    <a href='/counter' data-bind='css: { active: route().page === "counter-example" }'>
+                    <a data-bind='attr: { href: router.link("/counter") }, css: { active: route().page === "counter-example" }'>
                         <span class='glyphicon glyphicon-education'></span> Counter
                     </a>
                 </li>
                 <li>
-                    <a href='/fetch-data' data-bind='css: { active: route().page === "fetch-data" }'>
+                    <a data-bind='attr: { href: router.link("/fetch-data") }, css: { active: route().page === "fetch-data" }'>
                         <span class='glyphicon glyphicon-th-list'></span> Fetch data
                     </a>
                 </li>

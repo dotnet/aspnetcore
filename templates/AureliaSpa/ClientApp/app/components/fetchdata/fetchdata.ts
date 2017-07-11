@@ -6,7 +6,7 @@ export class Fetchdata {
     public forecasts: WeatherForecast[];
 
     constructor(http: HttpClient) {
-        http.fetch('/api/SampleData/WeatherForecasts')
+        http.fetch('api/SampleData/WeatherForecasts')
             .then(result => result.json() as Promise<WeatherForecast[]>)
             .then(data => {
                 this.forecasts = data;

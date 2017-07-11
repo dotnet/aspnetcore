@@ -274,14 +274,14 @@
       "resolved": "https://registry.npmjs.org/asn1.js/-/asn1.js-4.9.1.tgz"
     },
     "aspnet-prerendering": {
-      "version": "2.0.6",
-      "from": "aspnet-prerendering@>=2.0.5 <3.0.0",
-      "resolved": "https://registry.npmjs.org/aspnet-prerendering/-/aspnet-prerendering-2.0.6.tgz"
+      "version": "3.0.1",
+      "from": "aspnet-prerendering@3.0.1",
+      "resolved": "https://registry.npmjs.org/aspnet-prerendering/-/aspnet-prerendering-3.0.1.tgz"
     },
     "aspnet-webpack": {
-      "version": "1.0.29",
-      "from": "aspnet-webpack@>=1.0.29 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aspnet-webpack/-/aspnet-webpack-1.0.29.tgz"
+      "version": "2.0.0",
+      "from": "aspnet-webpack@2.0.0",
+      "resolved": "https://registry.npmjs.org/aspnet-webpack/-/aspnet-webpack-2.0.0.tgz"
     },
     "assert": {
       "version": "1.4.1",
@@ -932,9 +932,9 @@
       "resolved": "https://registry.npmjs.org/domain-context/-/domain-context-0.5.1.tgz"
     },
     "domain-task": {
-      "version": "2.0.3",
-      "from": "domain-task@>=2.0.2 <3.0.0",
-      "resolved": "https://registry.npmjs.org/domain-task/-/domain-task-2.0.3.tgz"
+      "version": "3.0.3",
+      "from": "domain-task@>=3.0.0 <4.0.0",
+      "resolved": "https://registry.npmjs.org/domain-task/-/domain-task-3.0.3.tgz"
     },
     "ee-first": {
       "version": "1.1.1",

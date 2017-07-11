@@ -33,7 +33,7 @@ module.exports = (env) => {
             ],
         },
         output: {
-            publicPath: '/dist/',
+            publicPath: 'dist/',
             filename: '[name].js',
             library: '[name]_[hash]',
         },

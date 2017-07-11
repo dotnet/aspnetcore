@@ -16,7 +16,7 @@ export class Router {
     private disposeHistory: () => void;
     private clickEventListener: EventListener;
 
-    constructor(history: History.History, routes: Route[]) {
+    constructor(private history: History.History, routes: Route[], basename: string) {
         // Reset and configure Crossroads so it matches routes and updates this.currentRoute
         crossroads.removeAllRoutes();
         crossroads.resetState();
@@ -33,8 +33,9 @@ export class Router {
             let target: any = evt.currentTarget;
             if (target && target.tagName === 'A') {
                 let href = target.getAttribute('href');
-                if (href && href.charAt(0) == '/') {
-                    history.push(href);
+                if (href && href.indexOf(basename + '/') === 0) {
+                    const hrefAfterBasename = href.substring(basename.length);
+                    history.push(hrefAfterBasename);
                     evt.preventDefault();
                 }
             }
@@ -44,6 +45,10 @@ export class Router {
         // Initialize Crossroads with starting location
         // Need to cast history to 'any' because @types/history is out-of-date
         crossroads.parse((history as any).location.pathname);
+    }
+
+    public link(url: string): string {
+        return this.history.createHref({ pathname: url });
     }
 
     public dispose() {
