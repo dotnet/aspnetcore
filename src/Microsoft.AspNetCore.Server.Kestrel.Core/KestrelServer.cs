@@ -25,7 +25,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         private readonly ITransportFactory _transportFactory;
 
         private bool _hasStarted;
-        private int _stopped;
+        private int _stopping;
+        private readonly TaskCompletionSource<object> _stoppedTcs = new TaskCompletionSource<object>();
 
         public KestrelServer(IOptions<KestrelServerOptions> options, ITransportFactory transportFactory, ILoggerFactory loggerFactory)
             : this(transportFactory, CreateServiceContext(options, loggerFactory))
@@ -154,35 +155,46 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         // Graceful shutdown if possible
         public async Task StopAsync(CancellationToken cancellationToken)
         {
-            if (Interlocked.Exchange(ref _stopped, 1) == 1)
+            if (Interlocked.Exchange(ref _stopping, 1) == 1)
             {
+                await _stoppedTcs.Task.ConfigureAwait(false);
                 return;
             }
 
-            var tasks = new Task[_transports.Count];
-            for (int i = 0; i < _transports.Count; i++)
+            try
             {
-                tasks[i] = _transports[i].UnbindAsync();
-            }
-            await Task.WhenAll(tasks).ConfigureAwait(false);
-
-            if (!await ConnectionManager.CloseAllConnectionsAsync(cancellationToken).ConfigureAwait(false))
-            {
-                Trace.NotAllConnectionsClosedGracefully();
-
-                if (!await ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false))
+                var tasks = new Task[_transports.Count];
+                for (int i = 0; i < _transports.Count; i++)
                 {
-                    Trace.NotAllConnectionsAborted();
+                    tasks[i] = _transports[i].UnbindAsync();
                 }
-            }
+                await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            for (int i = 0; i < _transports.Count; i++)
+                if (!await ConnectionManager.CloseAllConnectionsAsync(cancellationToken).ConfigureAwait(false))
+                {
+                    Trace.NotAllConnectionsClosedGracefully();
+
+                    if (!await ConnectionManager.AbortAllConnectionsAsync().ConfigureAwait(false))
+                    {
+                        Trace.NotAllConnectionsAborted();
+                    }
+                }
+
+                for (int i = 0; i < _transports.Count; i++)
+                {
+                    tasks[i] = _transports[i].StopAsync();
+                }
+                await Task.WhenAll(tasks).ConfigureAwait(false);
+
+                _heartbeat.Dispose();
+            }
+            catch (Exception ex)
             {
-                tasks[i] = _transports[i].StopAsync();
+                _stoppedTcs.TrySetException(ex);
+                throw;
             }
-            await Task.WhenAll(tasks).ConfigureAwait(false);
 
-            _heartbeat.Dispose();
+            _stoppedTcs.TrySetResult(null);
         }
 
         // Ungraceful shutdown

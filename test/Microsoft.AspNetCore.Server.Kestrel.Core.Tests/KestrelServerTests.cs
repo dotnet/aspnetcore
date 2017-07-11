@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -163,6 +162,111 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 new KestrelServer(Options.Create<KestrelServerOptions>(null), null, Mock.Of<ILoggerFactory>()));
 
             Assert.Equal("transportFactory", exception.ParamName);
+        }
+
+        [Fact]
+        public async Task StopAsyncCallsCompleteWhenFirstCallCompletes()
+        {
+            var options = new KestrelServerOptions
+            {
+                ListenOptions =
+                {
+                    new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                }
+            };
+
+            var unbind = new SemaphoreSlim(0);
+            var stop = new SemaphoreSlim(0);
+
+            var mockTransport = new Mock<ITransport>();
+            mockTransport
+                .Setup(transport => transport.BindAsync())
+                .Returns(Task.CompletedTask);
+            mockTransport
+                .Setup(transport => transport.UnbindAsync())
+                .Returns(async () => await unbind.WaitAsync());
+            mockTransport
+                .Setup(transport => transport.StopAsync())
+                .Returns(async () => await stop.WaitAsync());
+
+            var mockTransportFactory = new Mock<ITransportFactory>();
+            mockTransportFactory
+                .Setup(transportFactory => transportFactory.Create(It.IsAny<IEndPointInformation>(), It.IsAny<IConnectionHandler>()))
+                .Returns(mockTransport.Object);
+
+            var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, Mock.Of<LoggerFactory>());
+            await server.StartAsync(new DummyApplication(), CancellationToken.None);
+
+            var stopTask1 = server.StopAsync(default(CancellationToken));
+            var stopTask2 = server.StopAsync(default(CancellationToken));
+            var stopTask3 = server.StopAsync(default(CancellationToken));
+
+            Assert.False(stopTask1.IsCompleted);
+            Assert.False(stopTask2.IsCompleted);
+            Assert.False(stopTask3.IsCompleted);
+
+            unbind.Release();
+            stop.Release();
+
+            await Task.WhenAll(new[] { stopTask1, stopTask2, stopTask3 }).TimeoutAfter(TimeSpan.FromSeconds(10));
+
+            mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
+            mockTransport.Verify(transport => transport.StopAsync(), Times.Once);
+        }
+
+        [Fact]
+        public async Task StopAsyncCallsCompleteWithThrownException()
+        {
+            var options = new KestrelServerOptions
+            {
+                ListenOptions =
+                {
+                    new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+                }
+            };
+
+            var unbind = new SemaphoreSlim(0);
+            var unbindException = new InvalidOperationException();
+
+            var mockTransport = new Mock<ITransport>();
+            mockTransport
+                .Setup(transport => transport.BindAsync())
+                .Returns(Task.CompletedTask);
+            mockTransport
+                .Setup(transport => transport.UnbindAsync())
+                .Returns(async () =>
+                {
+                    await unbind.WaitAsync();
+                    throw unbindException;
+                });
+            mockTransport
+                .Setup(transport => transport.StopAsync())
+                .Returns(Task.CompletedTask);
+
+            var mockTransportFactory = new Mock<ITransportFactory>();
+            mockTransportFactory
+                .Setup(transportFactory => transportFactory.Create(It.IsAny<IEndPointInformation>(), It.IsAny<IConnectionHandler>()))
+                .Returns(mockTransport.Object);
+
+            var server = new KestrelServer(Options.Create(options), mockTransportFactory.Object, Mock.Of<LoggerFactory>());
+            await server.StartAsync(new DummyApplication(), CancellationToken.None);
+
+            var stopTask1 = server.StopAsync(default(CancellationToken));
+            var stopTask2 = server.StopAsync(default(CancellationToken));
+            var stopTask3 = server.StopAsync(default(CancellationToken));
+
+            Assert.False(stopTask1.IsCompleted);
+            Assert.False(stopTask2.IsCompleted);
+            Assert.False(stopTask3.IsCompleted);
+
+            unbind.Release();
+
+            var timeout = TimeSpan.FromSeconds(10);
+            Assert.Same(unbindException, await Assert.ThrowsAsync<InvalidOperationException>(() => stopTask1.TimeoutAfter(timeout)));
+            Assert.Same(unbindException, await Assert.ThrowsAsync<InvalidOperationException>(() => stopTask2.TimeoutAfter(timeout)));
+            Assert.Same(unbindException, await Assert.ThrowsAsync<InvalidOperationException>(() => stopTask3.TimeoutAfter(timeout)));
+
+            mockTransport.Verify(transport => transport.UnbindAsync(), Times.Once);
         }
 
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)
