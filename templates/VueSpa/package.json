@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "devDependencies": {
     "@types/requirejs": "^2.1.28",
-    "aspnet-webpack": "^1.0.27",
+    "aspnet-webpack": "^2.0.0",
     "awesome-typescript-loader": "^3.0.0",
     "bootstrap": "^3.3.6",
     "css-loader": "^0.25.0",

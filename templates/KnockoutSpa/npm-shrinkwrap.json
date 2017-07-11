@@ -167,9 +167,9 @@
       "dev": true
     },
     "aspnet-webpack": {
-      "version": "1.0.29",
-      "from": "aspnet-webpack@>=1.0.27 <2.0.0",
-      "resolved": "https://registry.npmjs.org/aspnet-webpack/-/aspnet-webpack-1.0.29.tgz",
+      "version": "2.0.0",
+      "from": "aspnet-webpack@2.0.0",
+      "resolved": "https://registry.npmjs.org/aspnet-webpack/-/aspnet-webpack-2.0.0.tgz",
       "dev": true
     },
     "assert": {
