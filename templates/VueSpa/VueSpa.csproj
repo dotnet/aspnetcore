@@ -9,17 +9,17 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0-rtm-26190" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.0.0-rtm-26219" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
-    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0-rtm-26190" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0-rtm-26190" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="2.0.0-rtm-26190" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0-rtm-26190" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="2.0.0-rtm-26219" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.0.0-rtm-26219" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="2.0.0-rtm-26219" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="2.0.0-rtm-26219" />
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0-*" />
+    <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0-rtm-26219" />
   </ItemGroup>
 
 <!--/-:cnd:noEmit -->
