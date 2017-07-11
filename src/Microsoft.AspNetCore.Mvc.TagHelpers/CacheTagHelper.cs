@@ -119,8 +119,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 // Use the CreateEntry to ensure a cache scope is created that will copy expiration tokens from
                 // cache entries created from the GetChildContentAsync call to the current entry.
                 IHtmlContent content;
-                using (var entry = MemoryCache.CreateEntry(cacheKey))
-                {
+                var entry = MemoryCache.CreateEntry(cacheKey);
+
                     // The result is processed inside an entry
                     // such that the tokens are inherited.
 
@@ -130,9 +130,12 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     entry.SetOptions(options);
 
                     entry.Value = result;
-                }
 
                 tcs.SetResult(content);
+                // An entry gets committed to the cache when disposed gets called. We only want to do this when
+                // the content has been correctly generated (didn't throw an exception). For that reason the entry
+                // can't be put inside a using block.
+                entry.Dispose();
                 return content;
             }
             catch (Exception ex)
