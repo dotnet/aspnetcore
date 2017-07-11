@@ -12,7 +12,7 @@ class FetchDataViewModel {
     public forecasts = ko.observableArray<WeatherForecast>();
 
     constructor() {
-        fetch('/api/SampleData/WeatherForecasts')
+        fetch('api/SampleData/WeatherForecasts')
             .then(response => response.json() as Promise<WeatherForecast[]>)
             .then(data => {
                 this.forecasts(data);

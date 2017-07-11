@@ -21,7 +21,7 @@ module.exports = (env) => {
         },
         output: {
             path: path.join(__dirname, 'wwwroot', 'dist'),
-            publicPath: '/dist/',
+            publicPath: 'dist/',
             filename: '[name].js',
             library: '[name]_[hash]',
         },

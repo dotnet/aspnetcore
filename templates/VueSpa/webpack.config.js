@@ -23,7 +23,7 @@ module.exports = (env) => {
         output: {
             path: path.join(__dirname, bundleOutputDir),
             filename: '[name].js',
-            publicPath: '/dist/'
+            publicPath: 'dist/'
         },
         plugins: [
             new CheckerPlugin(),
