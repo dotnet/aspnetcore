@@ -65,16 +65,16 @@
 
       <OOBPackagesDir>$(ArtifactsDir)Signed\OobPackages\</OOBPackagesDir>
       <OOBPackagesNoTimestampDir>$(ArtifactsDir)Signed\OobPackages-NoTimeStamp\</OOBPackagesNoTimestampDir>
+
+      <ZipPath>$(RepositoryRoot)tools\7za.exe</ZipPath>
     </PropertyGroup>
 
     <Exec Command="$(DotNetPath) run &quot;$(PackagesDir) &quot; &quot;$(PackagesNoTimestampDir) &quot;" WorkingDirectory="$(RepositoryRoot)src/CreateTimestampFreePackages" />
     <Exec Command="$(DotNetPath) run &quot;$(OOBPackagesDir) &quot; &quot;$(OOBPackagesNoTimestampDir) &quot;" WorkingDirectory="$(RepositoryRoot)src/CreateTimestampFreePackages" />
 
-    <PropertyGroup>
-      <ZipPath>$(RepositoryRoot)tools\7za.exe</ZipPath>
-    </PropertyGroup>
     <ItemGroup>
       <TimeStampFreeMetaPackage Include="$(TimestampFreePackagesOutputPath)Microsoft.AspNetCore.All.*.nupkg" />
+      <TimeStampMetaPackage Include="$(PackagesDir)Microsoft.AspNetCore.All.*.nupkg" />
     </ItemGroup>
 
     <Exec Command="$(ZipPath) x -y -scsUTF-8 -o@(TimeStampFreeMetaPackage->'$(SignedAllMetapackagePath)%(Filename)') %(TimeStampFreeMetaPackage.Identity) > nul" />
@@ -83,8 +83,15 @@
       <TimeStampedManifestFiles Include="$(SignedAllMetapackagePath)**\aspnetcore-store-*.xml" />
     </ItemGroup>
 
-    <Exec Command="powershell.exe -command &quot;(Get-Content %(TimeStampedManifestFiles.FullPath)).replace('-$(BuildNumber)','-final') | Set-Content %(TimeStampedManifestFiles.FullPath)&quot;"/>
-    <Move SourceFiles="%(TimeStampedManifestFiles.FullPath)" DestinationFiles="$([System.String]::new('%(TimeStampedManifestFiles.FullPath)').Replace('-$(BuildNumber)', '-final'))" />
+    <PropertyGroup>
+      <VersionToReplace>-$(BuildNumber)</VersionToReplace>
+      <VersionReplacement>-final</VersionReplacement>
+      <VersionToReplace Condition="$([System.String]::new('%(TimeStampMetaPackage.FileName)').EndsWith('-rtm-$(BuildNumber)'))">-rtm-$(BuildNumber)</VersionToReplace>
+      <VersionReplacement Condition="$([System.String]::new('%(TimeStampMetaPackage.FileName)').EndsWith('-rtm-$(BuildNumber)'))"></VersionReplacement>
+    </PropertyGroup>
+
+    <Exec Command="powershell.exe -command &quot;(Get-Content %(TimeStampedManifestFiles.FullPath)).replace('$(VersionToReplace)','$(VersionReplacement)') | Set-Content %(TimeStampedManifestFiles.FullPath)&quot;"/>
+    <Move SourceFiles="%(TimeStampedManifestFiles.FullPath)" DestinationFiles="$([System.String]::new('%(TimeStampedManifestFiles.FullPath)').Replace('$(VersionToReplace)', '$(VersionReplacement)'))" />
 
     <Exec Command="$(ZipPath) a -tzip -mx9 -r -y -uq0 $(TimestampFreePackagesOutputPath)%(TimeStampFreeMetaPackage.FileName).nupkg * > nul" WorkingDirectory="$(SignedAllMetapackagePath)%(TimeStampFreeMetaPackage.FileName)" />
   </Target>
