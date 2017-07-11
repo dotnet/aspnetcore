@@ -26,6 +26,7 @@ export function createServerRenderer(bootFunc: BootFunc): RenderToStringFunc {
             domainTasks: domainTaskCompletionPromise,
             data: customDataParameter
         };
+        const absoluteBaseUrl = params.origin + params.baseUrl; // Should be same value as page's <base href>
 
         // Open a new domain that can track all the async tasks involved in the app's execution
         domainTaskRun(/* code to run */ () => {
@@ -35,7 +36,7 @@ export function createServerRenderer(bootFunc: BootFunc): RenderToStringFunc {
             bindPromiseContinuationsToDomain(domainTaskCompletionPromise, domain['active']);
 
             // Make the base URL available to the 'domain-tasks/fetch' helper within this execution context
-            domainTaskBaseUrl(absoluteRequestUrl);
+            domainTaskBaseUrl(absoluteBaseUrl);
 
             // Begin rendering, and apply a timeout
             const bootFuncPromise = bootFunc(params);
