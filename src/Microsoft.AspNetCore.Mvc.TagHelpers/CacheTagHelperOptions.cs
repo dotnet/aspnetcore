@@ -12,6 +12,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         /// The maximum total size in bytes that will be cached by the <see cref="CacheTagHelper"/>
         /// at any given time.
         /// </summary>
-        public long SizeLimit { get; set; }
+        public long SizeLimit { get; set; } = 100 * 1024 * 1024; // 100MB
     }
 }

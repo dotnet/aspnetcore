@@ -14,8 +14,6 @@ namespace Microsoft.Extensions.DependencyInjection
     /// </summary>
     public static class TagHelperServicesExtensions
     {
-        private const int DefaultCacheMaximumSizeInBytes = 100 * 1024 * 1024; // 100MB
-
         /// <summary>
         ///  Adds MVC cache tag helper services to the application.
         /// </summary>
@@ -35,7 +33,6 @@ namespace Microsoft.Extensions.DependencyInjection
             // Required default services for cache tag helpers
             builder.Services.AddDistributedMemoryCache();
             builder.Services.TryAddSingleton<CacheTagHelperMemoryCacheFactory>();
-            builder.AddCacheTagHelperLimits(options => options.SizeLimit = DefaultCacheMaximumSizeInBytes);
 
             return builder;
         }
