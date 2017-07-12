@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
+using System.Net.Http;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
@@ -11,7 +13,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Newtonsoft.Json.Linq;
 
 namespace OpenIdConnectSample
 {
@@ -53,6 +57,7 @@ namespace OpenIdConnectSample
                 o.ClientSecret = Configuration["oidc:clientsecret"]; // for code flow
                 o.Authority = Configuration["oidc:authority"];
                 o.ResponseType = OpenIdConnectResponseType.CodeIdToken;
+                o.SaveTokens = true;
                 o.GetClaimsFromUserInfoEndpoint = true;
                 o.Events = new OpenIdConnectEvents()
                 {
@@ -73,19 +78,21 @@ namespace OpenIdConnectSample
             });
         }
 
-        public void Configure(IApplicationBuilder app)
+        public void Configure(IApplicationBuilder app, IOptionsMonitor<OpenIdConnectOptions> optionsMonitor)
         {
             app.UseDeveloperExceptionPage();
             app.UseAuthentication();
 
             app.Run(async context =>
             {
+                var response = context.Response;
+
                 if (context.Request.Path.Equals("/signedout"))
                 {
-                    await WriteHtmlAsync(context.Response, async res =>
+                    await WriteHtmlAsync(response, async res =>
                     {
                         await res.WriteAsync($"<h1>You have been signed out.</h1>");
-                        await res.WriteAsync("<a class=\"btn btn-link\" href=\"/\">Sign In</a>");
+                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
                     });
                     return;
                 }
@@ -93,10 +100,10 @@ namespace OpenIdConnectSample
                 if (context.Request.Path.Equals("/signout"))
                 {
                     await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    await WriteHtmlAsync(context.Response, async res =>
+                    await WriteHtmlAsync(response, async res =>
                     {
-                        await context.Response.WriteAsync($"<h1>Signed out {HtmlEncode(context.User.Identity.Name)}</h1>");
-                        await context.Response.WriteAsync("<a class=\"btn btn-link\" href=\"/\">Sign In</a>");
+                        await res.WriteAsync($"<h1>Signed out {HtmlEncode(context.User.Identity.Name)}</h1>");
+                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
                     });
                     return;
                 }
@@ -115,19 +122,22 @@ namespace OpenIdConnectSample
                 if (context.Request.Path.Equals("/Account/AccessDenied"))
                 {
                     await context.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
-                    await WriteHtmlAsync(context.Response, async res =>
+                    await WriteHtmlAsync(response, async res =>
                     {
-                        await context.Response.WriteAsync($"<h1>Access Denied for user {HtmlEncode(context.User.Identity.Name)} to resource '{HtmlEncode(context.Request.Query["ReturnUrl"])}'</h1>");
-                        await context.Response.WriteAsync("<a class=\"btn btn-link\" href=\"/signout\">Sign Out</a>");
+                        await res.WriteAsync($"<h1>Access Denied for user {HtmlEncode(context.User.Identity.Name)} to resource '{HtmlEncode(context.Request.Query["ReturnUrl"])}'</h1>");
+                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/signout\">Sign Out</a>");
+                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
                     });
                     return;
                 }
 
                 // DefaultAuthenticateScheme causes User to be set
-                var user = context.User;
+                // var user = context.User;
 
                 // This is what [Authorize] calls
-                // var user = await context.AuthenticateAsync();
+                var userResult = await context.AuthenticateAsync();
+                var user = userResult.Principal;
+                var props = userResult.Properties;
 
                 // This is what [Authorize(ActiveAuthenticationSchemes = OpenIdConnectDefaults.AuthenticationScheme)] calls
                 // var user = await context.AuthenticateAsync(OpenIdConnectDefaults.AuthenticationScheme);
@@ -151,15 +161,76 @@ namespace OpenIdConnectSample
                     return;
                 }
 
-                await WriteHtmlAsync(context.Response, async response =>
+                if (context.Request.Path.Equals("/refresh"))
                 {
-                    await response.WriteAsync($"<h1>Hello Authenticated User {HtmlEncode(user.Identity.Name)}</h1>");
-                    await response.WriteAsync("<a class=\"btn btn-default\" href=\"/restricted\">Restricted</a>");
-                    await response.WriteAsync("<a class=\"btn btn-default\" href=\"/signout\">Sign Out</a>");
-                    await response.WriteAsync("<a class=\"btn btn-default\" href=\"/signout-remote\">Sign Out Remote</a>");
+                    var refreshToken = props.GetTokenValue("refresh_token");
 
-                    await response.WriteAsync("<h2>Claims:</h2>");
-                    await WriteTableHeader(response, new string[] { "Claim Type", "Value" }, context.User.Claims.Select(c => new string[] { c.Type, c.Value }));
+                    if (string.IsNullOrEmpty(refreshToken))
+                    {
+                        await WriteHtmlAsync(response, async res =>
+                        {
+                            await res.WriteAsync($"No refresh_token is available.<br>");
+                            await res.WriteAsync("<a class=\"btn btn-link\" href=\"/signout\">Sign Out</a>");
+                        });
+
+                        return;
+                    }
+
+                    var options = optionsMonitor.Get(OpenIdConnectDefaults.AuthenticationScheme);
+                    var metadata = await options.ConfigurationManager.GetConfigurationAsync(context.RequestAborted);
+
+                    var pairs = new Dictionary<string, string>()
+                    {
+                        { "client_id", options.ClientId },
+                        { "client_secret", options.ClientSecret },
+                        { "grant_type", "refresh_token" },
+                        { "refresh_token", refreshToken }
+                    };
+                    var content = new FormUrlEncodedContent(pairs);
+                    var tokenResponse = await options.Backchannel.PostAsync(metadata.TokenEndpoint, content, context.RequestAborted);
+                    tokenResponse.EnsureSuccessStatusCode();
+
+                    var payload = JObject.Parse(await tokenResponse.Content.ReadAsStringAsync());
+
+                    // Persist the new acess token
+                    props.UpdateTokenValue("access_token", payload.Value<string>("access_token"));
+                    props.UpdateTokenValue("refresh_token", payload.Value<string>("refresh_token"));
+                    if (int.TryParse(payload.Value<string>("expires_in"), NumberStyles.Integer, CultureInfo.InvariantCulture, out var seconds))
+                    {
+                        var expiresAt = DateTimeOffset.UtcNow + TimeSpan.FromSeconds(seconds);
+                        props.UpdateTokenValue("expires_at", expiresAt.ToString("o", CultureInfo.InvariantCulture));
+                    }
+                    await context.SignInAsync(user, props);
+
+                    await WriteHtmlAsync(response, async res =>
+                    {
+                        await res.WriteAsync($"<h1>Refreshed.</h1>");
+                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/refresh\">Refresh tokens</a>");
+                        await res.WriteAsync("<a class=\"btn btn-default\" href=\"/\">Home</a>");
+
+                        await res.WriteAsync("<h2>Tokens:</h2>");
+                        await WriteTableHeader(res, new string[] { "Token Type", "Value" }, props.GetTokens().Select(token => new string[] { token.Name, token.Value }));
+
+                        await res.WriteAsync("<h2>Payload:</h2>");
+                        await res.WriteAsync(HtmlEncoder.Default.Encode(payload.ToString()).Replace(",", ",<br>") + "<br>");
+                    });
+
+                    return;
+                }
+
+                await WriteHtmlAsync(response, async res =>
+                {
+                    await res.WriteAsync($"<h1>Hello Authenticated User {HtmlEncode(user.Identity.Name)}</h1>");
+                    await res.WriteAsync("<a class=\"btn btn-default\" href=\"/refresh\">Refresh tokens</a>");
+                    await res.WriteAsync("<a class=\"btn btn-default\" href=\"/restricted\">Restricted</a>");
+                    await res.WriteAsync("<a class=\"btn btn-default\" href=\"/signout\">Sign Out</a>");
+                    await res.WriteAsync("<a class=\"btn btn-default\" href=\"/signout-remote\">Sign Out Remote</a>");
+
+                    await res.WriteAsync("<h2>Claims:</h2>");
+                    await WriteTableHeader(res, new string[] { "Claim Type", "Value" }, context.User.Claims.Select(c => new string[] { c.Type, c.Value }));
+
+                    await res.WriteAsync("<h2>Tokens:</h2>");
+                    await WriteTableHeader(res, new string[] { "Token Type", "Value" }, props.GetTokens().Select(token => new string[] { token.Name, token.Value }));
                 });
             });
         }
