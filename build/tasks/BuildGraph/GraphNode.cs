@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace BuildGraph
+namespace RepoTools.BuildGraph
 {
     [DebuggerDisplay("{Repository.Name}")]
     public class GraphNode

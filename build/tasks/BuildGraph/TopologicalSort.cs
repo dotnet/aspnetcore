@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BuildGraph
+namespace RepoTools.BuildGraph
 {
     public class TopologicalSort : IComparer<GraphNode>
     {

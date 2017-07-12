@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 
-namespace BuildGraph
+namespace RepoTools.BuildGraph
 {
     [DebuggerDisplay("{Name}")]
     public class Project

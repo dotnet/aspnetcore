@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace BuildGraph
+namespace RepoTools.BuildGraph
 {
     public static class GraphBuilder
     {
@@ -19,7 +19,7 @@ namespace BuildGraph
             foreach (var project in repositories.SelectMany(r => r.AllProjects))
             {
                 var thisProjectRepositoryNode = graphNodes[project.Repository];
-                if (root != null && string.Equals(root, project.Repository.Name, StringComparison.OrdinalIgnoreCase))
+                if (!string.IsNullOrEmpty(root) && string.Equals(root, project.Repository.Name, StringComparison.OrdinalIgnoreCase))
                 {
                     searchRoot = thisProjectRepositoryNode;
                 }

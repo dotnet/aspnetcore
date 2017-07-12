@@ -1,14 +1,13 @@
 <Project>
-  <Import Project="$(_BuildGraphFile)" />
-
-  <Target Name="BuildRepositories">
+  <Target Name="_BuildRepositories">
     <ItemGroup>
       <BatchedRepository Include="$(MSBuildProjectFullPath)">
         <BuildGroup>%(RepositoryToBuildInOrder.Order)</BuildGroup>
         <Repository>%(RepositoryToBuildInOrder.Identity)</Repository>
         <AdditionalProperties>
           RepositoryToBuild=%(RepositoryToBuildInOrder.Identity);
-          BuildRepositoryRoot=$(_CloneRepositoryRoot)%(RepositoryToBuildInOrder.Identity)\
+          BuildRepositoryRoot=%(RepositoryToBuildInOrder.RepositoryPath)\;
+          CommitHash=%(RepositoryToBuildInOrder.Commit)
         </AdditionalProperties>
       </BatchedRepository>
     </ItemGroup>
@@ -17,26 +16,6 @@
       <BatchBuilds Condition="$(BuildInParallel) AND '$(CompileOnly)'=='true'">true</BatchBuilds>
       <BatchBuilds Condition="'$(BatchBuilds)'==''">false</BatchBuilds>
     </PropertyGroup>
-
-    <Message
-      Text="Building repositories in the following batches:"
-      Importance="High"
-      Condition="'$(BatchBuilds)'=='true'" />
-
-    <Message
-      Text="%(BatchedRepository.BuildGroup): @(BatchedRepository -> '%(Repository)', ', ')"
-      Importance="High"
-      Condition="'$(BatchBuilds)'=='true'" />
-
-    <Message
-      Text="Building repositories in the following order:"
-      Importance="High"
-      Condition="'$(BatchBuilds)'!='true'" />
-
-    <Message
-      Text="%(BatchedRepository.Repository)"
-      Importance="High"
-      Condition="'$(BatchBuilds)'!='true'" />
 
     <MSBuild
       Projects="@(BatchedRepository)"
@@ -48,6 +27,9 @@
 
   <Target Name="_BuildRepository" DependsOnTargets="_PinVersions">
     <PropertyGroup>
+      <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration) /p:CommitHash=$(CommitHash)</RepositoryBuildArguments>
+
       <BuildArguments>$(_RepositoryBuildTargets) $(RepositoryBuildArguments)</BuildArguments>
       <RepositoryArtifactsRoot>$(BuildRepositoryRoot)artifacts</RepositoryArtifactsRoot>
       <RepositoryArtifactsBuildDirectory>$(RepositoryArtifactsRoot)\build\</RepositoryArtifactsBuildDirectory>
@@ -83,26 +65,27 @@
 
     <Copy
        SourceFiles="@(RepositoryArtifacts)"
-       DestinationFolder="$(UniverseBuildDir)" />
+       DestinationFolder="$(BuildDir)" />
 
     <Move
        SourceFiles="@(RepositoryMSBuildArtifacts)"
-       DestinationFolder="$(UniverseMSBuildDir)\$(RepositoryToBuild)\%(RecursiveDir)" />
+       DestinationFolder="$(ArtifactsDir)msbuild\$(RepositoryToBuild)\%(RecursiveDir)" />
 
     <Message Text="Publishing the following packages to the volatile feed: @(RepositoryNupkgs -> '%(Filename)%(Extension)', ', ')"
       Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
 
     <Exec
-      Command="$(DotNetPath) $(PackagePublisherPath) -d $(RepositoryArtifactsBuildDirectory) -f $(NuGetPublishVolatileFeed)"
+      Command="$(DotNetPath) $(PackagePublisherNetCoreApp) -d $(RepositoryArtifactsBuildDirectory) -f $(NuGetPublishVolatileFeed)"
       Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
 
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
   </Target>
 
-  <Target Name="_PinVersions">
+  <Target Name="_PinVersions" DependsOnTargets="_FindDotNetPath">
+
     <PropertyGroup>
       <PinToolBinary>$(RepositoryRoot)tools\PinVersions\bin\$(Configuration)\netcoreapp1.1\PinVersions.dll</PinToolBinary>
-      <PinVersionArgs>$(DotNetPath) $(PinToolBinary) --graph-specs-root &quot;$(_RestoreGraphSpecsDirectory) &quot; -s &quot;$(UniverseBuildDir) &quot; &quot;$(BuildRepositoryRoot) &quot;</PinVersionArgs>
+      <PinVersionArgs>$(DotNetPath) $(PinToolBinary) --graph-specs-root &quot;$(_RestoreGraphSpecsDirectory) &quot; -s &quot;$(BuildDir) &quot; &quot;$(BuildRepositoryRoot) &quot;</PinVersionArgs>
       <PinVersionArgs Condition="Exists('$(_DependencyPackagesDirectory)')">$(PinVersionArgs) -s &quot;$(_DependencyPackagesDirectory) &quot;</PinVersionArgs>
     </PropertyGroup>
 
