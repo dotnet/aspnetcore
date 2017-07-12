@@ -45,8 +45,7 @@ namespace OpenIdConnect.AzureAdSample
         {
             services.AddAuthentication(sharedOptions =>
             {
-                sharedOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-                sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                sharedOptions.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                 sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
             })
                 .AddCookie()
