@@ -4,7 +4,7 @@
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <InternalAspNetCoreSdkVersion>2.0.1-*</InternalAspNetCoreSdkVersion>
     <LibUvVersion>1.10.0</LibUvVersion>
-    <JsonNetVersion>9.0.1</JsonNetVersion>
+    <JsonNetVersion>10.0.1</JsonNetVersion>
     <MoqVersion>4.7.49</MoqVersion>
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
