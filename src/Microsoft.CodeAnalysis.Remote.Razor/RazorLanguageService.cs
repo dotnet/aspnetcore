@@ -31,7 +31,7 @@ namespace Microsoft.CodeAnalysis.Remote.Razor
         {
             var projectId = ProjectId.CreateFromSerialized(projectIdBytes, projectDebugName);
 
-            var solution = await GetSolutionAsync().ConfigureAwait(false);
+            var solution = await GetSolutionAsync(cancellationToken).ConfigureAwait(false);
             var project = solution.GetProject(projectId);
 
             var resolver = new DefaultTagHelperResolver(designTime: true);
