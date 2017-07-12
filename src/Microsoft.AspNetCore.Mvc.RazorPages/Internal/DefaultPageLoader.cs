@@ -23,7 +23,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             IViewCompilerProvider viewCompilerProvider,
             IOptions<RazorPagesOptions> pageOptions)
         {
-            _applicationModelProviders = applicationModelProviders.ToArray();
+            _applicationModelProviders = applicationModelProviders
+                .OrderBy(p => p.Order)
+                .ToArray();
             _viewCompilerProvider = viewCompilerProvider;
             _conventions = pageOptions.Value.Conventions
                 .OfType<IPageApplicationModelConvention>()
