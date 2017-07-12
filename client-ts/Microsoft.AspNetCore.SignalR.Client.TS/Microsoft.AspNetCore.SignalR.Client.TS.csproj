@@ -40,17 +40,12 @@
     <PropertyGroup>
       <ModuleVersion>@(ExecOutput)</ModuleVersion>
       <ModuleVersion Condition="'$(VersionSuffix)' != ''">$(ModuleVersion)-$(VersionSuffix)</ModuleVersion>
-      <IsGitRepository Condition="EXISTS('$(MSBuildThisFileDirectory)..\..\.git\HEAD')">true</IsGitRepository>
-      <IsGitRepository Condition="'$(IsGitRepository)'==''">false</IsGitRepository>
     </PropertyGroup>
     <Exec Command="npm version $(ModuleVersion)" WorkingDirectory="$(MSBuildThisFileDirectory).." Condition="'$(VersionSuffix)' != ''" />
     <Exec Command="npm pack" WorkingDirectory="$(MSBuildThisFileDirectory).." />
-    <Exec
-      Command="git checkout HEAD -- $(MSBuildThisFileDirectory)../package.json"
-      Condition="$(IsGitRepository) AND '$(VersionSuffix)' != ''" />
-    <Exec
-      Command="git checkout HEAD -- $(MSBuildThisFileDirectory)../package-lock.json"
-      Condition="$(IsGitRepository) AND '$(VersionSuffix)' != ''" />
+    <Exec Command="git checkout HEAD -- $(MSBuildThisFileDirectory)../package.json" Condition="'$(VersionSuffix)' != ''" />
+    <Exec Command="git checkout HEAD -- $(MSBuildThisFileDirectory)../package-lock.json" Condition="'$(VersionSuffix)' != ''" />
+
     <ItemGroup>
       <TSClient Include="$(MSBuildThisFileDirectory)../signalr-client*.tgz" />
     </ItemGroup>
