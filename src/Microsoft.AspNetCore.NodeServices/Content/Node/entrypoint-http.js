@@ -149,7 +149,7 @@
 	var path = __webpack_require__(3);
 	var startsWith = function (str, prefix) { return str.substring(0, prefix.length) === prefix; };
 	var appRootDir = process.cwd();
-	function patchedLStat(pathToStatLong) {
+	function patchedLStat(pathToStatLong, fsReqWrap) {
 	    try {
 	        // If the lstat completes without errors, we don't modify its behavior at all
 	        return origLStat.apply(this, arguments);
@@ -165,7 +165,7 @@
 	            // ancestor directories are symlinks or not. If there's a genuine file
 	            // permissions issue, it will still surface later when Node actually
 	            // tries to read the file.
-	            return origLStat.call(this, appRootDir);
+	            return origLStat.call(this, appRootDir, fsReqWrap);
 	        }
 	        else {
 	            // In any other case, preserve the original error
