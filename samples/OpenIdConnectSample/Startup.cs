@@ -147,7 +147,7 @@ namespace OpenIdConnectSample
                 // Authenticated, but not authorized
                 if (context.Request.Path.Equals("/restricted") && !user.Identities.Any(identity => identity.HasClaim("special", "true")))
                 {
-                    await context.ChallengeAsync();
+                    await context.ForbidAsync();
                     return;
                 }
 
