@@ -81,7 +81,7 @@
   <Target Name="_CloneRepository">
     <PropertyGroup>
       <ShallowClone Condition="'$(ShallowClone)'=='' OR '$(CloneRepositoryCommit)'!=''">false</ShallowClone>
-      <_CloneArguments>git clone --quiet $(CloneUrl)</_CloneArguments>
+      <_CloneArguments>git clone --quiet $(CloneUrl) $(CloneRepository)</_CloneArguments>
       <_CloneArguments Condition="'$(ShallowClone)'=='true'">$(_CloneArguments) --depth 1</_CloneArguments>
     </PropertyGroup>
 
