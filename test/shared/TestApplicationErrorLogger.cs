@@ -19,6 +19,8 @@ namespace Microsoft.AspNetCore.Testing
 
         public ConcurrentBag<LogMessage> Messages { get; } = new ConcurrentBag<LogMessage>();
 
+        public ConcurrentBag<object> Scopes { get; } = new ConcurrentBag<object>();
+
         public int TotalErrorsLogged => Messages.Count(message => message.LogLevel == LogLevel.Error);
 
         public int CriticalErrorsLogged => Messages.Count(message => message.LogLevel == LogLevel.Critical);
@@ -27,6 +29,7 @@ namespace Microsoft.AspNetCore.Testing
 
         public IDisposable BeginScope<TState>(TState state)
         {
+            Scopes.Add(state);
             return new Disposable(() => { });
         }
 

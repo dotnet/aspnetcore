@@ -13,8 +13,12 @@ namespace Microsoft.AspNetCore.Testing
     public class TestServiceContext : ServiceContext
     {
         public TestServiceContext()
-            : this(new LoggerFactory(new[] { new KestrelTestLoggerProvider() }))
         {
+            var logger = new TestApplicationErrorLogger();
+            var kestrelTrace = new TestKestrelTrace(logger);
+            var loggerFactory = new LoggerFactory(new[] { new KestrelTestLoggerProvider(logger) });
+
+            Initialize(loggerFactory, kestrelTrace);
         }
 
         public TestServiceContext(ILoggerFactory loggerFactory)
@@ -23,6 +27,11 @@ namespace Microsoft.AspNetCore.Testing
         }
 
         public TestServiceContext(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace)
+        {
+            Initialize(loggerFactory, kestrelTrace);
+        }
+
+        private void Initialize(ILoggerFactory loggerFactory, IKestrelTrace kestrelTrace)
         {
             LoggerFactory = loggerFactory;
             Log = kestrelTrace;
@@ -37,7 +46,7 @@ namespace Microsoft.AspNetCore.Testing
             };
         }
 
-        public ILoggerFactory LoggerFactory { get; }
+        public ILoggerFactory LoggerFactory { get; set; }
 
         public string DateHeaderValue => DateHeaderValueManager.GetDateHeaderValues().String;
     }

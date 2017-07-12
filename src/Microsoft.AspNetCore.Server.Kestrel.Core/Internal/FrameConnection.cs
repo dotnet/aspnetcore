@@ -2,8 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
@@ -79,72 +81,75 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public void StartRequestProcessing<TContext>(IHttpApplication<TContext> application)
         {
-            _lifetimeTask = ProcessRequestsAsync<TContext>(application);
+            _lifetimeTask = ProcessRequestsAsync(application);
         }
 
         private async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
         {
-            try
+            using (BeginConnectionScope())
             {
-                Log.ConnectionStart(ConnectionId);
-                KestrelEventSource.Log.ConnectionStart(this, _context.ConnectionInformation);
-
-                AdaptedPipeline adaptedPipeline = null;
-                var adaptedPipelineTask = Task.CompletedTask;
-                var input = _context.Input.Reader;
-                var output = _context.Output;
-
-                if (_context.ConnectionAdapters.Count > 0)
+                try
                 {
-                    adaptedPipeline = new AdaptedPipeline(input,
-                                                          output,
-                                                          PipeFactory.Create(AdaptedInputPipeOptions),
-                                                          PipeFactory.Create(AdaptedOutputPipeOptions),
-                                                          Log);
+                    Log.ConnectionStart(ConnectionId);
+                    KestrelEventSource.Log.ConnectionStart(this, _context.ConnectionInformation);
 
-                    input = adaptedPipeline.Input.Reader;
-                    output = adaptedPipeline.Output;
+                    AdaptedPipeline adaptedPipeline = null;
+                    var adaptedPipelineTask = Task.CompletedTask;
+                    var input = _context.Input.Reader;
+                    var output = _context.Output;
+
+                    if (_context.ConnectionAdapters.Count > 0)
+                    {
+                        adaptedPipeline = new AdaptedPipeline(input,
+                                                              output,
+                                                              PipeFactory.Create(AdaptedInputPipeOptions),
+                                                              PipeFactory.Create(AdaptedOutputPipeOptions),
+                                                              Log);
+
+                        input = adaptedPipeline.Input.Reader;
+                        output = adaptedPipeline.Output;
+                    }
+
+                    // _frame must be initialized before adding the connection to the connection manager
+                    CreateFrame(application, input, output);
+
+                    // Do this before the first await so we don't yield control to the transport until we've
+                    // added the connection to the connection manager
+                    _context.ServiceContext.ConnectionManager.AddConnection(_context.FrameConnectionId, this);
+                    _lastTimestamp = _context.ServiceContext.SystemClock.UtcNow.Ticks;
+
+                    if (adaptedPipeline != null)
+                    {
+                        // Stream can be null here and run async will close the connection in that case
+                        var stream = await ApplyConnectionAdaptersAsync();
+                        adaptedPipelineTask = adaptedPipeline.RunAsync(stream);
+                    }
+
+                    await _frame.ProcessRequestsAsync();
+                    await adaptedPipelineTask;
+                    await _socketClosedTcs.Task;
                 }
-
-                // _frame must be initialized before adding the connection to the connection manager
-                CreateFrame(application, input, output);
-
-                // Do this before the first await so we don't yield control to the transport until we've
-                // added the connection to the connection manager
-                _context.ServiceContext.ConnectionManager.AddConnection(_context.FrameConnectionId, this);
-                _lastTimestamp = _context.ServiceContext.SystemClock.UtcNow.Ticks;
-
-                if (adaptedPipeline != null)
+                catch (Exception ex)
                 {
-                    // Stream can be null here and run async will close the connection in that case
-                    var stream = await ApplyConnectionAdaptersAsync();
-                    adaptedPipelineTask = adaptedPipeline.RunAsync(stream);
+                    Log.LogError(0, ex, $"Unexpected exception in {nameof(FrameConnection)}.{nameof(ProcessRequestsAsync)}.");
                 }
-
-                await _frame.ProcessRequestsAsync();
-                await adaptedPipelineTask;
-                await _socketClosedTcs.Task;
-            }
-            catch (Exception ex)
-            {
-                Log.LogError(0, ex, $"Unexpected exception in {nameof(FrameConnection)}.{nameof(ProcessRequestsAsync)}.");
-            }
-            finally
-            {
-                _context.ServiceContext.ConnectionManager.RemoveConnection(_context.FrameConnectionId);
-                DisposeAdaptedConnections();
-
-                if (_frame.WasUpgraded)
+                finally
                 {
-                    _context.ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
-                }
-                else
-                {
-                    _context.ServiceContext.ConnectionManager.NormalConnectionCount.ReleaseOne();
-                }
+                    _context.ServiceContext.ConnectionManager.RemoveConnection(_context.FrameConnectionId);
+                    DisposeAdaptedConnections();
 
-                Log.ConnectionStop(ConnectionId);
-                KestrelEventSource.Log.ConnectionStop(this);
+                    if (_frame.WasUpgraded)
+                    {
+                        _context.ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
+                    }
+                    else
+                    {
+                        _context.ServiceContext.ConnectionManager.NormalConnectionCount.ReleaseOne();
+                    }
+
+                    Log.ConnectionStop(ConnectionId);
+                    KestrelEventSource.Log.ConnectionStop(this);
+                }
             }
         }
 
@@ -453,6 +458,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 _writeTimingWrites--;
             }
+        }
+
+        private IDisposable BeginConnectionScope()
+        {
+            if (Log.IsEnabled(LogLevel.Critical))
+            {
+                return Log.BeginScope(new ConnectionLogScope(ConnectionId));
+            }
+
+            return null;
         }
     }
 }
