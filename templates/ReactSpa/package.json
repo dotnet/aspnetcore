@@ -8,7 +8,7 @@
     "@types/react-dom": "15.5.1",
     "@types/react-router": "4.0.12",
     "@types/webpack-env": "1.13.0",
-    "aspnet-webpack": "^2.0.0",
+    "aspnet-webpack": "^2.0.1",
     "aspnet-webpack-react": "^3.0.0",
     "awesome-typescript-loader": "3.2.1",
     "bootstrap": "3.3.7",

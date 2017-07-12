@@ -12,7 +12,7 @@
     "@types/react-router": "^2.0.37",
     "@types/requirejs": "^2.1.26",
     "@types/signals": "0.0.16",
-    "aspnet-webpack": "^2.0.0",
+    "aspnet-webpack": "^2.0.1",
     "awesome-typescript-loader": "^3.0.0",
     "bootstrap": "^3.3.6",
     "bundle-loader": "^0.5.4",

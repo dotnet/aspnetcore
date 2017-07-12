@@ -175,9 +175,9 @@
       "resolved": "https://registry.npmjs.org/aspnet-prerendering/-/aspnet-prerendering-3.0.1.tgz"
     },
     "aspnet-webpack": {
-      "version": "2.0.0",
-      "from": "aspnet-webpack@2.0.0",
-      "resolved": "https://registry.npmjs.org/aspnet-webpack/-/aspnet-webpack-2.0.0.tgz"
+      "version": "2.0.1",
+      "from": "aspnet-webpack@2.0.1",
+      "resolved": "https://registry.npmjs.org/aspnet-webpack/-/aspnet-webpack-2.0.1.tgz"
     },
     "aspnet-webpack-react": {
       "version": "3.0.0",
