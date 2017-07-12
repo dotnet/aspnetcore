@@ -2,7 +2,7 @@ import * as path from 'path';
 const startsWith = (str: string, prefix: string) => str.substring(0, prefix.length) === prefix;
 const appRootDir = process.cwd();
 
-function patchedLStat(pathToStatLong: string) {
+function patchedLStat(pathToStatLong: string, fsReqWrap?: any) {
     try {
         // If the lstat completes without errors, we don't modify its behavior at all
         return origLStat.apply(this, arguments);
@@ -19,7 +19,7 @@ function patchedLStat(pathToStatLong: string) {
             // ancestor directories are symlinks or not. If there's a genuine file
             // permissions issue, it will still surface later when Node actually
             // tries to read the file.
-            return origLStat.call(this, appRootDir);
+            return origLStat.call(this, appRootDir, fsReqWrap);
         } else {
             // In any other case, preserve the original error
             throw ex;
