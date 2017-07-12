@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Internal
 {
-    public static class SocketLoggerExtensions
+    internal static class SocketHttpLoggerExtensions
     {
         // Category: LongPollingTransport
         private static readonly Action<ILogger, DateTime, string, string, Exception> _longPolling204 =

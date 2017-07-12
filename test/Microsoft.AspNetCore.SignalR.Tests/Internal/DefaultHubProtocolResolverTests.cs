@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests
             Assert.Equal($"The protocol '{protocolName ?? "(null)"}' is not supported.", exception.Message);
         }
 
-        public static IEnumerable<object[]> HubProtocols() =>
+        public static IEnumerable<object[]> HubProtocols =>
             new[]
             {
                 new object[] { new JsonHubProtocol(new JsonSerializer()) },

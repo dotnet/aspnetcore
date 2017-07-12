@@ -9,6 +9,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Sockets.Client
@@ -18,9 +19,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private static readonly string DefaultUserAgent = "Microsoft.AspNetCore.SignalR.Client/0.0.0";
         public static readonly ProductInfoHeaderValue DefaultUserAgentHeader = ProductInfoHeaderValue.Parse(DefaultUserAgent);
 
-        public static async Task SendMessages(Uri sendUrl, Channel<byte[], SendMessage> application, HttpClient httpClient, CancellationTokenSource transportCts, ILogger logger)
+        public static async Task SendMessages(Uri sendUrl, Channel<byte[], SendMessage> application, HttpClient httpClient,
+            CancellationTokenSource transportCts, ILogger logger, string connectionId)
         {
-            logger.LogInformation("Starting the send loop");
+            logger.SendStarted(connectionId);
             IList<SendMessage> messages = null;
             try
             {
@@ -35,7 +37,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                     if (messages.Count > 0)
                     {
-                        logger.LogDebug("Sending {0} message(s) to the server using url: {1}", messages.Count, sendUrl);
+                        logger.SendingMessages(connectionId, messages.Count, sendUrl);
 
                         // Send them in a single post
                         var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
@@ -61,7 +63,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         var response = await httpClient.SendAsync(request);
                         response.EnsureSuccessStatusCode();
 
-                        logger.LogDebug("Message(s) sent successfully");
+                        logger.SentSuccessfully(connectionId);
                         foreach (var message in messages)
                         {
                             message.SendResult?.TrySetResult(null);
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     }
                     else
                     {
-                        logger.LogDebug("No messages in batch to send");
+                        logger.NoMessages(connectionId);
                     }
                 }
             }
@@ -84,10 +86,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         message.SendResult?.TrySetCanceled();
                     }
                 }
+                logger.SendCanceled(connectionId);
             }
             catch (Exception ex)
             {
-                logger.LogError("Error while sending to '{0}': {1}", sendUrl, ex);
+                logger.ErrorSending(connectionId, sendUrl, ex);
                 if (messages != null)
                 {
                     foreach (var message in messages)
@@ -104,7 +107,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 transportCts.Cancel();
             }
 
-            logger.LogInformation("Send loop stopped");
+            logger.SendStopped(connectionId);
         }
     }
 }

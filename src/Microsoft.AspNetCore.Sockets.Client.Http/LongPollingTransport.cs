@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private Channel<byte[], SendMessage> _application;
         private Task _sender;
         private Task _poller;
+        private string _connectionId;
 
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
 
@@ -34,20 +36,20 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application)
+        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application, string connectionId)
         {
-            _logger.LogInformation("Starting {0}", nameof(LongPollingTransport));
+            _connectionId = connectionId;
+            _logger.StartTransport(_connectionId);
 
             _application = application;
 
             // Start sending and polling (ask for binary if the server supports it)
             _poller = Poll(url, _transportCts.Token);
-            _sender = SendUtils.SendMessages(url, _application, _httpClient, _transportCts, _logger);
+            _sender = SendUtils.SendMessages(url, _application, _httpClient, _transportCts, _logger, _connectionId);
 
             Running = Task.WhenAll(_sender, _poller).ContinueWith(t =>
             {
-                _logger.LogDebug("Transport stopped. Exception: '{0}'", t.Exception?.InnerException);
-
+                _logger.TransportStopped(_connectionId, t.Exception?.InnerException);
                 _application.Out.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                 return t;
             }).Unwrap();
@@ -57,7 +59,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public async Task StopAsync()
         {
-            _logger.LogInformation("Transport {0} is stopping", nameof(LongPollingTransport));
+            _logger.TransportStopping(_connectionId);
 
             _transportCts.Cancel();
 
@@ -69,13 +71,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
             {
                 // exceptions have been handled in the Running task continuation by closing the channel with the exception
             }
-
-            _logger.LogInformation("Transport {0} stopped", nameof(LongPollingTransport));
         }
 
         private async Task Poll(Uri pollUrl, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Starting the receive loop");
+            _logger.StartReceive(_connectionId);
             try
             {
                 while (!cancellationToken.IsCancellationRequested)
@@ -88,14 +88,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                     if (response.StatusCode == HttpStatusCode.NoContent || cancellationToken.IsCancellationRequested)
                     {
-                        _logger.LogDebug("The server is closing the connection");
+                        _logger.ClosingConnection(_connectionId);
 
                         // Transport closed or polling stopped, we're done
                         break;
                     }
                     else
                     {
-                        _logger.LogDebug("Received messages from the server");
+                        _logger.ReceivedMessages(_connectionId);
 
                         // Until Pipeline starts natively supporting BytesReader, this is the easiest way to do this.
                         var payload = await response.Content.ReadAsByteArrayAsync();
@@ -115,17 +115,18 @@ namespace Microsoft.AspNetCore.Sockets.Client
             catch (OperationCanceledException)
             {
                 // transport is being closed
+                _logger.ReceiveCanceled(_connectionId);
             }
             catch (Exception ex)
             {
-                _logger.LogError("Error while polling '{0}': {1}", pollUrl, ex);
+                _logger.ErrorPolling(_connectionId, pollUrl, ex);
                 throw;
             }
             finally
             {
                 // Make sure the send loop is terminated
                 _transportCts.Cancel();
-                _logger.LogInformation("Receive loop stopped");
+                _logger.ReceiveStopped(_connectionId);
             }
         }
     }

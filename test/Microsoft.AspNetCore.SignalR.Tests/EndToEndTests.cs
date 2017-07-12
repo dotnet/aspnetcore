@@ -129,6 +129,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                     await closeTcs.Task.OrTimeout();
                 }
+                catch (Exception ex)
+                {
+                    logger.LogInformation(ex, "Test threw exception");
+                    throw;
+                }
                 finally
                 {
                     logger.LogInformation("Disposing Connection");
@@ -181,6 +186,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     var receivedData = await receiveTcs.Task.OrTimeout();
                     Assert.Equal(message, Encoding.UTF8.GetString(receivedData));
                     logger.LogInformation("Completed receive");
+                }
+                catch (Exception ex)
+                {
+                    logger.LogInformation(ex, "Test threw exception");
+                    throw;
                 }
                 finally
                 {
@@ -239,6 +249,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     await connection.StartAsync().OrTimeout();
 
                     await closeTcs.Task.OrTimeout();
+                }
+                catch (Exception ex)
+                {
+                    logger.LogInformation(ex, "Test threw exception");
+                    throw;
                 }
                 finally
                 {

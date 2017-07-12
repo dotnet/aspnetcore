@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
                 var webSocketsTransport = new WebSocketsTransport(loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection).OrTimeout();
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection, connectionId: string.Empty).OrTimeout();
                 await webSocketsTransport.StopAsync().OrTimeout();
                 await webSocketsTransport.Running.OrTimeout();
             }
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
                 var webSocketsTransport = new WebSocketsTransport(loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection);
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection, connectionId: string.Empty);
                 connectionToTransport.Out.TryComplete();
                 await webSocketsTransport.Running.OrTimeout();
             }
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
 
                 var webSocketsTransport = new WebSocketsTransport(loggerFactory);
-                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection);
+                await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection, connectionId: string.Empty);
 
                 var sendTcs = new TaskCompletionSource<object>();
                 connectionToTransport.Out.TryWrite(new SendMessage(new byte[] { 0x42 }, sendTcs));

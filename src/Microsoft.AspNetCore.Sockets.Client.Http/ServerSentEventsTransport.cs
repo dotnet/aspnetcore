@@ -8,6 +8,7 @@ using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private readonly ILogger _logger;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
         private readonly ServerSentEventsMessageParser _parser = new ServerSentEventsMessageParser();
+        private string _connectionId;
 
         private Channel<byte[], SendMessage> _application;
 
@@ -40,20 +42,18 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<ServerSentEventsTransport>();
         }
 
-        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application)
+        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application, string connectionId)
         {
-            _logger.LogInformation("Starting {transportName}", nameof(ServerSentEventsTransport));
+            _connectionId = connectionId;
+            _logger.StartTransport(_connectionId);
 
             _application = application;
-            var sendTask = SendUtils.SendMessages(url, _application, _httpClient, _transportCts, _logger);
+            var sendTask = SendUtils.SendMessages(url, _application, _httpClient, _transportCts, _logger, _connectionId);
             var receiveTask = OpenConnection(_application, url, _transportCts.Token);
 
             Running = Task.WhenAll(sendTask, receiveTask).ContinueWith(t =>
             {
-                if (t.Exception != null)
-                {
-                    _logger.LogError(0, t.Exception.InnerException, "Transport stopped");
-                }
+                _logger.TransportStopped(_connectionId, t.Exception?.InnerException);
 
                 _application.Out.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                 return t;
@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         private async Task OpenConnection(Channel<byte[], SendMessage> application, Uri url, CancellationToken cancellationToken)
         {
-            _logger.LogInformation("Starting receive loop");
+            _logger.StartReceive(_connectionId);
 
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("text/event-stream"));
@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     var input = result.Buffer;
                     if (result.IsCancelled || (input.IsEmpty && result.IsCompleted))
                     {
-                        _logger.LogDebug("Server-Sent Event Stream ended");
+                        _logger.EventStreamEnded(_connectionId);
                         break;
                     }
 
@@ -118,12 +118,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 readCancellationRegistration.Dispose();
                 _transportCts.Cancel();
                 stream.Dispose();
+                _logger.ReceiveStopped(_connectionId);
             }
         }
 
         public async Task StopAsync()
         {
-            _logger.LogInformation("Transport {transportName} is stopping", nameof(ServerSentEventsTransport));
+            _logger.TransportStopping(_connectionId);
             _transportCts.Cancel();
             _application.Out.TryComplete();
             await Running;
