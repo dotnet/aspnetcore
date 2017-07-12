@@ -129,5 +129,7 @@ Save-TeamCityBackup $ciServer $backupName $ciUsername $ciPassword "$PSScriptRoot
 
 $backupName = $backupName.Replace('/', '_')
 
-$arguments = "$azureAccount $azureKey $azureShare $backupName $backupName" 
+$localFile = "$PSScriptRoot/$backupName"
+
+$arguments = "$azureAccount $azureKey $azureShare $localFile $backupName"
 Invoke-Expression "$PSScriptRoot/../../azure/upload-to-file-storage.ps1 $arguments"
