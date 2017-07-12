@@ -183,11 +183,12 @@
     <PropertyGroup>
       <!--
         Attempt to read environment variables set up by the CI's VCS Root if available.
-        * vcsroot.<RepositoryName>.url gives us the clone URL for a repository
-        * build.vcs.number.<RepositoryName> gives us the commit hash for a repository.
+        * BUILD_VCS_URL_<RepositoryName> gives us the clone URL for a repository
+        * BUILD_VCS_NUMBER_<RepositoryName> gives us the commit hash for a repository.
       -->
-      <_CloneUrl>$([System.Environment]::GetEnvironmentVariable("vcsroot.%(Repository.Identity).url"))</_CloneUrl>
-      <_CommitHash>$([System.Environment]::GetEnvironmentVariable("build.vcs.number.%(Repository.Identity)"))</_CommitHash>
+      <_RepositoryName>$([System.String]::new('%(Repository.Identity)').Replace('.', '_'))</_RepositoryName>
+      <_CloneUrl>$([System.Environment]::GetEnvironmentVariable("BUILD_VCS_URL_$(_RepositoryName)"))</_CloneUrl>
+      <_CommitHash>$([System.Environment]::GetEnvironmentVariable("BUILD_VCS_NUMBER_$(_RepositoryName)"))</_CommitHash>
     </PropertyGroup>
 
     <Warning Text="%(Repository.Identity) has not been cloned."
