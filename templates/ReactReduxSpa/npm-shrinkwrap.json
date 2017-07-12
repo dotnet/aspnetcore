@@ -22,6 +22,11 @@
       "from": "@types/react-dom@15.5.1",
       "resolved": "https://registry.npmjs.org/@types/react-dom/-/react-dom-15.5.1.tgz"
     },
+    "@types/react-hot-loader": {
+      "version": "3.0.3",
+      "from": "@types/react-hot-loader@3.0.3",
+      "resolved": "https://registry.npmjs.org/@types/react-hot-loader/-/react-hot-loader-3.0.3.tgz"
+    },
     "@types/react-redux": {
       "version": "4.4.45",
       "from": "@types/react-redux@4.4.45",

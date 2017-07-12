@@ -50,16 +50,16 @@
       "resolved": "https://registry.npmjs.org/@types/react-router/-/react-router-2.0.50.tgz",
       "dev": true
     },
-    "@types/requirejs": {
-      "version": "2.1.29",
-      "from": "@types/requirejs@>=2.1.26 <3.0.0",
-      "resolved": "https://registry.npmjs.org/@types/requirejs/-/requirejs-2.1.29.tgz",
-      "dev": true
-    },
     "@types/signals": {
       "version": "0.0.16",
       "from": "@types/signals@0.0.16",
       "resolved": "https://registry.npmjs.org/@types/signals/-/signals-0.0.16.tgz",
+      "dev": true
+    },
+    "@types/webpack-env": {
+      "version": "1.13.0",
+      "from": "@types/webpack-env@>=1.13.0 <2.0.0",
+      "resolved": "https://registry.npmjs.org/@types/webpack-env/-/webpack-env-1.13.0.tgz",
       "dev": true
     },
     "acorn": {

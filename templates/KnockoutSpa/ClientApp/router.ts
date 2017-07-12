@@ -22,7 +22,7 @@ export class Router {
         crossroads.resetState();
         crossroads.normalizeFn = crossroads.NORM_AS_OBJECT;
         routes.forEach(route => {
-            crossroads.addRoute(route.url, (requestParams) => {
+            crossroads.addRoute(route.url, (requestParams: any) => {
                 this.currentRoute(ko.utils.extend(requestParams, route.params));
             });
         });

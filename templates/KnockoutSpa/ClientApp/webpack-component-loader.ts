@@ -8,18 +8,18 @@ ko.components.loaders.unshift({
     loadComponent: (name, componentConfig, callback) => {
         if (typeof componentConfig === 'function') {
             // It's a lazy-loaded Webpack bundle
-            (componentConfig as any)(loadedModule => {
+            (componentConfig as any)((loadedModule: any) => {
                 // Handle TypeScript-style default exports
                 if (loadedModule.__esModule && loadedModule.default) {
                     loadedModule = loadedModule.default;
                 }
 
                 // Pass the loaded module to KO's default loader
-                ko.components.defaultLoader.loadComponent(name, loadedModule, callback);
+                ko.components.defaultLoader.loadComponent!(name, loadedModule as KnockoutComponentTypes.ComponentConfig, callback);
             });
         } else {
             // It's something else - let another component loader handle it
-            callback(null);
+            callback((null as any) as KnockoutComponentTypes.Definition); // workaround until https://github.com/DefinitelyTyped/DefinitelyTyped/pull/17999
         }
     }
 });

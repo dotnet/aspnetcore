@@ -7,7 +7,7 @@
     "emitDecoratorMetadata": true,
     "skipDefaultLibCheck": true,
     "lib": [ "es2015", "dom" ],
-    "types": [ "node" ]
+    "types": [ "webpack-env" ]
   },
   "exclude": [ "bin", "node_modules" ],
   "atom": { "rewriteTsconfig": false }

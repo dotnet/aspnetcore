@@ -2,10 +2,10 @@
   "name": "WebApplicationBasic",
   "version": "0.0.0",
   "dependencies": {
-    "@types/node": {
-      "version": "7.0.32",
-      "from": "@types/node@>=7.0.12 <8.0.0",
-      "resolved": "https://registry.npmjs.org/@types/node/-/node-7.0.32.tgz",
+    "@types/webpack-env": {
+      "version": "1.13.0",
+      "from": "@types/webpack-env@>=1.13.0 <2.0.0",
+      "resolved": "https://registry.npmjs.org/@types/webpack-env/-/webpack-env-1.13.0.tgz",
       "dev": true
     },
     "acorn": {

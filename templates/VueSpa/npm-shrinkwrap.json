@@ -2,10 +2,10 @@
   "name": "WebApplicationBasic",
   "version": "0.0.0",
   "dependencies": {
-    "@types/requirejs": {
-      "version": "2.1.29",
-      "from": "@types/requirejs@>=2.1.28 <3.0.0",
-      "resolved": "https://registry.npmjs.org/@types/requirejs/-/requirejs-2.1.29.tgz",
+    "@types/webpack-env": {
+      "version": "1.13.0",
+      "from": "@types/webpack-env@>=1.13.0 <2.0.0",
+      "resolved": "https://registry.npmjs.org/@types/webpack-env/-/webpack-env-1.13.0.tgz",
       "dev": true
     },
     "abbrev": {
