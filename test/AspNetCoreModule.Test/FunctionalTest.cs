@@ -39,15 +39,21 @@ namespace AspNetCoreModule.Test
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
-        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 25, 19)]
-        [InlineData(IISConfigUtility.AppPoolBitness.noChange, 25, 19)]
-        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 5, 4)]
-        [InlineData(IISConfigUtility.AppPoolBitness.noChange, 5, 4)]
-        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 0, 0)]
-        [InlineData(IISConfigUtility.AppPoolBitness.noChange, 0, 0)]
-        public Task ShutdownTimeLimitTest(IISConfigUtility.AppPoolBitness appPoolBitness, int valueOfshutdownTimeLimit, int expectedClosingTime)
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 25, 19, false)]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 25, 19, true)]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, 25, 19, false)]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, 25, 19, true)]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 5, 4, true)]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 5, 4, false)]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, 5, 4, true)]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, 5, 4, false)]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 0, 0, false)]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 0, 0, true)]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, 0, 0, false)]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, 0, 0, true)]
+        public Task ShutdownTimeLimitTest(IISConfigUtility.AppPoolBitness appPoolBitness, int valueOfshutdownTimeLimit, int expectedClosingTime, bool isGraceFullShutdownEnabled)
         {
-            return DoShutdownTimeLimitTest(appPoolBitness, valueOfshutdownTimeLimit, expectedClosingTime);
+            return DoShutdownTimeLimitTest(appPoolBitness, valueOfshutdownTimeLimit, expectedClosingTime, isGraceFullShutdownEnabled);
         }
         
         [ConditionalTheory]
@@ -274,7 +280,22 @@ namespace AspNetCoreModule.Test
         {
             return DoSendHTTPSRequestTest(appPoolBitness);
         }
-        
+
+        [ConditionalTheory]
+        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [OSSkipCondition(OperatingSystems.Linux)]
+        [OSSkipCondition(OperatingSystems.MacOSX)]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "MS-ASPNETCORE", "f")]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, "mS-ASPNETCORE", "fo")]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "MS-ASPNETCORE-", "foo")]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, "mS-ASPNETCORE-f", "fooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo")]
+        [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "MS-ASPNETCORE-foo", "foo")]
+        [InlineData(IISConfigUtility.AppPoolBitness.noChange, "MS-ASPNETCORE-foooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo", "bar")]
+        public Task FilterOutMSRequestHeadersTest(IISConfigUtility.AppPoolBitness appPoolBitness, string requestHeader, string requestHeaderValue)
+        {
+            return DoFilterOutMSRequestHeadersTest(appPoolBitness, requestHeader, requestHeaderValue);
+        }
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]

@@ -711,37 +711,54 @@ namespace AspNetCoreModule.Test
             }
         }
 
-        public static async Task DoShutdownTimeLimitTest(IISConfigUtility.AppPoolBitness appPoolBitness, int valueOfshutdownTimeLimit, int expectedClosingTime)
+        public static async Task DoShutdownTimeLimitTest(IISConfigUtility.AppPoolBitness appPoolBitness, int valueOfshutdownTimeLimit, int expectedClosingTime, bool isGraceFullShutdownEnabled)
         {
             using (var testSite = new TestWebSite(appPoolBitness, "DoShutdownTimeLimitTest"))
             {
                 using (var iisConfig = new IISConfigUtility(testSite.IisServerType, testSite.IisExpressConfigPath))
                 {
-                    // Set new value (10 second) to make the backend process get the Ctrl-C signal and measure when the recycle happens
-                    iisConfig.SetANCMConfig(testSite.SiteName, testSite.AspNetCoreApp.Name, "shutdownTimeLimit", valueOfshutdownTimeLimit);
-                    iisConfig.SetANCMConfig(
-                        testSite.SiteName, 
-                        testSite.AspNetCoreApp.Name, 
-                        "environmentVariable", 
-                        new string[] { "ANCMTestShutdownDelay", "20000" }
-                        );
+                    DateTime startTime = DateTime.Now;
 
-                    await VerifyResponseBody(testSite.AspNetCoreApp.GetUri(), "Running", HttpStatusCode.OK);
+                    // Make shutdownDelay time with hard coded value such as 20 seconds and test vairious shutdonwTimeLimit, either less than 20 seconds or bigger then 20 seconds
+                    int shutdownDelayTime = 20000;
+                    iisConfig.SetANCMConfig(testSite.SiteName, testSite.AspNetCoreApp.Name, "shutdownTimeLimit", valueOfshutdownTimeLimit);
+                    iisConfig.SetANCMConfig(testSite.SiteName, testSite.AspNetCoreApp.Name, "environmentVariable", new string[] { "ANCMTestShutdownDelay", shutdownDelayTime.ToString() });
+                    string expectedGracefulShutdownResponseStatusCode = "202";
+                    if (!isGraceFullShutdownEnabled)
+                    {
+                        iisConfig.SetANCMConfig(testSite.SiteName, testSite.AspNetCoreApp.Name, "environmentVariable", new string[] { "GracefulShutdown", "disabled" });
+                        expectedGracefulShutdownResponseStatusCode = "200";
+                    }
+
+                    string response = await GetResponse(testSite.AspNetCoreApp.GetUri(""), HttpStatusCode.OK);
+                    Assert.True(response == "Running");
+                    
                     string backendProcessId = await GetResponse(testSite.AspNetCoreApp.GetUri("GetProcessId"), HttpStatusCode.OK);
                     var backendProcess = Process.GetProcessById(Convert.ToInt32(backendProcessId));
 
-                    // Set a new value such as 100 to make the backend process being recycled
-                    DateTime startTime = DateTime.Now;
+                    // Set a new configuration value to make the backend process being recycled
+                    DateTime startTime2 = DateTime.Now;
                     iisConfig.SetANCMConfig(testSite.SiteName, testSite.AspNetCoreApp.Name, "shutdownTimeLimit", 100);
                     backendProcess.WaitForExit(30000);
                     DateTime endTime = DateTime.Now;
-                    var difference = endTime - startTime;
+                    var difference = endTime - startTime2;
                     Assert.True(difference.Seconds >= expectedClosingTime);
                     Assert.True(difference.Seconds < expectedClosingTime + 3);
-                    Assert.True(backendProcessId != await GetResponse(testSite.AspNetCoreApp.GetUri("GetProcessId"), HttpStatusCode.OK));
+                    string newBackendProcessId = await GetResponse(testSite.AspNetCoreApp.GetUri("GetProcessId"), HttpStatusCode.OK);
+                    Assert.True(backendProcessId != newBackendProcessId);
                     await VerifyResponseBody(testSite.AspNetCoreApp.GetUri(), "Running", HttpStatusCode.OK);
-                }
 
+                    // if expectedClosing time is less than the shutdownDelay time, gracefulshutdown is supposed to fail and failure event is expected
+                    if (expectedClosingTime*1000 + 1000 == shutdownDelayTime)
+                    {
+                        Assert.True(TestUtility.RetryHelper((arg1, arg2) => VerifyANCMGracefulShutdownEvent(arg1, arg2), startTime, backendProcessId));
+                        Assert.True(TestUtility.RetryHelper((arg1, arg2) => VerifyANCMGracefulShutdownEvent(arg1, arg2), startTime, expectedGracefulShutdownResponseStatusCode));
+                    }
+                    else
+                    {
+                        Assert.True(TestUtility.RetryHelper((arg1, arg2) => VerifyANCMGracefulShutdownFailureEvent(arg1, arg2), startTime, backendProcessId));
+                    }
+                }
                 testSite.AspNetCoreApp.RestoreFile("web.config");
             }
         }
@@ -1180,6 +1197,58 @@ namespace AspNetCoreModule.Test
             }
         }
 
+        public static async Task DoFilterOutMSRequestHeadersTest(IISConfigUtility.AppPoolBitness appPoolBitness, string requestHeader, string requestHeaderValue)
+        {
+            using (var testSite = new TestWebSite(appPoolBitness, "DoSendHTTPSRequestTest", startIISExpress: false))
+            {
+                using (var iisConfig = new IISConfigUtility(testSite.IisServerType, testSite.IisExpressConfigPath))
+                {
+                    string hostName = "";
+                    string subjectName = "localhost";
+                    string ipAddress = "*";
+                    string hexIPAddress = "0x00";
+                    int sslPort = InitializeTestMachine.SiteId + 6300;
+
+                    // Add https binding and get https uri information
+                    iisConfig.AddBindingToSite(testSite.SiteName, ipAddress, sslPort, hostName, "https");
+
+                    // Create a self signed certificate
+                    string thumbPrint = iisConfig.CreateSelfSignedCertificate(subjectName);
+
+                    // Export the self signed certificate to rootCA
+                    iisConfig.ExportCertificateTo(thumbPrint, sslStoreTo: @"Cert:\LocalMachine\Root");
+
+                    // Configure http.sys ssl certificate mapping to IP:Port endpoint with the newly created self signed certificage
+                    iisConfig.SetSSLCertificate(sslPort, hexIPAddress, thumbPrint);
+
+                    // starting IISExpress was deffered after creating test applications and now it is ready to start it 
+                    testSite.StartIISExpress();
+
+                    // Verify http request
+                    string requestHeaders = string.Empty;
+                    requestHeaders = await GetResponseAndHeaders(testSite.AspNetCoreApp.GetUri("DumpRequestHeaders"), new string[] { "Accept-Encoding", "gzip", requestHeader, requestHeaderValue }, HttpStatusCode.OK);
+                    requestHeaders = requestHeaders.Replace(" ", "");
+                    Assert.False(requestHeaders.ToUpper().Contains(requestHeader.ToLower()+":"));
+
+                    // Verify https request
+                    Uri targetHttpsUri = testSite.AspNetCoreApp.GetUri(null, sslPort, protocol: "https");
+                    requestHeader = await GetResponseAndHeaders(targetHttpsUri, new string[] { "Accept-Encoding", "gzip", requestHeader, requestHeaderValue }, HttpStatusCode.OK);
+                    requestHeaders = requestHeaders.Replace(" ", "");
+                    Assert.False(requestHeaders.ToUpper().Contains(requestHeader.ToLower() + ":"));
+
+                    // Remove the SSL Certificate mapping
+                    iisConfig.RemoveSSLCertificate(sslPort, hexIPAddress);
+
+                    // Remove the newly created self signed certificate
+                    iisConfig.DeleteCertificate(thumbPrint);
+
+                    // Remove the exported self signed certificate on rootCA
+                    iisConfig.DeleteCertificate(thumbPrint, @"Cert:\LocalMachine\Root");
+                }
+                testSite.AspNetCoreApp.RestoreFile("web.config");
+            }
+        }
+
         public static async Task DoClientCertificateMappingTest(IISConfigUtility.AppPoolBitness appPoolBitness, bool useHTTPSMiddleWare)
         {
             using (var testSite = new TestWebSite(appPoolBitness, "DoClientCertificateMappingTest", startIISExpress: false))
@@ -1510,6 +1579,16 @@ namespace AspNetCoreModule.Test
         private static bool VerifyANCMStartEvent(DateTime startFrom, string includeThis)
         {
             return VerifyEventLog(1001, startFrom, includeThis);
+        }
+
+        private static bool VerifyANCMGracefulShutdownEvent(DateTime startFrom, string includeThis)
+        {
+            return VerifyEventLog(1006, startFrom, includeThis);
+        }
+
+        private static bool VerifyANCMGracefulShutdownFailureEvent(DateTime startFrom, string includeThis)
+        {
+            return VerifyEventLog(1005, startFrom, includeThis);
         }
 
         private static bool VerifyApplicationEventLog(int eventID, DateTime startFrom, string includeThis)

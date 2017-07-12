@@ -14,6 +14,9 @@ namespace AspnetCoreModule.TestSites.Standard
 {
     public static class Program
     {
+        public static IApplicationLifetime AappLifetime;
+        public static int GracefulShutdownDelayTime = 0;
+
         private static X509Certificate2 _x509Certificate2;
 
         public static void Main(string[] args)
@@ -141,7 +144,34 @@ namespace AspnetCoreModule.TestSites.Standard
             }
 
             var host = builder.Build();
-            host.Run();
+            AappLifetime = (IApplicationLifetime)host.Services.GetService(typeof(IApplicationLifetime));
+
+            string gracefulShutdownDelay = Environment.GetEnvironmentVariable("GracefulShutdownDelayTime");
+            if (!string.IsNullOrEmpty(gracefulShutdownDelay))
+            {
+                GracefulShutdownDelayTime = Convert.ToInt32(gracefulShutdownDelay);
+            }
+            
+            AappLifetime.ApplicationStarted.Register(
+                () => Thread.Sleep(1000)
+            );
+            AappLifetime.ApplicationStopping.Register(
+                () => Thread.Sleep(Startup.SleeptimeWhileClosing / 2)
+            );
+            AappLifetime.ApplicationStopped.Register(
+                () => {
+                    Thread.Sleep(Startup.SleeptimeWhileClosing / 2);
+                    Startup.SleeptimeWhileClosing = 0;   // All of SleeptimeWhileClosing is used now
+                    }
+            );
+            try
+            {
+                host.Run();                
+            }
+            catch
+            {
+                // ignore
+            }
             
             if (Startup.SleeptimeWhileClosing != 0)
             {

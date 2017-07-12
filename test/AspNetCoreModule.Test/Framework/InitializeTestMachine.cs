@@ -13,8 +13,9 @@ namespace AspNetCoreModule.Test.Framework
         public const string ANCMTestFlagsEnvironmentVariable = "%ANCMTestFlags%";
         public const string ANCMTestFlagsDefaultContext = "AdminAnd64Bit";
         public const string ANCMTestFlagsTestSkipContext = "SkipTest";
-        public const string ANCMTestFlagsUsePrivateAspNetCoreFileContext = "UsePrivateAspNetCoreFile";
-        
+        public const string ANCMTestFlagsUsePrivateAspNetCoreFileContext = "UsePrivate";
+        public const string ANCMTestFlagsUseIISExpressContext = "UseIISExpress";
+
         private static bool? _usePrivateAspNetCoreFile = null;
         public static bool? UsePrivateAspNetCoreFile
         {
@@ -115,11 +116,17 @@ namespace AspNetCoreModule.Test.Framework
                     IISConfigUtility.IsIISReady = false;
                     if (IISConfigUtility.IsIISInstalled == true)
                     {
-                        if (Environment.GetEnvironmentVariable("ANCMTEST_USE_IISEXPRESS") != null && Environment.GetEnvironmentVariable("ANCMTEST_USE_IISEXPRESS").Equals("true", StringComparison.InvariantCultureIgnoreCase))
-                        {   
+                        var envValue = Environment.ExpandEnvironmentVariables(ANCMTestFlagsEnvironmentVariable);
+                        if (envValue.ToLower().Contains(ANCMTestFlagsUseIISExpressContext.ToLower()))
+                        {
+                            TestUtility.LogInformation("UseIISExpress is set");
                             throw new System.ApplicationException("'ANCMTestServerType' environment variable is set to 'true'");
                         }
-
+                        else
+                        {
+                            TestUtility.LogInformation("UseIISExpress is not set");
+                        }
+                        
                         // check websocket is installed
                         if (File.Exists(Path.Combine(IISConfigUtility.Strings.IIS64BitPath, "iiswsock.dll")))
                         {
