@@ -2,16 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Razor.TagHelpers;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 [assembly: HostingStartup(typeof(Microsoft.AspNetCore.ApplicationInsights.HostingStartup.ApplicationInsightsHostingStartup))]
 
@@ -52,8 +48,9 @@ namespace Microsoft.AspNetCore.ApplicationInsights.HostingStartup
             if (!string.IsNullOrEmpty(home))
             {
                 var settingsFile = Path.Combine(home, "site", "diagnostics", ApplicationInsightsSettingsFile);
-                var configurationBuilder = new ConfigurationBuilder();
-                configurationBuilder.AddJsonFile(settingsFile, optional: true);
+                var configurationBuilder = new ConfigurationBuilder()
+                    .AddJsonFile(settingsFile, optional: true, reloadOnChange: true);
+
                 services.AddLogging(builder => builder.AddConfiguration(configurationBuilder.Build().GetSection("Logging")));
             }
         }
