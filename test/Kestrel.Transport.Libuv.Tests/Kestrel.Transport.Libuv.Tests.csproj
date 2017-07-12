@@ -3,6 +3,8 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests</AssemblyName>
+    <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests</RootNamespace>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -21,8 +23,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.Kestrel.Core\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj" />
+    <ProjectReference Include="..\..\src\Kestrel.Core\Kestrel.Core.csproj" />
+    <ProjectReference Include="..\..\src\Kestrel.Transport.Libuv\Kestrel.Transport.Libuv.csproj" />
   </ItemGroup>
 
   <ItemGroup>

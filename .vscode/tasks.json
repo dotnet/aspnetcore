@@ -7,13 +7,13 @@
   },
   // requires that you first run build.cmd or build.sh to install local builds of dotnet
   "windows": {
-    "command": "${env.LOCALAPPDATA}/Microsoft/dotnet/dotnet.exe"
+    "command": "${env:USERPROFILE}/.dotnet/x64/dotnet.exe"
   },
   "osx": {
-    "command": "${env.HOME}/.dotnet/dotnet"
+    "command": "${env:HOME}/.dotnet/dotnet"
   },
   "linux": {
-    "command": "${env.HOME}/.dotnet/dotnet"
+    "command": "${env:HOME}/.dotnet/dotnet"
   },
   "suppressTaskName": true,
   "tasks": [
@@ -25,10 +25,17 @@
     },
     {
       "taskName": "Compile: solution",
-      "isBuildCommand": true,
+      "group": {
+        "isDefault": true,
+        "kind": "build"
+      },
+      "presentation": {
+        "panel": "dedicated"
+      },
       "args": [
         "build",
-        "${workspaceRoot}/KestrelHttpServer.sln"
+        "${workspaceRoot}/KestrelHttpServer.sln",
+        "/p:GenerateFullPaths=true"
       ],
       "problemMatcher": "$msCompile",
       // these have to defined here because of https://github.com/Microsoft/vscode/issues/20740
@@ -37,14 +44,14 @@
           "env": {
             // The location of .NET Framework reference assembiles.
             // These may not be installed yet if you have not run build.sh.
-            "ReferenceAssemblyRoot": "${env.HOME}/.nuget/packages/netframeworkreferenceassemblies/4.6.1/content"
+            "ReferenceAssemblyRoot": "${env:HOME}/.dotnet/buildtools/netfx/4.6.1/"
           }
         }
       },
       "linux": {
         "options": {
           "env": {
-            "ReferenceAssemblyRoot": "${env.HOME}/.nuget/packages/netframeworkreferenceassemblies/4.6.1/content"
+            "ReferenceAssemblyRoot": "${env:HOME}/.dotnet/buildtools/netfx/4.6.1/"
           }
         }
       }
@@ -52,15 +59,17 @@
     {
       "taskName": "Test",
       "args": [
-        "test"
+        "test",
+        "/p:GenerateFullPaths=true"
       ],
       "problemMatcher": "$msCompile",
-      "isTestCommand": true
+      "group": "test"
     },
     {
       "taskName": "Compile: CodeGenerator",
       "args": [
-        "build"
+        "build",
+        "/p:GenerateFullPaths=true"
       ],
       "options": {
         "cwd": "${workspaceRoot}/tools/CodeGenerator/"
@@ -101,7 +110,7 @@
         "Release"
       ],
       "options": {
-        "cwd": "${workspaceRoot}/test/Microsoft.AspNetCore.Server.Kestrel.Performance/"
+        "cwd": "${workspaceRoot}/test/Kestrel.Performance/"
       }
     }
   ]

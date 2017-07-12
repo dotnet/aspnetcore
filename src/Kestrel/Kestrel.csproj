@@ -3,6 +3,8 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <AssemblyName>Microsoft.AspNetCore.Server.Kestrel</AssemblyName>
+    <RootNamespace>Microsoft.AspNetCore.Server.Kestrel</RootNamespace>
     <Description>ASP.NET Core Kestrel cross-platform web server.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -16,8 +18,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Server.Kestrel.Core\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj" />
+    <ProjectReference Include="..\Kestrel.Core\Kestrel.Core.csproj" />
+    <ProjectReference Include="..\Kestrel.Transport.Libuv\Kestrel.Transport.Libuv.csproj" />
   </ItemGroup>
 
 </Project>

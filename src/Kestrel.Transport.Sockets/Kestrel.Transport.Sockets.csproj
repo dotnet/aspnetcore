@@ -3,6 +3,8 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets</AssemblyName>
+    <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets</RootNamespace>
     <Description>Managed socket transport for the ASP.NET Core Kestrel cross-platform web server.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -20,7 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj" />
+    <ProjectReference Include="..\Kestrel.Transport.Abstractions\Kestrel.Transport.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

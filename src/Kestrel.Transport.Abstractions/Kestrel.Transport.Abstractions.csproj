@@ -3,6 +3,8 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions</AssemblyName>
+    <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions</RootNamespace>
     <Description>Transport abstractions for the ASP.NET Core Kestrel cross-platform web server.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

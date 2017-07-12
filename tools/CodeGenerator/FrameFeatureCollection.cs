@@ -60,7 +60,7 @@ namespace CodeGenerator
             var allFeatures = alwaysFeatures.Concat(commonFeatures).Concat(sometimesFeatures).Concat(rareFeatures);
 
             // NOTE: This list MUST always match the set of feature interfaces implemented by Frame.
-            // See also: src/Microsoft.AspNetCore.Server.Kestrel/Http/Frame.FeatureCollection.cs
+            // See also: src/Kestrel/Http/Frame.FeatureCollection.cs
             var implementedFeatures = new[]
             {
                 typeof(IHttpRequestFeature),

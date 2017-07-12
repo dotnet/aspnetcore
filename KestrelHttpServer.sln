@@ -36,9 +36,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{0EF2AC
 		test\shared\TestServiceContext.cs = test\shared\TestServiceContext.cs
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core", "src\Microsoft.AspNetCore.Server.Kestrel.Core\Microsoft.AspNetCore.Server.Kestrel.Core.csproj", "{F510611A-3BEE-4B88-A613-5F4A74ED82A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Core", "src\Kestrel.Core\Kestrel.Core.csproj", "{F510611A-3BEE-4B88-A613-5F4A74ED82A1}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Core.Tests", "test\Microsoft.AspNetCore.Server.Kestrel.Core.Tests\Microsoft.AspNetCore.Server.Kestrel.Core.Tests.csproj", "{37F3BFB2-6454-49E5-9D7F-581BF755CCFE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Core.Tests", "test\Kestrel.Core.Tests\Kestrel.Core.Tests.csproj", "{37F3BFB2-6454-49E5-9D7F-581BF755CCFE}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleApp", "samples\SampleApp\SampleApp.csproj", "{2C3CB3DC-EEBF-4F52-9E1C-4F2F972E76C3}"
 EndProject
@@ -46,11 +46,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LargeResponseApp", "samples
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CodeGenerator", "tools\CodeGenerator\CodeGenerator.csproj", "{BD2D4D29-1BD9-40D0-BB31-337D5416B63C}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Https", "src\Microsoft.AspNetCore.Server.Kestrel.Https\Microsoft.AspNetCore.Server.Kestrel.Https.csproj", "{5F64B3C3-0C2E-431A-B820-A81BBFC863DA}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Https", "src\Kestrel.Https\Kestrel.Https.csproj", "{5F64B3C3-0C2E-431A-B820-A81BBFC863DA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.FunctionalTests", "test\Microsoft.AspNetCore.Server.Kestrel.FunctionalTests\Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.csproj", "{9559A5F1-080C-4909-B6CF-7E4B3DC55748}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.FunctionalTests", "test\Kestrel.FunctionalTests\Kestrel.FunctionalTests.csproj", "{9559A5F1-080C-4909-B6CF-7E4B3DC55748}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Performance", "test\Microsoft.AspNetCore.Server.Kestrel.Performance\Microsoft.AspNetCore.Server.Kestrel.Performance.csproj", "{EBFE9719-A44B-4978-A71F-D5C254E7F35A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Performance", "test\Kestrel.Performance\Kestrel.Performance.csproj", "{EBFE9719-A44B-4978-A71F-D5C254E7F35A}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestCertificates", "TestCertificates", "{2822C132-BFFB-4D53-AC5B-E7E47DD81A6E}"
 	ProjectSection(SolutionItems) = preProject
@@ -68,17 +68,17 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestCertificates", "TestCer
 		test\shared\TestCertificates\testCert.pfx = test\shared\TestCertificates\testCert.pfx
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv", "src\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.csproj", "{A76B8C8C-0DC5-4DD3-9B1F-02E51A0915F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Transport.Libuv", "src\Kestrel.Transport.Libuv\Kestrel.Transport.Libuv.csproj", "{A76B8C8C-0DC5-4DD3-9B1F-02E51A0915F4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel", "src\Microsoft.AspNetCore.Server.Kestrel\Microsoft.AspNetCore.Server.Kestrel.csproj", "{56139957-5C29-4E7D-89BD-7D20598B4EAF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel", "src\Kestrel\Kestrel.csproj", "{56139957-5C29-4E7D-89BD-7D20598B4EAF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets", "src\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets\Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.csproj", "{6950B18F-A3D2-41A4-AFEC-8B7C49517611}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Transport.Sockets", "src\Kestrel.Transport.Sockets\Kestrel.Transport.Sockets.csproj", "{6950B18F-A3D2-41A4-AFEC-8B7C49517611}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions", "src\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions\Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.csproj", "{2E9CB89D-EC8F-4DD9-A72B-08D5BABF752D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Transport.Abstractions", "src\Kestrel.Transport.Abstractions\Kestrel.Transport.Abstractions.csproj", "{2E9CB89D-EC8F-4DD9-A72B-08D5BABF752D}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests", "test\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests\Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.csproj", "{D95A7EC3-48AC-4D03-B2E2-0DA3E13BD3A4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Transport.Libuv.Tests", "test\Kestrel.Transport.Libuv.Tests\Kestrel.Transport.Libuv.Tests.csproj", "{D95A7EC3-48AC-4D03-B2E2-0DA3E13BD3A4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server.Kestrel.Tests", "test\Microsoft.AspNetCore.Server.Kestrel.Tests\Microsoft.AspNetCore.Server.Kestrel.Tests.csproj", "{4F1C30F8-CCAA-48D7-9DF6-2A84021F5BCC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Tests", "test\Kestrel.Tests\Kestrel.Tests.csproj", "{4F1C30F8-CCAA-48D7-9DF6-2A84021F5BCC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,5 +1,5 @@
 <Project>
   <ItemGroup>
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Server.Kestrel.Performance\Microsoft.AspNetCore.Server.Kestrel.Performance.csproj" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Kestrel.Performance\Kestrel.Performance.csproj" />
   </ItemGroup>
 </Project>

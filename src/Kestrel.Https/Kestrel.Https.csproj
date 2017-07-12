@@ -3,6 +3,8 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Https</AssemblyName>
+    <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Https</RootNamespace>
     <Description>HTTPS support for the ASP.NET Core Kestrel cross-platform web server.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
@@ -14,7 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.Server.Kestrel.Core\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
+    <ProjectReference Include="..\Kestrel.Core\Kestrel.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>

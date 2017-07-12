@@ -10,7 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Server.Kestrel.Core\Microsoft.AspNetCore.Server.Kestrel.Core.csproj" />
+    <ProjectReference Include="..\..\src\Kestrel.Core\Kestrel.Core.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -19,7 +19,7 @@
   </ItemGroup>
 
   <PropertyGroup>
-    <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\src\Microsoft.AspNetCore.Server.Kestrel.Core</StartWorkingDirectory>
+    <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\src\Kestrel.Core</StartWorkingDirectory>
     <StartArguments>Internal\Http\FrameHeaders.Generated.cs Internal\Http\Frame.Generated.cs Internal\Infrastructure\HttpUtilities.Generated.cs</StartArguments>
   </PropertyGroup>
 
