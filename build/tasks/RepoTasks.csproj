@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
+    <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
