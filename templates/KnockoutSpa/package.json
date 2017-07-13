@@ -9,7 +9,6 @@
     "@types/history": "^4.6.0",
     "@types/jquery": "^2.0.32",
     "@types/knockout": "^3.4.41",
-    "@types/react-router": "^2.0.37",
     "@types/signals": "0.0.16",
     "@types/webpack-env": "^1.13.0",
     "aspnet-webpack": "^2.0.1",

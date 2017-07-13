@@ -60,7 +60,7 @@ export const actionCreators = {
 // ----------------
 // REDUCER - For a given state and action, returns the new state. To support time travel, this must not mutate the old state.
 
-const unloadedState: WeatherForecastsState = { startDateIndex: undefined, forecasts: [], isLoading: false };
+const unloadedState: WeatherForecastsState = { forecasts: [], isLoading: false };
 
 export const reducer: Reducer<WeatherForecastsState> = (state: WeatherForecastsState, incomingAction: Action) => {
     const action = incomingAction as KnownAction;

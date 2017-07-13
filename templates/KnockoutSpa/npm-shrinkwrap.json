@@ -21,9 +21,9 @@
       "dev": true
     },
     "@types/history": {
-      "version": "2.0.48",
-      "from": "@types/history@>=2.0.38 <3.0.0",
-      "resolved": "https://registry.npmjs.org/@types/history/-/history-2.0.48.tgz",
+      "version": "4.6.0",
+      "from": "@types/history@4.6.0",
+      "resolved": "https://registry.npmjs.org/@types/history/-/history-4.6.0.tgz",
       "dev": true
     },
     "@types/jquery": {
@@ -36,18 +36,6 @@
       "version": "3.4.41",
       "from": "@types/knockout@>=3.4.35 <4.0.0",
       "resolved": "https://registry.npmjs.org/@types/knockout/-/knockout-3.4.41.tgz",
-      "dev": true
-    },
-    "@types/react": {
-      "version": "15.0.31",
-      "from": "@types/react@*",
-      "resolved": "https://registry.npmjs.org/@types/react/-/react-15.0.31.tgz",
-      "dev": true
-    },
-    "@types/react-router": {
-      "version": "2.0.50",
-      "from": "@types/react-router@>=2.0.37 <3.0.0",
-      "resolved": "https://registry.npmjs.org/@types/react-router/-/react-router-2.0.50.tgz",
       "dev": true
     },
     "@types/signals": {

@@ -7,6 +7,7 @@
     "target": "es5",
     "sourceMap": true,
     "skipDefaultLibCheck": true,
+    "strict": true,
     "types": ["webpack-env"]
   },
   "exclude": [

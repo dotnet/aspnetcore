@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { RouteComponentProps } from 'react-router';
 import 'isomorphic-fetch';
 
 interface FetchDataExampleState {
@@ -6,7 +7,7 @@ interface FetchDataExampleState {
     loading: boolean;
 }
 
-export class FetchData extends React.Component<{}, FetchDataExampleState> {
+export class FetchData extends React.Component<RouteComponentProps<{}>, FetchDataExampleState> {
     constructor() {
         super();
         this.state = { forecasts: [], loading: true };

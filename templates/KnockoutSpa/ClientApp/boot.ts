@@ -1,9 +1,9 @@
 import './css/site.css';
 import 'bootstrap';
 import * as ko from 'knockout';
+import { createBrowserHistory } from 'history';
 import './webpack-component-loader';
 import AppRootComponent from './components/app-root/app-root';
-import { createBrowserHistory } from 'history';
 const baseUrl = document.getElementsByTagName('base')[0].getAttribute('href')!;
 const basename = baseUrl.substring(0, baseUrl.length - 1); // History component needs no trailing slash
 
