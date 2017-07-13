@@ -70,7 +70,7 @@ namespace SocialSample
             })
                 // You must first create an app with Google and add its ID and Secret to your user-secrets.
                 // https://console.developers.google.com/project
-                .AddOAuth("Google-AccessToken", o =>
+                .AddOAuth("Google-AccessToken", "Google AccessToken only", o =>
             {
                 o.ClientId = Configuration["google:clientid"];
                 o.ClientSecret = Configuration["google:clientsecret"];
@@ -128,7 +128,7 @@ namespace SocialSample
                 */
                 // You must first create an app with Microsoft Account and add its ID and Secret to your user-secrets.
                 // https://apps.dev.microsoft.com/
-                .AddOAuth("Microsoft-AccessToken", o =>
+                .AddOAuth("Microsoft-AccessToken", "Microsoft AccessToken only", o =>
             {
                 o.ClientId = Configuration["microsoftaccount:clientid"];
                 o.ClientSecret = Configuration["microsoftaccount:clientsecret"];
@@ -148,7 +148,7 @@ namespace SocialSample
             })
                 // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
                 // https://github.com/settings/applications/
-                .AddOAuth("GitHub-AccessToken", o =>
+                .AddOAuth("GitHub-AccessToken", "GitHub AccessToken only", o =>
             {
                 o.ClientId = Configuration["github-token:clientid"];
                 o.ClientSecret = Configuration["github-token:clientsecret"];

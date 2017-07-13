@@ -16,6 +16,9 @@ namespace Microsoft.Extensions.DependencyInjection
             => builder.AddFacebook(FacebookDefaults.AuthenticationScheme, configureOptions);
 
         public static AuthenticationBuilder AddFacebook(this AuthenticationBuilder builder, string authenticationScheme, Action<FacebookOptions> configureOptions)
-            => builder.AddOAuth<FacebookOptions, FacebookHandler>(authenticationScheme, configureOptions);
+            => builder.AddFacebook(authenticationScheme, FacebookDefaults.DisplayName, configureOptions);
+
+        public static AuthenticationBuilder AddFacebook(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<FacebookOptions> configureOptions)
+            => builder.AddOAuth<FacebookOptions, FacebookHandler>(authenticationScheme, displayName, configureOptions);
     }
 }

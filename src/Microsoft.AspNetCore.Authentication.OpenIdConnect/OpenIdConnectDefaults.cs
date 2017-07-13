@@ -19,9 +19,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public const string AuthenticationScheme = "OpenIdConnect";
 
         /// <summary>
-        /// The default value for OpenIdConnectOptions.Caption.
+        /// The default value for the display name.
         /// </summary>
-        public static readonly string Caption = "OpenIdConnect";
+        public static readonly string DisplayName = "OpenIdConnect";
 
         /// <summary>
         /// The prefix used to for the nonce in the cookie.

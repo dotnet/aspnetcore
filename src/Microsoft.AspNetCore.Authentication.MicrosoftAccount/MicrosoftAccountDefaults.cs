@@ -7,6 +7,8 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
     {
         public const string AuthenticationScheme = "Microsoft";
 
+        public static readonly string DisplayName = "Microsoft";
+
         public static readonly string AuthorizationEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize";
 
         public static readonly string TokenEndpoint = "https://login.microsoftonline.com/common/oauth2/v2.0/token";
