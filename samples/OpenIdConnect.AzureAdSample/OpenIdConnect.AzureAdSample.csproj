@@ -20,7 +20,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="$(IdentityModelActiveDirectoryVersion)" />
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
 </Project>
