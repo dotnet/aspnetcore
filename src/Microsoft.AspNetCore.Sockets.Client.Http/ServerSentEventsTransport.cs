@@ -113,6 +113,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     }
                 }
             }
+            catch (OperationCanceledException)
+            {
+                _logger.ReceiveCanceled(_connectionId);
+            }
             finally
             {
                 readCancellationRegistration.Dispose();
