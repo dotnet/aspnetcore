@@ -5,8 +5,8 @@
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <DiagnosticSourceVersion>4.4.1-*</DiagnosticSourceVersion>
     <DependencyModelVersion>2.0.0-*</DependencyModelVersion>
-    <FSharpCoreVersion>4.1.0</FSharpCoreVersion>
-    <FSharpNetSdkVersion>1.0.*</FSharpNetSdkVersion>
+    <FSharpCoreVersion>4.2.1</FSharpCoreVersion>
+    <FSharpNetSdkVersion>1.0.5</FSharpNetSdkVersion>
     <InternalAspNetCoreSdkVersion>2.0.1-*</InternalAspNetCoreSdkVersion>
     <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
     <MoqVersion>4.7.49</MoqVersion>
