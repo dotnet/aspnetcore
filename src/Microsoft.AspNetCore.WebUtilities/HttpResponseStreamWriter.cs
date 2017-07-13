@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private char[] _charBuffer;
 
         private int _charBufferCount;
+        private bool _disposed;
 
         public HttpResponseStreamWriter(Stream stream, Encoding encoding)
             : this(stream, encoding, DefaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared)
@@ -46,15 +47,19 @@ namespace Microsoft.AspNetCore.WebUtilities
             ArrayPool<byte> bytePool,
             ArrayPool<char> charPool)
         {
-            if (!stream.CanWrite)
-            {
-                throw new ArgumentException(Resources.HttpResponseStreamWriter_StreamNotWritable, nameof(stream));
-            }
-
+            _stream = stream ?? throw new ArgumentNullException(nameof(stream));
             Encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
             _bytePool = bytePool ?? throw new ArgumentNullException(nameof(bytePool));
             _charPool = charPool ?? throw new ArgumentNullException(nameof(charPool));
-            _stream = stream ?? throw new ArgumentNullException(nameof(stream));
+
+            if (bufferSize <= 0)
+            {
+                throw new ArgumentOutOfRangeException(nameof(bufferSize));
+            }
+            if (!_stream.CanWrite)
+            {
+                throw new ArgumentException(Resources.HttpResponseStreamWriter_StreamNotWritable, nameof(stream));
+            }
 
             _charBufferSize = bufferSize;
 
@@ -69,12 +74,10 @@ namespace Microsoft.AspNetCore.WebUtilities
             catch
             {
                 charPool.Return(_charBuffer);
-                _charBuffer = null;
 
                 if (_byteBuffer != null)
                 {
                     bytePool.Return(_byteBuffer);
-                    _byteBuffer = null;
                 }
 
                 throw;
@@ -85,9 +88,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override void Write(char value)
         {
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
             if (_charBufferCount == _charBufferSize)
@@ -101,9 +104,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override void Write(char[] values, int index, int count)
         {
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
             if (values == null)
@@ -124,9 +127,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override void Write(string value)
         {
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
             if (value == null)
@@ -149,9 +152,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override async Task WriteAsync(char value)
         {
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
             if (_charBufferCount == _charBufferSize)
@@ -165,9 +168,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override async Task WriteAsync(char[] values, int index, int count)
         {
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
             if (values == null)
@@ -188,9 +191,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override async Task WriteAsync(string value)
         {
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
             if (value == null)
@@ -216,9 +219,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override void Flush()
         {
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
             FlushInternal(flushEncoder: true);
@@ -226,9 +229,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override Task FlushAsync()
         {
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpResponseStreamWriter));
             }
 
             return FlushInternalAsync(flushEncoder: true);
@@ -236,29 +239,21 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && _stream != null)
+            if (disposing && !_disposed)
             {
+                _disposed = true;
                 try
                 {
                     FlushInternal(flushEncoder: true);
                 }
                 finally
                 {
-                    _stream = null;
-
-                    if (_bytePool != null)
-                    {
-                        _bytePool.Return(_byteBuffer);
-                        _byteBuffer = null;
-                    }
-
-                    if (_charPool != null)
-                    {
-                        _charPool.Return(_charBuffer);
-                        _charBuffer = null;
-                    }
+                    _bytePool.Return(_byteBuffer);
+                    _charPool.Return(_charBuffer);
                 }
             }
+
+            base.Dispose(disposing);
         }
 
         // Note: our FlushInternal method does NOT flush the underlying stream. This would result in

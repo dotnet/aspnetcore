@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         private int _bytesRead;
 
         private bool _isBlocked;
+        private bool _disposed;
 
         public HttpRequestStreamReader(Stream stream, Encoding encoding)
             : this(stream, encoding, DefaultBufferSize, ArrayPool<byte>.Shared, ArrayPool<char>.Shared)
@@ -50,44 +51,23 @@ namespace Microsoft.AspNetCore.WebUtilities
             ArrayPool<byte> bytePool,
             ArrayPool<char> charPool)
         {
-            if (stream == null)
-            {
-                throw new ArgumentNullException(nameof(stream));
-            }
-
-            if (!stream.CanRead)
-            {
-                throw new ArgumentException(Resources.HttpRequestStreamReader_StreamNotReadable, nameof(stream));
-            }
-
-            if (encoding == null)
-            {
-                throw new ArgumentNullException(nameof(encoding));
-            }
-
-            if (bytePool == null)
-            {
-                throw new ArgumentNullException(nameof(bytePool));
-            }
-
-            if (charPool == null)
-            {
-                throw new ArgumentNullException(nameof(charPool));
-            }
+            _stream = stream ?? throw new ArgumentNullException(nameof(stream));
+            _encoding = encoding ?? throw new ArgumentNullException(nameof(encoding));
+            _bytePool = bytePool ?? throw new ArgumentNullException(nameof(bytePool));
+            _charPool = charPool ?? throw new ArgumentNullException(nameof(charPool));
 
             if (bufferSize <= 0)
             {
                 throw new ArgumentOutOfRangeException(nameof(bufferSize));
             }
+            if (!stream.CanRead)
+            {
+                throw new ArgumentException(Resources.HttpRequestStreamReader_StreamNotReadable, nameof(stream));
+            }
 
-            _stream = stream;
-            _encoding = encoding;
             _byteBufferSize = bufferSize;
-            _bytePool = bytePool;
-            _charPool = charPool;
 
             _decoder = encoding.GetDecoder();
-
             _byteBuffer = _bytePool.Rent(bufferSize);
 
             try
@@ -98,33 +78,24 @@ namespace Microsoft.AspNetCore.WebUtilities
             catch
             {
                 _bytePool.Return(_byteBuffer);
-                _byteBuffer = null;
 
                 if (_charBuffer != null)
                 {
                     _charPool.Return(_charBuffer);
-                    _charBuffer = null;
                 }
+
+                throw;
             }
         }
 
         protected override void Dispose(bool disposing)
         {
-            if (disposing && _stream != null)
+            if (disposing && !_disposed)
             {
-                _stream = null;
+                _disposed = true;
 
-                if (_bytePool != null)
-                {
-                    _bytePool.Return(_byteBuffer);
-                    _byteBuffer = null;
-                }
-
-                if (_charPool != null)
-                {
-                    _charPool.Return(_charBuffer);
-                    _charBuffer = null;
-                }
+                _bytePool.Return(_byteBuffer);
+                _charPool.Return(_charBuffer);
             }
 
             base.Dispose(disposing);
@@ -132,9 +103,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override int Peek()
         {
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
             }
 
             if (_charBufferIndex == _charsRead)
@@ -150,9 +121,9 @@ namespace Microsoft.AspNetCore.WebUtilities
 
         public override int Read()
         {
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
             }
 
             if (_charBufferIndex == _charsRead)
@@ -183,9 +154,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
             }
 
             var charsRead = 0;
@@ -246,9 +217,9 @@ namespace Microsoft.AspNetCore.WebUtilities
                 throw new ArgumentOutOfRangeException(nameof(count));
             }
 
-            if (_stream == null)
+            if (_disposed)
             {
-                throw new ObjectDisposedException("stream");
+                throw new ObjectDisposedException(nameof(HttpRequestStreamReader));
             }
 
             if (_charBufferIndex == _charsRead && await ReadIntoBufferAsync() == 0)

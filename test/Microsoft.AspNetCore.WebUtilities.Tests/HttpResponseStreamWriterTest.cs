@@ -1,8 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Moq;
 using System;
 using System.Buffers;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -405,6 +407,65 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Equal(content, actualContent);
         }
 
+        [Theory]
+        [MemberData(nameof(HttpResponseStreamWriterData))]
+        public static void NullInputsInConstructor_ExpectArgumentNullException(Stream stream, Encoding encoding, ArrayPool<byte> bytePool, ArrayPool<char> charPool)
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var httpRequestStreamReader = new HttpResponseStreamWriter(stream, encoding, 1, bytePool, charPool);
+            });
+        }
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public static void NegativeOrZeroBufferSize_ExpectArgumentOutOfRangeException(int size)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                var httpRequestStreamReader = new HttpRequestStreamReader(new MemoryStream(), Encoding.UTF8, size, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            });
+        }
+
+        [Fact]
+        public static void StreamCannotRead_ExpectArgumentException()
+        {
+            var mockStream = new Mock<Stream>();
+            mockStream.Setup(m => m.CanWrite).Returns(false);
+            Assert.Throws<ArgumentException>(() =>
+            {
+                var httpRequestStreamReader = new HttpRequestStreamReader(mockStream.Object, Encoding.UTF8, 1, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            });
+        }
+
+        [Theory]
+        [MemberData(nameof(HttpResponseDisposeData))]
+        public static void StreamDisposed_ExpectedObjectDisposedException(Action<HttpResponseStreamWriter> action)
+        {
+            var httpResponseStreamWriter = new HttpResponseStreamWriter(new MemoryStream(), Encoding.UTF8, 10, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            httpResponseStreamWriter.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() =>
+            {
+                action(httpResponseStreamWriter);
+            });
+        }
+
+        [Theory]
+        [MemberData(nameof(HttpResponseDisposeDataAsync))]
+        public static async Task StreamDisposed_ExpectedObjectDisposedExceptionAsync(Func<HttpResponseStreamWriter, Task> function)
+        {
+            var httpResponseStreamWriter = new HttpResponseStreamWriter(new MemoryStream(), Encoding.UTF8, 10, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            httpResponseStreamWriter.Dispose();
+
+            await Assert.ThrowsAsync<ObjectDisposedException>(() =>
+            {
+                 return function(httpResponseStreamWriter);
+            });
+        }
+
+
         private class TestMemoryStream : MemoryStream
         {
             public int FlushCallCount { get; private set; }
@@ -458,6 +519,55 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
                 DisposeCallCount++;
                 base.Dispose(disposing);
             }
+        }
+
+        private static IEnumerable<object[]> HttpResponseStreamWriterData()
+        {
+            yield return new object[] { null, Encoding.UTF8, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
+            yield return new object[] { new MemoryStream(), null, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
+            yield return new object[] { new MemoryStream(), Encoding.UTF8, null, ArrayPool<char>.Shared };
+            yield return new object[] { new MemoryStream(), Encoding.UTF8, ArrayPool<byte>.Shared, null };
+        }
+
+        private static IEnumerable<object[]> HttpResponseDisposeData()
+        {
+            yield return new object[] { new Action<HttpResponseStreamWriter>((httpResponseStreamWriter) =>
+            {
+                 httpResponseStreamWriter.Write('a');
+            })};
+            yield return new object[] { new Action<HttpResponseStreamWriter>((httpResponseStreamWriter) =>
+            {
+                 httpResponseStreamWriter.Write(new char[] { 'a', 'b' }, 0, 1);
+            })};
+
+            yield return new object[] { new Action<HttpResponseStreamWriter>((httpResponseStreamWriter) =>
+            {
+                httpResponseStreamWriter.Write("hello");
+            })};
+            yield return new object[] { new Action<HttpResponseStreamWriter>((httpResponseStreamWriter) =>
+            {
+                httpResponseStreamWriter.Flush();
+            })};
+        }
+        private static IEnumerable<object[]> HttpResponseDisposeDataAsync()
+        {
+            yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
+            {
+                await httpResponseStreamWriter.WriteAsync('a');
+            })};
+            yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
+            {
+                await httpResponseStreamWriter.WriteAsync(new char[] { 'a', 'b' }, 0, 1);
+            })};
+
+            yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
+            {
+                await httpResponseStreamWriter.WriteAsync("hello");
+            })};
+            yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
+            {
+                await httpResponseStreamWriter.FlushAsync();
+            })};
         }
     }
 }

@@ -1,11 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using Moq;
+using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
+
 
 namespace Microsoft.AspNetCore.WebUtilities.Test
 {
@@ -191,6 +195,64 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             Assert.Null(eol);
         }
 
+        [Theory]
+        [MemberData(nameof(HttpRequestNullData))]
+        public static void NullInputsInConstructor_ExpectArgumentNullException(Stream stream, Encoding encoding, ArrayPool<byte> bytePool, ArrayPool<char> charPool)
+        {
+            Assert.Throws<ArgumentNullException>(() =>
+            {
+                var httpRequestStreamReader = new HttpRequestStreamReader(stream, encoding, 1, bytePool, charPool);
+            });
+        }
+
+
+
+        [Theory]
+        [InlineData(0)]
+        [InlineData(-1)]
+        public static void NegativeOrZeroBufferSize_ExpectArgumentOutOfRangeException(int size)
+        {
+            Assert.Throws<ArgumentOutOfRangeException>(() =>
+            {
+                var httpRequestStreamReader = new HttpRequestStreamReader(new MemoryStream(), Encoding.UTF8, size, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            });
+        }
+
+        [Fact]
+        public static void StreamCannotRead_ExpectArgumentException()
+        {
+            var mockStream = new Mock<Stream>();
+            mockStream.Setup(m => m.CanRead).Returns(false);
+            Assert.Throws<ArgumentException>(() =>
+            {
+                var httpRequestStreamReader = new HttpRequestStreamReader(mockStream.Object, Encoding.UTF8, 1, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            });
+        }
+
+        [Theory]
+        [MemberData(nameof(HttpRequestDisposeData))]
+        public static void StreamDisposed_ExpectedObjectDisposedException(Action<HttpRequestStreamReader> action)
+        {
+            var httpRequestStreamReader = new HttpRequestStreamReader(new MemoryStream(), Encoding.UTF8, 10, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            httpRequestStreamReader.Dispose();
+
+            Assert.Throws<ObjectDisposedException>(() =>
+            {
+                action(httpRequestStreamReader);
+            });
+        }
+
+        [Fact]
+        public static async Task StreamDisposed_ExpectObjectDisposedExceptionAsync()
+        {
+            var httpRequestStreamReader = new HttpRequestStreamReader(new MemoryStream(), Encoding.UTF8, 10, ArrayPool<byte>.Shared, ArrayPool<char>.Shared);
+            httpRequestStreamReader.Dispose();
+
+            await Assert.ThrowsAsync<ObjectDisposedException>(() =>
+            {
+                return httpRequestStreamReader.ReadAsync(new char[10], 0, 1);
+            });
+        }
         private static HttpRequestStreamReader CreateReader()
         {
             var stream = new MemoryStream();
@@ -220,6 +282,31 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             }
 
             return new MemoryStream(data.ToArray());
+        }
+        private static IEnumerable<object[]> HttpRequestNullData()
+        {
+            yield return new object[] { null, Encoding.UTF8, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
+            yield return new object[] { new MemoryStream(), null, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
+            yield return new object[] { new MemoryStream(), Encoding.UTF8, null, ArrayPool<char>.Shared };
+            yield return new object[] { new MemoryStream(), Encoding.UTF8, ArrayPool<byte>.Shared, null };
+        }
+
+        private static IEnumerable<object[]> HttpRequestDisposeData()
+        {
+            yield return new object[] { new Action<HttpRequestStreamReader>((httpRequestStreamReader) =>
+            {
+                 var res = httpRequestStreamReader.Read();
+            })};
+            yield return new object[] { new Action<HttpRequestStreamReader>((httpRequestStreamReader) =>
+            {
+                 var res = httpRequestStreamReader.Read(new char[10], 0, 1);
+            })};
+
+            yield return new object[] { new Action<HttpRequestStreamReader>((httpRequestStreamReader) =>
+            {
+                var res = httpRequestStreamReader.Peek();
+            })};
+
         }
     }
 }
