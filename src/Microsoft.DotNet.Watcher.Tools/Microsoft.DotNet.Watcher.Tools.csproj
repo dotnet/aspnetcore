@@ -3,6 +3,7 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <LangVersion>7.1</LangVersion>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>dotnet-watch</AssemblyName>
     <OutputType>exe</OutputType>

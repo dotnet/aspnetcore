@@ -31,15 +31,21 @@ namespace Microsoft.DotNet.Watcher
             _reporter = CreateReporter(verbose: true, quiet: false, console: _console);
         }
 
-        public static int Main(string[] args)
+        public static async Task<int> Main(string[] args)
         {
-            DebugHelper.HandleDebugSwitch(ref args);
-            using (var program = new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory()))
+            try
             {
-                return program
-                    .RunAsync(args)
-                    .GetAwaiter()
-                    .GetResult();
+                DebugHelper.HandleDebugSwitch(ref args);
+                using (var program = new Program(PhysicalConsole.Singleton, Directory.GetCurrentDirectory()))
+                {
+                    return await program.RunAsync(args);
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("Unexpected error:");
+                Console.Error.WriteLine(ex.ToString());
+                return 1;
             }
         }
 
@@ -199,7 +205,6 @@ namespace Microsoft.DotNet.Watcher
 
         private static IReporter CreateReporter(bool verbose, bool quiet, IConsole console)
             => new PrefixConsoleReporter(console, verbose || CliContext.IsGlobalVerbose(), quiet);
-
 
         private string NormalizePath(string path)
         {
