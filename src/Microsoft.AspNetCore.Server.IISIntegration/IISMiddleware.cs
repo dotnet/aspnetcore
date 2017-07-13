@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             if (_options.ForwardWindowsAuthentication)
             {
-                authentication.AddScheme(new AuthenticationScheme(IISDefaults.AuthenticationScheme, displayName: null, handlerType: typeof(AuthenticationHandler)));
+                authentication.AddScheme(new AuthenticationScheme(IISDefaults.AuthenticationScheme, _options.AuthenticationDisplayName, typeof(AuthenticationHandler)));
             }
 
             _pairingToken = pairingToken;

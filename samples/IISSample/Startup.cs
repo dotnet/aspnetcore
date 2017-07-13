@@ -1,8 +1,10 @@
 using System;
 using System.Linq;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -15,13 +17,14 @@ namespace IISSample
             // These two middleware are registered via an IStartupFilter in UseIISIntegration but you can configure them here.
             services.Configure<IISOptions>(options =>
             {
+                options.AuthenticationDisplayName = "Windows Auth";
             });
             services.Configure<ForwardedHeadersOptions>(options =>
             {
             });
         }
 
-        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory)
+        public void Configure(IApplicationBuilder app, ILoggerFactory loggerfactory, IAuthenticationSchemeProvider authSchemeProvider)
         {
             var logger = loggerfactory.CreateLogger("Requests");
 
@@ -50,6 +53,8 @@ namespace IISSample
                 await context.Response.WriteAsync(Environment.NewLine);
 
                 await context.Response.WriteAsync("User: " + context.User.Identity.Name + Environment.NewLine);
+                var scheme = await authSchemeProvider.GetSchemeAsync(IISDefaults.AuthenticationScheme);
+                await context.Response.WriteAsync("DisplayName: " + scheme?.DisplayName + Environment.NewLine);
                 await context.Response.WriteAsync(Environment.NewLine);
 
                 await context.Response.WriteAsync("Headers:" + Environment.NewLine);

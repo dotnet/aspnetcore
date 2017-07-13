@@ -13,6 +13,11 @@ namespace Microsoft.AspNetCore.Builder
         public bool AutomaticAuthentication { get; set; } = true;
 
         /// <summary>
+        /// Sets the display name shown to users on login pages. The default is null.
+        /// </summary>
+        public string AuthenticationDisplayName { get; set; }
+
+        /// <summary>
         /// Used to indicate if the authentication handler should be registered. This is only done if ANCM indicates
         /// IIS has a non-anonymous authentication enabled, or for back compat with ANCMs that did not provide this information.
         /// </summary>
