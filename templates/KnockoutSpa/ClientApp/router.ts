@@ -43,8 +43,7 @@ export class Router {
         $(document).on('click', 'a', this.clickEventListener);
 
         // Initialize Crossroads with starting location
-        // Need to cast history to 'any' because @types/history is out-of-date
-        crossroads.parse((history as any).location.pathname);
+        crossroads.parse(history.location.pathname);
     }
 
     public link(url: string): string {
