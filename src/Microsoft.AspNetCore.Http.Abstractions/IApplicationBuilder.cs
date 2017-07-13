@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Builder
         /// <summary>
         /// Adds a middleware delegate to the application's request pipeline.
         /// </summary>
-        /// <param name="middleware">The middleware delgate.</param>
+        /// <param name="middleware">The middleware delegate.</param>
         /// <returns>The <see cref="IApplicationBuilder"/>.</returns>
         IApplicationBuilder Use(Func<RequestDelegate, RequestDelegate> middleware);
 
