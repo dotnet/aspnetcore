@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
             var scheme = await schemeProvider.GetSchemeAsync("oauth");
             Assert.NotNull(scheme);
             Assert.Equal("OAuthHandler`1", scheme.HandlerType.Name);
-            Assert.Equal("oauth", scheme.DisplayName);
+            Assert.Equal(OAuthDefaults.DisplayName, scheme.DisplayName);
         }
 
         [Fact]

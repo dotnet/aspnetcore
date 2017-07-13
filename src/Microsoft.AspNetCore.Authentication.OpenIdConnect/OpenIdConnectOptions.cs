@@ -27,7 +27,6 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Defaults:
         /// <para>AddNonceToRequest: true.</para>
         /// <para>BackchannelTimeout: 1 minute.</para>
-        /// <para>Caption: <see cref="OpenIdConnectDefaults.Caption"/>.</para>
         /// <para>ProtocolValidator: new <see cref="OpenIdConnectProtocolValidator"/>.</para>
         /// <para>RefreshOnIssuerKeyNotFound: true</para>
         /// <para>ResponseType: <see cref="OpenIdConnectResponseType.CodeIdToken"/></para>

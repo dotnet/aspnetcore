@@ -59,5 +59,10 @@
       {
         "TypeId": "public class Microsoft.AspNetCore.Authentication.OpenIdConnect.UserInformationReceivedContext : Microsoft.AspNetCore.Authentication.OpenIdConnect.BaseOpenIdConnectContext",
         "Kind": "Removal"
+      },
+      {
+        "TypeId": "public static class Microsoft.AspNetCore.Authentication.OpenIdConnect.OpenIdConnectDefaults",
+        "MemberId": "public static readonly System.String Caption",
+        "Kind": "Removal"
       }
   ]

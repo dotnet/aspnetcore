@@ -6,5 +6,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     public static class TwitterDefaults
     {
         public const string AuthenticationScheme = "Twitter";
+
+        public static readonly string DisplayName = "Twitter";
     }
 }

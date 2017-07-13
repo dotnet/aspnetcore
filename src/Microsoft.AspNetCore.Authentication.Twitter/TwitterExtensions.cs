@@ -18,9 +18,12 @@ namespace Microsoft.Extensions.DependencyInjection
             => builder.AddTwitter(TwitterDefaults.AuthenticationScheme, configureOptions);
 
         public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder, string authenticationScheme, Action<TwitterOptions> configureOptions)
+            => builder.AddTwitter(authenticationScheme, TwitterDefaults.DisplayName, configureOptions);
+
+        public static AuthenticationBuilder AddTwitter(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<TwitterOptions> configureOptions)
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<TwitterOptions>, TwitterPostConfigureOptions>());
-            return builder.AddRemoteScheme<TwitterOptions, TwitterHandler>(authenticationScheme, authenticationScheme, configureOptions);
+            return builder.AddRemoteScheme<TwitterOptions, TwitterHandler>(authenticationScheme, displayName, configureOptions);
         }
     }
 }

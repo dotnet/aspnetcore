@@ -18,9 +18,12 @@ namespace Microsoft.Extensions.DependencyInjection
             => builder.AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, configureOptions);
 
         public static AuthenticationBuilder AddJwtBearer(this AuthenticationBuilder builder, string authenticationScheme, Action<JwtBearerOptions> configureOptions)
+            => builder.AddJwtBearer(authenticationScheme, displayName: null, configureOptions: configureOptions);
+
+        public static AuthenticationBuilder AddJwtBearer(this AuthenticationBuilder builder, string authenticationScheme, string displayName, Action<JwtBearerOptions> configureOptions)
         {
             builder.Services.TryAddEnumerable(ServiceDescriptor.Singleton<IPostConfigureOptions<JwtBearerOptions>, JwtBearerPostConfigureOptions>());
-            return builder.AddScheme<JwtBearerOptions, JwtBearerHandler>(authenticationScheme, configureOptions);
+            return builder.AddScheme<JwtBearerOptions, JwtBearerHandler>(authenticationScheme, displayName, configureOptions);
         }
     }
 }
