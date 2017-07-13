@@ -22,7 +22,7 @@ namespace SampleStartups
         }
     }
 
-    public static class FakeServerWebHostBuliderExtensions
+    public static class FakeServerWebHostBuilderExtensions
     {
         public static IWebHostBuilder UseFakeServer(this IWebHostBuilder builder)
         {

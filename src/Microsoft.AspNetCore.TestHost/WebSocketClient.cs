@@ -87,6 +87,7 @@ namespace Microsoft.AspNetCore.TestHost
         {
             private readonly IHttpApplication<Context> _application;
             private TaskCompletionSource<WebSocket> _clientWebSocketTcs;
+            private CancellationTokenRegistration _cancellationTokenRegistration;
             private WebSocket _serverWebSocket;
 
             public Context Context { get; private set; }
@@ -95,6 +96,8 @@ namespace Microsoft.AspNetCore.TestHost
             public RequestState(Uri uri, PathString pathBase, CancellationToken cancellationToken, IHttpApplication<Context> application)
             {
                 _clientWebSocketTcs = new TaskCompletionSource<WebSocket>();
+                _cancellationTokenRegistration = cancellationToken.Register(
+                    () => _clientWebSocketTcs.TrySetCanceled(cancellationToken));
                 _application = application;
 
                 // HttpContext
@@ -181,12 +184,20 @@ namespace Microsoft.AspNetCore.TestHost
 
             Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(WebSocketAcceptContext context)
             {
-                Context.HttpContext.Response.StatusCode = 101; // Switching Protocols
-
                 var websockets = TestWebSocket.CreatePair(context.SubProtocol);
-                _clientWebSocketTcs.SetResult(websockets.Item1);
-                _serverWebSocket = websockets.Item2;
-                return Task.FromResult<WebSocket>(_serverWebSocket);
+                if (_clientWebSocketTcs.TrySetResult(websockets.Item1))
+                {
+                    Context.HttpContext.Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
+                    _serverWebSocket = websockets.Item2;
+                    return Task.FromResult(_serverWebSocket);
+                }
+                else
+                {
+                    Context.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                    websockets.Item1.Dispose();
+                    websockets.Item2.Dispose();
+                    return _clientWebSocketTcs.Task; // Canceled or Faulted - no result
+                }
             }
         }
     }

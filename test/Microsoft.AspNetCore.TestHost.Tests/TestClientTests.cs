@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
@@ -173,7 +172,7 @@ namespace Microsoft.AspNetCore.TestHost
         public async Task WebSocketWorks()
         {
             // Arrange
-            // This logger will attempt to access information from HttpRequest once the HttpContext is createds
+            // This logger will attempt to access information from HttpRequest once the HttpContext is created
             var logger = new VerifierLogger();
             RequestDelegate appDelegate = async ctx =>
             {
@@ -239,6 +238,53 @@ namespace Microsoft.AspNetCore.TestHost
             clientSocket.Dispose();
         }
 
+        [ConditionalFact]
+        public async Task WebSocketAcceptThrowsWhenCancelled()
+        {
+            // Arrange
+            // This logger will attempt to access information from HttpRequest once the HttpContext is created
+            var logger = new VerifierLogger();
+            RequestDelegate appDelegate = async ctx =>
+            {
+                if (ctx.WebSockets.IsWebSocketRequest)
+                {
+                    var websocket = await ctx.WebSockets.AcceptWebSocketAsync();
+                    var receiveArray = new byte[1024];
+                    while (true)
+                    {
+                        var receiveResult = await websocket.ReceiveAsync(new System.ArraySegment<byte>(receiveArray), CancellationToken.None);
+                        if (receiveResult.MessageType == WebSocketMessageType.Close)
+                        {
+                            await websocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Normal Closure", CancellationToken.None);
+                            break;
+                        }
+                        else
+                        {
+                            var sendBuffer = new System.ArraySegment<byte>(receiveArray, 0, receiveResult.Count);
+                            await websocket.SendAsync(sendBuffer, receiveResult.MessageType, receiveResult.EndOfMessage, CancellationToken.None);
+                        }
+                    }
+                }
+            };
+            var builder = new WebHostBuilder()
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton<ILogger<IWebHost>>(logger);
+                })
+                .Configure(app =>
+                {
+                    app.Run(appDelegate);
+                });
+            var server = new TestServer(builder);
+
+            // Act
+            var client = server.CreateWebSocketClient();
+            var tokenSource = new CancellationTokenSource();
+            tokenSource.Cancel();
+
+            // Assert
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await client.ConnectAsync(new System.Uri("http://localhost"), tokenSource.Token));
+        }
 
         private class VerifierLogger : ILogger<IWebHost>
         {
