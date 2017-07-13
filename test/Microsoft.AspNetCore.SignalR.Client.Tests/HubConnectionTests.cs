@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task StartAsyncCallsConnectionStart()
         {
             var connection = new Mock<IConnection>();
+            connection.SetupGet(p => p.Features).Returns(new FeatureCollection());
             connection.Setup(m => m.StartAsync()).Returns(Task.CompletedTask).Verifiable();
             var hubConnection = new HubConnection(connection.Object);
             await hubConnection.StartAsync();
@@ -125,6 +127,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var exception = new InvalidOperationException();
             var mockConnection = new Mock<IConnection>();
+            mockConnection.SetupGet(p => p.Features).Returns(new FeatureCollection());
             mockConnection
                 .Setup(m => m.DisposeAsync())
                 .Callback(() => mockConnection.Raise(c => c.Closed += null, exception))
@@ -144,6 +147,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task DoesNotThrowWhenClientMethodCalledButNoInvocationHandlerHasBeenSetUp()
         {
             var mockConnection = new Mock<IConnection>();
+            mockConnection.SetupGet(p => p.Features).Returns(new FeatureCollection());
 
             var invocation = new InvocationMessage(Guid.NewGuid().ToString(), nonBlocking: true, target: "NonExistingMethod123", arguments: new object[] { true, "arg2", 123 });
 
@@ -181,7 +185,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 };
             }
 
-            public string Name { get => "MockHubProtocol"; }
+            public string Name => "MockHubProtocol";
+
+            public ProtocolType Type => ProtocolType.Binary;
 
             public bool TryParseMessages(ReadOnlyBuffer<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
             {

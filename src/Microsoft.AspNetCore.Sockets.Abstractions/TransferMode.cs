@@ -1,12 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Threading.Tasks.Channels;
+using System;
 
-namespace Microsoft.AspNetCore.Sockets.Features
+namespace Microsoft.AspNetCore.Sockets
 {
-    public interface IConnectionTransportFeature
+    [Flags]
+    public enum TransferMode
     {
-        Channel<byte[]> Transport { get; set; }
+        Binary = 0x01,
+        Text = 0x02
     }
 }

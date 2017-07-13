@@ -10,8 +10,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
     internal static class SocketClientLoggerExtensions
     {
         // Category: Shared with LongPollingTransport, WebSocketsTransport and ServerSentEventsTransport
-        private static readonly Action<ILogger, DateTime, string, Exception> _startTransport =
-            LoggerMessage.Define<DateTime, string>(LogLevel.Information, 0, "{time}: Connection Id {connectionId}: Starting transport.");
+        private static readonly Action<ILogger, DateTime, string, TransferMode, Exception> _startTransport =
+            LoggerMessage.Define<DateTime, string, TransferMode>(LogLevel.Information, 0, "{time}: Connection Id {connectionId}: Starting transport. Transfer mode: {transferMode}.");
 
         private static readonly Action<ILogger, DateTime, string, Exception> _transportStopped =
             LoggerMessage.Define<DateTime, string>(LogLevel.Debug, 1, "{time}: Connection Id {connectionId}: Transport stopped.");
@@ -147,11 +147,11 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
         private static readonly Action<ILogger, DateTime, string, Exception> _stoppingClient =
             LoggerMessage.Define<DateTime, string>(LogLevel.Information, 18, "{time}: Connection Id {connectionId}: Stopping client.");
 
-        public static void StartTransport(this ILogger logger, string connectionId)
+        public static void StartTransport(this ILogger logger, string connectionId, TransferMode transferMode)
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                _startTransport(logger, DateTime.Now, connectionId, null);
+                _startTransport(logger, DateTime.Now, connectionId, transferMode, null);
             }
         }
 

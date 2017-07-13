@@ -4,6 +4,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Sockets.Client
 {
@@ -16,5 +17,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         event Func<Task> Connected;
         event Func<byte[], Task> Received;
         event Func<Exception, Task> Closed;
+
+        IFeatureCollection Features { get; }
     }
 }

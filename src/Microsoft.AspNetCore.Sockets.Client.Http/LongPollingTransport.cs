@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public Task Running { get; private set; } = Task.CompletedTask;
 
+        public TransferMode? Mode { get; private set; }
+
         public LongPollingTransport(HttpClient httpClient)
             : this(httpClient, null)
         { }
@@ -36,12 +38,18 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<LongPollingTransport>();
         }
 
-        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application, string connectionId)
+        public Task StartAsync(Uri url, Channel<byte[], SendMessage> application, TransferMode requestedTransferMode, string connectionId)
         {
-            _connectionId = connectionId;
-            _logger.StartTransport(_connectionId);
+            if (requestedTransferMode != TransferMode.Binary && requestedTransferMode != TransferMode.Text)
+            {
+                throw new ArgumentException("Invalid transfer mode.", nameof(requestedTransferMode));
+            }
 
             _application = application;
+            Mode = requestedTransferMode;
+            _connectionId = connectionId;
+
+            _logger.StartTransport(_connectionId, Mode.Value);
 
             // Start sending and polling (ask for binary if the server supports it)
             _poller = Poll(url, _transportCts.Token);

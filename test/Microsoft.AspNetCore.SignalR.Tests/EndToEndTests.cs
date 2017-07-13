@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
@@ -78,6 +79,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [ConditionalTheory]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         [MemberData(nameof(TransportTypes))]
+        // TODO: transfer types
         public async Task ConnectionCanSendAndReceiveMessages(TransportType transportType)
         {
             using (StartLog(out var loggerFactory, testName: $"ConnectionCanSendAndReceiveMessages_{transportType.ToString()}"))
@@ -88,6 +90,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var url = _serverFixture.BaseUrl + "/echo";
                 var connection = new HttpConnection(new Uri(url), transportType, loggerFactory);
+
+                connection.Features.Set<ITransferModeFeature>(
+                    new TransferModeFeature { TransferMode = TransferMode.Text });
                 try
                 {
                     var receiveTcs = new TaskCompletionSource<string>();
@@ -163,6 +168,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var url = _serverFixture.BaseUrl + "/echo";
                 var connection = new HttpConnection(new Uri(url), loggerFactory);
+                connection.Features.Set<ITransferModeFeature>(
+                    new TransferModeFeature { TransferMode = TransferMode.Binary });
+
                 try
                 {
                     var receiveTcs = new TaskCompletionSource<byte[]>();

@@ -22,6 +22,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private readonly ILogger _logger;
         private string _connectionId;
 
+        public Task Running { get; private set; } = Task.CompletedTask;
+
+        public TransferMode? Mode { get; private set; }
+
         public WebSocketsTransport()
             : this(null)
         {
@@ -32,9 +36,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger = (loggerFactory ?? NullLoggerFactory.Instance).CreateLogger<WebSocketsTransport>();
         }
 
-        public Task Running { get; private set; } = Task.CompletedTask;
-
-        public async Task StartAsync(Uri url, Channel<byte[], SendMessage> application, string connectionId)
+        public async Task StartAsync(Uri url, Channel<byte[], SendMessage> application, TransferMode requestedTransferMode, string connectionId)
         {
             if (url == null)
             {
@@ -46,10 +48,17 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 throw new ArgumentNullException(nameof(application));
             }
 
+            if (requestedTransferMode != TransferMode.Binary && requestedTransferMode != TransferMode.Text)
+            {
+                throw new ArgumentException("Invalid transfer mode.", nameof(requestedTransferMode));
+            }
+
             _application = application;
+            Mode = requestedTransferMode;
             _connectionId = connectionId;
 
-            _logger.StartTransport(_connectionId);
+            _logger.StartTransport(_connectionId, Mode.Value);
+
             await Connect(url);
             var sendTask = SendMessages(url);
             var receiveTask = ReceiveMessages(url);
@@ -145,6 +154,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
         {
             _logger.SendStarted(_connectionId);
 
+            var webSocketMessageType =
+                Mode == TransferMode.Binary
+                    ? WebSocketMessageType.Binary
+                    : WebSocketMessageType.Text;
+
             try
             {
                 while (await _application.In.WaitToReadAsync(_transportCts.Token))
@@ -155,7 +169,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         {
                             _logger.ReceivedFromApp(_connectionId, message.Payload.Length);
 
-                            await _webSocket.SendAsync(new ArraySegment<byte>(message.Payload), WebSocketMessageType.Text, true, _transportCts.Token);
+                            await _webSocket.SendAsync(new ArraySegment<byte>(message.Payload), webSocketMessageType, true, _transportCts.Token);
 
                             message.SendResult.SetResult(null);
                         }

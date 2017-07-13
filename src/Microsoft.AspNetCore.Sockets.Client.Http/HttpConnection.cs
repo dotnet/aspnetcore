@@ -2,11 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.Logging;
@@ -35,6 +38,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public Uri Url { get; }
 
+        public IFeatureCollection Features { get; } = new FeatureCollection();
+
         public event Func<Task> Connected;
         public event Func<byte[], Task> Received;
         public event Func<Exception, Task> Closed;
@@ -48,7 +53,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         { }
 
         public HttpConnection(Uri url, TransportType transportType)
-                    : this(url, transportType, loggerFactory: null)
+            : this(url, transportType, loggerFactory: null)
         {
         }
 
@@ -262,13 +267,40 @@ namespace Microsoft.AspNetCore.Sockets.Client
             // Start the transport, giving it one end of the pipeline
             try
             {
-                await _transport.StartAsync(connectUrl, applicationSide, _connectionId);
+                await _transport.StartAsync(connectUrl, applicationSide, requestedTransferMode: GetTransferMode(), connectionId: _connectionId);
+
+                // actual transfer mode can differ from the one that was requested so set it on the feature
+                Debug.Assert(_transport.Mode.HasValue, "transfer mode not set after transport started");
+                SetTransferMode(_transport.Mode.Value);
             }
             catch (Exception ex)
             {
                 _logger.ErrorStartingTransport(_connectionId, _transport.GetType().Name, ex);
                 throw;
             }
+        }
+
+        private TransferMode GetTransferMode()
+        {
+            var transferModeFeature = Features.Get<ITransferModeFeature>();
+            if (transferModeFeature == null)
+            {
+                return TransferMode.Text;
+            }
+
+            return transferModeFeature.TransferMode;
+        }
+
+        private void SetTransferMode(TransferMode transferMode)
+        {
+            var transferModeFeature = Features.Get<ITransferModeFeature>();
+            if (transferModeFeature == null)
+            {
+                transferModeFeature = new TransferModeFeature();
+                Features.Set(transferModeFeature);
+            }
+
+            transferModeFeature.TransferMode = transferMode;
         }
 
         private async Task ReceiveAsync()

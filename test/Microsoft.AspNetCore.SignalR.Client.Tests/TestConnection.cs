@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Newtonsoft.Json;
@@ -33,6 +34,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public Task Disposed => _disposed.Task;
         public ReadableChannel<byte[]> SentMessages => _sentMessages.In;
         public WritableChannel<byte[]> ReceivedMessages => _receivedMessages.Out;
+
+        public IFeatureCollection Features { get; } = new FeatureCollection();
 
         public TestConnection()
         {
