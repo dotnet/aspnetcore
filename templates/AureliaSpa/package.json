@@ -14,7 +14,7 @@
     "jquery": "^3.2.1"
   },
   "devDependencies": {
-    "@types/node": "^7.0.12",
+    "@types/webpack-env": "^1.13.0",
     "aspnet-webpack": "^2.0.1",
     "aurelia-webpack-plugin": "^2.0.0-rc.2",
     "css-loader": "^0.28.0",

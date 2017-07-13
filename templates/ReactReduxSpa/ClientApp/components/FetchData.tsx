@@ -8,7 +8,7 @@ import * as WeatherForecastsState from '../store/WeatherForecasts';
 type WeatherForecastProps =
     WeatherForecastsState.WeatherForecastsState        // ... state we've requested from the Redux store
     & typeof WeatherForecastsState.actionCreators      // ... plus action creators we've requested
-    & RouteComponentProps<{ startDateIndex: string }>; // ... plus incoming routing parameters   
+    & RouteComponentProps<{ startDateIndex: string }>; // ... plus incoming routing parameters
 
 class FetchData extends React.Component<WeatherForecastProps, {}> {
     componentWillMount() {
@@ -56,8 +56,8 @@ class FetchData extends React.Component<WeatherForecastProps, {}> {
     }
 
     private renderPagination() {
-        let prevStartDateIndex = this.props.startDateIndex - 5;
-        let nextStartDateIndex = this.props.startDateIndex + 5;
+        let prevStartDateIndex = (this.props.startDateIndex || 0) - 5;
+        let nextStartDateIndex = (this.props.startDateIndex || 0) + 5;
 
         return <p className='clearfix text-center'>
             <Link className='btn btn-default pull-left' to={ `/fetchdata/${ prevStartDateIndex }` }>Previous</Link>

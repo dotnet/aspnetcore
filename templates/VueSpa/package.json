@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "devDependencies": {
-    "@types/requirejs": "^2.1.28",
+    "@types/webpack-env": "^1.13.0",
     "aspnet-webpack": "^2.0.1",
     "awesome-typescript-loader": "^3.0.0",
     "bootstrap": "^3.3.6",

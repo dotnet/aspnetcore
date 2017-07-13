@@ -6,6 +6,7 @@
     "@types/history": "4.6.0",
     "@types/react": "15.0.35",
     "@types/react-dom": "15.5.1",
+    "@types/react-hot-loader": "3.0.3",
     "@types/react-redux": "4.4.45",
     "@types/react-router": "4.0.12",
     "@types/react-router-dom": "4.0.5",
