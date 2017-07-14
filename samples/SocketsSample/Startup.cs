@@ -47,7 +47,8 @@ namespace SocketsSample
 
             app.UseSignalR(routes =>
             {
-                routes.MapHub<Chat>("hubs");
+                routes.MapHub<DynamicChat>("dynamic");
+                routes.MapHub<Chat>("default");
                 routes.MapHub<Streaming>("streaming");
             });
 

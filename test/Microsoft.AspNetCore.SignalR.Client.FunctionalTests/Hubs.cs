@@ -4,6 +4,7 @@
 using System;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using Microsoft.CSharp;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 {
@@ -27,6 +28,34 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         public IObservable<string> Stream()
         {
             return new[] { "a", "b", "c" }.ToObservable();
+        }
+    }
+
+    public class DynamicTestHub : DynamicHub
+    {
+        public string HelloWorld()
+        {
+            return "Hello World!";
+        }
+
+        public string Echo(string message)
+        {
+            return message;
+        }
+
+        public async Task CallEcho(string message)
+        {
+            await Clients.Client(Context.ConnectionId).Echo(message);
+        }
+
+        public IObservable<string> Stream()
+        {
+            return new[] { "a", "b", "c" }.ToObservable();
+        }
+
+        public Task SendMessage(string message)
+        {
+            return Clients.All.Send(message);
         }
     }
 }

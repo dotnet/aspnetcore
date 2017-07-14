@@ -14,6 +14,10 @@
     <RuntimeIdentifier Condition="'$(TargetFramework)' != 'netcoreapp2.0'">win7-x64</RuntimeIdentifier>
   </PropertyGroup>
 
+  <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
+    <PackageReference Include="Microsoft.CSharp" Version="$(CoreFxVersion)" />
+  </ItemGroup>
+
   <ItemGroup>
     <Compile Include="..\Common\ServerFixture.cs" Link="ServerFixture.cs" />
     <Compile Include="..\Common\TaskExtensions.cs" Link="TaskExtensions.cs" />

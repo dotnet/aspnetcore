@@ -78,6 +78,8 @@ function getText(id) {
 }
 
 let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
+let hubRoute = getParameterByName('hubType') || "default";
+console.log('Hub Route:' + hubRoute);
 
 document.getElementById('head1').innerHTML = signalR.TransportType[transportType];
 
@@ -89,7 +91,8 @@ var connection;
 click('connect', event => {
     connectButton.disabled = true;
     disconnectButton.disabled = false;
-    let http = new signalR.HttpConnection(`http://${document.location.host}/hubs`, { transport: transportType });
+    console.log(`http://${document.location.host}/${hubRoute}`);
+    let http = new signalR.HttpConnection(`http://${document.location.host}/${hubRoute}`, { transport: transportType });
     connection = new signalR.HubConnection(http);
     connection.on('Send', msg => {
         addLine('message-list', msg);
