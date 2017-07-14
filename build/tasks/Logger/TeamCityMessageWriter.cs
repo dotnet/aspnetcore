@@ -28,12 +28,12 @@ namespace RepoTasks
 
         public WriteHandler WriteHandler { get; }
 
-        public void OnBuildFinished(BuildFinishedEventArgs e)
+        public void OnBuildStarted(BuildStartedEventArgs e)
         {
             _write($"##teamcity[blockOpened name='Build {_flowIdAttr}' flowId='{_flowIdAttr}']" + EOL);
         }
 
-        public void OnBuildStarted(BuildStartedEventArgs e)
+        public void OnBuildFinished(BuildFinishedEventArgs e)
         {
             _write($"##teamcity[blockClosed name='Build {_flowIdAttr}' flowId='{_flowIdAttr}']" + EOL);
         }
