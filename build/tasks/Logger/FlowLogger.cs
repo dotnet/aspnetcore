@@ -10,7 +10,9 @@ namespace RepoTasks
 {
     public class FlowLogger : ConsoleLogger
     {
-        private static readonly bool IsTeamCity = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TEAMCITY_PROJECT_NAME"));
+        // disabled until we can fix some of the whitespace and flow issues caused by invoking other shell commands from MSBuild
+        // private static readonly bool IsTeamCity = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TEAMCITY_PROJECT_NAME"));
+        private static readonly bool IsTeamCity = false;
 
         private volatile bool _initialized;
 
