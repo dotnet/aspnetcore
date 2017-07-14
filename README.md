@@ -73,7 +73,8 @@ See the [NuGet feeds](https://github.com/aspnet/Home/wiki/NuGet-feeds) wiki page
 
 This project produces builds using JetBrains TeamCity.
 
-<a href="https://www.jetbrains.com/teamcity/"><img src="https://github.com/aspnet/Home/wiki/images/logo_TeamCity.png"></a>
+
+<a href="https://www.jetbrains.com/teamcity/"><img src="https://github.com/aspnet/Home/wiki/images/logo_TeamCity.png" width="250"></a>
 
 # Feedback
 
