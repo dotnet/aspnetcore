@@ -82,6 +82,67 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
+        public void Load_InvokesApplicationModelProviders_WithTheRightOrder()
+        {
+            // Arrange
+            var descriptor = new PageActionDescriptor();
+            var compilerProvider = GetCompilerProvider();
+            var options = new TestOptionsManager<RazorPagesOptions>();
+
+            var provider1 = new Mock<IPageApplicationModelProvider>();
+            provider1.SetupGet(p => p.Order).Returns(10);
+            var provider2 = new Mock<IPageApplicationModelProvider>();
+            provider2.SetupGet(p => p.Order).Returns(-5);
+
+            var sequence = 0;
+            provider1.Setup(p => p.OnProvidersExecuting(It.IsAny<PageApplicationModelProviderContext>()))
+                .Callback((PageApplicationModelProviderContext c) =>
+                {
+                    Assert.Equal(1, sequence++);
+                    c.PageApplicationModel = new PageApplicationModel(descriptor, typeof(object).GetTypeInfo(), new object[0]);
+                })
+                .Verifiable();
+
+            provider2.Setup(p => p.OnProvidersExecuting(It.IsAny<PageApplicationModelProviderContext>()))
+                .Callback((PageApplicationModelProviderContext c) =>
+                {
+                    Assert.Equal(0, sequence++);
+                })
+                .Verifiable();
+
+            provider1.Setup(p => p.OnProvidersExecuted(It.IsAny<PageApplicationModelProviderContext>()))
+                .Callback((PageApplicationModelProviderContext c) =>
+                {
+                    Assert.Equal(2, sequence++);
+                })
+                .Verifiable();
+
+            provider2.Setup(p => p.OnProvidersExecuted(It.IsAny<PageApplicationModelProviderContext>()))
+                .Callback((PageApplicationModelProviderContext c) =>
+                {
+                    Assert.Equal(3, sequence++);
+                })
+                .Verifiable();
+
+            var providers = new[]
+            {
+                provider1.Object, provider2.Object
+            };
+
+            var loader = new DefaultPageLoader(
+                providers,
+                compilerProvider,
+                options);
+
+            // Act
+            var result = loader.Load(new PageActionDescriptor());
+
+            // Assert
+            provider1.Verify();
+            provider2.Verify();
+        }
+
+        [Fact]
         public void Load_InvokesApplicationModelConventions()
         {
             // Arrange
