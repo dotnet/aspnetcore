@@ -51,7 +51,7 @@ namespace Microsoft.DotNet.Watcher
                 using (var combinedCancellationSource = CancellationTokenSource.CreateLinkedTokenSource(
                     cancellationToken,
                     currentRunCancellationSource.Token))
-                using (var fileSetWatcher = new FileSetWatcher(fileSet))
+                using (var fileSetWatcher = new FileSetWatcher(fileSet, _reporter))
                 {
                     var fileSetTask = fileSetWatcher.GetChangedFileAsync(combinedCancellationSource.Token);
                     var processTask = _processRunner.RunAsync(processSpec, combinedCancellationSource.Token);

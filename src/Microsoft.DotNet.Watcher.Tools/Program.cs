@@ -160,6 +160,11 @@ namespace Microsoft.DotNet.Watcher
                 },
             };
 
+            if (CommandLineOptions.IsPollingEnabled)
+            {
+                _reporter.Output("Polling file watcher is enabled");
+            }
+
             await new DotNetWatcher(reporter)
                 .WatchAsync(processInfo, fileSetFactory, cancellationToken);
 

@@ -9,7 +9,9 @@ namespace Microsoft.DotNet.Watcher.Internal
     {
         event EventHandler<string> OnFileChange;
 
-        event EventHandler OnError;
+        event EventHandler<Exception> OnError;
+
+        string BasePath { get; }
 
         bool EnableRaisingEvents { get; set; }
     }

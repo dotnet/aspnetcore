@@ -31,6 +31,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             Ensure.NotNullOrEmpty(watchedDirectory, nameof(watchedDirectory));
 
             _watchedDirectory = new DirectoryInfo(watchedDirectory);
+            BasePath = _watchedDirectory.FullName;
 
             _pollingThread = new Thread(new ThreadStart(PollingLoop));
             _pollingThread.IsBackground = true;
@@ -44,15 +45,14 @@ namespace Microsoft.DotNet.Watcher.Internal
         public event EventHandler<string> OnFileChange;
 
 #pragma warning disable CS0067 // not used
-        public event EventHandler OnError;
+        public event EventHandler<Exception> OnError;
 #pragma warning restore
+
+        public string BasePath { get; }
 
         public bool EnableRaisingEvents
         {
-            get
-            {
-                return _raiseEvents;
-            }
+            get => _raiseEvents;
             set
             {
                 EnsureNotDisposed();
@@ -125,7 +125,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                         _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, true);
                     }
-                    catch(FileNotFoundException)
+                    catch (FileNotFoundException)
                     {
                         _knownEntities[fullFilePath] = new FileMeta(fileMeta.FileInfo, false);
                     }
@@ -187,7 +187,7 @@ namespace Microsoft.DotNet.Watcher.Internal
             {
                 return;
             }
-            
+
             var entities = dirInfo.EnumerateFileSystemInfos("*.*");
             foreach (var entity in entities)
             {

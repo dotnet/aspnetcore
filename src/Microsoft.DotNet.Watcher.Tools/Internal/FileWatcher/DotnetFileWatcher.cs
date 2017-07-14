@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.ComponentModel;
 using System.IO;
 using Microsoft.Extensions.Tools.Internal;
 
@@ -10,7 +11,6 @@ namespace Microsoft.DotNet.Watcher.Internal
     internal class DotnetFileWatcher : IFileSystemWatcher
     {
         private readonly Func<string, FileSystemWatcher> _watcherFactory;
-        private readonly string _watchedDirectory;
 
         private FileSystemWatcher _fileSystemWatcher;
 
@@ -26,14 +26,16 @@ namespace Microsoft.DotNet.Watcher.Internal
             Ensure.NotNull(fileSystemWatcherFactory, nameof(fileSystemWatcherFactory));
             Ensure.NotNullOrEmpty(watchedDirectory, nameof(watchedDirectory));
 
-            _watchedDirectory = watchedDirectory;
+            BasePath = watchedDirectory;
             _watcherFactory = fileSystemWatcherFactory;
             CreateFileSystemWatcher();
         }
 
         public event EventHandler<string> OnFileChange;
 
-        public event EventHandler OnError;
+        public event EventHandler<Exception> OnError;
+
+        public string BasePath { get; }
 
         private static FileSystemWatcher DefaultWatcherFactory(string watchedDirectory)
         {
@@ -44,10 +46,18 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         private void WatcherErrorHandler(object sender, ErrorEventArgs e)
         {
-            // Recreate the watcher
-            CreateFileSystemWatcher();
+            var exception = e.GetException();
 
-            OnError?.Invoke(this, null);
+            // Win32Exception may be triggered when setting EnableRaisingEvents on a file system type
+            // that is not supported, such as a network share. Don't attempt to recreate the watcher
+            // in this case as it will cause a StackOverflowException
+            if (!(exception is Win32Exception))
+            {
+                // Recreate the watcher if it is a recoverable error.
+                CreateFileSystemWatcher();
+            }
+
+            OnError?.Invoke(this, exception);
         }
 
         private void WatcherRenameHandler(object sender, RenamedEventArgs e)
@@ -99,7 +109,7 @@ namespace Microsoft.DotNet.Watcher.Internal
                     _fileSystemWatcher.Dispose();
                 }
 
-                _fileSystemWatcher = _watcherFactory(_watchedDirectory);
+                _fileSystemWatcher = _watcherFactory(BasePath);
                 _fileSystemWatcher.IncludeSubdirectories = true;
 
                 _fileSystemWatcher.Created += WatcherChangeHandler;
@@ -114,8 +124,8 @@ namespace Microsoft.DotNet.Watcher.Internal
 
         public bool EnableRaisingEvents
         {
-            get { return _fileSystemWatcher.EnableRaisingEvents; }
-            set { _fileSystemWatcher.EnableRaisingEvents = value; }
+            get => _fileSystemWatcher.EnableRaisingEvents;
+            set => _fileSystemWatcher.EnableRaisingEvents = value;
         }
 
         public void Dispose()

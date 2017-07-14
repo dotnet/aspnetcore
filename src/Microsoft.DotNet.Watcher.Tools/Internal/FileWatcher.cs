@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Tools.Internal;
 
 namespace Microsoft.DotNet.Watcher.Internal
 {
@@ -12,7 +13,18 @@ namespace Microsoft.DotNet.Watcher.Internal
     {
         private bool _disposed;
 
-        private readonly IDictionary<string, IFileSystemWatcher> _watchers = new Dictionary<string, IFileSystemWatcher>();
+        private readonly IDictionary<string, IFileSystemWatcher> _watchers;
+        private readonly IReporter _reporter;
+
+        public FileWatcher()
+            : this(NullReporter.Singleton)
+        { }
+
+        public FileWatcher(IReporter reporter)
+        {
+            _reporter = reporter ?? throw new ArgumentNullException(nameof(reporter));
+            _watchers = new Dictionary<string, IFileSystemWatcher>();
+        }
 
         public event Action<string> OnFileChange;
 
@@ -33,8 +45,11 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             foreach (var watcher in _watchers)
             {
+                watcher.Value.OnFileChange -= WatcherChangedHandler;
+                watcher.Value.OnError -= WatcherErrorHandler;
                 watcher.Value.Dispose();
             }
+
             _watchers.Clear();
         }
 
@@ -66,9 +81,18 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             var newWatcher = FileWatcherFactory.CreateWatcher(directory);
             newWatcher.OnFileChange += WatcherChangedHandler;
+            newWatcher.OnError += WatcherErrorHandler;
             newWatcher.EnableRaisingEvents = true;
 
             _watchers.Add(directory, newWatcher);
+        }
+
+        private void WatcherErrorHandler(object sender, Exception error)
+        {
+            if (sender is IFileSystemWatcher watcher)
+            {
+                _reporter.Warn($"The file watcher observing '{watcher.BasePath}' encountered an error: {error.Message}");
+            }
         }
 
         private void WatcherChangedHandler(object sender, string changedPath)
@@ -90,7 +114,9 @@ namespace Microsoft.DotNet.Watcher.Internal
             _watchers.Remove(directory);
 
             watcher.EnableRaisingEvents = false;
+
             watcher.OnFileChange -= WatcherChangedHandler;
+            watcher.OnError -= WatcherErrorHandler;
 
             watcher.Dispose();
         }

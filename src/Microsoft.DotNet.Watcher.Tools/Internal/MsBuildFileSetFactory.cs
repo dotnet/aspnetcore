@@ -144,7 +144,7 @@ namespace Microsoft.DotNet.Watcher.Internal
 
                         var fileSet = new FileSet(new[] { _projectFile });
 
-                        using (var watcher = new FileSetWatcher(fileSet))
+                        using (var watcher = new FileSetWatcher(fileSet, _reporter))
                         {
                             await watcher.GetChangedFileAsync(cancellationToken);
 

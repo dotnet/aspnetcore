@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.DotNet.Watcher.Tools;
@@ -18,6 +19,17 @@ namespace Microsoft.DotNet.Watcher
         public bool IsVerbose { get; private set; }
         public IList<string> RemainingArguments { get; private set; }
         public bool ListFiles { get; private set; }
+
+        public static bool IsPollingEnabled
+        {
+            get
+            {
+                var envVar = Environment.GetEnvironmentVariable("DOTNET_USE_POLLING_FILE_WATCHER");
+                return envVar != null &&
+                    (envVar.Equals("1", StringComparison.OrdinalIgnoreCase) ||
+                     envVar.Equals("true", StringComparison.OrdinalIgnoreCase));
+            }
+        }
 
         public static CommandLineOptions Parse(string[] args, IConsole console)
         {

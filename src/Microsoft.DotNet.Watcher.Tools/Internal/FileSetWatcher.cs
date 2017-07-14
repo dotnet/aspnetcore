@@ -11,14 +11,15 @@ namespace Microsoft.DotNet.Watcher.Internal
 {
     public class FileSetWatcher : IDisposable
     {
-        private readonly FileWatcher _fileWatcher = new FileWatcher();
+        private readonly FileWatcher _fileWatcher;
         private readonly IFileSet _fileSet;
 
-        public FileSetWatcher(IFileSet fileSet)
+        public FileSetWatcher(IFileSet fileSet, IReporter reporter)
         {
             Ensure.NotNull(fileSet, nameof(fileSet));
 
             _fileSet = fileSet;
+            _fileWatcher = new FileWatcher(reporter);
         }
 
         public async Task<string> GetChangedFileAsync(CancellationToken cancellationToken)
