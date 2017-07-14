@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Common
         public ServerFixture()
         {
             var testLog = AssemblyTestLog.ForAssembly(typeof(ServerFixture<TStartup>).Assembly);
-            _logToken = testLog.StartTestLog(null, typeof(ServerFixture<TStartup>).FullName, out _loggerFactory, "ServerFixture");
+            _logToken = testLog.StartTestLog(null, $"{nameof(ServerFixture<TStartup>)}_{typeof(TStartup).Name}" , out _loggerFactory, "ServerFixture");
             _logger = _loggerFactory.CreateLogger<ServerFixture<TStartup>>();
 
             StartServer();
