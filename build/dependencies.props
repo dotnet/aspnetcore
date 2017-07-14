@@ -8,7 +8,7 @@
     <JsonNetVersion>10.0.1</JsonNetVersion>
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
-    <OwinVersion>3.0.1</OwinVersion>
+    <OwinVersion>3.1.0</OwinVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
     <XunitVersion>2.3.0-beta2-*</XunitVersion>
