@@ -118,7 +118,6 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
-
         [Fact]
         public async Task EndpointsThatAcceptConnectionId404WhenUnknownConnectionIdProvidedForPost()
         {
@@ -584,6 +583,33 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             Assert.Equal("Hello, World", GetContentAsString(context2.Response.Body));
         }
 
+        [Theory]
+        [InlineData(TransportType.LongPolling, TransferMode.Binary | TransferMode.Text)]
+        [InlineData(TransportType.ServerSentEvents, TransferMode.Text)]
+        [InlineData(TransportType.WebSockets, TransferMode.Binary | TransferMode.Text)]
+        public async Task TransportCapabilitiesSet(TransportType transportType, TransferMode expectedTransportCapabilities)
+        {
+            var manager = CreateConnectionManager();
+            var connection = manager.CreateConnection();
+
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+
+            var context = MakeRequest("/foo", connection);
+            SetTransport(context, transportType);
+
+            var services = new ServiceCollection();
+            services.AddEndPoint<ImmediatelyCompleteEndPoint>();
+            var builder = new SocketBuilder(services.BuildServiceProvider());
+            builder.UseEndPoint<ImmediatelyCompleteEndPoint>();
+            var app = builder.Build();
+
+            var options = new HttpSocketOptions();
+            options.WebSockets.CloseTimeout = TimeSpan.FromSeconds(0);
+            await dispatcher.ExecuteAsync(context, options, app);
+
+            Assert.Equal(expectedTransportCapabilities, connection.TransportCapabilities);
+        }
+
         [Fact]
         public async Task UnauthorizedConnectionFailsToStartEndPoint()
         {
@@ -599,7 +625,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             {
                 o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
             });
-            services.AddAuthenticationCore(o => 
+            services.AddAuthenticationCore(o =>
             {
                 o.DefaultScheme = "Default";
                 o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
@@ -641,7 +667,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             {
                 o.AddPolicy("test", policy => policy.RequireClaim(ClaimTypes.NameIdentifier));
             });
-            services.AddAuthenticationCore(o => 
+            services.AddAuthenticationCore(o =>
             {
                 o.DefaultScheme = "Default";
                 o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
@@ -690,7 +716,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 });
             });
             services.AddLogging();
-            services.AddAuthenticationCore(o => 
+            services.AddAuthenticationCore(o =>
             {
                 o.DefaultScheme = "Default";
                 o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
@@ -747,7 +773,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                 });
             });
             services.AddLogging();
-            services.AddAuthenticationCore(o => 
+            services.AddAuthenticationCore(o =>
             {
                 o.DefaultScheme = "Default";
                 o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
@@ -822,7 +848,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             });
             services.AddAuthorizationPolicyEvaluator();
             services.AddLogging();
-            services.AddAuthenticationCore(o => 
+            services.AddAuthenticationCore(o =>
             {
                 o.DefaultScheme = "Default";
                 o.AddScheme("Default", a => a.HandlerType = typeof(TestAuthenticationHandler));
@@ -875,7 +901,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             });
             services.AddAuthorizationPolicyEvaluator();
             services.AddLogging();
-            services.AddAuthenticationCore(o => 
+            services.AddAuthenticationCore(o =>
             {
                 o.DefaultScheme = "Default";
                 o.AddScheme("Default", a => a.HandlerType = typeof(RejectHandler));

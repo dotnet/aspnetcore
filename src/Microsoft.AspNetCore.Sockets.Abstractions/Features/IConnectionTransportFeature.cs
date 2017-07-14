@@ -8,5 +8,7 @@ namespace Microsoft.AspNetCore.Sockets.Features
     public interface IConnectionTransportFeature
     {
         Channel<byte[]> Transport { get; set; }
+
+        TransferMode TransportCapabilities { get; set; }
     }
 }

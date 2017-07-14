@@ -18,9 +18,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
         private readonly WebSocketOptions _options;
         private readonly ILogger _logger;
         private readonly Channel<byte[]> _application;
-        private readonly string _connectionId;
+        private readonly DefaultConnectionContext _connection;
 
-        public WebSocketsTransport(WebSocketOptions options, Channel<byte[]> application, string connectionId, ILoggerFactory loggerFactory)
+        public WebSocketsTransport(WebSocketOptions options, Channel<byte[]> application, DefaultConnectionContext connection, ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
             _options = options;
             _application = application;
-            _connectionId = connectionId;
+            _connection = connection;
             _logger = loggerFactory.CreateLogger<WebSocketsTransport>();
         }
 
@@ -49,11 +49,11 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
             using (var ws = await context.WebSockets.AcceptWebSocketAsync())
             {
-                _logger.SocketOpened(_connectionId);
+                _logger.SocketOpened(_connection.ConnectionId);
 
                 await ProcessSocketAsync(ws);
             }
-            _logger.SocketClosed(_connectionId);
+            _logger.SocketClosed(_connection.ConnectionId);
         }
 
         public async Task ProcessSocketAsync(WebSocket socket)
@@ -72,12 +72,12 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
             if (trigger == receiving)
             {
                 task = sending;
-                _logger.WaitingForSend(_connectionId);
+                _logger.WaitingForSend(_connection.ConnectionId);
             }
             else
             {
                 task = receiving;
-                _logger.WaitingForClose(_connectionId);
+                _logger.WaitingForClose(_connection.ConnectionId);
             }
 
             // We're done writing
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
 
             if (resultTask != task)
             {
-                _logger.CloseTimedOut(_connectionId);
+                _logger.CloseTimedOut(_connection.ConnectionId);
                 socket.Abort();
             }
             else
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                         return receiveResult;
                     }
 
-                    _logger.MessageReceived(_connectionId, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
+                    _logger.MessageReceived(_connection.ConnectionId, receiveResult.MessageType, receiveResult.Count, receiveResult.EndOfMessage);
 
                     var truncBuffer = new ArraySegment<byte>(buffer.Array, 0, receiveResult.Count);
                     incomingMessage.Add(truncBuffer);
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                     Buffer.BlockCopy(incomingMessage[0].Array, incomingMessage[0].Offset, messageBuffer, 0, incomingMessage[0].Count);
                 }
 
-                _logger.MessageToApplication(_connectionId, messageBuffer.Length);
+                _logger.MessageToApplication(_connection.ConnectionId, messageBuffer.Length);
                 while (await _application.Out.WaitToWriteAsync())
                 {
                     if (_application.Out.TryWrite(messageBuffer))
@@ -176,22 +176,26 @@ namespace Microsoft.AspNetCore.Sockets.Internal.Transports
                     {
                         try
                         {
-                            _logger.SendPayload(_connectionId, buffer.Length);
+                            _logger.SendPayload(_connection.ConnectionId, buffer.Length);
+
+                            var webSocketMessageType = (_connection.TransferMode == TransferMode.Binary
+                                ? WebSocketMessageType.Binary
+                                : WebSocketMessageType.Text);
 
                             if (WebSocketCanSend(ws))
                             {
-                                await ws.SendAsync(new ArraySegment<byte>(buffer), _options.WebSocketMessageType, endOfMessage: true, cancellationToken: CancellationToken.None);
+                                await ws.SendAsync(new ArraySegment<byte>(buffer), webSocketMessageType, endOfMessage: true, cancellationToken: CancellationToken.None);
                             }
                         }
                         catch (WebSocketException socketException) when (!WebSocketCanSend(ws))
                         {
                             // this can happen when we send the CloseFrame to the client and try to write afterwards
-                            _logger.SendFailed(_connectionId, socketException);
+                            _logger.SendFailed(_connection.ConnectionId, socketException);
                             break;
                         }
                         catch (Exception ex)
                         {
-                            _logger.ErrorWritingFrame(_connectionId, ex);
+                            _logger.ErrorWritingFrame(_connection.ConnectionId, ex);
                             break;
                         }
                     }

@@ -29,7 +29,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
-                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+                var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionContext, loggerFactory: new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -61,9 +62,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
         }
 
         [Theory]
-        [InlineData(WebSocketMessageType.Text)]
-        [InlineData(WebSocketMessageType.Binary)]
-        public async Task DataWrittenToOutputPipelineAreSentAsFrames(WebSocketMessageType webSocketMessageType)
+        [InlineData(TransferMode.Text, WebSocketMessageType.Text)]
+        [InlineData(TransferMode.Binary, WebSocketMessageType.Binary)]
+        public async Task WebSocketTransportSetsMessageTypeBasedOnTransferModeFeature(TransferMode transferMode, WebSocketMessageType expectedMessageType)
         {
             var transportToApplication = Channel.CreateUnbounded<byte[]>();
             var applicationToTransport = Channel.CreateUnbounded<byte[]>();
@@ -72,7 +73,9 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
-                var ws = new WebSocketsTransport(new WebSocketOptions() { WebSocketMessageType = webSocketMessageType }, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+                var connectionContext = new DefaultConnectionContext(string.Empty, null, null) { TransferMode = transferMode };
+                var ws = new WebSocketsTransport(new WebSocketOptions(),
+                    transportSide, connectionContext, loggerFactory: new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -91,7 +94,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
                 Assert.Equal(1, clientSummary.Received.Count);
                 Assert.True(clientSummary.Received[0].EndOfMessage);
-                Assert.Equal(webSocketMessageType, clientSummary.Received[0].MessageType);
+                Assert.Equal(expectedMessageType, clientSummary.Received[0].MessageType);
                 Assert.Equal("Hello", Encoding.UTF8.GetString(clientSummary.Received[0].Buffer));
             }
         }
@@ -115,7 +118,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     applicationSide.Out.TryComplete();
                 }
 
-                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+                var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionContext, loggerFactory: new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -148,7 +152,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
-                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+                var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                var ws = new WebSocketsTransport(new WebSocketOptions(), transportSide, connectionContext, loggerFactory: new LoggerFactory());
 
                 // Give the server socket to the transport and run it
                 var transport = ws.ProcessSocketAsync(await feature.AcceptAsync());
@@ -184,7 +189,8 @@ namespace Microsoft.AspNetCore.Sockets.Tests
                     CloseTimeout = TimeSpan.FromSeconds(1)
                 };
 
-                var ws = new WebSocketsTransport(options, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+                var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                var ws = new WebSocketsTransport(options, transportSide, connectionContext, loggerFactory: new LoggerFactory());
 
                 var serverSocket = await feature.AcceptAsync();
                 // Give the server socket to the transport and run it
@@ -212,12 +218,13 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
-                var options = new WebSocketOptions()
+                var options = new WebSocketOptions
                 {
                     CloseTimeout = TimeSpan.FromSeconds(1)
                 };
 
-                var ws = new WebSocketsTransport(options, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+                var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                var ws = new WebSocketsTransport(options, transportSide, connectionContext, loggerFactory: new LoggerFactory());
 
                 var serverSocket = await feature.AcceptAsync();
                 // Give the server socket to the transport and run it
@@ -245,12 +252,14 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
-                var options = new WebSocketOptions()
+                var options = new WebSocketOptions
                 {
                     // We want to verify behavior without timeout affecting it
                     CloseTimeout = TimeSpan.FromSeconds(20)
                 };
-                var ws = new WebSocketsTransport(options, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+
+                var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                var ws = new WebSocketsTransport(options, transportSide, connectionContext, loggerFactory: new LoggerFactory());
 
                 var serverSocket = await feature.AcceptAsync();
                 // Give the server socket to the transport and run it
@@ -282,12 +291,13 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             using (var applicationSide = ChannelConnection.Create<byte[]>(transportToApplication, applicationToTransport))
             using (var feature = new TestWebSocketConnectionFeature())
             {
-                var options = new WebSocketOptions()
+                var options = new WebSocketOptions
                 {
                     // We want to verify behavior without timeout affecting it
                     CloseTimeout = TimeSpan.FromSeconds(20)
                 };
-                var ws = new WebSocketsTransport(options, transportSide, connectionId: string.Empty, loggerFactory: new LoggerFactory());
+                var connectionContext = new DefaultConnectionContext(string.Empty, null, null);
+                var ws = new WebSocketsTransport(options, transportSide, connectionContext, loggerFactory: new LoggerFactory());
 
                 var serverSocket = await feature.AcceptAsync();
                 // Give the server socket to the transport and run it

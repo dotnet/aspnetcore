@@ -89,6 +89,9 @@ namespace Microsoft.AspNetCore.Sockets
 
                 _logger.EstablishedConnection(connection.ConnectionId, context.TraceIdentifier);
 
+                // ServerSentEvents is a text protocol only
+                connection.TransportCapabilities = TransferMode.Text;
+
                 // We only need to provide the Input channel since writing to the application is handled through /send.
                 var sse = new ServerSentEventsTransport(connection.Application.In, connection.ConnectionId, _loggerFactory);
 
@@ -112,7 +115,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                 _logger.EstablishedConnection(connection.ConnectionId, context.TraceIdentifier);
 
-                var ws = new WebSocketsTransport(options.WebSockets, connection.Application, connection.ConnectionId, _loggerFactory);
+                var ws = new WebSocketsTransport(options.WebSockets, connection.Application, connection, _loggerFactory);
 
                 await DoPersistentConnection(socketDelegate, ws, context, connection);
             }
@@ -330,7 +333,7 @@ namespace Microsoft.AspNetCore.Sockets
 
             // Establish the connection
             var connection = _manager.CreateConnection();
-            
+
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.
             logScope.ConnectionId = connection.ConnectionId;
@@ -432,6 +435,9 @@ namespace Microsoft.AspNetCore.Sockets
             // Setup the connection state from the http context
             connection.User = context.User;
             connection.SetHttpContext(context);
+
+            // this is the default setting which should be overwritten by transports that have different capabilities (e.g. SSE)
+            connection.TransportCapabilities = TransferMode.Binary | TransferMode.Text;
 
             // Set the Connection ID on the logging scope so that logs from now on will have the
             // Connection ID metadata set.

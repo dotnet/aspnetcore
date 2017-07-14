@@ -16,7 +16,8 @@ namespace Microsoft.AspNetCore.Sockets
                                             IConnectionIdFeature,
                                             IConnectionMetadataFeature,
                                             IConnectionTransportFeature,
-                                            IConnectionUserFeature
+                                            IConnectionUserFeature,
+                                            ITransferModeFeature
     {
         // This tcs exists so that multiple calls to DisposeAsync all wait asynchronously
         // on the same task
@@ -35,6 +36,7 @@ namespace Microsoft.AspNetCore.Sockets
             Features.Set<IConnectionMetadataFeature>(this);
             Features.Set<IConnectionIdFeature>(this);
             Features.Set<IConnectionTransportFeature>(this);
+            Features.Set<ITransferModeFeature>(this);
         }
 
         public CancellationTokenSource Cancellation { get; set; }
@@ -60,6 +62,10 @@ namespace Microsoft.AspNetCore.Sockets
         public Channel<byte[]> Application { get; }
 
         public override Channel<byte[]> Transport { get; set; }
+
+        public TransferMode TransportCapabilities { get; set; }
+
+        public TransferMode TransferMode { get; set; }
 
         public async Task DisposeAsync()
         {
