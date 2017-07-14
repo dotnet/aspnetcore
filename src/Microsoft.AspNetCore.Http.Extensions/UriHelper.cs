@@ -53,6 +53,11 @@ namespace Microsoft.AspNetCore.Http.Extensions
             QueryString query = new QueryString(),
             FragmentString fragment = new FragmentString())
         {
+            if (scheme == null)
+            {
+                throw new ArgumentNullException(nameof(scheme));
+            }
+
             var combinedPath = (pathBase.HasValue || path.HasValue) ? (pathBase + path).ToString() : "/";
 
             var encodedHost = host.ToString();
@@ -74,7 +79,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
         }
 
         /// <summary>
-        /// Seperates the given absolute URI string into components. Assumes no PathBase.
+        /// Separates the given absolute URI string into components. Assumes no PathBase.
         /// </summary>
         /// <param name="uri">A string representation of the uri.</param>
         /// <param name="scheme">http, https, etc.</param>
@@ -94,7 +99,7 @@ namespace Microsoft.AspNetCore.Http.Extensions
             {
                 throw new ArgumentNullException(nameof(uri));
             }
-            // Satisfy the out parameters
+
             path = new PathString();
             query = new QueryString();
             fragment = new FragmentString();
@@ -142,6 +147,11 @@ namespace Microsoft.AspNetCore.Http.Extensions
         /// <returns></returns>
         public static string Encode(Uri uri)
         {
+            if (uri == null)
+            {
+                throw new ArgumentNullException(nameof(uri));
+            }
+
             if (uri.IsAbsoluteUri)
             {
                 return BuildAbsolute(

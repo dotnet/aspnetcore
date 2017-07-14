@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Http.Extensions
@@ -127,6 +128,29 @@ namespace Microsoft.AspNetCore.Http.Extensions
             Assert.Equal(path, resPath);
             Assert.Equal(query, resQuery);
             Assert.Equal(fragment, resFragment);
+        }
+
+        [Fact]
+        public void BuildAbsoluteNullInputThrowsArgumentNullException()
+        {
+            var resHost = new HostString();
+            var resPath = new PathString();
+            var resQuery = new QueryString();
+            var resFragment = new FragmentString();
+            Assert.Throws<ArgumentNullException>(() => UriHelper.BuildAbsolute(null, resHost,  resPath, resPath,  resQuery,  resFragment));
+
+        }
+
+        [Fact]
+        public void FromAbsoluteNullInputThrowsArgumentNullException()
+        {
+            string resScheme = null;
+            var resHost = new HostString();
+            var resPath = new PathString();
+            var resQuery = new QueryString();
+            var resFragment = new FragmentString();
+            Assert.Throws<ArgumentNullException>(() => UriHelper.FromAbsolute(null, out resScheme, out resHost, out resPath, out resQuery, out resFragment));
+
         }
     }
 }
