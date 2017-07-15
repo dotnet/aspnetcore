@@ -13,7 +13,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNet.Identity.EntityFramework" Version="$(IdentityEFCompatVersion)" />
-    <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(OwinSecurityVersion)" />
+    <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(OwinVersion)" />
     <PackageReference Include="Microsoft.Owin.Security.Interop" Version="$(AspNetCoreVersion)" />
   </ItemGroup>
 
