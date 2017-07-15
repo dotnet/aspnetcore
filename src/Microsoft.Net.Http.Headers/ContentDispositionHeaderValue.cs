@@ -73,6 +73,7 @@ namespace Microsoft.Net.Http.Headers
             set { SetName(NameString, value); }
         }
 
+
         public StringSegment FileName
         {
             get { return GetName(FileNameString); }
@@ -337,7 +338,7 @@ namespace Microsoft.Net.Http.Headers
 
         // Gets a parameter of the given name and attempts to decode it if necessary.
         // Returns null if the parameter is not present or the raw value if the encoding is incorrect.
-        private string GetName(string parameter)
+        private StringSegment GetName(string parameter)
         {
             var nameParameter = NameValueHeaderValue.Find(_parameters, parameter);
             if (nameParameter != null)
@@ -359,7 +360,7 @@ namespace Microsoft.Net.Http.Headers
                     return result;
                 }
                 // May not have been encoded
-                return nameParameter.Value.ToString();
+                return HeaderUtilities.RemoveQuotes(nameParameter.Value);
             }
             return null;
         }
