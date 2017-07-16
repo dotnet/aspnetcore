@@ -529,20 +529,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             => string.Format(CultureInfo.CurrentCulture, GetString("DuplicateDirective"), p0);
 
         /// <summary>
-        /// The '{0}' directive must exist prior to markup or code.
-        /// </summary>
-        internal static string DirectiveMustExistBeforeMarkupOrCode
-        {
-            get => GetString("DirectiveMustExistBeforeMarkupOrCode");
-        }
-
-        /// <summary>
-        /// The '{0}' directive must exist prior to markup or code.
-        /// </summary>
-        internal static string FormatDirectiveMustExistBeforeMarkupOrCode(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("DirectiveMustExistBeforeMarkupOrCode"), p0);
-
-        /// <summary>
         /// Block directive '{0}' cannot be imported.
         /// </summary>
         internal static string BlockDirectiveCannotBeImported
