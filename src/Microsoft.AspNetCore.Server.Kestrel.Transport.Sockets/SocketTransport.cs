@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     acceptSocket.NoDelay = _endPointInformation.NoDelay;
 
                     var connection = new SocketConnection(acceptSocket, this);
-                    connection.Start(_handler);
+                    _ = connection.StartAsync(_handler);
                 }
             }
             catch (Exception)
