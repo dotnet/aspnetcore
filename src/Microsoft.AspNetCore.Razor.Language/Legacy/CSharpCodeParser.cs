@@ -1787,39 +1787,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
             }
 
-            if (descriptor.Usage == DirectiveUsage.FileScopedSinglyOccurring ||
-                descriptor.Usage == DirectiveUsage.FileScopedMultipleOccurring)
-            {
-                var root = Context.Builder.ActiveBlocks.Last();
-                for (var i = 0; i < root.Children.Count; i++)
-                {
-                    // Directives, comments and whitespace are valid prior to an unnested directive.
-
-                    var child = root.Children[i];
-                    if (child is Legacy.Block block)
-                    {
-                        if (block.Type == BlockKindInternal.Directive || block.Type == BlockKindInternal.Comment)
-                        {
-                            continue;
-                        }
-                    }
-                    else if (child is Span span)
-                    {
-                        if (span.Length == 0 ||
-                            span.Kind == SpanKindInternal.Comment ||
-                            span.Symbols.All(symbol => string.IsNullOrWhiteSpace(symbol.Content)))
-                        {
-                            continue;
-                        }
-                    }
-
-                    UsageError(Resources.FormatDirectiveMustExistBeforeMarkupOrCode(descriptor.Directive));
-                    return;
-                }
-            }
-
-            return;
-
             void UsageError(string message)
             {
                 // There wil always be at least 1 child because of the `@` transition.
