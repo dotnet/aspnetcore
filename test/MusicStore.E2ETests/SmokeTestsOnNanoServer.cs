@@ -87,7 +87,7 @@ namespace E2ETests
 
                 RemoteDeploymentConfig = RemoteDeploymentConfigHelper.GetConfiguration();
 
-                DotnetRuntimePathOnShare = Path.Combine(RemoteDeploymentConfig.FileSharePath, "dotnet");
+                DotnetRuntimePathOnShare = Path.Combine(RemoteDeploymentConfig.FileSharePath, "dotnet_" + Guid.NewGuid());
 
                 // Prefer copying the zip file to fileshare and extracting on file share over copying the extracted
                 // dotnet runtime folder from source to file share as the size could be significantly huge.
