@@ -81,10 +81,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private static void ConnectCallback(UvConnectRequest connect, int status, UvException error, TaskCompletionSource<int> tcs)
         {
             var listener = (ListenerSecondary)tcs.Task.AsyncState;
-            listener.ConnectedCallback(connect, status, error, tcs);
+            _ = listener.ConnectedCallback(connect, status, error, tcs);
         }
 
-        private async void ConnectedCallback(UvConnectRequest connect, int status, UvException error, TaskCompletionSource<int> tcs)
+        private async Task ConnectedCallback(UvConnectRequest connect, int status, UvException error, TaskCompletionSource<int> tcs)
         {
             connect.Dispose();
             if (error != null)

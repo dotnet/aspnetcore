@@ -75,17 +75,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 
         public override async Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken token)
         {
-            ArraySegment<byte> segment;
+            var output = _output.Alloc();
+
             if (buffer != null)
             {
-                segment = new ArraySegment<byte>(buffer, offset, count);
+                output.Write(new ArraySegment<byte>(buffer, offset, count));
             }
-            else
-            {
-                segment = default(ArraySegment<byte>);
-            }
-            var output = _output.Alloc();
-            output.Write(segment);
+
             await output.FlushAsync(token);
         }
 

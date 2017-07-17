@@ -7,6 +7,7 @@ using System.Net;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Testing;
@@ -168,6 +169,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             await Task.Delay(5);
                         }
                     });
+                }
+            }
+        }
+
+        [Fact]
+        public async Task CanFlushAsyncWithConnectionAdapter()
+        {
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0))
+            {
+                ConnectionAdapters = { new PassThroughConnectionAdapter() }
+            };
+
+            var serviceContext = new TestServiceContext();
+
+            using (var server = new TestServer(async context =>
+            {
+                await context.Response.WriteAsync("Hello ");
+                await context.Response.Body.FlushAsync();
+                await context.Response.WriteAsync("World!");
+            }, serviceContext, listenOptions))
+            {
+                using (var connection = server.CreateConnection())
+                {
+                    await connection.Send(
+                        "GET / HTTP/1.0",
+                        "",
+                        "");
+                    await connection.ReceiveEnd(
+                        "HTTP/1.1 200 OK",
+                        "Connection: close",
+                        $"Date: {serviceContext.DateHeaderValue}",
+                        "",
+                        "Hello World!");
                 }
             }
         }

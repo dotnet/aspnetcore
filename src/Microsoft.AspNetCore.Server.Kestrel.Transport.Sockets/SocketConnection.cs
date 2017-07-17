@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             _remoteEndPoint = (IPEndPoint)_socket.RemoteEndPoint;
         }
 
-        public async void Start(IConnectionHandler connectionHandler)
+        public async Task StartAsync(IConnectionHandler connectionHandler)
         {
             try
             {
