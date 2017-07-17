@@ -854,7 +854,13 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             // Arrange
             var expected = new DivideByZeroException();
             var cache = new TestMemoryCache();
-            var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(cache), new HtmlTestEncoder())
+            // The two instances represent two instances of the same cache tag helper appearance in the page.
+            var cacheTagHelper1 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(cache), new HtmlTestEncoder())
+            {
+                ViewContext = GetViewContext(),
+                Enabled = true
+            };
+            var cacheTagHelper2 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(cache), new HtmlTestEncoder())
             {
                 ViewContext = GetViewContext(),
                 Enabled = true
@@ -871,8 +877,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 });
 
             // Act
-            var task1 = Task.Run(() => cacheTagHelper.ProcessAsync(GetTagHelperContext(cache.Key1), tagHelperOutput));
-            var task2 = Task.Run(() => cacheTagHelper.ProcessAsync(GetTagHelperContext(cache.Key2), tagHelperOutput));
+            var task1 = Task.Run(() => cacheTagHelper1.ProcessAsync(GetTagHelperContext(cache.Key1), tagHelperOutput));
+            var task2 = Task.Run(() => cacheTagHelper2.ProcessAsync(GetTagHelperContext(cache.Key2), tagHelperOutput));
 
             // Assert
             await Assert.ThrowsAsync<DivideByZeroException>(() => task1);
@@ -887,7 +893,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             var expected = "Hello world";
             var cache = new TestMemoryCache();
             var encoder = new HtmlTestEncoder();
-            var cacheTagHelper = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(cache), encoder)
+            // The two instances represent two instances of the same cache tag helper appearance in the page.
+            var cacheTagHelper1 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(cache), encoder)
+            {
+                ViewContext = GetViewContext(),
+                Enabled = true
+            };
+
+            var cacheTagHelper2 = new CacheTagHelper(new CacheTagHelperMemoryCacheFactory(cache), encoder)
             {
                 ViewContext = GetViewContext(),
                 Enabled = true
@@ -907,8 +920,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 });
 
             // Act
-            var task1 = Task.Run(() => cacheTagHelper.ProcessAsync(GetTagHelperContext(cache.Key1), tagHelperOutput));
-            var task2 = Task.Run(() => cacheTagHelper.ProcessAsync(GetTagHelperContext(cache.Key2), tagHelperOutput));
+            var task1 = Task.Run(() => cacheTagHelper1.ProcessAsync(GetTagHelperContext(cache.Key1), tagHelperOutput));
+            var task2 = Task.Run(() => cacheTagHelper2.ProcessAsync(GetTagHelperContext(cache.Key2), tagHelperOutput));
 
             // Assert
             await Task.WhenAll(task1, task2);
@@ -980,7 +993,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         // a TaskCancellationSource as an entry. We want to ensure that both calls use the results of the TCS as their output.
         private class TestMemoryCache : IMemoryCache
         {
-            private const int WaitTimeout = 3000;
+            private const int WaitTimeout = 5000;
             public readonly string Key1 = "Key1";
             public readonly string Key2 = "Key2";
             public readonly ManualResetEventSlim ManualResetEvent1 = new ManualResetEventSlim();
