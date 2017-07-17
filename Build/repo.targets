@@ -8,7 +8,6 @@
 
   <ItemGroup>
     <PackageReference Include="PackagePublisher" Version="2.0.0-*" />
-    <PackageReference Include="NuGet.CommandLine" Version="$(NuGetCommandLineVersion)" />
   </ItemGroup>
 
   <Target Name="_LocateMSBuildExe">
@@ -35,11 +34,14 @@
 
   <Target Name="PackageProjects">
     <PropertyGroup>
-      <NuGetExePath>$([MSBuild]::EnsureTrailingSlash('$(NuGetPackageRoot)'))nuget.commandline\$(NuGetCommandLineVersion)\tools\nuget.exe</NuGetExePath>
-      <NuspecPath>$(RepositoryRoot)nuget\AspNetCore.nuspec</NuspecPath>
+      <PackageVersion>1.0.0-pre-$(BuildNumber)</PackageVersion>
+      <PackageOutputPath>$(ArtifactsDir)build\</PackageOutputPath>
     </PropertyGroup>
 
-    <Exec Command="&quot;$(NuGetExePath)&quot; pack &quot;$(NuspecPath)&quot; -OutputDirectory &quot;$(ArtifactsDir)\build&quot; -prop Version=1.0.0-pre-$(BuildNumber)" />
+      <MSBuild
+        Projects="$(MSBuildThisFileDirectory)../nuget/AspNetCore.csproj"
+        Targets="Pack"
+        Properties="PackageVersion=$(PackageVersion);PackageOutputPath=$(PackageOutputPath)" />
   </Target>
 
   <Target Name="PublishPackage" 

@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <NuspecFile>$(MSBuildThisFileDirectory)AspNetCore.nuspec</NuspecFile>
+    <NuspecProperties>version=$(PackageVersion)</NuspecProperties>
+  </PropertyGroup>
+
+</Project>
