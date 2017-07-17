@@ -1,5 +1,6 @@
 bin
 obj
+.vs/
 *.suo
 *.user
 _ReSharper.*
@@ -14,8 +15,8 @@ artifacts
 StyleCop.Cache
 node_modules
 *.snk
-.build
 .nuget
 .r
 .deps
 global.json
+korebuild-lock.txt

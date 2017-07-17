@@ -42,20 +42,14 @@
 
     <Message Text="============ Building $(RepositoryToBuild) ============" Importance="High" />
 
-    <!-- Copy Korebuild folder to individual repos to avoid downloading it again and again and also to
-          prevent from taking in newer Korebuild changes when Universe is building midway -->
-    <ItemGroup>
-      <_KorebuildItems Include="$(RepositoryRoot).build\**\*.*" />
-    </ItemGroup>
-
-    <Message Text="Copying Korebuild from Universe to repository $(BuildRepositoryRoot)"/>
-    <Copy SourceFiles="@(_KorebuildItems)" DestinationFolder="$(BuildRepositoryRoot).build\%(RecursiveDir)" SkipUnchangedFiles="true" UseHardlinksIfPossible="true" />
+    <!-- Copy Korebuild lock file to individual repos to align version if the repo doesn't already have one -->
+    <Message Text="Copying KoreBuild lockfile from Universe to repository $(BuildRepositoryRoot)"/>
+    <Copy SourceFiles="$(RepositoryRoot)korebuild-lock.txt" DestinationFolder="$(BuildRepositoryRoot)" />
 
     <Exec
-      Command="./$(_BuildScriptToExecute) $(BuildArguments)"
-      EnvironmentVariables="KOREBUILD_SKIP_RUNTIME_INSTALL=1"
+      Command="./$(_BuildScriptToExecute) -Path $(BuildRepositoryRoot) $(BuildArguments)"
       IgnoreStandardErrorWarningFormat="true"
-      WorkingDirectory="$(BuildRepositoryRoot)" />
+      WorkingDirectory="$(RepositoryRoot)" />
 
     <ItemGroup>
       <RepositoryArtifacts Include="$(RepositoryArtifactsBuildDirectory)*" />
@@ -75,8 +69,10 @@
     <Message Text="Publishing the following packages to the volatile feed: @(RepositoryNupkgs -> '%(Filename)%(Extension)', ', ')"
       Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
 
-    <Exec
-      Command="$(DotNetPath) $(PackagePublisherNetCoreApp) -d $(RepositoryArtifactsBuildDirectory) -f $(NuGetPublishVolatileFeed)"
+    <PushNuGetPackages
+      Packages="@(RepositoryNupkgs)"
+      Feed="$(NuGetPublishVolatileFeed)"
+      ApiKey="$(APIKey)"
       Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
 
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />

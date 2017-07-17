@@ -23,10 +23,6 @@
     <BuildDependsOn>$(BuildDependsOn);CloneRepositories;BuildRepositories</BuildDependsOn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="PackagePublisher" Version="2.0.0-*" />
-  </ItemGroup>
-
   <Import Project="$(_RepositoryListToImport)" />
 
   <Target Name="CleanUniverseArtifacts">
@@ -111,7 +107,7 @@
   </Target>
 
   <Target Name="BuildRepositories"
-     DependsOnTargets="_PrepareRepositories;_FindDotNetPath;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
+     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
 
   <Target Name="_PrepareRestoreGraphSpecs" DependsOnTargets="_PrepareRepositories">
     <ItemGroup>
