@@ -3,7 +3,6 @@
     <AspNetCoreIntegrationTestingVersion>0.4.0-*</AspNetCoreIntegrationTestingVersion>
     <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
-    <DepsRuntimeFrameworkVersion>2.0.0-preview3-25514-02</DepsRuntimeFrameworkVersion>
     <DotnetDebToolVersion>2.0.0-preview2-*</DotnetDebToolVersion>
     <InternalAspNetCoreSdkVersion>2.0.1-*</InternalAspNetCoreSdkVersion>
     <MoqVersion>4.7.49</MoqVersion>

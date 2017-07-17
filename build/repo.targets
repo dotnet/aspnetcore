@@ -75,7 +75,7 @@
       Condition="Exists('$(DependencyBuildDirectory)')" />
   </Target>
 
-  <Target Name="BuildPackageCache" DependsOnTargets="UpdateNuGetConfig;AddDiaSymReaderToPath">
+  <Target Name="BuildPackageCache" DependsOnTargets="UpdateNuGetConfig;AddDiaSymReaderToPath;_ResolveCurrentSharedFrameworkVersion">
     <GetOSPlatform>
       <!-- Returns {Linux, macOS, Windows} -->
       <Output TaskParameter="PlatformName" PropertyName="OSPlatform" />
@@ -125,7 +125,7 @@
     <Exec Command="dotnet restore" WorkingDirectory="$(HostingStartupTemplatePath)" />
 
     <!--- MSBuild caches things if you run inproc so have to use Exec -->
-    <Exec Command="dotnet msbuild /t:&quot;Restore;Rebuild;CollectDeps&quot; $(HostingStartupTemplateFile) /p:&quot;DepsOutputPath=$(DepsOutputPath);HostingStartupPackageName=%(HostingStartupPackageReference.Identity);HostingStartupPackageVersion=%(Version)&quot;"/>
+    <Exec Command="dotnet msbuild /t:&quot;Restore;Rebuild;CollectDeps&quot; $(HostingStartupTemplateFile) /p:&quot;DepsOutputPath=$(DepsOutputPath);HostingStartupPackageName=%(HostingStartupPackageReference.Identity);HostingStartupPackageVersion=%(Version);RuntimeFrameworkVersion=$(SharedFrameworkVersion)&quot;"/>
 
     <ItemGroup>
       <PackageStoreManifestFiles Include="$(RuntimeStoreOutputPath)**\artifact.xml">
@@ -205,7 +205,10 @@
 
   <Target Name="_ResolveCurrentSharedFrameworkVersion">
     <!-- Parse framework version -->
-    <Exec Command="powershell.exe $(ToolsDir)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true">
+    <Exec Command="powershell.exe $(ToolsDir)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true" Condition="'$(OS)' == 'Windows_NT'">
+      <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
+    </Exec>
+    <Exec Command="bash $(ToolsDir)GetSharedFrameworkVersion.sh" ConsoleToMSBuild="true" Condition="'$(OS)' != 'Windows_NT'">
       <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
     </Exec>
   </Target>
