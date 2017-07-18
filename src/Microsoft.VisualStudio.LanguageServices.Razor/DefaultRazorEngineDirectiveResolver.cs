@@ -23,11 +23,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
                 using (var session = await client.CreateSessionAsync(project.Solution))
                 {
-                    var directives = await session.InvokeAsync<IEnumerable<DirectiveDescriptor>>(
-                            "GetDirectivesAsync", 
-                            new object[] { project.Id.Id, "Foo", },
-                            cancellationToken)
-                        .ConfigureAwait(false);
+                    var directives = await session.InvokeAsync<IEnumerable<DirectiveDescriptor>>("GetDirectivesAsync", new object[] { project.Id.Id, "Foo", }).ConfigureAwait(false);
                     return directives;
                 }
             }
