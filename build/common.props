@@ -12,6 +12,9 @@
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!-- Generate full pdbs for desktop targeting projects on platforms that support generating full pdbs. -->
+    <DebugType Condition="'$(OS)'=='Windows_NT' AND '$(TargetFramework)'=='net46'">full</DebugType>
   </PropertyGroup>
 
   <ItemGroup>
