@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                 throw new ArgumentNullException(nameof(headers));
             }
 
-            if (string.IsNullOrWhiteSpace(key))
+            if (string.IsNullOrEmpty(key))
             {
                 throw new ArgumentNullException(nameof(key));
             }
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         // Quote items that contain comas and are not already quoted.
         private static string QuoteIfNeeded(string value)
         {
-            if (!string.IsNullOrWhiteSpace(value) &&
+            if (!string.IsNullOrEmpty(value) &&
                 value.Contains(',') &&
                 (value[0] != '"' || value[value.Length - 1] != '"'))
             {
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.Http.Internal
 
         private static string DeQuote(string value)
         {
-            if (!string.IsNullOrWhiteSpace(value) &&
+            if (!string.IsNullOrEmpty(value) &&
                 (value.Length > 1 && value[0] == '"' && value[value.Length - 1] == '"'))
             {
                 value = value.Substring(1, value.Length - 2);
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                 throw new ArgumentNullException(nameof(headers));
             }
 
-            if (string.IsNullOrWhiteSpace(key))
+            if (string.IsNullOrEmpty(key))
             {
                 throw new ArgumentNullException(nameof(key));
             }
