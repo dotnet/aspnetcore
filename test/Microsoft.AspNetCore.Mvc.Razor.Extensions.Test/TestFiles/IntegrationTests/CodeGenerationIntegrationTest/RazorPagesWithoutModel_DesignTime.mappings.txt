@@ -1,16 +1,16 @@
 Source Location: (38:3,1 [41] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml)
 |using Microsoft.AspNetCore.Mvc.RazorPages|
-Generated Location: (696:15,0 [41] )
+Generated Location: (487:14,0 [41] )
 |using Microsoft.AspNetCore.Mvc.RazorPages|
 
 Source Location: (23:2,14 [12] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml)
 |"*, AppCode"|
-Generated Location: (1153:25,37 [12] )
+Generated Location: (944:24,37 [12] )
 |"*, AppCode"|
 
 Source Location: (566:24,47 [4] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml)
 |Name|
-Generated Location: (1716:38,47 [4] )
+Generated Location: (1507:37,47 [4] )
 |Name|
 
 Source Location: (95:5,12 [283] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/RazorPagesWithoutModel.cshtml)
@@ -28,7 +28,7 @@ Source Location: (95:5,12 [283] TestFiles/IntegrationTests/CodeGenerationIntegra
         public string Name { get; set; }
     }
 |
-Generated Location: (2197:49,12 [283] )
+Generated Location: (1988:48,12 [283] )
 |
     public IActionResult OnPost(Customer customer)
     {

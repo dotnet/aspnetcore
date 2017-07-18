@@ -1,6 +1,4 @@
 Document - 
-    CSharpCode - 
-        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.Razor.Compilation.RazorViewAttribute(null, typeof(Test.Namespace.ViewWithNamespace_View))]
     NamespaceDeclaration -  - Test.Namespace
         UsingDirective -  - TModel = global::System.Object
         UsingDirective - (1:0,1 [12] ) - System

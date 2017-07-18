@@ -1,6 +1,4 @@
 Document - 
-    CSharpCode - 
-        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(Test.Namespace.PageWithNamespace_Page), null)]
     NamespaceDeclaration -  - Test.Namespace
         UsingDirective -  - TModel = global::System.Object
         UsingDirective - (1:0,1 [12] ) - System
