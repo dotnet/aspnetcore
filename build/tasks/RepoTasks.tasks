@@ -4,4 +4,5 @@
   </PropertyGroup>
 
   <UsingTask TaskName="RepoTasks.RenameEncodedFolders" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.VerifySignedRuntimeStoreBinaries" AssemblyFile="$(_RepoTaskAssembly)" />
 </Project>
