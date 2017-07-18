@@ -30,6 +30,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
 
             TemplateEngine = templateEngine;
+            FilePath = filePath;
             _parser = new BackgroundParser(templateEngine, filePath);
             _parser.ResultsReady += (sender, args) => OnDocumentParseComplete(args);
             _parser.Start();
@@ -41,6 +42,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         public event EventHandler<DocumentParseCompleteEventArgs> DocumentParseComplete;
 
         public RazorTemplateEngine TemplateEngine { get; }
+
+        public string FilePath { get; }
 
         // Internal for testing.
         internal RazorSyntaxTree CurrentSyntaxTree { get; private set; }
