@@ -30,33 +30,40 @@ namespace Microsoft.AspNetCore.Sockets
 
         public async Task ExecuteAsync(HttpContext context, HttpSocketOptions options, SocketDelegate socketDelegate)
         {
-            if (!await AuthorizeHelper.AuthorizeAsync(context, options.AuthorizationData))
+            // Create the log scope and attempt to pass the Connection ID to it so as many logs as possible contain
+            // the Connection ID metadata. If this is the negotiate request then the Connection ID for the scope will
+            // be set a little later.
+            var logScope = new ConnectionLogScope(GetConnectionId(context));
+            using (_logger.BeginScope(logScope))
             {
-                return;
-            }
+                if (!await AuthorizeHelper.AuthorizeAsync(context, options.AuthorizationData))
+                {
+                    return;
+                }
 
-            if (HttpMethods.IsOptions(context.Request.Method))
-            {
-                // OPTIONS /{path}
-                await ProcessNegotiate(context, options);
-            }
-            else if (HttpMethods.IsPost(context.Request.Method))
-            {
-                // POST /{path}
-                await ProcessSend(context);
-            }
-            else if (HttpMethods.IsGet(context.Request.Method))
-            {
-                // GET /{path}
-                await ExecuteEndpointAsync(context, socketDelegate, options);
-            }
-            else
-            {
-                context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+                if (HttpMethods.IsOptions(context.Request.Method))
+                {
+                    // OPTIONS /{path}
+                    await ProcessNegotiate(context, options, logScope);
+                }
+                else if (HttpMethods.IsPost(context.Request.Method))
+                {
+                    // POST /{path}
+                    await ProcessSend(context);
+                }
+                else if (HttpMethods.IsGet(context.Request.Method))
+                {
+                    // GET /{path}
+                    await ExecuteEndpointAsync(context, socketDelegate, options, logScope);
+                }
+                else
+                {
+                    context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+                }
             }
         }
 
-        private async Task ExecuteEndpointAsync(HttpContext context, SocketDelegate socketDelegate, HttpSocketOptions options)
+        private async Task ExecuteEndpointAsync(HttpContext context, SocketDelegate socketDelegate, HttpSocketOptions options, ConnectionLogScope logScope)
         {
             var supportedTransports = options.Transports;
 
@@ -74,13 +81,13 @@ namespace Microsoft.AspNetCore.Sockets
                     return;
                 }
 
-                _logger.EstablishedConnection(connection.ConnectionId, context.TraceIdentifier);
-
-                if (!await EnsureConnectionStateAsync(connection, context, TransportType.ServerSentEvents, supportedTransports))
+                if (!await EnsureConnectionStateAsync(connection, context, TransportType.ServerSentEvents, supportedTransports, logScope))
                 {
                     // Bad connection state. It's already set the response status code.
                     return;
                 }
+
+                _logger.EstablishedConnection(connection.ConnectionId, context.TraceIdentifier);
 
                 // We only need to provide the Input channel since writing to the application is handled through /send.
                 var sse = new ServerSentEventsTransport(connection.Application.In, connection.ConnectionId, _loggerFactory);
@@ -97,13 +104,13 @@ namespace Microsoft.AspNetCore.Sockets
                     return;
                 }
 
-                _logger.EstablishedConnection(connection.ConnectionId, context.TraceIdentifier);
-
-                if (!await EnsureConnectionStateAsync(connection, context, TransportType.WebSockets, supportedTransports))
+                if (!await EnsureConnectionStateAsync(connection, context, TransportType.WebSockets, supportedTransports, logScope))
                 {
                     // Bad connection state. It's already set the response status code.
                     return;
                 }
+
+                _logger.EstablishedConnection(connection.ConnectionId, context.TraceIdentifier);
 
                 var ws = new WebSocketsTransport(options.WebSockets, connection.Application, connection.ConnectionId, _loggerFactory);
 
@@ -121,7 +128,7 @@ namespace Microsoft.AspNetCore.Sockets
                     return;
                 }
 
-                if (!await EnsureConnectionStateAsync(connection, context, TransportType.LongPolling, supportedTransports))
+                if (!await EnsureConnectionStateAsync(connection, context, TransportType.LongPolling, supportedTransports, logScope))
                 {
                     // Bad connection state. It's already set the response status code.
                     return;
@@ -201,8 +208,7 @@ namespace Microsoft.AspNetCore.Sockets
 
                 var pollAgain = true;
 
-                // If the application ended before the transport task then we need to potentially need to end the
-                // connection
+                // If the application ended before the transport task then we potentially need to end the connection
                 if (resultTask == connection.ApplicationTask)
                 {
                     // Complete the transport (notifying it of the application error if there is one)
@@ -315,7 +321,7 @@ namespace Microsoft.AspNetCore.Sockets
             await socketDelegate(connection);
         }
 
-        private Task ProcessNegotiate(HttpContext context, HttpSocketOptions options)
+        private Task ProcessNegotiate(HttpContext context, HttpSocketOptions options, ConnectionLogScope logScope)
         {
             // Set the allowed headers for this resource
             context.Response.Headers.AppendCommaSeparatedValues("Allow", "GET", "POST", "OPTIONS");
@@ -324,6 +330,10 @@ namespace Microsoft.AspNetCore.Sockets
 
             // Establish the connection
             var connection = _manager.CreateConnection();
+            
+            // Set the Connection ID on the logging scope so that logs from now on will have the
+            // Connection ID metadata set.
+            logScope.ConnectionId = connection.ConnectionId;
 
             // Get the bytes for the connection id
             var negotiateResponseBuffer = Encoding.UTF8.GetBytes(GetNegotiatePayload(connection.ConnectionId, options));
@@ -364,6 +374,8 @@ namespace Microsoft.AspNetCore.Sockets
             return sb.ToString();
         }
 
+        private static string GetConnectionId(HttpContext context) => context.Request.Query["id"];
+
         private async Task ProcessSend(HttpContext context)
         {
             var connection = await GetConnectionAsync(context);
@@ -393,7 +405,7 @@ namespace Microsoft.AspNetCore.Sockets
             }
         }
 
-        private async Task<bool> EnsureConnectionStateAsync(DefaultConnectionContext connection, HttpContext context, TransportType transportType, TransportType supportedTransports)
+        private async Task<bool> EnsureConnectionStateAsync(DefaultConnectionContext connection, HttpContext context, TransportType transportType, TransportType supportedTransports, ConnectionLogScope logScope)
         {
             if ((supportedTransports & transportType) == 0)
             {
@@ -421,12 +433,16 @@ namespace Microsoft.AspNetCore.Sockets
             connection.User = context.User;
             connection.SetHttpContext(context);
 
+            // Set the Connection ID on the logging scope so that logs from now on will have the
+            // Connection ID metadata set.
+            logScope.ConnectionId = connection.ConnectionId;
+
             return true;
         }
 
         private async Task<DefaultConnectionContext> GetConnectionAsync(HttpContext context)
         {
-            var connectionId = context.Request.Query["id"];
+            var connectionId = GetConnectionId(context);
 
             if (StringValues.IsNullOrEmpty(connectionId))
             {
@@ -449,7 +465,7 @@ namespace Microsoft.AspNetCore.Sockets
 
         private async Task<DefaultConnectionContext> GetOrCreateConnectionAsync(HttpContext context)
         {
-            var connectionId = context.Request.Query["id"];
+            var connectionId = GetConnectionId(context);
             DefaultConnectionContext connection;
 
             // There's no connection id so this is a brand new connection
