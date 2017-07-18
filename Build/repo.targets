@@ -40,7 +40,7 @@
 
       <MSBuild
         Projects="$(MSBuildThisFileDirectory)../nuget/AspNetCore.csproj"
-        Targets="Pack"
+        Targets="Restore;Pack"
         Properties="PackageVersion=$(PackageVersion);PackageOutputPath=$(PackageOutputPath)" />
   </Target>
 
