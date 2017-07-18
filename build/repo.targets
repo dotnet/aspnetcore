@@ -4,7 +4,7 @@
   <!-- packages required to implement the targets in this file-->
   <PropertyGroup>
     <BuildDependsOn>Restore;CopyAndExtractUnsignedPackages;VerifyUnsignedPackages;LegacyBuild;CreateTimestampFreePackages;Publish</BuildDependsOn>
-    <PublishDependsOn>VerifySignedPackages;PushPackages</PublishDependsOn>
+    <PublishDependsOn>VerifySignedPackages;VerifySignedRuntimeStoreBinaries;PushPackages</PublishDependsOn>
   </PropertyGroup>
 
   <Target Name="Build" DependsOnTargets="$(BuildDependsOn)" />
@@ -133,6 +133,13 @@
        ArtifactDirectory="$(NoTimestampPackagesDir)"
        RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Signed.json"
        Condition="Exists('$(NoTimestampPackagesDir)')" />
+  </Target>
+
+  <Target Name="VerifySignedRuntimeStoreBinaries" Condition="'$(VerifySignatures)' != 'false'">
+    <ItemGroup>
+      <SignedRuntimeStoreBinaries Include="$(UnsignedPackageCachePath)**\*.dll" Exclude="$(UnsignedPackageCachePath)*.*"/>
+    </ItemGroup>
+    <RepoTasks.VerifySignedRuntimeStoreBinaries Binaries="@(SignedRuntimeStoreBinaries)" />
   </Target>
 
   <Target Name="CreateTimestampFreePackages" DependsOnTargets="_FindDotNetPath">
