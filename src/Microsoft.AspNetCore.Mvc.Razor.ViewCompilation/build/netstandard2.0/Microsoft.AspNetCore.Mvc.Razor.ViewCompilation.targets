@@ -36,7 +36,7 @@
   <Target
     Name="_RunForCore"
     DependsOnTargets="_CreateResponseFileForMvcRazorPrecompile"
-    Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp'">
+    Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp' AND '$(RuntimeIdentifier)'==''">
 
     <!--
     GetDotNetHost attempts to locate the muxer path if the executing process is a .NET Core application i.e. dotnet msbuild.
@@ -144,7 +144,7 @@
 
   <Target Name="_MvcRazorResolveFilesToCompute"
     AfterTargets="ComputeRefAssembliesToPublish"
-    Condition="'$(MvcRazorCompileOnPublish)'=='true'">
+    Condition="'$(MvcRazorCompileOnPublish)'=='true' AND ('$(TargetFrameworkIdentifier)'!='.NETCoreApp' OR '$(RuntimeIdentifier)'=='')">
 
     <PropertyGroup>
       <_MvcRazorOutputPdbFullPath>$([System.IO.Path]::ChangeExtension('$(_MvcRazorOutputFullPath)', '.pdb'))</_MvcRazorOutputPdbFullPath>
@@ -155,11 +155,11 @@
           Remove="%(MvcRazorFilesToCompile.FullPath)"
           Condition="'$(MvcRazorExcludeViewFilesFromPublish)'=='true'" />
 
-      <ResolvedFileToPublish Include="$(_MvcRazorOutputFullPath)" CopyToPublishDirectory="Always">
+      <ResolvedFileToPublish Include="$(_MvcRazorOutputFullPath)" CopyToPublishDirectory="Always" Condition="Exists('$(_MvcRazorOutputFullPath)')">
         <RelativePath>$([System.IO.Path]::GetFileName('$(_MvcRazorOutputFullPath)'))</RelativePath>
       </ResolvedFileToPublish>
 
-      <ResolvedFileToPublish Include="$(_MvcRazorOutputPdbFullPath)" CopyToPublishDirectory="Always">
+      <ResolvedFileToPublish Include="$(_MvcRazorOutputPdbFullPath)" CopyToPublishDirectory="Always" Condition="Exists('$(_MvcRazorOutputPdbFullPath)')">
         <RelativePath>$([System.IO.Path]::GetFileName('$(_MvcRazorOutputPdbFullPath)'))</RelativePath>
       </ResolvedFileToPublish>
     </ItemGroup>
