@@ -8,20 +8,30 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class LoggingConnectionAdapterTests
     {
-        // This test is particularly flaky on some teamcity agents, so skip there for now.
-        // https://github.com/aspnet/KestrelHttpServer/issues/1697
-        [ConditionalFact]
-        [EnvironmentVariableSkipCondition("TEAMCITY_VERSION", null)]
+        private readonly ITestOutputHelper _output;
+
+        public LoggingConnectionAdapterTests(ITestOutputHelper output)
+        {
+            _output = output;
+        }
+
+        [Fact]
         public async Task LoggingConnectionAdapterCanBeAddedBeforeAndAfterHttpsAdapter()
         {
             var host = new WebHostBuilder()
+                .ConfigureLogging(builder =>
+                {
+                    builder.SetMinimumLevel(LogLevel.Trace);
+                    builder.AddXunit(_output);
+                })
                 .UseKestrel(options =>
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
