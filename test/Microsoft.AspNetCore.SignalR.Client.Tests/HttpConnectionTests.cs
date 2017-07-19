@@ -434,6 +434,108 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
         }
 
         [Fact]
+        public async Task EventQueueTimeout()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                });
+
+            var mockTransport = new Mock<ITransport>();
+            Channel<byte[], SendMessage> channel = null;
+            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>()))
+                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string>((url, c, transferMode, connectionId) =>
+                {
+                    channel = c;
+                    return Task.CompletedTask;
+                });
+            mockTransport.Setup(t => t.StopAsync())
+                .Returns(() =>
+                {
+                    channel.Out.TryComplete();
+                    return Task.CompletedTask;
+                });
+            mockTransport.SetupGet(t => t.Mode).Returns(TransferMode.Text);
+
+            var blockReceiveCallbackTcs = new TaskCompletionSource<object>();
+            var closedTcs = new TaskCompletionSource<object>();
+
+            var connection = new HttpConnection(new Uri("http://fakeuri.org/"), new TestTransportFactory(mockTransport.Object), loggerFactory: null, httpMessageHandler: mockHttpHandler.Object);
+            connection.Received +=
+                async m =>
+                {
+                    await blockReceiveCallbackTcs.Task;
+                };
+            connection.Closed += _ => {
+                closedTcs.SetResult(null);
+                return Task.CompletedTask;
+            };
+                
+            await connection.StartAsync();
+            channel.Out.TryWrite(Array.Empty<byte>());
+
+            // Ensure that SignalR isn't blocked by the receive callback
+            Assert.False(channel.In.TryRead(out var message));
+
+            await connection.DisposeAsync();
+        }
+
+        [Fact]
+        public async Task EventQueueTimeoutWithException()
+        {
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+                    return request.Method == HttpMethod.Options
+                        ? ResponseUtils.CreateResponse(HttpStatusCode.OK, ResponseUtils.CreateNegotiationResponse())
+                        : ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                });
+
+            var mockTransport = new Mock<ITransport>();
+            Channel<byte[], SendMessage> channel = null;
+            mockTransport.Setup(t => t.StartAsync(It.IsAny<Uri>(), It.IsAny<Channel<byte[], SendMessage>>(), It.IsAny<TransferMode>(), It.IsAny<string>()))
+                .Returns<Uri, Channel<byte[], SendMessage>, TransferMode, string>((url, c, transferMode, connectionId) =>
+                {
+                    channel = c;
+                    return Task.CompletedTask;
+                });
+            mockTransport.Setup(t => t.StopAsync())
+                .Returns(() =>
+                {
+                    channel.Out.TryComplete();
+                    return Task.CompletedTask;
+                });
+            mockTransport.SetupGet(t => t.Mode).Returns(TransferMode.Text);
+
+            var callbackInvokedTcs = new TaskCompletionSource<object>();
+            var closedTcs = new TaskCompletionSource<object>();
+
+            var connection = new HttpConnection(new Uri("http://fakeuri.org/"), new TestTransportFactory(mockTransport.Object), loggerFactory: null, httpMessageHandler: mockHttpHandler.Object);
+            connection.Received +=
+                m =>
+                {
+                    throw new OperationCanceledException();
+                };
+
+            await connection.StartAsync();
+            channel.Out.TryWrite(Array.Empty<byte>());
+
+            // Ensure that SignalR isn't blocked by the receive callback
+            Assert.False(channel.In.TryRead(out var message));
+
+            await connection.DisposeAsync();
+        }
+
+        [Fact]
         public async Task ClosedEventNotRaisedWhenTheClientIsStoppedButWasNeverStarted()
         {
             var connection = new HttpConnection(new Uri("http://fakeuri.org/"));
