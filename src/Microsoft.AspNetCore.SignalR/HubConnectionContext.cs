@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Features;
+using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Features;
@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.SignalR
 
         private IHubFeature HubFeature => Features.Get<IHubFeature>();
 
+        private IDataEncoderFeature DataEncoderFeature => Features.Get<IDataEncoderFeature>();
+
         // Used by the HubEndPoint only
         internal ReadableChannel<byte[]> Input => _connectionContext.Transport;
 
@@ -41,6 +43,12 @@ namespace Microsoft.AspNetCore.SignalR
         {
             get => HubFeature.Protocol;
             set => HubFeature.Protocol = value;
+        }
+
+        public IDataEncoder DataEncoder
+        {
+            get => DataEncoderFeature.DataEncoder;
+            set => DataEncoderFeature.DataEncoder = value;
         }
 
         public virtual WritableChannel<byte[]> Output => _output;

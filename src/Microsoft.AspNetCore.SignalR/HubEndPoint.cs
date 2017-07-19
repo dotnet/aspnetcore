@@ -15,14 +15,19 @@ using Microsoft.AspNetCore.SignalR.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 
 namespace Microsoft.AspNetCore.SignalR
 {
     public class HubEndPoint<THub> : IInvocationBinder where THub : Hub
     {
+        private static readonly Base64Encoder Base64Encoder = new Base64Encoder();
+        private static readonly PassThroughEncoder PassThroughEncoder = new PassThroughEncoder();
+
         private readonly Dictionary<string, HubMethodDescriptor> _methods = new Dictionary<string, HubMethodDescriptor>(StringComparer.OrdinalIgnoreCase);
 
         private readonly HubLifetimeManager<THub> _lifetimeManager;
@@ -51,12 +56,15 @@ namespace Microsoft.AspNetCore.SignalR
             var output = Channel.CreateUnbounded<byte[]>();
 
             // Set the hub feature before doing anything else. This stores
-            // all the relevant state for a SignalR Hub connection
+            // all the relevant state for a SignalR Hub connection.
             connection.Features.Set<IHubFeature>(new HubFeature());
+            connection.Features.Set<IDataEncoderFeature>(new DataEncoderFeature());
 
             var connectionContext = new HubConnectionContext(output, connection);
 
             await ProcessNegotiate(connectionContext);
+
+            var encoder = connectionContext.DataEncoder;
 
             // Hubs support multiple producers so we set up this loop to copy
             // data written to the HubConnectionContext's channel to the transport channel
@@ -66,6 +74,8 @@ namespace Microsoft.AspNetCore.SignalR
                 {
                     while (output.In.TryRead(out var buffer))
                     {
+                        buffer = encoder.Encode(buffer);
+
                         while (await connection.Transport.Out.WaitToWriteAsync())
                         {
                             if (connection.Transport.Out.TryWrite(buffer))
@@ -107,7 +117,20 @@ namespace Microsoft.AspNetCore.SignalR
                         // Resolve the Hub Protocol for the connection and store it in metadata
                         // Other components, outside the Hub, may need to know what protocol is in use
                         // for a particular connection, so we store it here.
-                        connection.Protocol = _protocolResolver.GetProtocol(negotiationMessage.Protocol, connection);
+                        var protocol = _protocolResolver.GetProtocol(negotiationMessage.Protocol, connection);
+                        connection.Protocol = protocol;
+
+                        var transportCapabilities = connection.Features.Get<IConnectionTransportFeature>()?.TransportCapabilities
+                            ?? throw new InvalidOperationException("Unable to read transport capabilities.");
+
+                        if (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) == 0)
+                        {
+                            connection.DataEncoder = Base64Encoder;
+                        }
+                        else
+                        {
+                            connection.DataEncoder = PassThroughEncoder;
+                        }
 
                         return;
                     }
@@ -201,6 +224,8 @@ namespace Microsoft.AspNetCore.SignalR
                 {
                     while (connection.Input.TryRead(out var buffer))
                     {
+                        buffer = connection.DataEncoder.Decode(buffer);
+
                         if (protocol.TryParseMessages(buffer, this, out var hubMessages))
                         {
                             foreach (var hubMessage in hubMessages)

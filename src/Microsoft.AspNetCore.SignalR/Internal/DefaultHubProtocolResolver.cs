@@ -3,7 +3,6 @@
 
 using System;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
-using Microsoft.AspNetCore.Sockets;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Internal

@@ -8,10 +8,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Newtonsoft.Json;
-using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
@@ -26,6 +27,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         private CancellationTokenSource _receiveShutdownToken = new CancellationTokenSource();
         private Task _receiveLoop;
 
+        private TransferMode? _transferMode;
+
         public event Func<Task> Connected;
         public event Func<byte[], Task> Received;
         public event Func<Exception, Task> Closed;
@@ -37,8 +40,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
-        public TestConnection()
+        public TestConnection(TransferMode? transferMode = null)
         {
+            _transferMode = transferMode;
             _receiveLoop = ReceiveLoopAsync(_receiveShutdownToken.Token);
         }
 
@@ -68,6 +72,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         public Task StartAsync()
         {
+            if (_transferMode.HasValue)
+            {
+                var transferModeFeature = Features.Get<ITransferModeFeature>();
+                if (transferModeFeature == null)
+                {
+                    transferModeFeature = new TransferModeFeature();
+                    Features.Set(transferModeFeature);
+                }
+
+                transferModeFeature.TransferMode = _transferMode.Value;
+            }
+
             _started.TrySetResult(null);
             Connected?.Invoke();
             return Task.CompletedTask;

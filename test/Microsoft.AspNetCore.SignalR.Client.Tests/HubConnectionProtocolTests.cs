@@ -2,11 +2,15 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.Logging;
+using Moq;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -313,6 +317,58 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 1, target = "Foo", arguments = args }).OrTimeout();
 
                 Assert.Equal(args, await handlerCalled.Task.OrTimeout());
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task MessagesEncodedWhenUsingBinaryProtocolOverTextTransport()
+        {
+            var connection = new TestConnection(TransferMode.Text);
+
+            var hubConnection = new HubConnection(connection, new MessagePackHubProtocol(), new LoggerFactory());
+            try
+            {
+                await hubConnection.StartAsync().OrTimeout();
+                await hubConnection.SendAsync("MyMethod", 42).OrTimeout();
+
+                await connection.ReadSentTextMessageAsync().OrTimeout();
+                var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
+
+                // this throws if the message is not a valid base64 string
+                Convert.FromBase64String(invokeMessage);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task MessagesDecodedWhenUsingBinaryProtocolOverTextTransport()
+        {
+            var connection = new TestConnection(TransferMode.Text);
+            var hubConnection = new HubConnection(connection, new MessagePackHubProtocol(), new LoggerFactory());
+
+            var invocationTcs = new TaskCompletionSource<int>();
+            try
+            {
+                await hubConnection.StartAsync().OrTimeout();
+                hubConnection.On<int>("MyMethod", result => invocationTcs.SetResult(result));
+
+                using (var ms = new MemoryStream())
+                {
+                    new MessagePackHubProtocol().WriteMessage(new InvocationMessage("1", true, "MyMethod", 42), ms);
+                    var invokeMessage = Convert.ToBase64String(ms.ToArray());
+                    connection.ReceivedMessages.TryWrite(Encoding.UTF8.GetBytes(invokeMessage));
+                }
+
+                Assert.Equal(42, await invocationTcs.Task);
             }
             finally
             {

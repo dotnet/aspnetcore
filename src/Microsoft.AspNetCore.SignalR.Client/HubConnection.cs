@@ -4,16 +4,18 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using Newtonsoft.Json;
@@ -27,6 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         private readonly IConnection _connection;
         private readonly IHubProtocol _protocol;
         private readonly HubBinder _binder;
+        private IDataEncoder _encoder;
 
         private readonly object _pendingCallsLock = new object();
         private readonly CancellationTokenSource _connectionActive = new CancellationTokenSource();
@@ -86,12 +89,27 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 _connection.Features.Set(transferModeFeature);
             }
 
-            transferModeFeature.TransferMode =
-                (_protocol.Type == ProtocolType.Binary)
+            var requestedTransferMode =
+                _protocol.Type == ProtocolType.Binary
                     ? TransferMode.Binary
                     : TransferMode.Text;
 
+            transferModeFeature.TransferMode = requestedTransferMode;
             await _connection.StartAsync();
+            var actualTransferMode = transferModeFeature.TransferMode;
+
+            if (requestedTransferMode == TransferMode.Binary && actualTransferMode == TransferMode.Text)
+            {
+                // This is for instance for SSE which is a Text protocol and the user wants to use a binary
+                // protocol so we need to encode messages.
+                _encoder = new Base64Encoder();
+            }
+            else
+            {
+                Debug.Assert(requestedTransferMode == actualTransferMode, "All transports besides SSE are expected to support binary mode.");
+
+                _encoder = new PassThroughEncoder();
+            }
 
             using (var memoryStream = new MemoryStream())
             {
@@ -171,7 +189,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             try
             {
-                var payload = _protocol.WriteToArray(invocationMessage);
+                var payload = _encoder.Encode(_protocol.WriteToArray(invocationMessage));
 
                 _logger.LogInformation("Sending Invocation '{invocationId}'", invocationMessage.InvocationId);
 
@@ -188,6 +206,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task OnDataReceivedAsync(byte[] data)
         {
+            data = _encoder.Decode(data);
+
             if (_protocol.TryParseMessages(data, _binder, out var messages))
             {
                 foreach (var message in messages)
