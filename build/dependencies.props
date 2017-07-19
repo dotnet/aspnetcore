@@ -5,10 +5,10 @@
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <DotnetDebToolVersion>2.0.0-preview2-*</DotnetDebToolVersion>
     <InternalAspNetCoreSdkVersion>2.0.1-*</InternalAspNetCoreSdkVersion>
+    <JsonNetVersion>10.0.1</JsonNetVersion>
     <MoqVersion>4.7.49</MoqVersion>
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
-    <NewtonsoftJsonVersion>10.0.1</NewtonsoftJsonVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
     <XunitVersion>2.3.0-beta2-*</XunitVersion>
