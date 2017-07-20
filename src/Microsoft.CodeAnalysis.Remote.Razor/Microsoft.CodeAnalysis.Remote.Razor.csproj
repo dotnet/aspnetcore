@@ -22,8 +22,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevVersion)" />
+    <!-- Temporarily disable package downgrade warnings.  Revert when RoslynDevVersion >= RoslynVersion. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
+
     <PackageReference Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(RoslynDevVersion)" />
     <PackageReference Include="StreamJsonRpc" Version="$(StreamJsonRpcVersion)" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />

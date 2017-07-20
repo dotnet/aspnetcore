@@ -24,8 +24,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevVersion)" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevVersion)" />
+    <!-- Temporarily disable package downgrade warnings.  Revert when RoslynDevVersion >= RoslynVersion. -->
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
+    
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="$(DependencyModelVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
     <PackageReference Include="Moq" Version="$(MoqVersion)" />
