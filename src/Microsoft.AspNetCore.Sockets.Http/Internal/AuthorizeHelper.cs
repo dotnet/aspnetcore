@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             // This will set context.User if required
             var authenticateResult = await policyEvaluator.AuthenticateAsync(authorizePolicy, context);
 
-            var authorizeResult = await policyEvaluator.AuthorizeAsync(authorizePolicy, authenticateResult, context);
+            var authorizeResult = await policyEvaluator.AuthorizeAsync(authorizePolicy, authenticateResult, context, resource: null);
             if (authorizeResult.Succeeded)
             {
                 return true;
