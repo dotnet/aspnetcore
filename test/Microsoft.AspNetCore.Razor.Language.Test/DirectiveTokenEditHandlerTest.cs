@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var result = directiveTokenHandler.CanAcceptChange(target, sourceChange);
 
             // Assert
-            Assert.Equal(PartialParseResultInternal.Accepted | PartialParseResultInternal.Provisional, result);
+            Assert.Equal(PartialParseResult.Accepted | PartialParseResult.Provisional, result);
         }
 
         [Theory]
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             var result = directiveTokenHandler.CanAcceptChange(target, sourceChange);
 
             // Assert
-            Assert.Equal(PartialParseResultInternal.Rejected, result);
+            Assert.Equal(PartialParseResult.Rejected, result);
         }
 
         private class TestDirectiveTokenEditHandler : DirectiveTokenEditHandler
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Test
             {
             }
 
-            public new PartialParseResultInternal CanAcceptChange(Span target, SourceChange change)
+            public new PartialParseResult CanAcceptChange(Span target, SourceChange change)
                 => base.CanAcceptChange(target, change);
         }
     }

@@ -48,11 +48,7 @@ namespace Microsoft.CodeAnalysis.Razor
             for (var i = 0; i < types.Count; i++)
             {
                 var descriptor = factory.CreateDescriptor(types[i]);
-
-                if (descriptor != null)
-                {
-                    context.Results.Add(descriptor);
-                }
+                context.Results.Add(descriptor);
             }
         }
 

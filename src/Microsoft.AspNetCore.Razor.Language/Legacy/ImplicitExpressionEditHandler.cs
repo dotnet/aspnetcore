@@ -59,11 +59,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return hashCodeCombiner;
         }
 
-        protected override PartialParseResultInternal CanAcceptChange(Span target, SourceChange change)
+        protected override PartialParseResult CanAcceptChange(Span target, SourceChange change)
         {
             if (AcceptedCharacters == AcceptedCharactersInternal.Any)
             {
-                return PartialParseResultInternal.Rejected;
+                return PartialParseResult.Rejected;
             }
 
             // In some editors intellisense insertions are handled as "dotless commits".  If an intellisense selection is confirmed
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Don't support 0->1 length edits
             if (lastChar == null)
             {
-                return PartialParseResultInternal.Rejected;
+                return PartialParseResult.Rejected;
             }
 
             // Accepts cases when insertions are made at the end of a span or '.' is inserted within a span.
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return HandleDeletion(target, lastChar.Value, change);
             }
 
-            return PartialParseResultInternal.Rejected;
+            return PartialParseResult.Rejected;
         }
 
         // A dotless commit is the process of inserting a '.' with an intellisense selection.
@@ -249,17 +249,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return string.IsNullOrWhiteSpace(target.Content.Substring(offset));
         }
 
-        private PartialParseResultInternal HandleDotlessCommitInsertion(Span target)
+        private PartialParseResult HandleDotlessCommitInsertion(Span target)
         {
-            var result = PartialParseResultInternal.Accepted;
+            var result = PartialParseResult.Accepted;
             if (!AcceptTrailingDot && target.Content.LastOrDefault() == '.')
             {
-                result |= PartialParseResultInternal.Provisional;
+                result |= PartialParseResult.Provisional;
             }
             return result;
         }
 
-        private PartialParseResultInternal HandleReplacement(Span target, SourceChange change)
+        private PartialParseResult HandleReplacement(Span target, SourceChange change)
         {
             // Special Case for IntelliSense commits.
             //  When IntelliSense commits, we get two changes (for example user typed "Date", then committed "DateTime" by pressing ".")
@@ -268,24 +268,24 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             //  We need partial parsing to accept case #2.
             var oldText = change.GetOriginalText(target);
 
-            var result = PartialParseResultInternal.Rejected;
+            var result = PartialParseResult.Rejected;
             if (EndsWithDot(oldText) && EndsWithDot(change.NewText))
             {
-                result = PartialParseResultInternal.Accepted;
+                result = PartialParseResult.Accepted;
                 if (!AcceptTrailingDot)
                 {
-                    result |= PartialParseResultInternal.Provisional;
+                    result |= PartialParseResult.Provisional;
                 }
             }
             return result;
         }
 
-        private PartialParseResultInternal HandleDeletion(Span target, char previousChar, SourceChange change)
+        private PartialParseResult HandleDeletion(Span target, char previousChar, SourceChange change)
         {
             // What's left after deleting?
             if (previousChar == '.')
             {
-                return TryAcceptChange(target, change, PartialParseResultInternal.Accepted | PartialParseResultInternal.Provisional);
+                return TryAcceptChange(target, change, PartialParseResult.Accepted | PartialParseResult.Provisional);
             }
             else if (ParserHelpers.IsIdentifierPart(previousChar))
             {
@@ -293,11 +293,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else
             {
-                return PartialParseResultInternal.Rejected;
+                return PartialParseResult.Rejected;
             }
         }
 
-        private PartialParseResultInternal HandleInsertion(Span target, char previousChar, SourceChange change)
+        private PartialParseResult HandleInsertion(Span target, char previousChar, SourceChange change)
         {
             // What are we inserting after?
             if (previousChar == '.')
@@ -310,11 +310,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             else
             {
-                return PartialParseResultInternal.Rejected;
+                return PartialParseResult.Rejected;
             }
         }
 
-        private PartialParseResultInternal HandleInsertionAfterIdPart(Span target, SourceChange change)
+        private PartialParseResult HandleInsertionAfterIdPart(Span target, SourceChange change)
         {
             // If the insertion is a full identifier part, accept it
             if (ParserHelpers.IsIdentifier(change.NewText, requireIdentifierStart: false))
@@ -324,16 +324,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             else if (EndsWithDot(change.NewText))
             {
                 // Accept it, possibly provisionally
-                var result = PartialParseResultInternal.Accepted;
+                var result = PartialParseResult.Accepted;
                 if (!AcceptTrailingDot)
                 {
-                    result |= PartialParseResultInternal.Provisional;
+                    result |= PartialParseResult.Provisional;
                 }
                 return TryAcceptChange(target, change, result);
             }
             else
             {
-                return PartialParseResultInternal.Rejected;
+                return PartialParseResult.Rejected;
             }
         }
 
@@ -344,22 +344,22 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     content.Take(content.Length - 1).All(ParserHelpers.IsIdentifierPart));
         }
 
-        private PartialParseResultInternal HandleInsertionAfterDot(Span target, SourceChange change)
+        private PartialParseResult HandleInsertionAfterDot(Span target, SourceChange change)
         {
             // If the insertion is a full identifier or another dot, accept it
             if (ParserHelpers.IsIdentifier(change.NewText) || change.NewText == ".")
             {
                 return TryAcceptChange(target, change);
             }
-            return PartialParseResultInternal.Rejected;
+            return PartialParseResult.Rejected;
         }
 
-        private PartialParseResultInternal TryAcceptChange(Span target, SourceChange change, PartialParseResultInternal acceptResult = PartialParseResultInternal.Accepted)
+        private PartialParseResult TryAcceptChange(Span target, SourceChange change, PartialParseResult acceptResult = PartialParseResult.Accepted)
         {
             var content = change.GetEditedContent(target);
             if (StartsWithKeyword(content))
             {
-                return PartialParseResultInternal.Rejected | PartialParseResultInternal.SpanContextChanged;
+                return PartialParseResult.Rejected | PartialParseResult.SpanContextChanged;
             }
 
             return acceptResult;

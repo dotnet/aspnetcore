@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
         }
 
-        protected override PartialParseResultInternal CanAcceptChange(Span target, SourceChange change)
+        protected override PartialParseResult CanAcceptChange(Span target, SourceChange change)
         {
             if (AcceptedCharacters == AcceptedCharactersInternal.NonWhiteSpace)
             {
@@ -25,11 +25,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                     // Did not modify whitespace, directive format should be the same.
                     // Return provisional so extensible IR/code gen pieces can see the full directive text
                     // once the user stops editing the document.
-                    return PartialParseResultInternal.Accepted | PartialParseResultInternal.Provisional;
+                    return PartialParseResult.Accepted | PartialParseResult.Provisional;
                 }
             }
 
-            return PartialParseResultInternal.Rejected;
+            return PartialParseResult.Rejected;
 
         }
 

@@ -5,13 +5,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class EditResult
     {
-        public EditResult(PartialParseResultInternal result, SpanBuilder editedSpan)
+        public EditResult(PartialParseResult result, SpanBuilder editedSpan)
         {
             Result = result;
             EditedSpan = editedSpan;
         }
 
-        public PartialParseResultInternal Result { get; set; }
+        public PartialParseResult Result { get; set; }
         public SpanBuilder EditedSpan { get; set; }
     }
 }

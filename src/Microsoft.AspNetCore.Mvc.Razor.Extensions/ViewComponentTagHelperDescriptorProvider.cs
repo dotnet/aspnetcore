@@ -55,12 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var factory = new ViewComponentTagHelperDescriptorFactory(compilation);
             for (var i = 0; i < types.Count; i++)
             {
-                var descriptor = factory.CreateDescriptor(types[i]);
-
-                if (descriptor != null)
-                {
-                    context.Results.Add(descriptor);
-                }
+                context.Results.Add(factory.CreateDescriptor(types[i]));
             }
         }
 
