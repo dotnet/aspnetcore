@@ -67,17 +67,21 @@ namespace Microsoft.AspNetCore.Authorization.Policy
         /// <param name="policy">The <see cref="AuthorizationPolicy"/>.</param>
         /// <param name="authenticationResult">The result of a call to <see cref="AuthenticateAsync(AuthorizationPolicy, HttpContext)"/>.</param>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
+        /// <param name="resource">
+        /// An optional resource the policy should be checked with.
+        /// If a resource is not required for policy evaluation you may pass null as the value.
+        /// </param>
         /// <returns>Returns <see cref="PolicyAuthorizationResult.Success"/> if authorization succeeds.
         /// Otherwise returns <see cref="PolicyAuthorizationResult.Forbid"/> if <see cref="AuthenticateResult.Succeeded"/>, otherwise
         /// returns  <see cref="PolicyAuthorizationResult.Challenge"/></returns>
-        public virtual async Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy, AuthenticateResult authenticationResult, HttpContext context)
+        public virtual async Task<PolicyAuthorizationResult> AuthorizeAsync(AuthorizationPolicy policy, AuthenticateResult authenticationResult, HttpContext context, object resource)
         {
             if (policy == null)
             {
                 throw new ArgumentNullException(nameof(policy));
             }
 
-            var result = await _authorization.AuthorizeAsync(context.User, context, policy);
+            var result = await _authorization.AuthorizeAsync(context.User, resource, policy);
             if (result.Succeeded)
             {
                 return PolicyAuthorizationResult.Success();
