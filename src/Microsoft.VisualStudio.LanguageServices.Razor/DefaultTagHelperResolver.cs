@@ -44,10 +44,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         if (session != null)
                         {
                             var jsonObject = await session.InvokeAsync<JObject>(
-                                    "GetTagHelpersAsync",
-                                    new object[] { project.Id.Id, "Foo", },
-                                    CancellationToken.None
-                                ).ConfigureAwait(false);
+                                "GetTagHelpersAsync",
+                                new object[] { project.Id.Id, "Foo", }).ConfigureAwait(false);
 
                             result = GetTagHelperResolutionResult(jsonObject);
 

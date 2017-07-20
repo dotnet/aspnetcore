@@ -38,14 +38,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         public virtual EditResult ApplyChange(Span target, SourceChange change, bool force)
         {
-            var result = PartialParseResult.Accepted;
+            var result = PartialParseResultInternal.Accepted;
             if (!force)
             {
                 result = CanAcceptChange(target, change);
             }
 
             // If the change is accepted then apply the change
-            if ((result & PartialParseResult.Accepted) == PartialParseResult.Accepted)
+            if ((result & PartialParseResultInternal.Accepted) == PartialParseResultInternal.Accepted)
             {
                 return new EditResult(result, UpdateSpan(target, change));
             }
@@ -60,9 +60,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                    (changeOldEnd < end || (changeOldEnd == end && AcceptedCharacters != AcceptedCharactersInternal.None));
         }
 
-        protected virtual PartialParseResult CanAcceptChange(Span target, SourceChange change)
+        protected virtual PartialParseResultInternal CanAcceptChange(Span target, SourceChange change)
         {
-            return PartialParseResult.Rejected;
+            return PartialParseResultInternal.Rejected;
         }
 
         protected virtual SpanBuilder UpdateSpan(Span target, SourceChange change)

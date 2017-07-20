@@ -1,10 +1,10 @@
 Source Location: (8:0,8 [5] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inject.cshtml)
 |MyApp|
-Generated Location: (852:19,0 [5] )
+Generated Location: (673:18,0 [5] )
 |MyApp|
 
 Source Location: (14:0,14 [14] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Inject.cshtml)
 |MyPropertyName|
-Generated Location: (972:23,22 [14] )
+Generated Location: (793:22,22 [14] )
 |MyPropertyName|
 

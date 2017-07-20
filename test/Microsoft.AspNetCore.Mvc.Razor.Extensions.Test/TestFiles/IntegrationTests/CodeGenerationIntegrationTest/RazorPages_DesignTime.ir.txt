@@ -1,6 +1,4 @@
 Document - 
-    CSharpCode - 
-        IntermediateToken -  - CSharp - [assembly:global::Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure.RazorPageAttribute(null, typeof(AspNetCore.TestFiles_IntegrationTests_CodeGenerationIntegrationTest_RazorPages_cshtml), null)]
     NamespaceDeclaration -  - AspNetCore
         UsingDirective -  - TModel = global::System.Object
         UsingDirective - (1:0,1 [12] ) - System
