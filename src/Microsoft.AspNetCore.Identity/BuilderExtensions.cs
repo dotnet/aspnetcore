@@ -11,12 +11,21 @@ namespace Microsoft.AspNetCore.Builder
     public static class BuilderExtensions
     {
         /// <summary>
+        /// <para>
+        /// This method is obsolete and will be removed in a future version.
+        /// The recommended alternative is <see cref="AuthAppBuilderExtensions.UseAuthentication(IApplicationBuilder)" />
+        /// </para>
+        /// <para>
         /// Enables ASP.NET identity for the current application.
+        /// </para>
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> instance this method extends.</param>
         /// <returns>The <see cref="IApplicationBuilder"/> instance this method extends.</returns>
-        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470")]
+        [Obsolete(
+            "This method is obsolete and will be removed in a future version. " +
+            "The recommended alternative is UseAuthentication(). " +
+            "See https://go.microsoft.com/fwlink/?linkid=845470")]
         public static IApplicationBuilder UseIdentity(this IApplicationBuilder app)
-            => app.UseAuthentication(); 
+            => app.UseAuthentication();
     }
 }
