@@ -1075,6 +1075,17 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
         }
 
         [Fact]
+        public async Task AuthorizeAttributeIsExecutedPriorToAutoAntiforgeryFilter()
+        {
+            // Act
+            var response = await Client.PostAsync("/Pages/Admin/Edit", new StringContent(""));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+            Assert.Equal("/Login?ReturnUrl=%2FPages%2FAdmin%2FEdit", response.Headers.Location.PathAndQuery);
+        }
+
+        [Fact]
         public async Task PageFiltersAppliedToPageModel_AreExecuted()
         {
             // Arrange

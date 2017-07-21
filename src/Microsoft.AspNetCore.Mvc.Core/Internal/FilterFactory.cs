@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
@@ -26,9 +27,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actionDescriptor = actionContext.ActionDescriptor;
 
             var staticFilterItems = new FilterItem[actionDescriptor.FilterDescriptors.Count];
-            for (var i = 0; i < actionDescriptor.FilterDescriptors.Count; i++)
+
+            var orderedFilters = actionDescriptor.FilterDescriptors
+                .OrderBy(
+                    filter => filter,
+                    FilterDescriptorOrderComparer.Comparer)
+                .ToList();
+
+            for (var i = 0; i < orderedFilters.Count; i++)
             {
-                staticFilterItems[i] = new FilterItem(actionDescriptor.FilterDescriptors[i]);
+                staticFilterItems[i] = new FilterItem(orderedFilters[i]);
             }
 
             var allFilterItems = new List<FilterItem>(staticFilterItems);
