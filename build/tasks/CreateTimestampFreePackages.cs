@@ -6,60 +6,69 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using NuGet.Packaging;
 using NuGet.Packaging.Core;
 using NuGet.Versioning;
 
-namespace CreateTimestampFreePackages
+namespace RepoTasks
 {
-    class Program
+    public class CreateTimestampFreePackages : Task
     {
-        public static int Main(string[] args)
+        /// <summary>
+        /// The packages to produce time stamp free versions for.
+        /// </summary>
+        [Required]
+        public ITaskItem[] PackagesWithTimestamp { get; set; }
+
+        /// <summary>
+        /// The directory to output time stamp free packages to.
+        /// </summary>
+        [Required]
+        public string OutputDirectory { get; set; }
+
+        [Output]
+        public ITaskItem[] PackagesWithoutTimestamp { get; set; }
+
+        public override bool Execute()
         {
-            if (args.Length != 2)
+            var packageIds = GetKnownPackageIds();
+
+            var output = new List<ITaskItem>();
+            foreach (var package in PackagesWithTimestamp)
             {
-                Console.Error.WriteLine("Usage CreateTimestampFreePackages <SourcePackagesDir> <TargetPackagesDir>");
-                return 1;
+                var packageWithoutTimestampPath = CreateTimeStampFreePackage(packageIds, package.ItemSpec);
+                Log.LogMessage($"Creating timestamp free version at {packageWithoutTimestampPath} from {package.ItemSpec}.");
+
+                output.Add(new TaskItem(packageWithoutTimestampPath));
             }
 
-            var packagesDir = args[0].Trim();
-            var nonTimeStampedDir = args[1].Trim();
-            Directory.CreateDirectory(nonTimeStampedDir);
-            var packages = Directory.GetFiles(packagesDir, "*.nupkg");
-            var packageIds = GetPackageIds(packages);
-
-            foreach (var file in packages)
-            {
-                CreateTimeStampFreePackage(packageIds, nonTimeStampedDir, file);
-            }
-
-            return 0;
+            PackagesWithoutTimestamp = output.ToArray();
+            return true;
         }
 
-        public static PackageIdentity GetPackageIdentity(string packagePath)
-        {
-            using (var reader = new PackageArchiveReader(packagePath))
-            {
-                return reader.GetIdentity();
-            }
-        }
-
-        private static HashSet<string> GetPackageIds(string[] packagePaths)
+        private HashSet<string> GetKnownPackageIds()
         {
             var packageIds = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
-            foreach (var packagePath in packagePaths)
+            foreach (var package in PackagesWithTimestamp)
             {
-                packageIds.Add(GetPackageIdentity(packagePath).Id);
+                using (var reader = new PackageArchiveReader(package.ItemSpec))
+                {
+                    var packageId = reader.GetIdentity();
+                    packageIds.Add(packageId.Id);
+                }
             }
 
             return packageIds;
         }
 
-        private static void CreateTimeStampFreePackage(HashSet<string> aspnetPackageIds, string outDir, string packagePath)
+        private string CreateTimeStampFreePackage(HashSet<string> knownPackageIds, string packagePath)
         {
-            var targetPath = Path.Combine(outDir, Path.GetFileName(packagePath));
-            PackageIdentity updatedIdentity;
+            var targetPath = Path.Combine(OutputDirectory, Path.GetFileName(packagePath));
             File.Copy(packagePath, targetPath, overwrite: true);
+
+            PackageIdentity updatedIdentity;
 
             using (var fileStream = File.Open(targetPath, FileMode.Open))
             using (var package = new ZipArchive(fileStream, ZipArchiveMode.Update))
@@ -86,7 +95,7 @@ namespace CreateTimestampFreePackages
                         foreach (var dependency in group.Packages)
                         {
                             PackageDependency dependencyToAdd;
-                            if (aspnetPackageIds.Contains(dependency.Id))
+                            if (knownPackageIds.Contains(dependency.Id))
                             {
                                 dependencyToAdd = UpdateDependency(identity, dependency);
                             }
@@ -111,9 +120,13 @@ namespace CreateTimestampFreePackages
                 }
             }
 
-            var updatedTargetPath = Path.Combine(outDir, updatedIdentity.Id + '.' + updatedIdentity.Version.ToNormalizedString() + ".nupkg");
+            var updatedTargetPath = Path.Combine(OutputDirectory, updatedIdentity.Id + '.' + updatedIdentity.Version.ToNormalizedString() + ".nupkg");
+            if (File.Exists(updatedTargetPath))
+            {
+                File.Delete(updatedTargetPath);
+            }
             File.Move(targetPath, updatedTargetPath);
-            Console.WriteLine("Creating timestamp free version at {0}", updatedTargetPath);
+            return updatedTargetPath;
         }
 
         private static PackageDependency UpdateDependency(PackageIdentity id, PackageDependency dependency)

@@ -30,3 +30,5 @@ project.lock.json
 .vs
 global.json
 korebuild-lock.txt
+msbuild.log
+msbuild.binlog

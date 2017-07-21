@@ -1,0 +1,70 @@
+<Project>
+  <!-- SDL verification tool -->
+  <Target Name="BinScope">
+    <PropertyGroup>
+      <BinScopeOutDir Condition="'$(BinScopeOutDir)' == ''">$(ArtifactsDir)BinScope\</BinScopeOutDir>
+      <BinScopeTargetDir Condition="'$(BinScopeTarget)' == ''">$(IntermediateOutputPath)BinScope\</BinScopeTargetDir>
+      <BinScopeLogFile Condition="'$(BinScopeLogFile)' == ''">$(BinScopeOutDir)BinScopeResults.xml</BinScopeLogFile>
+
+      <BinScope70InstallDir>$(MSBuildProgramFiles32)\Microsoft\BinScope for SDL 7.0\</BinScope70InstallDir>
+
+      <BinScopeInstallDir Condition="('$(BinScopeInstallerDir)' == '') And (Exists('$(BinScope70InstallDir)'))">$(BinScope70InstallDir)</BinScopeInstallDir>
+      <BinScopeEXE Condition="'$(BinScopeEXE)' == ''">$(BinScopeInstallDir)BinScope.EXE</BinScopeEXE>
+
+      <BinScopeSymbolOption Condition="'$(BinScopeSymPath)' != ''">/sympath $(BinScopeSymPath)</BinScopeSymbolOption>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <BinScopeTargetFiles Include="$(SignedBinariesIntermediateOutputPath)*.dll" />
+      <BinScopeTargetFiles Include="$(UnsignedPackagesPath)**\*.pdb" />
+    </ItemGroup>
+
+    <RemoveDir Directories="$(BinScopeTargetDir)" />
+    <MakeDir Directories="$(BinScopeTargetDir)" />
+
+    <Copy SourceFiles="@(BinScopeTargetFiles)" DestinationFiles="@(BinScopeTargetFiles->'$(BinScopeTargetDir)%(RecursiveDir)\%(Filename)%(Extension)')" />
+
+    <WriteLinesToFile
+      File="$(IntermediateOutputPath)BinScope.rsp" Overwrite="true"
+      Lines="@(BinScopeTargetFiles->'/target $(BinScopeTargetDir)%(RecursiveDir)%(Filename)%(Extension) $(BinScopeSymbolOption)')" />
+
+    <Error
+      Message="BinScope could not be found at $(BinScope70InstallDir)"
+      Condition="!Exists('$(BinScopeEXE)') AND '$(LocalBuild)'!='true'" />
+
+    <Warning
+      Text="BinScope could not be found at $(BinScope70InstallDir). Skipping BinScope"
+      Condition="!Exists('$(BinScopeEXE)') AND '$(LocalBuild)'=='true'" />
+
+    <Exec
+      Command="&quot;$(BinScopeEXE)&quot; @$(IntermediateOutputPath)BinScope.rsp /logfile $(BinScopeLogFile) /Xslt"
+      Condition="Exists('$(BinScopeEXE)')" />
+  </Target>
+
+  <!-- Runs NuGetPackageVerifier on signed (timestamped and timestamp-free packages -->
+  <Target Name="VerifySignedPackages">
+    <PropertyGroup>
+      <SignedPackagesDir>$(ArtifactsDir)Signed\Packages\</SignedPackagesDir>
+      <NoTimestampPackagesDir>$(ArtifactsDir)Signed\Packages-NoTimeStamp\</NoTimestampPackagesDir>
+    </PropertyGroup>
+
+    <VerifyPackages
+      ArtifactDirectory="$(SignedPackagesDir)"
+      RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Signed.json"
+      Condition="Exists('$(SignedPackagesDir)')" />
+
+    <VerifyPackages
+      ArtifactDirectory="$(NoTimestampPackagesDir)"
+      RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Signed.json"
+      Condition="Exists('$(NoTimestampPackagesDir)')" />
+  </Target>
+
+  <!-- Ensures binaries in the runtime store are correctly authenticode signed -->
+  <Target Name="VerifySignedRuntimeStoreBinaries">
+    <ItemGroup>
+      <SignedRuntimeStoreBinaries Include="$(UnsignedPackageCachePath)**\*.dll" Exclude="$(UnsignedPackageCachePath)*.*"/>
+    </ItemGroup>
+    <RepoTasks.VerifySignedRuntimeStoreBinaries Binaries="@(SignedRuntimeStoreBinaries)" />
+  </Target>
+
+</Project>

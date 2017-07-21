@@ -1,43 +1,14 @@
+## Prerequisites
 
-How to run Coherence-Signed
-===========================
+* Policheck - http://toolbox/policheck
+* CodeSign.Submitter - \\cp1pd1cdscvlt04\public\Submitter Tool for Download\Submitter 4.1.1.1 (.net v3.5 runtime)\Codesign.Submitter.msi
+* BinScope - http://toolbox/binscope
 
-1. Open a VS "Developer Command Prompt"
+### Running locally without code signing
 
-2. Depending on the Git branch you want to test (e.g. dev or release), run:
-   ```
-   set build_branch=dev
-   set RootDrop=\\aspnetci\drops\Coherence\%build_branch%
-   ```
+`build /t:LocalBuild`
 
-3. Make a temporary edit to `dnx.msbuild` to disable BinScope and signing
-   verification (you generally can't run them locally).
-   Change line 14 from:
-   ```
-   <Target Name="Build" DependsOnTargets="CopyUnsignedPackages;BinScope;VerifySignatures" />
-    ```
-   To:
-   ```
-   <Target Name="Build" DependsOnTargets="CopyUnsignedPackages" />
-    ```
-   (Remember to undo this before you check in!)
-
-4. Run the build file with TestCodeSign=true (because you can't do the
-   real signing):
-   ```
-   msbuild dnx.msbuild /P:TestCodeSign=true
-   ```
-
-5. The output files will end up in `.\bin\Release\Packages`
-
-
-Hints
-=====
-
-To change the source of packages, create a local path in the form:
-```
-    C:\FakeDNXDrop\Coherence\release\12345
-```
-Where `release` is the branch, and `12345` is the build number (the exact number doesn't matter).
-Then in `.\tools\dnx.settings.targets` change `<DNXDropRoot>` to be `C:\FakeDNXDrop\`.
+### Running locally with code signing
+* Launch a shell running under redmond\fxsign (https://microsoft.sharepoint.com/teams/fxsign/SitePages/FxSign-Account.aspx)
+* `build /t:Verify /p:COHERENCE_DROP_LOCATION=<coherence-drop-share-on-ci> /p:COHERENCE_PACKAGECACHE_DROP_LOCATION:<coherence-packagecache-drop-on-ci>`
 

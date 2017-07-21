@@ -1,0 +1,50 @@
+<Project>
+  <PropertyGroup>
+    <PublishFeed>https://dotnet.myget.org/F/aspnetcore-dev/</PublishFeed>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ToolsPath>$(RepositoryRoot)tools\</ToolsPath>
+    <ZipExePath>$(ToolsPath)7Za.exe</ZipExePath>
+    <CodeSignProjectDirectory>$(RepositoryRoot)src\CodeSign\</CodeSignProjectDirectory>
+
+    <!-- Directories to copy files to -->
+    <CoherenceDestinationDir>$(ArtifactsDir)coherence\</CoherenceDestinationDir>
+    <CoherencePackageCacheDestinationDir>$(ArtifactsDir)coherence-packageCache\</CoherencePackageCacheDestinationDir>
+    <CoherenceSignedDestinationDir>$(ArtifactsDir)Signed\</CoherenceSignedDestinationDir>
+
+    <!-- Working directories -->
+    <IntermediateOutputPath>$(RepositoryRoot)obj\</IntermediateOutputPath>
+    <SignedBinariesIntermediateOutputPath>$(IntermediateOutputPath)Signed\</SignedBinariesIntermediateOutputPath>
+    <PoliCheckPath>$(IntermediateOutputPath)policheck\</PoliCheckPath>
+    <PackagesOutputPath>$(ArtifactsDir)Signed\Packages\</PackagesOutputPath>
+    <PackagesOobOutputPath>$(ArtifactsDir)Signed\OobPackages\</PackagesOobOutputPath>
+    <PackageCacheOutputPath>$(ArtifactsDir)Signed\PackageCache\</PackageCacheOutputPath>
+    <TimestampFreePackagesOutputPath>$(ArtifactsDir)Signed\Packages-NoTimeStamp\</TimestampFreePackagesOutputPath>
+    <SymbolsOutputPath>$(ArtifactsDir)Signed\Symbols\</SymbolsOutputPath>
+    <SignedVSIXPath>$(ArtifactsDir)Signed\VSIX\</SignedVSIXPath>
+
+    <UnsignedPackagesPath>$(IntermediateOutputPath)UnsignedPackages\</UnsignedPackagesPath>
+    <UnsignedOobPackagesPath>$(IntermediateOutputPath)UnsignedOobPackages\</UnsignedOobPackagesPath>
+    <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
+    <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedOobPackages\</UnsignedSymbolPackagesPath>
+    <UnsignedVSIXPath>$(IntermediateOutputPath)UnsignedVSIX\</UnsignedVSIXPath>
+    <UnsignedPackageCachePath>$(IntermediateOutputPath)UPC\</UnsignedPackageCachePath>
+    <SignedAllMetapackagePath>$(IntermediateOutputPath)SignedAllMetapackage\</SignedAllMetapackagePath>
+    <UnsignedVSIXWithSignedBinariesPath>$(IntermediateOutputPath)UnsignedVSIXWithSignedBinaries\</UnsignedVSIXWithSignedBinariesPath>
+    <UnsignedBinariesPath>$(IntermediateOutputPath)FilesToSign\</UnsignedBinariesPath>
+  </PropertyGroup>
+
+  <!-- Properties for code sign -->
+  <PropertyGroup>
+    <CodeSignApprovers>elipton;joeloff</CodeSignApprovers>
+    <BinaryCodeSignCertificate>400</BinaryCodeSignCertificate>
+    <VSIXCodeSignCertificate>100040160</VSIXCodeSignCertificate>
+    <ThirdParthCodeSignCertificate>135020001</ThirdParthCodeSignCertificate>
+    <CodeSignDisplayName>Microsoft ASP.NET Core</CodeSignDisplayName>
+    <CodeSignUrl>https://www.asp.net/</CodeSignUrl>
+    <VerifySignatures Condition="'$(VerifySignatures)' == ''">true</VerifySignatures>
+    <CodeSignCreateTestJob Condition="'$(CodeSignCreateTestJob)' == ''">false</CodeSignCreateTestJob>
+  </PropertyGroup>
+
+</Project>

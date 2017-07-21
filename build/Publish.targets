@@ -1,0 +1,34 @@
+<Project>
+
+  <!-- Inserts the Razor VSIX to the VS drop share -->
+  <Target Name="RunVSDrop">
+    <ItemGroup>
+      <SignedRazorVSIX Include="$(SignedVSIXPath)*.vsix" />
+    </ItemGroup>
+
+    <MSBuild
+      Projects="$(MSBuildProjectDirectory)\vsdrop\drop.msbuild"
+      Targets="BuildAndPublishManifest"
+      Properties="
+        SignedVsixPath=$([System.IO.Path]::GetDirectoryName(%(SignedRazorVSIX.FullPath)));
+        RepositoryRoot=$(RepositoryRoot)\;
+        ManifestRepositoryName=AspNetCore/%(SignedRazorVSIX.FileName);
+        ManifestBuildBranch=$(BUILD_BRANCH);
+        ManifestBuildNumber=$(BUILD_NUMBER)" />
+  </Target>
+
+  <Target Name="PushPackages">
+    <ItemGroup>
+      <PackagesToPush Include="$(CoherenceSignedDestinationDir)Packages\*.nupkg" />
+      <PackagesToPush Include="$(CoherenceSignedDestinationDir)OobPackages\*.nupkg" />
+      <PackagesToPush Include="$(CoherenceDestinationDir)ext\*.nupkg" />
+      <PackagesToPush Include="$(CoherenceDestinationDir)noship\*.nupkg" />
+    </ItemGroup>
+
+    <PushNuGetPackages
+      Packages="@(PackagesToPush)"
+      Feed="$(PublishFeed)"
+      ApiKey="$(APIKey)" />
+  </Target>
+
+</Project>

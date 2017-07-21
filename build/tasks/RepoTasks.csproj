@@ -2,8 +2,12 @@
    <Import Project="$(RepoTasksSdkPath)\Sdk.props" Condition="'$(RepoTasksSdkPath)' != '' "/>
 
    <PropertyGroup>
-       <TargetFramework>netcoreapp2.0</TargetFramework>
+     <TargetFramework>netstandard2.0</TargetFramework>
    </PropertyGroup>
+
+   <ItemGroup>
+    <PackageReference Include="NuGet.Packaging" Version="$(NuGetInMSBuildVersion)" />
+   </ItemGroup>
 
   <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>
 

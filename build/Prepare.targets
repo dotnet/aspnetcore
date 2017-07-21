@@ -1,0 +1,85 @@
+<Project>
+  <Target Name="Clean">
+    <RemoveDir Directories="$(ArtifactsDir);$(IntermediateOutputPath)" />
+  </Target>
+
+  <Target Name="GatherInputs">
+    <MakeDir Directories="$(SignedBinariesIntermediateOutputPath)" />
+    <MakeDir Directories="$(CoherenceDestinationDir)" />
+    <MakeDir Directories="$(CoherencePackageCacheDestinationDir)" />
+    <MakeDir Directories="$(CoherenceDestinationDir)vsix" />
+
+    <ItemGroup>
+      <VSIXPaths Include="$(COHERENCE_DROP_LOCATION)\build\*.vsix" />
+      <PackageCaches Include="$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.zip;$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.tar.gz" />
+      <PackageCachesArtifacts Include="
+        $(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.nuspec;
+        $(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.txt" />
+    </ItemGroup>
+
+    <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{branch}\{build-number}"
+      Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
+    <Error Text="COHERENCE_PACKAGECACHE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence-PackageCache\{build-number}"
+      Condition=" '$(COHERENCE_PACKAGECACHE_DROP_LOCATION)' == '' " />
+
+    <Exec Command="(robocopy /NJH /NJS /NP /NS /NDL /NFL /NP /E /MT $(COHERENCE_DROP_LOCATION) $(CoherenceDestinationDir)) ^&amp; IF %ERRORLEVEL% LEQ 3 exit 0" />
+
+    <Copy SourceFiles="@(VSIXPaths)" DestinationFolder="$(CoherenceDestinationDir)vsix" SkipUnchangedFiles="true" />
+    <Copy
+      SourceFiles="$([System.IO.Path]::ChangeExtension(%(VSIXPaths.FullPath), '.json'))"
+      DestinationFolder="$(CoherenceDestinationDir)vsix"
+      SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(PackageCaches)" DestinationFolder="$(CoherencePackageCacheDestinationDir)" SkipUnchangedFiles="true" />
+    <Copy SourceFiles="@(PackageCachesArtifacts)" DestinationFolder="$(CoherencePackageCacheDestinationDir)" SkipUnchangedFiles="true" />
+  </Target>
+
+  <Target Name="ExtractInputs">
+    <ItemGroup>
+      <UnsignedPackages Include="$(CoherenceDestinationDir)ship\*.nupkg" />
+      <UnsignedOobPackages Include="$(CoherenceDestinationDir)shipoob\*.nupkg" />
+      <UnsignedSymbolPackages Include="$(CoherenceDestinationDir)symbols\Microsoft.Data.Sqlite*.nupkg" />
+      <UnsignedVSIX Include="$(CoherenceDestinationDir)vsix\*.vsix" />
+      <UnsignedPackageCaches Include="$(CoherencePackageCacheDestinationDir)Build.RS.*.zip" />
+      <PoliCheckPackages Include="$(CoherenceDestinationDir)symbols\*.nupkg" />
+
+      <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
+      <_UnzipFiles Include="@(UnsignedOobPackages)" Destination="$(UnsignedOobPackagesPath)" />
+      <_UnzipFiles Include="@(UnsignedSymbolPackages)" Destination="$(UnsignedSymbolPackagesPath)" />
+      <_UnzipFiles Include="@(UnsignedVSIX)" Destination="$(UnsignedVSIXPath)" />
+      <_UnzipFiles Include="@(UnsignedPackageCaches)" Destination="$(UnsignedPackageCachePath)" />
+      <_UnzipFiles Include="@(PoliCheckPackages)" Destination="$(PoliCheckPath)" />
+    </ItemGroup>
+
+    <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
+    <Error Text="No OOB packages found for signing." Condition="'@(UnsignedOobPackages)'==''" />
+    <Error Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
+    <Error Text="No package cache found for signing." Condition="'@(UnsignedPackageCaches)'==''" />
+
+    <UnzipArchive
+      File="%(_UnzipFiles.FullPath)"
+      Destination="%(_UnzipFiles.Destination)%(_UnzipFiles.FileName)"
+      Condition="!Exists('%(_UnzipFiles.Destination)%(_UnzipFiles.FileName)')" />
+
+    <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedPackagesPath)" />
+    <RepoTasks.RenameEncodedFolders RootDirectory="$(UnsignedOobPackagesPath)" />
+
+    <RemoveDir Directories="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\_rels')" />
+    <Delete Files="@(PoliCheckPackages->'$(PoliCheckPath)%(Filename)\[Content_Types].xml')" />
+  </Target>
+
+  <!--
+  Runs the default composite rule on packages that we intend on shipping. This is meant to ensure we aren't missing verification
+  due to a repository mis-configuration
+  -->
+  <Target Name="VerifyUnsignedPackages">
+    <PropertyGroup>
+      <CoherencePackagesDir>$(ArtifactsDir)coherence\ship\</CoherencePackagesDir>
+    </PropertyGroup>
+
+    <VerifyPackages
+      ArtifactDirectory="$(CoherencePackagesDir)"
+      RuleFile="$(RepositoryRoot)NuGetPackageVerifier.json"
+      Condition="Exists('$(CoherencePackagesDir)')" />
+  </Target>
+
+</Project>

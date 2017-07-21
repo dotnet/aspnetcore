@@ -1,213 +1,80 @@
 <Project>
-  <UsingTask AssemblyFile="$(RepositoryRoot)tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.SubmitCodeSignJob" />
-  <UsingTask AssemblyFile="$(RepositoryRoot)tools\Microsoft.Web.MsBuildTasks2.dll" TaskName="Microsoft.Web.MsBuildTasks.WaitForCodeSignJobs" />
-
-  <Target Name="VerifyPackages" Condition="'$(VerifySignatures)' != 'false'">
-    <PropertyGroup>
-      <CoherencePackagesDir>$(ArtifactsPath)\coherence\ship\</CoherencePackagesDir>
-    </PropertyGroup>
-
-     <VerifyPackages
-       ArtifactDirectory="$(CoherencePackagesDir)"
-       RuleFile="$(RepositoryRoot)NuGetPackageVerifier.json"
-       Condition="Exists('$(CoherencePackagesDir)')" />
-  </Target>
-
-  <Target Name="PrepareFilesForSigning">
-    <!-- Flatten the file names -->
-    <ItemGroup>
-      <_UnsignedBinaries
-          Include="$(UnsignedPackagesPath)**\*.dll;
-                    $(UnsignedPackagesPath)**\*.exe;
-                    $(UnsignedPackagesPath)**\*.psd1;
-                    $(UnsignedPackagesPath)**\*.psm1;
-                    $(UnsignedPackagesPath)**\*.ps1;"
-            />
-
-      <_UnsignedOobBinaries
-          Include="$(UnsignedOobPackagesPath)**\*.dll;
-                    $(UnsignedOobPackagesPath)**\*.exe;
-                    $(UnsignedOobPackagesPath)**\*.psd1;
-                    $(UnsignedOobPackagesPath)**\*.psm1;
-                    $(UnsignedOobPackagesPath)**\*.ps1;"
-            />
-
-      <_UnsignedVSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
-
-      <_UnsignedPackageCacheBinaries
-          Include="$(UnsignedPackageCachePath)**\netcoreapp2.0\microsoft.*\**\*.dll;
-                    $(UnsignedPackageCachePath)**\netcoreapp2.0\system.*\**\*.dll;
-                    $(UnsignedPackageCachePath)**\netcoreapp2.0\windowsazure.*\**\*.dll" />
-      <_UnsignedPackageCacheThirdPartyBinaries
-          Include="$(UnsignedPackageCachePath)**\netcoreapp2.0\newtonsoft*\**\*.dll;
-                    $(UnsignedPackageCachePath)**\netcoreapp2.0\remotion*\**\*.dll;
-                    $(UnsignedPackageCachePath)**\netcoreapp2.0\serilog*\**\*.dll;
-                    $(UnsignedPackageCachePath)**\netcoreapp2.0\sqlitepclraw*\**\*.dll;
-                    $(UnsignedPackageCachePath)**\netcoreapp2.0\stackexchange*\**\*.dll" />
-
-      <UnsignedBinaries Include="@(_UnsignedBinaries)">
-        <!-- Flattened file for signing -->
-        <UnsignedFlatFileName>$(UnsignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
-        <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
-        <!-- Replaces "PackageName\lib\tfm" with "PackageName.symbols\lib\tfm" -->
-        <SymbolsBinaryFullName>$(UnsignedSymbolPackagesPath)$([System.String]::new('%(RecursiveDir)').Substring(0, $([System.String]::new('%(RecursiveDir)').IndexOf('\')))).symbols$([System.String]::new('%(RecursiveDir)').Substring($([System.String]::new('%(RecursiveDir)').IndexOf('\'))))%(Filename)%(Extension)</SymbolsBinaryFullName>
-      </UnsignedBinaries>
-
-      <UnsignedOobBinaries Include="@(_UnsignedOobBinaries)">
-        <!-- Flattened file for signing -->
-        <UnsignedFlatFileName>$(UnsignedOobBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
-        <SignedFlatFileName>$(SignedOobBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
-        <!-- Replaces "PackageName\lib\tfm" with "PackageName.symbols\lib\tfm" -->
-        <SymbolsBinaryFullName>$(UnsignedOobSymbolPackagesPath)$([System.String]::new('%(RecursiveDir)').Substring(0, $([System.String]::new('%(RecursiveDir)').IndexOf('\')))).symbols$([System.String]::new('%(RecursiveDir)').Substring($([System.String]::new('%(RecursiveDir)').IndexOf('\'))))%(Filename)%(Extension)</SymbolsBinaryFullName>
-      </UnsignedOobBinaries>
-
-      <UnsignedVSIXBinaries Include="@(_UnsignedVSIXBinaries)">
-        <!-- Flattened file for signing -->
-        <UnsignedFlatFileName>$(UnsignedVSIXPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
-        <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
-      </UnsignedVSIXBinaries>
-
-      <UnsignedPackageCacheBinaries Include="@(_UnsignedPackageCacheBinaries)">
-        <!-- Flattened file for signing -->
-        <UnsignedFlatFileName>$(UnsignedPackageCachePath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
-        <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
-      </UnsignedPackageCacheBinaries>
-
-      <UnsignedPackageCacheThirdPartyBinaries Include="@(_UnsignedPackageCacheThirdPartyBinaries)">
-        <!-- Flattened file for signing -->
-        <UnsignedFlatFileName>$(UnsignedPackageCachePath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</UnsignedFlatFileName>
-        <SignedFlatFileName>$(SignedBinariesPath)$([System.String]::new('%(RecursiveDir)%(FileName)%(Extension)').Replace('\', '_'))</SignedFlatFileName>
-      </UnsignedPackageCacheThirdPartyBinaries>
-
-      <PackageBinariesToSign Include="%(UnsignedBinaries.UnsignedFlatFileName)" />
-      <PackageOobBinariesToSign Include="%(UnsignedOobBinaries.UnsignedFlatFileName)" />
-      <PackageCacheBinariesToSign Include="%(UnsignedPackageCacheBinaries.UnsignedFlatFileName)" />
-      <PackageCacheThirdPartyBinariesToSign Include="%(UnsignedPackageCacheThirdPartyBinaries.UnsignedFlatFileName)" />
-      <VSIXBinariesToSign Include="%(UnsignedVSIXBinaries.UnsignedFlatFileName)" />
-    </ItemGroup>
-
-    <Copy SourceFiles="@(UnsignedBinaries)" DestinationFiles="@(UnsignedBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(UnsignedOobBinaries)" DestinationFiles="@(UnsignedOobBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(UnsignedPackageCacheBinaries)" DestinationFiles="@(UnsignedPackageCacheBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(UnsignedPackageCacheThirdPartyBinaries)" DestinationFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(UnsignedVSIXBinaries)" DestinationFiles="@(UnsignedVSIXBinaries->'%(UnsignedFlatFileName)')" SkipUnchangedFiles="true" />
-  </Target>
-
-  <Target Name="SignFiles" DependsOnTargets="PrepareFilesForSigning">
-    <RemoveDir Directories="$(CodeSignScriptsPath)" />
-    <MakeDir Directories="$(CodeSignScriptsPath)" />
-
-    <ItemGroup>
-      <BinariesToSign Include="
-                @(PackageBinariesToSign);
-                @(PackageOobBinariesToSign);
-                @(VSIXBinariesToSign)" />
-    </ItemGroup>
-
-    <SubmitCodeSignJob
-        Approvers="$(CodeSignApprovers)"
-        Certificates="%(Certificates)"
-        Description="%(Description)"
-        DisplayName="%(DisplayName)"
-        DisplayUrl="%(Url)"
-        Files="@(BinariesToSign)"
-        GenerateCopyScript="false"
-        Poll="false"
-        SSL="true"
-        CreateTestJob="$(CodeSignCreateTestJob)"
-        Test="$(TestCodeSign)">
-      <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
-      <Output TaskParameter="CompletionPath" PropertyName="CodeSignCompletionPath" />
-    </SubmitCodeSignJob>
-
-    <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
-
-    <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MT $(CodeSignCompletionPath) $(SignedOutputPath)
-            IF %ERRORLEVEL% LEQ 3 exit 0" />
-  </Target>
-
-  <Target Name="SignPackageCache" DependsOnTargets="PrepareFilesForSigning">
-    <RemoveDir Directories="$(CodeSignScriptsPath)" />
-    <MakeDir Directories="$(CodeSignScriptsPath)" />
-
-    <SubmitCodeSignJob
-        Approvers="$(CodeSignApprovers)"
-        Certificates="%(Certificates)"
-        Description="%(Description)"
-        DisplayName="%(DisplayName)"
-        DisplayUrl="%(Url)"
-        Files="@(PackageCacheBinariesToSign)"
-        GenerateCopyScript="false"
-        Poll="false"
-        SSL="true"
-        CreateTestJob="$(CodeSignCreateTestJob)"
-        Test="$(TestCodeSign)">
-      <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
-      <Output TaskParameter="CompletionPath" PropertyName="CodeSignCompletionPath" />
-    </SubmitCodeSignJob>
-
-    <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
-
-    <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MT $(CodeSignCompletionPath) $(SignedOutputPath)
-            IF %ERRORLEVEL% LEQ 3 exit 0" />
-
-    <SubmitCodeSignJob
-        Approvers="$(CodeSignApprovers)"
-        Certificates="%(Certificates)"
-        Description="%(Description)"
-        DisplayName="%(DisplayName)"
-        DisplayUrl="%(Url)"
-        Files="@(PackageCacheThirdPartyBinariesToSign)"
-        GenerateCopyScript="false"
-        Poll="false"
-        SSL="true"
-        CreateTestJob="$(CodeSignCreateTestJob)"
-        Test="$(TestCodeSign)">
-      <Output TaskParameter="JobNumber" ItemName="ThirdPartyCodeSignJobNumbers" />
-      <Output TaskParameter="CompletionPath" PropertyName="ThirdPartyCodeSignCompletionPath" />
-    </SubmitCodeSignJob>
-
-    <WaitForCodeSignJobs JobNumbers="@(ThirdPartyCodeSignJobNumbers)" Test="$(TestCodeSign)" />
-
-    <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MT $(ThirdPartyCodeSignCompletionPath) $(SignedOutputPath)
-            IF %ERRORLEVEL% LEQ 3 exit 0" />
-  </Target>
-
-  <Target Name="ReplaceUnsignedFiles" DependsOnTargets="SignFiles;SignPackageCache">
-    <Copy SourceFiles="@(UnsignedBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedBinaries->'%(FullPath)')" />
-    <Copy SourceFiles="@(UnsignedOobBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedOobBinaries->'%(FullPath)')" />
-    <Copy SourceFiles="@(UnsignedVSIXBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedVSIXBinaries->'%(FullPath)')" />
-    <Copy SourceFiles="@(UnsignedPackageCacheBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedPackageCacheBinaries->'%(FullPath)')" />
-    <Copy SourceFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(UnsignedPackageCacheThirdPartyBinaries->'%(FullPath)')" />
-    <ItemGroup>
-      <!-- only overwrite existing unsigned binaries in the symbols packages. We don't create symbols-packages for all packages. -->
-      <_SignedSymbolsBinaries Include="@(UnsignedBinaries)" Condition="Exists('%(SymbolsBinaryFullName)')" />
-    </ItemGroup>
-    <Copy SourceFiles="@(_SignedSymbolsBinaries->'%(SignedFlatFileName)')" DestinationFiles="@(_SignedSymbolsBinaries->'%(SymbolsBinaryFullName)')" />
-  </Target>
-
   <PropertyGroup>
     <SignDependsOn>
-      ReplaceUnsignedFiles;
+      PrepareFilesForSigning;
+      SignFiles;
       RebuildPackages;
       RebuildVSIXes;
       RebuildPackageCaches;
-      RunVSDrop;
+      CreateTimestampFreePackages
     </SignDependsOn>
   </PropertyGroup>
 
-  <Target Name="TestSign" DependsOnTargets="SetupTestSign;Sign" />
+  <Target Name="Sign" DependsOnTargets="$(SignDependsOn)" />
 
-  <Target Name="SetupTestSign">
-    <PropertyGroup>
-      <CodeSignCreateTestJob>false</CodeSignCreateTestJob>
-      <TestCodeSign>true</TestCodeSign>
-      <COHERENCE_DROP_LOCATION Condition="'$(COHERENCE_DROP_LOCATION)'==''">\\aspnetci\drops\Coherence\dev\Latest</COHERENCE_DROP_LOCATION>
-      <COHERENCE_PACKAGECACHE_DROP_LOCATION Condition="'$(COHERENCE_PACKAGECACHE_DROP_LOCATION)'==''">\\aspnetci\drops\Coherence-PackageCache\dev\Latest</COHERENCE_PACKAGECACHE_DROP_LOCATION>
-    </PropertyGroup>
+  <Target Name="PrepareFilesForSigning">
+    <ItemGroup>
+      <PackageBinaries Include="
+        $(UnsignedPackagesPath)**\*.dll;
+        $(UnsignedPackagesPath)**\*.exe;
+        $(UnsignedPackagesPath)**\*.psd1;
+        $(UnsignedPackagesPath)**\*.psm1;
+        $(UnsignedPackagesPath)**\*.ps1;" />
+
+      <OobPackageBinaries Include="
+        $(UnsignedOobPackagesPath)**\*.dll;
+        $(UnsignedOobPackagesPath)**\*.exe;
+        $(UnsignedOobPackagesPath)**\*.psd1;
+        $(UnsignedOobPackagesPath)**\*.psm1;
+        $(UnsignedOobPackagesPath)**\*.ps1;" />
+
+      <VSIXBinaries Include="$(UnsignedVSIXPath)**\*.dll" />
+
+      <PackageCacheBinaries Include="
+        $(UnsignedPackageCachePath)**\netcoreapp2.0\microsoft.*\**\*.dll;
+        $(UnsignedPackageCachePath)**\netcoreapp2.0\system.*\**\*.dll;
+        $(UnsignedPackageCachePath)**\netcoreapp2.0\windowsazure.*\**\*.dll" />
+
+      <PackageCacheThirdPartyBinaries Include="
+        $(UnsignedPackageCachePath)**\netcoreapp2.0\newtonsoft*\**\*.dll;
+        $(UnsignedPackageCachePath)**\netcoreapp2.0\remotion*\**\*.dll;
+        $(UnsignedPackageCachePath)**\netcoreapp2.0\serilog*\**\*.dll;
+        $(UnsignedPackageCachePath)**\netcoreapp2.0\sqlitepclraw*\**\*.dll;
+        $(UnsignedPackageCachePath)**\netcoreapp2.0\stackexchange*\**\*.dll" />
+    </ItemGroup>
   </Target>
 
-  <Target Name="Sign" DependsOnTargets="$(SignDependsOn)" />
+  <Target Name="SignFiles">
+    <ItemGroup>
+      <AspNetCoreBinaries Include="
+        @(PackageBinaries);
+        @(OobPackageBinaries);
+        @(VSIXBinaries);
+        @(PackageCacheBinaries)" />
+
+      <_SignProject Include="$(MSBuildProjectFullPath)">
+        <AdditionalProperties>
+          LocalBuild=$(LocalBuild);
+          Certificate=$(BinaryCodeSignCertificate);
+          JobName=AspNetCoreBinaries;
+          Description=Signing AspNetCore binaries;
+          Files=@(AspNetCoreBinaries)
+        </AdditionalProperties>
+      </_SignProject>
+
+      <_SignProject Include="$(MSBuildProjectFullPath)">
+        <AdditionalProperties>
+          LocalBuild=$(LocalBuild);
+          Certificate=$(ThirdParthCodeSignCertificate);
+          JobName=ThirdPartyBinaries;
+          Description=Signing third party binaries;
+          Files=@(PackageCacheThirdPartyBinaries)
+        </AdditionalProperties>
+      </_SignProject>
+    </ItemGroup>
+
+    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" BuildInParallel="$(BuildInParallel)" />
+  </Target>
 
   <Target Name="RebuildPackages">
     <MakeDir Directories="$(PackageOutputPath)" />
@@ -216,79 +83,85 @@
       <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
       <NuSpecOob Include="$(UnsignedOobPackagesPath)**\*.nuspec" />
       <SymbolsNuSpec Include="$(UnsignedSymbolPackagesPath)**\*.nuspec" />
+
+      <_ZipProjects
+        Include="$(MSBuildProjectFullPath)"
+        AdditionalProperties="ZipRoot=%(NuSpec.RootDir)%(NuSpec.Directory);OutputDir=$(PackagesOutputPath)" />
+      <_ZipProjects
+        Include="$(MSBuildProjectFullPath)"
+        AdditionalProperties="ZipRoot=%(NuSpecOob.RootDir)%(NuSpecOob.Directory);OutputDir=$(PackagesOobOutputPath)" />
+      <_ZipProjects
+        Include="$(MSBuildProjectFullPath)"
+        AdditionalProperties="ZipRoot=%(SymbolsNuSpec.RootDir)%(SymbolsNuSpec.Directory);OutputDir=$(SymbolsOutputPath)" />
     </ItemGroup>
 
     <MSBuild
-        Projects="$(MSBuildProjectFullPath)"
-        Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(NuSpec.Identity);OutDir=$(PackagesOutputPath)"
-        Targets="RebuildPackage"/>
-
-    <MSBuild
-        Projects="$(MSBuildProjectFullPath)"
-        Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(NuSpecOob.Identity);OutDir=$(PackagesOobOutputPath)"
-        Targets="RebuildPackage"/>
-
-    <MSBuild
-        Projects="$(MSBuildProjectFullPath)"
-        Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);NuSpecFile=%(SymbolsNuSpec.Identity);OutDir=$(SymbolsOutputPath)"
-        Targets="RebuildPackage"/>
-
-    <!-- Capture packages that contain content we signed since that will become the list of items we will submit to BinScope -->
-    <ItemGroup>
-      <SignedPackages Include="$(PackagesOutputPath)**\*.nupkg" />
-      <SignedSymbolsPackages Include="$(SymbolsOutputPath)**\*.nupkg" />
-    </ItemGroup>
+      Projects="@(_ZipProjects)"
+      Targets="ZipFile"
+      BuildInParallel="$(BuildInParallel)"
+      Properties="Extension=.nupkg" />
   </Target>
 
   <!-- Repacks and signs VSIXes -->
   <Target Name="RebuildVSIXes">
     <ItemGroup>
       <_VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
-      <VSIXManifest Include="%(_VSIXManifest.FullPath)">
-        <VSIXDirectory>$([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))</VSIXDirectory>
+      <VSIXManifest Include="@(_VSIXManifest)">
         <VSIXName>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))))</VSIXName>
       </VSIXManifest>
     </ItemGroup>
 
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
-        Properties="
-                Configuration=$(Configuration);
-                Sign=$(Sign);
-                TestCodeSign=$(TestCodeSign);
-                VSIXManifest=%(VSIXManifest.Identity);
-                VSIXDirectory=%(VSIXManifest.VSIXDirectory);
-                OutDir=$(UnsignedVSIXWithSignedBinariesPath)"
-        Targets="RepackVSIX"/>
+        Targets="ZipFile"
+        Properties="ZipRoot=%(VSIXManifest.RootDirectory)%(VSIXManifest.Directory);OutputDir=$(UnsignedVSIXWithSignedBinariesPath);Extension=.vsix" />
 
     <ItemGroup>
       <VSIXToSign Include="$(UnsignedVSIXWithSignedBinariesPath)**\*.vsix" />
+
+      <_SignProject Project="$(MSBuildProjectFullPath)">
+        <AdditionalProperties>
+          Certificate=$(VSIXCodeSignCertificate);
+          JobName=RazorVSIX;
+          LocalBuild=$(LocalBuild);
+          Description=Signing Razor VSIX;
+          Files=@(VSIXToSign)
+        </AdditionalProperties>
+      </_SignProject>
     </ItemGroup>
 
-    <SubmitCodeSignJob
-        Approvers="$(CodeSignApprovers)"
-        Certificates="$(VSIXCodeSignCertificates)"
-        Description="Signing AspNetCore VSIX"
-        DisplayName="$(CodeSignDisplayName)"
-        DisplayUrl="$(CodeSignUrl)"
-        Files="@(VSIXToSign)"
-        GenerateCopyScript="false"
-        Poll="false"
-        SSL="true"
-        CreateTestJob="$(CodeSignCreateTestJob)"
-        Test="$(TestCodeSign)">
-      <Output TaskParameter="JobNumber" ItemName="CodeSignJobNumbers" />
-      <Output TaskParameter="CompletionPath" PropertyName="CodeSignCompletionPath" />
-    </SubmitCodeSignJob>
-
-    <WaitForCodeSignJobs JobNumbers="@(CodeSignJobNumbers)" Test="$(TestCodeSign)" />
-
-    <Exec Command="robocopy /NJH /NJS /NP /NS /NDL /NP /E /MIR /MT $(CodeSignCompletionPath) $(SignedVSIXPath)
-            IF %ERRORLEVEL% LEQ 3 exit 0" />
+    <MSBuild Projects="@(_SignProject)" Targets="SubmitCodeSign" />
 
     <Copy
-        SourceFiles="$(CoherenceDestinationDir)vsix\%(VSIXManifest.VSIXName).json"
-        DestinationFolder="$(SignedVSIXPath)" />
+      SourceFiles="@(VSIXToSign);$(CoherenceDestinationDir)vsix\%(VSIXManifest.VSIXName).json"
+      DestinationFolder="$(SignedVSIXPath)" />
+  </Target>
+
+  <Target Name="SubmitCodeSign">
+    <ItemGroup>
+      <_Approvers Include="$(CodeSignApprovers)" />
+      <_Files Include="$(Files)" />
+
+      <_ResponseFileLines Include="--approver=%(_Approvers.Identity)" />
+      <_ResponseFileLines Include="--cert=$(Certificate)" />
+      <_ResponseFileLines Include="--local-build" Condition="'$(LocalBuild)'=='true'" />
+      <_ResponseFileLines Include="--description=$(Description)" />
+      <_ResponseFileLines Include="--display-name=$(CodeSignDisplayName)" />
+      <_ResponseFileLines Include="--display-url=$(CodeSignUrl)" />
+      <_ResponseFileLines Include="-f=%(_Files.Identity)" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <ResponseFilePath>$(IntermediateOutputPath)$(JobName).rsp</ResponseFilePath>
+      <CodeSignExeOutputPath>$(RepositoryRoot)src\CodeSign\bin\$(Configuration)\net461\CodeSign.exe</CodeSignExeOutputPath>
+    </PropertyGroup>
+
+    <WriteLinesToFile
+      File="$(ResponseFilePath)"
+      Lines="@(_ResponseFileLines)"
+      Overwrite="true" />
+
+    <Exec Command="&quot;$(CodeSignExeOutputPath)&quot; @$(ResponseFilePath)" />
   </Target>
 
   <!-- Repacks PackageCache -->
@@ -302,7 +175,7 @@
 
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
-        Properties="Configuration=$(Configuration);Sign=$(Sign);TestCodeSign=$(TestCodeSign);PackageCacheFile=%(PackageCachesFiles.Identity);OutDir=$(PackageCacheOutputPath)"
+        Properties="PackageCacheFile=%(PackageCachesFiles.Identity);OutDir=$(PackageCacheOutputPath)"
         Targets="RebuildPackageCache"/>
 
     <!-- Create a Build.PackageStore-{version}.nupkg to push to internal feed -->
@@ -320,39 +193,97 @@
     <Exec Command="&quot;$(ToolsPath)NuGet.exe&quot; pack &quot;@(PackageCacheNuspec)&quot; -Version $(VersionNumber) -OutputDirectory &quot;$(PackageCacheOutputPath) &quot; -BasePath &quot;$(PackageCacheOutputPath) &quot;"/>
   </Target>
 
-  <Target Name="RebuildPackage">
-    <PropertyGroup>
-      <WorkingDir>$([System.IO.Path]::GetDirectoryName($(NuSpecFile)))</WorkingDir>
-      <PackageName>$([System.IO.Path]::GetFileName($(WorkingDir)))</PackageName>
-    </PropertyGroup>
-    <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
-    <Exec Command="&quot;$(ToolsPath)7za.exe&quot; a -tzip -mx9 -r -y &quot;$(OutDir)$(PackageName).nupkg&quot; * > nul" WorkingDirectory="$(WorkingDir)" />
-  </Target>
-
-  <Target Name="RepackVSIX">
-    <PropertyGroup>
-      <VSIXName>$([System.IO.Path]::GetFileName($(VSIXDirectory)))</VSIXName>
-    </PropertyGroup>
-
-    <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
-    <Exec Command="&quot;$(ToolsPath)7za.exe&quot; a -tzip -mx9 -r -y &quot;$(OutDir)$(VSIXName).vsix&quot;" WorkingDirectory="$(VSIXDirectory)" />
-  </Target>
-
   <Target Name="RebuildPackageCache">
     <PropertyGroup>
       <WorkingDir>$(PackageCacheFile)</WorkingDir>
       <PackageCacheName>$([System.IO.Path]::GetFileName($(PackageCacheFile)))</PackageCacheName>
       <CreateTarGzip Condition="$(PackageCacheName.Contains('osx')) or $(PackageCacheName.Contains('linux'))">true</CreateTarGzip>
+      <OutputFile>$(OutDir)$(PackageCacheName)</OutputFile>
+
+      <OutputFile  Condition="'$(CreateTarGzip)'=='true'">$(OutputFile).tar.gz</OutputFile>
+      <OutputFile Condition="'$(CreateTarGzip)'!='true'">$(OutputFile).zip</OutputFile>
     </PropertyGroup>
     <Error Condition="'$(OutDir)'==''" Text="Output dir not specified" />
 
+    <Delete Files="$(OutputFile)" Condition="Exists('$(OutputFile)')" />
+
     <!-- see https://sevenzip.osdn.jp/chm/cmdline/ -->
-    <Exec Command="&quot;$(ToolsPath)7za.exe&quot; a -tzip -mx9 -r -y &quot;$(OutDir)$(PackageCacheName).zip&quot; * > nul"
+    <Exec Command="&quot;$(ZipExePath)&quot; a -tzip -mx9 -r -y &quot;$(OutputFile)&quot; * > nul"
       WorkingDirectory="$(WorkingDir)"
       Condition="'$(CreateTarGzip)' != 'true'" />
 
-    <Exec Command="&quot;$(ToolsPath)7za.exe&quot; a -ttar -r -y -so tmp.tar * | &quot;$(ToolsPath)7za.exe&quot; a -si &quot;$(OutDir)$(PackageCacheName).tar.gz&quot;"
+    <Exec Command="&quot;$(ZipExePath)&quot; a -ttar -r -y -so tmp.tar * | &quot;$(ZipExePath)&quot; a -y -si &quot;$(OutputFile)&quot;"
        WorkingDirectory="$(WorkingDir)"
        Condition="'$(CreateTarGzip)' == 'true'" />
   </Target>
+
+  <Target Name="CreateTimestampFreePackages">
+    <PropertyGroup>
+      <PackagesDir>$(ArtifactsDir)Signed\Packages\</PackagesDir>
+      <PackagesNoTimestampDir>$(ArtifactsDir)Signed\Packages-NoTimeStamp\</PackagesNoTimestampDir>
+
+      <OOBPackagesDir>$(ArtifactsDir)Signed\OobPackages\</OOBPackagesDir>
+      <OOBPackagesNoTimestampDir>$(ArtifactsDir)Signed\OobPackages-NoTimeStamp\</OOBPackagesNoTimestampDir>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <PackagesWithTimeStamp Include="$(PackagesDir)*.nupkg" />
+      <OOBPackagesWithTimeStamp Include="$(OOBPackagesDir)*.nupkg" />
+    </ItemGroup>
+
+    <MakeDir Directories="$(PackagesNoTimestampDir);$(OOBPackagesNoTimestampDir)" />
+
+    <RepoTasks.CreateTimestampFreePackages
+      PackagesWithTimeStamp="@(PackagesWithTimeStamp)"
+      OutputDirectory="$(PackagesNoTimestampDir)" />
+
+    <RepoTasks.CreateTimestampFreePackages
+      PackagesWithTimeStamp="@(OOBPackagesWithTimeStamp)"
+      OutputDirectory="$(OOBPackagesNoTimestampDir)" />
+
+    <ItemGroup>
+      <TimeStampFreeMetaPackage Include="$(TimestampFreePackagesOutputPath)Microsoft.AspNetCore.All.*.nupkg" />
+      <TimeStampMetaPackage Include="$(PackagesDir)Microsoft.AspNetCore.All.*.nupkg" />
+    </ItemGroup>
+
+    <UnzipArchive
+      File="%(TimeStampFreeMetaPackage.FullPath)"
+      Destination="$(SignedAllMetapackagePath)%(TimeStampFreeMetaPackage.FileName)" />
+
+    <ItemGroup>
+      <TimeStampedManifestFiles Include="$(SignedAllMetapackagePath)**\aspnetcore-store-*.xml" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <VersionToReplace>-$(BuildNumber)</VersionToReplace>
+      <VersionReplacement>-final</VersionReplacement>
+      <VersionToReplace Condition="$([System.String]::new('%(TimeStampMetaPackage.FileName)').EndsWith('-rtm-$(BuildNumber)'))">-rtm-$(BuildNumber)</VersionToReplace>
+      <VersionReplacement Condition="$([System.String]::new('%(TimeStampMetaPackage.FileName)').EndsWith('-rtm-$(BuildNumber)'))"></VersionReplacement>
+    </PropertyGroup>
+
+    <Exec Command="powershell.exe -command &quot;(Get-Content %(TimeStampedManifestFiles.FullPath)).replace('$(VersionToReplace)','$(VersionReplacement)') | Set-Content %(TimeStampedManifestFiles.FullPath)&quot;"/>
+    <Move SourceFiles="%(TimeStampedManifestFiles.FullPath)" DestinationFiles="$([System.String]::new('%(TimeStampedManifestFiles.FullPath)').Replace('$(VersionToReplace)', '$(VersionReplacement)'))" />
+
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="ZipFile"
+      Properties="ZipRoot=$(SignedAllMetapackagePath)%(TimeStampFreeMetaPackage.FileName)\;OutputDir=$(TimestampFreePackagesOutputPath)" />
+  </Target>
+
+  <Target Name="ZipFile">
+    <PropertyGroup>
+      <FileName>$([System.IO.Path]::GetFileName($(ZipRoot.Trim('\'))))</FileName>
+      <OutputFile>$(OutputDir)$(FileName)$(Extension)</OutputFile>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Files Include="$(ZipRoot)**\*" />
+    </ItemGroup>
+
+    <ZipArchive
+      File="$(OutputFile)"
+      SourceFiles="@(Files)"
+      WorkingDirectory="$(ZipRoot)" />
+  </Target>
+
 </Project>
