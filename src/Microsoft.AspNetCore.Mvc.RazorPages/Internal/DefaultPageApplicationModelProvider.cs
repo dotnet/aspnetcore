@@ -16,16 +16,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     public class DefaultPageApplicationModelProvider : IPageApplicationModelProvider
     {
         private const string ModelPropertyName = "Model";
-        private readonly FilterCollection _globalFilters;
-
-        /// <summary>
-        /// Initializes a new instance of <see cref="DefaultPageApplicationModelProvider"/>.
-        /// </summary>
-        /// <param name="mvcOptions"></param>
-        public DefaultPageApplicationModelProvider(IOptions<MvcOptions> mvcOptions)
-        {
-            _globalFilters = mvcOptions.Value.Filters;
-        }
 
         /// <inheritdoc />
         public int Order => -1000;
@@ -146,11 +136,6 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         internal void PopulateFilters(PageApplicationModel pageModel)
         {
-            for (var i = 0; i < _globalFilters.Count; i++)
-            {
-                pageModel.Filters.Add(_globalFilters[i]);
-            }
-
             for (var i = 0; i < pageModel.HandlerTypeAttributes.Count; i++)
             {
                 if (pageModel.HandlerTypeAttributes[i] is IFilterMetadata filter)

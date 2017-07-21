@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Reflection;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -20,7 +21,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             var compilerProvider = GetCompilerProvider();
 
-            var options = new TestOptionsManager<RazorPagesOptions>();
+            var razorPagesOptions = new TestOptionsManager<RazorPagesOptions>();
+            var mvcOptions = new TestOptionsManager<MvcOptions>();
 
             var provider1 = new Mock<IPageApplicationModelProvider>();
             var provider2 = new Mock<IPageApplicationModelProvider>();
@@ -71,7 +73,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var loader = new DefaultPageLoader(
                 providers,
                 compilerProvider,
-                options);
+                razorPagesOptions,
+                mvcOptions);
 
             // Act
             var result = loader.Load(new PageActionDescriptor());
@@ -87,7 +90,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Arrange
             var descriptor = new PageActionDescriptor();
             var compilerProvider = GetCompilerProvider();
-            var options = new TestOptionsManager<RazorPagesOptions>();
+            var razorPagesOptions = new TestOptionsManager<RazorPagesOptions>();
+            var mvcOptions = new TestOptionsManager<MvcOptions>();
 
             var provider1 = new Mock<IPageApplicationModelProvider>();
             provider1.SetupGet(p => p.Order).Returns(10);
@@ -132,7 +136,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             var loader = new DefaultPageLoader(
                 providers,
                 compilerProvider,
-                options);
+                razorPagesOptions,
+                mvcOptions);
 
             // Act
             var result = loader.Load(new PageActionDescriptor());
@@ -159,19 +164,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 });
             var providers = new[] { provider.Object };
 
-            var options = new TestOptionsManager<RazorPagesOptions>();
+            var razorPagesOptions = new TestOptionsManager<RazorPagesOptions>();
+            var mvcOptions = new TestOptionsManager<MvcOptions>();
             var convention = new Mock<IPageApplicationModelConvention>();
             convention.Setup(c => c.Apply(It.IsAny<PageApplicationModel>()))
                 .Callback((PageApplicationModel m) =>
                 {
                     Assert.Same(model, m);
                 });
-            options.Value.Conventions.Add(convention.Object);
+            razorPagesOptions.Value.Conventions.Add(convention.Object);
 
             var loader = new DefaultPageLoader(
                 providers,
                 compilerProvider,
-                options);
+                razorPagesOptions,
+                mvcOptions);
 
             // Act
             var result = loader.Load(new PageActionDescriptor());

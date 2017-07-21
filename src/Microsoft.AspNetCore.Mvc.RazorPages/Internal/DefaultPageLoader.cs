@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Options;
@@ -17,11 +18,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         private readonly IPageApplicationModelProvider[] _applicationModelProviders;
         private readonly IViewCompilerProvider _viewCompilerProvider;
         private readonly IPageApplicationModelConvention[] _conventions;
+        private readonly FilterCollection _globalFilters;
 
         public DefaultPageLoader(
             IEnumerable<IPageApplicationModelProvider> applicationModelProviders,
             IViewCompilerProvider viewCompilerProvider,
-            IOptions<RazorPagesOptions> pageOptions)
+            IOptions<RazorPagesOptions> pageOptions,
+            IOptions<MvcOptions> mvcOptions)
         {
             _applicationModelProviders = applicationModelProviders
                 .OrderBy(p => p.Order)
@@ -30,6 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _conventions = pageOptions.Value.Conventions
                 .OfType<IPageApplicationModelConvention>()
                 .ToArray();
+            _globalFilters = mvcOptions.Value.Filters;
         }
 
         private IViewCompiler Compiler => _viewCompilerProvider.GetCompiler();
@@ -61,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 _conventions[i].Apply(context.PageApplicationModel);
             }
 
-            return CompiledPageActionDescriptorBuilder.Build(context.PageApplicationModel);
+            return CompiledPageActionDescriptorBuilder.Build(context.PageApplicationModel, _globalFilters);
         }
     }
 }
