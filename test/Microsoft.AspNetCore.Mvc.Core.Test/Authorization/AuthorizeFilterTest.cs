@@ -202,6 +202,20 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         }
 
         [Fact]
+        public async Task AuthZResourceShouldBeAuthorizationFilterContext()
+        {
+            // Arrange
+            var authorizeFilter = new AuthorizeFilter(new AuthorizationPolicyBuilder().RequireAssertion(c => c.Resource is AuthorizationFilterContext).Build());
+            var authorizationContext = GetAuthorizationContext();
+
+            // Act
+            await authorizeFilter.OnAuthorizationAsync(authorizationContext);
+
+            // Assert
+            Assert.Null(authorizationContext.Result);
+        }
+
+        [Fact]
         public async Task Invoke_RequireUnknownRoleShouldForbid()
         {
             // Arrange

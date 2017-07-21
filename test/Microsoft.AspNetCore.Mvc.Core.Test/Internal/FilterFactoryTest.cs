@@ -90,6 +90,62 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void GetAllFilters_OrdersFilters()
+        {
+            // Arrange
+            var filter1 = new TestOrderedFilter { Order = 1000 };
+            var filter2 = new TestFilter();
+            var filter3 = new TestOrderedFilter { Order = 10 };
+            var actionContext = CreateActionContext(new[]
+            {
+                new FilterDescriptor(filter1, FilterScope.Action),
+                new FilterDescriptor(filter2, FilterScope.Action),
+                new FilterDescriptor(filter3, FilterScope.Action),
+            });
+            var filterProviders = new[] { new DefaultFilterProvider() };
+
+            // Act
+            var filterResult = FilterFactory.GetAllFilters(filterProviders, actionContext);
+
+            // Assert
+            Assert.Collection(
+                filterResult.Filters,
+                f => Assert.Same(filter2, f),
+                f => Assert.Same(filter3, f),
+                f => Assert.Same(filter1, f));
+        }
+
+        [Fact]
+        public void GetAllFilters_CachesFilterOrder()
+        {
+            // Arrange
+            var filter1 = new TestOrderedFilter { Order = 1000 };
+            var filter2 = new TestFilter();
+            var filter3 = new TestOrderedFilter { Order = 10 };
+            var actionContext = CreateActionContext(new[]
+            {
+                new FilterDescriptor(filter1, FilterScope.Action),
+                new FilterDescriptor(filter2, FilterScope.Action),
+                new FilterDescriptor(filter3, FilterScope.Action),
+            });
+            var filterProviders = new[] { new DefaultFilterProvider() };
+
+            // Act
+            var filterResult = FilterFactory.GetAllFilters(filterProviders, actionContext);
+            var requestFilters = FilterFactory.CreateUncachedFilters(
+                filterProviders,
+                actionContext,
+                filterResult.CacheableFilters);
+
+            // Assert
+            Assert.Collection(
+                requestFilters,
+                f => Assert.Same(filter2, f),
+                f => Assert.Same(filter3, f),
+                f => Assert.Same(filter1, f));
+        }
+
+        [Fact]
         public void GetAllFilters_CachesFilterFromFactory()
         {
             // Arrange
@@ -264,6 +320,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 _providerExecuted?.Invoke(context);
             }
+        }
+
+        private class TestOrderedFilter : IFilterMetadata, IOrderedFilter
+        {
+            public int Order { get; set; }
         }
 
         private static ActionContext CreateActionContext(FilterDescriptor[] filterDescriptors)
