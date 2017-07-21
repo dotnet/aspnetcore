@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
                 return;
             }
 
-            var authorizeResult = await policyEvaluator.AuthorizeAsync(effectivePolicy, authenticateResult, context.HttpContext);
+            var authorizeResult = await policyEvaluator.AuthorizeAsync(effectivePolicy, authenticateResult, context.HttpContext, context);
 
             if (authorizeResult.Challenged)
             {
