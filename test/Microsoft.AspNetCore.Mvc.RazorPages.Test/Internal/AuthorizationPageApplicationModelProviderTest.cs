@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private static PageApplicationModelProviderContext GetApplicationProviderContext(TypeInfo typeInfo)
         {
-            var defaultProvider = new DefaultPageApplicationModelProvider(new TestOptionsManager<MvcOptions>());
+            var defaultProvider = new DefaultPageApplicationModelProvider();
             var context = new PageApplicationModelProviderContext(new PageActionDescriptor(), typeInfo);
             defaultProvider.OnProvidersExecuting(context);
             return context;

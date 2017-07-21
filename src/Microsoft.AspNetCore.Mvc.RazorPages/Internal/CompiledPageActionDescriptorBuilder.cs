@@ -18,12 +18,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         /// Creates a <see cref="CompiledPageActionDescriptor"/> from the specified <paramref name="applicationModel"/>.
         /// </summary>
         /// <param name="applicationModel">The <see cref="PageApplicationModel"/>.</param>
+        /// <param name="globalFilters">Global filters to apply to the page.</param>
         /// <returns>The <see cref="CompiledPageActionDescriptor"/>.</returns>
-        public static CompiledPageActionDescriptor Build(PageApplicationModel applicationModel)
+        public static CompiledPageActionDescriptor Build(
+            PageApplicationModel applicationModel,
+            FilterCollection globalFilters)
         {
             var boundProperties = CreateBoundProperties(applicationModel);
-            var filters = applicationModel.Filters
-                .Select(f => new FilterDescriptor(f, FilterScope.Action))
+            var filters = Enumerable.Concat(
+                    globalFilters.Select(f => new FilterDescriptor(f, FilterScope.Global)),
+                    applicationModel.Filters.Select(f => new FilterDescriptor(f, FilterScope.Action)))
                 .ToArray();
             var handlerMethods = CreateHandlerMethods(applicationModel);
 

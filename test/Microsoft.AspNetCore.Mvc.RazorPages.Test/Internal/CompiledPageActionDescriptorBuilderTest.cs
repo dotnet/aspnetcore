@@ -31,9 +31,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             };
             var handlerTypeInfo = typeof(object).GetTypeInfo();
             var pageApplicationModel = new PageApplicationModel(actionDescriptor, handlerTypeInfo, new object[0]);
+            var globalFilters = new FilterCollection();
 
             // Act
-            var actual = CompiledPageActionDescriptorBuilder.Build(pageApplicationModel);
+            var actual = CompiledPageActionDescriptorBuilder.Build(pageApplicationModel, globalFilters);
 
             // Assert
             Assert.Same(actionDescriptor.ActionConstraints, actual.ActionConstraints);
@@ -78,9 +79,10 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     },
                 }
             };
+            var globalFilters = new FilterCollection();
 
             // Act
-            var actual = CompiledPageActionDescriptorBuilder.Build(pageApplicationModel);
+            var actual = CompiledPageActionDescriptorBuilder.Build(pageApplicationModel, globalFilters);
 
             // Assert
             Assert.Same(pageApplicationModel.PageType, actual.PageTypeInfo);
@@ -90,6 +92,52 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Equal(pageApplicationModel.Filters, actual.FilterDescriptors.Select(f => f.Filter));
             Assert.Equal(pageApplicationModel.HandlerMethods.Select(p => p.MethodInfo), actual.HandlerMethods.Select(p => p.MethodInfo));
             Assert.Equal(pageApplicationModel.HandlerProperties.Select(p => p.PropertyName), actual.BoundProperties.Select(p => p.Name));
+        }
+
+        [Fact]
+        public void CreateDescriptor_AddsGlobalFiltersWithTheRightScope()
+        {
+            // Arrange
+            var actionDescriptor = new PageActionDescriptor
+            {
+                ActionConstraints = new List<IActionConstraintMetadata>(),
+                AttributeRouteInfo = new AttributeRouteInfo(),
+                FilterDescriptors = new List<FilterDescriptor>(),
+                RelativePath = "/Foo",
+                RouteValues = new Dictionary<string, string>(),
+                ViewEnginePath = "/Pages/Foo",
+            };
+            var handlerTypeInfo = typeof(TestModel).GetTypeInfo();
+            var pageApplicationModel = new PageApplicationModel(actionDescriptor, handlerTypeInfo, new object[0])
+            {
+                PageType = typeof(TestPage).GetTypeInfo(),
+                ModelType = typeof(TestModel).GetTypeInfo(),
+                Filters =
+                {
+                    Mock.Of<IFilterMetadata>(),
+                },
+            };
+            var globalFilters = new FilterCollection
+            {
+                Mock.Of<IFilterMetadata>(),
+            };
+
+            // Act
+            var compiledPageActionDescriptor = CompiledPageActionDescriptorBuilder.Build(pageApplicationModel, globalFilters);
+
+            // Assert
+            Assert.Collection(
+                compiledPageActionDescriptor.FilterDescriptors,
+                filterDescriptor =>
+                {
+                    Assert.Same(globalFilters[0], filterDescriptor.Filter);
+                    Assert.Equal(FilterScope.Global, filterDescriptor.Scope);
+                },
+                filterDescriptor =>
+                {
+                    Assert.Same(pageApplicationModel.Filters[0], filterDescriptor.Filter);
+                    Assert.Equal(FilterScope.Action, filterDescriptor.Scope);
+                });
         }
 
         private class TestPage
