@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Authentication.JwtBearer
             : base(context, scheme, options) { }
 
         /// <summary>
-        /// Bearer Token. This will give application an opportunity to retrieve token from an alternation location.
+        /// Bearer Token. This will give the application an opportunity to retrieve a token from an alternative location.
         /// </summary>
         public string Token { get; set; }
     }
