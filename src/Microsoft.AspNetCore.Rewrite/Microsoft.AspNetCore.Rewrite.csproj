@@ -3,7 +3,6 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <VersionPrefix>2.0.0</VersionPrefix>
     <Description>ASP.NET Core basic middleware for rewriting URLs. Includes:
 * Support for custom URL rewrite rules
 * Support for running IIS URL Rewrite module rules

@@ -3,7 +3,6 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <VersionPrefix>2.0.0</VersionPrefix>
     <Description>ASP.NET Core middleware for HTTP Response compression.</Description>
     <TargetFrameworks>net461;netstandard2.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>

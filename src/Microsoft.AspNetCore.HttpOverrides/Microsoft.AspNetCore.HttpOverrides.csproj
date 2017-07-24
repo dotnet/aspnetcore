@@ -3,7 +3,6 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
-    <VersionPrefix>2.0.0</VersionPrefix>
     <Description>ASP.NET Core basic middleware for supporting HTTP method overrides. Includes:
 * X-Forwarded-* headers to forward headers from a proxy.
 * HTTP method override header.</Description>
