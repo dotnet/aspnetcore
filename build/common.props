@@ -15,7 +15,7 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <!-- Pin versions to work around CLI bug -->
-    <AspNetCoreVersion Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">2.0.0-$(VersionSuffix)</AspNetCoreVersion>
+    <AspNetCoreVersion Condition="'$(BUILD_PACKAGE_CACHE)' == 'true'">$(VersionPrefix)-$(VersionSuffix)</AspNetCoreVersion>
   </PropertyGroup>
 
   <ItemGroup>
