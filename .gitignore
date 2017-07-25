@@ -40,3 +40,5 @@ npm-debug.log
 .vscode/
 
 /templates/*/Properties/launchSettings.json
+global.json
+korebuild-lock.txt
