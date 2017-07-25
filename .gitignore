@@ -39,3 +39,4 @@ node_modules
 .testPublish/
 .vscode
 global.json
+korebuild-lock.txt
