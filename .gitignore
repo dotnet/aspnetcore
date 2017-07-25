@@ -41,3 +41,4 @@ launchSettings.json
 .vscode/
 TestResults/
 global.json
+korebuild-lock.txt
