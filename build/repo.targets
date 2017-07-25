@@ -27,7 +27,7 @@
 
   <Target Name="CleanUniverseArtifacts">
     <RemoveDir Directories="$(RepositoryRoot)obj" Condition="Exists('$(RepositoryRoot)obj')" />
-    <RemoveDir Directories="$(_CloneRepositoryRoot)" Condition="Exists('$(_CloneRepositoryRoot)')" />
+    <RemoveDir Directories="$(_CloneRepositoryRoot)" Condition="Exists('$(_CloneRepositoryRoot)') AND '$(ClearRepositoryCloneRoot)' != 'false'" />
   </Target>
 
   <Target Name="_PrepareRepositories">
