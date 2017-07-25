@@ -33,3 +33,4 @@ launchSettings.json
 .build/
 .testPublish/
 global.json
+korebuild-lock.txt
