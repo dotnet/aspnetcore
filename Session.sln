@@ -23,7 +23,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		NuGet.config = NuGet.config
 		NuGetPackageVerifier.json = NuGetPackageVerifier.json
 		README.md = README.md
-		version.props = version.props
+		version.xml = version.xml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{4F21221F-2813-41B7-AAFC-E03FD52971CC}"

@@ -1,6 +1,6 @@
 <Project>
   <Import Project="dependencies.props" />
-  <Import Project="..\version.props" />
+  <Import Project="..\version.xml" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
