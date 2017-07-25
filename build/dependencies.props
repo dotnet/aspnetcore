@@ -1,6 +1,6 @@
-﻿<Project>
+<Project>
   <PropertyGroup>
-    <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
+    <AspNetCoreVersion>2.1.0-*</AspNetCoreVersion>
     <AzureKeyVaultVersion>2.3.2</AzureKeyVaultVersion>
     <IdentityModelActiveDirectoryVersion>3.14.1</IdentityModelActiveDirectoryVersion>
     <IdentityModelOpenIdVersion>2.1.4</IdentityModelOpenIdVersion>
