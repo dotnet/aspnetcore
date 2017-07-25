@@ -99,12 +99,13 @@ __get_remote_file() {
     fi
 
     failed=false
-    if __machine_has curl ; then
+    if __machine_has wget; then
+        wget --tries 10 --quiet -O $local_path $remote_path || failed=true
+    fi
+
+    if [ "$failed" = true ] && __machine_has curl; then
+        failed=false
         curl --retry 10 -sSL -f --create-dirs -o $local_path $remote_path || failed=true
-    elif __machine_has wget; then
-        wget --tries 10 -O $local_path $remote_path || failed=true
-    else
-        failed=true
     fi
 
     if [ "$failed" = true ]; then
