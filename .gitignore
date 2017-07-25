@@ -34,3 +34,5 @@ testWorkDir/
 *.nuget.targets
 .idea/
 .dotnet/
+global.json
+korebuild-lock.txt
