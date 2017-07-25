@@ -4,7 +4,7 @@
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
     <IdentityModelActiveDirectoryVersion>3.14.1</IdentityModelActiveDirectoryVersion>
     <IdentityModelOpenIdVersion>2.1.4</IdentityModelOpenIdVersion>
-    <InternalAspNetCoreSdkVersion>2.0.1-*</InternalAspNetCoreSdkVersion>
+    <InternalAspNetCoreSdkVersion>2.1.1-*</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
