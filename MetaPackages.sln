@@ -11,7 +11,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{97D53BEB-A511-4FBE-B784-AB407D9A219F}"
 	ProjectSection(SolutionItems) = preProject
 		NuGet.config = NuGet.config
-		version.props = version.props
+		version.xml = version.xml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F92CB7A1-C38E-408C-A7EC-A5C040D041E1}"
