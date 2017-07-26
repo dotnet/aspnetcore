@@ -28,10 +28,13 @@
 
     <RuntimeStoreTimestampInstallerPackageName>aspnetcore-store-$(TimestampVersion)</RuntimeStoreTimestampInstallerPackageName>
     <RuntimeStoreNoTimestampInstallerPackageName>aspnetcore-store-$(NoTimestampVersion)</RuntimeStoreNoTimestampInstallerPackageName>
+    <HostingBundleTimestampInstallerPackageName>dotnet-hosting-$(TimestampVersion)</HostingBundleTimestampInstallerPackageName>
+    <HostingBundleNoTimestampInstallerPackageName>dotnet-hosting-$(NoTimestampVersion)</HostingBundleNoTimestampInstallerPackageName>
 
     <RuntimeStoreWorkingDirectory>$(RepositoryRoot).rw\</RuntimeStoreWorkingDirectory>
     <RuntimeStoreOutputPath>$(RepositoryRoot).ro\</RuntimeStoreOutputPath>
     <ArtifactsDir>$(RepositoryRoot)artifacts\</ArtifactsDir>
+    <DotnetInstallersDir>$(ArtifactsDir)dotnetInstallers\</DotnetInstallersDir>
     <ArtifactsZipDir>$(ArtifactsDir)zip\</ArtifactsZipDir>
     <DepsOutputPath>$(ArtifactsDir)deps\</DepsOutputPath>
     <RuntimeStoreZipTimestampDir>$(ArtifactsZipDir)t\</RuntimeStoreZipTimestampDir>
@@ -40,31 +43,34 @@
     <RuntimeStoreSymbolsZipNoTimestampDir>$(ArtifactsZipDir)sn\</RuntimeStoreSymbolsZipNoTimestampDir>
     <RuntimeStoreInstallerDirectory>$(ArtifactsDir)installers\</RuntimeStoreInstallerDirectory>
     <RuntimeStoreArchiveDirectory>$(ArtifactsDir)rsArchive\</RuntimeStoreArchiveDirectory>
-    <RuntimeStoreInstallerLayoutTimestampDirectory>$(ArtifactsDir)itLayout\</RuntimeStoreInstallerLayoutTimestampDirectory>
+    <RuntimeStoreInstallerLayoutTimestampDirectory>$(ArtifactsDir)StoreTimestampLayout\</RuntimeStoreInstallerLayoutTimestampDirectory>
     <RuntimeStoreInstallerLayoutPackageRootTimestampDirectory>$(RuntimeStoreInstallerLayoutTimestampDirectory)package_root\</RuntimeStoreInstallerLayoutPackageRootTimestampDirectory>
-    <RuntimeStoreInstallerLayoutNoTimestampDirectory>$(ArtifactsDir)inLayout\</RuntimeStoreInstallerLayoutNoTimestampDirectory>
+    <RuntimeStoreInstallerOutputTimeStampDirectory>$(ArtifactsDir)StoreTimestampOutput\</RuntimeStoreInstallerOutputTimeStampDirectory>
+    <RuntimeStoreInstallerLayoutNoTimestampDirectory>$(ArtifactsDir)StoreNoTimestampLayout\</RuntimeStoreInstallerLayoutNoTimestampDirectory>
     <RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory>$(RuntimeStoreInstallerLayoutNoTimestampDirectory)package_root\</RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory>
-    <RuntimeStoreInstallerOutputTimeStampDirectory>$(ArtifactsDir)itOutput\</RuntimeStoreInstallerOutputTimeStampDirectory>
-    <RuntimeStoreInstallerOutputNoTimeStampDirectory>$(ArtifactsDir)inOutput\</RuntimeStoreInstallerOutputNoTimeStampDirectory>
+    <RuntimeStoreInstallerOutputNoTimeStampDirectory>$(ArtifactsDir)StoreNoTimestampOutput\</RuntimeStoreInstallerOutputNoTimeStampDirectory>
+    <HostingBundleInstallerLayoutTimestampDirectory>$(ArtifactsDir)HostingTimestampLayout\</HostingBundleInstallerLayoutTimestampDirectory>
+    <HostingBundleInstallerLayoutPackageRootTimestampDirectory>$(HostingBundleInstallerLayoutTimestampDirectory)package_root\</HostingBundleInstallerLayoutPackageRootTimestampDirectory>
+    <HostingBundleInstallerOutputTimeStampDirectory>$(ArtifactsDir)HostingTimestampOutput\</HostingBundleInstallerOutputTimeStampDirectory>
+    <HostingBundleInstallerLayoutNoTimestampDirectory>$(ArtifactsDir)HostingNoTimestampLayout\</HostingBundleInstallerLayoutNoTimestampDirectory>
+    <HostingBundleInstallerLayoutPackageRootNoTimestampDirectory>$(HostingBundleInstallerLayoutNoTimestampDirectory)package_root\</HostingBundleInstallerLayoutPackageRootNoTimestampDirectory>
+    <HostingBundleInstallerOutputNoTimeStampDirectory>$(ArtifactsDir)HostingNoTimestampOutput\</HostingBundleInstallerOutputNoTimeStampDirectory>
     <TempDir>$(ArtifactsDir)temp\</TempDir>
     <ToolsDir>$(RepositoryRoot)tools\</ToolsDir>
+    <PackagingDir>$(ToolsDir)packaging\</PackagingDir>
+    <ScriptsDir>$(ToolsDir)scripts\</ScriptsDir>
     <DockerDir>$(ToolsDir)docker\</DockerDir>
     <DependencyBuildDirectory>$(RepositoryRoot).deps\build\</DependencyBuildDirectory>
     <RuntimeStoreReferenceDirectory>$(ToolsDir)Build.RuntimeStore.References\</RuntimeStoreReferenceDirectory>
     <RuntimeStoreReferencePackageDirectory>$(RuntimeStoreReferenceDirectory)bin\Release\</RuntimeStoreReferencePackageDirectory>
-    <DebianConfigTemplateFile>$(ToolsDir)debian_config.json</DebianConfigTemplateFile>
-    <RPMChangelogTemplateFile>$(ToolsDir)changelog</RPMChangelogTemplateFile>
+    <StoreDebianConfigTemplateFile>$(PackagingDir)store_debian_config.json</StoreDebianConfigTemplateFile>
+    <HostingDebianConfigTemplateFile>$(PackagingDir)hosting_debian_config.json</HostingDebianConfigTemplateFile>
+    <RPMChangelogTemplateFile>$(PackagingDir)changelog</RPMChangelogTemplateFile>
     <DotnetDebToolDirectory>$(ToolsDir)dotnet-deb-tool-consumer\</DotnetDebToolDirectory>
-    <RestoreRuntimeStoreDirectory>$(ToolsDir)RestoreRuntimeStore\</RestoreRuntimeStoreDirectory>
     <BuildDirectory>$(RepositoryRoot).build\</BuildDirectory>
     <BuildTempDirectory>$(BuildDirectory)temp\</BuildTempDirectory>
     <BuildDotnetDirectory>$(BuildDirectory)dotnet\</BuildDotnetDirectory>
     <DockerRootDirectory>/opt/code/</DockerRootDirectory>
-
-    <PrepareDependsOn>
-      $(PrepareDependsOn);
-      UpdateNuGetConfig
-    </PrepareDependsOn>
   </PropertyGroup>
 
   <Target Name="UpdateNuGetConfig">
@@ -197,7 +203,7 @@
   </Target>
 
   <Target Name="ConvertZipToTGZ">
-    <Exec Command="&quot;$(ToolsDir)zip2tgz.sh&quot; &quot;$(ZipFileName)&quot; &quot;$(TGZFileName)&quot;" />
+    <Exec Command="&quot;$(ScriptsDir)zip2tgz.sh&quot; &quot;$(ZipFileName)&quot; &quot;$(TGZFileName)&quot;" />
     <Delete Files="$(ZipFileName)" />
   </Target>
 
@@ -205,10 +211,10 @@
 
   <Target Name="_ResolveCurrentSharedFrameworkVersion">
     <!-- Parse framework version -->
-    <Exec Command="powershell.exe $(ToolsDir)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true" Condition="'$(OS)' == 'Windows_NT'">
+    <Exec Command="powershell.exe $(ScriptsDir)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true" Condition="'$(OS)' == 'Windows_NT'">
       <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
     </Exec>
-    <Exec Command="bash $(ToolsDir)GetSharedFrameworkVersion.sh" ConsoleToMSBuild="true" Condition="'$(OS)' != 'Windows_NT'">
+    <Exec Command="bash $(ScriptsDir)GetSharedFrameworkVersion.sh" ConsoleToMSBuild="true" Condition="'$(OS)' != 'Windows_NT'">
       <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
     </Exec>
   </Target>
@@ -228,7 +234,7 @@
   </Target>
 
   <Target Name="_AddDiaSymReaderFromDownloadedSharedFramework" DependsOnTargets="_ResolveCurrentSharedFrameworkVersion" Condition="'$(PACKAGE_CACHE_PLATFORM)' == 'x86'">
-    <Exec Command="powershell.exe $(ToolsDir)InstallSharedFrameworkx86.ps1 $(SharedFrameworkVersion) $(BuildTempDirectory)"/>
+    <Exec Command="powershell.exe $(ScriptsDir)InstallSharedFrameworkx86.ps1 $(SharedFrameworkVersion) $(BuildTempDirectory)"/>
 
     <PropertyGroup>
       <DiaSymReaderDirectory>$(BuildTempDirectory)shared\Microsoft.NETCore.App\$(SharedFrameworkVersion)</DiaSymReaderDirectory>
@@ -331,9 +337,9 @@
     <ZipArchive File="%(MetaPackageNupkg.FullPath)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="@(MetaPackageNupkg->'$(TempDir)%(Filename)')" Overwrite="true" />
   </Target>
 
-  <Target Name="BuildInstallers" DependsOnTargets="GenerateDebs;GenerateRpms" />
+  <Target Name="BuildInstallers" DependsOnTargets="GenerateDebs;GenerateRpms;GenerateTargzs" />
 
-  <Target Name="EnsureInstallerPrerequisites">
+  <Target Name="EnsureInstallerPrerequisites" DependsOnTargets="_ResolveCurrentSharedFrameworkVersion">
     <!-- Check Docker server OS -->
     <Exec Command="docker version -f &quot;{{.Server.Os}}&quot;" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="DockerHostOS" />
@@ -345,27 +351,63 @@
     <Message Text="Local runtime store signed artifacts not specified via RUNTIMESTORE_SIGNED_ARTIFACTS_PATH, falling back to artifacts availabe on myget." Importance="high" Condition="'$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)' == ''"/>
     <MSBuild Projects="$(RestoreRuntimeStoreDirectory)\RestoreRuntimeStore.csproj" Targets="Restore" Properties="RestorePackagesPath=$(RuntimeStoreArchiveDirectory)" Condition="'$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)' == ''"/>
 
+    <ItemGroup>
+      <RuntimeStoreTimestampArchive Include="$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)**\Build.RS.linux-*.tar.gz"/>
+      <RuntimeStoreNoTimestampArchive Include="$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)**\Build.RS.linux.tar.gz"/>
+    </ItemGroup>
+
+    <Error Text="@(RuntimeStoreTimestampArchive->Count()) timestamp linux archives found at $(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)." Condition="'@(RuntimeStoreTimestampArchive->Count())' != 1" />
+    <Error Text="@(RuntimeStoreNoTimestampArchive->Count()) no timestamp linux archives found at $(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)." Condition="'@(RuntimeStoreNoTimestampArchive->Count())' != 1" />
+
+    <!-- Download dotnet installers -->
     <PropertyGroup>
-      <RuntimeStoreSignedArchivesPath>$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)</RuntimeStoreSignedArchivesPath>
-      <RuntimeStoreSignedArchivesPath  Condition="'$(RuntimeStoreSignedArchivesPath)' == ''">$(RuntimeStoreArchiveDirectory)</RuntimeStoreSignedArchivesPath>
+      <HostLink>http://dotnetcli.azureedge.net/dotnet/Runtime/$(SharedFrameworkVersion)/dotnet-host-$(SharedFrameworkVersion)</HostLink>
+      <HostfxrLink>http://dotnetcli.azureedge.net/dotnet/Runtime/$(SharedFrameworkVersion)/dotnet-hostfxr-$(SharedFrameworkVersion)</HostfxrLink>
+      <RuntimeLink>http://dotnetcli.azureedge.net/dotnet/Runtime/$(SharedFrameworkVersion)/dotnet-runtime-$(SharedFrameworkVersion)</RuntimeLink>
+      <RuntimeTargzLink>http://dotnetcli.azureedge.net/dotnet/Runtime/$(SharedFrameworkVersion)/dotnet-runtime-$(SharedFrameworkVersion)-linux-x64.tar.gz</RuntimeTargzLink>
     </PropertyGroup>
 
     <ItemGroup>
-      <RuntimeStoreTimestampArchive Include="$(RuntimeStoreSignedArchivesPath)**\Build.RS.linux-*.tar.gz"/>
-      <RuntimeStoreNoTimestampArchive Include="$(RuntimeStoreSignedArchivesPath)**\Build.RS.linux.tar.gz"/>
+      <DotnetInstallerSuffixes Include="rhel.7-x64.rpm;debian.8-x64.deb;ubuntu.14.04-x64.deb;ubuntu.16.04-x64.deb;ubuntu.16.10-x64.deb"/>
     </ItemGroup>
 
-    <Error Text="@(RuntimeStoreTimestampArchive->Count()) timestamp linux archives found at $(RuntimeStoreSignedArchivesPath)." Condition="'@(RuntimeStoreTimestampArchive->Count())' != 1" />
-    <Error Text="@(RuntimeStoreNoTimestampArchive->Count()) no timestamp linux archives found at $(RuntimeStoreSignedArchivesPath)." Condition="'@(RuntimeStoreNoTimestampArchive->Count())' != 1" />
+    <RemoveDir Directories="$(DotnetInstallersDir)" />
+    <MakeDir Directories="$(DotnetInstallersDir)" />
+
+    <Exec Command="curl $(HostLink)-%(DotnetInstallerSuffixes.Identity) -o $(DotnetInstallersDir)dotnet-host-$(SharedFrameworkVersion)-%(DotnetInstallerSuffixes.Identity)" />
+    <Exec Command="curl $(HostfxrLink)-%(DotnetInstallerSuffixes.Identity) -o $(DotnetInstallersDir)dotnet-hostfxr-$(SharedFrameworkVersion)-%(DotnetInstallerSuffixes.Identity)" />
+    <Exec Command="curl $(RuntimeLink)-%(DotnetInstallerSuffixes.Identity) -o $(DotnetInstallersDir)dotnet-runtime-$(SharedFrameworkVersion)-%(DotnetInstallerSuffixes.Identity)" />
+    <Exec Command="curl $(RuntimeTargzLink) -o $(DotnetInstallersDir)dotnet-runtime-$(SharedFrameworkVersion)-linux-x64.tar.gz" />
+  </Target>
+
+  <Target Name="GenerateTargzs" DependsOnTargets="EnsureInstallerPrerequisites">
+    <!-- Create layout: Clear layout directories -->
+    <RemoveDir Directories="$(HostingBundleInstallerLayoutTimestampDirectory);$(HostingBundleInstallerLayoutNoTimestampDirectory)" />
+    <MakeDir Directories="$(HostingBundleInstallerLayoutTimestampDirectory);$(HostingBundleInstallerLayoutNoTimestampDirectory)" />
+    <MakeDir Directories="$(RuntimeStoreInstallerDirectory)" Condition="!Exists($(RuntimeStoreInstallerDirectory))" />
+
+    <!-- Create layout: Download dotnet runtime -->
+    <PropertyGroup>
+      <HostingBundleTimestampTARGZFileName>$(HostingBundleTimestampInstallerPackageName)-linux-$(PACKAGE_CACHE_PLATFORM).tar.gz</HostingBundleTimestampTARGZFileName>
+      <HostingBundleNoTimestampTARGZFileName>$(HostingBundleNoTimestampInstallerPackageName)-linux-$(PACKAGE_CACHE_PLATFORM).tar.gz</HostingBundleNoTimestampTARGZFileName>
+    </PropertyGroup>
+
+    <!-- Create layout: Aspnet Hosting Bundle -->
+    <Exec Command="tar -xzf @(RuntimeStoreTimestampArchive) -C $(HostingBundleInstallerLayoutTimestampDirectory)" />
+    <Exec Command="tar -xzf @(RuntimeStoreNoTimestampArchive) -C $(HostingBundleInstallerLayoutNoTimestampDirectory)" />
+    <Exec Command="tar -xzf $(DotnetInstallersDir)dotnet-runtime-$(SharedFrameworkVersion)-linux-x64.tar.gz -C $(HostingBundleInstallerLayoutTimestampDirectory)" />
+    <Exec Command="tar -xzf $(DotnetInstallersDir)dotnet-runtime-$(SharedFrameworkVersion)-linux-x64.tar.gz -C $(HostingBundleInstallerLayoutNoTimestampDirectory)" />
+
+    <!-- Create Aspnet Hosting Bundle tar.gz -->
+    <Exec Command="tar -czf $(RuntimeStoreInstallerDirectory)$(HostingBundleTimestampTARGZFileName) $(HostingBundleInstallerLayoutTimestampDirectory)" />
+    <Exec Command="tar -czf $(RuntimeStoreInstallerDirectory)$(HostingBundleNoTimestampTARGZFileName) $(HostingBundleInstallerLayoutNoTimestampDirectory)" />
   </Target>
 
   <Target Name="GenerateRpms" DependsOnTargets="EnsureInstallerPrerequisites">
     <!-- Create layout: Aspnet runtime store -->
-    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutTimestampDirectory)" />
-    <MakeDir Directories="$(RuntimeStoreInstallerLayoutPackageRootTimestampDirectory)" />
+    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutTimestampDirectory);$(RuntimeStoreInstallerLayoutNoTimestampDirectory);$(HostingBundleInstallerLayoutTimestampDirectory);$(HostingBundleInstallerLayoutNoTimestampDirectory)" />
+    <MakeDir Directories="$(RuntimeStoreInstallerLayoutPackageRootTimestampDirectory);$(RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory);$(HostingBundleInstallerLayoutPackageRootTimestampDirectory);$(HostingBundleInstallerLayoutPackageRootNoTimestampDirectory)" />
     <Exec Command="tar -xzf @(RuntimeStoreTimestampArchive) -C $(RuntimeStoreInstallerLayoutPackageRootTimestampDirectory)" />
-    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutNoTimestampDirectory)" />
-    <MakeDir Directories="$(RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory)" />
     <Exec Command="tar -xzf @(RuntimeStoreNoTimestampArchive) -C $(RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory)" />
 
     <!-- Create layout: Place changelog -->
@@ -381,98 +423,208 @@
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
+    <Copy
+      SourceFiles="$(RPMChangelogTemplateFile)"
+      DestinationFiles="$(HostingBundleInstallerLayoutTimestampDirectory)templates/changelog"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+    <Copy
+      SourceFiles="$(RPMChangelogTemplateFile)"
+      DestinationFiles="$(HostingBundleInstallerLayoutNoTimestampDirectory)templates/changelog"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
 
     <!-- Common installer parameters -->
-    <JsonPeek Query="$.short_description" JsonInputPath="$(DebianConfigTemplateFile)">
-      <Output TaskParameter="Result" ItemName="_InstallerSummary" />
+    <JsonPeek Query="$.short_description" JsonInputPath="$(StoreDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_StoreInstallerSummary" />
     </JsonPeek>
-    <JsonPeek Query="$.long_description" JsonInputPath="$(DebianConfigTemplateFile)">
-      <Output TaskParameter="Result" ItemName="_InstallerDescription" />
+    <JsonPeek Query="$.long_description" JsonInputPath="$(StoreDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_StoreInstallerDescription" />
     </JsonPeek>
-    <JsonPeek Query="$.license.type" JsonInputPath="$(DebianConfigTemplateFile)">
-      <Output TaskParameter="Result" ItemName="_InstallerLicense" />
+    <JsonPeek Query="$.license.type" JsonInputPath="$(StoreDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_StoreInstallerLicense" />
     </JsonPeek>
-    <JsonPeek Query="$.release.package_revision" JsonInputPath="$(DebianConfigTemplateFile)">
-      <Output TaskParameter="Result" ItemName="_InstallerPackageRevision" />
+    <JsonPeek Query="$.release.package_revision" JsonInputPath="$(StoreDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_StoreInstallerPackageRevision" />
     </JsonPeek>
-    <JsonPeek Query="$.homepage" JsonInputPath="$(DebianConfigTemplateFile)">
-      <Output TaskParameter="Result" ItemName="_InstallerHomepage" />
+    <JsonPeek Query="$.homepage" JsonInputPath="$(StoreDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_StoreInstallerHomepage" />
     </JsonPeek>
-    <JsonPeek Query="$.maintainer_name" JsonInputPath="$(DebianConfigTemplateFile)">
-      <Output TaskParameter="Result" ItemName="_InstallerMaintainerName" />
+    <JsonPeek Query="$.maintainer_name" JsonInputPath="$(StoreDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_StoreInstallerMaintainerName" />
     </JsonPeek>
-    <JsonPeek Query="$.maintainer_email" JsonInputPath="$(DebianConfigTemplateFile)">
-      <Output TaskParameter="Result" ItemName="_InstallerMaintainerEmail" />
+    <JsonPeek Query="$.maintainer_email" JsonInputPath="$(StoreDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_StoreInstallerMaintainerEmail" />
     </JsonPeek>
-    <JsonPeek Query="$.release.changelog_message" JsonInputPath="$(DebianConfigTemplateFile)">
-      <Output TaskParameter="Result" ItemName="_InstallerChangelogMessage" />
+    <JsonPeek Query="$.release.changelog_message" JsonInputPath="$(StoreDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_StoreInstallerChangelogMessage" />
+    </JsonPeek>
+    <JsonPeek Query="$.short_description" JsonInputPath="$(HostingDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_HostingInstallerSummary" />
+    </JsonPeek>
+    <JsonPeek Query="$.long_description" JsonInputPath="$(HostingDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_HostingInstallerDescription" />
+    </JsonPeek>
+    <JsonPeek Query="$.license.type" JsonInputPath="$(HostingDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_HostingInstallerLicense" />
+    </JsonPeek>
+    <JsonPeek Query="$.release.package_revision" JsonInputPath="$(HostingDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_HostingInstallerPackageRevision" />
+    </JsonPeek>
+    <JsonPeek Query="$.homepage" JsonInputPath="$(HostingDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_HostingInstallerHomepage" />
+    </JsonPeek>
+    <JsonPeek Query="$.maintainer_name" JsonInputPath="$(HostingDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_HostingInstallerMaintainerName" />
+    </JsonPeek>
+    <JsonPeek Query="$.maintainer_email" JsonInputPath="$(HostingDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_HostingInstallerMaintainerEmail" />
+    </JsonPeek>
+    <JsonPeek Query="$.release.changelog_message" JsonInputPath="$(HostingDebianConfigTemplateFile)">
+      <Output TaskParameter="Result" ItemName="_HostingInstallerChangelogMessage" />
     </JsonPeek>
 
+    <ItemGroup>
+      <RHStoreDirectories Include="/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/additionalDeps" />
+      <RHStoreDirectories Include="/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/store" />
+      <GeneralStoreDirectories Include="/usr/share/dotnet/additionalDeps" />
+      <GeneralStoreDirectories Include="/usr/share/dotnet/store" />
+    </ItemGroup>
+
     <PropertyGroup>
-      <InstallerSummary>@(_InstallerSummary)</InstallerSummary>
-      <InstallerDescription>@(_InstallerDescription)</InstallerDescription>
-      <InstallerLicense>@(_InstallerLicense)</InstallerLicense>
-      <InstallerPackageRevision>@(_InstallerPackageRevision)</InstallerPackageRevision>
-      <InstallerHomepage>@(_InstallerHomepage)</InstallerHomepage>
-      <InstallerMaintainerName>@(_InstallerMaintainerName)</InstallerMaintainerName>
-      <InstallerMaintainerEmail>@(_InstallerMaintainerEmail)</InstallerMaintainerEmail>
-      <InstallerChangelogMessage>@(_InstallerChangelogMessage)</InstallerChangelogMessage>
+      <StoreInstallerSummary>@(_StoreInstallerSummary)</StoreInstallerSummary>
+      <StoreInstallerDescription>@(_StoreInstallerDescription)</StoreInstallerDescription>
+      <StoreInstallerLicense>@(_StoreInstallerLicense)</StoreInstallerLicense>
+      <StoreInstallerPackageRevision>@(_StoreInstallerPackageRevision)</StoreInstallerPackageRevision>
+      <StoreInstallerHomepage>@(_StoreInstallerHomepage)</StoreInstallerHomepage>
+      <StoreInstallerMaintainerName>@(_StoreInstallerMaintainerName)</StoreInstallerMaintainerName>
+      <StoreInstallerMaintainerEmail>@(_StoreInstallerMaintainerEmail)</StoreInstallerMaintainerEmail>
+      <StoreInstallerChangelogMessage>@(_StoreInstallerChangelogMessage)</StoreInstallerChangelogMessage>
+      <HostingInstallerSummary>@(_HostingInstallerSummary)</HostingInstallerSummary>
+      <HostingInstallerDescription>@(_HostingInstallerDescription)</HostingInstallerDescription>
+      <HostingInstallerLicense>@(_HostingInstallerLicense)</HostingInstallerLicense>
+      <HostingInstallerPackageRevision>@(_HostingInstallerPackageRevision)</HostingInstallerPackageRevision>
+      <HostingInstallerHomepage>@(_HostingInstallerHomepage)</HostingInstallerHomepage>
+      <HostingInstallerMaintainerName>@(_HostingInstallerMaintainerName)</HostingInstallerMaintainerName>
+      <HostingInstallerMaintainerEmail>@(_HostingInstallerMaintainerEmail)</HostingInstallerMaintainerEmail>
+      <HostingInstallerChangelogMessage>@(_HostingInstallerChangelogMessage)</HostingInstallerChangelogMessage>
+      <RHInstallerInstallRoot>/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/</RHInstallerInstallRoot>
+      <RHStoreDirectoriesArguments>@(RHStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RHStoreDirectoriesArguments>
+      <GeneralInstallerInstallRoot>/usr/share/dotnet/</GeneralInstallerInstallRoot>
+      <GeneralStoreDirectoriesArguments>@(GeneralStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</GeneralStoreDirectoriesArguments>
     </PropertyGroup>
 
     <!-- Update Date, Maintainer, Version, Revision and Changelog Message -->
     <Exec Command="sed -i
       -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/'
-      -e 's/MAINTAINER_NAME/$(InstallerMaintainerName)/'
-      -e 's/MAINTAINER_EMAIL/$(InstallerMaintainerEmail)/'
+      -e 's/MAINTAINER_NAME/$(StoreInstallerMaintainerName)/'
+      -e 's/MAINTAINER_EMAIL/$(StoreInstallerMaintainerEmail)/'
       -e 's/PACKAGE_VERSION/$(TimestampVersion)/'
-      -e 's/PACKAGE_REVISION/$(InstallerPackageRevision)/'
-      -e 's/CHANGELOG_MESSAGE/$(InstallerChangelogMessage)/'
+      -e 's/PACKAGE_REVISION/$(StoreInstallerPackageRevision)/'
+      -e 's/CHANGELOG_MESSAGE/$(StoreInstallerChangelogMessage)/'
       $(RuntimeStoreInstallerLayoutTimestampDirectory)templates/changelog" />
     <Exec Command="sed -i
       -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/'
-      -e 's/MAINTAINER_NAME/$(InstallerMaintainerName)/'
-      -e 's/MAINTAINER_EMAIL/$(InstallerMaintainerEmail)/'
+      -e 's/MAINTAINER_NAME/$(StoreInstallerMaintainerName)/'
+      -e 's/MAINTAINER_EMAIL/$(StoreInstallerMaintainerEmail)/'
       -e 's/PACKAGE_VERSION/$(NoTimestampVersion)/'
-      -e 's/PACKAGE_REVISION/$(InstallerPackageRevision)/'
-      -e 's/CHANGELOG_MESSAGE/$(InstallerChangelogMessage)/'
+      -e 's/PACKAGE_REVISION/$(StoreInstallerPackageRevision)/'
+      -e 's/CHANGELOG_MESSAGE/$(StoreInstallerChangelogMessage)/'
       $(RuntimeStoreInstallerLayoutNoTimestampDirectory)templates/changelog" />
+    <Exec Command="sed -i
+      -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/'
+      -e 's/MAINTAINER_NAME/$(HostingInstallerMaintainerName)/'
+      -e 's/MAINTAINER_EMAIL/$(HostingInstallerMaintainerEmail)/'
+      -e 's/PACKAGE_VERSION/$(TimestampVersion)/'
+      -e 's/PACKAGE_REVISION/$(HostingInstallerPackageRevision)/'
+      -e 's/CHANGELOG_MESSAGE/$(HostingInstallerChangelogMessage)/'
+      $(HostingBundleInstallerLayoutTimestampDirectory)templates/changelog" />
+    <Exec Command="sed -i
+      -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/'
+      -e 's/MAINTAINER_NAME/$(HostingInstallerMaintainerName)/'
+      -e 's/MAINTAINER_EMAIL/$(HostingInstallerMaintainerEmail)/'
+      -e 's/PACKAGE_VERSION/$(NoTimestampVersion)/'
+      -e 's/PACKAGE_REVISION/$(HostingInstallerPackageRevision)/'
+      -e 's/CHANGELOG_MESSAGE/$(HostingInstallerChangelogMessage)/'
+      $(HostingBundleInstallerLayoutNoTimestampDirectory)templates/changelog" />
 
     <MSBuild
       Projects="$(ProjectPath)"
-      Targets="BuildRuntimeStoreRPM"
-      Properties="InstallerPlatform=rhel;InstallerSummary=$(InstallerSummary);InstallerDescription=$(InstallerDescription);InstallerLicense=$(InstallerLicense);InstallerPackageRevision=$(InstallerPackageRevision);InstallerHomepage=$(InstallerHomepage);InstallerMaintainerName=$(InstallerMaintainerName);InstallerMaintainerEmail=$(InstallerMaintainerEmail);InstallerChangelogMessage=$(InstallerChangelogMessage)" />
+      Targets="BuildStoreAndHostingRPM"
+      Properties="DockerImage=rhel.7;
+        InstallerPlatform=rh.rhel.7;
+        InstallerInstallRoot=$(RHInstallerInstallRoot);
+        BuildNumber=$(BuildNumber);
+        SharedFrameworkVersion=$(SharedFrameworkVersion);
+        StoreDirectoriesArguments=$(RHStoreDirectoriesArguments);
+        StoreInstallerSummary=$(StoreInstallerSummary);
+        StoreInstallerDescription=$(StoreInstallerDescription);
+        StoreInstallerLicense=$(StoreInstallerLicense);
+        StoreInstallerPackageRevision=$(StoreInstallerPackageRevision);
+        StoreInstallerHomepage=$(StoreInstallerHomepage);
+        StoreInstallerMaintainerName=$(StoreInstallerMaintainerName);
+        StoreInstallerMaintainerEmail=$(StoreInstallerMaintainerEmail);
+        HostingInstallerSummary=$(HostingInstallerSummary);
+        HostingInstallerDescription=$(HostingInstallerDescription);
+        HostingInstallerLicense=$(HostingInstallerLicense);
+        HostingInstallerPackageRevision=$(HostingInstallerPackageRevision);
+        HostingInstallerHomepage=$(HostingInstallerHomepage);
+        HostingInstallerMaintainerName=$(HostingInstallerMaintainerName);
+        HostingInstallerMaintainerEmail=$(HostingInstallerMaintainerEmail);
+        SkipInstallerTests=true" />
+    <MSBuild
+      Projects="$(ProjectPath)"
+      Targets="BuildStoreAndHostingRPM"
+      Properties="DockerImage=rhel.7;
+        InstallerPlatform=rhel.7;
+        InstallerInstallRoot=$(GeneralInstallerInstallRoot);
+        BuildNumber=$(BuildNumber);
+        SharedFrameworkVersion=$(SharedFrameworkVersion);
+        StoreDirectoriesArguments=$(GeneralStoreDirectoriesArguments);
+        StoreInstallerSummary=$(StoreInstallerSummary);
+        StoreInstallerDescription=$(StoreInstallerDescription);
+        StoreInstallerLicense=$(StoreInstallerLicense);
+        StoreInstallerPackageRevision=$(StoreInstallerPackageRevision);
+        StoreInstallerHomepage=$(StoreInstallerHomepage);
+        StoreInstallerMaintainerName=$(StoreInstallerMaintainerName);
+        StoreInstallerMaintainerEmail=$(StoreInstallerMaintainerEmail);
+        HostingInstallerSummary=$(HostingInstallerSummary);
+        HostingInstallerDescription=$(HostingInstallerDescription);
+        HostingInstallerLicense=$(HostingInstallerLicense);
+        HostingInstallerPackageRevision=$(HostingInstallerPackageRevision);
+        HostingInstallerHomepage=$(HostingInstallerHomepage);
+        HostingInstallerMaintainerName=$(HostingInstallerMaintainerName);
+        HostingInstallerMaintainerEmail=$(HostingInstallerMaintainerEmail)" />
   </Target>
 
-  <Target Name="BuildRuntimeStoreRPM">
-    <ItemGroup>
-      <RPMDirectories Include="/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/store" />
-      <RPMDirectories Include="/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/additionalDeps" />
-    </ItemGroup>
-
+  <Target Name="BuildStoreAndHostingRPM">
     <PropertyGroup>
       <!-- rpm unique installer parameters -->
       <RuntimeStoreTimestampRPMFileName>$(RuntimeStoreTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).rpm</RuntimeStoreTimestampRPMFileName>
       <RuntimeStoreNoTimestampRPMFileName>$(RuntimeStoreNoTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).rpm</RuntimeStoreNoTimestampRPMFileName>
-      <RPMDirectoriesArguments>@(RPMDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RPMDirectoriesArguments>
-      <InstallerMaintainer>$(InstallerMaintainerName) &lt;$(InstallerMaintainerEmail)&gt;</InstallerMaintainer>
+      <HostingBundleTimestampRPMFileName>$(HostingBundleTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).rpm</HostingBundleTimestampRPMFileName>
+      <HostingBundleNoTimestampRPMFileName>$(HostingBundleNoTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).rpm</HostingBundleNoTimestampRPMFileName>
+      <StoreInstallerMaintainer>$(StoreInstallerMaintainerName) &lt;$(StoreInstallerMaintainerEmail)&gt;</StoreInstallerMaintainer>
+      <HostingInstallerMaintainer>$(HostingInstallerMaintainerName) &lt;$(HostingInstallerMaintainerEmail)&gt;</HostingInstallerMaintainer>
       <InstallerVendor>.NET Foundation</InstallerVendor>
-      <InstallerInstallRoot>/opt/rh/rh-dotnet20/root/usr/lib64/dotnet</InstallerInstallRoot>
     </PropertyGroup>
 
     <!-- Clear the output dir -->
-    <RemoveDir Directories="$(RuntimeStoreInstallerOutputTimeStampDirectory);$(RuntimeStoreInstallerOutputNoTimeStampDirectory)" />
-    <MakeDir Directories="$(RuntimeStoreInstallerOutputTimeStampDirectory);$(RuntimeStoreInstallerOutputNoTimeStampDirectory)" />
+    <RemoveDir Directories="$(RuntimeStoreInstallerOutputTimeStampDirectory);$(RuntimeStoreInstallerOutputNoTimeStampDirectory);$(HostingBundleInstallerOutputTimeStampDirectory);$(HostingBundleInstallerOutputNoTimeStampDirectory)" />
+    <MakeDir Directories="$(RuntimeStoreInstallerOutputTimeStampDirectory);$(RuntimeStoreInstallerOutputNoTimeStampDirectory);$(HostingBundleInstallerOutputTimeStampDirectory);$(HostingBundleInstallerOutputNoTimeStampDirectory)" />
 
     <!-- Build Docker Image -->
     <Exec
-      Command="docker build --build-arg USER_ID=%24(id -u) -t docker-image-$(InstallerPlatform) $(InstallerPlatform)"
+      Command="docker build --build-arg USER_ID=%24(id -u) -t docker-image-$(DockerImage) $(DockerImage)"
       WorkingDirectory="$(DockerDir)" />
 
-    <!-- Build Runtime Store Deb package -->
+    <!-- Build Runtime Store RPM package -->
     <Exec Command="docker run
       --rm
       -v $(RepositoryRoot):$(DockerRootDirectory)
-      docker-image-$(InstallerPlatform)
+      docker-image-$(DockerImage)
       fpm
         --verbose
         -s dir
@@ -480,21 +632,21 @@
         -n $(RuntimeStoreTimestampInstallerPackageName)
         -v $(TimestampVersion)
         -a amd64
-        $(RPMDirectoriesArguments)
-        --rpm-changelog $(DockerRootDirectory)artifacts/itLayout/templates/changelog
-        --rpm-summary &quot;$(InstallerSummary)&quot;
-        --description &quot;$(InstallerDescription)&quot;
-        --maintainer &quot;$(InstallerMaintainer)&quot;
+        $(StoreDirectoriesArguments)
+        --rpm-changelog $(DockerRootDirectory)artifacts/StoreTimestampLayout/templates/changelog
+        --rpm-summary &quot;$(StoreInstallerSummary)&quot;
+        --description &quot;$(StoreInstallerDescription)&quot;
+        --maintainer &quot;$(StoreInstallerMaintainer)&quot;
         --vendor &quot;$(InstallerVendor)&quot;
-        -p $(DockerRootDirectory)artifacts/itOutput/$(RuntimeStoreTimestampRPMFileName)
-        --license &quot;$(InstallerLicense)&quot;
-        --iteration $(InstallerPackageRevision)
-        --url &quot;$(InstallerHomepage)&quot;
-        $(DockerRootDirectory)artifacts/itLayout/package_root/=&quot;$(InstallerInstallRoot)&quot;" />
+        -p $(DockerRootDirectory)artifacts/StoreTimestampOutput/$(RuntimeStoreTimestampRPMFileName)
+        --license &quot;$(StoreInstallerLicense)&quot;
+        --iteration $(StoreInstallerPackageRevision)
+        --url &quot;$(StoreInstallerHomepage)&quot;
+        $(DockerRootDirectory)artifacts/StoreTimestampLayout/package_root/=&quot;$(InstallerInstallRoot)&quot;" />
     <Exec Command="docker run
       --rm
       -v $(RepositoryRoot):$(DockerRootDirectory)
-      docker-image-$(InstallerPlatform)
+      docker-image-$(DockerImage)
       fpm
         --verbose
         -s dir
@@ -502,83 +654,240 @@
         -n $(RuntimeStoreNoTimestampInstallerPackageName)
         -v $(NoTimestampVersion)
         -a amd64
-        $(RPMDirectoriesArguments)
-        --rpm-changelog $(DockerRootDirectory)artifacts/inLayout/templates/changelog
-        --rpm-summary &quot;$(InstallerSummary)&quot;
-        --description &quot;$(InstallerDescription)&quot;
-        --maintainer &quot;$(InstallerMaintainer)&quot;
+        $(StoreDirectoriesArguments)
+        --rpm-changelog $(DockerRootDirectory)artifacts/StoreNoTimestampLayout/templates/changelog
+        --rpm-summary &quot;$(StoreInstallerSummary)&quot;
+        --description &quot;$(StoreInstallerDescription)&quot;
+        --maintainer &quot;$(StoreInstallerMaintainer)&quot;
         --vendor &quot;$(InstallerVendor)&quot;
-        -p $(DockerRootDirectory)artifacts/inOutput/$(RuntimeStoreNoTimestampRPMFileName)
-        --license &quot;$(InstallerLicense)&quot;
-        --iteration $(InstallerPackageRevision)
-        --url &quot;$(InstallerHomepage)&quot;
-        $(DockerRootDirectory)artifacts/inLayout/package_root/=&quot;$(InstallerInstallRoot)&quot;" />
+        -p $(DockerRootDirectory)artifacts/StoreNoTimestampOutput/$(RuntimeStoreNoTimestampRPMFileName)
+        --license &quot;$(StoreInstallerLicense)&quot;
+        --iteration $(StoreInstallerPackageRevision)
+        --url &quot;$(StoreInstallerHomepage)&quot;
+        $(DockerRootDirectory)artifacts/StoreNoTimestampLayout/package_root/=&quot;$(InstallerInstallRoot)&quot;" />
 
-    <!-- Remove Docker Image to save disk space -->
-    <Exec Command="docker rmi docker-image-$(InstallerPlatform)" />
+    <!-- Build Hosting Bundle RPM package -->
+    <ItemGroup>
+      <HostingBundleTimestampDependencies Include="$(RuntimeStoreTimestampInstallerPackageName)">
+        <Version>$(TimestampVersion)</Version>
+      </HostingBundleTimestampDependencies>
+      <HostingBundleTimestampDependencies Include="dotnet-runtime-$(SharedFrameworkVersion)">
+        <Version>$(SharedFrameworkVersion)</Version>
+      </HostingBundleTimestampDependencies>
+      <HostingBundleNoTimestampDependencies Include="$(RuntimeStoreNoTimestampInstallerPackageName)">
+        <Version>$(NoTimestampVersion)</Version>
+      </HostingBundleNoTimestampDependencies>
+      <HostingBundleNoTimestampDependencies Include="dotnet-runtime-$(SharedFrameworkVersion)">
+        <Version>$(SharedFrameworkVersion)</Version>
+      </HostingBundleNoTimestampDependencies>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <HostingBundleTimestampDependenciesArguments>@(HostingBundleTimestampDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</HostingBundleTimestampDependenciesArguments>
+      <HostingBundleNoTimestampDependenciesArguments>@(HostingBundleNoTimestampDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</HostingBundleNoTimestampDependenciesArguments>
+    </PropertyGroup>
+
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(DockerRootDirectory)
+      docker-image-$(DockerImage)
+      fpm
+        --verbose
+        -s dir
+        -t rpm
+        -n $(HostingBundleTimestampInstallerPackageName)
+        -v $(TimestampVersion)
+        -a amd64
+        $(HostingBundleTimestampDependenciesArguments)
+        --rpm-changelog $(DockerRootDirectory)artifacts/HostingTimestampLayout/templates/changelog
+        --rpm-summary &quot;$(HostingInstallerSummary)&quot;
+        --description &quot;$(HostingInstallerDescription)&quot;
+        --maintainer &quot;$(HostingInstallerMaintainer)&quot;
+        --vendor &quot;$(InstallerVendor)&quot;
+        -p $(DockerRootDirectory)artifacts/HostingTimestampOutput/$(HostingBundleTimestampRPMFileName)
+        --license &quot;$(HostingInstallerLicense)&quot;
+        --iteration $(HostingInstallerPackageRevision)
+        --url &quot;$(HostingInstallerHomepage)&quot;
+        $(DockerRootDirectory)artifacts/HostingTimestampLayout/package_root/=&quot;$(InstallerInstallRoot)&quot;" />
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(DockerRootDirectory)
+      docker-image-$(DockerImage)
+      fpm
+        --verbose
+        -s dir
+        -t rpm
+        -n $(HostingBundleNoTimestampInstallerPackageName)
+        -v $(NoTimestampVersion)
+        -a amd64
+        $(HostingBundleNoTimestampDependenciesArguments)
+        --rpm-changelog $(DockerRootDirectory)artifacts/HostingNoTimestampLayout/templates/changelog
+        --rpm-summary &quot;$(HostingInstallerSummary)&quot;
+        --description &quot;$(HostingInstallerDescription)&quot;
+        --maintainer &quot;$(HostingInstallerMaintainer)&quot;
+        --vendor &quot;$(InstallerVendor)&quot;
+        -p $(DockerRootDirectory)artifacts/HostingNoTimestampOutput/$(HostingBundleNoTimestampRPMFileName)
+        --license &quot;$(HostingInstallerLicense)&quot;
+        --iteration $(HostingInstallerPackageRevision)
+        --url &quot;$(HostingInstallerHomepage)&quot;
+        $(DockerRootDirectory)artifacts/HostingNoTimestampLayout/package_root/=&quot;$(InstallerInstallRoot)&quot;" />
 
     <!-- Copy Runtime Store package to output -->
     <ItemGroup>
-      <GeneratedTimestampRPMFiles Include="$(RuntimeStoreInstallerOutputTimeStampDirectory)/*.rpm" />
-      <GeneratedNoTimestampRPMFiles Include="$(RuntimeStoreInstallerOutputNoTimeStampDirectory)/*.rpm" />
+      <GeneratedStoreTimestampRPMFiles Include="$(RuntimeStoreInstallerOutputTimeStampDirectory)/*.rpm" />
+      <GeneratedStoreNoTimestampRPMFiles Include="$(RuntimeStoreInstallerOutputNoTimeStampDirectory)/*.rpm" />
+      <GeneratedHostingTimestampRPMFiles Include="$(HostingBundleInstallerOutputTimeStampDirectory)/*.rpm" />
+      <GeneratedHostingNoTimestampRPMFiles Include="$(HostingBundleInstallerOutputNoTimeStampDirectory)/*.rpm" />
     </ItemGroup>
 
-    <Error Text="@(GeneratedTimestampRPMFiles->Count()) timestamp .rpm files generated." Condition="'@(GeneratedTimestampRPMFiles->Count())' != 1" />
-    <Error Text="@(GeneratedNoTimestampRPMFiles->Count()) no timestamp .rpm files generated." Condition="'@(GeneratedNoTimestampRPMFiles->Count())' != 1" />
+    <Error Text="@(GeneratedStoreTimestampRPMFiles->Count()) timestamp store rpm installer files generated." Condition="'@(GeneratedStoreTimestampRPMFiles->Count())' != 1" />
+    <Error Text="@(GeneratedStoreNoTimestampRPMFiles->Count()) no timestamp store rpm installer files generated." Condition="'@(GeneratedStoreNoTimestampRPMFiles->Count())' != 1" />
+    <Error Text="@(GeneratedHostingTimestampRPMFiles->Count()) timestamp hosting rpm instaler files generated." Condition="'@(GeneratedHostingTimestampRPMFiles->Count())' != 1" />
+    <Error Text="@(GeneratedHostingNoTimestampRPMFiles->Count()) no timestamp hosting rpm installer files generated." Condition="'@(GeneratedHostingNoTimestampRPMFiles->Count())' != 1" />
 
     <Copy
       DestinationFiles="$(RuntimeStoreInstallerDirectory)$(RuntimeStoreTimestampRPMFileName)"
-      SourceFiles="@(GeneratedTimestampRPMFiles)"
+      SourceFiles="@(GeneratedStoreTimestampRPMFiles)"
       OverwriteReadOnlyFiles="true"
       SkipUnchangedFiles="false" />
     <Copy
       DestinationFiles="$(RuntimeStoreInstallerDirectory)$(RuntimeStoreNoTimestampRPMFileName)"
-      SourceFiles="@(GeneratedNoTimestampRPMFiles)"
+      SourceFiles="@(GeneratedStoreNoTimestampRPMFiles)"
       OverwriteReadOnlyFiles="true"
       SkipUnchangedFiles="false" />
+    <Copy
+      DestinationFiles="$(RuntimeStoreInstallerDirectory)$(HostingBundleTimestampRPMFileName)"
+      SourceFiles="@(GeneratedHostingTimestampRPMFiles)"
+      OverwriteReadOnlyFiles="true"
+      SkipUnchangedFiles="false" />
+    <Copy
+      DestinationFiles="$(RuntimeStoreInstallerDirectory)$(HostingBundleNoTimestampRPMFileName)"
+      SourceFiles="@(GeneratedHostingNoTimestampRPMFiles)"
+      OverwriteReadOnlyFiles="true"
+      SkipUnchangedFiles="false" />
+
+    <!-- Parse CLI version -->
+    <ReadLinesFromFile File="$(BuildDirectory)cli.version">
+      <Output TaskParameter="Lines" PropertyName="CLIVersionNumber" />
+    </ReadLinesFromFile>
+
+    <!-- Run installer tests -->
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(DockerRootDirectory)
+      -e DotnetInstallerSuffix=-$(SharedFrameworkVersion)-$(DockerImage)-x64.rpm
+      -e InstallerExtension=.rpm
+      -e StoreInstallerFile=@(GeneratedStoreTimestampRPMFiles->'%(Filename)%(Extension)')
+      -e StoreInstallerPackageName=$(RuntimeStoreTimestampInstallerPackageName)
+      -e HostingInstallerFile=@(GeneratedHostingTimestampRPMFiles->'%(Filename)%(Extension)')
+      -e HostingInstallerPackageName=$(HostingBundleTimestampInstallerPackageName)
+      -e InstallRoot=$(InstallerInstallRoot)
+      -e InstallCommand=&quot;sudo rpm -i&quot;
+      -e UninstallCommand=&quot;sudo rpm -e&quot;
+      docker-image-$(DockerImage)
+      ./tools/scripts/TestInstallers.sh" 
+      Condition="'$(SkipInstallerTests)' != 'true'"/>
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(DockerRootDirectory)
+      -e DotnetInstallerSuffix=-$(SharedFrameworkVersion)-$(DockerImage)-x64.rpm
+      -e InstallerExtension=.rpm
+      -e StoreInstallerFile=@(GeneratedStoreNoTimestampRPMFiles->'%(Filename)%(Extension)')
+      -e StoreInstallerPackageName=$(RuntimeStoreNoTimestampInstallerPackageName)
+      -e HostingInstallerFile=@(GeneratedHostingNoTimestampRPMFiles->'%(Filename)%(Extension)')
+      -e HostingInstallerPackageName=$(HostingBundleNoTimestampInstallerPackageName)
+      -e InstallRoot=$(InstallerInstallRoot)
+      -e InstallCommand=&quot;sudo rpm -i&quot;
+      -e UninstallCommand=&quot;sudo rpm -e&quot;
+      docker-image-$(DockerImage)
+      ./tools/scripts/TestInstallers.sh" 
+      Condition="'$(SkipInstallerTests)' != 'true'"/>
+
+    <!-- Remove Docker Image to save disk space -->
+    <Exec Command="docker rmi docker-image-$(DockerImage)" />
   </Target>
 
   <Target Name="GenerateDebs" DependsOnTargets="EnsureInstallerPrerequisites">
     <!-- Create layout: Aspnet runtime store -->
-    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutTimestampDirectory)" />
-    <MakeDir Directories="$(RuntimeStoreInstallerLayoutPackageRootTimestampDirectory)" />
+    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutTimestampDirectory);$(RuntimeStoreInstallerLayoutNoTimestampDirectory);$(HostingBundleInstallerLayoutTimestampDirectory);$(HostingBundleInstallerLayoutNoTimestampDirectory)" />
+    <MakeDir Directories="$(RuntimeStoreInstallerLayoutPackageRootTimestampDirectory);$(RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory);$(HostingBundleInstallerLayoutPackageRootTimestampDirectory);$(HostingBundleInstallerLayoutPackageRootNoTimestampDirectory)" />
     <Exec Command="tar -xzf @(RuntimeStoreTimestampArchive) -C $(RuntimeStoreInstallerLayoutPackageRootTimestampDirectory)" />
-    <RemoveDir Directories="$(RuntimeStoreInstallerLayoutNoTimestampDirectory)" />
-    <MakeDir Directories="$(RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory)" />
     <Exec Command="tar -xzf @(RuntimeStoreNoTimestampArchive) -C $(RuntimeStoreInstallerLayoutPackageRootNoTimestampDirectory)" />
 
     <!-- Create layout: Generate and Place debian_config.json -->
     <Copy
-      SourceFiles="$(DebianConfigTemplateFile)"
+      SourceFiles="$(StoreDebianConfigTemplateFile)"
       DestinationFiles="$(RuntimeStoreInstallerLayoutTimestampDirectory)debian_config.json"
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
     <Copy
-      SourceFiles="$(DebianConfigTemplateFile)"
+      SourceFiles="$(StoreDebianConfigTemplateFile)"
       DestinationFiles="$(RuntimeStoreInstallerLayoutNoTimestampDirectory)debian_config.json"
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
+    <Copy
+      SourceFiles="$(HostingDebianConfigTemplateFile)"
+      DestinationFiles="$(HostingBundleInstallerLayoutTimestampDirectory)debian_config.json"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+    <Copy
+      SourceFiles="$(HostingDebianConfigTemplateFile)"
+      DestinationFiles="$(HostingBundleInstallerLayoutNoTimestampDirectory)debian_config.json"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
 
-    <MSBuild Projects="$(ProjectPath)" Targets="BuildRuntimeStoreDeb" Properties="InstallerPlatform=debian" />
-    <MSBuild Projects="$(ProjectPath)" Targets="BuildRuntimeStoreDeb" Properties="InstallerPlatform=ubuntu.14.04" />
-    <MSBuild Projects="$(ProjectPath)" Targets="BuildRuntimeStoreDeb" Properties="InstallerPlatform=ubuntu.16.04" />
-    <MSBuild Projects="$(ProjectPath)" Targets="BuildRuntimeStoreDeb" Properties="InstallerPlatform=ubuntu.16.10" />
+    <!-- Create layout: Update debian_config.json -->
+    <Exec Command="sed -i
+      -e 's/DOTNET_RUNTIME_VERSION/$(SharedFrameworkVersion)/'
+      -e 's/ASPNETCORE_STORE_VERSION/$(TimestampVersion)/'
+      $(HostingBundleInstallerLayoutTimestampDirectory)debian_config.json" />
+
+    <Exec Command="sed -i
+      -e 's/DOTNET_RUNTIME_VERSION/$(SharedFrameworkVersion)/'
+      -e 's/ASPNETCORE_STORE_VERSION/$(NoTimestampVersion)/'
+      $(HostingBundleInstallerLayoutNoTimestampDirectory)debian_config.json" />
+
+    <MSBuild 
+      Projects="$(ProjectPath)" 
+      Targets="BuildStoreAndHostingDeb" 
+      Properties="InstallerPlatform=debian.8;
+        SharedFrameworkVersion=$(SharedFrameworkVersion);
+        BuildNumber=$(BuildNumber)" />
+    <MSBuild 
+      Projects="$(ProjectPath)" 
+      Targets="BuildStoreAndHostingDeb" 
+      Properties="InstallerPlatform=ubuntu.14.04;
+        SharedFrameworkVersion=$(SharedFrameworkVersion);
+        BuildNumber=$(BuildNumber)" />
+    <MSBuild 
+      Projects="$(ProjectPath)" 
+      Targets="BuildStoreAndHostingDeb" 
+      Properties="InstallerPlatform=ubuntu.16.04;
+        SharedFrameworkVersion=$(SharedFrameworkVersion);
+        BuildNumber=$(BuildNumber)" />
+    <MSBuild 
+      Projects="$(ProjectPath)" 
+      Targets="BuildStoreAndHostingDeb" 
+      Properties="InstallerPlatform=ubuntu.16.10;
+        SharedFrameworkVersion=$(SharedFrameworkVersion);
+        BuildNumber=$(BuildNumber)" />
   </Target>
 
-
-  <Target Name="BuildRuntimeStoreDeb">
+  <Target Name="BuildStoreAndHostingDeb">
     <PropertyGroup>
       <RuntimeStoreTimestampDebianFileName>$(RuntimeStoreTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).deb</RuntimeStoreTimestampDebianFileName>
       <RuntimeStoreNoTimestampDebianFileName>$(RuntimeStoreNoTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).deb</RuntimeStoreNoTimestampDebianFileName>
+      <HostingBundleTimestampDebianFileName>$(HostingBundleTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).deb</HostingBundleTimestampDebianFileName>
+      <HostingBundleNoTimestampDebianFileName>$(HostingBundleNoTimestampInstallerPackageName)-$(InstallerPlatform)-$(PACKAGE_CACHE_PLATFORM).deb</HostingBundleNoTimestampDebianFileName>
     </PropertyGroup>
 
     <!-- Clear the output dir -->
-    <RemoveDir Directories="$(RuntimeStoreInstallerOutputTimeStampDirectory)" />
-    <RemoveDir Directories="$(RuntimeStoreInstallerOutputNoTimeStampDirectory)" />
-    <MakeDir Directories="$(RuntimeStoreInstallerOutputTimeStampDirectory)" />
-    <MakeDir Directories="$(RuntimeStoreInstallerOutputNoTimeStampDirectory)" />
+    <RemoveDir Directories="$(RuntimeStoreInstallerOutputTimeStampDirectory);$(RuntimeStoreInstallerOutputNoTimeStampDirectory);$(HostingBundleInstallerOutputTimeStampDirectory);$(HostingBundleInstallerOutputNoTimeStampDirectory)" />
+    <MakeDir Directories="$(RuntimeStoreInstallerOutputTimeStampDirectory);$(RuntimeStoreInstallerOutputNoTimeStampDirectory);$(HostingBundleInstallerOutputTimeStampDirectory);$(HostingBundleInstallerOutputNoTimeStampDirectory)" />
 
     <!-- Build Docker Image -->
     <Exec
@@ -590,7 +899,7 @@
       <Output TaskParameter="Lines" PropertyName="CLIVersionNumber" />
     </ReadLinesFromFile>
 
-    <!-- Build Runtime Store Deb package -->
+    <!-- Build Runtime Store and Hosting Bundle Deb package -->
     <Exec Command="docker run
       --rm
       -v $(RepositoryRoot):$(DockerRootDirectory)
@@ -599,6 +908,8 @@
       -e BuildNumber=$(BuildNumber)
       -e RUNTIMESTORE_TIMESTAMP_INSTALLERNAME=$(RuntimeStoreTimestampInstallerPackageName)
       -e RUNTIMESTORE_NOTIMESTAMP_INSTALLERNAME=$(RuntimeStoreNoTimestampInstallerPackageName)
+      -e HOSTINGBUNDLE_TIMESTAMP_INSTALLERNAME=$(HostingBundleTimestampInstallerPackageName)
+      -e HOSTINGBUNDLE_NOTIMESTAMP_INSTALLERNAME=$(HostingBundleNoTimestampInstallerPackageName)
       docker-image-$(InstallerPlatform)
       /bin/bash -c &quot;
         $(DockerRootDirectory).build/dotnet/dotnet-install.sh
@@ -609,30 +920,76 @@
       &quot;"
       ContinueOnError="WarnAndContinue" />
 
-    <!-- Remove Docker Image to save disk space -->
-    <Exec Command="docker rmi docker-image-$(InstallerPlatform)" />
-
-    <!-- Copy Runtime Store package to output -->
+    <!-- Copy Runtime Store and Hosting Bundle packages to output -->
     <ItemGroup>
-      <GeneratedTimestampDebFiles Include="$(RuntimeStoreInstallerOutputTimeStampDirectory)/*.deb" />
-      <GeneratedNoTimestampDebFiles Include="$(RuntimeStoreInstallerOutputNoTimeStampDirectory)/*.deb" />
+      <GeneratedStoreTimestampDebFiles Include="$(RuntimeStoreInstallerOutputTimeStampDirectory)/*.deb" />
+      <GeneratedStoreNoTimestampDebFiles Include="$(RuntimeStoreInstallerOutputNoTimeStampDirectory)/*.deb" />
+      <GeneratedHostingTimestampDebFiles Include="$(HostingBundleInstallerOutputTimeStampDirectory)/*.deb" />
+      <GeneratedHostingNoTimestampDebFiles Include="$(HostingBundleInstallerOutputNoTimeStampDirectory)/*.deb" />
     </ItemGroup>
 
-    <Error Text="@(GeneratedTimestampDebFiles->Count()) timestamp .deb files generated." Condition="'@(GeneratedTimestampDebFiles->Count())' != 1" />
-    <Error Text="@(GeneratedNoTimestampDebFiles->Count()) no timestamp .deb files generated." Condition="'@(GeneratedTimestampDebFiles->Count())' != 1" />
+    <Error Text="@(GeneratedTimestampDebFiles->Count()) timestamp store deb installer files generated." Condition="'@(GeneratedStoreTimestampDebFiles->Count())' != 1" />
+    <Error Text="@(GeneratedNoTimestampDebFiles->Count()) no timestamp store deb installer files generated." Condition="'@(GeneratedStoreNoTimestampDebFiles->Count())' != 1" />
+    <Error Text="@(GeneratedHostingTimestampDebFiles->Count()) timestamp hosting deb installer files generated." Condition="'@(GeneratedHostingTimestampDebFiles->Count())' != 1" />
+    <Error Text="@(GeneratedHostingNoTimestampDebFiles->Count()) no timestamp hosting deb installer files generated." Condition="'@(GeneratedHostingNoTimestampDebFiles->Count())' != 1" />
 
     <Copy
       DestinationFiles="$(RuntimeStoreInstallerDirectory)$(RuntimeStoreTimestampDebianFileName)"
-      SourceFiles="@(GeneratedTimestampDebFiles)"
+      SourceFiles="@(GeneratedStoreTimestampDebFiles)"
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
     <Copy
       DestinationFiles="$(RuntimeStoreInstallerDirectory)$(RuntimeStoreNoTimestampDebianFileName)"
-      SourceFiles="@(GeneratedNoTimestampDebFiles)"
+      SourceFiles="@(GeneratedStoreNoTimestampDebFiles)"
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
       UseHardlinksIfPossible="False" />
+    <Copy
+      DestinationFiles="$(RuntimeStoreInstallerDirectory)$(HostingBundleTimestampDebianFileName)"
+      SourceFiles="@(GeneratedHostingTimestampDebFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+    <Copy
+      DestinationFiles="$(RuntimeStoreInstallerDirectory)$(HostingBundleNoTimestampDebianFileName)"
+      SourceFiles="@(GeneratedHostingNoTimestampDebFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <!-- Run installer tests -->
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(DockerRootDirectory)
+      -e DotnetInstallerSuffix=-$(SharedFrameworkVersion)-$(InstallerPlatform)-x64.deb
+      -e InstallerExtension=.deb
+      -e StoreInstallerFile=$(RuntimeStoreTimestampDebianFileName)
+      -e StoreInstallerPackageName=$(RuntimeStoreTimestampInstallerPackageName)
+      -e HostingInstallerFile=$(HostingBundleTimestampDebianFileName)
+      -e HostingInstallerPackageName=$(HostingBundleTimestampInstallerPackageName)
+      -e InstallRoot=/usr/share/dotnet/
+      -e InstallCommand=&quot;sudo dpkg -i&quot;
+      -e UninstallCommand=&quot;sudo dpkg -r&quot;
+      docker-image-$(InstallerPlatform)
+      ./tools/scripts/TestInstallers.sh" />
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(DockerRootDirectory)
+      -e DotnetInstallerSuffix=-$(SharedFrameworkVersion)-$(InstallerPlatform)-x64.deb
+      -e InstallerExtension=.deb
+      -e StoreInstallerFile=$(RuntimeStoreNoTimestampDebianFileName)
+      -e StoreInstallerPackageName=$(RuntimeStoreNoTimestampInstallerPackageName)
+      -e HostingInstallerFile=$(HostingBundleNoTimestampDebianFileName)
+      -e HostingInstallerPackageName=$(HostingBundleNoTimestampInstallerPackageName)
+      -e InstallRoot=/usr/share/dotnet/
+      -e InstallCommand=&quot;sudo dpkg -i&quot;
+      -e UninstallCommand=&quot;sudo dpkg -r&quot;
+      docker-image-$(InstallerPlatform)
+      ./tools/scripts/TestInstallers.sh" />
+
+    <!-- Remove Docker Image to save disk space -->
+    <Exec Command="docker rmi docker-image-$(InstallerPlatform)" />
   </Target>
 
   <Target Name="RunDebTool">
@@ -654,6 +1011,24 @@
         -i $(RuntimeStoreInstallerLayoutNoTimestampDirectory)
         -o $(RuntimeStoreInstallerOutputNoTimeStampDirectory)
         -n $(RUNTIMESTORE_NOTIMESTAMP_INSTALLERNAME)
+        -v $(NoTimestampVersion)"
+      WorkingDirectory="$(DotnetDebToolDirectory)" />
+
+    <!-- Build Hosting Bundle Timestamp Deb package -->
+    <Exec Command="
+      dotnet deb-tool
+        -i $(HostingBundleInstallerLayoutTimestampDirectory)
+        -o $(HostingBundleInstallerOutputTimeStampDirectory)
+        -n $(HOSTINGBUNDLE_TIMESTAMP_INSTALLERNAME)
+        -v $(TimestampVersion)"
+      WorkingDirectory="$(DotnetDebToolDirectory)" />
+
+    <!-- Build Hosting Bundle NoTimestamp Deb package -->
+    <Exec Command="
+      dotnet deb-tool
+        -i $(HostingBundleInstallerLayoutNoTimestampDirectory)
+        -o $(HostingBundleInstallerOutputNoTimeStampDirectory)
+        -n $(HOSTINGBUNDLE_NOTIMESTAMP_INSTALLERNAME)
         -v $(NoTimestampVersion)"
       WorkingDirectory="$(DotnetDebToolDirectory)" />
   </Target>
