@@ -90,19 +90,16 @@
     <Exec Command="dotnet --info" />
 
     <PropertyGroup>
-      <OutputZipSufix Condition="'$(OSPlatform)' == 'Windows'">win$(PACKAGE_CACHE_PLATFORM)</OutputZipSufix>
-      <OutputZipSufix Condition="'$(OSPlatform)' == 'Linux'">linux</OutputZipSufix>
-      <OutputZipSufix Condition="'$(OSPlatform)' == 'macOS'">osx</OutputZipSufix>
       <RID Condition="'$(OSPlatform)' == 'Windows'">win7-$(PACKAGE_CACHE_PLATFORM)</RID>
       <RID Condition="'$(OSPlatform)' == 'Linux'">linux-$(PACKAGE_CACHE_PLATFORM)</RID>
       <RID Condition="'$(OSPlatform)' == 'macOS'">osx-$(PACKAGE_CACHE_PLATFORM)</RID>
 
-      <OutputZip>$(ArtifactsDir)Build.RS.$(OutputZipSufix)-$(VersionSuffix).zip</OutputZip>
-      <OutputZipNoTimestamp>$(ArtifactsDir)Build.RS.$(OutputZipSufix).zip</OutputZipNoTimestamp>
-      <OutputSymbolZip>$(ArtifactsDir)Build.Symbols.RS.$(OutputZipSufix)-$(VersionSuffix).zip</OutputSymbolZip>
-      <OutputSymbolZipNoTimestamp>$(ArtifactsDir)Build.Symbols.RS.$(OutputZipSufix).zip</OutputSymbolZipNoTimestamp>
-      <OutputSymbolTGZ>$(ArtifactsDir)Build.Symbols.RS.$(OutputZipSufix)-$(VersionSuffix).tar.gz</OutputSymbolTGZ>
-      <OutputSymbolTGZNoTimeStamp>$(ArtifactsDir)Build.Symbols.RS.$(OutputZipSufix).tar.gz</OutputSymbolTGZNoTimeStamp>
+      <OutputZip>$(ArtifactsDir)aspnetcore-store-$(TimestampVersion)-$(RID).zip</OutputZip>
+      <OutputZipNoTimestamp>$(ArtifactsDir)aspnetcore-store-$(NoTimestampVersion)-$(RID).zip</OutputZipNoTimestamp>
+      <OutputSymbolZip>$(ArtifactsDir)aspnetcore-symbols-$(TimestampVersion)-$(RID).zip</OutputSymbolZip>
+      <OutputSymbolZipNoTimestamp>$(ArtifactsDir)aspnetcore-symbols-$(NoTimestampVersion)-$(RID).zip</OutputSymbolZipNoTimestamp>
+      <OutputSymbolTGZ>$(ArtifactsDir)aspnetcore-symbols-$(TimestampVersion)-$(RID).tar.gz</OutputSymbolTGZ>
+      <OutputSymbolTGZNoTimeStamp>$(ArtifactsDir)aspnetcore-symbols-$(NoTimestampVersion)-$(RID).tar.gz</OutputSymbolTGZNoTimeStamp>
     </PropertyGroup>
 
     <!-- Build reference package -->
@@ -174,10 +171,6 @@
 
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="ConvertZipToTGZ" Properties="ZipFileName=$(OutputSymbolZip);TGZFileName=$(OutputSymbolTGZ)" Condition="'$(OSPlatform)' == 'Linux'"/>
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="ConvertZipToTGZ" Properties="ZipFileName=$(OutputSymbolZipNoTimeStamp);TGZFileName=$(OutputSymbolTGZNoTimeStamp)" Condition="'$(OSPlatform)' == 'Linux'"/>
-
-    <!--Drop a nuspec file in artifacts for packing zip files into a nupkg-->
-    <Copy SourceFiles="$(RepositoryRoot)build\Build.RS.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)'=='Linux'" />
-    <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionPrefix)-$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)'=='Linux'" />
 
     <!-- Add a common manifest for package trimming -->
     <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="CreateCommonManifest" Condition="'$(OSPlatform)' == 'Windows' AND '$(PACKAGE_CACHE_PLATFORM)' == 'x64'"/>
@@ -278,19 +271,21 @@
     <PropertyGroup>
         <NoTimestampSource>$(COHERENCE_SIGNED_DROP_LOCATION)\Signed\Packages-NoTimeStamp</NoTimestampSource>
         <TimestampSource>$(COHERENCE_SIGNED_DROP_LOCATION)\Signed\Packages</TimestampSource>
+        <NoTimestampOutputPackageName>nuGetPackagesArchive-$(NoTimestampVersion)</NoTimestampOutputPackageName>
+        <TimestampOutputPackageName>nuGetPackagesArchive-$(TimestampVersion)</TimestampOutputPackageName>
     </PropertyGroup>
 
     <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
     <!-- Here, we're re-invoking KoreBuild, but limiting it to a specific target. -->
     <!-- This won't rerun the whole build, but it ensures that the necessary MSBuild Tasks and Properties are initialized -->
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(TimestampVersion);PackageSource=$(TimestampSource);OutputPackageName=nuGetPackagesArchive.timestamped;ArchiverPath=$(ArchiverPath)" />
-    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(NoTimestampVersion);PackageSource=$(NoTimestampSource);OutputPackageName=nuGetPackagesArchive.notimestamp;ArchiverPath=$(ArchiverPath)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(TimestampVersion);PackageSource=$(TimestampSource);OutputPackageName=$(TimestampOutputPackageName);ArchiverPath=$(ArchiverPath)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(NoTimestampVersion);PackageSource=$(NoTimestampSource);OutputPackageName=$(NoTimestampOutputPackageName);ArchiverPath=$(ArchiverPath)" />
 
     <!-- Copy LZMA archives to Coherence-Signed drop location -->
     <PropertyGroup>
         <PublishDir Condition="'$(PublishShare)' != ''">$(PublishShare)\fallbackArchives</PublishDir>
     </PropertyGroup>
-    <Copy SourceFiles="$(RepositoryRoot)artifacts\nuGetPackagesArchive.timestamped.lzma;$(RepositoryRoot)artifacts\nuGetPackagesArchive.notimestamp.lzma" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
+    <Copy SourceFiles="$(RepositoryRoot)artifacts\$(TimestampOutputPackageName).timestamped.lzma;$(RepositoryRoot)artifacts\$(NoTimestampOutputPackageName).lzma" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
   </Target>
 
   <Target Name="AddManifestsToNupkg">
@@ -327,8 +322,8 @@
     <Error Text="RUNTIMESTORE_SIGNED_ARTIFACTS_PATH is not specified. The path containing the linux archives files must be must not be empty." Condition="'$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)' == ''" />
 
     <ItemGroup>
-      <RuntimeStoreTimestampArchive Include="$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)**\Build.RS.linux-*.tar.gz"/>
-      <RuntimeStoreNoTimestampArchive Include="$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)**\Build.RS.linux.tar.gz"/>
+      <RuntimeStoreTimestampArchive Include="$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)**\aspnetcore-store-$(TimestampVersion)-$(RID).tar.gz"/>
+      <RuntimeStoreNoTimestampArchive Include="$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)**\aspnetcore-store-$(NoTimestampVersion)-$(RID).tar.gz"/>
     </ItemGroup>
 
     <Error Text="@(RuntimeStoreTimestampArchive->Count()) timestamp linux archives found at $(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)." Condition="'@(RuntimeStoreTimestampArchive->Count())' != 1" />
