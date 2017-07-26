@@ -458,9 +458,6 @@
     <JsonPeek Query="$.maintainer_email" JsonInputPath="$(StoreDebianConfigTemplateFile)">
       <Output TaskParameter="Result" ItemName="_StoreInstallerMaintainerEmail" />
     </JsonPeek>
-    <JsonPeek Query="$.release.changelog_message" JsonInputPath="$(StoreDebianConfigTemplateFile)">
-      <Output TaskParameter="Result" ItemName="_StoreInstallerChangelogMessage" />
-    </JsonPeek>
     <JsonPeek Query="$.short_description" JsonInputPath="$(HostingDebianConfigTemplateFile)">
       <Output TaskParameter="Result" ItemName="_HostingInstallerSummary" />
     </JsonPeek>
@@ -482,9 +479,6 @@
     <JsonPeek Query="$.maintainer_email" JsonInputPath="$(HostingDebianConfigTemplateFile)">
       <Output TaskParameter="Result" ItemName="_HostingInstallerMaintainerEmail" />
     </JsonPeek>
-    <JsonPeek Query="$.release.changelog_message" JsonInputPath="$(HostingDebianConfigTemplateFile)">
-      <Output TaskParameter="Result" ItemName="_HostingInstallerChangelogMessage" />
-    </JsonPeek>
 
     <ItemGroup>
       <RHStoreDirectories Include="/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/additionalDeps" />
@@ -501,7 +495,6 @@
       <StoreInstallerHomepage>@(_StoreInstallerHomepage)</StoreInstallerHomepage>
       <StoreInstallerMaintainerName>@(_StoreInstallerMaintainerName)</StoreInstallerMaintainerName>
       <StoreInstallerMaintainerEmail>@(_StoreInstallerMaintainerEmail)</StoreInstallerMaintainerEmail>
-      <StoreInstallerChangelogMessage>@(_StoreInstallerChangelogMessage)</StoreInstallerChangelogMessage>
       <HostingInstallerSummary>@(_HostingInstallerSummary)</HostingInstallerSummary>
       <HostingInstallerDescription>@(_HostingInstallerDescription)</HostingInstallerDescription>
       <HostingInstallerLicense>@(_HostingInstallerLicense)</HostingInstallerLicense>
@@ -509,7 +502,6 @@
       <HostingInstallerHomepage>@(_HostingInstallerHomepage)</HostingInstallerHomepage>
       <HostingInstallerMaintainerName>@(_HostingInstallerMaintainerName)</HostingInstallerMaintainerName>
       <HostingInstallerMaintainerEmail>@(_HostingInstallerMaintainerEmail)</HostingInstallerMaintainerEmail>
-      <HostingInstallerChangelogMessage>@(_HostingInstallerChangelogMessage)</HostingInstallerChangelogMessage>
       <RHInstallerInstallRoot>/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/</RHInstallerInstallRoot>
       <RHStoreDirectoriesArguments>@(RHStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RHStoreDirectoriesArguments>
       <GeneralInstallerInstallRoot>/usr/share/dotnet/</GeneralInstallerInstallRoot>
@@ -523,7 +515,6 @@
       -e 's/MAINTAINER_EMAIL/$(StoreInstallerMaintainerEmail)/'
       -e 's/PACKAGE_VERSION/$(TimestampVersion)/'
       -e 's/PACKAGE_REVISION/$(StoreInstallerPackageRevision)/'
-      -e 's/CHANGELOG_MESSAGE/$(StoreInstallerChangelogMessage)/'
       $(RuntimeStoreInstallerLayoutTimestampDirectory)templates/changelog" />
     <Exec Command="sed -i
       -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/'
@@ -531,7 +522,6 @@
       -e 's/MAINTAINER_EMAIL/$(StoreInstallerMaintainerEmail)/'
       -e 's/PACKAGE_VERSION/$(NoTimestampVersion)/'
       -e 's/PACKAGE_REVISION/$(StoreInstallerPackageRevision)/'
-      -e 's/CHANGELOG_MESSAGE/$(StoreInstallerChangelogMessage)/'
       $(RuntimeStoreInstallerLayoutNoTimestampDirectory)templates/changelog" />
     <Exec Command="sed -i
       -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/'
@@ -539,7 +529,6 @@
       -e 's/MAINTAINER_EMAIL/$(HostingInstallerMaintainerEmail)/'
       -e 's/PACKAGE_VERSION/$(TimestampVersion)/'
       -e 's/PACKAGE_REVISION/$(HostingInstallerPackageRevision)/'
-      -e 's/CHANGELOG_MESSAGE/$(HostingInstallerChangelogMessage)/'
       $(HostingBundleInstallerLayoutTimestampDirectory)templates/changelog" />
     <Exec Command="sed -i
       -e 's/DATE/$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))/'
@@ -547,7 +536,6 @@
       -e 's/MAINTAINER_EMAIL/$(HostingInstallerMaintainerEmail)/'
       -e 's/PACKAGE_VERSION/$(NoTimestampVersion)/'
       -e 's/PACKAGE_REVISION/$(HostingInstallerPackageRevision)/'
-      -e 's/CHANGELOG_MESSAGE/$(HostingInstallerChangelogMessage)/'
       $(HostingBundleInstallerLayoutNoTimestampDirectory)templates/changelog" />
 
     <MSBuild
@@ -785,7 +773,7 @@
       -e InstallCommand=&quot;sudo rpm -i&quot;
       -e UninstallCommand=&quot;sudo rpm -e&quot;
       docker-image-$(DockerImage)
-      ./tools/scripts/TestInstallers.sh" 
+      ./tools/scripts/TestInstallers.sh"
       Condition="'$(SkipInstallerTests)' != 'true'"/>
     <Exec Command="docker run
       --rm
@@ -800,7 +788,7 @@
       -e InstallCommand=&quot;sudo rpm -i&quot;
       -e UninstallCommand=&quot;sudo rpm -e&quot;
       docker-image-$(DockerImage)
-      ./tools/scripts/TestInstallers.sh" 
+      ./tools/scripts/TestInstallers.sh"
       Condition="'$(SkipInstallerTests)' != 'true'"/>
 
     <!-- Remove Docker Image to save disk space -->
@@ -851,27 +839,27 @@
       -e 's/ASPNETCORE_STORE_VERSION/$(NoTimestampVersion)/'
       $(HostingBundleInstallerLayoutNoTimestampDirectory)debian_config.json" />
 
-    <MSBuild 
-      Projects="$(ProjectPath)" 
-      Targets="BuildStoreAndHostingDeb" 
+    <MSBuild
+      Projects="$(ProjectPath)"
+      Targets="BuildStoreAndHostingDeb"
       Properties="InstallerPlatform=debian.8;
         SharedFrameworkVersion=$(SharedFrameworkVersion);
         BuildNumber=$(BuildNumber)" />
-    <MSBuild 
-      Projects="$(ProjectPath)" 
-      Targets="BuildStoreAndHostingDeb" 
+    <MSBuild
+      Projects="$(ProjectPath)"
+      Targets="BuildStoreAndHostingDeb"
       Properties="InstallerPlatform=ubuntu.14.04;
         SharedFrameworkVersion=$(SharedFrameworkVersion);
         BuildNumber=$(BuildNumber)" />
-    <MSBuild 
-      Projects="$(ProjectPath)" 
-      Targets="BuildStoreAndHostingDeb" 
+    <MSBuild
+      Projects="$(ProjectPath)"
+      Targets="BuildStoreAndHostingDeb"
       Properties="InstallerPlatform=ubuntu.16.04;
         SharedFrameworkVersion=$(SharedFrameworkVersion);
         BuildNumber=$(BuildNumber)" />
-    <MSBuild 
-      Projects="$(ProjectPath)" 
-      Targets="BuildStoreAndHostingDeb" 
+    <MSBuild
+      Projects="$(ProjectPath)"
+      Targets="BuildStoreAndHostingDeb"
       Properties="InstallerPlatform=ubuntu.16.10;
         SharedFrameworkVersion=$(SharedFrameworkVersion);
         BuildNumber=$(BuildNumber)" />
