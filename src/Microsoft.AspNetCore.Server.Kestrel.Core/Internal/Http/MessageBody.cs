@@ -147,7 +147,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     if (!readableBuffer.IsEmpty)
                     {
-                        var actual = Math.Min(readableBuffer.Length, buffer.Count);
+                        //  buffer.Count is int
+                        var actual = (int) Math.Min(readableBuffer.Length, buffer.Count);
                         var slice = readableBuffer.Slice(0, actual);
                         consumed = readableBuffer.Move(readableBuffer.Start, actual);
                         slice.CopyTo(buffer);
@@ -476,7 +477,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             // "7FFFFFFF\r\n" is the largest chunk size that could be returned as an int.
             private const int MaxChunkPrefixBytes = 10;
 
-            private int _inputLength;
+            private long _inputLength;
             private long _consumedBytes;
 
             private Mode _mode = Mode.Prefix;
@@ -568,7 +569,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 return _mode == Mode.Complete;
             }
 
-            private void AddAndCheckConsumedBytes(int consumedBytes)
+            private void AddAndCheckConsumedBytes(long consumedBytes)
             {
                 _consumedBytes += consumedBytes;
 

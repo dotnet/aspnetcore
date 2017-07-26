@@ -105,7 +105,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 {
                     if (!readableBuffer.IsEmpty)
                     {
-                        var count = Math.Min(readableBuffer.Length, buffer.Count);
+                        // buffer.Count is int
+                        var count = (int) Math.Min(readableBuffer.Length, buffer.Count);
                         readableBuffer = readableBuffer.Slice(0, count);
                         readableBuffer.CopyTo(buffer);
                         return count;

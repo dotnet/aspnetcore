@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             var reading = Task.Run(async () =>
             {
-                int remaining = InnerLoopCount * _writeLenght;
+                long remaining = InnerLoopCount * _writeLenght;
                 while (remaining != 0)
                 {
                     var result = await _pipe.Reader.ReadAsync();

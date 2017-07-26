@@ -423,12 +423,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        public void BytesRead(int count)
+        public void BytesRead(long count)
         {
             Interlocked.Add(ref _readTimingBytesRead, count);
         }
 
-        public void StartTimingWrite(int size)
+        public void StartTimingWrite(long size)
         {
             lock (_writeTimingLock)
             {

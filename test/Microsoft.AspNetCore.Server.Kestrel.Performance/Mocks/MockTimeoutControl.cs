@@ -37,11 +37,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks
         {
         }
 
-        public void BytesRead(int count)
+        public void BytesRead(long count)
         {
         }
 
-        public void StartTimingWrite(int size)
+        public void StartTimingWrite(long size)
         {
         }
 
