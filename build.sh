@@ -10,7 +10,7 @@ RESET="\033[0m"
 RED="\033[0;31m"
 MAGENTA="\033[0;95m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-[ -z "${DOTNET_HOME:-}"] && DOTNET_HOME="$HOME/.dotnet"
+[ -z "${DOTNET_HOME:-}" ] && DOTNET_HOME="$HOME/.dotnet"
 config_file="$DIR/version.xml"
 verbose=false
 update=false
@@ -22,7 +22,7 @@ tools_source=''
 # Functions
 #
 __usage() {
-    echo "Usage: $(basename ${BASH_SOURCE[0]}) [options] [[--] <MSBUILD_ARG>...]"
+    echo "Usage: $(basename "${BASH_SOURCE[0]}") [options] [[--] <MSBUILD_ARG>...]"
     echo ""
     echo "Arguments:"
     echo "    <MSBUILD_ARG>...         Arguments passed to MSBuild. Variable number of arguments allowed."
@@ -46,16 +46,17 @@ __usage() {
 }
 
 get_korebuild() {
+    local version
     local lock_file="$repo_path/korebuild-lock.txt"
-    if [ ! -f $lock_file ] || [ "$update" = true ]; then
-        __get_remote_file "$tools_source/korebuild/channels/$channel/latest.txt" $lock_file
+    if [ ! -f "$lock_file" ] || [ "$update" = true ]; then
+        __get_remote_file "$tools_source/korebuild/channels/$channel/latest.txt" "$lock_file"
     fi
-    local version="$(grep 'version:*' -m 1 $lock_file)"
+    version="$(grep 'version:*' -m 1 "$lock_file")"
     if [[ "$version" == '' ]]; then
         __error "Failed to parse version from $lock_file. Expected a line that begins with 'version:'"
         return 1
     fi
-    version="$(echo ${version#version:} | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
+    version="$(echo "${version#version:}" | sed -e 's/^[[:space:]]*//' -e 's/[[:space:]]*$//')"
     local korebuild_path="$DOTNET_HOME/buildtools/korebuild/$version"
 
     {
@@ -64,10 +65,10 @@ get_korebuild() {
             local remote_path="$tools_source/korebuild/artifacts/$version/korebuild.$version.zip"
             tmpfile="$(mktemp)"
             echo -e "${MAGENTA}Downloading KoreBuild ${version}${RESET}"
-            if __get_remote_file $remote_path $tmpfile; then
-                unzip -q -d "$korebuild_path" $tmpfile
+            if __get_remote_file "$remote_path" "$tmpfile"; then
+                unzip -q -d "$korebuild_path" "$tmpfile"
             fi
-            rm $tmpfile || true
+            rm "$tmpfile" || true
         fi
 
         source "$korebuild_path/KoreBuild.sh"
@@ -81,7 +82,7 @@ get_korebuild() {
 }
 
 __error() {
-    echo -e "${RED}$@${RESET}" 1>&2
+    echo -e "${RED}$*${RESET}" 1>&2
 }
 
 __machine_has() {
@@ -94,18 +95,18 @@ __get_remote_file() {
     local local_path=$2
 
     if [[ "$remote_path" != 'http'* ]]; then
-        cp $remote_path $local_path
+        cp "$remote_path" "$local_path"
         return 0
     fi
 
     failed=false
     if __machine_has wget; then
-        wget --tries 10 --quiet -O $local_path $remote_path || failed=true
+        wget --tries 10 --quiet -O "$local_path" "$remote_path" || failed=true
     fi
 
     if [ "$failed" = true ] && __machine_has curl; then
         failed=false
-        curl --retry 10 -sSL -f --create-dirs -o $local_path $remote_path || failed=true
+        curl --retry 10 -sSL -f --create-dirs -o "$local_path" "$remote_path" || failed=true
     fi
 
     if [ "$failed" = true ]; then
@@ -114,13 +115,13 @@ __get_remote_file() {
     fi
 }
 
-__read_dom () { local IFS=\> ; read -d \< ENTITY CONTENT ;}
+__read_dom () { local IFS=\> ; read -r -d \< ENTITY CONTENT ;}
 
 #
 # main
 #
 
-while [[ $# > 0 ]]; do
+while [[ $# -gt 0 ]]; do
     case $1 in
         -\?|-h|--help)
             __usage --no-exit
@@ -128,7 +129,7 @@ while [[ $# > 0 ]]; do
             ;;
         -c|--channel|-Channel)
             shift
-            channel=${1:-}
+            channel="${1:-}"
             [ -z "$channel" ] && __usage
             ;;
         --config-file|-ConfigFile)
@@ -138,7 +139,7 @@ while [[ $# > 0 ]]; do
             ;;
         -d|--dotnet-home|-DotNetHome)
             shift
-            DOTNET_HOME=${1:-}
+            DOTNET_HOME="${1:-}"
             [ -z "$DOTNET_HOME" ] && __usage
             ;;
         --path|-Path)
@@ -178,14 +179,14 @@ if ! __machine_has curl && ! __machine_has wget; then
     exit 1
 fi
 
-if [ -f $config_file ]; then
+if [ -f "$config_file" ]; then
     comment=false
     while __read_dom; do
         if [ "$comment" = true ]; then [[ $CONTENT == *'-->'* ]] && comment=false ; continue; fi
         if [[ $ENTITY == '!--'* ]]; then comment=true; continue; fi
         if [ -z "$channel" ] && [[ $ENTITY == "KoreBuildChannel" ]]; then channel=$CONTENT; fi
         if [ -z "$tools_source" ] && [[ $ENTITY == "KoreBuildToolsSource" ]]; then tools_source=$CONTENT; fi
-    done < $config_file
+    done < "$config_file"
 fi
 
 [ -z "$channel" ] && channel='dev'
@@ -193,4 +194,4 @@ fi
 
 get_korebuild
 install_tools "$tools_source" "$DOTNET_HOME"
-invoke_repository_build "$repo_path" $@
+invoke_repository_build "$repo_path" "$@"
