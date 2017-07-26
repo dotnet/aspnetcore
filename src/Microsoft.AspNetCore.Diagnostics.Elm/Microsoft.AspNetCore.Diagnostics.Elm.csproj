@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Description>ASP.NET Core Error Logging Middleware (ELM) to capture and display request logs.</Description>
-    <VersionPrefix>0.3.0</VersionPrefix>
+    <VersionPrefix>0.4.0</VersionPrefix>
     <TargetFramework>netstandard2.0</TargetFramework>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
