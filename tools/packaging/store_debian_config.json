@@ -1,0 +1,30 @@
+{
+    "maintainer_name": "Microsoft",
+    "maintainer_email": "nugetaspnet@microsoft.com",
+
+    "package_name": "aspnetcore-store",
+    "install_root": "/usr/share/dotnet",
+
+    "short_description": "Microsoft ASP.NET Core 2.0.0 Runtime Package Store",
+    "long_description": "Runtime package store for Microsoft ASP.NET Core. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub (https://github.com/aspnet/home). We happily accept issues and PRs.",
+    "homepage": "https://www.asp.net/",
+
+    "release":{
+        "package_version":"0.0.0.0",
+        "package_revision":"1",
+        "urgency" : "low",
+        "changelog_message" : ""
+    },
+
+    "control": {
+        "priority":"standard",
+        "section":"devel",
+        "architecture":"any"
+    },
+
+    "copyright": "Microsoft",
+    "license": {
+        "type": "Apache-2.0",
+        "full_text": "Copyright (c) .NET Foundation. All rights reserved.\n\nLicensed under the Apache License, Version 2.0 (the \"License\"); you may not use\nthese files except in compliance with the License. You may obtain a copy of the\nLicense at\n\nhttp://www.apache.org/licenses/LICENSE-2.0\n\nUnless required by applicable law or agreed to in writing, software distributed\nunder the License is distributed on an \"AS IS\" BASIS, WITHOUT WARRANTIES OR\nCONDITIONS OF ANY KIND, either express or implied. See the License for the\nspecific language governing permissions and limitations under the License."
+    }
+}
