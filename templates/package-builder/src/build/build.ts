@@ -206,10 +206,23 @@ function buildDotNetNewNuGetPackage(packageId: string) {
                 HostIdentifier: {
                     type: 'bind',
                     binding: 'HostIdentifier'
+                },
+                skipRestore: {
+                    type: 'parameter',
+                    datatype: 'bool',
+                    description: 'If specified, skips the automatic restore of the project on create.',
+                    defaultValue: 'false'
                 }
             },
             tags: { language: 'C#', type: 'project' },
             postActions: [
+                {
+                    condition: '(!skipRestore)',
+                    description: 'Restore NuGet packages required by this project.',
+                    manualInstructions: [{ text: 'Run \'dotnet restore\'' }],
+                    actionId: '210D431B-A78B-4D2F-B762-4ED3E3EA9025',
+                    continueOnError: true
+                },
                 /*
                 // Currently it doesn't appear to be possible to run `npm install` from a
                 // postAction, due to https://github.com/dotnet/templating/issues/849
@@ -245,7 +258,11 @@ function buildDotNetNewNuGetPackage(packageId: string) {
                 },
                 Framework: {
                     longName: 'framework'
-                }
+                },
+                skipRestore: {
+                    longName: 'no-restore',
+                    shortName: ''
+                },
             }
         }, null, 2));
         
