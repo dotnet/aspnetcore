@@ -1,6 +1,6 @@
 <Project>
   <Import Project="dependencies.props" />
-  <Import Project="..\version.props" />
+  <Import Project="..\version.xml" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
@@ -20,10 +20,10 @@
     <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkVersion)" PrivateAssets="All" />
   </ItemGroup>
 
-<!--  
+<!--
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' AND '$(OutputType)'=='library'">
     <PackageReference Include="NETStandard.Library" Version="$(NetStandardImplicitPackageVersion)" />
-  </ItemGroup> 
+  </ItemGroup>
 -->
 
 </Project>

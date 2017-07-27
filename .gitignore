@@ -50,3 +50,5 @@ src/AspNetCore/version.h
 
 *.VC.*db
 global.json
+korebuild-lock.txt
+
