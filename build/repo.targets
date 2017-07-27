@@ -161,7 +161,7 @@
       <NoTimestampDepsFiles Include="$(RuntimeStoreZipNoTimestampDir)additionalDeps\**\*"/>
     </ItemGroup>
 
-    <MSBuild Projects="$(ProjectPath)" Targets="_RemoveTimestampFromDepsFile" Properties="DepsFile=%(NoTimestampDepsFiles.FullPath)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_RemoveTimestampFromDepsFile" Properties="DepsFile=%(NoTimestampDepsFiles.FullPath)" />
 
     <ItemGroup>
       <OutputZipFiles Include="$(RuntimeStoreZipTimestampDir)**\*" />
@@ -175,15 +175,15 @@
     <ZipArchive File="$(OutputSymbolZip)" SourceFiles="@(OutputSymbolZipFiles)" WorkingDirectory="$(RuntimeStoreSymbolsZipTimestampDir)" Overwrite="true" Condition="'@(OutputSymbolZipFiles)' != ''"/>
     <ZipArchive File="$(OutputSymbolZipNoTimeStamp)" SourceFiles="@(OutputSymbolZipFilesNoTimestamp)" WorkingDirectory="$(RuntimeStoreSymbolsZipNoTimestampDir)" Overwrite="true" Condition="'@(OutputSymbolZipFilesNoTimestamp)' != ''"/>
 
-    <MSBuild Projects="$(ProjectPath)" Targets="ConvertZipToTGZ" Properties="ZipFileName=$(OutputSymbolZip);TGZFileName=$(OutputSymbolTGZ)" Condition="'$(OSPlatform)' == 'Linux'"/>
-    <MSBuild Projects="$(ProjectPath)" Targets="ConvertZipToTGZ" Properties="ZipFileName=$(OutputSymbolZipNoTimeStamp);TGZFileName=$(OutputSymbolTGZNoTimeStamp)" Condition="'$(OSPlatform)' == 'Linux'"/>
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="ConvertZipToTGZ" Properties="ZipFileName=$(OutputSymbolZip);TGZFileName=$(OutputSymbolTGZ)" Condition="'$(OSPlatform)' == 'Linux'"/>
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="ConvertZipToTGZ" Properties="ZipFileName=$(OutputSymbolZipNoTimeStamp);TGZFileName=$(OutputSymbolTGZNoTimeStamp)" Condition="'$(OSPlatform)' == 'Linux'"/>
 
     <!--Drop a nuspec file in artifacts for packing zip files into a nupkg-->
     <Copy SourceFiles="$(RepositoryRoot)build\Build.RS.nuspec" DestinationFolder="$(ArtifactsDir)" Condition="'$(OSPlatform)'=='Linux'" />
     <WriteLinesToFile File="$(ArtifactsDir)version.txt" Lines="$(VersionPrefix)-$(VersionSuffix)" Overwrite="true" Condition="'$(OSPlatform)'=='Linux'" />
 
     <!-- Add a common manifest for package trimming -->
-    <MSBuild Projects="$(ProjectPath)" Targets="CreateCommonManifest" Condition="'$(OSPlatform)' == 'Windows' AND '$(PACKAGE_CACHE_PLATFORM)' == 'x64'"/>
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="CreateCommonManifest" Condition="'$(OSPlatform)' == 'Windows' AND '$(PACKAGE_CACHE_PLATFORM)' == 'x64'"/>
   </Target>
 
   <Target Name="CreateCommonManifest">
@@ -246,14 +246,8 @@
   </Target>
 
   <Target Name="_RemoveTimestampFromDepsFile">
-    <GetOSPlatform>
-      <!-- Returns {Linux, macOS, Windows} -->
-      <Output TaskParameter="PlatformName" PropertyName="OSPlatform" />
-    </GetOSPlatform>
-
-    <Exec Command="powershell.exe -command &quot;(Get-Content $(DepsFile)).replace('$(TimestampVersion)', '$(NoTimestampVersion)') | Set-Content $(DepsFile)&quot;" Condition="'$(OSPlatform)'=='Windows'"/>
-    <Exec Command="sed -i -e &quot;s/$(TimestampVersion)/$(NoTimestampVersion)/g&quot; $(DepsFile)" Condition="'$(OSPlatform)'=='macOS'"/>
-    <Exec Command="sed -i -e &quot;s/$(TimestampVersion)/$(NoTimestampVersion)/g&quot; $(DepsFile)" Condition="'$(OSPlatform)'=='Linux'"/>
+    <Exec Command="powershell.exe -command &quot;(Get-Content $(DepsFile)).replace('$(TimestampVersion)', '$(NoTimestampVersion)') | Set-Content $(DepsFile)&quot;" Condition="'$(OS)' == 'Windows_NT'"/>
+    <Exec Command="sed -i -e &quot;s/$(TimestampVersion)/$(NoTimestampVersion)/g&quot; $(DepsFile)" Condition="'$(OS)' != 'Windows_NT'"/>
   </Target>
 
   <Target Name="_BuildFallbackArchive">
@@ -306,8 +300,8 @@
     <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
     <!-- Here, we're re-invoking KoreBuild, but limiting it to a specific target. -->
     <!-- This won't rerun the whole build, but it ensures that the necessary MSBuild Tasks and Properties are initialized -->
-    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(TimestampVersion);PackageSource=$(TimestampSource);OutputPackageName=nuGetPackagesArchive.timestamped;ArchiverPath=$(ArchiverPath)" />
-    <MSBuild Projects="$(ProjectPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(NoTimestampVersion);PackageSource=$(NoTimestampSource);OutputPackageName=nuGetPackagesArchive.notimestamp;ArchiverPath=$(ArchiverPath)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(TimestampVersion);PackageSource=$(TimestampSource);OutputPackageName=nuGetPackagesArchive.timestamped;ArchiverPath=$(ArchiverPath)" />
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildFallbackArchive" Properties="AspNetPackageVersion=$(NoTimestampVersion);PackageSource=$(NoTimestampSource);OutputPackageName=nuGetPackagesArchive.notimestamp;ArchiverPath=$(ArchiverPath)" />
 
     <!-- Copy LZMA archives to Coherence-Signed drop location -->
     <PropertyGroup>
@@ -539,7 +533,7 @@
       $(HostingBundleInstallerLayoutNoTimestampDirectory)templates/changelog" />
 
     <MSBuild
-      Projects="$(ProjectPath)"
+      Projects="$(MSBuildProjectFullPath)"
       Targets="BuildStoreAndHostingRPM"
       Properties="DockerImage=rhel.7;
         InstallerPlatform=rh.rhel.7;
@@ -563,7 +557,7 @@
         HostingInstallerMaintainerEmail=$(HostingInstallerMaintainerEmail);
         SkipInstallerTests=true" />
     <MSBuild
-      Projects="$(ProjectPath)"
+      Projects="$(MSBuildProjectFullPath)"
       Targets="BuildStoreAndHostingRPM"
       Properties="DockerImage=rhel.7;
         InstallerPlatform=rhel.7;
@@ -840,25 +834,25 @@
       $(HostingBundleInstallerLayoutNoTimestampDirectory)debian_config.json" />
 
     <MSBuild
-      Projects="$(ProjectPath)"
+      Projects="$(MSBuildProjectFullPath)"
       Targets="BuildStoreAndHostingDeb"
       Properties="InstallerPlatform=debian.8;
         SharedFrameworkVersion=$(SharedFrameworkVersion);
         BuildNumber=$(BuildNumber)" />
     <MSBuild
-      Projects="$(ProjectPath)"
+      Projects="$(MSBuildProjectFullPath)"
       Targets="BuildStoreAndHostingDeb"
       Properties="InstallerPlatform=ubuntu.14.04;
         SharedFrameworkVersion=$(SharedFrameworkVersion);
         BuildNumber=$(BuildNumber)" />
     <MSBuild
-      Projects="$(ProjectPath)"
+      Projects="$(MSBuildProjectFullPath)"
       Targets="BuildStoreAndHostingDeb"
       Properties="InstallerPlatform=ubuntu.16.04;
         SharedFrameworkVersion=$(SharedFrameworkVersion);
         BuildNumber=$(BuildNumber)" />
     <MSBuild
-      Projects="$(ProjectPath)"
+      Projects="$(MSBuildProjectFullPath)"
       Targets="BuildStoreAndHostingDeb"
       Properties="InstallerPlatform=ubuntu.16.10;
         SharedFrameworkVersion=$(SharedFrameworkVersion);
