@@ -28,3 +28,5 @@ project.lock.json
 .build
 .vscode
 .vs
+global.json
+korebuild-lock.txt

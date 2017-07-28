@@ -180,11 +180,18 @@
     <Exec Command="$(ZipPath) a -tzip -mx9 -r -y -uq0 $(TimestampFreePackagesOutputPath)%(TimeStampFreeMetaPackage.FileName).nupkg * > nul" WorkingDirectory="$(SignedAllMetapackagePath)%(TimeStampFreeMetaPackage.FileName)" />
   </Target>
 
-  <Target Name="PushPackages" DependsOnTargets="_FindDotNetPath">
-    <Exec Command="$(DotNetPath) $(PackagePublisherNetCoreApp) -d $(CoherenceSignedDestinationDir)Packages -f $(PublishFeed)" />
-    <Exec Command="$(DotNetPath) $(PackagePublisherNetCoreApp) -d $(CoherenceSignedDestinationDir)OobPackages -f $(PublishFeed)" />
-    <Exec Command="$(DotNetPath) $(PackagePublisherNetCoreApp) -d $(CoherenceDestinationDir)ext -f $(PublishFeed)" />
-    <Exec Command="$(DotNetPath) $(PackagePublisherNetCoreApp) -d $(CoherenceDestinationDir)noship -f $(PublishFeed)" />
+  <Target Name="PushPackages">
+    <ItemGroup>
+      <PackagesToPush Include="$(CoherenceSignedDestinationDir)Packages\*.nupkg" />
+      <PackagesToPush Include="$(CoherenceSignedDestinationDir)OobPackages\*.nupkg" />
+      <PackagesToPush Include="$(CoherenceDestinationDir)ext\*.nupkg" />
+      <PackagesToPush Include="$(CoherenceDestinationDir)noship\*.nupkg" />
+    </ItemGroup>
+
+    <PushNuGetPackages
+      Packages="@(PackagesToPush)"
+      Feed="$(PublishFeed)"
+      ApiKey="$(APIKey)" />
   </Target>
 
   <Target Name="_FindDotNetPath">

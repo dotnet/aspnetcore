@@ -1,5 +1,0 @@
-<Project>
-  <ItemGroup>
-    <PackageReference Include="PackagePublisher" Version="2.0.0-*" />
-  </ItemGroup>
-</Project>
