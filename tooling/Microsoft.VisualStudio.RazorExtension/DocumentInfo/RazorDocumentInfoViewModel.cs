@@ -5,6 +5,7 @@
 
 using System;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Text;
 
@@ -44,6 +45,19 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
         public SourceTextContainer TextContainer => _documentTracker.TextContainer;
 
         public Workspace Workspace => _documentTracker.Workspace;
+
+        public HostLanguageServices RazorLanguageServices => Workspace?.Services.GetLanguageServices(RazorLanguage.Name);
+
+        public TagHelperResolver TagHelperResolver => RazorLanguageServices?.GetRequiredService<TagHelperResolver>();
+
+        public RazorSyntaxFactsService RazorSyntaxFactsService => RazorLanguageServices?.GetRequiredService<RazorSyntaxFactsService>();
+
+        public RazorTemplateEngineFactoryService RazorTemplateEngineFactoryService => RazorLanguageServices?.GetRequiredService<RazorTemplateEngineFactoryService>();
+
+        public TagHelperCompletionService TagHelperCompletionService => RazorLanguageServices?.GetRequiredService<TagHelperCompletionService>();
+
+        public TagHelperFactsService TagHelperFactsService => RazorLanguageServices?.GetRequiredService<TagHelperFactsService>();
+
     }
 }
 

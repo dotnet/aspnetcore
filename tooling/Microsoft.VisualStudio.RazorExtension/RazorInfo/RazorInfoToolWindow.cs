@@ -5,6 +5,7 @@
 using System;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.LanguageServices.Razor;
@@ -19,7 +20,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         private IRazorEngineAssemblyResolver _assemblyResolver;
         private IRazorEngineDocumentGenerator _documentGenerator;
         private IRazorEngineDirectiveResolver _directiveResolver;
-        private ITagHelperResolver _tagHelperResolver;
+        private TagHelperResolver _tagHelperResolver;
         private VisualStudioWorkspace _workspace;
 
         public RazorInfoToolWindow() : base(null)
@@ -37,7 +38,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             _assemblyResolver = componentModel.GetService<IRazorEngineAssemblyResolver>();
             _documentGenerator = componentModel.GetService<IRazorEngineDocumentGenerator>();
             _directiveResolver = componentModel.GetService<IRazorEngineDirectiveResolver>();
-            _tagHelperResolver = componentModel.GetService<ITagHelperResolver>();
+            _tagHelperResolver = componentModel.GetService<TagHelperResolver>();
 
             _workspace = componentModel.GetService<VisualStudioWorkspace>();
             _workspace.WorkspaceChanged += Workspace_WorkspaceChanged;

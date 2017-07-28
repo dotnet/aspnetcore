@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.TextManager.Interop;
 using System.IO;
+using Microsoft.CodeAnalysis.Razor;
 
 namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
@@ -24,7 +25,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         private readonly IRazorEngineAssemblyResolver _assemblyResolver;
         private readonly IRazorEngineDirectiveResolver _directiveResolver;
         private readonly IRazorEngineDocumentGenerator _documentGenerator;
-        private readonly ITagHelperResolver _tagHelperResolver;
+        private readonly TagHelperResolver _tagHelperResolver;
         private readonly IServiceProvider _services;
         private readonly Workspace _workspace;
         private readonly Action<Exception> _errorHandler;
@@ -42,7 +43,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
             Workspace workspace,
             IRazorEngineAssemblyResolver assemblyResolver,
             IRazorEngineDirectiveResolver directiveResolver,
-            ITagHelperResolver tagHelperResolver,
+            TagHelperResolver tagHelperResolver,
             IRazorEngineDocumentGenerator documentGenerator,
             Action<Exception> errorHandler)
         {

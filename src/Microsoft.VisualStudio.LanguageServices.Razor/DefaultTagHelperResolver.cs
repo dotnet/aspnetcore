@@ -17,14 +17,16 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
-    [Export(typeof(ITagHelperResolver))]
-    internal class DefaultTagHelperResolver : ITagHelperResolver
+    internal class DefaultTagHelperResolver : TagHelperResolver
     {
-        [Import]
-        public VisualStudioWorkspace Workspace { get; set; }
+        private readonly Workspace _workspace;
+        private readonly IServiceProvider _services;
 
-        [Import]
-        public SVsServiceProvider Services { get; set; }
+        public DefaultTagHelperResolver(Workspace workspace, IServiceProvider services)
+        {
+            _workspace = workspace;
+            _services = services;
+        }
 
         public async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project)
         {
@@ -36,7 +38,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 // when it's disconnected (user stops the process).
                 //
                 // This will change in the future to an easier to consume API but for VS RTM this is what we have.
-                var client = await RazorLanguageServiceClientFactory.CreateAsync(Workspace, CancellationToken.None);
+                var client = await RazorLanguageServiceClientFactory.CreateAsync(_workspace, CancellationToken.None);
                 if (client != null)
                 {
                     using (var session = await client.CreateSessionAsync(project.Solution))
@@ -59,7 +61,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
                 // The OOP host is turned off, so let's do this in process.
                 var compilation = await project.GetCompilationAsync(CancellationToken.None).ConfigureAwait(false);
-                result = GetTagHelpers(compilation, designTime: true);
+                result = GetTagHelpers(compilation);
                 return result;
             }
             catch (Exception exception)
@@ -81,13 +83,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
         }
 
-        private TagHelperResolutionResult GetTagHelpers(Compilation compilation, bool designTime)
+        public override TagHelperResolutionResult GetTagHelpers(Compilation compilation)
         {
             var descriptors = new List<TagHelperDescriptor>();
 
             var providers = new ITagHelperDescriptorProvider[]
             {
-                new DefaultTagHelperDescriptorProvider() { DesignTime = designTime, },
+                new DefaultTagHelperDescriptorProvider() { DesignTime = true, },
                 new ViewComponentTagHelperDescriptorProvider(),
             };
 
@@ -121,8 +123,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
         private IVsActivityLog GetActivityLog()
         {
-            var services = (IServiceProvider)Services;
-            return services.GetService(typeof(SVsActivityLog)) as IVsActivityLog;
+            return _services.GetService(typeof(SVsActivityLog)) as IVsActivityLog;
         }
     }
 }
