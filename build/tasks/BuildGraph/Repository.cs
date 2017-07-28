@@ -56,6 +56,11 @@ namespace RepoTools.BuildGraph
             foreach (var file in solutionFiles)
             {
                 var spec = provider.GetDependencyGraphSpec(name, file);
+                if (spec == null)
+                {
+                    continue;
+                }
+
                 var projects = spec.Projects.OrderBy(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ? 0 : 1);
                 foreach (var specProject in projects)
                 {

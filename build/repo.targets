@@ -110,13 +110,19 @@
      DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
 
   <Target Name="_PrepareRestoreGraphSpecs" DependsOnTargets="_PrepareRepositories">
-    <ItemGroup>
-      <Solution Include="$(_CloneRepositoryRoot)%(Repository.Identity)\*.sln">
-        <Repository>%(Repository.Identity)</Repository>
-      </Solution>
 
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="ResolveSolutions"
+             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(Repository.Identity)\"
+             ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="Solution" />
+    </MSBuild>
+
+    <Error Text="No solutions were found in '$(_CloneRepositoryRoot)'" Condition="@(Solution->Count()) == 0" />
+
+    <ItemGroup>
       <Solution>
-        <AdditionalProperties>RestoreGraphOutputPath=$(_RestoreGraphSpecsDirectory)%(Solution.Repository)\%(Solution.FileName)%(Solution.Extension).json</AdditionalProperties>
+        <AdditionalProperties>RestoreGraphOutputPath=$(_RestoreGraphSpecsDirectory)$([System.IO.Path]::GetFileName('$([System.IO.Path]::GetDirectoryName(%(FullPath)))'))\%(Solution.FileName)%(Solution.Extension).json</AdditionalProperties>
       </Solution>
 
       <GraphSpecInputs Include="
