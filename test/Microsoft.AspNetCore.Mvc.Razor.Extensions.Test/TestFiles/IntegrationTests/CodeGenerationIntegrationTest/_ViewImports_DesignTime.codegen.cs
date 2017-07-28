@@ -20,7 +20,7 @@ IHtmlHelper<TModel> __typeHelper = default(IHtmlHelper<TModel>);
         }
         ))();
         ((System.Action)(() => {
-global::System.Object Model = null;
+global::System.Object Helper = null;
         }
         ))();
         }
@@ -34,7 +34,7 @@ global::System.Object Model = null;
         }
         #pragma warning restore 1998
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
-        public IHtmlHelper<dynamic> Model { get; private set; }
+        public IHtmlHelper<dynamic> Helper { get; private set; }
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.ViewFeatures.IModelExpressionProvider ModelExpressionProvider { get; private set; }
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]

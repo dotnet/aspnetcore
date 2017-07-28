@@ -109,11 +109,8 @@ public class MyModel
         [Fact]
         public void _ViewImports_Runtime()
         {
-            var error = "'TestFiles_IntegrationTests_CodeGenerationIntegrationTest__ViewImports_cshtml.Model' " + 
-                "hides inherited member 'RazorPage<dynamic>.Model'. Use the new keyword if hiding was intended.";
-
             var references = CreateCompilationReferences(CurrentMvcShim);
-            RunRuntimeTest(references, new[] { error, });
+            RunRuntimeTest(references);
         }
 
         [Fact]
@@ -347,11 +344,8 @@ public abstract class MyPageModel<T> : Page
         [Fact]
         public void _ViewImports_DesignTime()
         {
-            var error = "'TestFiles_IntegrationTests_CodeGenerationIntegrationTest__ViewImports_cshtml.Model' " +
-                "hides inherited member 'RazorPage<dynamic>.Model'. Use the new keyword if hiding was intended.";
-
             var references = CreateCompilationReferences(CurrentMvcShim);
-            RunDesignTimeTest(references, new[] { error, });
+            RunDesignTimeTest(references);
         }
 
         [Fact]

@@ -24,7 +24,7 @@ Document -
                 DirectiveToken - (729:13,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.HeadTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (832:14,14 [87] ) - Microsoft.AspNetCore.Mvc.Razor.TagHelpers.BodyTagHelper, Microsoft.AspNetCore.Mvc.Razor
                 DirectiveToken - (8:0,8 [19] _ViewImports.cshtml) - IHtmlHelper<TModel>
-                DirectiveToken - (28:0,28 [5] _ViewImports.cshtml) - Model
+                DirectiveToken - (28:0,28 [6] _ViewImports.cshtml) - Helper
             CSharpCode - 
                 IntermediateToken -  - CSharp - #pragma warning disable 0414
             CSharpCode - 
