@@ -73,13 +73,13 @@ namespace IISSample
 
         public static void Main(string[] args)
         {
+            var config = new ConfigurationBuilder()
+                .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                .AddCommandLine(args)
+                .Build();
 
             var host = new WebHostBuilder()
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true);
-                    config.AddCommandLine(args);
-                })
+                .UseConfiguration(config)
                 .ConfigureLogging((hostingContext, builder) =>
                 {
                     builder.AddConfiguration(hostingContext.Configuration.GetSection("Logging"));
