@@ -1,14 +1,8 @@
 <Project>
   <PropertyGroup>
-    <MicrosoftCommonTargetsImported>true</MicrosoftCommonTargetsImported>
-    <VerifyDependsOn>$(VerifyDependsOn);PublishPackage</VerifyDependsOn>
     <PublishFeed>https://dotnet.myget.org/F/aspnetcoremodule/api/v2/package</PublishFeed>
-    <NuGetCommandLineVersion>3.5.0</NuGetCommandLineVersion>
+    <VerifyDependsOn>$(VerifyDependsOn);PublishPackage</VerifyDependsOn>
   </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="PackagePublisher" Version="2.0.0-*" />
-  </ItemGroup>
 
   <Target Name="_LocateMSBuildExe">
     <ItemGroup>
@@ -35,25 +29,23 @@
   <Target Name="PackageProjects">
     <PropertyGroup>
       <PackageVersion>1.0.0-pre-$(BuildNumber)</PackageVersion>
-      <PackageOutputPath>$(ArtifactsDir)build\</PackageOutputPath>
     </PropertyGroup>
 
-      <MSBuild
-        Projects="$(MSBuildThisFileDirectory)../nuget/AspNetCore.csproj"
-        Targets="Restore;Pack"
-        Properties="PackageVersion=$(PackageVersion);PackageOutputPath=$(PackageOutputPath)" />
+    <MSBuild
+      Projects="$(MSBuildThisFileDirectory)../nuget/AspNetCore.csproj"
+      Targets="Restore;Pack"
+      Properties="PackageVersion=$(PackageVersion);PackageOutputPath=$(BuildDir)" />
   </Target>
 
-  <Target Name="PublishPackage" 
-    DependsOnTargets="_FindDotNetPath"
-    Condition="'$(PublishPackage)'=='true'">
-    
-    <Exec Command="&quot;$(DotNetPath)&quot; $(PackagePublisherNetCoreApp) -d &quot;$(ArtifactsDir)\build&quot; -f $(PublishFeed)" />
+  <Target Name="PublishPackage" Condition="'$(PublishPackage)'=='true'">
+    <ItemGroup>
+      <PackagesToPush Include="$(BuildDir)*.nupkg" />
+    </ItemGroup>
+
+    <PushNuGetPackages
+      Packages="@(PackagesToPush)"
+      Feed="$(PublishFeed)"
+      ApiKey="$(APIKey)" />
   </Target>
 
-  <Target Name="_FindDotNetPath">
-    <GetDotNetHost>
-      <Output TaskParameter="ExecutablePath" PropertyName="DotNetPath" />
-    </GetDotNetHost>
-  </Target>
 </Project>
