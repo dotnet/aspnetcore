@@ -108,13 +108,14 @@
       <_VSIXManifest Include="$(UnsignedVSIXPath)**\extension.vsixmanifest" />
       <VSIXManifest Include="@(_VSIXManifest)">
         <VSIXName>$([System.IO.Path]::GetFileName($([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))))</VSIXName>
+        <VSIXDir>$([System.IO.Path]::GetDirectoryName(%(_VSIXManifest.FullPath)))\</VSIXDir>
       </VSIXManifest>
     </ItemGroup>
 
     <MSBuild
         Projects="$(MSBuildProjectFullPath)"
         Targets="ZipFile"
-        Properties="ZipRoot=%(VSIXManifest.RootDirectory)%(VSIXManifest.Directory);OutputDir=$(UnsignedVSIXWithSignedBinariesPath);Extension=.vsix" />
+        Properties="ZipRoot=%(VSIXManifest.VSIXDir);OutputDir=$(UnsignedVSIXWithSignedBinariesPath);Extension=.vsix" />
 
     <ItemGroup>
       <VSIXToSign Include="$(UnsignedVSIXWithSignedBinariesPath)**\*.vsix" />
