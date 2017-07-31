@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
@@ -11,7 +10,6 @@ namespace Microsoft.AspNetCore.Razor.Language
     /// <summary>
     /// A metadata class describing a tag helper attribute.
     /// </summary>
-    [DebuggerDisplay("{DisplayName,nq}")]
     public abstract class BoundAttributeDescriptor : IEquatable<BoundAttributeDescriptor>
     {
         protected BoundAttributeDescriptor(string kind)
@@ -53,6 +51,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                 return errors;
             }
+        }
+
+        public override string ToString()
+        {
+            return DisplayName ?? base.ToString();
         }
 
         public bool Equals(BoundAttributeDescriptor other)

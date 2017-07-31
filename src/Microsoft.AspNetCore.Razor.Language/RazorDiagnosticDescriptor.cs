@@ -6,14 +6,14 @@ using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    [DebuggerDisplay("Error {Id}: {GetMessageFormat()}")]
+    [DebuggerDisplay("{" + nameof(DebuggerToString) + "(),nq}")]
     public sealed class RazorDiagnosticDescriptor : IEquatable<RazorDiagnosticDescriptor>
     {
         private readonly Func<string> _messageFormat;
 
         public RazorDiagnosticDescriptor(
             string id,
-            Func<string> messageFormat, 
+            Func<string> messageFormat,
             RazorDiagnosticSeverity severity)
         {
             if (string.IsNullOrEmpty(id))
@@ -55,6 +55,11 @@ namespace Microsoft.AspNetCore.Razor.Language
         public override int GetHashCode()
         {
             return StringComparer.Ordinal.GetHashCode(Id);
+        }
+
+        private string DebuggerToString()
+        {
+            return $@"Error ""{Id}"": ""{GetMessageFormat()}""";
         }
     }
 }

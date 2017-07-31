@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language
     /// <summary>
     /// An item in <see cref="RazorProject"/>.
     /// </summary>
-    [DebuggerDisplay("{CombinedPath}")]
+    [DebuggerDisplay("{" + nameof(DebuggerToString) + "()}")]
     public abstract class RazorProjectItem
     {
         /// <summary>
@@ -104,6 +104,11 @@ namespace Microsoft.AspNetCore.Razor.Language
                     return FilePath.Substring(0, index);
                 }
             }
+        }
+
+        private string DebuggerToString()
+        {
+            return CombinedPath;
         }
     }
 }

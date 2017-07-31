@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
     /// <summary>
     /// Default concrete <see cref="TagHelperContent"/>.
     /// </summary>
-    [DebuggerDisplay("{DebuggerToString(),nq}")]
+    [DebuggerDisplay("{" + nameof(DebuggerToString) + "(),nq}")]
     public class DefaultTagHelperContent : TagHelperContent
     {
         private object _singleContent;
@@ -323,6 +323,11 @@ namespace Microsoft.AspNetCore.Razor.TagHelpers
             _hasContent = true;
 
             return this;
+        }
+
+        private string DebuggerToString()
+        {
+            return GetContent();
         }
         
         // Overrides Write(string) to find if the content written is empty/whitespace.

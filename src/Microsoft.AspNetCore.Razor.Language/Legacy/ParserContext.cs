@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
     // Debug Helpers
 
 #if DEBUG
-    [DebuggerDisplay("{Unparsed}")]
+    [DebuggerDisplay("{" + nameof(DebuggerToString) + "(),nq}")]
     internal partial class ParserContext
     {
         private const int InfiniteLoopCountThreshold = 1000;
@@ -97,6 +97,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             }
             _infiniteLoopGuardLocation = Source.Location;
             return false;
+        }
+
+        private string DebuggerToString()
+        {
+            return Unparsed;
         }
     }
 #endif

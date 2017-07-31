@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    [DebuggerDisplay("{DisplayName,nq}")]
     public abstract class RequiredAttributeDescriptor : IEquatable<RequiredAttributeDescriptor>
     {
         public string Name { get; protected set; }
@@ -32,7 +30,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return errors;
             }
         }
-        
+
+        public override string ToString()
+        {
+            return DisplayName ?? base.ToString();
+        }
+
         public bool Equals(RequiredAttributeDescriptor other)
         {
             return RequiredAttributeDescriptorComparer.Default.Equals(this, other);

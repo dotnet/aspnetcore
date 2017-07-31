@@ -3,12 +3,10 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 
 namespace Microsoft.AspNetCore.Razor.Language
 {
-    [DebuggerDisplay("{DisplayName,nq}")]
     public abstract class TagHelperDescriptor : IEquatable<TagHelperDescriptor>
     {
         private IEnumerable<RazorDiagnostic> _allDiagnostics;
@@ -66,6 +64,11 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             return _allDiagnostics;
+        }
+
+        public override string ToString()
+        {
+            return DisplayName ?? base.ToString();
         }
 
         public bool Equals(TagHelperDescriptor other)
