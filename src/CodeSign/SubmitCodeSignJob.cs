@@ -185,14 +185,7 @@ namespace CodeSign
             {
                 do
                 {
-                    try
-                    {
-                        jw.Watch(job);
-                    }
-                    catch
-                    {
-                        break;
-                    }
+                    jw.Watch(job.JobNumber, Server, Port, IsSSL: true, IsImmediate: false);
                 } while (!jw.IsDone);
 
                 if (jw.ErrorList.Count > 0)
