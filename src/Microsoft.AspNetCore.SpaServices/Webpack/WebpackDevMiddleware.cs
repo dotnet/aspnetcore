@@ -4,6 +4,7 @@ using System.Threading;
 using Microsoft.AspNetCore.NodeServices;
 using Microsoft.AspNetCore.SpaServices.Webpack;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.Builder
 {
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.Builder
             };
             var devServerInfo =
                 nodeServices.InvokeExportAsync<WebpackDevServerInfo>(nodeScript.FileName, "createWebpackDevServer",
-                    JsonConvert.SerializeObject(devServerOptions)).Result;
+                    JsonConvert.SerializeObject(devServerOptions, new JsonSerializerSettings() { ContractResolver = new DefaultContractResolver() })).Result;
 
             // If we're talking to an older version of aspnet-webpack, it will return only a single PublicPath,
             // not an array of PublicPaths. Handle that scenario.
