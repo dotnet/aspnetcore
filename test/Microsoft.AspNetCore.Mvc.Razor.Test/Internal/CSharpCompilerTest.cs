@@ -151,7 +151,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             // Arrange
             var dependencyContextOptions = new DependencyContextCompilationOptions(
                 new[] { "MyDefine" },
-                languageVersion: "CSharp7_1",
+                languageVersion: "7.1",
                 platform: null,
                 allowUnsafe: true,
                 warningsAsErrors: null,
