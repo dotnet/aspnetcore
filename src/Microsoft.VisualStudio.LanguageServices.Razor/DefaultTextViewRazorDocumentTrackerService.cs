@@ -16,8 +16,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     [ContentType(RazorLanguage.ContentType)]
     [TextViewRole(PredefinedTextViewRoles.Editable)]
-    //[Export(typeof(IWpfTextViewConnectionListener))] - we're not exporting this interface because we only want it to be hooked up
-    // in developer mode.
+    [Export(typeof(IWpfTextViewConnectionListener))]
     [Export(typeof(TextViewRazorDocumentTrackerService))]
     internal class DefaultTextViewRazorDocumentTrackerService : TextViewRazorDocumentTrackerService, IWpfTextViewConnectionListener
     {

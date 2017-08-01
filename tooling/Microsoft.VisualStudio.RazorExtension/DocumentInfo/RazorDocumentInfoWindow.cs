@@ -63,6 +63,10 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
         private void OnBeforeDocumentWindowShow(IVsWindowFrame frame)
         {
             var vsTextView = VsShellUtilities.GetTextView(frame);
+            if (vsTextView == null)
+            {
+                return;
+            }
 
             var textView = _adapterFactory.GetWpfTextView(vsTextView);
             if (textView != null && textView != _textView)
