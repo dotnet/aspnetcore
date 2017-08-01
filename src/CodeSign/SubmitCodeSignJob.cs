@@ -49,7 +49,9 @@ namespace CodeSign
             {
                 var job = InitializeJob(fileMapping.Keys);
                 job.Send();
+                Console.WriteLine($"Job #{job.JobNumber} was sent.");
                 WatchJob(job);
+                Console.WriteLine($"Job #{job.JobNumber} finished at '{job.JobCompletionPath}'.");
                 completionPath = job.JobCompletionPath;
             }
             else
