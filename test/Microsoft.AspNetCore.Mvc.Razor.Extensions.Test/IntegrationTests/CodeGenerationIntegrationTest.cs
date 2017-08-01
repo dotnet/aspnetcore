@@ -107,6 +107,13 @@ public class MyModel
         }
 
         [Fact]
+        public void Sections_Runtime()
+        {
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunRuntimeTest(references);
+        }
+
+        [Fact]
         public void _ViewImports_Runtime()
         {
             var references = CreateCompilationReferences(CurrentMvcShim);
@@ -336,6 +343,13 @@ public abstract class MyPageModel<T> : Page
 
         [Fact]
         public void Basic_DesignTime()
+        {
+            var references = CreateCompilationReferences(CurrentMvcShim);
+            RunDesignTimeTest(references);
+        }
+
+        [Fact]
+        public void Sections_DesignTime()
         {
             var references = CreateCompilationReferences(CurrentMvcShim);
             RunDesignTimeTest(references);

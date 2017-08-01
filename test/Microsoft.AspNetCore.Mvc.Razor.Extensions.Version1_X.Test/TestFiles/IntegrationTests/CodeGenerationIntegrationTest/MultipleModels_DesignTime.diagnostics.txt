@@ -1,0 +1,1 @@
+TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MultipleModels.cshtml(2,1): Error RZ9999: The 'model' directive may only occur once per document.

@@ -3,9 +3,7 @@
 
 using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
-using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Xunit;
-using static Microsoft.AspNetCore.Razor.Language.Intermediate.IntermediateNodeAssert;
 
 namespace Microsoft.AspNetCore.Razor.Language.Extensions
 {
@@ -69,7 +67,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteSection(context, node);
 
             // Assert
-            var expected = @"CreateSection(""MySection"", async(__razor_section_writer) => {
+            var expected = @"CreateSection(""MySection"", async() => {
     Render Children
 }
 );

@@ -12,7 +12,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     {
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
-            return new DefaultTemplateEngineFactoryService();
+            return new DefaultTemplateEngineFactoryService(languageServices);
         }
     }
 }
