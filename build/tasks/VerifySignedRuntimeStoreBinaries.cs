@@ -32,7 +32,7 @@ namespace RepoTasks
                 }
                 else
                 {
-                    Log.LogMessage(MessageImportance.High, $"{binaryName} is authenticode signed");
+                    Log.LogMessage($"{binaryName} is authenticode signed");
                 }
             }
 

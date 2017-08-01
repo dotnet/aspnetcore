@@ -145,7 +145,6 @@ namespace CodeSign
             // Add approvers and exclude the submitter from the list
             foreach (var approver in Approvers.Except(new [] { Submitter }))
             {
-                Console.WriteLine($"Adding {approver} as approver.");
                 job.AddApprover(approver);
             }
 
