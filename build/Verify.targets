@@ -2,21 +2,16 @@
   <!-- SDL verification tool -->
   <Target Name="BinScope">
     <PropertyGroup>
-      <BinScopeOutDir Condition="'$(BinScopeOutDir)' == ''">$(ArtifactsDir)BinScope\</BinScopeOutDir>
-      <BinScopeTargetDir Condition="'$(BinScopeTarget)' == ''">$(IntermediateOutputPath)BinScope\</BinScopeTargetDir>
-      <BinScopeLogFile Condition="'$(BinScopeLogFile)' == ''">$(BinScopeOutDir)BinScopeResults.xml</BinScopeLogFile>
-
       <BinScope70InstallDir>$(MSBuildProgramFiles32)\Microsoft\BinScope for SDL 7.0\</BinScope70InstallDir>
+      <BinScopeEXE>$(BinScope70InstallDir)BinScope.EXE</BinScopeEXE>
 
-      <BinScopeInstallDir Condition="('$(BinScopeInstallerDir)' == '') And (Exists('$(BinScope70InstallDir)'))">$(BinScope70InstallDir)</BinScopeInstallDir>
-      <BinScopeEXE Condition="'$(BinScopeEXE)' == ''">$(BinScopeInstallDir)BinScope.EXE</BinScopeEXE>
-
-      <BinScopeSymbolOption Condition="'$(BinScopeSymPath)' != ''">/sympath $(BinScopeSymPath)</BinScopeSymbolOption>
+      <BinScopeOutDir Condition="'$(BinScopeOutDir)' == ''">$(ArtifactsDir)BinScope\</BinScopeOutDir>
+      <BinScopeLogFile Condition="'$(BinScopeLogFile)' == ''">$(BinScopeOutDir)BinScopeResults.xml</BinScopeLogFile>
+      <BinScopeTargetDir Condition="'$(BinScopeTarget)' == ''">$(IntermediateOutputPath)BinScope\</BinScopeTargetDir>
     </PropertyGroup>
 
     <ItemGroup>
-      <BinScopeTargetFiles Include="$(SignedBinariesIntermediateOutputPath)*.dll" />
-      <BinScopeTargetFiles Include="$(UnsignedPackagesPath)**\*.pdb" />
+      <BinScopeTargetFiles Include="$(UnsignedPackagesPath)**\*.dll" />
     </ItemGroup>
 
     <RemoveDir Directories="$(BinScopeTargetDir)" />
@@ -25,7 +20,8 @@
     <Copy SourceFiles="@(BinScopeTargetFiles)" DestinationFiles="@(BinScopeTargetFiles->'$(BinScopeTargetDir)%(RecursiveDir)\%(Filename)%(Extension)')" />
 
     <WriteLinesToFile
-      File="$(IntermediateOutputPath)BinScope.rsp" Overwrite="true"
+      File="$(IntermediateOutputPath)BinScope.rsp"
+      Overwrite="true"
       Lines="@(BinScopeTargetFiles->'/target $(BinScopeTargetDir)%(RecursiveDir)%(Filename)%(Extension) $(BinScopeSymbolOption)')" />
 
     <Error
