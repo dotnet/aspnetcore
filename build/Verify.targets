@@ -40,19 +40,21 @@
   <!-- Runs NuGetPackageVerifier on signed (timestamped and timestamp-free packages -->
   <Target Name="VerifySignedPackages">
     <PropertyGroup>
-      <SignedPackagesDir>$(ArtifactsDir)Signed\Packages\</SignedPackagesDir>
-      <NoTimestampPackagesDir>$(ArtifactsDir)Signed\Packages-NoTimeStamp\</NoTimestampPackagesDir>
+      <SignedDir>$(ArtifactsDir)Signed</SignedDir>
+      <SignedPackagesDir>$(SignedDir)Packages\</SignedPackagesDir>
+      <NoTimestampPackagesDir>$(SignedDir)Packages-NoTimeStamp\</NoTimestampPackagesDir>
+      <OOBPackagesDir>$(SignedDir)OobPackages</OOBPackagesDir>
+      <NoTimestampOOBPackagesDir>$(SignedDir)OobPackages-NoTimeStamp</NoTimestampOOBPackagesDir>
     </PropertyGroup>
 
-    <VerifyPackages
-      ArtifactDirectory="$(SignedPackagesDir)"
-      RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Signed.json"
-      Condition="Exists('$(SignedPackagesDir)')" />
+    <ItemGroup>
+      <DirectoriesToScan Include="$(SignedPackagesDir);$(NoTimestampPackagesDir);$(OOBPackagesDir);$(NoTimestampOOBPackagesDir)" />
+    </ItemGroup>
 
     <VerifyPackages
-      ArtifactDirectory="$(NoTimestampPackagesDir)"
+      ArtifactDirectory="%(DirectoriesToScan.Identity)"
       RuleFile="$(RepositoryRoot)NuGetPackageVerifier-Signed.json"
-      Condition="Exists('$(NoTimestampPackagesDir)')" />
+      Condition="Exists('$(DirectoriesToScan.Identity)')" />
   </Target>
 
   <!-- Ensures binaries in the runtime store are correctly authenticode signed -->
