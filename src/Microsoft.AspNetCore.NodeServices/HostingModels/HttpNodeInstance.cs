@@ -50,6 +50,7 @@ namespace Microsoft.AspNetCore.NodeServices.HostingModels
                 options.DebuggingPort)
         {
             _client = new HttpClient();
+            _client.Timeout = TimeSpan.FromMilliseconds(options.InvocationTimeoutMilliseconds + 1000);
         }
 
         private static string MakeCommandLineOptions(int port)
