@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Microsoft.AspNetCore.Hosting;
@@ -154,11 +155,16 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
 
             var parseOptions = new CSharpParseOptions(preprocessorSymbols: defines);
 
-            LanguageVersion languageVersion;
-            if (!string.IsNullOrEmpty(dependencyContextOptions.LanguageVersion) &&
-                Enum.TryParse(dependencyContextOptions.LanguageVersion, ignoreCase: true, result: out languageVersion))
+            if (!string.IsNullOrEmpty(dependencyContextOptions.LanguageVersion))
             {
-                parseOptions = parseOptions.WithLanguageVersion(languageVersion);
+                if (LanguageVersionFacts.TryParse(dependencyContextOptions.LanguageVersion, out var languageVersion))
+                {
+                    parseOptions = parseOptions.WithLanguageVersion(languageVersion);
+                }
+                else
+                {
+                    Debug.Fail($"LanguageVersion {languageVersion} specified in the deps file could not be parsed.");
+                }
             }
 
             return parseOptions;
