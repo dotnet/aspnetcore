@@ -99,16 +99,19 @@ __get_remote_file() {
         return 0
     fi
 
-    local succeeded=false
+    local failed=false
     if __machine_has wget; then
-        wget --tries 10 --quiet -O "$local_path" "$remote_path" && succeeded=true
+        wget --tries 10 --quiet -O "$local_path" "$remote_path" || failed=true
+    else
+        failed=true
     fi
 
-    if [ "$succeeded" = false ] && __machine_has curl; then
-        curl --retry 10 -sSL -f --create-dirs -o "$local_path" "$remote_path" && succeeded=true
+    if [ "$failed" = true ] && __machine_has curl; then
+        failed=false
+        curl --retry 10 -sSL -f --create-dirs -o "$local_path" "$remote_path" || failed=true
     fi
 
-    if [ "$succeeded" = false ]; then
+    if [ "$failed" = true ]; then
         __error "Download failed: $remote_path" 1>&2
         return 1
     fi
