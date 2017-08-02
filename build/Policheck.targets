@@ -151,11 +151,11 @@
     </PropertyGroup>
 
     <Error
-      Message="Policheck.exe could not be found. See http://toolbox/policheck for installation instructions."
+      Text="Policheck.exe could not be found. See http://toolbox/policheck for installation instructions."
       Condition="!Exists('$(_PoliCheckExe)') AND '$(LocalBuild)'!='true'" />
 
     <Warning
-      Message="Policheck.exe could not be found. See http://toolbox/policheck for installation instructions. Proceeding without running the tool."
+      Text="Policheck.exe could not be found. See http://toolbox/policheck for installation instructions. Proceeding without running the tool."
       Condition="!Exists('$(_PoliCheckExe)') AND '$(LocalBuild)'=='true'" />
 
     <Exec Command="&quot;$(_PoliCheckExe)&quot; $(_PoliCheckArguments)" IgnoreExitCode="true" />
