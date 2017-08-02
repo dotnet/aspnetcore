@@ -214,9 +214,4 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_FindDotNetPath">
-    <GetDotNetHost>
-      <Output TaskParameter="ExecutablePath" PropertyName="DotNetPath" />
-    </GetDotNetHost>
-  </Target>
 </Project>

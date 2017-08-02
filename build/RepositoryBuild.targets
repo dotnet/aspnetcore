@@ -22,7 +22,7 @@
       BuildInParallel="$(BatchBuilds)"
       StopOnFirstFailure="true"
       Targets="_BuildRepository"
-      Properties="BuildGroup=%(BatchedRepository.BuildGroup)" />
+      Properties="BuildGroup=%(BatchedRepository.BuildGroup);BuildNumber=$(BuildNumber)" />
   </Target>
 
   <Target Name="_BuildRepository" DependsOnTargets="_PinVersions">
@@ -78,14 +78,16 @@
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
   </Target>
 
-  <Target Name="_PinVersions" DependsOnTargets="_FindDotNetPath">
+  <Target Name="_PinVersions">
+    <ItemGroup>
+      <PinPackageSources Include="$(BuildDir)" />
+      <PinPackageSources Include="$(_DependencyPackagesDirectory)" Condition="Exists('$(_DependencyPackagesDirectory)')" />
+    </ItemGroup>
 
-    <PropertyGroup>
-      <PinToolBinary>$(RepositoryRoot)tools\PinVersions\bin\$(Configuration)\netcoreapp1.1\PinVersions.dll</PinToolBinary>
-      <PinVersionArgs>$(DotNetPath) $(PinToolBinary) --graph-specs-root &quot;$(_RestoreGraphSpecsDirectory) &quot; -s &quot;$(BuildDir) &quot; &quot;$(BuildRepositoryRoot) &quot;</PinVersionArgs>
-      <PinVersionArgs Condition="Exists('$(_DependencyPackagesDirectory)')">$(PinVersionArgs) -s &quot;$(_DependencyPackagesDirectory) &quot;</PinVersionArgs>
-    </PropertyGroup>
-
-    <Exec Command="$(PinVersionArgs)" />
+    <RepoTasks.PinVersions
+      GraphSpecsRoot="$(_RestoreGraphSpecsDirectory)"
+      BuildRepositoryRoot="$(BuildRepositoryRoot)"
+      PackageSources="@(PinPackageSources)" />
   </Target>
+
 </Project>

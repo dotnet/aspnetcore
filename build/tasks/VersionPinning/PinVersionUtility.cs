@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -6,6 +9,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -13,19 +18,23 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using UniverseTools;
 
-namespace PinVersions
+namespace RepoTasks.VersionPinning
 {
-    class PinVersionUtility
+    internal class PinVersionUtility
     {
         private readonly string _repositoryRoot;
         private readonly FindPackageByIdResource[] _findPackageResources;
         private readonly ConcurrentDictionary<string, Task<NuGetVersion>> _exactMatches = new ConcurrentDictionary<string, Task<NuGetVersion>>(StringComparer.OrdinalIgnoreCase);
         private readonly DependencyGraphSpecProvider _provider;
         private readonly SourceCacheContext _sourceCacheContext;
+        private readonly TaskLoggingHelper _logger;
 
-        public PinVersionUtility(string repositoryRoot, List<string> pinSources, DependencyGraphSpecProvider provider)
+        public PinVersionUtility(
+            string repositoryRoot,
+            List<string> pinSources,
+            DependencyGraphSpecProvider provider,
+            TaskLoggingHelper logger)
         {
             _repositoryRoot = repositoryRoot;
             _findPackageResources = new FindPackageByIdResource[pinSources.Count];
@@ -36,14 +45,17 @@ namespace PinVersions
             }
             _provider = provider;
             _sourceCacheContext = new SourceCacheContext();
+            _logger = logger;
         }
 
         public void Execute()
         {
+            _logger.LogMessage(MessageImportance.High, $"Pinning package references for projects in {_repositoryRoot}");
+
             var solutionPinMetadata = GetProjectPinVersionMetadata();
             foreach (var cliToolReference in solutionPinMetadata.CLIToolReferences)
             {
-                Console.WriteLine($"Pinning CLI Tool {cliToolReference.Item1.Name}({cliToolReference.Item1.VersionRange} to {cliToolReference.Item2} for all projects in {_repositoryRoot}.");
+                _logger.LogMessage(MessageImportance.Normal, $"Pinning CLI Tool {cliToolReference.Item1.Name}({cliToolReference.Item1.VersionRange} to {cliToolReference.Item2} for all projects in {_repositoryRoot}.");
             }
 
             foreach (var item in solutionPinMetadata.PinVersionLookup)
@@ -53,7 +65,7 @@ namespace PinVersions
 
                 if (!(projectPinMetadata.Packages.Any() || solutionPinMetadata.CLIToolReferences.Any()))
                 {
-                    Console.WriteLine($"No package or tool references to pin for {specProject.FilePath}.");
+                    _logger.LogMessage(MessageImportance.Normal, $"No package or tool references to pin for {specProject.FilePath}.");
                     continue;
                 }
 
@@ -66,14 +78,14 @@ namespace PinVersions
 
                 if (projectPinMetadata.Packages.Any())
                 {
-                    Console.WriteLine($"Pinning package versions for {specProject.FilePath}.");
+                    _logger.LogMessage(MessageImportance.Normal, $"Pinning package versions for {specProject.FilePath}.");
                 }
 
                 var pinnedReferences = new XElement("ItemGroup");
                 foreach (var packageReference in projectPinMetadata.Packages)
                 {
                     (var tfm, var libraryRange, var exactVersion) = packageReference;
-                    Console.WriteLine($"Pinning reference {libraryRange.Name}({libraryRange.VersionRange} to {exactVersion}.");
+                    _logger.LogMessage(MessageImportance.Normal, $"Pinning reference {libraryRange.Name}({libraryRange.VersionRange} to {exactVersion}.");
                     var metadata = new List<XAttribute>
                     {
                         new XAttribute("Update", libraryRange.Name),
