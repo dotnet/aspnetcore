@@ -39,7 +39,7 @@
       <UnsignedOobPackages Include="$(CoherenceDestinationDir)shipoob\*.nupkg" />
       <UnsignedSymbolPackages Include="$(CoherenceDestinationDir)symbols\Microsoft.Data.Sqlite*.nupkg" />
       <UnsignedVSIX Include="$(CoherenceDestinationDir)vsix\*.vsix" />
-      <UnsignedPackageCaches Include="$(CoherencePackageCacheDestinationDir)Build.RS.*.zip" />
+      <UnsignedPackageCaches Include="$(CoherencePackageCacheDestinationDir)aspnetcore-store-*.zip" />
       <PoliCheckPackages Include="$(CoherenceDestinationDir)symbols\*.nupkg" />
 
       <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
