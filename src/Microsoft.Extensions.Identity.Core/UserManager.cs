@@ -26,17 +26,17 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// The data protection purpose used for the reset password related methods.
         /// </summary>
-        protected const string ResetPasswordTokenPurpose = "ResetPassword";
+        public const string ResetPasswordTokenPurpose = "ResetPassword";
 
         /// <summary>
         /// The data protection purpose used for the change phone number methods.
         /// </summary>
-        protected const string ChangePhoneNumberTokenPurpose = "ChangePhoneNumber";
+        public const string ChangePhoneNumberTokenPurpose = "ChangePhoneNumber";
 
         /// <summary>
         /// The data protection purpose used for the email confirmation related methods.
         /// </summary>
-        protected const string ConfirmEmailTokenPurpose = "EmailConfirmation";
+        public const string ConfirmEmailTokenPurpose = "EmailConfirmation";
 
         private readonly Dictionary<string, IUserTwoFactorTokenProvider<TUser>> _tokenProviders =
             new Dictionary<string, IUserTwoFactorTokenProvider<TUser>>();
