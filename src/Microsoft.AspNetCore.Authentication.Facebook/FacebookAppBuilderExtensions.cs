@@ -12,23 +12,23 @@ namespace Microsoft.AspNetCore.Builder
     public static class FacebookAppBuilderExtensions
     {
         /// <summary>
-        /// Obsolete, see https://go.microsoft.com/fwlink/?linkid=845470
+        /// UseFacebookAuthentication is obsolete. Configure Facebook authentication with AddAuthentication().AddFacebook in ConfigureServices. See https://go.microsoft.com/fwlink/?linkid=845470 for more details.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to add the handler to.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]
+        [Obsolete("UseFacebookAuthentication is obsolete. Configure Facebook authentication with AddAuthentication().AddFacebook in ConfigureServices. See https://go.microsoft.com/fwlink/?linkid=845470 for more details.", error: true)]
         public static IApplicationBuilder UseFacebookAuthentication(this IApplicationBuilder app)
         {
             throw new NotSupportedException("This method is no longer supported, see https://go.microsoft.com/fwlink/?linkid=845470");
         }
 
         /// <summary>
-        /// Obsolete, see https://go.microsoft.com/fwlink/?linkid=845470
+        /// UseFacebookAuthentication is obsolete. Configure Facebook authentication with AddAuthentication().AddFacebook in ConfigureServices. See https://go.microsoft.com/fwlink/?linkid=845470 for more details.
         /// </summary>
         /// <param name="app">The <see cref="IApplicationBuilder"/> to add the handler to.</param>
         /// <param name="options">A <see cref="FacebookOptions"/> that specifies options for the handler.</param>
         /// <returns>A reference to this instance after the operation has completed.</returns>
-        [Obsolete("See https://go.microsoft.com/fwlink/?linkid=845470", error: true)]
+        [Obsolete("UseFacebookAuthentication is obsolete. Configure Facebook authentication with AddAuthentication().AddFacebook in ConfigureServices. See https://go.microsoft.com/fwlink/?linkid=845470 for more details.", error: true)]
         public static IApplicationBuilder UseFacebookAuthentication(this IApplicationBuilder app, FacebookOptions options)
         {
             throw new NotSupportedException("This method is no longer supported, see https://go.microsoft.com/fwlink/?linkid=845470");
