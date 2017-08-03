@@ -99,6 +99,8 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, AuthorizationPageApplicationModelProvider>());
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IPageApplicationModelProvider, TempDataFilterPageApplicationModelProvider>());
+            services.TryAddEnumerable(
+                ServiceDescriptor.Singleton<IPageApplicationModelProvider, ResponseCacheFilterApplicationModelProvider>());
 
             services.TryAddEnumerable(
                 ServiceDescriptor.Singleton<IActionInvokerProvider, PageActionInvokerProvider>());

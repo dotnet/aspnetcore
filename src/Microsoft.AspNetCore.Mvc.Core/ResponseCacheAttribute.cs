@@ -78,20 +78,16 @@ namespace Microsoft.AspNetCore.Mvc
         /// <inheritdoc />
         public bool IsReusable => true;
 
-        /// <inheritdoc />
-        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
+        /// <summary>
+        /// Gets the <see cref="CacheProfile"/> for this attribute.
+        /// </summary>
+        /// <returns></returns>
+        public CacheProfile GetCacheProfile(MvcOptions options)
         {
-            if (serviceProvider == null)
-            {
-                throw new ArgumentNullException(nameof(serviceProvider));
-            }
-
-            var optionsAccessor = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();
-
             CacheProfile selectedProfile = null;
             if (CacheProfileName != null)
             {
-                optionsAccessor.Value.CacheProfiles.TryGetValue(CacheProfileName, out selectedProfile);
+                options.CacheProfiles.TryGetValue(CacheProfileName, out selectedProfile);
                 if (selectedProfile == null)
                 {
                     throw new InvalidOperationException(Resources.FormatCacheProfileNotFound(CacheProfileName));
@@ -109,16 +105,30 @@ namespace Microsoft.AspNetCore.Mvc
             VaryByHeader = VaryByHeader ?? selectedProfile?.VaryByHeader;
             VaryByQueryKeys = VaryByQueryKeys ?? selectedProfile?.VaryByQueryKeys;
 
-            // ResponseCacheFilter cannot take any null values. Hence, if there are any null values,
-            // the properties convert them to their defaults and are passed on.
-            return new ResponseCacheFilter(new CacheProfile
+            return new CacheProfile
             {
                 Duration = _duration,
                 Location = _location,
                 NoStore = _noStore,
                 VaryByHeader = VaryByHeader,
                 VaryByQueryKeys = VaryByQueryKeys,
-            });
+            };
+        }
+
+        /// <inheritdoc />
+        public IFilterMetadata CreateInstance(IServiceProvider serviceProvider)
+        {
+            if (serviceProvider == null)
+            {
+                throw new ArgumentNullException(nameof(serviceProvider));
+            }
+
+            var optionsAccessor = serviceProvider.GetRequiredService<IOptions<MvcOptions>>();
+            var cacheProfile = GetCacheProfile(optionsAccessor.Value);
+
+            // ResponseCacheFilter cannot take any null values. Hence, if there are any null values,
+            // the properties convert them to their defaults and are passed on.
+            return new ResponseCacheFilter(cacheProfile);
         }
     }
 }

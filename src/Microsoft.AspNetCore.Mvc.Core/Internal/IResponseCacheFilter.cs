@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Mvc.Filters;
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     /// <summary>
-    /// An <see cref="IActionFilter"/> which sets the appropriate headers related to Response caching.
+    /// A filter which sets the appropriate headers related to Response caching.
     /// </summary>
-    public interface IResponseCacheFilter : IActionFilter
+    public interface IResponseCacheFilter : IFilterMetadata
     {
     }
 }

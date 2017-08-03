@@ -1,15 +1,16 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Internal;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
     /// <summary>
-    /// An <see cref="IActionFilter"/> which sets the appropriate headers related to response caching.
+    /// A <see cref="IPageFilter"/> which sets the appropriate headers related to response caching.
     /// </summary>
-    public class ResponseCacheFilter : IActionFilter, IResponseCacheFilter
+    public class ResponseCacheFilter : IPageFilter, IResponseCacheFilter
     {
         private readonly ResponseCacheFilterExecutor _executor;
 
@@ -76,16 +77,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             set => _executor.VaryByQueryKeys = value;
         }
 
-        /// <inheritdoc />
-        public void OnActionExecuting(ActionExecutingContext context)
+        public void OnPageHandlerSelected(PageHandlerSelectedContext context)
+        {
+        }
+
+        public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            // If there are more filters which can override the values written by this filter,
-            // then skip execution of this filter.
             if (ResponseCacheFilterExecutor.IsOverridden(this, context))
             {
                 return;
@@ -94,8 +96,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _executor.Execute(context);
         }
 
-        /// <inheritdoc />
-        public void OnActionExecuted(ActionExecutedContext context)
+        public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
         {
         }
     }

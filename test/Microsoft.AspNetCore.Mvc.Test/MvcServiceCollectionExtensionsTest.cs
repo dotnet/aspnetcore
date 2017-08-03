@@ -437,6 +437,7 @@ namespace Microsoft.AspNetCore.Mvc
                             typeof(AuthorizationPageApplicationModelProvider),
                             typeof(DefaultPageApplicationModelProvider),
                             typeof(TempDataFilterPageApplicationModelProvider),
+                            typeof(ResponseCacheFilterApplicationModelProvider),
                         }
                     },
                 };
