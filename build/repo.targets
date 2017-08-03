@@ -67,9 +67,6 @@
     <HostingDebianConfigTemplateFile>$(PackagingDir)hosting_debian_config.json</HostingDebianConfigTemplateFile>
     <RPMChangelogTemplateFile>$(PackagingDir)changelog</RPMChangelogTemplateFile>
     <DotnetDebToolDirectory>$(ToolsDir)dotnet-deb-tool-consumer\</DotnetDebToolDirectory>
-    <BuildDirectory>$(RepositoryRoot).build\</BuildDirectory>
-    <BuildTempDirectory>$(BuildDirectory)temp\</BuildTempDirectory>
-    <BuildDotnetDirectory>$(BuildDirectory)dotnet\</BuildDotnetDirectory>
     <DockerRootDirectory>/opt/code/</DockerRootDirectory>
   </PropertyGroup>
 
@@ -207,8 +204,6 @@
     <Delete Files="$(ZipFileName)" />
   </Target>
 
-  <Target Name="AddDiaSymReaderToPath" Condition="'$(OS)' == 'Windows_NT'" DependsOnTargets="_AddDiaSymReaderFromCurrentSharedFramework;_AddDiaSymReaderFromDownloadedSharedFramework" />
-
   <Target Name="_ResolveCurrentSharedFrameworkVersion">
     <!-- Parse framework version -->
     <Exec Command="powershell.exe $(ScriptsDir)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true" Condition="'$(OS)' == 'Windows_NT'">
@@ -219,25 +214,13 @@
     </Exec>
   </Target>
 
-  <Target Name="_AddDiaSymReaderFromCurrentSharedFramework" DependsOnTargets="_ResolveCurrentSharedFrameworkVersion" Condition="'$(PACKAGE_CACHE_PLATFORM)' == 'x64'">
+  <Target Name="AddDiaSymReaderToPath" Condition="'$(OS)' == 'Windows_NT'" DependsOnTargets="_ResolveCurrentSharedFrameworkVersion">
     <GetDotNetHost>
       <Output TaskParameter="DotNetDirectory" PropertyName="DotnetHomeDirectory" />
     </GetDotNetHost>
 
     <PropertyGroup>
       <DiaSymReaderDirectory>$(DotnetHomeDirectory)shared\Microsoft.NETCore.App\$(SharedFrameworkVersion)</DiaSymReaderDirectory>
-    </PropertyGroup>
-
-    <Message Text="Adding DiaSymReader to PATH by appending: $(DiaSymReaderDirectory)" Importance="high" />
-
-    <SetEnvironmentVariable Variable="PATH" Value="$(PATH);$(DiaSymReaderDirectory)" />
-  </Target>
-
-  <Target Name="_AddDiaSymReaderFromDownloadedSharedFramework" DependsOnTargets="_ResolveCurrentSharedFrameworkVersion" Condition="'$(PACKAGE_CACHE_PLATFORM)' == 'x86'">
-    <Exec Command="powershell.exe $(ScriptsDir)InstallSharedFrameworkx86.ps1 $(SharedFrameworkVersion) $(BuildTempDirectory)"/>
-
-    <PropertyGroup>
-      <DiaSymReaderDirectory>$(BuildTempDirectory)shared\Microsoft.NETCore.App\$(SharedFrameworkVersion)</DiaSymReaderDirectory>
     </PropertyGroup>
 
     <Message Text="Adding DiaSymReader to PATH by appending: $(DiaSymReaderDirectory)" Importance="high" />
@@ -341,9 +324,7 @@
 
     <Error Text="Docker host must be using Linux containers." Condition="'$(DockerHostOS)' != 'linux'"/>
 
-    <!-- Download runtime store archives -->
-    <Message Text="Local runtime store signed artifacts not specified via RUNTIMESTORE_SIGNED_ARTIFACTS_PATH, falling back to artifacts availabe on myget." Importance="high" Condition="'$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)' == ''"/>
-    <MSBuild Projects="$(RestoreRuntimeStoreDirectory)\RestoreRuntimeStore.csproj" Targets="Restore" Properties="RestorePackagesPath=$(RuntimeStoreArchiveDirectory)" Condition="'$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)' == ''"/>
+    <Error Text="RUNTIMESTORE_SIGNED_ARTIFACTS_PATH is not specified. The path containing the linux archives files must be must not be empty." Condition="'$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)' == ''" />
 
     <ItemGroup>
       <RuntimeStoreTimestampArchive Include="$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)**\Build.RS.linux-*.tar.gz"/>
@@ -748,11 +729,6 @@
       OverwriteReadOnlyFiles="true"
       SkipUnchangedFiles="false" />
 
-    <!-- Parse CLI version -->
-    <ReadLinesFromFile File="$(BuildDirectory)cli.version">
-      <Output TaskParameter="Lines" PropertyName="CLIVersionNumber" />
-    </ReadLinesFromFile>
-
     <!-- Run installer tests -->
     <Exec Command="docker run
       --rm
@@ -876,30 +852,18 @@
       Command="docker build --build-arg USER_ID=%24(id -u) -t docker-image-$(InstallerPlatform) $(InstallerPlatform)"
       WorkingDirectory="$(DockerDir)" />
 
-    <!-- Parse CLI version -->
-    <ReadLinesFromFile File="$(BuildDirectory)cli.version">
-      <Output TaskParameter="Lines" PropertyName="CLIVersionNumber" />
-    </ReadLinesFromFile>
-
     <!-- Build Runtime Store and Hosting Bundle Deb package -->
     <Exec Command="docker run
       --rm
       -v $(RepositoryRoot):$(DockerRootDirectory)
       -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
-      -e KOREBUILD_SKIP_RUNTIME_INSTALL=true
       -e BuildNumber=$(BuildNumber)
       -e RUNTIMESTORE_TIMESTAMP_INSTALLERNAME=$(RuntimeStoreTimestampInstallerPackageName)
       -e RUNTIMESTORE_NOTIMESTAMP_INSTALLERNAME=$(RuntimeStoreNoTimestampInstallerPackageName)
       -e HOSTINGBUNDLE_TIMESTAMP_INSTALLERNAME=$(HostingBundleTimestampInstallerPackageName)
       -e HOSTINGBUNDLE_NOTIMESTAMP_INSTALLERNAME=$(HostingBundleNoTimestampInstallerPackageName)
       docker-image-$(InstallerPlatform)
-      /bin/bash -c &quot;
-        $(DockerRootDirectory).build/dotnet/dotnet-install.sh
-          --channel preview
-          --version $(CLIVersionNumber) &amp;&amp;
-        export PATH=$PATH:/home/code_executor/.dotnet &amp;&amp;
-        ./build.sh /t:RunDebTool
-      &quot;"
+      ./build.sh /t:RunDebTool"
       ContinueOnError="WarnAndContinue" />
 
     <!-- Copy Runtime Store and Hosting Bundle packages to output -->
