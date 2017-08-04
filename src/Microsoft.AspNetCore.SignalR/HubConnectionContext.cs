@@ -6,7 +6,7 @@ using System.Security.Claims;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.SignalR.Features;
-using Microsoft.AspNetCore.SignalR.Internal.Encoders;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Features;
@@ -26,8 +26,6 @@ namespace Microsoft.AspNetCore.SignalR
 
         private IHubFeature HubFeature => Features.Get<IHubFeature>();
 
-        private IDataEncoderFeature DataEncoderFeature => Features.Get<IDataEncoderFeature>();
-
         // Used by the HubEndPoint only
         internal ReadableChannel<byte[]> Input => _connectionContext.Transport;
 
@@ -39,17 +37,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public virtual IDictionary<object, object> Metadata => _connectionContext.Metadata;
 
-        public virtual IHubProtocol Protocol
-        {
-            get => HubFeature.Protocol;
-            set => HubFeature.Protocol = value;
-        }
-
-        public IDataEncoder DataEncoder
-        {
-            get => DataEncoderFeature.DataEncoder;
-            set => DataEncoderFeature.DataEncoder = value;
-        }
+        public virtual HubProtocolReaderWriter ProtocolReaderWriter { get; set; }
 
         public virtual WritableChannel<HubMessage> Output => _output;
     }

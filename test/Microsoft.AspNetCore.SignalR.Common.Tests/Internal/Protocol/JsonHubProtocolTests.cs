@@ -61,10 +61,14 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             };
 
             var protocol = new JsonHubProtocol(jsonSerializer);
-            var encoded = protocol.WriteToArray(message);
-            var json = Encoding.UTF8.GetString(encoded);
 
-            Assert.Equal(expectedOutput, json);
+            using (var ms = new MemoryStream())
+            {
+                protocol.WriteMessage(message, ms);
+                var json = Encoding.UTF8.GetString(ms.ToArray());
+
+                Assert.Equal(expectedOutput, json);
+            }
         }
 
         [Theory]

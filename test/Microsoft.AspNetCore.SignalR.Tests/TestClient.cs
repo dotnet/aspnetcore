@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.SignalR.Internal;
+using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Internal;
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
     public class TestClient : IDisposable, IInvocationBinder
     {
         private static int _id;
-        private IHubProtocol _protocol;
+        private readonly HubProtocolReaderWriter _protocolReaderWriter;
         private CancellationTokenSource _cts;
         private ChannelConnection<byte[]> _transport;
 
@@ -40,13 +41,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, Interlocked.Increment(ref _id).ToString()) }));
             Connection.Metadata["ConnectedTask"] = new TaskCompletionSource<bool>();
 
-            _protocol = new JsonHubProtocol(new JsonSerializer());
+            var protocol = new JsonHubProtocol(new JsonSerializer());
+            _protocolReaderWriter = new HubProtocolReaderWriter(protocol, new PassThroughEncoder());
 
             _cts = new CancellationTokenSource();
 
             using (var memoryStream = new MemoryStream())
             {
-                NegotiationProtocol.WriteMessage(new NegotiationMessage(_protocol.Name), memoryStream);
+                NegotiationProtocol.WriteMessage(new NegotiationMessage(protocol.Name), memoryStream);
                 Application.Out.TryWrite(memoryStream.ToArray());
             }
         }
@@ -122,8 +124,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task<string> SendInvocationAsync(string methodName, bool nonBlocking, params object[] args)
         {
             var invocationId = GetInvocationId();
-            var payload = _protocol.WriteToArray(new InvocationMessage(invocationId, nonBlocking, methodName, args));
 
+            var payload = _protocolReaderWriter.WriteMessage(new InvocationMessage(invocationId, nonBlocking, methodName, args));
             await Application.Out.WriteAsync(payload);
 
             return invocationId;
@@ -152,7 +154,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public HubMessage TryRead()
         {
             if (Application.In.TryRead(out var buffer) &&
-                _protocol.TryParseMessages(buffer, this, out var messages))
+                _protocolReaderWriter.ReadMessages(buffer, this, out var messages))
             {
                 return messages[0];
             }

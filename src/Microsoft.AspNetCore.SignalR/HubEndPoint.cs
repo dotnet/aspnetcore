@@ -58,25 +58,21 @@ namespace Microsoft.AspNetCore.SignalR
             // Set the hub feature before doing anything else. This stores
             // all the relevant state for a SignalR Hub connection.
             connection.Features.Set<IHubFeature>(new HubFeature());
-            connection.Features.Set<IDataEncoderFeature>(new DataEncoderFeature());
 
             var connectionContext = new HubConnectionContext(output, connection);
 
             await ProcessNegotiate(connectionContext);
 
-            var encoder = connectionContext.DataEncoder;
-
             // Hubs support multiple producers so we set up this loop to copy
             // data written to the HubConnectionContext's channel to the transport channel
+            var protocolReaderWriter = connectionContext.ProtocolReaderWriter;
             async Task WriteToTransport()
             {
                 while (await output.In.WaitToReadAsync())
                 {
                     while (output.In.TryRead(out var hubMessage))
                     {
-                        var buffer = connectionContext.Protocol.WriteToArray(hubMessage);
-                        buffer = encoder.Encode(buffer);
-
+                        var buffer = protocolReaderWriter.WriteMessage(hubMessage);
                         while (await connection.Transport.Out.WaitToWriteAsync())
                         {
                             if (connection.Transport.Out.TryWrite(buffer))
@@ -115,23 +111,16 @@ namespace Microsoft.AspNetCore.SignalR
                 {
                     if (NegotiationProtocol.TryParseMessage(buffer, out var negotiationMessage))
                     {
-                        // Resolve the Hub Protocol for the connection and store it in metadata
-                        // Other components, outside the Hub, may need to know what protocol is in use
-                        // for a particular connection, so we store it here.
                         var protocol = _protocolResolver.GetProtocol(negotiationMessage.Protocol, connection);
-                        connection.Protocol = protocol;
 
                         var transportCapabilities = connection.Features.Get<IConnectionTransportFeature>()?.TransportCapabilities
                             ?? throw new InvalidOperationException("Unable to read transport capabilities.");
 
-                        if (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) == 0)
-                        {
-                            connection.DataEncoder = Base64Encoder;
-                        }
-                        else
-                        {
-                            connection.DataEncoder = PassThroughEncoder;
-                        }
+                        var dataEncoder = (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) == 0)
+                            ? (IDataEncoder)Base64Encoder
+                            : PassThroughEncoder;
+
+                        connection.ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
 
                         return;
                     }
@@ -217,7 +206,6 @@ namespace Microsoft.AspNetCore.SignalR
             // is used to get the exception so we can bubble it up the stack
             var cts = new CancellationTokenSource();
             var completion = new TaskCompletionSource<object>();
-            var protocol = connection.Protocol;
 
             try
             {
@@ -225,9 +213,7 @@ namespace Microsoft.AspNetCore.SignalR
                 {
                     while (connection.Input.TryRead(out var buffer))
                     {
-                        buffer = connection.DataEncoder.Decode(buffer);
-
-                        if (protocol.TryParseMessages(buffer, this, out var hubMessages))
+                        if (connection.ProtocolReaderWriter.ReadMessages(buffer, this, out var hubMessages))
                         {
                             foreach (var hubMessage in hubMessages)
                             {
@@ -241,7 +227,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                                         // Don't wait on the result of execution, continue processing other
                                         // incoming messages on this connection.
-                                        var ignore = ProcessInvocation(connection, protocol, invocationMessage, cts, completion);
+                                        var ignore = ProcessInvocation(connection, invocationMessage, cts, completion);
                                         break;
 
                                     // Other kind of message we weren't expecting
@@ -262,7 +248,6 @@ namespace Microsoft.AspNetCore.SignalR
         }
 
         private async Task ProcessInvocation(HubConnectionContext connection,
-                                             IHubProtocol protocol,
                                              InvocationMessage invocationMessage,
                                              CancellationTokenSource dispatcherCancellation,
                                              TaskCompletionSource<object> dispatcherCompletion)
@@ -271,7 +256,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 // If an unexpected exception occurs then we want to kill the entire connection
                 // by ending the processing loop
-                await Execute(connection, protocol, invocationMessage);
+                await Execute(connection, invocationMessage);
             }
             catch (Exception ex)
             {
@@ -283,21 +268,21 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task Execute(HubConnectionContext connection, IHubProtocol protocol, InvocationMessage invocationMessage)
+        private async Task Execute(HubConnectionContext connection, InvocationMessage invocationMessage)
         {
             if (!_methods.TryGetValue(invocationMessage.Target, out var descriptor))
             {
                 // Send an error to the client. Then let the normal completion process occur
                 _logger.LogError("Unknown hub method '{method}'", invocationMessage.Target);
-                await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationMessage.InvocationId, $"Unknown hub method '{invocationMessage.Target}'"));
+                await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, $"Unknown hub method '{invocationMessage.Target}'"));
             }
             else
             {
-                await Invoke(descriptor, connection, protocol, invocationMessage);
+                await Invoke(descriptor, connection, invocationMessage);
             }
         }
 
-        private async Task SendMessageAsync(HubConnectionContext connection, IHubProtocol protocol, HubMessage hubMessage)
+        private async Task SendMessageAsync(HubConnectionContext connection, HubMessage hubMessage)
         {
             while (await connection.Output.WaitToWriteAsync())
             {
@@ -312,7 +297,7 @@ namespace Microsoft.AspNetCore.SignalR
             throw new OperationCanceledException("Outbound channel was closed while trying to write hub message");
         }
 
-        private async Task Invoke(HubMethodDescriptor descriptor, HubConnectionContext connection, IHubProtocol protocol, InvocationMessage invocationMessage)
+        private async Task Invoke(HubMethodDescriptor descriptor, HubConnectionContext connection, InvocationMessage invocationMessage)
         {
             var methodExecutor = descriptor.MethodExecutor;
 
@@ -323,7 +308,7 @@ namespace Microsoft.AspNetCore.SignalR
                     _logger.LogDebug("Failed to invoke {hubMethod} because user is unauthorized", invocationMessage.Target);
                     if (!invocationMessage.NonBlocking)
                     {
-                        await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationMessage.InvocationId, $"Failed to invoke '{invocationMessage.Target}' because user is unauthorized"));
+                        await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, $"Failed to invoke '{invocationMessage.Target}' because user is unauthorized"));
                     }
                     return;
                 }
@@ -357,12 +342,12 @@ namespace Microsoft.AspNetCore.SignalR
                     if (IsStreamed(methodExecutor, result, methodExecutor.MethodReturnType, out var enumerator))
                     {
                         _logger.LogTrace("[{connectionId}/{invocationId}] Streaming result of type {resultType}", connection.ConnectionId, invocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
-                        await StreamResultsAsync(invocationMessage.InvocationId, connection, protocol, enumerator);
+                        await StreamResultsAsync(invocationMessage.InvocationId, connection, enumerator);
                     }
                     else if (!invocationMessage.NonBlocking)
                     {
                         _logger.LogTrace("[{connectionId}/{invocationId}] Sending result of type {resultType}", connection.ConnectionId, invocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
-                        await SendMessageAsync(connection, protocol, CompletionMessage.WithResult(invocationMessage.InvocationId, result));
+                        await SendMessageAsync(connection, CompletionMessage.WithResult(invocationMessage.InvocationId, result));
                     }
                 }
                 catch (TargetInvocationException ex)
@@ -370,7 +355,7 @@ namespace Microsoft.AspNetCore.SignalR
                     _logger.LogError(0, ex, "Failed to invoke hub method");
                     if (!invocationMessage.NonBlocking)
                     {
-                        await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationMessage.InvocationId, ex.InnerException.Message));
+                        await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, ex.InnerException.Message));
                     }
                 }
                 catch (Exception ex)
@@ -378,7 +363,7 @@ namespace Microsoft.AspNetCore.SignalR
                     _logger.LogError(0, ex, "Failed to invoke hub method");
                     if (!invocationMessage.NonBlocking)
                     {
-                        await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationMessage.InvocationId, ex.Message));
+                        await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, ex.Message));
                     }
                 }
                 finally
@@ -410,7 +395,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IHubProtocol protocol, IAsyncEnumerator<object> enumerator)
+        private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection,IAsyncEnumerator<object> enumerator)
         {
             // TODO: Cancellation? See https://github.com/aspnet/SignalR/issues/481
             try
@@ -418,14 +403,14 @@ namespace Microsoft.AspNetCore.SignalR
                 while (await enumerator.MoveNextAsync())
                 {
                     // Send the stream item
-                    await SendMessageAsync(connection, protocol, new StreamItemMessage(invocationId, enumerator.Current));
+                    await SendMessageAsync(connection, new StreamItemMessage(invocationId, enumerator.Current));
                 }
 
-                await SendMessageAsync(connection, protocol, CompletionMessage.Empty(invocationId));
+                await SendMessageAsync(connection, CompletionMessage.Empty(invocationId));
             }
             catch (Exception ex)
             {
-                await SendMessageAsync(connection, protocol, CompletionMessage.WithError(invocationId, ex.Message));
+                await SendMessageAsync(connection, CompletionMessage.WithError(invocationId, ex.Message));
             }
         }
 
