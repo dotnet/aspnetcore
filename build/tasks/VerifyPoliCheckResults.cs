@@ -45,6 +45,9 @@ namespace RepoTasks
             }
 
             var success = true;
+            var usedTerms = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+            var usedExcludedFiles = new HashSet<ITaskItem>();
+            var usedDetailedExclusion = new HashSet<ITaskItem>();
             foreach (var result in xDocument.Descendants("Result"))
             {
                 foreach (var resultObject in result.Elements("Object"))
@@ -53,14 +56,16 @@ namespace RepoTasks
                     var isExcludedTerm = ExcludeTerms.Any(ex => string.Equals(ex, term, StringComparison.OrdinalIgnoreCase));
                     if (isExcludedTerm)
                     {
+                        usedTerms.Add(term);
                         continue;
                     }
 
                     var filePath = resultObject.Attribute("URL").Value;
 
-                    var isExcludedFile = ExcludeFiles.Any(ex => string.Equals(ex.GetMetadata("FullPath"), filePath, StringComparison.OrdinalIgnoreCase));
-                    if (isExcludedFile)
+                    var excludedFile = ExcludeFiles.FirstOrDefault(ex => filePath.EndsWith(ex.ItemSpec, StringComparison.OrdinalIgnoreCase));
+                    if (excludedFile != null)
                     {
+                        usedExcludedFiles.Add(excludedFile);
                         continue;
                     }
 
@@ -71,17 +76,20 @@ namespace RepoTasks
                         int.TryParse(positionText.Substring("Line: ".Length), out lineNumber);
                     }
 
-                    var isExcludedInDetail = DetailedExclusions.Any(item =>
+                    var excludedInDetail = DetailedExclusions.FirstOrDefault(item =>
                     {
-                        var exclusionFilePath = item.GetMetadata("FullPath");
+                        var exclusionFilePath = item.ItemSpec;
                         var exclusionTerm = item.GetMetadata("Term");
 
-                        return string.Equals(exclusionFilePath, filePath, StringComparison.OrdinalIgnoreCase) &&
+                        return
+                            filePath.EndsWith(exclusionFilePath, StringComparison.OrdinalIgnoreCase) &&
                             string.Equals(exclusionTerm, term, StringComparison.OrdinalIgnoreCase);
 
                     });
-                    if (isExcludedInDetail)
+
+                    if (excludedInDetail != null)
                     {
+                        usedDetailedExclusion.Add(excludedInDetail);
                         continue;
                     }
 
@@ -97,6 +105,21 @@ namespace RepoTasks
                     Log.LogError($"Policheck {termClass}", $"PC0{severity}", null, filePath, lineNumber, column, 0, 0, message);
                     success = false;
                 }
+            }
+
+            foreach (var term in ExcludeTerms.Except(usedTerms, StringComparer.OrdinalIgnoreCase))
+            {
+                Log.LogWarning($"Unused excluded term '{term}'.");
+            }
+
+            foreach (var exclusion in ExcludeFiles.Except(usedExcludedFiles))
+            {
+                Log.LogWarning($"Unused excluded file '{exclusion.ItemSpec}'.");
+            }
+
+            foreach (var exclusion in DetailedExclusions.Except(usedDetailedExclusion))
+            {
+                Log.LogWarning($"Unused exclusion '{exclusion.ItemSpec}' for term '{exclusion.GetMetadata("Term")}'.");
             }
 
             return success;
