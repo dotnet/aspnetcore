@@ -15,10 +15,10 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubConnectionContext
     {
-        private readonly WritableChannel<byte[]> _output;
+        private readonly WritableChannel<HubMessage> _output;
         private readonly ConnectionContext _connectionContext;
 
-        public HubConnectionContext(WritableChannel<byte[]> output, ConnectionContext connectionContext)
+        public HubConnectionContext(WritableChannel<HubMessage> output, ConnectionContext connectionContext)
         {
             _output = output;
             _connectionContext = connectionContext;
@@ -51,6 +51,6 @@ namespace Microsoft.AspNetCore.SignalR
             set => DataEncoderFeature.DataEncoder = value;
         }
 
-        public virtual WritableChannel<byte[]> Output => _output;
+        public virtual WritableChannel<HubMessage> Output => _output;
     }
 }

@@ -314,11 +314,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
         private async Task WriteAsync(HubConnectionContext connection, HubMessage hubMessage)
         {
-            var data = connection.Protocol.WriteToArray(hubMessage);
-
             while (await connection.Output.WaitToWriteAsync())
             {
-                if (connection.Output.TryWrite(data))
+                if (connection.Output.TryWrite(hubMessage))
                 {
                     break;
                 }

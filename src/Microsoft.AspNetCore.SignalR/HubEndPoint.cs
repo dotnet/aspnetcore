@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         public async Task OnConnectedAsync(ConnectionContext connection)
         {
-            var output = Channel.CreateUnbounded<byte[]>();
+            var output = Channel.CreateUnbounded<HubMessage>();
 
             // Set the hub feature before doing anything else. This stores
             // all the relevant state for a SignalR Hub connection.
@@ -72,8 +72,9 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 while (await output.In.WaitToReadAsync())
                 {
-                    while (output.In.TryRead(out var buffer))
+                    while (output.In.TryRead(out var hubMessage))
                     {
+                        var buffer = connectionContext.Protocol.WriteToArray(hubMessage);
                         buffer = encoder.Encode(buffer);
 
                         while (await connection.Transport.Out.WaitToWriteAsync())
@@ -298,11 +299,9 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task SendMessageAsync(HubConnectionContext connection, IHubProtocol protocol, HubMessage hubMessage)
         {
-            var payload = protocol.WriteToArray(hubMessage);
-
             while (await connection.Output.WaitToWriteAsync())
             {
-                if (connection.Output.TryWrite(payload))
+                if (connection.Output.TryWrite(hubMessage))
                 {
                     return;
                 }
