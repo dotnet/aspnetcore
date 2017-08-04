@@ -42,7 +42,7 @@ echo "Installing libunwind8..."
 apt-get install -y libunwind8
 
 echo "Installing Java..."
-apt-get install -y openjdk-7-jre-headless unzip
+apt-get install -y default-jre-headless unzip
 
 echo "Installing Node.js..."
 apt-get install -y nodejs
