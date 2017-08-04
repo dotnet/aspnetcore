@@ -2,6 +2,8 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 #include "precomp.hxx"
+#include <dbgutil.h>
+
 
 // Just to be aware of the FORWARDING_HANDLER object size.
 C_ASSERT(sizeof(FORWARDING_HANDLER) <= 632);
@@ -53,6 +55,11 @@ m_fWebSocketUpgrade(FALSE),
 m_fFinishRequest(FALSE),
 m_fClientDisconnected(FALSE)
 {
+#ifdef DEBUG
+    DBGPRINTF((DBG_CONTEXT,
+        "FORWARDING_HANDLER::FORWARDING_HANDLER \n"));
+#endif // DEBUG
+
     InitializeSRWLock(&m_RequestLock);
 }
 
@@ -63,6 +70,11 @@ FORWARDING_HANDLER::~FORWARDING_HANDLER(
     //
     // Destructor has started.
     //
+#ifdef DEBUG
+    DBGPRINTF((DBG_CONTEXT,
+        "FORWARDING_HANDLER::~FORWARDING_HANDLER \n"));
+#endif // DEBUG
+
     m_Signature = FORWARDING_HANDLER_SIGNATURE_FREE;
 
     //
@@ -2101,6 +2113,11 @@ None
         DBG_ASSERT(TlsGetValue(g_dwTlsIndex) == this);
     }
 
+#ifdef DEBUG
+    DBGPRINTF((DBG_CONTEXT,
+        "FORWARDING_HANDLER::OnWinHttpCompletionInternal %x -- %d --%p\n", dwInternetStatus, m_fWebSocketUpgrade, m_pW3Context));
+#endif // DEBUG
+
     fEndRequest = (dwInternetStatus == WINHTTP_CALLBACK_STATUS_HANDLE_CLOSING);
     if (!fEndRequest) 
     {
@@ -2377,6 +2394,7 @@ Finished:
         if (m_pWebSocket != NULL)
         {
             m_pWebSocket->TerminateRequest();
+            m_pWebSocket->Terminate();
             m_pWebSocket = NULL;
         }
 

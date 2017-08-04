@@ -4,7 +4,12 @@
 #include "precomp.hxx"
 #include <IPHlpApi.h>
 
-//DECLARE_DEBUG_PRINT_OBJECT("Asp.Net Core Module");
+#ifdef DEBUG
+    DECLARE_DEBUG_PRINTS_OBJECT();
+    DECLARE_DEBUG_VARIABLE();
+    DECLARE_PLATFORM_TYPE();
+#endif // DEBUG
+
 
 HTTP_MODULE_ID      g_pModuleId = NULL;
 IHttpServer *       g_pHttpServer = NULL;
@@ -141,6 +146,11 @@ HRESULT
 {
     HRESULT                 hr = S_OK;
     CProxyModuleFactory *   pFactory = NULL;
+
+#ifdef DEBUG
+    CREATE_DEBUG_PRINT_OBJECT("Asp.Net Core Module");
+    g_dwDebugFlags = DEBUG_FLAGS_ANY;
+#endif // DEBUG
 
     CREATE_DEBUG_PRINT_OBJECT;
 

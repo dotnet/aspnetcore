@@ -122,6 +122,8 @@ public:
     {
         STRU     strTemp;
         MULTISZ   *pMultiSz = static_cast<MULTISZ *>(pvData);
+        DBG_ASSERT(pMultiSz);
+        DBG_ASSERT(pEntry);
         strTemp.Copy(pEntry->QueryName());
         strTemp.Append(pEntry->QueryValue());
         pMultiSz->Append(strTemp.QueryStr());
@@ -135,9 +137,14 @@ public:
     )
     {
         ENVIRONMENT_VAR_ENTRY *   pNewEntry = new ENVIRONMENT_VAR_ENTRY();
-        pNewEntry->Initialize(pEntry->QueryName(), pEntry->QueryValue());
-        ENVIRONMENT_VAR_HASH *pHash = static_cast<ENVIRONMENT_VAR_HASH *>(pvData);
-        pHash->InsertRecord(pNewEntry);
+        if (pNewEntry != NULL) 
+        {
+            pNewEntry->Initialize(pEntry->QueryName(), pEntry->QueryValue());
+            ENVIRONMENT_VAR_HASH *pHash = static_cast<ENVIRONMENT_VAR_HASH *>(pvData);
+            DBG_ASSERT(pHash);
+            pHash->InsertRecord(pNewEntry);
+            pNewEntry->Dereference();
+        }
     }
 
 private:

@@ -33,6 +33,19 @@ FORWARDER_CONNECTION::Initialize(
         goto Finished;
     }
 
+    //
+    // Since WinHttp will not emit WINHTTP_CALLBACK_STATUS_HANDLE_CLOSING
+    // when closing WebSocket handle on Win8. Register callback at Connect level as a workaround
+    //
+    if (WinHttpSetStatusCallback(m_hConnection,
+                                 FORWARDING_HANDLER::OnWinHttpCompletion,
+                                 WINHTTP_CALLBACK_FLAG_HANDLES,
+                                 NULL) == WINHTTP_INVALID_STATUS_CALLBACK)
+    {
+        hr = HRESULT_FROM_WIN32(GetLastError());
+        goto Finished;
+    }
+
 Finished:
 
     return hr;
