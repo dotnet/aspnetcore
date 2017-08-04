@@ -3,11 +3,10 @@
 
 using System;
 using System.Globalization;
-using System.Threading;
 using Microsoft.AspNetCore.Builder;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Localization.Tests
+namespace Microsoft.AspNetCore.Localization
 {
     public class RequestLocalizationOptionsTest : IDisposable
     {

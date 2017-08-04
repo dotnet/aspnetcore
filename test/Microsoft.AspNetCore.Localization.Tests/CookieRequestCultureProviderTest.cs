@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.TestHost;
 using Microsoft.Net.Http.Headers;
 using Xunit;
 
-namespace Microsoft.Extensions.Localization.Tests
+namespace Microsoft.Extensions.Localization
 {
     public class CookieRequestCultureProviderTest
     {

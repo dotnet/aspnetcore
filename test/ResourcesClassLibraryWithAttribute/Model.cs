@@ -5,8 +5,5 @@ namespace ResourcesClassLibraryWithAttribute
 {
     public class Model
     {
-        public Model()
-        {
-        }
     }
 }

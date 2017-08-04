@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
-namespace Microsoft.Extensions.Localization.Tests
+namespace Microsoft.Extensions.Localization
 {
     public class ResourceManagerStringLocalizerTest
     {
@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.Localization.Tests
                 logger);
 
             // Act
-            for (int i = 0; i < 5; i++)
+            for (var i = 0; i < 5; i++)
             {
                 localizer1.GetAllStrings().ToList();
                 localizer2.GetAllStrings().ToList();
@@ -229,13 +229,7 @@ namespace Microsoft.Extensions.Localization.Tests
 
         private TestSink Sink { get; } = new TestSink();
 
-        private ILogger Logger
-        {
-            get
-            {
-                return new TestLoggerFactory(Sink, true).CreateLogger<ResourceManagerStringLocalizer>();
-            }
-        }
+        private ILogger Logger => new TestLoggerFactory(Sink, enabled: true).CreateLogger<ResourceManagerStringLocalizer>();
 
         public class TestResourceManager : ResourceManager
         {

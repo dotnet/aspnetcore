@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.TestHost;
 using Xunit;
 
-namespace Microsoft.Extensions.Localization.Tests
+namespace Microsoft.Extensions.Localization
 {
     public class QueryStringRequestCultureProviderTest
     {

@@ -5,8 +5,5 @@ namespace ResourcesClassLibraryNoAttribute
 {
     public class Model
     {
-        public Model()
-        {
-        }
     }
 }

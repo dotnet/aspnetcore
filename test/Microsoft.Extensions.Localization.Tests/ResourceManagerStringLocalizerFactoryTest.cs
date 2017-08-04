@@ -10,6 +10,7 @@ using Microsoft.Extensions.Options;
 using Moq;
 using Xunit;
 
+// This namespace intentionally matches the default assembly namespace.
 namespace Microsoft.Extensions.Localization.Tests
 {
     public class TestResourceManagerStringLocalizerFactory : ResourceManagerStringLocalizerFactory
