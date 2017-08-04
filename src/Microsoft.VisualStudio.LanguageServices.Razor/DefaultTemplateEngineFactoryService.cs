@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Host;
 using Mvc1_X = Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X;
 using MvcLatest = Microsoft.AspNetCore.Mvc.Razor.Extensions;
@@ -11,6 +14,7 @@ namespace Microsoft.CodeAnalysis.Razor
 {
     internal class DefaultTemplateEngineFactoryService : RazorTemplateEngineFactoryService
     {
+        private const string MvcAssemblyName = "Microsoft.AspNetCore.Mvc.Razor";
         private static readonly Version LatestSupportedMvc = new Version(2, 1, 0);
 
         private readonly HostLanguageServices _services;
@@ -70,8 +74,36 @@ namespace Microsoft.CodeAnalysis.Razor
 
         private Version GetMvcVersion(string projectPath)
         {
-            // TODO: Need to figure out the actual referenced Mvc version in the project. https://github.com/aspnet/Razor/issues/1183
+            var workspace = _services.WorkspaceServices.Workspace;
+
+            var project = workspace.CurrentSolution.Projects.FirstOrDefault(p =>
+            {
+                var directory = Path.GetDirectoryName(p.FilePath);
+                return string.Equals(
+                    NormalizeDirectoryPath(directory),
+                    NormalizeDirectoryPath(projectPath),
+                    StringComparison.OrdinalIgnoreCase);
+            });
+
+            if (project != null)
+            {
+                var compilation = CSharpCompilation.Create(project.AssemblyName).AddReferences(project.MetadataReferences);
+
+                foreach (var identity in compilation.ReferencedAssemblyNames)
+                {
+                    if (identity.Name == MvcAssemblyName)
+                    {
+                        return identity.Version;
+                    }
+                }
+            }
+
             return null;
+        }
+
+        private string NormalizeDirectoryPath(string path)
+        {
+            return path.Replace('\\', '/').TrimEnd('/');
         }
     }
 }
