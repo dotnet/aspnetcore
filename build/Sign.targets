@@ -49,8 +49,7 @@
       <AspNetCoreBinaries Include="
         @(PackageBinaries);
         @(OobPackageBinaries);
-        @(VSIXBinaries);
-        @(PackageCacheBinaries)" />
+        @(VSIXBinaries)" />
 
       <_SignProject Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
@@ -59,6 +58,16 @@
           JobName=AspNetCoreBinaries;
           Description=Signing AspNetCore binaries;
           Files=@(AspNetCoreBinaries)
+        </AdditionalProperties>
+      </_SignProject>
+
+      <_SignProject Include="$(MSBuildProjectFullPath)">
+        <AdditionalProperties>
+          LocalBuild=$(LocalBuild);
+          Certificate=$(BinaryCodeSignCertificate);
+          JobName=PackageCacheBinaries;
+          Description=Signing AspNetCore Package Cache binaries;
+          Files=@(PackageCacheBinaries)
         </AdditionalProperties>
       </_SignProject>
 
@@ -156,6 +165,8 @@
       <ResponseFilePath>$(IntermediateOutputPath)$(JobName).rsp</ResponseFilePath>
       <CodeSignExeOutputPath>$(RepositoryRoot)src\CodeSign\bin\$(Configuration)\net461\CodeSign.exe</CodeSignExeOutputPath>
     </PropertyGroup>
+
+    <Message Text="Executing code sign job $(JobName)..." Importance="High" />
 
     <WriteLinesToFile
       File="$(ResponseFilePath)"
