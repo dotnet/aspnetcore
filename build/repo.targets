@@ -10,8 +10,10 @@
     <PrepareDependsOn>$(PrepareDependsOn);GatherInputs;ExtractInputs;VerifyUnsignedPackages;Policheck</PrepareDependsOn>
     <PackageDependsOn>$(PackageDependsOn);Sign</PackageDependsOn>
     <VerifyDependsOn>$(VerifyDependsOn);BinScope;VerifySignedPackages;VerifySignedRuntimeStoreBinaries</VerifyDependsOn>
-    <PublishOnlyDependsOn>RunVSDrop;PushPackages</PublishOnlyDependsOn>
+    <PublishDependsOn>Build;RunVSDrop;PushPackages</PublishDependsOn>
   </PropertyGroup>
+
+  <Target Name="Publish" DependsOnTargets="$(PublishDependsOn)" />
 
   <Target Name="LocalBuild" DependsOnTargets="SetupLocalBuild;Package" />
 

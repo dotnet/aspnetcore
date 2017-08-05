@@ -7,7 +7,7 @@
     </ItemGroup>
 
     <MSBuild
-      Projects="$(MSBuildProjectDirectory)\vsdrop\drop.msbuild"
+      Projects="$(MSBuildThisFileDirectory)vsdrop\drop.msbuild"
       Targets="BuildAndPublishManifest"
       Properties="
         SignedVsixPath=$([System.IO.Path]::GetDirectoryName(%(SignedRazorVSIX.FullPath)));
