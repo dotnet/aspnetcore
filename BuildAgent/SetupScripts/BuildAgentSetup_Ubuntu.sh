@@ -70,8 +70,16 @@ cd ~/TeamCity/conf
 cp buildAgent.dist.properties buildAgent.properties
 
 # Set the build agent name and CI server urls
-sed -i "s/name=.*/name=$AGENTNAME/" buildAgent.properties
-sed -i "s#serverUrl=.*#serverUrl=$SERVERURL#g" buildAgent.properties
+sed -i "s|^name=.*|name=$AGENTNAME|" buildAgent.properties
+sed -i "s|^serverUrl=.*|serverUrl=$SERVERURL|" buildAgent.properties
+
+# Use the local SSD (/mnt) for the work and temp dirs.
+# * It should be as fast or faster than the OS disk (which is backed by blob storage).
+# * It reduces load and storage on the OS disk.
+# * The data on the local SSD may lost at any time (typically after a reboot), but this
+#   should be fine for the work and temp dirs.
+sed -i "s|^workDir=.*|workDir=/mnt/work|" buildAgent.properties
+sed -i "s|^tempDir=.*|tempDir=/mnt/temp|" buildAgent.properties
 
 echo >> buildAgent.properties # append a new line
 echo "system.aspnet.os.name=$ASPNETOSNAME" >> buildAgent.properties
