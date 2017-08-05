@@ -39,11 +39,8 @@ echo "Installing Java..."
 apt-get install -y default-jre-headless unzip
 
 echo "Installing Node.js..."
+curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
 apt-get install -y nodejs
-ln -s /usr/bin/nodejs /usr/bin/node
-
-echo "Installing NPM..."
-apt-get install -y npm
 
 echo "Installing Bower globally..."
 npm install -g bower
