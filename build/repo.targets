@@ -64,8 +64,22 @@
     <Error Text="KOREBUILD_REPOSITORY_EXCLUDE AND KOREBUILD_REPOSITORY_INCLUDE are specified."
       Condition="'$(KOREBUILD_REPOSITORY_INCLUDE)' != '' AND '$(KOREBUILD_REPOSITORY_EXCLUDE)' != ''" />
 
+    <!--
+    Determine the protocol to clone individual repositories over. Clone repositories over https,
+    if Universe was cloned over https
+    -->
+    <Exec Command="git config --get remote.origin.url" ConsoleToMSBuild="true" WorkingDirectory="$(RepositoryRoot)">
+      <Output TaskParameter="ConsoleOutput" PropertyName="UniverseCloneUrl" />
+    </Exec>
+
+    <PropertyGroup>
+      <_CloneOverHttps Condition="$(UniverseCloneUrl.StartsWith('https'))">true</_CloneOverHttps>
+    </PropertyGroup>
+
     <ItemGroup>
       <Repository Update="%(Identity)" RepositoryPath="$(_CloneRepositoryRoot)%(Identity)" />
+      <Repository Update="%(Identity)" CloneUrl="git@github.com:aspnet/%(Identity)" Condition="'$(_CloneOverHttps)'!='true'" />
+      <Repository Update="%(Identity)" CloneUrl="https://github.com/aspnet/%(Identity)" Condition="'$(_CloneOverHttps)'=='true'" />
     </ItemGroup>
   </Target>
 
@@ -115,7 +129,9 @@
     <Exec
       Command="$(_CloneArguments) --branch $(CloneBranch)"
       Condition="'$(GateBranchExitCode)'!='0'"
-      WorkingDirectory="$(_CloneRepositoryRoot)" />
+      WorkingDirectory="$(_CloneRepositoryRoot)"
+      EnvironmentVariables="GIT_TERMINAL_PROMPT=0"
+      Timeout="180000" />
 
     <Message Text="Resetting $(CloneRepository) commit to $(CloneRepositoryCommit) ..." Importance="High" Condition="'$(CloneRepositoryCommit)'!=''"/>
     <Exec
