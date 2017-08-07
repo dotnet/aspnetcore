@@ -1,20 +1,39 @@
 <Project>
 
   <!-- Inserts the Razor VSIX to the VS drop share -->
-  <Target Name="RunVSDrop">
+  <Target Name="RunVSDrop" DependsOnTargets="_LocateMSBuildExe">
+    <Error Text="MSBuild 15.0 could not be located."
+      Condition="'$(MSBuildExePath)'==''" />
+
     <ItemGroup>
       <SignedRazorVSIX Include="$(SignedVSIXPath)*.vsix" />
+
+      <MSBuildExeArgs Include="
+        &quot;$(MSBuildExePath)&quot;;
+        &quot;$(MSBuildThisFileDirectory)vsdrop\drop.msbuild&quot;;
+        /t:BuildAndPublishManifest;
+        /p:SignedVsixPath=$([System.IO.Path]::GetDirectoryName(%(SignedRazorVSIX.FullPath)));
+        /p:RepositoryRoot=$(RepositoryRoot);
+        /p:ManifestRepositoryName=AspNetCore/%(SignedRazorVSIX.FileName);
+        /p:ManifestBuildBranch=$(BUILD_BRANCH);
+        /p:ManifestBuildNumber=$(BUILD_NUMBER)" />
     </ItemGroup>
 
-    <MSBuild
-      Projects="$(MSBuildThisFileDirectory)vsdrop\drop.msbuild"
-      Targets="BuildAndPublishManifest"
-      Properties="
-        SignedVsixPath=$([System.IO.Path]::GetDirectoryName(%(SignedRazorVSIX.FullPath)));
-        RepositoryRoot=$(RepositoryRoot)\;
-        ManifestRepositoryName=AspNetCore/%(SignedRazorVSIX.FileName);
-        ManifestBuildBranch=$(BUILD_BRANCH);
-        ManifestBuildNumber=$(BUILD_NUMBER)" />
+    <Exec Command="@(MSBuildExeArgs, ' ')" />
+  </Target>
+
+  <Target Name="_LocateMSBuildExe" Condition="Exists('$(MSBuildProgramFiles32)')">
+    <ItemGroup>
+      <MSBuild15ExePaths Include="$(MSBuildProgramFiles32)\Microsoft Visual Studio\**\MSBuild\15.0\Bin\MSBuild.exe" />
+    </ItemGroup>
+
+    <Warning
+      Text="Unable to locate MSBuild 15.0 under $(MSBuildProgramFiles32)\Microsoft Visual Studio"
+      Condition="'@(MSBuild15ExePaths)'==''"/>
+
+    <PropertyGroup Condition="'@(MSBuild15ExePaths)'!=''">
+      <MSBuildExePath>%(MSBuild15ExePaths.FullPath)</MSBuildExePath>
+    </PropertyGroup>
   </Target>
 
   <Target Name="PushPackages">
