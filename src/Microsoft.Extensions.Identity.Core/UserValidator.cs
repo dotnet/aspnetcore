@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Gets the <see cref="IdentityErrorDescriber"/> used to provider error messages for the current <see cref="UserValidator{TUser}"/>.
         /// </summary>
-        /// <value>Yhe <see cref="IdentityErrorDescriber"/> used to provider error messages for the current <see cref="UserValidator{TUser}"/>.</value>
+        /// <value>The <see cref="IdentityErrorDescriber"/> used to provider error messages for the current <see cref="UserValidator{TUser}"/>.</value>
         public IdentityErrorDescriber Describer { get; private set; }
 
         /// <summary>
