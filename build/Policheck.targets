@@ -61,13 +61,17 @@
       Text="Policheck.exe could not be found. See http://toolbox/policheck for installation instructions. Proceeding without running the tool."
       Condition="!Exists('$(_PoliCheckExe)') AND '$(LocalBuild)'=='true'" />
 
-    <Exec Command="&quot;$(_PoliCheckExe)&quot; $(_PoliCheckArguments)" IgnoreExitCode="true" />
+    <Exec
+      Command="&quot;$(_PoliCheckExe)&quot; $(_PoliCheckArguments)"
+      IgnoreExitCode="true"
+      Condition="Exists('$(_PoliCheckExe)')" />
 
     <RepoTasks.VerifyPoliCheckResults
       PoliCheckOutputFile="$(_PoliCheckOutputFile)"
       ExcludeTerms="$(Exclusions)"
       ExcludeFiles="@(FileExclusions)"
-      DetailedExclusions="@(SrcExclusions)" />
+      DetailedExclusions="@(SrcExclusions)"
+      Condition="Exists('$(_PoliCheckOutputFile)')" />
 
     <CallTarget Targets="_CleanupPolicheckOutputs" />
     <OnError ExecuteTargets="_CleanupPolicheckOutputs" />
