@@ -857,6 +857,7 @@
       --rm
       -v $(RepositoryRoot):$(DockerRootDirectory)
       -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+      -e KOREBUILD_SKIP_OLD_RUNTIME_INSTALL=true
       -e BuildNumber=$(BuildNumber)
       -e RUNTIMESTORE_TIMESTAMP_INSTALLERNAME=$(RuntimeStoreTimestampInstallerPackageName)
       -e RUNTIMESTORE_NOTIMESTAMP_INSTALLERNAME=$(RuntimeStoreNoTimestampInstallerPackageName)
