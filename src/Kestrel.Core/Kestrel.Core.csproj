@@ -23,6 +23,10 @@
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="System.Threading.Tasks.Extensions" Version="$(CoreFxVersion)" />
+
+    <!-- Override System.Memory and System.Runtime.CompilerServices.Unsafe to the ones we have on feed -->
+    <PackageReference Include="System.Memory" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(CoreFxVersion)" />
   </ItemGroup>
 
   <ItemGroup>

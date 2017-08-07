@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.System.Buffers;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             var currentWritableBuffer = Input.Alloc(MinAllocBufferSize);
             _currentWritableBuffer = currentWritableBuffer;
 
-            _bufferHandle = currentWritableBuffer.Buffer.Pin();
+            _bufferHandle = currentWritableBuffer.Buffer.Retain(true);
 
             return handle.Libuv.buf_init((IntPtr)_bufferHandle.PinnedPointer, currentWritableBuffer.Buffer.Length);
         }
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             // Cleanup state from last OnAlloc. This is safe even if OnAlloc wasn't called.
             _currentWritableBuffer = null;
-            _bufferHandle.Free();
+            _bufferHandle.Dispose();
         }
 
         private async Task ApplyBackpressureAsync(WritableBufferAwaitable flushTask)

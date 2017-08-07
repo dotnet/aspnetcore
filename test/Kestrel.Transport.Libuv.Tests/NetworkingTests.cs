@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Testing;
 using Xunit;
 

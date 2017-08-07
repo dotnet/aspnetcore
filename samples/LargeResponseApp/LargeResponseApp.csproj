@@ -11,4 +11,8 @@
     <ProjectReference Include="..\..\src\Kestrel\Kestrel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETCore.Compilers" Version="$(MicrosoftNETCoreCompilersVersion)" PrivateAssets="All" />
+  </ItemGroup>
+
 </Project>

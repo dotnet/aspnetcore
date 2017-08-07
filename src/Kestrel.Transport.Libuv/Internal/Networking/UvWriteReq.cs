@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.System.Buffers;
-using Microsoft.AspNetCore.Server.Kestrel.Internal.System.IO.Pipelines;
+using System.IO.Pipelines;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking
@@ -95,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
                 if (nBuffers == 1)
                 {
                     var memory = buffer.First;
-                    var memoryHandle = memory.Pin();
+                    var memoryHandle = memory.Retain(true);
                     _handles.Add(memoryHandle);
 
                     // Fast path for single buffer
@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
                     foreach (var memory in buffer)
                     {
                         // This won't actually pin the buffer since we're already using pinned memory
-                        var memoryHandle = memory.Pin();
+                        var memoryHandle = memory.Retain(true);
                         _handles.Add(memoryHandle);
 
                         // create and pin each segment being written
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networkin
             count = handleList.Count;
             for (var i = 0; i < count; i++)
             {
-                handleList[i].Free();
+                handleList[i].Dispose();
             }
             handleList.Clear();
         }
