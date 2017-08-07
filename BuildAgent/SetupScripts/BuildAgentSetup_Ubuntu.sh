@@ -42,16 +42,6 @@ echo "Installing Node.js..."
 curl -sL https://deb.nodesource.com/setup_6.x | sudo -E bash -
 apt-get install -y nodejs
 
-echo "Installing Bower globally..."
-npm install -g bower
-echo '{ "allow_root": true }' > ~/.bowerrc # workaround for bower install errors when using with sudo
-
-echo "Installing Grunt globally..."
-npm install -g grunt
-
-echo "Installing Gulp globally..."
-npm install -g gulp
-
 echo "Installing TypeScript globally..."
 npm install -g typescript
 
