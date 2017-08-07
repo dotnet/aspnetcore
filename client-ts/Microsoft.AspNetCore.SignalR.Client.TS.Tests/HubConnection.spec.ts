@@ -1,7 +1,7 @@
 import { IConnection } from "../Microsoft.AspNetCore.SignalR.Client.TS/IConnection"
 import { HubConnection } from "../Microsoft.AspNetCore.SignalR.Client.TS/HubConnection"
 import { DataReceived, ConnectionClosed } from "../Microsoft.AspNetCore.SignalR.Client.TS/Common"
-import { TransportType, ITransport } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
+import { TransportType, ITransport, TransferMode } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
 import { Observer } from "../Microsoft.AspNetCore.SignalR.Client.TS/Observable"
 import { TextMessageFormat } from "../Microsoft.AspNetCore.SignalR.Client.TS/Formatters"
 
@@ -26,7 +26,7 @@ describe("HubConnection", () => {
             let connection = new TestConnection();
 
             let hubConnection = new HubConnection(connection);
-            var invokePromise = hubConnection.send("testMethod", "arg", 42)
+            let invokePromise = hubConnection.send("testMethod", "arg", 42)
                 .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
             // Verify the message is sent
@@ -52,7 +52,7 @@ describe("HubConnection", () => {
             let connection = new TestConnection();
 
             let hubConnection = new HubConnection(connection);
-            var invokePromise = hubConnection.invoke("testMethod", "arg", 42)
+            let invokePromise = hubConnection.invoke("testMethod", "arg", 42)
                 .catch((_) => { }); // Suppress exception and unhandled promise rejection warning.
 
             // Verify the message is sent
@@ -76,7 +76,7 @@ describe("HubConnection", () => {
             let connection = new TestConnection();
 
             let hubConnection = new HubConnection(connection);
-            var invokePromise = hubConnection.invoke("testMethod", "arg", 42);
+            let invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
             connection.receive({ type: 3, invocationId: connection.lastInvocationId, error: "foo" });
 
@@ -88,7 +88,7 @@ describe("HubConnection", () => {
             let connection = new TestConnection();
 
             let hubConnection = new HubConnection(connection);
-            var invokePromise = hubConnection.invoke("testMethod", "arg", 42);
+            let invokePromise = hubConnection.invoke("testMethod", "arg", 42);
 
             connection.receive({ type: 3, invocationId: connection.lastInvocationId, result: "foo" });
 
@@ -99,7 +99,7 @@ describe("HubConnection", () => {
             let connection = new TestConnection();
 
             let hubConnection = new HubConnection(connection);
-            var invokePromise = hubConnection.invoke("testMethod");
+            let invokePromise = hubConnection.invoke("testMethod");
             hubConnection.stop();
 
             let ex = await captureException(async () => await invokePromise);
@@ -110,7 +110,7 @@ describe("HubConnection", () => {
             let connection = new TestConnection();
 
             let hubConnection = new HubConnection(connection);
-            var invokePromise = hubConnection.invoke("testMethod");
+            let invokePromise = hubConnection.invoke("testMethod");
             // Typically this would be called by the transport
             connection.onClosed(new Error("Connection lost"));
 
@@ -137,7 +137,7 @@ describe("HubConnection", () => {
             let connection = new TestConnection();
 
             let hubConnection = new HubConnection(connection);
-            var invokePromise = hubConnection.stream("testStream", "arg", 42);
+            let invokePromise = hubConnection.stream("testStream", "arg", 42);
 
             // Verify the message is sent
             expect(connection.sentData.length).toBe(1);
@@ -168,7 +168,6 @@ describe("HubConnection", () => {
 
             let ex = await captureException(async () => await observer.completed);
             expect(ex.message).toEqual("Error: foo");
-
         });
 
         it("completes the observer when a completion is received", async () => {
@@ -250,12 +249,14 @@ describe("HubConnection", () => {
 });
 
 class TestConnection implements IConnection {
+    readonly features: any = {};
+
     start(): Promise<void> {
         return Promise.resolve();
     };
 
     send(data: any): Promise<void> {
-        var invocation = TextMessageFormat.parse(data)[0];
+        let invocation = TextMessageFormat.parse(data)[0];
         this.lastInvocationId = JSON.parse(invocation).invocationId;
         if (this.sentData) {
             this.sentData.push(invocation);
@@ -273,7 +274,7 @@ class TestConnection implements IConnection {
     };
 
     receive(data: any): void {
-        var payload = JSON.stringify(data);
+        let payload = JSON.stringify(data);
         this.onDataReceived(TextMessageFormat.write(payload));
     }
 

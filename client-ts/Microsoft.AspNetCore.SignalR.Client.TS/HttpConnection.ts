@@ -1,10 +1,10 @@
 import { DataReceived, ConnectionClosed } from "./Common"
 import { IConnection } from "./IConnection"
-import { ITransport, TransportType, WebSocketTransport, ServerSentEventsTransport, LongPollingTransport } from "./Transports"
+import { ITransport, TransferMode, TransportType, WebSocketTransport, ServerSentEventsTransport, LongPollingTransport } from "./Transports"
 import { IHttpClient, HttpClient } from "./HttpClient"
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions"
 
-enum ConnectionState {
+const enum ConnectionState {
     Initial,
     Connecting,
     Connected,
@@ -24,6 +24,8 @@ export class HttpConnection implements IConnection {
     private transport: ITransport;
     private options: IHttpConnectionOptions;
     private startPromise: Promise<void>;
+
+    readonly features: any = {};
 
     constructor(url: string, options: IHttpConnectionOptions = {}) {
         this.url = url;
@@ -59,7 +61,14 @@ export class HttpConnection implements IConnection {
             this.transport = this.createTransport(this.options.transport, negotiateResponse.availableTransports);
             this.transport.onDataReceived = this.onDataReceived;
             this.transport.onClosed = e => this.stopConnection(true, e);
-            await this.transport.connect(this.url);
+
+            let requestedTransferMode =
+                this.features.transferMode === TransferMode.Binary
+                    ? TransferMode.Binary
+                    : TransferMode.Text;
+
+            this.features.transferMode = await this.transport.connect(this.url, requestedTransferMode);
+
             // only change the state if we were connecting to not overwrite
             // the state if the connection is already marked as Disconnected
             this.changeState(ConnectionState.Connecting, ConnectionState.Connected);

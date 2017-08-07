@@ -2,7 +2,7 @@ import { IHttpClient } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpClien
 import { HttpConnection } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpConnection"
 import { IHttpConnectionOptions } from "../Microsoft.AspNetCore.SignalR.Client.TS/IHttpConnectionOptions"
 import { DataReceived, TransportClosed } from "../Microsoft.AspNetCore.SignalR.Client.TS/Common"
-import { ITransport, TransportType } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
+import { ITransport, TransportType, TransferMode } from "../Microsoft.AspNetCore.SignalR.Client.TS/Transports"
 import { eachTransport } from "./Common";
 
 describe("Connection", () => {
@@ -112,7 +112,7 @@ describe("Connection", () => {
             }
         } as IHttpConnectionOptions;
 
-        var connection = new HttpConnection("http://tempuri.org", options);
+        let connection = new HttpConnection("http://tempuri.org", options);
 
         try {
             await connection.start();
@@ -125,7 +125,7 @@ describe("Connection", () => {
     });
 
     it("can stop a non-started connection", async (done) => {
-        var connection = new HttpConnection("http://tempuri.org");
+        let connection = new HttpConnection("http://tempuri.org");
         await connection.stop();
         done();
     });
@@ -133,16 +133,16 @@ describe("Connection", () => {
     it("preserves users connection string", async done => {
         let connectUrl: string;
         let fakeTransport: ITransport = {
-            connect(url: string): Promise<void> {
+            connect(url: string): Promise<TransferMode> {
                 connectUrl = url;
-                return Promise.reject("");
+                return Promise.reject(TransferMode.Text);
             },
             send(data: any): Promise<void> {
                 return Promise.reject("");
             },
             stop(): void { },
             onDataReceived: undefined,
-            onClosed: undefined
+            onClosed: undefined,
         }
 
         let options: IHttpConnectionOptions = {
@@ -158,7 +158,7 @@ describe("Connection", () => {
         } as IHttpConnectionOptions;
 
 
-        var connection = new HttpConnection("http://tempuri.org?q=myData", options);
+        let connection = new HttpConnection("http://tempuri.org?q=myData", options);
 
         try {
             await connection.start();
@@ -173,7 +173,7 @@ describe("Connection", () => {
     });
 
     eachTransport((requestedTransport: TransportType) => {
-        it(`Connection cannot be started if requested ${TransportType[requestedTransport]} transport not available on server`, async done => {
+        it(`cannot be started if requested ${TransportType[requestedTransport]} transport not available on server`, async done => {
             let options: IHttpConnectionOptions = {
                 httpClient: <IHttpClient>{
                     options(url: string): Promise<string> {
@@ -186,7 +186,7 @@ describe("Connection", () => {
                 transport: requestedTransport
             } as IHttpConnectionOptions;
 
-            var connection = new HttpConnection("http://tempuri.org", options);
+            let connection = new HttpConnection("http://tempuri.org", options);
             try {
                 await connection.start();
                 fail();
@@ -199,7 +199,7 @@ describe("Connection", () => {
         });
     });
 
-    it(`Connection cannot be started if no transport available on server and no transport requested`, async done => {
+    it("cannot be started if no transport available on server and no transport requested", async done => {
         let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
                 options(url: string): Promise<string> {
@@ -211,7 +211,7 @@ describe("Connection", () => {
             }
         } as IHttpConnectionOptions;
 
-        var connection = new HttpConnection("http://tempuri.org", options);
+        let connection = new HttpConnection("http://tempuri.org", options);
         try {
             await connection.start();
             fail();
@@ -221,5 +221,43 @@ describe("Connection", () => {
             expect(e.message).toBe("No available transports found.");
             done();
         }
+    });
+
+    [
+        [TransferMode.Text, TransferMode.Text],
+        [TransferMode.Text, TransferMode.Binary],
+        [TransferMode.Binary, TransferMode.Text],
+        [TransferMode.Binary, TransferMode.Binary],
+    ].forEach(([requestedTransferMode, transportTransferMode]) => {
+        it(`connection returns ${transportTransferMode} transfer mode when ${requestedTransferMode} transfer mode is requested`, async () => {
+            let fakeTransport = {
+                // mode: TransferMode : TransferMode.Text
+                connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> { return Promise.resolve(transportTransferMode); },
+                send(data: any): Promise<void> { return Promise.resolve(); },
+                stop(): void {},
+                onDataReceived: null,
+                onClosed: null,
+                mode: transportTransferMode
+            } as ITransport;
+
+            let options: IHttpConnectionOptions = {
+                httpClient: <IHttpClient>{
+                    options(url: string): Promise<string> {
+                        return Promise.resolve("{ \"connectionId\": \"42\", \"availableTransports\": [] }");
+                    },
+                    get(url: string): Promise<string> {
+                        return Promise.resolve("");
+                    }
+                },
+                transport: fakeTransport
+            } as IHttpConnectionOptions;
+
+            let connection = new HttpConnection("https://tempuri.org", options);
+            connection.features.transferMode = requestedTransferMode;
+            await connection.start();
+            let actualTransferMode = connection.features.transferMode;
+
+            expect(actualTransferMode).toBe(transportTransferMode);
+        });
     });
 });

@@ -1,12 +1,14 @@
 import { ConnectionClosed } from "./Common"
 import { IConnection } from "./IConnection"
-import { TransportType } from "./Transports"
+import { TransportType, TransferMode } from "./Transports"
 import { Subject, Observable } from "./Observable"
-export { TransportType } from "./Transports"
-export { HttpConnection } from "./HttpConnection"
-import { IHubProtocol, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, NegotiationMessage } from "./IHubProtocol";
+import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, NegotiationMessage } from "./IHubProtocol";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { TextMessageFormat } from "./Formatters"
+
+export { TransportType } from "./Transports"
+export { HttpConnection } from "./HttpConnection"
+export { JsonHubProtocol } from "./JsonHubProtocol"
 
 export class HubConnection {
     private connection: IConnection;
@@ -91,10 +93,22 @@ export class HubConnection {
     }
 
     async start(): Promise<void> {
+        let requestedTransferMode =
+            (this.protocol.type === ProtocolType.Binary)
+                ? TransferMode.Binary
+                : TransferMode.Text;
+
+        this.connection.features.transferMode = requestedTransferMode
         await this.connection.start();
+        var actualTransferMode = this.connection.features.transferMode;
+
         await this.connection.send(
             TextMessageFormat.write(
-                JSON.stringify(<NegotiationMessage>{ protocol: this.protocol.name()})));
+                JSON.stringify(<NegotiationMessage>{ protocol: this.protocol.name})));
+
+        if (requestedTransferMode === TransferMode.Binary && actualTransferMode === TransferMode.Text) {
+            this.protocol = new Base64EncodedHubProtocol(this.protocol);
+        }
     }
 
     stop(): void {
@@ -194,5 +208,40 @@ export class HubConnection {
             arguments: args,
             nonblocking: nonblocking
         };
+    }
+}
+
+class Base64EncodedHubProtocol implements IHubProtocol {
+    private wrappedProtocol: IHubProtocol;
+
+    constructor(protocol: IHubProtocol) {
+        this.wrappedProtocol = protocol;
+        this.name = this.wrappedProtocol.name;
+        this.type = ProtocolType.Text;
+    }
+
+    readonly name: string;
+    readonly type: ProtocolType;
+
+    parseMessages(input: any): HubMessage[] {
+        // atob/btoa are browsers APIs but they can be polyfilled. If this becomes problematic we can use
+        // base64-js module
+        let s = atob(input);
+        let payload = new Uint8Array(s.length);
+        for (let i = 0; i < payload.length; i++) {
+            payload[i] = s.charCodeAt(i);
+        }
+        return this.wrappedProtocol.parseMessages(payload.buffer);
+    }
+
+    writeMessage(message: HubMessage) {
+        let payload = new Uint8Array(this.wrappedProtocol.writeMessage(message));
+        let s = "";
+        for (var i = 0; i < payload.byteLength; i++) {
+            s += String.fromCharCode(payload[i]);
+        }
+        // atob/btoa are browsers APIs but they can be polyfilled. If this becomes problematic we can use
+        // base64-js module
+        return btoa(s);
     }
 }

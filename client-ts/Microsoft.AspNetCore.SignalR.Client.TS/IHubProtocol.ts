@@ -28,8 +28,14 @@ export interface NegotiationMessage {
     readonly protocol: string;
 }
 
+export const enum ProtocolType {
+    Text = 1,
+    Binary
+}
+
 export interface IHubProtocol {
-    name(): string;
+    readonly name: string;
+    readonly type: ProtocolType;
     parseMessages(input: any): HubMessage[];
     writeMessage(message: HubMessage): any;
 }

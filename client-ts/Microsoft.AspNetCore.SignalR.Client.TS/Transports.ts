@@ -1,5 +1,6 @@
 import { DataReceived, TransportClosed } from "./Common"
 import { IHttpClient } from "./HttpClient"
+import { HttpError } from "./HttpError"
 
 export enum TransportType {
     WebSockets,
@@ -7,8 +8,13 @@ export enum TransportType {
     LongPolling
 }
 
+export const enum TransferMode {
+    Text = 1,
+    Binary
+}
+
 export interface ITransport {
-    connect(url: string): Promise<void>;
+    connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode>;
     send(data: any): Promise<void>;
     stop(): void;
     onDataReceived: DataReceived;
@@ -18,16 +24,20 @@ export interface ITransport {
 export class WebSocketTransport implements ITransport {
     private webSocket: WebSocket;
 
-    connect(url: string, queryString: string = ""): Promise<void> {
-        return new Promise<void>((resolve, reject) => {
+    connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> {
+
+        return new Promise<TransferMode>((resolve, reject) => {
             url = url.replace(/^http/, "ws");
 
             let webSocket = new WebSocket(url);
+            if (requestedTransferMode == TransferMode.Binary) {
+                webSocket.binaryType = "arraybuffer";
+            }
 
             webSocket.onopen = (event: Event) => {
                 console.log(`WebSocket connected to ${url}`);
                 this.webSocket = webSocket;
-                resolve();
+                resolve(requestedTransferMode);
             };
 
             webSocket.onerror = (event: Event) => {
@@ -78,20 +88,19 @@ export class WebSocketTransport implements ITransport {
 export class ServerSentEventsTransport implements ITransport {
     private eventSource: EventSource;
     private url: string;
-    private queryString: string;
     private httpClient: IHttpClient;
 
     constructor(httpClient: IHttpClient) {
         this.httpClient = httpClient;
     }
 
-    connect(url: string): Promise<void> {
+    connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> {
         if (typeof (EventSource) === "undefined") {
-            Promise.reject("EventSource not supported by the browser.")
+            Promise.reject("EventSource not supported by the browser.");
         }
         this.url = url;
 
-        return new Promise<void>((resolve, reject) => {
+        return new Promise<TransferMode>((resolve, reject) => {
             let eventSource = new EventSource(this.url);
 
             try {
@@ -121,7 +130,8 @@ export class ServerSentEventsTransport implements ITransport {
                 eventSource.onopen = () => {
                     console.log(`SSE connected to ${this.url}`);
                     this.eventSource = eventSource;
-                    resolve();
+                    // SSE is a text protocol
+                    resolve(TransferMode.Text);
                 }
             }
             catch (e) {
@@ -155,19 +165,22 @@ export class LongPollingTransport implements ITransport {
         this.httpClient = httpClient;
     }
 
-    connect(url: string): Promise<void> {
+    connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> {
         this.url = url;
         this.shouldPoll = true;
-        this.poll(this.url);
-        return Promise.resolve();
+        this.poll(this.url, requestedTransferMode);
+        return Promise.resolve(requestedTransferMode);
     }
 
-    private poll(url: string): void {
+    private poll(url: string, transferMode: TransferMode): void {
         if (!this.shouldPoll) {
             return;
         }
 
         let pollXhr = new XMLHttpRequest();
+        if (transferMode === TransferMode.Binary) {
+            pollXhr.responseType = "arraybuffer";
+        }
 
         pollXhr.onload = () => {
             if (pollXhr.status == 200) {
@@ -187,7 +200,7 @@ export class LongPollingTransport implements ITransport {
                         return;
                     }
                 }
-                this.poll(url);
+                this.poll(url, transferMode);
             }
             else if (this.pollXhr.status == 204) {
                 if (this.onClosed) {
@@ -196,7 +209,7 @@ export class LongPollingTransport implements ITransport {
             }
             else {
                 if (this.onClosed) {
-                    this.onClosed(new Error(`Status: ${pollXhr.status}, Message: ${pollXhr.responseText}`));
+                    this.onClosed(new HttpError(pollXhr.statusText, pollXhr.status));
                 }
             }
         };
@@ -209,7 +222,7 @@ export class LongPollingTransport implements ITransport {
         };
 
         pollXhr.ontimeout = () => {
-            this.poll(url);
+            this.poll(url, transferMode);
         }
 
         this.pollXhr = pollXhr;

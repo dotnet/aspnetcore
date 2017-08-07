@@ -24,7 +24,15 @@ gulp.task('browserify-client', ['compile-ts-client'], () => {
         .pipe(gulp.dest(clientOutDir + '/../browser'));
 });
 
+gulp.task('browserify-msgpackprotocol', ['compile-ts-client'], () => {
+    return browserify(clientOutDir + '/MessagePackHubProtocol.js', {standalone: 'signalRMsgPack'})
+        .bundle()
+        .pipe(source('signalr-msgpackprotocol.js'))
+        .pipe(gulp.dest(clientOutDir + '/../browser'));
+});
 
-gulp.task('build-ts-client', ['clean', 'compile-ts-client', 'browserify-client']);
+gulp.task('browserify', [ 'browserify-client', 'browserify-msgpackprotocol']);
+
+gulp.task('build-ts-client', ['clean', 'compile-ts-client', 'browserify']);
 
 gulp.task('default', ['build-ts-client']);

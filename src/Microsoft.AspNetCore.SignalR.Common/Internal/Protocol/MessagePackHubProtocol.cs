@@ -171,7 +171,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 completionMessage.HasResult ? NonVoidResult :
                 VoidResult;
 
-            packer.PackArrayHeader(3 + resultKind != VoidResult ? 1 : 0);
+            packer.PackArrayHeader(3 + (resultKind != VoidResult ? 1 : 0));
             packer.Pack(CompletionMessageType);
             packer.PackString(completionMessage.InvocationId);
             packer.Pack(resultKind);

@@ -1,10 +1,11 @@
 ﻿import { TextMessageFormat } from "./Formatters";
-import { IHubProtocol, HubMessage } from "./IHubProtocol";
+import { IHubProtocol, ProtocolType, HubMessage } from "./IHubProtocol";
 
 export class JsonHubProtocol implements IHubProtocol {
-    name(): string {
-        return "json"
-    }
+
+    readonly name: string = "json";
+
+    readonly type: ProtocolType = ProtocolType.Text;
 
     parseMessages(input: string): HubMessage[] {
         if (!input) {
