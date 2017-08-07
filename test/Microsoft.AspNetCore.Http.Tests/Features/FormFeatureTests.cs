@@ -49,10 +49,14 @@ namespace Microsoft.AspNetCore.Http.Features
 
         private const string MultipartContentType = "multipart/form-data; boundary=WebKitFormBoundary5pDRpGheQXaM8k3T";
 
+        private const string MultipartContentTypeWithSpecialCharacters = "multipart/form-data; boundary=\"WebKitFormBoundary/:5pDRpGheQXaM8k3T\"";
+
         private const string EmptyMultipartForm = "--WebKitFormBoundary5pDRpGheQXaM8k3T--";
 
         // Note that CRLF (\r\n) is required. You can't use multi-line C# strings here because the line breaks on Linux are just LF.
         private const string MultipartFormEnd = "--WebKitFormBoundary5pDRpGheQXaM8k3T--\r\n";
+
+        private const string MultipartFormEndWithSpecialCharacters = "--WebKitFormBoundary/:5pDRpGheQXaM8k3T--\r\n";
 
         private const string MultipartFormField = "--WebKitFormBoundary5pDRpGheQXaM8k3T\r\n" +
 "Content-Disposition: form-data; name=\"description\"\r\n" +
@@ -71,6 +75,12 @@ namespace Microsoft.AspNetCore.Http.Features
 "\r\n" +
 "<html><body>Hello World</body></html>\r\n";
 
+        private const string MultipartFormFileSpecialCharacters = "--WebKitFormBoundary/:5pDRpGheQXaM8k3T\r\n" +
+"Content-Disposition: form-data; name=\"description\"\r\n" +
+"\r\n" +
+"Foo\r\n";
+
+
         private const string MultipartFormWithField =
             MultipartFormField +
             MultipartFormEnd;
@@ -87,6 +97,10 @@ namespace Microsoft.AspNetCore.Http.Features
         private const string MultipartFormWithEncodedFilename =
             MultipartFormEncodedFilename +
             MultipartFormEnd;
+
+        private const string MultipartFormWithSpecialCharacters =
+            MultipartFormFileSpecialCharacters +
+            MultipartFormEndWithSpecialCharacters;
 
         [Theory]
         [InlineData(true)]
@@ -205,6 +219,43 @@ namespace Microsoft.AspNetCore.Http.Features
                 Assert.Equal("<html><body>Hello World</body></html>", content);
             }
 
+            await responseFeature.CompleteAsync();
+        }
+
+        [Theory]
+        [InlineData(true)]
+        [InlineData(false)]
+        public async Task ReadFormAsync_MultipartWithFileAndQuotedBoundaryString_ReturnsParsedFormCollection(bool bufferRequest)
+        {
+            var formContent = Encoding.UTF8.GetBytes(MultipartFormWithSpecialCharacters);
+            var context = new DefaultHttpContext();
+            var responseFeature = new FakeResponseFeature();
+            context.Features.Set<IHttpResponseFeature>(responseFeature);
+            context.Request.ContentType = MultipartContentTypeWithSpecialCharacters;
+            context.Request.Body = new NonSeekableReadStream(formContent);
+
+            IFormFeature formFeature = new FormFeature(context.Request, new FormOptions() { BufferBody = bufferRequest });
+            context.Features.Set<IFormFeature>(formFeature);
+
+            var formCollection = context.Request.Form;
+
+            Assert.NotNull(formCollection);
+
+            // Cached
+            formFeature = context.Features.Get<IFormFeature>();
+            Assert.NotNull(formFeature);
+            Assert.NotNull(formFeature.Form);
+            Assert.Same(formCollection, formFeature.Form);
+            Assert.Same(formCollection, await context.Request.ReadFormAsync());
+
+            // Content
+            Assert.Equal(1, formCollection.Count);
+            Assert.Equal("Foo", formCollection["description"]);
+
+            Assert.NotNull(formCollection.Files);
+            Assert.Equal(0, formCollection.Files.Count);
+
+            // Cleanup
             await responseFeature.CompleteAsync();
         }
 
