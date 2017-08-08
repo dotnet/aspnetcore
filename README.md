@@ -1,7 +1,7 @@
 ## Prerequisites
 
 * Policheck - http://toolbox/policheck
-* CodeSign.Submitter - \\cp1pd1cdscvlt04\public\Submitter Tool for Download\Submitter 4.1.1.1 (.net v3.5 runtime)\Codesign.Submitter.msi
+* CodeSign.Submitter - `\\cp1pd1cdscvlt04\public\Submitter Tool for Download\Submitter 4.1.1.1 (.net v3.5 runtime)\Codesign.Submitter.msi`
 * BinScope - http://toolbox/binscope
 
 ### Running locally without code signing
