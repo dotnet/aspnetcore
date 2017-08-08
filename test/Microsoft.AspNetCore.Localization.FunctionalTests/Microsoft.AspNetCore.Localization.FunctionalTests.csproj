@@ -8,11 +8,13 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\samples\LocalizationSample\LocalizationSample.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Localization\Microsoft.AspNetCore.Localization.csproj" />
+    <ProjectReference Include="..\LocalizationWebsite\LocalizationWebsite.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(AspNetIntegrationTestingVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
