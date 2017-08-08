@@ -67,6 +67,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             // https://github.com/SignalR/SignalR/blob/1fba14fa3437e24c204dfaf8a18db3fce8acad3c/src/Microsoft.AspNet.SignalR.Core/Owin/WebSockets/WebSocketHandler.cs#L248-L251
             Running = Task.WhenAll(sendTask, receiveTask).ContinueWith(t =>
             {
+                _webSocket.Dispose();
                 _logger.TransportStopped(_connectionId, t.Exception?.InnerException);
                _application.Out.TryComplete(t.IsFaulted ? t.Exception.InnerException : null);
                return t;
@@ -221,7 +222,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger.TransportStopping(_connectionId);
 
             await CloseWebSocket();
-            _webSocket.Dispose();
 
             try
             {
@@ -242,7 +242,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 if (_webSocket.State != WebSocketState.Closed)
                 {
                     _logger.ClosingWebSocket(_connectionId);
-                    await _webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+
+                    // We intentionally don't pass _transportCts.Token to CloseOutputAsync. The token can be cancelled
+                    // for reasons not related to webSocket in which case we would not close the websocket gracefully.
+                    await _webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
+
+                    // shutdown the transport after a timeout in case the server does not send close frame
+                    _transportCts.CancelAfter(TimeSpan.FromSeconds(5));
                 }
             }
             catch (Exception ex)

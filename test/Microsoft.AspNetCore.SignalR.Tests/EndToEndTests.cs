@@ -42,6 +42,17 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             _serverFixture = serverFixture;
         }
 
+        [Fact]
+        public async Task CanStartConnectionUsingDefaultTransport()
+        {
+            var url = _serverFixture.BaseUrl + "/echo";
+            // The test should connect to the server using WebSockets transport on Windows 8 and newer.
+            // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
+            var connection = new HttpConnection(new Uri(url));
+            await connection.StartAsync().OrTimeout();
+            await connection.DisposeAsync().OrTimeout();
+        }
+
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public async Task WebSocketsTest()
