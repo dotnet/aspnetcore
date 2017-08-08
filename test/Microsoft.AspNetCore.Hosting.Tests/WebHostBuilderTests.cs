@@ -852,6 +852,45 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void StartupErrorsAreLoggedIfCaptureStartupErrorsIsTrue()
+        {
+            var builder = CreateWebHostBuilder()
+                .CaptureStartupErrors(true)
+                .Configure(app =>
+                {
+                    throw new InvalidOperationException("Startup exception");
+                })
+                .UseServer(new TestServer());
+
+            using (var host = (WebHost)builder.Build())
+            {
+                var sink = host.Services.GetRequiredService<ITestSink>();
+                Assert.True(sink.Writes.Any(w => w.Exception?.Message == "Startup exception"));
+            }
+        }
+
+        [Fact]
+        public void StartupErrorsAreLoggedIfCaptureStartupErrorsIsFalse()
+        {
+            ITestSink testSink = null;
+
+            var builder = CreateWebHostBuilder()
+                .CaptureStartupErrors(false)
+                .Configure(app =>
+                {
+                    testSink = app.ApplicationServices.GetRequiredService<ITestSink>();
+
+                    throw new InvalidOperationException("Startup exception");
+                })
+                .UseServer(new TestServer());
+
+            Assert.Throws<InvalidOperationException>(() => builder.Build());
+
+            Assert.NotNull(testSink);
+            Assert.True(testSink.Writes.Any(w => w.Exception?.Message == "Startup exception"));
+        }
+
+        [Fact]
         public void HostingStartupTypeCtorThrowsIfNull()
         {
             Assert.Throws<ArgumentNullException>(() => new HostingStartupAttribute(null));
