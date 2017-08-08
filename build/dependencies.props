@@ -1,6 +1,6 @@
 <Project>
   <PropertyGroup>
-    <AspNetCoreIntegrationTestingVersion>0.4.0-*</AspNetCoreIntegrationTestingVersion>
+    <AspNetCoreIntegrationTestingVersion>0.5.0-*</AspNetCoreIntegrationTestingVersion>
     <AspNetCoreVersion>2.1.0-*</AspNetCoreVersion>
     <CoreFxLabsVersion>0.1.0-*</CoreFxLabsVersion>
     <CoreFxVersion>4.4.0-*</CoreFxVersion>
