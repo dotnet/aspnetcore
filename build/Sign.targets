@@ -190,28 +190,11 @@
       Properties="PackageCacheFile=%(PackageCachesFiles.Identity);OutDir=$(PackageCacheOutputPath)"
       Targets="RebuildPackageCache"/>
 
-    <!-- Create a Build.PackageStore-{version}.nupkg to push to internal feed -->
-    <Copy SourceFiles="@(PackageCacheNuspec)" DestinationFolder="$(PackageCacheOutputPath)" />
-    <ReadLinesFromFile File="$(CoherencePackageCacheDestinationDir)version.txt">
-      <Output TaskParameter="Lines" PropertyName="VersionNumber" />
-    </ReadLinesFromFile>
-
     <ItemGroup>
-      <RuntimeStoreSymbols Include="$(CoherencePackageCacheDestinationDir)Build.Symbols.*" />
+      <RuntimeStoreSymbols Include="$(CoherencePackageCacheDestinationDir)aspnetcore-symbols*" />
     </ItemGroup>
 
     <Copy SourceFiles="@(RuntimeStoreSymbols)" DestinationFolder="$(PackageCacheOutputPath)" />
-
-    <MSBuild
-      Projects="$(MSBuildThisFileDirectory)_Pack.proj"
-      Targets="Restore;Pack"
-      Properties="
-        NoBuild=true;
-        BaseIntermediateOutputPath=$(IntermediateOutputPath)repack-cache\;
-        NuspecFile=%(PackageCacheNuspec.FullPath);
-        PackageVersion=$(VersionNumber);
-        NuSpecBasePath=$(PackageCacheOutputPath);
-        PackageOutputPath=$(PackageCacheOutputPath)" />
   </Target>
 
   <Target Name="RebuildPackageCache">
