@@ -605,6 +605,38 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task DelayedSendTest()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            dynamic endPoint = serviceProvider.GetService(GetEndPointType(typeof(HubT)));
+
+            using (var firstClient = new TestClient())
+            using (var secondClient = new TestClient())
+            {
+                Task firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
+                Task secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
+
+                await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
+
+                await firstClient.SendInvocationAsync("DelayedSend", secondClient.Connection.ConnectionId, "test").OrTimeout();
+
+                // check that 'secondConnection' has received the group send
+                var hubMessage = await secondClient.Read().OrTimeout();
+                var invocation = Assert.IsType<InvocationMessage>(hubMessage);
+                Assert.Equal("Send", invocation.Target);
+                Assert.Equal(1, invocation.Arguments.Length);
+                Assert.Equal("test", invocation.Arguments[0]);
+
+                // kill the connections
+                firstClient.Dispose();
+                secondClient.Dispose();
+
+                await Task.WhenAll(firstEndPointTask, secondEndPointTask).OrTimeout();
+            }
+        }
+
         [Theory]
         [InlineData(nameof(StreamingHub.CounterChannel))]
         [InlineData(nameof(StreamingHub.CounterObservable))]
@@ -732,6 +764,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             yield return new Type[] { typeof(DynamicTestHub) };
             yield return new Type[] { typeof(MethodHub) };
+            yield return new Type[] { typeof(HubT) };
         }
 
         private static Type GetEndPointType(Type hubType)
@@ -781,6 +814,56 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 return Clients.Client(connectionId).Send(message);
             }
 
+            public Task GroupAddMethod(string groupName)
+            {
+                return Groups.AddAsync(Context.ConnectionId, groupName);
+            }
+
+            public Task GroupSendMethod(string groupName, string message)
+            {
+                return Clients.Group(groupName).Send(message);
+            }
+
+            public Task BroadcastMethod(string message)
+            {
+                return Clients.All.Broadcast(message);
+            }
+        }
+
+        public interface Test
+        {
+            Task Send(string message);
+            Task Broadcast(string message);
+        }
+
+        public class HubT : Hub<Test>
+        {
+            public override Task OnConnectedAsync()
+            {
+                var tcs = (TaskCompletionSource<bool>)Context.Connection.Metadata["ConnectedTask"];
+                tcs?.TrySetResult(true);
+                return base.OnConnectedAsync();
+            }
+
+            public string Echo(string data)
+            {
+                return data;
+            }
+
+            public Task ClientSendMethod(string userId, string message)
+            {
+                return Clients.User(userId).Send(message);
+            }
+
+            public Task ConnectionSendMethod(string connectionId, string message)
+            {
+                return Clients.Client(connectionId).Send(message);
+            }
+            public Task DelayedSend(string connectionId, string message)
+            {
+                Task.Delay(100);
+                return Clients.Client(connectionId).Send(message);
+            }
             public Task GroupAddMethod(string groupName)
             {
                 return Groups.AddAsync(Context.ConnectionId, groupName);

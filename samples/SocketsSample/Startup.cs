@@ -50,6 +50,7 @@ namespace SocketsSample
                 routes.MapHub<DynamicChat>("dynamic");
                 routes.MapHub<Chat>("default");
                 routes.MapHub<Streaming>("streaming");
+                routes.MapHub<HubTChat>("hubT");
             });
 
             app.UseSockets(routes =>

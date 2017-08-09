@@ -16,6 +16,7 @@
     <XunitVersion>2.3.0-beta2-*</XunitVersion>
     <RxVersion>3.1.1</RxVersion>
     <MsgPackVersion>0.9.0-beta2</MsgPackVersion>
+    <SystemReflectionEmitVersion>4.3.0</SystemReflectionEmitVersion>
     <!--
       TODO remove in next update of xunit
       Prevent bug in xunit.analyzer from failing the build.
