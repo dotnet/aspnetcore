@@ -21,7 +21,7 @@
     <PropertyGroup>
       <LocalBuild>true</LocalBuild>
       <COHERENCE_DROP_LOCATION Condition="'$(COHERENCE_DROP_LOCATION)'==''">\\aspnetci\drops\Coherence\dev\Latest</COHERENCE_DROP_LOCATION>
-      <COHERENCE_PACKAGECACHE_DROP_LOCATION Condition="'$(COHERENCE_PACKAGECACHE_DROP_LOCATION)'==''">\\aspnetci\drops\Coherence-PackageCache\dev\Latest</COHERENCE_PACKAGECACHE_DROP_LOCATION>
+      <COHERENCE_PACKAGECACHE_DROP_LOCATION Condition="'$(COHERENCE_PACKAGECACHE_DROP_LOCATION)'==''">\\aspnetci\drops\RuntimeStore\dev\Latest</COHERENCE_PACKAGECACHE_DROP_LOCATION>
     </PropertyGroup>
   </Target>
 
