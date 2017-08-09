@@ -959,7 +959,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             if (Optional(CSharpSymbolType.Identifier) || Optional(CSharpSymbolType.Keyword))
             {
-                Optional(CSharpSymbolType.QuestionMark); // Nullable
                 if (Optional(CSharpSymbolType.DoubleColon))
                 {
                     if (!Optional(CSharpSymbolType.Identifier))
@@ -975,6 +974,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     NamespaceOrTypeName();
                 }
+
+                Optional(CSharpSymbolType.QuestionMark); // Nullable
+
                 while (At(CSharpSymbolType.LeftBracket))
                 {
                     Balance(BalancingModes.None);

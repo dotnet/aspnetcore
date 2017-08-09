@@ -784,6 +784,33 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode(" ;  ").Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
+        [Theory]
+        [InlineData("string?")]
+        [InlineData("string?[]")]
+        [InlineData("global::System.Int32?")]
+        [InlineData("KeyValuePair<string, string>?")]
+        [InlineData("KeyValuePair<string, string>?[]")]
+        [InlineData("global::System.Collections.Generic.KeyValuePair<string, string>?[]")]
+        public void DirectiveDescriptor_AllowsNullableTypes(string expectedType)
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddTypeToken());
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                $"@custom {expectedType}",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, expectedType, markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+        }
+
         [Fact]
         public void DirectiveDescriptor_ErrorsExtraContentAfterDirective()
         {
