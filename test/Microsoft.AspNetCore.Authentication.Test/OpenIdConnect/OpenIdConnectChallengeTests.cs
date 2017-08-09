@@ -5,11 +5,12 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
@@ -19,7 +20,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         private static readonly string ChallengeEndpoint = TestServerBuilder.TestHost + TestServerBuilder.Challenge;
 
         [Fact]
-        public async Task ChallengeIsIssuedCorrectly()
+        public async Task ChallengeRedirectIsIssuedCorrectly()
         {
             var settings = new TestSettings(
                 opt =>
@@ -86,7 +87,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         </body>
         */
         [Fact]
-        public async Task ChallengeIssueedCorrectlyForFormPost()
+        public async Task ChallengeFormPostIssuedCorrectly()
         {
             var settings = new TestSettings(
                 opt =>
@@ -361,24 +362,37 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.Null(res.Headers.Location);
         }
 
-        [Fact]
-        public async Task ChallengeSetsNonceAndStateCookies()
+        [Theory]
+        [InlineData(OpenIdConnectRedirectBehavior.RedirectGet)]
+        [InlineData(OpenIdConnectRedirectBehavior.FormPost)]
+        public async Task ChallengeSetsNonceAndStateCookies(OpenIdConnectRedirectBehavior method)
         {
             var settings = new TestSettings(o =>
             {
+                o.AuthenticationMethod = method;
                 o.ClientId = "Test Id";
                 o.Authority = TestServerBuilder.DefaultAuthority;
             });
             var server = settings.CreateTestServer();
             var transaction = await server.SendAsync(ChallengeEndpoint);
 
-            var firstCookie = transaction.SetCookie.First();
-            Assert.Contains(OpenIdConnectDefaults.CookieNoncePrefix, firstCookie);
-            Assert.Contains("expires", firstCookie);
+            var challengeCookies = SetCookieHeaderValue.ParseList(transaction.SetCookie);
+            var nonceCookie = challengeCookies.Where(cookie => cookie.Name.StartsWith(OpenIdConnectDefaults.CookieNoncePrefix, StringComparison.Ordinal)).Single();
+            Assert.True(nonceCookie.Expires.HasValue);
+            Assert.True(nonceCookie.Expires > DateTime.UtcNow);
+            Assert.True(nonceCookie.HttpOnly);
+            Assert.Equal("/signin-oidc", nonceCookie.Path);
+            Assert.Equal("N", nonceCookie.Value);
+            Assert.Equal(Net.Http.Headers.SameSiteMode.None, nonceCookie.SameSite);
 
-            var secondCookie = transaction.SetCookie.Skip(1).First();
-            Assert.StartsWith(".AspNetCore.Correlation.OpenIdConnect.", secondCookie);
-            Assert.Contains("expires", secondCookie);
+            var correlationCookie = challengeCookies.Where(cookie => cookie.Name.StartsWith(".AspNetCore.Correlation.", StringComparison.Ordinal)).Single();
+            Assert.True(correlationCookie.Expires.HasValue);
+            Assert.True(nonceCookie.Expires > DateTime.UtcNow);
+            Assert.True(correlationCookie.HttpOnly);
+            Assert.Equal("/signin-oidc", correlationCookie.Path);
+            Assert.False(StringSegment.IsNullOrEmpty(correlationCookie.Value));
+
+            Assert.Equal(2, challengeCookies.Count);
         }
 
         [Fact]

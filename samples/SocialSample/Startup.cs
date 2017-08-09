@@ -162,7 +162,7 @@ namespace SocialSample
             })
                 // You must first create an app with GitHub and add its ID and Secret to your user-secrets.
                 // https://github.com/settings/applications/
-                .AddOAuth("GitHub", o =>
+                .AddOAuth("GitHub", "Github", o =>
             {
                 o.ClientId = Configuration["github:clientid"];
                 o.ClientSecret = Configuration["github:clientsecret"];

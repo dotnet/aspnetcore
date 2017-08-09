@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
-        public async Task OnMessageReceived_Reject_NoMoreEventsRun()
+        public async Task OnMessageReceived_Fail_NoMoreEventsRun()
         {
             var messageReceived = false;
             var remoteFailure = false;
@@ -197,7 +197,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
-        public async Task OnTokenValidated_Reject_NoMoreEventsRun()
+        public async Task OnTokenValidated_Fail_NoMoreEventsRun()
         {
             var messageReceived = false;
             var tokenValidated = false;
@@ -385,7 +385,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
-        public async Task OnAuthorizationCodeReceived_Reject_NoMoreEventsRun()
+        public async Task OnAuthorizationCodeReceived_Fail_NoMoreEventsRun()
         {
             var messageReceived = false;
             var tokenValidated = false;
@@ -596,7 +596,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
-        public async Task OnTokenResponseReceived_Reject_NoMoreEventsRun()
+        public async Task OnTokenResponseReceived_Fail_NoMoreEventsRun()
         {
             var messageReceived = false;
             var tokenValidated = false;
@@ -825,7 +825,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
-        public async Task OnTokenValidatedBackchannel_Reject_NoMoreEventsRun()
+        public async Task OnTokenValidatedBackchannel_Fail_NoMoreEventsRun()
         {
             var messageReceived = false;
             var codeReceived = false;
@@ -1060,7 +1060,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
-        public async Task OnUserInformationReceived_Reject_NoMoreEventsRun()
+        public async Task OnUserInformationReceived_Fail_NoMoreEventsRun()
         {
             var messageReceived = false;
             var tokenValidated = false;
@@ -1321,7 +1321,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
-        public async Task OnAuthenticationFailed_Reject_NoMoreEventsRun()
+        public async Task OnAuthenticationFailed_Fail_NoMoreEventsRun()
         {
             var messageReceived = false;
             var tokenValidated = false;
