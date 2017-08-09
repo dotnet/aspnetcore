@@ -7,6 +7,7 @@
     <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.FunctionalTests</RootNamespace>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
+    <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
     <ServerGarbageCollection>true</ServerGarbageCollection>
 
     <!--
@@ -41,16 +42,5 @@
     <PackageReference Include="xunit" Version="$(XunitVersion)" />
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
   </ItemGroup>
-
-  <Target Name="DefinePlatformConstants" BeforeTargets="CoreCompile">
-    <Sdk_GetOSPlatform>
-      <!-- Returns {Linux, macOS, Windows} -->
-      <Output TaskParameter="PlatformName" PropertyName="OSPlatform" />
-    </Sdk_GetOSPlatform>
-
-    <PropertyGroup>
-      <DefineConstants>$(DefineConstants);$(OSPlatform.ToUpperInvariant())</DefineConstants>
-    </PropertyGroup>
-  </Target>
 
 </Project>
