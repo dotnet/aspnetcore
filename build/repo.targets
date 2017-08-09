@@ -322,8 +322,8 @@
     <Error Text="RUNTIMESTORE_SIGNED_ARTIFACTS_PATH is not specified. The path containing the linux archives files must be must not be empty." Condition="'$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)' == ''" />
 
     <ItemGroup>
-      <RuntimeStoreTimestampArchive Include="$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)**\aspnetcore-store-$(TimestampVersion)-$(RID).tar.gz"/>
-      <RuntimeStoreNoTimestampArchive Include="$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)**\aspnetcore-store-$(NoTimestampVersion)-$(RID).tar.gz"/>
+      <RuntimeStoreTimestampArchive Include="$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)**\aspnetcore-store-$(TimestampVersion)-linux-x64.tar.gz"/>
+      <RuntimeStoreNoTimestampArchive Include="$(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)**\aspnetcore-store-$(NoTimestampVersion)-linux-x64.tar.gz"/>
     </ItemGroup>
 
     <Error Text="@(RuntimeStoreTimestampArchive->Count()) timestamp linux archives found at $(RUNTIMESTORE_SIGNED_ARTIFACTS_PATH)." Condition="'@(RuntimeStoreTimestampArchive->Count())' != 1" />
