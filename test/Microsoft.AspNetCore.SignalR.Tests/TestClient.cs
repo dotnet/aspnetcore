@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             var messages = new List<HubMessage>();
             while (true)
             {
-                var message = await Read();
+                var message = await ReadAsync();
 
                 if (message == null)
                 {
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             while (true)
             {
-                var message = await Read();
+                var message = await ReadAsync();
 
                 if (message == null)
                 {
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return invocationId;
         }
 
-        public async Task<HubMessage> Read()
+        public async Task<HubMessage> ReadAsync()
         {
             while (true)
             {

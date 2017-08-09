@@ -459,8 +459,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await firstClient.SendInvocationAsync("BroadcastMethod", "test").OrTimeout();
 
                 foreach (var result in await Task.WhenAll(
-                    firstClient.Read(),
-                    secondClient.Read()).OrTimeout())
+                    firstClient.ReadAsync(),
+                    secondClient.ReadAsync()).OrTimeout())
                 {
                     var invocation = Assert.IsType<InvocationMessage>(result);
                     Assert.Equal("Broadcast", invocation.Target);
@@ -505,7 +505,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await firstClient.SendInvocationAsync(nameof(MethodHub.GroupSendMethod), "testGroup", "test").OrTimeout();
 
                 // check that 'secondConnection' has received the group send
-                var hubMessage = await secondClient.Read().OrTimeout();
+                var hubMessage = await secondClient.ReadAsync().OrTimeout();
                 var invocation = Assert.IsType<InvocationMessage>(hubMessage);
                 Assert.Equal("Send", invocation.Target);
                 Assert.Equal(1, invocation.Arguments.Length);
@@ -558,7 +558,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await firstClient.SendInvocationAsync("ClientSendMethod", secondClient.Connection.User.Identity.Name, "test").OrTimeout();
 
                 // check that 'secondConnection' has received the group send
-                var hubMessage = await secondClient.Read().OrTimeout();
+                var hubMessage = await secondClient.ReadAsync().OrTimeout();
                 var invocation = Assert.IsType<InvocationMessage>(hubMessage);
                 Assert.Equal("Send", invocation.Target);
                 Assert.Equal(1, invocation.Arguments.Length);
@@ -591,7 +591,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await firstClient.SendInvocationAsync("ConnectionSendMethod", secondClient.Connection.ConnectionId, "test").OrTimeout();
 
                 // check that 'secondConnection' has received the group send
-                var hubMessage = await secondClient.Read().OrTimeout();
+                var hubMessage = await secondClient.ReadAsync().OrTimeout();
                 var invocation = Assert.IsType<InvocationMessage>(hubMessage);
                 Assert.Equal("Send", invocation.Target);
                 Assert.Equal(1, invocation.Arguments.Length);
@@ -623,7 +623,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await firstClient.SendInvocationAsync("DelayedSend", secondClient.Connection.ConnectionId, "test").OrTimeout();
 
                 // check that 'secondConnection' has received the group send
-                var hubMessage = await secondClient.Read().OrTimeout();
+                var hubMessage = await secondClient.ReadAsync().OrTimeout();
                 var invocation = Assert.IsType<InvocationMessage>(hubMessage);
                 Assert.Equal("Send", invocation.Target);
                 Assert.Equal(1, invocation.Arguments.Length);
