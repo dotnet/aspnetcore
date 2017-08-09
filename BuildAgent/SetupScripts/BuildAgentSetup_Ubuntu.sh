@@ -49,6 +49,10 @@ echo "Installing Nginx..."
 apt-get install -y nginx
 update-rc.d nginx defaults
 
+echo "Installing Docker..."
+curl -fsSL https://get.docker.com | sh
+usermod -aG docker $SUDO_USER
+
 echo "Downloading build agent from $SERVERURL and updating the properties..."
 mkdir ~/TeamCity
 cd ~/TeamCity
