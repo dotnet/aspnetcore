@@ -285,7 +285,7 @@
     <PropertyGroup>
         <PublishDir Condition="'$(PublishShare)' != ''">$(PublishShare)\fallbackArchives</PublishDir>
     </PropertyGroup>
-    <Copy SourceFiles="$(RepositoryRoot)artifacts\$(TimestampOutputPackageName).timestamped.lzma;$(RepositoryRoot)artifacts\$(NoTimestampOutputPackageName).lzma" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
+    <Copy SourceFiles="$(RepositoryRoot)artifacts\$(TimestampOutputPackageName).lzma;$(RepositoryRoot)artifacts\$(NoTimestampOutputPackageName).lzma" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
   </Target>
 
   <Target Name="AddManifestsToNupkg">
