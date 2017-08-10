@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
 
             var connection = _connections[connectionId];
-            if (connection != null)
+            if (connection == null)
             {
                 return;
             }
