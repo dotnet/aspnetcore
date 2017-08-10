@@ -10,10 +10,6 @@ namespace RepoTasks
 {
     public class FlowLogger : ConsoleLogger
     {
-        // disabled until we can fix some of the whitespace and flow issues caused by invoking other shell commands from MSBuild
-        // private static readonly bool IsTeamCity = !string.IsNullOrEmpty(Environment.GetEnvironmentVariable("TEAMCITY_PROJECT_NAME"));
-        private static readonly bool IsTeamCity = false;
-
         private volatile bool _initialized;
 
         public FlowLogger()
@@ -37,20 +33,14 @@ namespace RepoTasks
             if (_initialized) return;
             _initialized = true;
 
-            var _flowId = GetFlowId();
+            var flowId = GetFlowId();
+            var prefix = $"{flowId,-22}| ";
+            var write = WriteHandler;
+            WriteHandler = msg => write(prefix + msg);
 
-            var writer = IsTeamCity
-                ? (IWriter)new TeamCityMessageWriter(WriteHandler, _flowId)
-                : new DefaultPrefixMessageWriter(WriteHandler, _flowId);
-
-            WriteHandler = writer.WriteHandler;
             eventSource.BuildStarted += (o, e) =>
             {
-                writer.OnBuildStarted(e);
-            };
-            eventSource.BuildFinished += (o, e) =>
-            {
-                writer.OnBuildFinished(e);
+                WriteHandler(e.Message + Environment.NewLine);
             };
         }
 
