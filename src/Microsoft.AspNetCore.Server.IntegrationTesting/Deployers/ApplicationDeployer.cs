@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
         }
 
-        protected void AddEnvironmentVariablesToProcess(ProcessStartInfo startInfo, List<KeyValuePair<string, string>> environmentVariables)
+        protected void AddEnvironmentVariablesToProcess(ProcessStartInfo startInfo, IDictionary<string, string> environmentVariables)
         {
             var environment = startInfo.Environment;
             SetEnvironmentVariable(environment, "ASPNETCORE_ENVIRONMENT", DeploymentParameters.EnvironmentName);

@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             ApplicationName = new DirectoryInfo(ApplicationPath).Name;
             ServerType = serverType;
             RuntimeFlavor = runtimeFlavor;
-            EnvironmentVariables.Add(new KeyValuePair<string, string>("ASPNETCORE_DETAILEDERRORS", "true"));
+            EnvironmentVariables["ASPNETCORE_DETAILEDERRORS"] = "true";
         }
 
         public ServerType ServerType { get; }
@@ -103,12 +103,12 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         /// Environment variables to be set before starting the host.
         /// Not applicable for IIS Scenarios.
         /// </summary>
-        public List<KeyValuePair<string, string>> EnvironmentVariables { get; } = new List<KeyValuePair<string, string>>();
+        public IDictionary<string, string> EnvironmentVariables { get; } = new Dictionary<string, string>();
 
         /// <summary>
         /// Environment variables used when invoking dotnet publish.
         /// </summary>
-        public List<KeyValuePair<string, string>> PublishEnvironmentVariables { get; } = new List<KeyValuePair<string, string>>();
+        public IDictionary<string, string> PublishEnvironmentVariables { get; } = new Dictionary<string, string>();
 
         /// <summary>
         /// For any application level cleanup to be invoked after performing host cleanup.

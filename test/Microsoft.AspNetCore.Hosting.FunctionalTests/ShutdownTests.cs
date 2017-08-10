@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     PublishApplicationBeforeDeployment = true
                 };
 
-                deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("ASPNETCORE_STARTMECHANIC", "Run"));
+                deploymentParameters.EnvironmentVariables["ASPNETCORE_STARTMECHANIC"] = "Run";
 
                 using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
                 {
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     PublishApplicationBeforeDeployment = true
                 };
 
-                deploymentParameters.EnvironmentVariables.Add(new KeyValuePair<string, string>("ASPNETCORE_STARTMECHANIC", "WaitForShutdown"));
+                deploymentParameters.EnvironmentVariables["ASPNETCORE_STARTMECHANIC"] = "WaitForShutdown";
 
                 using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
                 {
