@@ -19,7 +19,7 @@
     <UnzipArchive File="$(FallbackArchive)" Destination="$(FallbackArchiveDestination)" Overwrite="true" />
     <UnzipArchive File="$(RuntimeStore)" Destination="$(RuntimeStoreDestination)" Overwrite="true" />
 
-    <MSBuild Projects="$(RepositoryRoot)src\Microsoft.AspNetCore.SiteExtension\Microsoft.AspNetCore.SiteExtension.csproj"
+    <MSBuild Projects="$(RepositoryRoot)src\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj"
       Targets="Pack"
       Properties="DotnetHomeDirectory=$(DotnetHomeDirectory);FallbackArchiveDestination=$(FallbackArchiveDestination);RuntimeStoreDestination=$(RuntimeStoreDestination)" />
   </Target>
