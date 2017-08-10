@@ -9,7 +9,6 @@ function splitAt(input: string, searchString: string, position: number): [string
 }
 
 export namespace TextMessageFormat {
-    const InvalidPayloadError = new Error("Invalid text message payload");
     const LengthRegex = /^[0-9]+$/;
 
     function hasSpace(input: string, offset: number, length: number): boolean {

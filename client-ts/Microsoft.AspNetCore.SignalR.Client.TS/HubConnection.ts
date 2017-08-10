@@ -5,6 +5,7 @@ import { Subject, Observable } from "./Observable"
 import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, NegotiationMessage } from "./IHubProtocol";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { TextMessageFormat } from "./Formatters"
+import { Base64EncodedHubProtocol } from "./Base64EncodedHubProtocol"
 
 export { TransportType } from "./Transports"
 export { HttpConnection } from "./HttpConnection"
@@ -208,40 +209,5 @@ export class HubConnection {
             arguments: args,
             nonblocking: nonblocking
         };
-    }
-}
-
-class Base64EncodedHubProtocol implements IHubProtocol {
-    private wrappedProtocol: IHubProtocol;
-
-    constructor(protocol: IHubProtocol) {
-        this.wrappedProtocol = protocol;
-        this.name = this.wrappedProtocol.name;
-        this.type = ProtocolType.Text;
-    }
-
-    readonly name: string;
-    readonly type: ProtocolType;
-
-    parseMessages(input: any): HubMessage[] {
-        // atob/btoa are browsers APIs but they can be polyfilled. If this becomes problematic we can use
-        // base64-js module
-        let s = atob(input);
-        let payload = new Uint8Array(s.length);
-        for (let i = 0; i < payload.length; i++) {
-            payload[i] = s.charCodeAt(i);
-        }
-        return this.wrappedProtocol.parseMessages(payload.buffer);
-    }
-
-    writeMessage(message: HubMessage) {
-        let payload = new Uint8Array(this.wrappedProtocol.writeMessage(message));
-        let s = "";
-        for (var i = 0; i < payload.byteLength; i++) {
-            s += String.fromCharCode(payload[i]);
-        }
-        // atob/btoa are browsers APIs but they can be polyfilled. If this becomes problematic we can use
-        // base64-js module
-        return btoa(s);
     }
 }

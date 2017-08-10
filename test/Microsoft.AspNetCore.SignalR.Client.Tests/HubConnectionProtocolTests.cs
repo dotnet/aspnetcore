@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -339,8 +340,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await connection.ReadSentTextMessageAsync().OrTimeout();
                 var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
+                // The message is in the following format `size:payload;`
+                var parts = invokeMessage.Split(':');
+                Assert.Equal(2, parts.Length);
+                Assert.True(int.TryParse(parts[0], out var payloadSize));
+                Assert.Equal(payloadSize, parts[1].Length - 1);
+                Assert.EndsWith(";", parts[1]);
+
                 // this throws if the message is not a valid base64 string
-                Convert.FromBase64String(invokeMessage);
+                Convert.FromBase64String(parts[1].Substring(0, payloadSize));
             }
             finally
             {
@@ -364,11 +372,15 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 using (var ms = new MemoryStream())
                 {
                     new MessagePackHubProtocol().WriteMessage(new InvocationMessage("1", true, "MyMethod", 42), ms);
+
                     var invokeMessage = Convert.ToBase64String(ms.ToArray());
-                    connection.ReceivedMessages.TryWrite(Encoding.UTF8.GetBytes(invokeMessage));
+                    var payloadSize = invokeMessage.Length.ToString(CultureInfo.InvariantCulture);
+                    var message = $"{payloadSize}:{invokeMessage};";
+
+                    connection.ReceivedMessages.TryWrite(Encoding.UTF8.GetBytes(message));
                 }
 
-                Assert.Equal(42, await invocationTcs.Task);
+                Assert.Equal(42, await invocationTcs.Task.OrTimeout());
             }
             finally
             {
