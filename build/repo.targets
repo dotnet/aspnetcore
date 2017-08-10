@@ -4,10 +4,11 @@
   <PropertyGroup>
     <NuGetPublishVolatileFeed>https://dotnet.myget.org/F/aspnetcore-volatile-dev/api/v2/package</NuGetPublishVolatileFeed>
 
+    <LineupBuildDir>$(ArtifactsDir)lineups\</LineupBuildDir>
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
     <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)</_DependencyPackagesDirectory>
-    <_RestoreGraphSpecsDirectory>$(RepositoryRoot)obj\package-specs\</_RestoreGraphSpecsDirectory>
+    <_RestoreGraphSpecsDirectory>$(IntermediateDir)package-specs\</_RestoreGraphSpecsDirectory>
 
     <_RepositoryListFileName>Repositories.props</_RepositoryListFileName>
     <_DefaultRepositoryList>$(MSBuildThisFileDirectory)$(_RepositoryListFileName)</_DefaultRepositoryList>
@@ -26,8 +27,25 @@
   <Import Project="$(_RepositoryListToImport)" />
 
   <Target Name="CleanUniverseArtifacts">
-    <RemoveDir Directories="$(RepositoryRoot)obj" Condition="Exists('$(RepositoryRoot)obj')" />
     <RemoveDir Directories="$(_CloneRepositoryRoot)" Condition="Exists('$(_CloneRepositoryRoot)') AND '$(ClearRepositoryCloneRoot)' != 'false'" />
+    <RemoveDir Directories="$(BuildDir);$(LineupBuildDir);$(IntermediateDir)" />
+    <MakeDir Directories="$(BuildDir);$(LineupBuildDir)" />
+  </Target>
+
+  <Target Name="GenerateLineup" DependsOnTargets="_GenerateBuildGraph">
+    <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)..\lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
+                DestinationFolder="$(LineupBuildDir)"
+                Properties="version=$(Version)"
+                Dependencies="@(PackagesProduced);@(ExternalDependency)">
+      <Output TaskParameter="Packages" ItemName="LineupPackage" />
+    </PackNuSpec>
+  </Target>
+
+  <Target Name="PublishLineupPackage" Condition="'$(PublishPackages)'=='true' AND @(LineupPackage->Count()) != 0" >
+    <PushNuGetPackages
+      Packages="@(LineupPackage)"
+      Feed="$(NuGetPublishVolatileFeed)"
+      ApiKey="$(APIKey)" />
   </Target>
 
   <Target Name="_PrepareRepositories">
@@ -107,7 +125,7 @@
   </Target>
 
   <Target Name="BuildRepositories"
-     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
+     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories;PublishLineupPackage" />
 
   <Target Name="_PrepareRestoreGraphSpecs" DependsOnTargets="_PrepareRepositories">
 
@@ -137,12 +155,19 @@
     <MSBuild
       Projects="@(Solution)"
       Targets="GenerateRestoreGraphFile"
-      BuildInParallel="$(BuildInParallel)" />
+      Properties="BuildNumber=$(BuildNumber);KoreBuildRestoreTargetsImported=true"
+      BuildInParallel="$(BuildInParallel)"
+      ContinueOnError="true" />
   </Target>
 
   <Target Name="_GenerateBuildGraph" DependsOnTargets="_GenerateRestoreGraphSpecs">
-    <RepoTasks.CalculateBuildGraph Repositories="@(Repository)" StartGraphAt="$(BuildGraphOf)" PackageSpecsDirectory="$(_RestoreGraphSpecsDirectory)">
+    <RepoTasks.CalculateBuildGraph
+      Repositories="@(Repository)"
+      StartGraphAt="$(BuildGraphOf)"
+      DefaultPackageVersion="$(Version)"
+      PackageSpecsDirectory="$(_RestoreGraphSpecsDirectory)">
       <Output TaskParameter="RepositoriesToBuildInOrder" ItemName="RepositoryToBuildInOrder" />
+      <Output TaskParameter="PackagesProduced" ItemName="PackagesProduced" />
     </RepoTasks.CalculateBuildGraph>
   </Target>
 

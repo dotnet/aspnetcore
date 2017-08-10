@@ -81,7 +81,7 @@ namespace RepoTasks.VersionPinning
                     _logger.LogMessage(MessageImportance.Normal, $"Pinning package versions for {specProject.FilePath}.");
                 }
 
-                var pinnedReferences = new XElement("ItemGroup");
+                var pinnedReferences = new XElement("ItemGroup", new XAttribute("Condition", "'$(PolicyDesignTimeBuild)' != 'true' AND !Exists('$(MSBuildThisFileDirectory)$(MSBuildProjectFile).nugetpolicy.g.targets')"));
                 foreach (var packageReference in projectPinMetadata.Packages)
                 {
                     (var tfm, var libraryRange, var exactVersion) = packageReference;
