@@ -21,3 +21,9 @@ Here are a few samples that demonstrate different localization features includin
  * [Localization.StarterWeb](https://github.com/aspnet/Entropy/tree/dev/samples/Localization.StarterWeb) - comprehensive localization sample demonstrates almost all of the localization features
  * [Localization.EntityFramework](https://github.com/aspnet/Entropy/tree/dev/samples/Localization.EntityFramework) - localization sample that uses an EntityFramework based localization provider for resources
  * [Localization.CustomResourceManager](https://github.com/aspnet/Entropy/tree/dev/samples/Localization.CustomResourceManager) - localization sample that uses a custom `ResourceManagerStringLocalizer`
+
+### Providers
+
+Community projects adapt _RequestCultureProvider_ for determining the culture information of an `HttpRequest`.
+
+ * [My.AspNetCore.Localization.Session](https://github.com/hishamco/My.AspNetCore.Localization.Session) - determines the culture information for a request via values in the session state.
