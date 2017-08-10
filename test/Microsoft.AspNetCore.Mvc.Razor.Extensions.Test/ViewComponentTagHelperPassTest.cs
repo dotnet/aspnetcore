@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Linq;
-using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
@@ -47,7 +46,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             Assert.Equal(3, @class.Children.Count); // No class node created for a VCTH
             for (var i = 0; i < @class.Children.Count; i++)
             {
-                Assert.IsNotType<CSharpCodeIntermediateNode>(@class.Children[i]);
+                Assert.IsNotType<ViewComponentTagHelperIntermediateNode>(@class.Children[i]);
             }
         }
 
@@ -94,32 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             var @class = FindClassNode(irDocument);
             Assert.Equal(4, @class.Children.Count);
 
-            var vcthClass = Assert.IsType<CSharpCodeIntermediateNode>(@class.Children.Last());
-            var tokenNode = vcthClass.Children[0] as IntermediateToken;
-            Assert.Equal(
-                @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
-public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
-{
-    private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;
-    public __Generated__TagCloudViewComponentTagHelper(global::Microsoft.AspNetCore.Mvc.IViewComponentHelper helper)
-    {
-        _helper = helper;
-    }
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute, global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute]
-    public global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { get; set; }
-    public System.Int32 Foo { get; set; }
-    public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output)
-    {
-        (_helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-        var content = await _helper.InvokeAsync(""TagCloud"", new { Foo });
-        output.TagName = null;
-        output.Content.SetHtmlContent(content);
-    }
-}
-",
-                tokenNode.Content,
-                ignoreLineEndingDifferences: true);
-            Assert.Equal(TokenKind.CSharp, tokenNode.Kind);
+            Assert.IsType<ViewComponentTagHelperIntermediateNode>(@class.Children.Last());
         }
 
         [Fact]
@@ -165,33 +139,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             var @class = FindClassNode(irDocument);
             Assert.Equal(4, @class.Children.Count);
 
-            var vcthClass = Assert.IsType<CSharpCodeIntermediateNode>(@class.Children[3]);
-            var tokenNode = vcthClass.Children[0] as IntermediateToken;
-            Assert.Equal(
-                @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
-public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
-{
-    private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;
-    public __Generated__TagCloudViewComponentTagHelper(global::Microsoft.AspNetCore.Mvc.IViewComponentHelper helper)
-    {
-        _helper = helper;
-    }
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute, global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute]
-    public global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { get; set; }
-    public System.Collections.Generic.Dictionary<System.String, System.Int32> Tags { get; set; }
-     = new System.Collections.Generic.Dictionary<System.String, System.Int32>();
-    public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output)
-    {
-        (_helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-        var content = await _helper.InvokeAsync(""TagCloud"", new { Tags });
-        output.TagName = null;
-        output.Content.SetHtmlContent(content);
-    }
-}
-",
-                tokenNode.Content,
-                ignoreLineEndingDifferences: true);
-            Assert.Equal(TokenKind.CSharp, tokenNode.Kind);
+            Assert.IsType<ViewComponentTagHelperIntermediateNode>(@class.Children[3]);
         }
 
         [Fact]
@@ -249,32 +197,7 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             var @class = FindClassNode(irDocument);
             Assert.Equal(5, @class.Children.Count);
 
-            var vcthClass = Assert.IsType<CSharpCodeIntermediateNode>(@class.Children.Last());
-            var tokenNode = vcthClass.Children[0] as IntermediateToken;
-            Assert.Equal(
-                @"[Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute(""tagcloud"")]
-public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.Razor.TagHelpers.TagHelper
-{
-    private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper _helper = null;
-    public __Generated__TagCloudViewComponentTagHelper(global::Microsoft.AspNetCore.Mvc.IViewComponentHelper helper)
-    {
-        _helper = helper;
-    }
-    [Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute, global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute]
-    public global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext ViewContext { get; set; }
-    public System.Int32 Foo { get; set; }
-    public override async global::System.Threading.Tasks.Task ProcessAsync(Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext context, Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput output)
-    {
-        (_helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?.Contextualize(ViewContext);
-        var content = await _helper.InvokeAsync(""TagCloud"", new { Foo });
-        output.TagName = null;
-        output.Content.SetHtmlContent(content);
-    }
-}
-",
-                tokenNode.Content,
-                ignoreLineEndingDifferences: true);
-            Assert.Equal(TokenKind.CSharp, tokenNode.Kind);
+            Assert.IsType<ViewComponentTagHelperIntermediateNode>(@class.Children.Last());
         }
 
         private RazorCodeDocument CreateDocument(string content)
@@ -327,21 +250,6 @@ public class __Generated__TagCloudViewComponentTagHelper : Microsoft.AspNetCore.
             var visitor = new TagHelperNodeVisitor();
             visitor.Visit(node);
             return visitor.Node;
-        }
-
-        private string GetCSharpContent(IntermediateNode node)
-        {
-            var builder = new StringBuilder();
-            for (var i = 0; i < node.Children.Count; i++)
-            {
-                var child = node.Children[i] as IntermediateToken;
-                if (child.Kind == TokenKind.CSharp)
-                {
-                    builder.Append(child.Content);
-                }
-            }
-
-            return builder.ToString();
         }
 
         private class ClassDeclarationNodeVisitor : IntermediateNodeWalker

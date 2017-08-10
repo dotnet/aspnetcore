@@ -1,13 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.AspNetCore.Razor.Language.CodeGeneration;
 using Microsoft.AspNetCore.Razor.Language.Extensions;
 using Microsoft.AspNetCore.Razor.Language.Intermediate;
 
@@ -17,8 +12,6 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
     {
         // Run after the default taghelper pass
         public override int Order => IntermediateNodePassBase.DefaultFeatureOrder + 2000;
-
-        private static readonly string[] PublicModifiers = new[] { "public" };
 
         protected override void ExecuteCore(RazorCodeDocument codeDocument, DocumentIntermediateNode documentNode)
         {
@@ -142,145 +135,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
 
         private void AddTagHelperClass(Context context, TagHelperDescriptor tagHelper)
         {
-            var writer = new CodeWriter();
-            WriteClass(context, writer, tagHelper);
-
-            var code = new CSharpCodeIntermediateNode();
-            code.Children.Add(new IntermediateToken()
+            var node = new ViewComponentTagHelperIntermediateNode()
             {
-                Kind = TokenKind.CSharp,
-                Content = writer.GenerateCode()
-            });
+                ClassName = context.GetClassName(tagHelper),
+                TagHelper = tagHelper
+            };
 
-            context.Class.Children.Add(code);
-        }
-
-        private void WriteClass(Context context, CodeWriter writer, TagHelperDescriptor tagHelper)
-        {
-            // Add target element.
-            BuildTargetElementString(writer, tagHelper);
-
-            // Initialize declaration.
-            var tagHelperTypeName = "Microsoft.AspNetCore.Razor.TagHelpers.TagHelper";
-            var className = context.GetClassName(tagHelper);
-
-            using (writer.BuildClassDeclaration(PublicModifiers, className, tagHelperTypeName, interfaces: null))
-            {
-                // Add view component helper.
-                writer.WriteVariableDeclaration(
-                    $"private readonly global::Microsoft.AspNetCore.Mvc.IViewComponentHelper",
-                    "_helper",
-                    value: null);
-
-                // Add constructor.
-                BuildConstructorString(writer, className);
-
-                // Add attributes.
-                BuildAttributeDeclarations(writer, tagHelper);
-
-                // Add process method.
-                BuildProcessMethodString(writer, tagHelper);
-            }
-        }
-
-        private void BuildConstructorString(CodeWriter writer, string className)
-        {
-            writer.Write("public ")
-                .Write(className)
-                .Write("(")
-                .Write("global::Microsoft.AspNetCore.Mvc.IViewComponentHelper helper")
-                .WriteLine(")");
-            using (writer.BuildScope())
-            {
-                writer.WriteStartAssignment("_helper")
-                    .Write("helper")
-                    .WriteLine(";");
-            }
-        }
-
-        private void BuildAttributeDeclarations(CodeWriter writer, TagHelperDescriptor tagHelper)
-        {
-            writer.Write("[")
-              .Write("Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNotBoundAttribute")
-              .WriteParameterSeparator()
-              .Write($"global::Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute")
-              .WriteLine("]");
-
-            writer.WriteAutoPropertyDeclaration(
-                PublicModifiers,
-                $"global::Microsoft.AspNetCore.Mvc.Rendering.ViewContext",
-                "ViewContext");
-
-            foreach (var attribute in tagHelper.BoundAttributes)
-            {
-                writer.WriteAutoPropertyDeclaration(
-                    PublicModifiers,
-                    attribute.TypeName,
-                    attribute.GetPropertyName());
-
-                if (attribute.IndexerTypeName != null)
-                {
-                    writer.Write(" = ")
-                        .WriteStartNewObject(attribute.TypeName)
-                        .WriteEndMethodInvocation();
-                }
-            }
-        }
-
-        private void BuildProcessMethodString(CodeWriter writer, TagHelperDescriptor tagHelper)
-        {
-            var contextVariable = "context";
-            var outputVariable = "output";
-
-            using (writer.BuildMethodDeclaration(
-                    $"public override async",
-                    $"global::{typeof(Task).FullName}",
-                    "ProcessAsync",
-                    new Dictionary<string, string>()
-                    {
-                        { "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext", contextVariable },
-                        { "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput", outputVariable }
-                    }))
-            {
-                writer.WriteInstanceMethodInvocation(
-                    $"(_helper as global::Microsoft.AspNetCore.Mvc.ViewFeatures.IViewContextAware)?",
-                    "Contextualize",
-                    new[] { "ViewContext" });
-
-                var methodParameters = GetMethodParameters(tagHelper);
-                var contentVariable = "content";
-                writer.Write("var ")
-                    .WriteStartAssignment(contentVariable)
-                    .WriteInstanceMethodInvocation($"await _helper", "InvokeAsync", methodParameters);
-                writer.WriteStartAssignment($"{outputVariable}.TagName")
-                    .WriteLine("null;");
-                writer.WriteInstanceMethodInvocation(
-                    $"{outputVariable}.Content",
-                    "SetHtmlContent",
-                    new[] { contentVariable });
-            }
-        }
-
-        private string[] GetMethodParameters(TagHelperDescriptor tagHelper)
-        {
-            var propertyNames = tagHelper.BoundAttributes.Select(attribute => attribute.GetPropertyName());
-            var joinedPropertyNames = string.Join(", ", propertyNames);
-            var parametersString = $"new {{ { joinedPropertyNames } }}";
-            var viewComponentName = tagHelper.GetViewComponentName();
-            var methodParameters = new[] { $"\"{viewComponentName}\"", parametersString };
-            return methodParameters;
-        }
-
-        private void BuildTargetElementString(CodeWriter writer, TagHelperDescriptor tagHelper)
-        {
-            Debug.Assert(tagHelper.TagMatchingRules.Count() == 1);
-
-            var rule = tagHelper.TagMatchingRules.First();
-
-            writer.Write("[")
-                .WriteStartMethodInvocation("Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute")
-                .WriteStringLiteral(rule.TagName)
-                .WriteLine(")]");
+            context.Class.Children.Add(node);
         }
 
         private struct Context

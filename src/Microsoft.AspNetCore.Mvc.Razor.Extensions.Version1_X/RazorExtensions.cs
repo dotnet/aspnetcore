@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             EnsureDesignTime(builder);
 
             builder.Features.Add(new ViewComponentTagHelperPass());
+            builder.AddTargetExtension(new ViewComponentTagHelperTargetExtension());
         }
 
         private static void EnsureDesignTime(IRazorEngineBuilder builder)
