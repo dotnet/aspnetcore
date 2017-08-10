@@ -927,6 +927,7 @@ namespace Microsoft.CodeAnalysis.Razor
             IEnumerable<string> existingCompletions,
             string containingTagName,
             string containingParentTagName = "body",
+            bool containingParentIsTagHelper = false,
             string tagHelperPrefix = "")
         {
             var documentContext = TagHelperDocumentContext.Create(tagHelperPrefix, descriptors);
@@ -936,6 +937,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 containingTagName,
                 attributes: Enumerable.Empty<KeyValuePair<string, string>>(),
                 containingParentTagName: containingParentTagName,
+                containingParentIsTagHelper: containingParentIsTagHelper,
                 inHTMLSchema: (tag) => tag == "strong" || tag == "b" || tag == "bold" || tag == "li" || tag == "div");
 
             return completionContext;

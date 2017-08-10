@@ -55,7 +55,13 @@ namespace Microsoft.CodeAnalysis.Razor
             var prefix = documentContext.Prefix ?? string.Empty;
             Debug.Assert(completionContext.CurrentTagName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
 
-            var applicableTagHelperBinding = _tagHelperFactsService.GetTagHelperBinding(documentContext, completionContext.CurrentTagName, completionContext.Attributes, completionContext.CurrentParentTagName);
+            var applicableTagHelperBinding = _tagHelperFactsService.GetTagHelperBinding(
+                documentContext,
+                completionContext.CurrentTagName,
+                completionContext.Attributes,
+                completionContext.CurrentParentTagName,
+                parentIsTagHelper: false);
+
             var applicableDescriptors = applicableTagHelperBinding?.Descriptors ?? Enumerable.Empty<TagHelperDescriptor>();
             var unprefixedTagName = completionContext.CurrentTagName.Substring(prefix.Length);
 
@@ -227,11 +233,13 @@ namespace Microsoft.CodeAnalysis.Razor
             }
 
             var prefix = completionContext.DocumentContext.Prefix ?? string.Empty;
+
             var binding = _tagHelperFactsService.GetTagHelperBinding(
                 completionContext.DocumentContext,
                 completionContext.ContainingTagName,
                 completionContext.Attributes,
-                completionContext.ContainingParentTagName);
+                completionContext.ContainingParentTagName,
+                completionContext.ContainingParentIsTagHelper);
 
             if (binding == null)
             {

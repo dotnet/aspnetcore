@@ -15,6 +15,7 @@ namespace Microsoft.CodeAnalysis.Razor
             string containingTagName,
             IEnumerable<KeyValuePair<string, string>> attributes,
             string containingParentTagName,
+            bool containingParentIsTagHelper,
             Func<string, bool> inHTMLSchema)
         {
             if (documentContext == null)
@@ -37,6 +38,7 @@ namespace Microsoft.CodeAnalysis.Razor
             ContainingTagName = containingTagName;
             Attributes = attributes;
             ContainingParentTagName = containingParentTagName;
+            ContainingParentIsTagHelper = containingParentIsTagHelper;
             InHTMLSchema = inHTMLSchema;
         }
 
@@ -49,6 +51,8 @@ namespace Microsoft.CodeAnalysis.Razor
         public IEnumerable<KeyValuePair<string, string>> Attributes { get; }
 
         public string ContainingParentTagName { get; }
+
+        public bool ContainingParentIsTagHelper { get; }
 
         public Func<string, bool> InHTMLSchema { get; }
     }

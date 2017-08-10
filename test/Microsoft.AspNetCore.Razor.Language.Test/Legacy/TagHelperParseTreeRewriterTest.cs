@@ -385,6 +385,99 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 tagHelperPrefix: "th:");
         }
 
+        [Fact]
+        public void Rewrite_UnderstandsTagHelperPrefixAndAllowedChildrenAndRequireParent()
+        {
+            // Arrange
+            var documentContent = "<th:p><th:strong></th:strong></th:p>";
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock("th:p",
+                    new MarkupTagHelperBlock("th:strong")));
+            var descriptors = new TagHelperDescriptor[]
+            {
+                TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"))
+                    .AllowChildTag("strong")
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("strong").RequireParentTag("p"))
+                    .Build(),
+            };
+
+            // Act & Assert
+            EvaluateData(
+                descriptors,
+                documentContent,
+                expectedOutput,
+                expectedErrors: Enumerable.Empty<RazorError>(),
+                tagHelperPrefix: "th:");
+        }
+
+        [Fact]
+        public void Rewrite_InvalidStructure_UnderstandsTagHelperPrefixAndAllowedChildrenAndRequireParent()
+        {
+            // Arrange
+            var documentContent = "<th:p></th:strong></th:p>";
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock("th:p",
+                    new MarkupTagBlock(
+                        Factory.Markup("</th:strong>"))));
+            var descriptors = new TagHelperDescriptor[]
+            {
+                TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"))
+                    .AllowChildTag("strong")
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("StrongTagHelper", "SomeAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("strong").RequireParentTag("p"))
+                    .Build(),
+            };
+            var expectedErrors = new[] {
+                new RazorError(
+                    LegacyResources.FormatTagHelpersParseTreeRewriter_FoundMalformedTagHelper("th:strong"),
+                    absoluteIndex: 8,
+                    lineIndex: 0,
+                    columnIndex: 8,
+                    length: 9),
+            };
+
+            // Act & Assert
+            EvaluateData(
+                descriptors,
+                documentContent,
+                expectedOutput,
+                expectedErrors: expectedErrors,
+                tagHelperPrefix: "th:");
+        }
+
+        [Fact]
+        public void Rewrite_NonTagHelperChild_UnderstandsTagHelperPrefixAndAllowedChildren()
+        {
+            // Arrange
+            var documentContent = "<th:p><strong></strong></th:p>";
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock("th:p",
+                    new MarkupTagBlock(
+                        Factory.Markup("<strong>")),
+                    new MarkupTagBlock(
+                        Factory.Markup("</strong>"))));
+            var descriptors = new TagHelperDescriptor[]
+            {
+                TagHelperDescriptorBuilder.Create("PTagHelper", "SomeAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"))
+                    .AllowChildTag("strong")
+                    .Build(),
+            };
+
+            // Act & Assert
+            EvaluateData(
+                descriptors,
+                documentContent,
+                expectedOutput,
+                expectedErrors: Enumerable.Empty<RazorError>(),
+                tagHelperPrefix: "th:");
+        }
+
         public static TheoryData InvalidHtmlScriptBlockData
         {
             get

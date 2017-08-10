@@ -62,7 +62,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             var prefix = documentContext.Prefix ?? string.Empty;
             Debug.Assert(completionContext.CurrentTagName.StartsWith(prefix, StringComparison.OrdinalIgnoreCase));
 
-            var applicableTagHelperBinding = _tagHelperFactsService.GetTagHelperBinding(documentContext, completionContext.CurrentTagName, completionContext.Attributes, completionContext.CurrentParentTagName);
+            var applicableTagHelperBinding = _tagHelperFactsService.GetTagHelperBinding(
+                documentContext,
+                completionContext.CurrentTagName,
+                completionContext.Attributes,
+                completionContext.CurrentParentTagName);
+
             var applicableDescriptors = applicableTagHelperBinding?.Descriptors ?? Enumerable.Empty<TagHelperDescriptor>();
             var unprefixedTagName = completionContext.CurrentTagName.Substring(prefix.Length);
 

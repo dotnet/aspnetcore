@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static bool SatisfiesRule(
             string tagNameWithoutPrefix,
-            string parentTagName,
+            string parentTagNameWithoutPrefix,
             IEnumerable<KeyValuePair<string, string>> tagAttributes,
             TagMatchingRuleDescriptor rule)
         {
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                 return false;
             }
 
-            var satisfiesParentTag = SatisfiesParentTag(parentTagName, rule);
+            var satisfiesParentTag = SatisfiesParentTag(parentTagNameWithoutPrefix, rule);
             if (!satisfiesParentTag)
             {
                 return false;
@@ -89,14 +89,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             return true;
         }
 
-        public static bool SatisfiesParentTag(string parentTagName, TagMatchingRuleDescriptor rule)
+        public static bool SatisfiesParentTag(string parentTagNameWithoutPrefix, TagMatchingRuleDescriptor rule)
         {
             if (rule == null)
             {
                 throw new ArgumentNullException(nameof(rule));
             }
 
-            if (rule.ParentTag != null && !string.Equals(parentTagName, rule.ParentTag, StringComparison.OrdinalIgnoreCase))
+            if (rule.ParentTag != null && !string.Equals(parentTagNameWithoutPrefix, rule.ParentTag, StringComparison.OrdinalIgnoreCase))
             {
                 return false;
             }

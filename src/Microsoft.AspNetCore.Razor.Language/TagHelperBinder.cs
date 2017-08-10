@@ -39,12 +39,14 @@ namespace Microsoft.AspNetCore.Razor.Language
         /// retrieves catch-all <see cref="TagHelperDescriptor"/>s (descriptors that target every tag).</param>
         /// <param name="attributes">Attributes on the HTML tag.</param>
         /// <param name="parentTagName">The parent tag name of the given <paramref name="tagName"/> tag.</param>
+        /// <param name="parentIsTagHelper">Is the parent tag of the given <paramref name="tagName"/> tag a tag helper.</param>
         /// <returns><see cref="TagHelperDescriptor"/>s that apply to the given HTML tag criteria.
         /// Will return <c>null</c> if no <see cref="TagHelperDescriptor"/>s are a match.</returns>
         public TagHelperBinding GetBinding(
             string tagName,
             IReadOnlyList<KeyValuePair<string, string>> attributes,
-            string parentTagName)
+            string parentTagName,
+            bool parentIsTagHelper)
         {
             if (!string.IsNullOrEmpty(_tagHelperPrefix) &&
                 (tagName.Length <= _tagHelperPrefix.Length ||
@@ -74,11 +76,17 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var tagNameWithoutPrefix = _tagHelperPrefix != null ? tagName.Substring(_tagHelperPrefix.Length) : tagName;
+            var parentTagNameWithoutPrefix = parentTagName;
+            if (_tagHelperPrefix != null && parentIsTagHelper)
+            {
+                parentTagNameWithoutPrefix = parentTagName.Substring(_tagHelperPrefix.Length);
+            }
+
             Dictionary<TagHelperDescriptor, IReadOnlyList<TagMatchingRuleDescriptor>> applicableDescriptorMappings = null;
             foreach (var descriptor in descriptors)
             {
                 var applicableRules = descriptor.TagMatchingRules.Where(
-                    rule => TagHelperMatchingConventions.SatisfiesRule(tagNameWithoutPrefix, parentTagName, attributes, rule));
+                    rule => TagHelperMatchingConventions.SatisfiesRule(tagNameWithoutPrefix, parentTagNameWithoutPrefix, attributes, rule));
 
                 if (applicableRules.Any())
                 {

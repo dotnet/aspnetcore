@@ -27,7 +27,7 @@ namespace Microsoft.CodeAnalysis.Razor
             var service = new DefaultTagHelperFactsService();
 
             // Act
-            var binding = service.GetTagHelperBinding(documentContext, "!a", Enumerable.Empty<KeyValuePair<string, string>>(), parentTag: null);
+            var binding = service.GetTagHelperBinding(documentContext, "!a", Enumerable.Empty<KeyValuePair<string, string>>(), parentTag: null, parentIsTagHelper: false);
 
             // Assert
             Assert.Null(binding);
@@ -73,7 +73,7 @@ namespace Microsoft.CodeAnalysis.Razor
             };
 
             // Act
-            var binding = service.GetTagHelperBinding(documentContext, "a", attributes, parentTag: "p");
+            var binding = service.GetTagHelperBinding(documentContext, "a", attributes, parentTag: "p", parentIsTagHelper: false);
 
             // Assert
             var descriptor = Assert.Single(binding.Descriptors);
@@ -109,7 +109,7 @@ namespace Microsoft.CodeAnalysis.Razor
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
             var service = new DefaultTagHelperFactsService();
-            var binding = service.GetTagHelperBinding(documentContext, "a", Enumerable.Empty<KeyValuePair<string, string>>(), parentTag: null);
+            var binding = service.GetTagHelperBinding(documentContext, "a", Enumerable.Empty<KeyValuePair<string, string>>(), parentTag: null, parentIsTagHelper: false);
 
             // Act
             var descriptors = service.GetBoundTagHelperAttributes(documentContext, "asp-route-something", binding);
@@ -144,7 +144,7 @@ namespace Microsoft.CodeAnalysis.Razor
             };
             var documentContext = TagHelperDocumentContext.Create(string.Empty, documentDescriptors);
             var service = new DefaultTagHelperFactsService();
-            var binding = service.GetTagHelperBinding(documentContext, "input", Enumerable.Empty<KeyValuePair<string, string>>(), parentTag: null);
+            var binding = service.GetTagHelperBinding(documentContext, "input", Enumerable.Empty<KeyValuePair<string, string>>(), parentTag: null, parentIsTagHelper: false);
 
             // Act
             var descriptors = service.GetBoundTagHelperAttributes(documentContext, "asp-for", binding);

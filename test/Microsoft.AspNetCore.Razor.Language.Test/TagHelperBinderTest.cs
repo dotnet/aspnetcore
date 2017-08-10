@@ -28,7 +28,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "th:div",
                 attributes: expectedAttributes,
-                parentTagName: "body");
+                parentTagName: "body",
+                parentIsTagHelper: false);
 
             // Assert
             Assert.Equal(expectedDescriptors, bindingResult.Descriptors, TagHelperDescriptorComparer.CaseSensitive);
@@ -109,7 +110,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             var bindingResult = tagHelperBinder.GetBinding(
                 tagName,
                 attributes: Array.Empty<KeyValuePair<string, string>>(),
-                parentTagName: parentTagName);
+                parentTagName: parentTagName,
+                parentIsTagHelper: false);
 
             // Assert
             Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, bindingResult.Descriptors, TagHelperDescriptorComparer.CaseSensitive);
@@ -272,7 +274,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var tagHelperBinder = new TagHelperBinder(null, (IReadOnlyList<TagHelperDescriptor>)availableDescriptors);
 
             // Act
-            var bindingResult = tagHelperBinder.GetBinding(tagName, providedAttributes, parentTagName: "p");
+            var bindingResult = tagHelperBinder.GetBinding(tagName, providedAttributes, parentTagName: "p", parentIsTagHelper: false);
 
             // Assert
             Assert.Equal((IEnumerable<TagHelperDescriptor>)expectedDescriptors, bindingResult?.Descriptors, TagHelperDescriptorComparer.CaseSensitive);
@@ -292,7 +294,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "th",
                 attributes: Array.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
+                parentTagName: "p",
+                parentIsTagHelper: false);
 
             // Assert
             Assert.Null(bindingResult);
@@ -312,11 +315,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var bindingResultDiv = tagHelperBinder.GetBinding(
                 tagName: "th:div",
                 attributes: Array.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
+                parentTagName: "p",
+                parentIsTagHelper: false);
             var bindingResultSpan = tagHelperBinder.GetBinding(
                 tagName: "th:span",
                 attributes: Array.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
+                parentTagName: "p",
+                parentIsTagHelper: false);
 
             // Assert
             var descriptor = Assert.Single(bindingResultDiv.Descriptors);
@@ -339,7 +344,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "th:div",
                 attributes: Array.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
+                parentTagName: "p",
+                parentIsTagHelper: false);
 
             // Assert
             var descriptor = Assert.Single(bindingResult.Descriptors);
@@ -362,7 +368,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "div",
                 attributes: Array.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
+                parentTagName: "p",
+                parentIsTagHelper: false);
 
             // Assert
             Assert.Null(bindingResult);
@@ -385,7 +392,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             var tagHelperBinding = tagHelperBinder.GetBinding(
                 tagName: "foo",
                 attributes: Array.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
+                parentTagName: "p",
+                parentIsTagHelper: false);
 
             // Assert
             Assert.Null(tagHelperBinding);
@@ -411,11 +419,13 @@ namespace Microsoft.AspNetCore.Razor.Language
             var divBinding = tagHelperBinder.GetBinding(
                 tagName: "div",
                 attributes: Array.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
+                parentTagName: "p",
+                parentIsTagHelper: false);
             var spanBinding = tagHelperBinder.GetBinding(
                 tagName: "span",
                 attributes: Array.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
+                parentTagName: "p",
+                parentIsTagHelper: false);
 
             // Assert
             // For divs
@@ -443,7 +453,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             var bindingResult = tagHelperBinder.GetBinding(
                 tagName: "div",
                 attributes: Array.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
+                parentTagName: "p",
+                parentIsTagHelper: false);
 
             // Assert
             var descriptor = Assert.Single(bindingResult.Descriptors);
@@ -470,7 +481,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             var binding = tagHelperBinder.GetBinding(
                 tagName: "div",
                 attributes: Array.Empty<KeyValuePair<string, string>>(),
-                parentTagName: "p");
+                parentTagName: "p",
+                parentIsTagHelper: false);
 
             // Assert
             var boundDescriptor = Assert.Single(binding.Descriptors);
@@ -478,6 +490,35 @@ namespace Microsoft.AspNetCore.Razor.Language
             var boundRules = binding.GetBoundRules(boundDescriptor);
             var boundRule = Assert.Single(boundRules);
             Assert.Equal("div", boundRule.TagName);
+        }
+
+        [Fact]
+        public void GetBinding_PrefixedParent_ReturnsBinding()
+        {
+            // Arrange
+            var divDescriptor = TagHelperDescriptorBuilder.Create("foo1", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("div").RequireParentTag("p"))
+                .Build();
+            var pDescriptor = TagHelperDescriptorBuilder.Create("foo2", "SomeAssembly")
+                .TagMatchingRuleDescriptor(rule => rule.RequireTagName("p"))
+                .Build();
+            var descriptors = new[] { divDescriptor, pDescriptor };
+            var tagHelperBinder = new TagHelperBinder("th:", descriptors);
+
+            // Act
+            var bindingResult = tagHelperBinder.GetBinding(
+                tagName: "th:div",
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
+                parentTagName: "th:p",
+                parentIsTagHelper: true);
+
+            // Assert
+            var boundDescriptor = Assert.Single(bindingResult.Descriptors);
+            Assert.Same(divDescriptor, boundDescriptor);
+            var boundRules = bindingResult.GetBoundRules(boundDescriptor);
+            var boundRule = Assert.Single(boundRules);
+            Assert.Equal("div", boundRule.TagName);
+            Assert.Equal("p", boundRule.ParentTag);
         }
     }
 }

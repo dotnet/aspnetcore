@@ -14,7 +14,8 @@ namespace Microsoft.CodeAnalysis.Razor
             TagHelperDocumentContext documentContext,
             string tagName,
             IEnumerable<KeyValuePair<string, string>> attributes,
-            string parentTag)
+            string parentTag,
+            bool parentIsTagHelper)
         {
             if (documentContext == null)
             {
@@ -39,7 +40,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var prefix = documentContext.Prefix;
             var tagHelperBinder = new TagHelperBinder(prefix, descriptors);
-            var binding = tagHelperBinder.GetBinding(tagName, attributes.ToList(), parentTag);
+            var binding = tagHelperBinder.GetBinding(tagName, attributes.ToList(), parentTag, parentIsTagHelper);
 
             return binding;
         }

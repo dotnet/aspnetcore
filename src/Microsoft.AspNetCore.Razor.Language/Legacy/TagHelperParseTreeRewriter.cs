@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private readonly Stack<BlockBuilder> _blockStack;
         private TagHelperBlockTracker _currentTagHelperTracker;
         private BlockBuilder _currentBlock;
-        private string _currentParentTagName;
 
         public TagHelperParseTreeRewriter(string tagHelperPrefix, IEnumerable<TagHelperDescriptor> descriptors)
         {
@@ -55,6 +54,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             _attributeValueBuilder = new StringBuilder();
             _htmlAttributeTracker = new List<KeyValuePair<string, string>>();
         }
+
+        private TagBlockTracker CurrentTracker => _trackerStack.Count > 0 ? _trackerStack.Peek() : null;
+
+        private string CurrentParentTagName => CurrentTracker?.TagName;
+
+        private bool CurrentParentIsTagHelper => CurrentTracker?.IsTagHelper ?? false;
 
         public Block Rewrite(Block syntaxTree, ErrorSink errorSink)
         {
@@ -189,7 +194,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 // We're now in a start tag block, we first need to see if the tag block is a tag helper.
                 var elementAttributes = GetAttributeNameValuePairs(tagBlock);
 
-                tagHelperBinding = _tagHelperBinder.GetBinding(tagName, elementAttributes, _currentParentTagName);
+                tagHelperBinding = _tagHelperBinder.GetBinding(
+                    tagName,
+                    elementAttributes,
+                    CurrentParentTagName,
+                    CurrentParentIsTagHelper);
 
                 // If there aren't any TagHelperDescriptors registered then we aren't a TagHelper
                 if (tagHelperBinding == null)
@@ -257,7 +266,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     tagHelperBinding = _tagHelperBinder.GetBinding(
                         tagName,
                         attributes: Array.Empty<KeyValuePair<string, string>>(),
-                        parentTagName: _currentParentTagName);
+                        parentTagName: CurrentParentTagName,
+                        parentIsTagHelper: CurrentParentIsTagHelper);
 
                     // If there are not TagHelperDescriptors associated with the end tag block that also have no
                     // required attributes then it means we can't be a TagHelper, bail out.
@@ -508,10 +518,20 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 return;
             }
 
-            var currentTracker = _trackerStack.Count > 0 ? _trackerStack.Peek() : null;
+            if (!HasAllowedChildren())
+            {
+                return;
+            }
 
-            if (HasAllowedChildren() &&
-                !_currentTagHelperTracker.AllowedChildren.Contains(tagName, StringComparer.OrdinalIgnoreCase))
+            var tagHelperBinding = _tagHelperBinder.GetBinding(
+                tagName,
+                attributes: Array.Empty<KeyValuePair<string, string>>(),
+                parentTagName: CurrentParentTagName,
+                parentIsTagHelper: CurrentParentIsTagHelper);
+
+            // If we found a binding for the current tag, then it is a tag helper. Use the prefixed allowed children to compare.
+            var allowedChildren = tagHelperBinding != null ? _currentTagHelperTracker.PrefixedAllowedChildren : _currentTagHelperTracker.AllowedChildren;
+            if (!allowedChildren.Contains(tagName, StringComparer.OrdinalIgnoreCase))
             {
                 OnAllowedChildrenTagError(_currentTagHelperTracker, tagName, tagBlock, errorSink);
             }
@@ -812,14 +832,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         private void PushTrackerStack(TagBlockTracker tracker)
         {
-            _currentParentTagName = tracker.TagName;
             _trackerStack.Push(tracker);
         }
 
         private TagBlockTracker PopTrackerStack()
         {
             var poppedTracker = _trackerStack.Pop();
-            _currentParentTagName = _trackerStack.Count > 0 ? _trackerStack.Peek().TagName : null;
 
             return poppedTracker;
         }
