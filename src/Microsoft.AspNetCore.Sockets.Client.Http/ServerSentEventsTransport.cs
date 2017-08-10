@@ -140,7 +140,15 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger.TransportStopping(_connectionId);
             _transportCts.Cancel();
             _application.Out.TryComplete();
-            await Running;
+
+            try
+            {
+                await Running;
+            }
+            catch
+            {
+                // exceptions have been handled in the Running task continuation by closing the channel with the exception
+            }
         }
     }
 }

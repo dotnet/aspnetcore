@@ -43,12 +43,23 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
-        public async Task CanStartConnectionUsingDefaultTransport()
+        public async Task CanStartAndStopConnectionUsingDefaultTransport()
         {
             var url = _serverFixture.BaseUrl + "/echo";
             // The test should connect to the server using WebSockets transport on Windows 8 and newer.
             // On Windows 7/2008R2 it should use ServerSentEvents transport to connect to the server.
             var connection = new HttpConnection(new Uri(url));
+            await connection.StartAsync().OrTimeout();
+            await connection.DisposeAsync().OrTimeout();
+        }
+
+        [Theory]
+        [MemberData(nameof(TransportTypes))]
+        public async Task CanStartAndStopConnectionUsingGivenTransport(TransportType transportType)
+        {
+            var url = _serverFixture.BaseUrl + "/echo";
+            // When WebSockets is attempted to be used on Windows 7/2008R2 it will instead use ServerSentEvents
+            var connection = new HttpConnection(new Uri(url), transportType);
             await connection.StartAsync().OrTimeout();
             await connection.DisposeAsync().OrTimeout();
         }
