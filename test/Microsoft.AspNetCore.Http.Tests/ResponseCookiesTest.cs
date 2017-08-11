@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Text;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.Extensions.ObjectPool;
@@ -25,6 +26,35 @@ namespace Microsoft.AspNetCore.Http.Tests
             Assert.StartsWith(testcookie, cookieHeaderValues[0]);
             Assert.Contains("path=/", cookieHeaderValues[0]);
             Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
+        }
+
+        [Fact]
+        public void DeleteCookieWithCookieOptionsShouldKeepPropertiesOfCookieOptions()
+        {
+            var headers = new HeaderDictionary();
+            var cookies = new ResponseCookies(headers, null);
+            var testcookie = "TestCookie";
+            var time = new DateTimeOffset(2000, 1, 1, 1, 1, 1, 1, TimeSpan.Zero);
+            var options = new CookieOptions
+            {
+                Secure = true,
+                HttpOnly = true,
+                Path = "/",
+                Expires = time,
+                Domain = "example.com",
+                SameSite = SameSiteMode.Lax
+            };
+
+            cookies.Delete(testcookie, options);
+
+            var cookieHeaderValues = headers[HeaderNames.SetCookie];
+            Assert.Equal(1, cookieHeaderValues.Count);
+            Assert.StartsWith(testcookie, cookieHeaderValues[0]);
+            Assert.Contains("path=/", cookieHeaderValues[0]);
+            Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
+            Assert.Contains("secure", cookieHeaderValues[0]);
+            Assert.Contains("httponly", cookieHeaderValues[0]);
+            Assert.Contains("samesite", cookieHeaderValues[0]);
         }
 
         [Fact]

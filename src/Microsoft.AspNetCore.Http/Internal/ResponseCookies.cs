@@ -129,6 +129,9 @@ namespace Microsoft.AspNetCore.Http.Internal
                 Path = options.Path,
                 Domain = options.Domain,
                 Expires = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc),
+                Secure = options.Secure,
+                HttpOnly = options.HttpOnly,
+                SameSite = options.SameSite
             });
         }
     }
