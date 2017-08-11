@@ -58,7 +58,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task CanStartAndStopConnectionUsingGivenTransport(TransportType transportType)
         {
             var url = _serverFixture.BaseUrl + "/echo";
-            // When WebSockets is attempted to be used on Windows 7/2008R2 it will instead use ServerSentEvents
             var connection = new HttpConnection(new Uri(url), transportType);
             await connection.StartAsync().OrTimeout();
             await connection.DisposeAsync().OrTimeout();
@@ -99,7 +98,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [ConditionalTheory]
-        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         [MemberData(nameof(TransportTypes))]
         // TODO: transfer types
         public async Task ConnectionCanSendAndReceiveMessages(TransportType transportType)
@@ -189,7 +187,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
 
                 var url = _serverFixture.BaseUrl + "/echo";
-                var connection = new HttpConnection(new Uri(url), loggerFactory);
+                var connection = new HttpConnection(new Uri(url), TransportType.WebSockets, loggerFactory);
                 connection.Features.Set<ITransferModeFeature>(
                     new TransferModeFeature { TransferMode = TransferMode.Binary });
 
@@ -294,12 +292,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public static IEnumerable<object[]> TransportTypes =>
-            new[]
+        public static IEnumerable<object[]> TransportTypes()
+        {
+            if (TestHelpers.IsWebSocketsSupported())
             {
-                new object[] { TransportType.WebSockets },
-                new object[] { TransportType.ServerSentEvents },
-                new object[] { TransportType.LongPolling }
-            };
+                yield return new object[] { TransportType.WebSockets };
+            }
+            yield return new object[] { TransportType.ServerSentEvents };
+            yield return new object[] { TransportType.LongPolling };
+        }
     }
 }

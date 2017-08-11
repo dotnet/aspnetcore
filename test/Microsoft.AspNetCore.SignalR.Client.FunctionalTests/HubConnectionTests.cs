@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
         public static IEnumerable<TransportType> TransportTypes()
         {
-            if (WebsocketsSupported())
+            if (TestHelpers.IsWebSocketsSupported())
             {
                 // TODO: Currently we are always sending Text messages over websockets which does not work
                 // with binary protocols. It is getting fixed separately.
@@ -253,20 +253,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
             yield return TransportType.ServerSentEvents;
             yield return TransportType.LongPolling;
-
-            bool WebsocketsSupported()
-            {
-                try
-                {
-                    new System.Net.WebSockets.ClientWebSocket();
-                }
-                catch (PlatformNotSupportedException)
-                {
-                    return false;
-                }
-
-                return true;
-            }
         }
     }
 }

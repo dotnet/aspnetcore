@@ -17,6 +17,7 @@
     <Compile Include="..\Common\ServerFixture.cs" Link="ServerFixture.cs" />
     <Compile Include="..\Common\TaskExtensions.cs" Link="TaskExtensions.cs" />
     <Compile Include="..\Common\ChannelExtensions.cs" Link="ChannelExtensions.cs" />
+    <Compile Include="..\Common\TestHelpers.cs" Link="TestHelpers.cs" />
   </ItemGroup>
 
   <ItemGroup>

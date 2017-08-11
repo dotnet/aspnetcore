@@ -3,6 +3,7 @@
 
 using System;
 using System.Net.Http;
+using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(TransportType.LongPolling, typeof(LongPollingTransport))]
         public void DefaultTransportFactoryCreatesRequestedTransportIfAvailable_Win7(TransportType requestedTransport, Type expectedTransportType)
         {
-            if (!WebsocketsSupported())
+            if (!TestHelpers.IsWebSocketsSupported())
             {
                 var transportFactory = new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient());
                 Assert.IsType(expectedTransportType,
@@ -85,7 +86,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [InlineData(TransportType.WebSockets)]
         public void DefaultTransportFactoryThrowsIfItCannotCreateRequestedTransport_Win7(TransportType requestedTransport)
         {
-            if (!WebsocketsSupported())
+            if (!TestHelpers.IsWebSocketsSupported())
             {
                 var transportFactory =
                     new DefaultTransportFactory(requestedTransport, loggerFactory: null, httpClient: new HttpClient());
@@ -94,20 +95,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 Assert.Equal("No requested transports available on the server.", ex.Message);
             }
-        }
-
-        private bool WebsocketsSupported()
-        {
-            try
-            {
-                new System.Net.WebSockets.ClientWebSocket();
-            }
-            catch (PlatformNotSupportedException)
-            {
-                return false;
-            }
-
-            return true;
         }
     }
 }
