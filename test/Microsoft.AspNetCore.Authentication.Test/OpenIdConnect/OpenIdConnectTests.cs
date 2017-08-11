@@ -182,27 +182,39 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         }
 
         [Fact]
-        public async Task SignOutWithDefaultRedirectUri()
+        public async Task SignOutFormPostWithDefaultRedirectUri()
         {
-            var configuration = TestServerBuilder.CreateDefaultOpenIdConnectConfiguration();
-            var server = TestServerBuilder.CreateServer(o =>
+            var settings = new TestSettings(o =>
             {
+                o.AuthenticationMethod = OpenIdConnectRedirectBehavior.FormPost;
                 o.Authority = TestServerBuilder.DefaultAuthority;
                 o.ClientId = "Test Id";
-                o.Configuration = configuration;
             });
+            var server = settings.CreateTestServer();
+
+            var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Signout);
+            Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+
+            settings.ValidateSignoutFormPost(transaction,
+                OpenIdConnectParameterNames.PostLogoutRedirectUri);
+        }
+
+        [Fact]
+        public async Task SignOutRedirectWithDefaultRedirectUri()
+        {
+            var settings = new TestSettings(o =>
+            {
+                o.AuthenticationMethod = OpenIdConnectRedirectBehavior.RedirectGet;
+                o.Authority = TestServerBuilder.DefaultAuthority;
+                o.ClientId = "Test Id";
+            });
+            var server = settings.CreateTestServer();
 
             var transaction = await server.SendAsync(DefaultHost + TestServerBuilder.Signout);
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
-            Assert.True(transaction.Response.Headers.Location.AbsoluteUri.StartsWith(configuration.EndSessionEndpoint));
 
-            var query = transaction.Response.Headers.Location.Query.Substring(1).Split('&')
-                                   .Select(each => each.Split('='))
-                                   .ToDictionary(pair => pair[0], pair => pair[1]);
-
-            string redirectUri;
-            Assert.True(query.TryGetValue("post_logout_redirect_uri", out redirectUri));
-            Assert.Equal(UrlEncoder.Default.Encode("https://example.com/signout-callback-oidc"), redirectUri, true);
+            settings.ValidateSignoutRedirect(transaction.Response.Headers.Location,
+                OpenIdConnectParameterNames.PostLogoutRedirectUri);
         }
 
         [Fact]

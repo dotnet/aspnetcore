@@ -80,6 +80,44 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             return formInputs;
         }
 
+        public IDictionary<string, string> ValidateSignoutFormPost(TestTransaction transaction, params string[] parametersToValidate)
+        {
+            IDictionary<string, string> formInputs = null;
+            var errors = new List<string>();
+            var xdoc = XDocument.Parse(transaction.ResponseText.Replace("doctype", "DOCTYPE"));
+            var forms = xdoc.Descendants("form");
+            if (forms.Count() != 1)
+            {
+                errors.Add("Only one form element is expected in response body.");
+            }
+            else
+            {
+                formInputs = forms.Single()
+                                  .Elements("input")
+                                  .ToDictionary(elem => elem.Attribute("name").Value,
+                                                elem => elem.Attribute("value").Value);
+
+                ValidateParameters(formInputs, parametersToValidate, errors, htmlEncoded: false);
+            }
+
+            if (errors.Any())
+            {
+                var buf = new StringBuilder();
+                buf.AppendLine($"The signout form post is not valid.");
+                // buf.AppendLine();
+
+                foreach (var error in errors)
+                {
+                    buf.AppendLine(error);
+                }
+
+                Debug.WriteLine(buf.ToString());
+                Assert.True(false, buf.ToString());
+            }
+
+            return formInputs;
+        }
+
         public IDictionary<string, string> ValidateChallengeRedirect(Uri redirectUri, params string[] parametersToValidate) =>
             ValidateRedirectCore(redirectUri, OpenIdConnectRequestType.Authentication, parametersToValidate);
 
@@ -156,6 +194,9 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                     case OpenIdConnectParameterNames.VersionTelemetry:
                         ValidateVersionTelemetry(actualValues, errors, htmlEncoded);
                         break;
+                    case OpenIdConnectParameterNames.PostLogoutRedirectUri:
+                        ValidatePostLogoutRedirectUri(actualValues, errors, htmlEncoded);
+                        break;
                     default:
                         throw new InvalidOperationException($"Unknown parameter \"{paramToValidate}\".");
                 }
@@ -186,42 +227,45 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             }
         }
 
-        private void ValidateClientId(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateQueryParameter(OpenIdConnectParameterNames.ClientId, _options.ClientId, actualQuery, errors, htmlEncoded);
+        private void ValidateClientId(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+            ValidateParameter(OpenIdConnectParameterNames.ClientId, _options.ClientId, actualParams, errors, htmlEncoded);
 
-        private void ValidateResponseType(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateQueryParameter(OpenIdConnectParameterNames.ResponseType, _options.ResponseType, actualQuery, errors, htmlEncoded);
+        private void ValidateResponseType(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+            ValidateParameter(OpenIdConnectParameterNames.ResponseType, _options.ResponseType, actualParams, errors, htmlEncoded);
 
-        private void ValidateResponseMode(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateQueryParameter(OpenIdConnectParameterNames.ResponseMode, _options.ResponseMode, actualQuery, errors, htmlEncoded);
+        private void ValidateResponseMode(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+            ValidateParameter(OpenIdConnectParameterNames.ResponseMode, _options.ResponseMode, actualParams, errors, htmlEncoded);
 
-        private void ValidateScope(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateQueryParameter(OpenIdConnectParameterNames.Scope, string.Join(" ", _options.Scope), actualQuery, errors, htmlEncoded);
+        private void ValidateScope(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+            ValidateParameter(OpenIdConnectParameterNames.Scope, string.Join(" ", _options.Scope), actualParams, errors, htmlEncoded);
 
-        private void ValidateRedirectUri(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateQueryParameter(OpenIdConnectParameterNames.RedirectUri, TestServerBuilder.TestHost + _options.CallbackPath, actualQuery, errors, htmlEncoded);
+        private void ValidateRedirectUri(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+            ValidateParameter(OpenIdConnectParameterNames.RedirectUri, TestServerBuilder.TestHost + _options.CallbackPath, actualParams, errors, htmlEncoded);
 
-        private void ValidateResource(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateQueryParameter(OpenIdConnectParameterNames.RedirectUri, _options.Resource, actualQuery, errors, htmlEncoded);
+        private void ValidateResource(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+            ValidateParameter(OpenIdConnectParameterNames.RedirectUri, _options.Resource, actualParams, errors, htmlEncoded);
 
-        private void ValidateState(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateQueryParameter(OpenIdConnectParameterNames.State, ExpectedState, actualQuery, errors, htmlEncoded);
+        private void ValidateState(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+            ValidateParameter(OpenIdConnectParameterNames.State, ExpectedState, actualParams, errors, htmlEncoded);
 
-        private void ValidateSkuTelemetry(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateQueryParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NET", actualQuery, errors, htmlEncoded);
+        private void ValidateSkuTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+            ValidateParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NET", actualParams, errors, htmlEncoded);
 
-        private void ValidateVersionTelemetry(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateQueryParameter(OpenIdConnectParameterNames.VersionTelemetry, typeof(OpenIdConnectMessage).GetTypeInfo().Assembly.GetName().Version.ToString(), actualQuery, errors, htmlEncoded);
+        private void ValidateVersionTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+            ValidateParameter(OpenIdConnectParameterNames.VersionTelemetry, typeof(OpenIdConnectMessage).GetTypeInfo().Assembly.GetName().Version.ToString(), actualParams, errors, htmlEncoded);
 
-        private void ValidateQueryParameter(
+        private void ValidatePostLogoutRedirectUri(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
+            ValidateParameter(OpenIdConnectParameterNames.PostLogoutRedirectUri, "https://example.com/signout-callback-oidc", actualParams, errors, htmlEncoded);
+
+        private void ValidateParameter(
             string parameterName,
             string expectedValue,
-            IDictionary<string, string> actualQuery,
+            IDictionary<string, string> actualParams,
             ICollection<string> errors,
             bool htmlEncoded)
         {
             string actualValue;
-            if (actualQuery.TryGetValue(parameterName, out actualValue))
+            if (actualParams.TryGetValue(parameterName, out actualValue))
             {
                 if (htmlEncoded)
                 {
@@ -230,12 +274,12 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
                 if (actualValue != expectedValue)
                 {
-                    errors.Add($"Query parameter {parameterName}'s expected value is {expectedValue} but its actual value is {actualValue}");
+                    errors.Add($"Parameter {parameterName}'s expected value is '{expectedValue}' but its actual value is '{actualValue}'");
                 }
             }
             else
             {
-                errors.Add($"Query parameter {parameterName} is missing");
+                errors.Add($"Parameter {parameterName} is missing");
             }
         }
     }
