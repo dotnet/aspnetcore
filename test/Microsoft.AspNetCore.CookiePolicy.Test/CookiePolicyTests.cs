@@ -273,7 +273,7 @@ namespace Microsoft.AspNetCore.CookiePolicy.Test
 
             Assert.NotNull(transaction.SetCookie);
             Assert.Equal(1, transaction.SetCookie.Count);
-            Assert.Equal("A=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; samesite=lax", transaction.SetCookie[0]);
+            Assert.Equal("A=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; secure; samesite=lax", transaction.SetCookie[0]);
         }
 
         [Fact]
