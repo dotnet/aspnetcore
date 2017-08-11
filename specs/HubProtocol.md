@@ -16,15 +16,40 @@ The SignalR Protocol requires the following attributes from the underlying trans
 
 ## Overview
 
-There are two encodings of the SignalR protocol: [JSON](http://www.json.org/) and [Protocol Buffers](https://developers.google.com/protocol-buffers/). Only one format can be used for the duration of a connection, and the format must be negotiated in advance (i.e. using a QueryString value, Header, or other indicator). However, each format shares a similar overall structure.
+This document describes three encodings of the SignalR protocol: [JSON](http://www.json.org/), [MessagePack](http://msgpack.org/) and [Protocol Buffers](https://developers.google.com/protocol-buffers/). Only one format can be used for the duration of a connection, and the format must be negotiated after opening the connection and before sending any other messages. However, each format shares a similar overall structure.
 
 In the SignalR protocol, the following types of messages can be sent:
 
+* `Negotiation` Message - Sent by the client to negotiate the message format
 * `Invocation` Message - Indicates a request to invoke a particular method (the Target) with provided Arguments on the remote endpoint.
 * `StreamItem` Message - Indicates individual items of streamed response data from a previous Invocation message.
 * `Completion` Message - Indicates a previous Invocation has completed, and no further `StreamItem` messages will be received. Contains an error if the invocation concluded with an error, or the result if the invocation is not a streaming invocation.
 
-In order to perform a single invocation, Caller follows the following basic flow:
+After opening a connection to the server the client must send a `Negotiation` message to the server as its first message. The negotiation message is **always** a JSON message and contains the name of the format (protocol) that will be used for the duration of the connection. If the server does not support the protocol requested by the client or the first message received from the client is not a `Negotiation` message the server must close the connection.
+
+The `Negotiation` message contains the following properties:
+
+* `protocol` - the name of the protocol to be used for messages exchanged betweent the server and the client
+
+Example:
+
+```json
+{
+    "protocol": "messagepack"
+}
+```
+
+##Communication between the Caller and the Callee
+
+There a three kinds of interactions between the Caller and the Calle:
+
+* Invocations - the Caller sends a message to the Calle and expects a message indicating that the invocation has been completed and optionally a result of the invocation
+* Non-Blocking Invocations - the Caller sends a message to the Callee and does not expect any further messages for this invocation
+* Streaming Invocations - the Caller sends a message to the Callee and expects one or more results returned by the Callee followed by a message indicating the end of invocation
+
+##Invocations
+
+In order to perform a single invocation, the Caller follows the following basic flow:
 
 1. Allocate a unique `Invocation ID` value (arbitrary string, chosen by the Caller) to represent the invocation
 2. Send an `Invocation` message containing the `Invocation ID`, the name of the `Target` being invoked, and the `Arguments` to provide to the method.
@@ -47,7 +72,7 @@ Invocations can be marked as "Non-Blocking" in the `Invocation` message, which i
 
 The SignalR protocol allows for multiple `StreamItem` messages to be transmitted in response to an `Invocation` message, and allows the receiver to dispatch these results as they arrive, to allow for streaming data from one endpoint to another.
 
-On the Callee side, it is up to the Callee's Binder to determine if a method call will yield multiple results. For example, in .NET certain return types may indicate multiple results, while others may indicate a single result. Even then, applications may wish for multiple results to be buffered and returned in a single `Completion` frame. It is up to the Binder to decide how to map this. The Callee's Binder must encode each result in separate `StreamItem` messages, indicating the end of results by sending a `Completion` message. Since the `Completion` message accepts an optional payload value, methods with single results can be handled with a single `Completion` message, bearing the complete results.
+On the Callee side, it is up to the Callee's Binder to determine if a method call will yield multiple results. For example, in .NET certain return types may indicate multiple results, while others may indicate a single result. Even then, applications may wish for multiple results to be buffered and returned in a single `Completion` frame. It is up to the Binder to decide how to map this. The Callee's Binder must encode each result in separate `StreamItem` messages, indicating the end of results by sending a `Completion` message.
 
 On the Caller side, the user code which performs the invocation indicates how it would like to receive the results and it is up the Caller's Binder to determine how to handle the result. If the Caller expects only a single result, but multiple results are returned, the Caller's Binder should yield an error indicating that multiple results were returned. However, if a Caller expects multiple results, but only a single result is returned, the Caller's Binder should yield that single result and indicate there are no further results.
 
@@ -348,7 +373,159 @@ World;0:;
 
 Note that the final frame still ends with the `;` terminator, and that since the body may contain `;`, newlines, etc., the length is specified in order to know exactly where the body ends.
 
+## MessagePack (MsgPack) encoding
+
+In the MsgPack Encoding of the SignalR Protocol, each Message is represented as a single MsgPack array containing items that correspond to properties of the given hub protocol message. The array items may be primitive values, arrays (e.g. method arguments) or objects (e.g. argument value). The first item in the array is the message type.
+
+MessagePack uses different formats to encode values. Refer to the [MsgPack format spec](https://github.com/msgpack/msgpack/blob/master/spec.md#formats) for format definitions.
+
+### Invocation Message Encoding
+
+`Invocation` messages have the following structure:
+
+```
+[1, InvocationId, NonBlocking, Target, [Arguments]]
+```
+
+* `1` - Message Type - `1` indicates this is an `Invocation` message
+* InvocationId - A `String` encoding the Invocation ID for the message
+* NonBlocking - A `Boolean` indicating if the invocation is Non-Blocking (see "Non-Blocking Invocations" above)
+* Target - A `String` encoding the Target name, as expected by the Callee's Binder
+* Arguments - An Array containing arguments to apply to the method referred to in Target.
+
+Example:
+
+The following payload
+
+```
+0x95 0x01 0xa3 0x78 0x79 0x7a 0xc3 0xa6 0x6d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+```
+
+is decoded as follows:
+
+* `0x95` - 5-element array
+* `0x01` - `1` (Message Type - `Invocation` message)
+* `0xa3` - string of length 3 (Target)
+* `0x78` - `x`
+* `0x79` - `y`
+* `0x7a` - `z`
+* `0xc3` - `true` (NonBlocking)
+* `0xa6` - string of length 6 (Target)
+* `0x6d` - `m`
+* `0x65` - `e`
+* `0x74` - `t`
+* `0x68` - `h`
+* `0x6f` - `o`
+* `0x64` - `d`
+* `0x91` - 1-element array (Arguments)
+* `0x2a` - `42` (Argument value)
+
+### StreamItem Message Encoding
+
+`StreamItem` messages have the following structure:
+
+[2, InvocationId, Item]
+
+* `2` - Message Type - `2` indicates this is a `StreamItem` message
+* InvocationId - A `String` encoding the Invocation ID for the message
+* Item - the value of the stream item
+
+Example:
+
+The following payload:
+```
+0x93 0x02 0xa3 0x78 0x79 0x7a 0x2a
+```
+
+is decoded as follows:
+
+* `0x93` - 3-element array
+* `0x02` - `2` (Message Type - `StreamItem` message)
+* `0xa3` - string of length 3 (Target)
+* `0x78` - `x`
+* `0x79` - `y`
+* `0x7a` - `z`
+* `0x2a` - `42` (Item)
+
+### Completion Message Encoding
+
+`Completion` messages have the following structure
+
+```
+[3, InvocationId, ResultKind, Result?]
+```
+
+* `3` - Message Type - `3` indicates this is a `Completion` message
+* InvocationId - A `String` encoding the Invocation ID for the message
+* ResultKind - A flag indicating the invocation result kind:
+    * `1` - Error result - Result contains a `String` with the error message
+    * `2` - Void result - Result contains the value returned by the server
+    * `3` - Non-Void result - Result is absent
+* Result - An optional item containing the result of invocation. Absent if the server did not return any value (void methods)
+
+Examples:
+
+#### Error Result:
+
+The following payload:
+```
+0x94 0x03 0xa3 0x78 0x79 0x7a 0x01 0xa5 0x45 0x72 0x72 0x6f 0x72
+```
+
+is decoded as follows:
+
+* `0x94` - 4-element array
+* `0x03` - `3` (Message Type - `Result` message)
+* `0xa3` - string of length 3 (Target)
+* `0x78` - `x`
+* `0x79` - `y`
+* `0x7a` - `z`
+* `0x01` - `1` (ResultKind - Error result)
+* `0xa5` - string of length 5
+* `0x45` - `E`
+* `0x72` - `r`
+* `0x72` - `r`
+* `0x6f` - `o`
+* `0x72` - `r`
+
+#### Void Result:
+
+The following payload:
+```
+0x93 0x03 0xa3 0x78 0x79 0x7a 0x02
+```
+
+is decoded as follows:
+
+* `0x93` - 3-element array
+* `0x03` - `3` (Message Type - `Result` message)
+* `0xa3` - string of length 3 (Target)
+* `0x78` - `x`
+* `0x79` - `y`
+* `0x7a` - `z`
+* `0x02` - `2` (ResultKind - Void result)
+
+#### Non-Void Result:
+
+The following payload:
+```
+0x94 0x03 0xa3 0x78 0x79 0x7a 0x03 0x2a
+```
+
+is decoded as follows:
+
+* `0x94` - 4-element array
+* `0x03` - `3` (Message Type - `Result` message)
+* `0xa3` - string of length 3 (Target)
+* `0x78` - `x`
+* `0x79` - `y`
+* `0x7a` - `z`
+* `0x03` - `3` (ResultKind - Non-Void result)
+* `0x2a` - `42` (Result)
+
 ## Protocol Buffers (ProtoBuf) Encoding
+
+**Protobuf encoding is currently not implemented**
 
 In order to support ProtoBuf, an application must provide a [ProtoBuf service definition](https://developers.google.com/protocol-buffers/docs/proto3) for the Hub. However, implementations may automatically generate these definitions from reflection information, if the underlying platform supports this. For example, the .NET implementation will attempt to generate service definitions for methods that use only simple primitive and enumerated types. The service definition provides a description of how to encode the arguments and return value for the call. For example, consider the following C# method:
 
@@ -425,24 +602,24 @@ When a request completes, a `Completion` ProtoBuf message is constructed. If the
 
 ## Type Mappings
 
-Below are some sample type mappings between JSON/ProtoBuf types and the .NET client. This is not an exhaustive or authoritative list, just informative guidance. Official clients will provide ways for users to override the default mapping behavior for a particular method, parameter, or parameter type
+Below are some sample type mappings between JSON types and the .NET client. This is not an exhaustive or authoritative list, just informative guidance. Official clients will provide ways for users to override the default mapping behavior for a particular method, parameter, or parameter type
 
-|                  .NET Type                      |          JSON Type           |                  ProtoBuf Type               |
-| ----------------------------------------------- | ---------------------------- | -------------------------------------------- |
-| `System.Byte`, `System.UInt16`, `System.UInt32` | `Number`                     | `uint32`                                     |
-| `System.SByte`, `System.Int16`, `System.Int32`  | `Number`                     | `int32`                                      |
-| `System.UInt64`                                 | `Number`                     | `uint64`                                     |
-| `System.Int64`                                  | `Number`                     | `int64`                                      |
-| `System.Single`                                 | `Number`                     | `float`                                      |
-| `System.Double`                                 | `Number`                     | `double`                                     |
-| `System.Boolean`                                | `true` or `false`            | `bool`                                       |
-| `System.String`                                 | `String`                     | `string`                                     |
-| `System.Byte`[]                                 | `String` (Base64-encoded)    | `bytes`                                      |
-| `IEnumerable<T>`                                | `Array`                      | `repeated`                                   |
-| custom `enum`                                   | `Number`                     | `uint64`                                     |
-| custom `struct` or `class`                      | `Object`                     | Requires an explicit .proto file definition  |
+|                  .NET Type                      |          JSON Type           |   MsgPack format family   |    ProtoBuf Type       |
+| ----------------------------------------------- | ---------------------------- |---------------------------|------------------------|
+| `System.Byte`, `System.UInt16`, `System.UInt32` | `Number`                     | `positive fixint`, `uint` | `uint32`               |
+| `System.SByte`, `System.Int16`, `System.Int32`  | `Number`                     | `fixit`, `int`            | `int32`                |
+| `System.UInt64`                                 | `Number`                     | `positive fixint`, `uint` | `uint64`               |
+| `System.Int64`                                  | `Number`                     | `fixint`, `int`           | `int64`                |
+| `System.Single`                                 | `Number`                     | `float`                   | `float`                |
+| `System.Double`                                 | `Number`                     | `float`                   | `double`               |
+| `System.Boolean`                                | `true` or `false`            | `true`, `false`           | `bool`                 |
+| `System.String`                                 | `String`                     | `fixstr`, `str`           | `string`               |
+| `System.Byte`[]                                 | `String` (Base64-encoded)    | `bin`                     | `bytes`                |
+| `IEnumerable<T>`                                | `Array`                      | `bin`                     | `repeated`             |
+| custom `enum`                                   | `Number`                     | `fixint`, `int`           | `uint64`               |
+| custom `struct` or `class`                      | `Object`                     | `fixmap`, `map`           | Requires an explicit .proto file definition  |
 
-Protobuf payloads are wrapped in an outer message framing described below.
+MessagePack payloads are wrapped in an outer message framing described below.
 
 #### Binary encoding
 
