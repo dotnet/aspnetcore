@@ -535,10 +535,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public async Task StartRequestProcessingCreatesLogScopeWithConnectionId()
         {
             _frameConnection.StartRequestProcessing(new DummyApplication());
-
-            _frameConnection.OnConnectionClosed(ex: null);
-
-            await _frameConnection.StopAsync().TimeoutAfter(TimeSpan.FromSeconds(5));
             
             var scopeObjects = ((TestKestrelTrace)_frameConnectionContext.ServiceContext.Log)
                                     .Logger
@@ -546,10 +542,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                                     .OfType<IReadOnlyList<KeyValuePair<string, object>>>()
                                     .ToList();
 
+            _frameConnection.OnConnectionClosed(ex: null);
+
+            await _frameConnection.StopAsync().TimeoutAfter(TimeSpan.FromSeconds(5));
+
             Assert.Equal(1, scopeObjects.Count);
             var pairs = scopeObjects[0].ToDictionary(p => p.Key, p => p.Value);
             Assert.True(pairs.ContainsKey("ConnectionId"));
             Assert.Equal(_frameConnection.ConnectionId, pairs["ConnectionId"]);
+
+            // Verify the scope was disposed after request processing completed
+            Assert.True(((TestKestrelTrace)_frameConnectionContext.ServiceContext.Log).Logger.Scopes.IsEmpty);
         }
     }
 }

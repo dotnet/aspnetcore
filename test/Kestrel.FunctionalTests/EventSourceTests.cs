@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private class TestEventListener : EventListener
         {
             private volatile bool _disposed;
-            private ConcurrentBag<EventWrittenEventArgs> _events = new ConcurrentBag<EventWrittenEventArgs>();
+            private ConcurrentQueue<EventWrittenEventArgs> _events = new ConcurrentQueue<EventWrittenEventArgs>();
 
             public IEnumerable<EventWrittenEventArgs> EventData => _events;
 
@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             {
                 if (!_disposed)
                 {
-                    _events.Add(eventData);
+                    _events.Enqueue(eventData);
                 }
             }
 
