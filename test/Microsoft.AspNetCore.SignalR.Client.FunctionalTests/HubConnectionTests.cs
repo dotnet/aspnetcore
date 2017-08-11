@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(HubProtocolsXTransportsXHubPaths))]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task CheckFixedMessage(IHubProtocol protocol, TransportType transportType, string path)
         {
             using (StartLog(out var loggerFactory))
@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(HubProtocolsXTransportsXHubPaths))]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task CanSendAndReceiveMessage(IHubProtocol protocol, TransportType transportType, string path)
         {
             using (StartLog(out var loggerFactory))
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(HubProtocolsXTransportsXHubPaths))]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task MethodsAreCaseInsensitive(IHubProtocol protocol, TransportType transportType, string path)
         {
             using (StartLog(out var loggerFactory))
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(HubProtocolsXTransportsXHubPaths))]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task CanInvokeClientMethodFromServer(IHubProtocol protocol, TransportType transportType, string path)
         {
             using (StartLog(out var loggerFactory))
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(HubProtocolsXTransportsXHubPaths))]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task CanStreamClientMethodFromServer(IHubProtocol protocol, TransportType transportType, string path)
         {
             using (StartLog(out var loggerFactory))
@@ -189,7 +189,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         }
 
         [Theory]
-        [MemberData(nameof(HubProtocolsXTransportsXHubPaths))]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
         public async Task ServerClosesConnectionIfHubMethodCannotBeResolved(IHubProtocol hubProtocol, TransportType transportType, string hubPath)
         {
             using (StartLog(out var loggerFactory))
@@ -217,15 +217,18 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        public static IEnumerable<object[]> HubProtocolsXTransportsXHubPaths()
+        public static IEnumerable<object[]> HubProtocolsAndTransportsAndHubPaths
         {
-            foreach (var protocol in HubProtocols)
+            get
             {
-                foreach (var transport in TransportTypes())
+                foreach (var protocol in HubProtocols)
                 {
-                    foreach (var hubPath in HubPaths)
+                    foreach (var transport in TransportTypes())
                     {
-                        yield return new object[] { protocol, transport, hubPath };
+                        foreach (var hubPath in HubPaths)
+                        {
+                            yield return new object[] { protocol, transport, hubPath };
+                        }
                     }
                 }
             }
@@ -240,16 +243,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 new MessagePackHubProtocol(),
             };
 
-
         public static IEnumerable<TransportType> TransportTypes()
         {
             if (TestHelpers.IsWebSocketsSupported())
             {
-                // TODO: Currently we are always sending Text messages over websockets which does not work
-                // with binary protocols. It is getting fixed separately.
-                // The tests are also failing on full framework when using WebSockets transport
-                // due to: https://github.com/aspnet/SignalR/issues/568
-                // yield return TransportType.WebSockets;
+                yield return TransportType.WebSockets;
             }
             yield return TransportType.ServerSentEvents;
             yield return TransportType.LongPolling;
