@@ -13,7 +13,7 @@
     <RedisVersion>1.2.4</RedisVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0-*</TestSdkVersion>
-    <XunitVersion>2.3.0-beta2-*</XunitVersion>
+    <XunitVersion>2.3.0-beta3-*</XunitVersion>
     <RxVersion>3.1.1</RxVersion>
     <MsgPackVersion>0.9.0-beta2</MsgPackVersion>
     <SystemReflectionEmitVersion>4.3.0</SystemReflectionEmitVersion>

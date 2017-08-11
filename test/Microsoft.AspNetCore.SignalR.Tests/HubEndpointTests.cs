@@ -760,11 +760,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        public static IEnumerable<Type[]> HubTypes()
+        public static IEnumerable<object[]> HubTypes()
         {
-            yield return new Type[] { typeof(DynamicTestHub) };
-            yield return new Type[] { typeof(MethodHub) };
-            yield return new Type[] { typeof(HubT) };
+            yield return new[] { typeof(DynamicTestHub) };
+            yield return new[] { typeof(MethodHub) };
+            yield return new[] { typeof(HubT) };
         }
 
         private static Type GetEndPointType(Type hubType)
