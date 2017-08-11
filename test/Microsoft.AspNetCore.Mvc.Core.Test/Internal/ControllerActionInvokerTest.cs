@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
@@ -15,8 +14,8 @@ using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -1392,6 +1391,101 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Equal(5, context.Object.Items["Result"]);
         }
 
+        [Fact]
+        public async Task InvokeAction_ConvertibleToActionResult()
+        {
+            // Arrange
+            var inputParam = 12;
+            var actionParameters = new Dictionary<string, object> { { "input", inputParam }, };
+            IActionResult result = null;
+
+            var filter = new Mock<IActionFilter>(MockBehavior.Strict);
+            filter.Setup(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>())).Verifiable();
+            filter
+                .Setup(f => f.OnActionExecuted(It.IsAny<ActionExecutedContext>()))
+                .Callback<ActionExecutedContext>(c => result = c.Result)
+                .Verifiable();
+
+            var invoker = CreateInvoker(new[] { filter.Object }, nameof(TestController.ActionReturningConvertibleToActionResult), actionParameters);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            var testActionResult = Assert.IsType<TestActionResult>(result);
+            Assert.Equal(inputParam, testActionResult.Value);
+        }
+
+        [Fact]
+        public async Task InvokeAction_AsyncAction_ConvertibleToActionResult()
+        {
+            // Arrange
+            var inputParam = 13;
+            var actionParameters = new Dictionary<string, object> { { "input", inputParam }, };
+            IActionResult result = null;
+
+            var filter = new Mock<IActionFilter>(MockBehavior.Strict);
+            filter.Setup(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>())).Verifiable();
+            filter
+                .Setup(f => f.OnActionExecuted(It.IsAny<ActionExecutedContext>()))
+                .Callback<ActionExecutedContext>(c => result = c.Result)
+                .Verifiable();
+
+            var invoker = CreateInvoker(new[] { filter.Object }, nameof(TestController.ActionReturningConvertibleToActionResultAsync), actionParameters);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            var testActionResult = Assert.IsType<TestActionResult>(result);
+            Assert.Equal(inputParam, testActionResult.Value);
+        }
+
+        [Fact]
+        public async Task InvokeAction_ConvertibleToActionResult_AsObject()
+        {
+            // Arrange
+            var actionParameters = new Dictionary<string, object>();
+            IActionResult result = null;
+
+            var filter = new Mock<IActionFilter>(MockBehavior.Strict);
+            filter.Setup(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>())).Verifiable();
+            filter
+                .Setup(f => f.OnActionExecuted(It.IsAny<ActionExecutedContext>()))
+                .Callback<ActionExecutedContext>(c => result = c.Result)
+                .Verifiable();
+
+            var invoker = CreateInvoker(new[] { filter.Object }, nameof(TestController.ActionReturningConvertibleAsObject), actionParameters);
+
+            // Act
+            await invoker.InvokeAsync();
+
+            // Assert
+            Assert.IsType<TestActionResult>(result);
+        }
+
+        [Fact]
+        public async Task InvokeAction_ConvertibleToActionResult_ReturningNull_Throws()
+        {
+            // Arrange
+            var expectedMessage = @"Cannot return null from an action method with a return type of 'Microsoft.AspNetCore.Mvc.Infrastructure.IConvertToActionResult'.";
+            var actionParameters = new Dictionary<string, object>();
+            IActionResult result = null;
+
+            var filter = new Mock<IActionFilter>(MockBehavior.Strict);
+            filter.Setup(f => f.OnActionExecuting(It.IsAny<ActionExecutingContext>())).Verifiable();
+            filter
+                .Setup(f => f.OnActionExecuted(It.IsAny<ActionExecutedContext>()))
+                .Callback<ActionExecutedContext>(c => result = c.Result)
+                .Verifiable();
+
+            var invoker = CreateInvoker(new[] { filter.Object }, nameof(TestController.ConvertibleToActionResultReturningNull), actionParameters);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => invoker.InvokeAsync());
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
         #endregion
 
         protected override ResourceInvoker CreateInvoker(
@@ -1710,6 +1804,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return input;
             }
 
+            public ConvertibleToActionResult ActionReturningConvertibleToActionResult(int input)
+                => new ConvertibleToActionResult { Value = input };
+
+            public Task<ConvertibleToActionResult> ActionReturningConvertibleToActionResultAsync(int input)
+                => Task.FromResult(new ConvertibleToActionResult { Value = input });
+
+            public object ActionReturningConvertibleAsObject() => new ConvertibleToActionResult();
+
+            public IConvertToActionResult ConvertibleToActionResultReturningNull()
+            {
+                var mock = new Mock<IConvertToActionResult>();
+                mock.Setup(m => m.Convert()).Returns((IActionResult)null);
+
+                return mock.Object;
+            }
+
             public class TaskDerivedType : Task
             {
                 public TaskDerivedType()
@@ -1744,6 +1854,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 actionDescriptor.MethodInfo,
                 actionDescriptor.ControllerTypeInfo,
                 ParameterDefaultValues.GetParameterDefaultValues(actionDescriptor.MethodInfo));
+        }
+
+        public class ConvertibleToActionResult : IConvertToActionResult
+        {
+            public int Value { get; set; }
+
+            public IActionResult Convert() => new TestActionResult { Value = Value };
         }
     }
 }

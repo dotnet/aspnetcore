@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -311,6 +312,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var diagnosticSource = _diagnosticSource;
             var logger = _logger;
+            var returnType = executor.MethodReturnType;
 
             IActionResult result = null;
             try
@@ -321,7 +323,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     controller);
                 logger.ActionMethodExecuting(controllerContext, orderedArguments);
 
-                var returnType = executor.MethodReturnType;
                 if (returnType == typeof(void))
                 {
                     // Sync method returning void
@@ -345,6 +346,30 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         throw new InvalidOperationException(
                             Resources.FormatActionResult_ActionReturnValueCannotBeNull(typeof(IActionResult)));
                     }
+                }
+                else if (IsConvertibleToActionResult(executor))
+                {
+                    IConvertToActionResult convertToActionResult;
+                    if (executor.IsMethodAsync)
+                    {
+                        // Async method returning awaitable-of-ActionResult<T> (e.g., Task<ActionResult<Person>>)
+                        // We have to use ExecuteAsync because we don't know the awaitable's type at compile time.
+                        convertToActionResult = (IConvertToActionResult)await executor.ExecuteAsync(controller, orderedArguments);
+                    }
+                    else
+                    {
+                        // Sync method returning ActionResult<T>
+                        convertToActionResult = (IConvertToActionResult)executor.Execute(controller, orderedArguments);
+                    }
+
+                    result = convertToActionResult.Convert();
+
+                    if (result == null)
+                    {
+                        throw new InvalidOperationException(
+                            Resources.FormatActionResult_ActionReturnValueCannotBeNull(typeof(IConvertToActionResult)));
+                    }
+
                 }
                 else if (IsResultIActionResult(executor))
                 {
@@ -370,10 +395,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     // Sync method returning arbitrary object
                     var resultAsObject = executor.Execute(controller, orderedArguments);
-                    result = resultAsObject as IActionResult ?? new ObjectResult(resultAsObject)
-                    {
-                        DeclaredType = returnType,
-                    };
+                    ConvertToActionResult(resultAsObject);
+
                 }
                 else if (executor.AsyncResultType == typeof(void))
                 {
@@ -385,10 +408,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 {
                     // Async method returning awaitable-of-nonvoid
                     var resultAsObject = await executor.ExecuteAsync(controller, orderedArguments);
-                    result = resultAsObject as IActionResult ?? new ObjectResult(resultAsObject)
-                    {
-                        DeclaredType = executor.AsyncResultType,
-                    };
+                    ConvertToActionResult(resultAsObject);
                 }
 
                 _result = result;
@@ -402,12 +422,37 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     controllerContext,
                     result);
             }
+
+            void ConvertToActionResult(object resultAsObject)
+            {
+                if (resultAsObject is IActionResult actionResult)
+                {
+                    result = actionResult;
+                }
+                else if (resultAsObject is IConvertToActionResult convertToActionResult)
+                {
+                    result = convertToActionResult.Convert();
+                }
+                else
+                {
+                    result = new ObjectResult(resultAsObject)
+                    {
+                        DeclaredType = returnType,
+                    };
+                }
+            }
         }
 
         private static bool IsResultIActionResult(ObjectMethodExecutor executor)
         {
             var resultType = executor.AsyncResultType ?? executor.MethodReturnType;
             return typeof(IActionResult).IsAssignableFrom(resultType);
+        }
+
+        private bool IsConvertibleToActionResult(ObjectMethodExecutor executor)
+        {
+            var resultType = executor.AsyncResultType ?? executor.MethodReturnType;
+            return typeof(IConvertToActionResult).IsAssignableFrom(resultType);
         }
 
         /// <remarks><see cref="ResourceInvoker.InvokeFilterPipelineAsync"/> for details on what the
