@@ -30,6 +30,7 @@
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_Version=$(Version)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_LineupBuildDir=$(LineupBuildDir)'</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_DependencyLineupDir=$(_DependencyLineupDir)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_IntermediateDir=$(IntermediateDir)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:CustomBeforeKoreBuildProps=$(MSBuildThisFileDirectory)repobuild\BeforeKoreBuild.props'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:CustomAfterKoreBuildTargets=$(MSBuildThisFileDirectory)repobuild\AfterKoreBuild.targets'</RepositoryBuildArguments>
