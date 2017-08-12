@@ -811,6 +811,55 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Span(SpanKindInternal.Code, expectedType, markup: false).AsDirectiveToken(descriptor.Tokens[0])));
         }
 
+        [Theory]
+        [InlineData("(bool, int)")]
+        [InlineData("(int aa, string bb)?")]
+        [InlineData("(  int?   q   ,  bool   w   )")]
+        [InlineData("( int  ?  q, bool ?w ,(long ?  [])) ?")]
+        [InlineData("(List<(int, string)?> aa, string bb)")]
+        [InlineData("(string ss, (int u, List<(string, int)> k, (Char c, bool b, List<int> l)), global::System.Int32[] a)")]
+        public void DirectiveDescriptor_AllowsTupleTypes(string expectedType)
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddTypeToken());
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                $"@custom {expectedType}",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, expectedType, markup: false).AsDirectiveToken(descriptor.Tokens[0])));
+        }
+
+        [Fact]
+        public void DirectiveDescriptor_AllowsTupleTypes_IgnoresTrailingWhitespace()
+        {
+            // Arrange
+            var descriptor = DirectiveDescriptor.CreateDirective(
+                "custom",
+                DirectiveKind.SingleLine,
+                b => b.AddTypeToken());
+
+            // Act & Assert
+            ParseCodeBlockTest(
+                $"@custom (bool, int?)   ",
+                new[] { descriptor },
+                new DirectiveBlock(
+                    new DirectiveChunkGenerator(descriptor),
+                    Factory.CodeTransition(),
+                    Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, "(bool, int?)", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
+                    Factory.MetaCode("   ").Accepts(AcceptedCharactersInternal.WhiteSpace)));
+        }
+
         [Fact]
         public void DirectiveDescriptor_ErrorsExtraContentAfterDirective()
         {

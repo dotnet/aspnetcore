@@ -957,7 +957,34 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
         protected bool NamespaceOrTypeName()
         {
-            if (Optional(CSharpSymbolType.Identifier) || Optional(CSharpSymbolType.Keyword))
+            if (Optional(CSharpSymbolType.LeftParenthesis))
+            {
+                while (!Optional(CSharpSymbolType.RightParenthesis) && !EndOfFile)
+                {
+                    Optional(CSharpSymbolType.WhiteSpace);
+
+                    if (!NamespaceOrTypeName())
+                    {
+                        return false;
+                    }
+
+                    Optional(CSharpSymbolType.WhiteSpace);
+                    Optional(CSharpSymbolType.Identifier);
+                    Optional(CSharpSymbolType.WhiteSpace);
+                    Optional(CSharpSymbolType.Comma);
+                }
+
+                if (At(CSharpSymbolType.WhiteSpace) && NextIs(CSharpSymbolType.QuestionMark))
+                {
+                    // Only accept the whitespace if we are going to consume the next token.
+                    AcceptAndMoveNext();
+                }
+
+                Optional(CSharpSymbolType.QuestionMark); // Nullable
+
+                return true;
+            }
+            else if (Optional(CSharpSymbolType.Identifier) || Optional(CSharpSymbolType.Keyword))
             {
                 if (Optional(CSharpSymbolType.DoubleColon))
                 {
@@ -975,7 +1002,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     NamespaceOrTypeName();
                 }
 
+                if (At(CSharpSymbolType.WhiteSpace) && NextIs(CSharpSymbolType.QuestionMark))
+                {
+                    // Only accept the whitespace if we are going to consume the next token.
+                    AcceptAndMoveNext();
+                }
+
                 Optional(CSharpSymbolType.QuestionMark); // Nullable
+
+                if (At(CSharpSymbolType.WhiteSpace) && NextIs(CSharpSymbolType.LeftBracket))
+                {
+                    // Only accept the whitespace if we are going to consume the next token.
+                    AcceptAndMoveNext();
+                }
 
                 while (At(CSharpSymbolType.LeftBracket))
                 {
