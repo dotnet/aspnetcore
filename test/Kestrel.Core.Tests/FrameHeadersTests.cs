@@ -217,11 +217,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void ValidContentLengthsAccepted()
         {
-            ValidContentLengthsAccepted(new FrameRequestHeaders());
-            ValidContentLengthsAccepted(new FrameResponseHeaders());
+            ValidContentLengthsAcceptedImpl(new FrameRequestHeaders());
+            ValidContentLengthsAcceptedImpl(new FrameResponseHeaders());
         }
 
-        private static void ValidContentLengthsAccepted(FrameHeaders frameHeaders)
+        private static void ValidContentLengthsAcceptedImpl(FrameHeaders frameHeaders)
         {
             IDictionary<string, StringValues> headers = frameHeaders;
 
@@ -252,11 +252,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void InvalidContentLengthsRejected()
         {
-            InvalidContentLengthsRejected(new FrameRequestHeaders());
-            InvalidContentLengthsRejected(new FrameResponseHeaders());
+            InvalidContentLengthsRejectedImpl(new FrameRequestHeaders());
+            InvalidContentLengthsRejectedImpl(new FrameResponseHeaders());
         }
 
-        private static void InvalidContentLengthsRejected(FrameHeaders frameHeaders)
+        private static void InvalidContentLengthsRejectedImpl(FrameHeaders frameHeaders)
         {
             IDictionary<string, StringValues> headers = frameHeaders;
 

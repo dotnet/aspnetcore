@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private IHttpParser<RequestHandler> CreateParser(IKestrelTrace log) => new HttpParser<RequestHandler>(log.IsEnabled(LogLevel.Information));
 
-        public static IEnumerable<string[]> RequestLineValidData => HttpParsingData.RequestLineValidData;
+        public static IEnumerable<object[]> RequestLineValidData => HttpParsingData.RequestLineValidData;
 
         public static IEnumerable<object[]> RequestLineIncompleteData => HttpParsingData.RequestLineIncompleteData.Select(requestLine => new[] { requestLine });
 

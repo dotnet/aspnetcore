@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 StartDummyApplication(server);
 
                 var warning = testLogger.Messages.Single(log => log.LogLevel == LogLevel.Warning);
-                Assert.True(warning.Message.Contains("Overriding"));
+                Assert.Contains("Overriding", warning.Message);
             }
         }
 
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)
         {
-            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new [] { new KestrelTestLoggerProvider(testLogger)} ));
+            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) }));
         }
 
         private static void StartDummyApplication(IServer server)

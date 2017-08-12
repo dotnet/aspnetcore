@@ -590,7 +590,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await _input.Writer.WriteAsync(data);
 
             _frame.Stop();
-            Assert.IsNotType(typeof(Task<Task>), requestProcessingTask);
+            Assert.IsNotType<Task<Task>>(requestProcessingTask);
 
             await requestProcessingTask.TimeoutAfter(TimeSpan.FromSeconds(10));
             _input.Writer.Complete();
@@ -812,9 +812,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 .Select(i => $"Header-{startAt + i}: value{startAt + i}\r\n"));
         }
 
-        public static IEnumerable<object> RequestLineValidData => HttpParsingData.RequestLineValidData;
+        public static IEnumerable<object[]> RequestLineValidData => HttpParsingData.RequestLineValidData;
 
-        public static IEnumerable<object> RequestLineDotSegmentData => HttpParsingData.RequestLineDotSegmentData;
+        public static IEnumerable<object[]> RequestLineDotSegmentData => HttpParsingData.RequestLineDotSegmentData;
 
         public static TheoryData<string> TargetWithEncodedNullCharData
         {
