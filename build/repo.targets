@@ -68,12 +68,17 @@
     Determine the protocol to clone individual repositories over. Clone repositories over https,
     if Universe was cloned over https
     -->
-    <Exec Command="git config --get remote.origin.url" ConsoleToMSBuild="true" WorkingDirectory="$(RepositoryRoot)">
-      <Output TaskParameter="ConsoleOutput" PropertyName="UniverseCloneUrl" />
+    <Exec
+      Command="git config --get remote.origin.url"
+      ConsoleToMSBuild="true"
+      WorkingDirectory="$(RepositoryRoot)"
+      IgnoreExitCode="true">
+        <Output TaskParameter="ConsoleOutput" PropertyName="UniverseCloneUrl" />
     </Exec>
 
     <PropertyGroup>
-      <_CloneOverHttps Condition="$(UniverseCloneUrl.StartsWith('https'))">true</_CloneOverHttps>
+      <_CloneOverHttps>true</_CloneOverHttps>
+      <_CloneOverHttps Condition="'$(UniverseCloneUrl)' != '' AND !$(UniverseCloneUrl.StartsWith('https'))">false</_CloneOverHttps>
     </PropertyGroup>
 
     <ItemGroup>
