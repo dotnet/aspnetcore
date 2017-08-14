@@ -196,7 +196,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// to script on the page.
         /// </para>
         /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.SameSite) + ".")]
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.HttpOnly) + ".")]
         public bool CookieHttpOnly { get => Cookie.HttpOnly; set => Cookie.HttpOnly = value; }
 
         /// <summary>
