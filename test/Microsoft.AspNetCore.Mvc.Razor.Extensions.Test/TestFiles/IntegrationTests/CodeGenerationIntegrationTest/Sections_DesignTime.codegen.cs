@@ -11,10 +11,19 @@ namespace AspNetCore
     using Microsoft.AspNetCore.Mvc;
     using Microsoft.AspNetCore.Mvc.Rendering;
     using Microsoft.AspNetCore.Mvc.ViewFeatures;
-    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Sections_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<dynamic>
+    public class TestFiles_IntegrationTests_CodeGenerationIntegrationTest_Sections_cshtml : global::Microsoft.AspNetCore.Mvc.Razor.RazorPage<DateTime>
     {
+        private global::InputTestTagHelper __InputTestTagHelper;
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
+        ((System.Action)(() => {
+DateTime __typeHelper = default(DateTime);
+        }
+        ))();
+        ((System.Action)(() => {
+global::System.Object __typeHelper = "InputTestTagHelper, AppCode";
+        }
+        ))();
         ((System.Action)(() => {
 global::System.Object Section1 = null;
         }
@@ -27,13 +36,19 @@ global::System.Object Section1 = null;
         #pragma warning disable 1998
         public async override global::System.Threading.Tasks.Task ExecuteAsync()
         {
-#line 1 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
+#line 5 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
    
     Layout = "_SectionTestLayout.cshtml";
 
 #line default
 #line hidden
             DefineSection("Section1", async() => {
+                __InputTestTagHelper = CreateTagHelper<global::InputTestTagHelper>();
+#line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
+__InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Date);
+
+#line default
+#line hidden
             }
             );
         }
@@ -47,7 +62,7 @@ global::System.Object Section1 = null;
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
         public global::Microsoft.AspNetCore.Mvc.Rendering.IJsonHelper Json { get; private set; }
         [global::Microsoft.AspNetCore.Mvc.Razor.Internal.RazorInjectAttribute]
-        public global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<dynamic> Html { get; private set; }
+        public global::Microsoft.AspNetCore.Mvc.Rendering.IHtmlHelper<DateTime> Html { get; private set; }
     }
 }
 #pragma warning restore 1591

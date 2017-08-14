@@ -109,7 +109,14 @@ public class MyModel
         [Fact]
         public void Sections_Runtime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+public class InputTestTagHelper : {typeof(TagHelper).FullName}
+{{
+    public ModelExpression For {{ get; set; }}
+}}
+");
             RunRuntimeTest(references);
         }
 
@@ -351,7 +358,14 @@ public abstract class MyPageModel<T> : Page
         [Fact]
         public void Sections_DesignTime()
         {
-            var references = CreateCompilationReferences(CurrentMvcShim);
+            var references = CreateCompilationReferences(CurrentMvcShim, appCode: $@"
+using Microsoft.AspNetCore.Mvc.ViewFeatures;
+
+public class InputTestTagHelper : {typeof(TagHelper).FullName}
+{{
+    public ModelExpression For {{ get; set; }}
+}}
+");
             RunDesignTimeTest(references);
         }
 

@@ -35,9 +35,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                     }
                 }
 
-                for (; i < directive.Node.Children.Count; i++)
+                while (i != directive.Node.Children.Count)
                 {
+                    // Move non-token children over to the section node so we don't have double references to children nodes.
                     section.Children.Add(directive.Node.Children[i]);
+                    directive.Node.Children.RemoveAt(i);
                 }
 
                 directive.InsertAfter(section);

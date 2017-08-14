@@ -1,4 +1,8 @@
-﻿@{ 
+﻿@model DateTime
+
+@addTagHelper "InputTestTagHelper, AppCode"
+
+@{ 
     Layout = "_SectionTestLayout.cshtml";
 }
 
@@ -6,4 +10,5 @@
 
 @section Section1 {
     <div>This is in Section 1</div>
+    <input-test for="Date" />
 }
