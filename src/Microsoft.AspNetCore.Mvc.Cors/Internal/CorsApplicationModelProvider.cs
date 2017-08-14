@@ -5,6 +5,8 @@ using System;
 using System.Linq;
 using Microsoft.AspNetCore.Cors.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Cors.Internal
 {
@@ -28,6 +30,9 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
+            var isCorsEnabledGlobally = context.Result.Filters.OfType<ICorsAuthorizationFilter>().Any() ||
+                context.Result.Filters.OfType<CorsAuthorizationFilterFactory>().Any();
+
             foreach (var controllerModel in context.Result.Controllers)
             {
                 var enableCors = controllerModel.Attributes.OfType<IEnableCorsAttribute>().FirstOrDefault();
@@ -42,6 +47,8 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
                     controllerModel.Filters.Add(new DisableCorsAuthorizationFilter());
                 }
 
+                var corsOnController = enableCors != null || disableCors != null || controllerModel.Filters.OfType<ICorsAuthorizationFilter>().Any();
+
                 foreach (var actionModel in controllerModel.Actions)
                 {
                     enableCors = actionModel.Attributes.OfType<IEnableCorsAttribute>().FirstOrDefault();
@@ -54,6 +61,28 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
                     if (disableCors != null)
                     {
                         actionModel.Filters.Add(new DisableCorsAuthorizationFilter());
+                    }
+
+                    var corsOnAction = enableCors != null || disableCors != null || actionModel.Filters.OfType<ICorsAuthorizationFilter>().Any();
+
+                    if (isCorsEnabledGlobally || corsOnController || corsOnAction)
+                    {
+                        UpdateHttpMethodActionConstraint(actionModel);
+                    }
+                }
+            }
+        }
+
+        private static void UpdateHttpMethodActionConstraint(ActionModel actionModel)
+        {
+            for (var i = 0; i < actionModel.Selectors.Count; i++)
+            {
+                var selectorModel = actionModel.Selectors[i];
+                for (var j = 0; j < selectorModel.ActionConstraints.Count; j++)
+                {
+                    if (selectorModel.ActionConstraints[j] is HttpMethodActionConstraint httpConstraint)
+                    {
+                        selectorModel.ActionConstraints[j] = new CorsHttpMethodActionConstraint(httpConstraint);
                     }
                 }
             }

@@ -43,6 +43,55 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(new[] { "*" }, header.Value.ToArray());
         }
 
+        [Fact]
+        public async Task OptionsRequest_NonPreflight_ExecutesOptionsAction()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(new HttpMethod("OPTIONS"), "http://localhost/NonCors/GetOptions");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("[\"Create\",\"Update\",\"Delete\"]", content);
+            Assert.Empty(response.Headers);
+        }
+
+        [Fact]
+        public async Task PreflightRequestOnNonCorsEnabledController_ExecutesOptionsAction()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(new HttpMethod("OPTIONS"), "http://localhost/NonCors/GetOptions");
+            request.Headers.Add(CorsConstants.Origin, "http://example.com");
+            request.Headers.Add(CorsConstants.AccessControlRequestMethod, "POST");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var content = await response.Content.ReadAsStringAsync();
+            Assert.Equal("[\"Create\",\"Update\",\"Delete\"]", content);
+            Assert.Empty(response.Headers);
+        }
+
+        [Fact]
+        public async Task PreflightRequestOnNonCorsEnabledController_DoesNotMatchTheAction()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(new HttpMethod("OPTIONS"), "http://localhost/NonCors/Post");
+            request.Headers.Add(CorsConstants.Origin, "http://example.com");
+            request.Headers.Add(CorsConstants.AccessControlRequestMethod, "POST");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
         [Theory]
         [InlineData("GET")]
         [InlineData("HEAD")]
