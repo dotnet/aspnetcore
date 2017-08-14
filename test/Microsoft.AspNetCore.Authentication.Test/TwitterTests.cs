@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
                     }
                 };
             },
-            context => 
+            context =>
             {
                 // REVIEW: Gross
                 context.ChallengeAsync("Twitter").GetAwaiter().GetResult();
@@ -73,6 +73,36 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
             Assert.Equal(HttpStatusCode.Redirect, transaction.Response.StatusCode);
             var query = transaction.Response.Headers.Location.Query;
             Assert.Contains("custom=test", query);
+        }
+
+        /// <summary>
+        /// Validates the Twitter Options to check if the Consumer Key is missing in the TwitterOptions and if so throws the ArgumentException
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task ThrowsIfClientIdMissing()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ConsumerSecret = "Test Consumer Secret";
+            });
+
+            await Assert.ThrowsAsync<ArgumentException>("ConsumerKey", async () => await server.SendAsync("http://example.com/challenge"));
+        }
+
+        /// <summary>
+        /// Validates the Twitter Options to check if the Consumer Secret is missing in the TwitterOptions and if so throws the ArgumentException
+        /// </summary>
+        /// <returns></returns>
+        [Fact]
+        public async Task ThrowsIfClientSecretMissing()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ConsumerKey = "Test Consumer Key";
+            });
+
+            await Assert.ThrowsAsync<ArgumentException>("ConsumerSecret", async () => await server.SendAsync("http://example.com/challenge"));
         }
 
         [Fact]
