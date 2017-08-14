@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         /// system uses the cookie authentication handler multiple times.
         /// </para>
         /// </summary>
-        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Domain) + ".")]
+        [Obsolete("This property is obsolete and will be removed in a future version. The recommended alternative is " + nameof(Cookie) + "." + nameof(CookieBuilder.Name) + ".")]
         public string CookieName { get => Cookie.Name; set => Cookie.Name = value; }
 
         /// <summary>
