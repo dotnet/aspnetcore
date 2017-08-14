@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.TestHost
             new TestServer(new WebHostBuilder().Configure(app => { }));
         }
 
-
         [Fact]
         public void DoesNotCaptureStartupErrorsByDefault()
         {
@@ -43,6 +42,46 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
         }
 
+        [Fact]
+        public async Task ServicesCanBeOverridenForTestingAsync()
+        {
+            var builder = new WebHostBuilder()
+                .ConfigureServices(s => s.AddSingleton<IServiceProviderFactory<ThirdPartyContainer>,ThirdPartyContainerServiceProviderFactory>())
+                .UseStartup<ThirdPartyContainerStartup>()
+                .ConfigureTestServices(services => services.AddSingleton(new SimpleService { Message = "OverridesConfigureServices" }))
+                .ConfigureTestContainer<ThirdPartyContainer>(container => container.Services.AddSingleton(new TestService { Message = "OverridesConfigureContainer" }));
+
+            var host = new TestServer(builder);
+
+            var response = await host.CreateClient().GetStringAsync("/");
+
+            Assert.Equal("OverridesConfigureServices, OverridesConfigureContainer", response);
+        }
+
+        public class ThirdPartyContainerStartup
+        {
+            public void ConfigureServices(IServiceCollection services) =>
+                services.AddSingleton(new SimpleService { Message = "ConfigureServices" });
+
+            public void ConfigureContainer(ThirdPartyContainer container) =>
+                container.Services.AddSingleton(new TestService { Message = "ConfigureContainer" });
+
+            public void Configure(IApplicationBuilder app) => 
+                app.Use((ctx, next) => ctx.Response.WriteAsync(
+                    $"{ctx.RequestServices.GetRequiredService<SimpleService>().Message}, {ctx.RequestServices.GetRequiredService<TestService>().Message}"));
+        }
+
+        public class ThirdPartyContainer
+        {
+            public IServiceCollection Services { get; set; }
+        }
+
+        public class ThirdPartyContainerServiceProviderFactory : IServiceProviderFactory<ThirdPartyContainer>
+        {
+            public ThirdPartyContainer CreateBuilder(IServiceCollection services) => new ThirdPartyContainer { Services = services };
+
+            public IServiceProvider CreateServiceProvider(ThirdPartyContainer containerBuilder) => containerBuilder.Services.BuildServiceProvider();
+        }
 
         [Fact]
         public void CaptureStartupErrorsSettingPreserved()
@@ -153,7 +192,7 @@ namespace Microsoft.AspNetCore.TestHost
             Assert.Throws<ArgumentNullException>(() => new TestServer(builder, null));
         }
 
-        public class TestService { }
+        public class TestService { public string Message { get; set; } }
 
         public class TestRequestServiceMiddleware
         {

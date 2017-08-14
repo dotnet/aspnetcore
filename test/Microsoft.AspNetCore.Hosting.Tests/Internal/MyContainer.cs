@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Hosting.Tests.Internal
 
         public bool FancyMethodCalled { get; private set; }
 
+        public IServiceCollection Services => _services;
+
         public string Environment { get; set; }
 
         public object GetService(Type serviceType)

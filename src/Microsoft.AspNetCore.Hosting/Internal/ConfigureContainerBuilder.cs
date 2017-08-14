@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Reflection;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
@@ -15,6 +14,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         public MethodInfo MethodInfo { get; }
+
+        public Func<Action<object>, Action<object>> ConfigureContainerFilters { get; set; }
 
         public Action<object> Build(object instance) => container => Invoke(instance, container);
 
@@ -30,6 +31,13 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         }
 
         private void Invoke(object instance, object container)
+        {
+            ConfigureContainerFilters(StartupConfigureContainer)(container);
+
+            void StartupConfigureContainer(object containerBuilder) => InvokeCore(instance, containerBuilder);
+        }
+
+        private void InvokeCore(object instance, object container)
         {
             if (MethodInfo == null)
             {

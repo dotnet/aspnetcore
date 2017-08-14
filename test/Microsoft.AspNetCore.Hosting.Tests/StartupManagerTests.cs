@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting.Fakes;
 using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.AspNetCore.Hosting.Tests.Internal;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 using Xunit;
 
@@ -17,6 +18,261 @@ namespace Microsoft.AspNetCore.Hosting.Tests
 {
     public class StartupManagerTests
     {
+        [Fact]
+        public void ConventionalStartupClass_StartupServiceFilters_WrapsConfigureServicesMethod()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
+            serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(1, overrideAfterService: true));
+            serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(2, overrideAfterService: true));
+            var services = serviceCollection.BuildServiceProvider();
+
+            var type = typeof(VoidReturningStartupServicesFiltersStartup);
+            var startup = StartupLoader.LoadMethods(services, type, "");
+
+            var applicationServices = startup.ConfigureServicesDelegate(serviceCollection);
+            var before = applicationServices.GetRequiredService<ServiceBefore>();
+            var after = applicationServices.GetRequiredService<ServiceAfter>();
+
+            Assert.Equal("StartupServicesFilter Before 1", before.Message);
+            Assert.Equal("StartupServicesFilter After 1", after.Message);
+        }
+
+        [Fact]
+        public void ConventionalStartupClass_StartupServiceFilters_MultipleStartupServiceFiltersRun()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
+            serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(1, overrideAfterService: false));
+            serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(2, overrideAfterService: true));
+            var services = serviceCollection.BuildServiceProvider();
+
+            var type = typeof(VoidReturningStartupServicesFiltersStartup);
+            var startup = StartupLoader.LoadMethods(services, type, "");
+
+            var applicationServices = startup.ConfigureServicesDelegate(serviceCollection);
+            var before = applicationServices.GetRequiredService<ServiceBefore>();
+            var after = applicationServices.GetRequiredService<ServiceAfter>();
+
+            Assert.Equal("StartupServicesFilter Before 1", before.Message);
+            Assert.Equal("StartupServicesFilter After 2", after.Message);
+        }
+
+        [Fact]
+        public void ConventionalStartupClass_StartupServicesFilters_ThrowsIfStartupBuildsTheContainerAsync()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<IServiceCollection>, DefaultServiceProviderFactory>();
+            serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(1, overrideAfterService: false));
+            var services = serviceCollection.BuildServiceProvider();
+
+            var type = typeof(IServiceProviderReturningStartupServicesFiltersStartup);
+            var startup = StartupLoader.LoadMethods(services, type, "");
+
+            var expectedMessage = $"A ConfigureServices method that returns an {nameof(IServiceProvider)} is " +
+                $"not compatible with the use of one or more {nameof(IStartupConfigureServicesFilter)}. " +
+                $"Use a void returning ConfigureServices method instead or a ConfigureContainer method.";
+
+            var exception = Assert.Throws<InvalidOperationException>(() => startup.ConfigureServicesDelegate(serviceCollection));
+
+            Assert.Equal(expectedMessage, exception.Message);
+        }
+
+        [Fact]
+        public void ConventionalStartupClass_ConfigureContainerFilters_WrapInRegistrationOrder()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
+            serviceCollection.AddSingleton<IStartupConfigureContainerFilter<MyContainer>>(new TestConfigureContainerFilter(1, overrideAfterService: true));
+            serviceCollection.AddSingleton<IStartupConfigureContainerFilter<MyContainer>>(new TestConfigureContainerFilter(2, overrideAfterService: true));
+            var services = serviceCollection.BuildServiceProvider();
+
+            var type = typeof(ConfigureContainerStartupServicesFiltersStartup);
+            var startup = StartupLoader.LoadMethods(services, type, "");
+
+            var applicationServices = startup.ConfigureServicesDelegate(serviceCollection);
+            var before = applicationServices.GetRequiredService<ServiceBefore>();
+            var after = applicationServices.GetRequiredService<ServiceAfter>();
+
+            Assert.Equal("ConfigureContainerFilter Before 1", before.Message);
+            Assert.Equal("ConfigureContainerFilter After 1", after.Message);
+        }
+
+        [Fact]
+        public void ConventionalStartupClass_ConfigureContainerFilters_RunsAllFilters()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
+            serviceCollection.AddSingleton<IStartupConfigureContainerFilter<MyContainer>>(new TestConfigureContainerFilter(1, overrideAfterService: false));
+            serviceCollection.AddSingleton<IStartupConfigureContainerFilter<MyContainer>>(new TestConfigureContainerFilter(2, overrideAfterService: true));
+            var services = serviceCollection.BuildServiceProvider();
+
+            var type = typeof(ConfigureContainerStartupServicesFiltersStartup);
+            var startup = StartupLoader.LoadMethods(services, type, "");
+
+            var applicationServices = startup.ConfigureServicesDelegate(serviceCollection);
+            var before = applicationServices.GetRequiredService<ServiceBefore>();
+            var after = applicationServices.GetRequiredService<ServiceAfter>();
+
+            Assert.Equal("ConfigureContainerFilter Before 1", before.Message);
+            Assert.Equal("ConfigureContainerFilter After 2", after.Message);
+        }
+
+        [Fact]
+        public void ConventionalStartupClass_ConfigureContainerFilters_RunAfterConfigureServicesFilters()
+        {
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddSingleton<IServiceProviderFactory<MyContainer>, MyContainerFactory>();
+            serviceCollection.AddSingleton<IStartupConfigureServicesFilter>(new TestStartupServicesFilter(1, overrideAfterService: false));
+            serviceCollection.AddSingleton<IStartupConfigureContainerFilter<MyContainer>>(new TestConfigureContainerFilter(2, overrideAfterService: true));
+            var services = serviceCollection.BuildServiceProvider();
+
+            var type = typeof(ConfigureServicesAndConfigureContainerStartup);
+            var startup = StartupLoader.LoadMethods(services, type, "");
+
+            var applicationServices = startup.ConfigureServicesDelegate(serviceCollection);
+            var before = applicationServices.GetRequiredService<ServiceBefore>();
+            var after = applicationServices.GetRequiredService<ServiceAfter>();
+
+            Assert.Equal("StartupServicesFilter Before 1", before.Message);
+            Assert.Equal("ConfigureContainerFilter After 2", after.Message);
+        }
+
+        public class ConfigureContainerStartupServicesFiltersStartup
+        {
+            public void ConfigureContainer(MyContainer services)
+            {
+                services.Services.TryAddSingleton(new ServiceBefore { Message = "Configure container" });
+                services.Services.TryAddSingleton(new ServiceAfter { Message = "Configure container" });
+            }
+
+            public void Configure(IApplicationBuilder builder)
+            {
+            }
+        }
+
+        public class ConfigureServicesAndConfigureContainerStartup
+        {
+            public void ConfigureServices(IServiceCollection services)
+            {
+                services.TryAddSingleton(new ServiceBefore { Message = "Configure services" });
+                services.TryAddSingleton(new ServiceAfter { Message = "Configure services" });
+            }
+
+            public void ConfigureContainer(MyContainer services)
+            {
+                services.Services.TryAddSingleton(new ServiceBefore { Message = "Configure container" });
+                services.Services.TryAddSingleton(new ServiceAfter { Message = "Configure container" });
+            }
+
+            public void Configure(IApplicationBuilder builder)
+            {
+            }
+        }
+
+        public class TestConfigureContainerFilter : IStartupConfigureContainerFilter<MyContainer>
+        {
+            public TestConfigureContainerFilter(object additionalData, bool overrideAfterService)
+            {
+                AdditionalData = additionalData;
+                OverrideAfterService = overrideAfterService;
+            }
+
+            public object AdditionalData { get; }
+            public bool OverrideAfterService { get; }
+
+            public Action<MyContainer> ConfigureContainer(Action<MyContainer> next)
+            {
+                return services =>
+                {
+                    services.Services.TryAddSingleton(new ServiceBefore { Message = $"ConfigureContainerFilter Before {AdditionalData}" });
+
+                    next(services);
+
+                    // Ensures we can always override.
+                    if (OverrideAfterService)
+                    {
+                        services.Services.AddSingleton(new ServiceAfter { Message = $"ConfigureContainerFilter After {AdditionalData}" });
+                    }
+                    else
+                    {
+                        services.Services.TryAddSingleton(new ServiceAfter { Message = $"ConfigureContainerFilter After {AdditionalData}" });
+                    }
+                };
+            }
+        }
+
+        public class IServiceProviderReturningStartupServicesFiltersStartup
+        {
+            public IServiceProvider ConfigureServices(IServiceCollection services)
+            {
+                services.TryAddSingleton(new ServiceBefore { Message = "Configure services" });
+                services.TryAddSingleton(new ServiceAfter { Message = "Configure services" });
+
+                return services.BuildServiceProvider();
+            }
+
+            public void Configure(IApplicationBuilder builder)
+            {
+            }
+        }
+
+        public class TestStartupServicesFilter : IStartupConfigureServicesFilter
+        {
+            public TestStartupServicesFilter(object additionalData, bool overrideAfterService)
+            {
+                AdditionalData = additionalData;
+                OverrideAfterService = overrideAfterService;
+            }
+
+            public object AdditionalData { get; }
+            public bool OverrideAfterService { get; }
+
+            public Action<IServiceCollection> ConfigureServices(Action<IServiceCollection> next)
+            {
+                return services =>
+                {
+                    services.TryAddSingleton(new ServiceBefore { Message = $"StartupServicesFilter Before {AdditionalData}" });
+
+                    next(services);
+
+                    // Ensures we can always override.
+                    if (OverrideAfterService)
+                    {
+                        services.AddSingleton(new ServiceAfter { Message = $"StartupServicesFilter After {AdditionalData}" });
+                    }
+                    else
+                    {
+                        services.TryAddSingleton(new ServiceAfter { Message = $"StartupServicesFilter After {AdditionalData}" });
+                    }
+                };
+            }
+        }
+
+        public class VoidReturningStartupServicesFiltersStartup
+        {
+            public void ConfigureServices(IServiceCollection services)
+            {
+                services.TryAddSingleton(new ServiceBefore { Message = "Configure services" });
+                services.TryAddSingleton(new ServiceAfter { Message = "Configure services" });
+            }
+
+            public void Configure(IApplicationBuilder builder)
+            {
+            }
+        }
+
+
+        public class ServiceBefore
+        {
+            public string Message { get; set; }
+        }
+
+        public class ServiceAfter
+        {
+            public string Message { get; set; }
+        }
+
         [Fact]
         public void StartupClassMayHaveHostingServicesInjected()
         {
