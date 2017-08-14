@@ -454,7 +454,7 @@ namespace Microsoft.AspNetCore.Identity
         {
             ThrowIfDisposed();
             await UpdateSecurityStampInternal(user);
-            var result = await ValidateUserInternal(user);
+            var result = await ValidateUserAsync(user);
             if (!result.Succeeded)
             {
                 return result;
@@ -872,8 +872,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 return IdentityResult.Failed(ErrorDescriber.InvalidToken());
             }
-            var passwordStore = GetPasswordStore();
-            var result = await UpdatePasswordHash(passwordStore, user, newPassword);
+            var result = await UpdatePasswordHash(user, newPassword, validatePassword: true);
             if (!result.Succeeded)
             {
                 return result;
@@ -2253,7 +2252,7 @@ namespace Microsoft.AspNetCore.Identity
             }
         }
 
-        internal IUserTwoFactorStore<TUser> GetUserTwoFactorStore()
+        private IUserTwoFactorStore<TUser> GetUserTwoFactorStore()
         {
             var cast = Store as IUserTwoFactorStore<TUser>;
             if (cast == null)
@@ -2263,7 +2262,7 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
-        internal IUserLockoutStore<TUser> GetUserLockoutStore()
+        private IUserLockoutStore<TUser> GetUserLockoutStore()
         {
             var cast = Store as IUserLockoutStore<TUser>;
             if (cast == null)
@@ -2273,7 +2272,7 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
-        internal IUserEmailStore<TUser> GetEmailStore(bool throwOnFail = true)
+        private IUserEmailStore<TUser> GetEmailStore(bool throwOnFail = true)
         {
             var cast = Store as IUserEmailStore<TUser>;
             if (throwOnFail && cast == null)
@@ -2283,7 +2282,7 @@ namespace Microsoft.AspNetCore.Identity
             return cast;
         }
 
-        internal IUserPhoneNumberStore<TUser> GetPhoneNumberStore()
+        private IUserPhoneNumberStore<TUser> GetPhoneNumberStore()
         {
             var cast = Store as IUserPhoneNumberStore<TUser>;
             if (cast == null)
@@ -2304,7 +2303,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         // Update the security stamp if the store supports it
-        internal async Task UpdateSecurityStampInternal(TUser user)
+        private async Task UpdateSecurityStampInternal(TUser user)
         {
             if (SupportsUserSecurityStamp)
             {
@@ -2312,12 +2311,22 @@ namespace Microsoft.AspNetCore.Identity
             }
         }
 
-        internal async Task<IdentityResult> UpdatePasswordHash(IUserPasswordStore<TUser> passwordStore,
+        /// <summary>
+        /// Updates a user's password hash.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="newPassword">The new password.</param>
+        /// <param name="validatePassword">Whether to validate the password.</param>
+        /// <returns>Whether the password has was successfully updated.</returns>
+        protected virtual Task<IdentityResult> UpdatePasswordHash(TUser user, string newPassword, bool validatePassword)
+            => UpdatePasswordHash(GetPasswordStore(), user, newPassword, validatePassword);
+
+        private async Task<IdentityResult> UpdatePasswordHash(IUserPasswordStore<TUser> passwordStore,
             TUser user, string newPassword, bool validatePassword = true)
         {
             if (validatePassword)
             {
-                var validate = await ValidatePasswordInternal(user, newPassword);
+                var validate = await ValidatePasswordAsync(user, newPassword);
                 if (!validate.Succeeded)
                 {
                     return validate;
@@ -2377,16 +2386,22 @@ namespace Microsoft.AspNetCore.Identity
 
 
         /// <summary>
-        /// Generates the token purpose used to change email
+        /// Generates the token purpose used to change email.
         /// </summary>
-        /// <param name="newEmail"></param>
-        /// <returns></returns>
+        /// <param name="newEmail">The new email address.</param>
+        /// <returns>The token purpose.</returns>
         protected static string GetChangeEmailTokenPurpose(string newEmail)
         {
             return "ChangeEmail:" + newEmail;
         }
 
-        private async Task<IdentityResult> ValidateUserInternal(TUser user)
+        /// <summary>
+        /// Should return <see cref="IdentityResult.Success"/> if validation is successful. This is
+        /// called before saving the user via Create or Update.
+        /// </summary>
+        /// <param name="user">The user</param>
+        /// <returns>A <see cref="IdentityResult"/> representing whether validation was successful.</returns>
+        protected async Task<IdentityResult> ValidateUserAsync(TUser user)
         {
             if (SupportsUserSecurityStamp)
             {
@@ -2413,7 +2428,14 @@ namespace Microsoft.AspNetCore.Identity
             return IdentityResult.Success;
         }
 
-        private async Task<IdentityResult> ValidatePasswordInternal(TUser user, string password)
+        /// <summary>
+        /// Should return <see cref="IdentityResult.Success"/> if validation is successful. This is
+        /// called before updating the password hash.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <param name="password">The password.</param>
+        /// <returns>A <see cref="IdentityResult"/> representing whether validation was successful.</returns>
+        protected async Task<IdentityResult> ValidatePasswordAsync(TUser user, string password)
         {
             var errors = new List<IdentityError>();
             foreach (var v in PasswordValidators)
@@ -2432,9 +2454,14 @@ namespace Microsoft.AspNetCore.Identity
             return IdentityResult.Success;
         }
 
-        private async Task<IdentityResult> UpdateUserAsync(TUser user)
+        /// <summary>
+        /// Called to update the user after validating and updating the normalized email/user name.
+        /// </summary>
+        /// <param name="user">The user.</param>
+        /// <returns>Whether the operation was successful.</returns>
+        protected virtual async Task<IdentityResult> UpdateUserAsync(TUser user)
         {
-            var result = await ValidateUserInternal(user);
+            var result = await ValidateUserAsync(user);
             if (!result.Succeeded)
             {
                 return result;

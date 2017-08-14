@@ -160,7 +160,7 @@ namespace Microsoft.AspNetCore.Identity
             {
                 throw new ArgumentNullException(nameof(role));
             }
-            var result = await ValidateRoleInternal(role);
+            var result = await ValidateRoleAsync(role);
             if (!result.Succeeded)
             {
                 return result;
@@ -415,7 +415,13 @@ namespace Microsoft.AspNetCore.Identity
             _disposed = true;
         }
 
-        private async Task<IdentityResult> ValidateRoleInternal(TRole role)
+        /// <summary>
+        /// Should return <see cref="IdentityResult.Success"/> if validation is successful. This is
+        /// called before saving the role via Create or Update.
+        /// </summary>
+        /// <param name="role">The role</param>
+        /// <returns>A <see cref="IdentityResult"/> representing whether validation was successful.</returns>
+        protected virtual async Task<IdentityResult> ValidateRoleAsync(TRole role)
         {
             var errors = new List<IdentityError>();
             foreach (var v in RoleValidators)
@@ -434,9 +440,14 @@ namespace Microsoft.AspNetCore.Identity
             return IdentityResult.Success;
         }
 
-        private async Task<IdentityResult> UpdateRoleAsync(TRole role)
+        /// <summary>
+        /// Called to update the role after validating and updating the normalized role name.
+        /// </summary>
+        /// <param name="role">The role.</param>
+        /// <returns>Whether the operation was successful.</returns>
+        protected virtual async Task<IdentityResult> UpdateRoleAsync(TRole role)
         {
-            var result = await ValidateRoleInternal(role);
+            var result = await ValidateRoleAsync(role);
             if (!result.Succeeded)
             {
                 return result;
