@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.Composition;
 using Microsoft.CodeAnalysis;
@@ -164,6 +165,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
             
             return project.IsCapabilityMatch("DotNetCoreWeb");
+        }
+
+        public static IEnumerable<ITextView> GetTextViews(ITextBuffer textBuffer)
+        {
+            // TODO: Extract text views from buffer
+
+            return new[] { (ITextView)null };
         }
     }
 }

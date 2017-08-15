@@ -11,6 +11,20 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             = new ResourceManager("Microsoft.VisualStudio.LanguageServices.Razor.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
+        /// Value cannot be null or an empty string.
+        /// </summary>
+        internal static string ArgumentCannotBeNullOrEmpty
+        {
+            get => GetString("ArgumentCannotBeNullOrEmpty");
+        }
+
+        /// <summary>
+        /// Value cannot be null or an empty string.
+        /// </summary>
+        internal static string FormatArgumentCannotBeNullOrEmpty()
+            => GetString("ArgumentCannotBeNullOrEmpty");
+
+        /// <summary>
         /// An unexpected exception occurred when invoking '{0}.{1}' on the Razor language service.
         /// </summary>
         internal static string UnexpectedException

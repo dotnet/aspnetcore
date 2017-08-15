@@ -37,6 +37,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30319" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61030" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(VsShellVersion)" />
 
     <!-- We need to use this version of Json.Net to maintain consistency with Visual Studio. -->
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />

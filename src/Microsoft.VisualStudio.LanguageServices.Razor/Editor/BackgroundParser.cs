@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.VisualStudio.Text;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor
+namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 {
     internal class BackgroundParser : IDisposable
     {
@@ -29,7 +29,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         /// <summary>
         /// Fired on the main thread.
         /// </summary>
-        public event EventHandler<DocumentParseCompleteEventArgs> ResultsReady;
+        public event EventHandler<DocumentStructureChangedEventArgs> ResultsReady;
 
         public bool IsIdle
         {
@@ -62,44 +62,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             return _main.Lock();
         }
 
-        protected virtual void OnResultsReady(DocumentParseCompleteEventArgs args)
+        protected virtual void OnResultsReady(DocumentStructureChangedEventArgs args)
         {
-            var handler = ResultsReady;
-            if (handler != null)
+            using (SynchronizeMainThreadState())
             {
-                handler(this, args);
+                ResultsReady?.Invoke(this, args);
             }
-        }
-
-        private static bool TreesAreDifferent(RazorSyntaxTree leftTree, RazorSyntaxTree rightTree, IEnumerable<Edit> edits, CancellationToken cancelToken)
-        {
-            return TreesAreDifferent(leftTree.Root, rightTree.Root, edits.Select(edit => edit.Change), cancelToken);
-        }
-
-        internal static bool TreesAreDifferent(Block leftTree, Block rightTree, IEnumerable<SourceChange> changes, CancellationToken cancelToken)
-        {
-            // Apply all the pending changes to the original tree
-            // PERF: If this becomes a bottleneck, we can probably do it the other way around,
-            //  i.e. visit the tree and find applicable changes for each node.
-            foreach (var change in changes)
-            {
-                cancelToken.ThrowIfCancellationRequested();
-
-                var changeOwner = leftTree.LocateOwner(change);
-
-                // Apply the change to the tree
-                if (changeOwner == null)
-                {
-                    return true;
-                }
-
-                var result = changeOwner.EditHandler.ApplyChange(changeOwner, change, force: true);
-                changeOwner.ReplaceWith(result.EditedSpan);
-            }
-
-            // Now compare the trees
-            var treesDifferent = !leftTree.EquivalentTo(rightTree);
-            return treesDifferent;
         }
 
         private abstract class ThreadStateBase
@@ -155,7 +123,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 SetThreadId(Thread.CurrentThread.ManagedThreadId);
             }
 
-            public event EventHandler<DocumentParseCompleteEventArgs> ResultsReady;
+            public event EventHandler<DocumentStructureChangedEventArgs> ResultsReady;
 
             public CancellationToken CancelToken
             {
@@ -187,7 +155,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             public void QueueChange(Edit edit)
             {
-                EnsureOnThread();
+                // Any thread can queue a change.
+
                 lock (_stateLock)
                 {
                     // CurrentParcel token source is not null ==> There's a parse underway
@@ -217,7 +186,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 }
             }
 
-            public void ReturnParcel(DocumentParseCompleteEventArgs args)
+            public void ReturnParcel(DocumentStructureChangedEventArgs args)
             {
                 lock (_stateLock)
                 {
@@ -307,7 +276,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                         {
                             try
                             {
-                                DocumentParseCompleteEventArgs args = null;
+                                DocumentStructureChangedEventArgs args = null;
                                 using (var linkedCancel = CancellationTokenSource.CreateLinkedTokenSource(_shutdownToken, parcel.CancelToken))
                                 {
                                     if (!linkedCancel.IsCancellationRequested)
@@ -333,14 +302,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                                             // Clear discarded changes list
                                             _previouslyDiscarded = null;
 
-                                            var treeStructureChanged = _currentSyntaxTree == null || TreesAreDifferent(_currentSyntaxTree, results.GetSyntaxTree(), allEdits, parcel.CancelToken);
                                             _currentSyntaxTree = results.GetSyntaxTree();
 
                                             // Build Arguments
-                                            args = new DocumentParseCompleteEventArgs(
+                                            args = new DocumentStructureChangedEventArgs(
                                                 finalEdit.Change,
                                                 finalEdit.Snapshot,
-                                                treeStructureChanged,
                                                 results);
                                         }
                                         else
