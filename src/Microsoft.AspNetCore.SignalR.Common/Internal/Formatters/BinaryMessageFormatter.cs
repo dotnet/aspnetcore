@@ -6,7 +6,7 @@ using System.Binary;
 using System.Buffers;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
+namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
 {
     public static class BinaryMessageFormatter
     {

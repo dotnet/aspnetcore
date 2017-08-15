@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         }
 
         [Theory]
-        [InlineData("2:", "Unable to parse payload as a negotiation message.")]
-        [InlineData("2:42;", "Unexpected JSON Token Type 'Integer'. Expected a JSON Object.")]
-        [InlineData("4:\"42\";", "Unexpected JSON Token Type 'String'. Expected a JSON Object.")]
-        [InlineData("4:null;", "Unexpected JSON Token Type 'Null'. Expected a JSON Object.")]
-        [InlineData("2:{};", "Missing required property 'protocol'.")]
-        [InlineData("2:[];", "Unexpected JSON Token Type 'Array'. Expected a JSON Object.")]
+        [InlineData("", "Unable to parse payload as a negotiation message.")]
+        [InlineData("42\u001e", "Unexpected JSON Token Type 'Integer'. Expected a JSON Object.")]
+        [InlineData("\"42\"\u001e", "Unexpected JSON Token Type 'String'. Expected a JSON Object.")]
+        [InlineData("null\u001e", "Unexpected JSON Token Type 'Null'. Expected a JSON Object.")]
+        [InlineData("{}\u001e", "Missing required property 'protocol'.")]
+        [InlineData("[]\u001e", "Unexpected JSON Token Type 'Array'. Expected a JSON Object.")]
         public void ParsingNegotiationMessageThrowsForInvalidMessages(string payload, string expectedMessage)
         {
             var message = Encoding.UTF8.GetBytes(payload);

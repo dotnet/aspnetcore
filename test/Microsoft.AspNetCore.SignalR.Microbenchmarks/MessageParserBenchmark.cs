@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using BenchmarkDotNet.Attributes;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 
 namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
 {

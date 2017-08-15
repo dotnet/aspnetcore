@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
+namespace Microsoft.AspNetCore.SignalR.Client.Tests
 {
     public class ServerSentEventsParserTests
     {

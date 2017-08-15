@@ -4,7 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using MsgPack;
 using MsgPack.Serialization;
 

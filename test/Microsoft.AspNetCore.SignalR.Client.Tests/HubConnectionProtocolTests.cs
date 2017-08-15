@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await connection.ReadSentTextMessageAsync().OrTimeout();
                 var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
-                Assert.Equal("78:{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"nonBlocking\":true,\"arguments\":[]};", invokeMessage);
+                Assert.Equal("{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"nonBlocking\":true,\"arguments\":[]}\u001e", invokeMessage);
             }
             finally
             {
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await hubConnection.StartAsync();
                 var negotiationMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
-                Assert.Equal("19:{\"protocol\":\"json\"};", negotiationMessage);
+                Assert.Equal("{\"protocol\":\"json\"}\u001e", negotiationMessage);
             }
             finally
             {
@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await connection.ReadSentTextMessageAsync().OrTimeout();
                 var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
-                Assert.Equal("59:{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"arguments\":[]};", invokeMessage);
+                Assert.Equal("{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"arguments\":[]}\u001e", invokeMessage);
             }
             finally
             {
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await connection.ReadSentTextMessageAsync().OrTimeout();
                 var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
-                Assert.Equal("59:{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"arguments\":[]};", invokeMessage);
+                Assert.Equal("{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"arguments\":[]}\u001e", invokeMessage);
 
                 // Complete the channel
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();

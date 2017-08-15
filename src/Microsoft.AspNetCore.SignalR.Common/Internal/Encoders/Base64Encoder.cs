@@ -4,7 +4,6 @@
 using System;
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
 {
@@ -13,7 +12,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
         public byte[] Decode(byte[] payload)
         {
             var buffer = new ReadOnlyBuffer<byte>(payload);
-            TextMessageParser.TryParseMessage(ref buffer, out var message);
+            LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out var message);
 
             return Convert.FromBase64String(Encoding.UTF8.GetString(message.ToArray()));
         }
@@ -23,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
             var buffer = Encoding.UTF8.GetBytes(Convert.ToBase64String(payload));
             using (var stream = new MemoryStream())
             {
-                TextMessageFormatter.WriteMessage(buffer, stream);
+                LengthPrefixedTextMessageWriter.WriteMessage(buffer, stream);
                 return stream.ToArray();
             }
         }

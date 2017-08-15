@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Buffers;
 using System.Collections.Generic;
 using System.Text;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
+namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Encoders
 {
-    public class TextMessageParserTests
+    public class LengthPrefixedTextMessageParserTests
     {
         [Theory]
         [InlineData(0, "0:;", "")]
@@ -21,7 +20,7 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         {
             ReadOnlyBuffer<byte> buffer = Encoding.UTF8.GetBytes(encoded);
 
-            Assert.True(TextMessageParser.TryParseMessage(ref buffer, out var message));
+            Assert.True(LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out var message));
             Assert.Equal(0, buffer.Length);
             Assert.Equal(Encoding.UTF8.GetBytes(payload), message.ToArray());
         }
@@ -33,7 +32,7 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
             ReadOnlyBuffer<byte> buffer = Encoding.UTF8.GetBytes(encoded);
 
             var messages = new List<byte[]>();
-            while (TextMessageParser.TryParseMessage(ref buffer, out var message))
+            while (LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out var message))
             {
                 messages.Add(message.ToArray());
             }
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
         public void ReadIncompleteMessages(string encoded)
         {
             ReadOnlyBuffer<byte> buffer = Encoding.UTF8.GetBytes(encoded);
-            Assert.False(TextMessageParser.TryParseMessage(ref buffer, out _));
+            Assert.False(LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out _));
         }
 
         [Theory]
@@ -70,7 +69,7 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
             ReadOnlyBuffer<byte> buffer = Encoding.UTF8.GetBytes(encoded);
             var ex = Assert.Throws<FormatException>(() =>
             {
-                TextMessageParser.TryParseMessage(ref buffer, out _);
+                LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out _);
             });
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -83,7 +82,7 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
             ReadOnlyBuffer<byte> buffer = new byte[] { 0x48, 0x65, 0x80, 0x6C, 0x6F, (byte)':' };
             var ex = Assert.Throws<FormatException>(() =>
             {
-                TextMessageParser.TryParseMessage(ref buffer, out _);
+                LengthPrefixedTextMessageParser.TryParseMessage(ref buffer, out _);
             });
             Assert.Equal("Invalid length: 'He�lo'", ex.Message);
         }

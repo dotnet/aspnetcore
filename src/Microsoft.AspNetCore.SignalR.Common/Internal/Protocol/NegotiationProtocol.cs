@@ -3,7 +3,7 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 

@@ -1,15 +1,14 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.IO;
 using System.Text;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.AspNetCore.SignalR.Internal.Encoders;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
+namespace Microsoft.AspNetCore.SignalR.Tests.Internal.Encoders
 {
-    public class TextMessageFormatterTests
+    public class LengthPrefixedTextMessageFormatterTests
     {
         [Fact]
         public void WriteMultipleMessages()
@@ -24,12 +23,12 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
             var output = new MemoryStream();
             foreach (var message in messages)
             {
-                TextMessageFormatter.WriteMessage(message, output);
+                LengthPrefixedTextMessageWriter.WriteMessage(message, output);
             }
 
             Assert.Equal(expectedEncoding, Encoding.UTF8.GetString(output.ToArray()));
         }
-        
+
         [Theory]
         [InlineData(8, "0:;", "")]
         [InlineData(8, "3:ABC;", "ABC")]
@@ -40,7 +39,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
             var message = Encoding.UTF8.GetBytes(payload);
             var output = new MemoryStream();
 
-            TextMessageFormatter.WriteMessage(message, output);
+            LengthPrefixedTextMessageWriter.WriteMessage(message, output);
 
             Assert.Equal(encoded, Encoding.UTF8.GetString(output.ToArray()));
         }

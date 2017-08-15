@@ -4,7 +4,7 @@
 using System;
 using System.Binary;
 
-namespace Microsoft.AspNetCore.Sockets.Internal.Formatters
+namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
 {
     public static class BinaryMessageParser
     {

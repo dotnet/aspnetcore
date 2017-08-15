@@ -4,7 +4,7 @@
 using System.IO;
 using System.Linq;
 using System.Text;
-using Microsoft.AspNetCore.Sockets.Internal.Formatters;
+using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
