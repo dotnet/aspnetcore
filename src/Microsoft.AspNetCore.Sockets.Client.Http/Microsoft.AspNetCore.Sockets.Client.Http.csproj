@@ -24,7 +24,6 @@
     <PackageReference Include="System.Memory" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Text.Formatting" Version="$(CoreFxLabsVersion)" />
     <PackageReference Include="System.Threading.Tasks.Channels" Version="$(CoreFxLabsVersion)" />
   </ItemGroup>
 

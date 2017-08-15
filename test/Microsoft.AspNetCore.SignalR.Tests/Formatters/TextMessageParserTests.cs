@@ -81,7 +81,6 @@ namespace Microsoft.AspNetCore.Sockets.Common.Tests.Internal.Formatters
             // Invalid because first character is a UTF-8 "continuation" character
             // We need to include the ':' so that
             ReadOnlyBuffer<byte> buffer = new byte[] { 0x48, 0x65, 0x80, 0x6C, 0x6F, (byte)':' };
-            var reader = new BytesReader(buffer);
             var ex = Assert.Throws<FormatException>(() =>
             {
                 TextMessageParser.TryParseMessage(ref buffer, out _);

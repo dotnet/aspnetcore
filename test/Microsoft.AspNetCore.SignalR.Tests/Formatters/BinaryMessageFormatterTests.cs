@@ -1,9 +1,8 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
-using System.Buffers;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Microsoft.AspNetCore.Sockets.Internal.Formatters;
 using Xunit;
@@ -56,7 +55,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
 
             BinaryMessageFormatter.WriteMessage(payload, output);
 
-            Assert.Equal(encoded, output.ToArray().Slice(offset).ToArray());
+            Assert.Equal(encoded, output.ToArray().Skip(offset));
         }
 
         [Theory]
@@ -77,7 +76,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests.Internal.Formatters
 
             BinaryMessageFormatter.WriteMessage(message, output);
 
-            Assert.Equal(encoded, output.ToArray().Slice(offset).ToArray());
+            Assert.Equal(encoded, output.ToArray().Skip(offset));
         }
     }
 }
