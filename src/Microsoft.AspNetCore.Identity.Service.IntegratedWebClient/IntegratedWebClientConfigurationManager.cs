@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Identity.Service.IntegratedWebClient
                 configurationContext.AuthorizationEndpoint = MakeAbsolute(authorizationUri);
             }
 
-            if (!Uri.TryCreate(configurationContext.AuthorizationEndpoint, UriKind.RelativeOrAbsolute, out var tokenUri))
+            if (!Uri.TryCreate(configurationContext.TokenEndpoint, UriKind.RelativeOrAbsolute, out var tokenUri))
             {
                 configurationContext.TokenEndpoint = $"{baseUrl}/tfp/IdentityService/signinsignup/oauth2/v2.0/token";
             }

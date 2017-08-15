@@ -1,0 +1,37 @@
+﻿@using Identity.OpenIdConnect.WebSite.Identity.Models.ApplicationViewModels
+@model CreateScopeViewModel
+
+    @{
+        ViewData["Title"] = "Add a scope to your application";
+    }
+
+    <h2>@ViewData["Title"].</h2>
+    <hr />
+    <ul class="list-unstyled">
+        <li class="h4">Name</li>
+        <li><a asp-action="Details">@Model.Name</a></li>
+        <li class="h4">Scopes</li>
+        <li>
+            <ul class="list-unstyled list-inline">
+                @foreach (var scope in Model.Scopes)
+                {
+                    <li>@scope</li>
+                }
+            </ul>
+        </li>
+    </ul>
+    <div>
+        <hr />
+        <form asp-action="AddScope" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="NewScope">New scope</label>
+                <input asp-for="NewScope" class="form-control" placeholder="New scope">
+                <span asp-validation-for="NewScope" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-default">Add</button>
+        </form>
+    </div>
+    @section Scripts {
+        @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    }

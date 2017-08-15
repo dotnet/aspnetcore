@@ -1,0 +1,23 @@
+﻿@using Identity.OpenIdConnect.WebSite.Identity.Models.ApplicationViewModels
+@model CreateApplicationViewModel
+
+    @{
+        ViewData["Title"] = "Create your application";
+    }
+
+    <h2>@ViewData["Title"].</h2>
+    <div>
+        <hr />
+        <form asp-action="Create" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="Name">Name</label>
+                <input asp-for="Name" class="form-control" placeholder="Name">
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-default">Submit</button>
+        </form>
+    </div>
+    @section Scripts {
+        @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    }

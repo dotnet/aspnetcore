@@ -1,0 +1,24 @@
+﻿@using Identity.OpenIdConnect.WebSite.Identity.Models.ApplicationViewModels
+@model RemoveLogoutUriViewModel
+
+    @{
+        ViewData["Title"] = "Remove logout uri";
+    }
+
+    <h2>@ViewData["Title"]</h2>
+    <hr />
+    <ul class="list-unstyled">
+        <li class="h4">Name</li>
+        <li><a asp-action="Details">@Model.Name</a></li>
+    </ul>
+    <div>
+        <hr />
+        <form asp-action="RemoveLogoutUri" asp-route-logoutUri="@Model.LogoutUri" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <p>Are you sure you want to remove the logout uri <strong>@Model.LogoutUri</strong>?</p>
+            <button type="submit" class="btn btn-default">Confirm</button>
+        </form>
+    </div>
+    @section Scripts {
+        @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    }

@@ -6,7 +6,6 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity.Service;
@@ -84,7 +83,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
                 using (var rsa = RSA.Create(2048))
                 {
                     var signingRequest = new CertificateRequest(
-                        new X500DistinguishedName("CN=IdentityService.Development"), rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
+                        new X500DistinguishedName("CN=Identity.Development"), rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
                     var enhacedKeyUsage = new OidCollection();
                     enhacedKeyUsage.Add(new Oid("1.3.6.1.5.5.7.3.1", "Server Authentication"));
                     signingRequest.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(enhacedKeyUsage, critical: true));
@@ -120,7 +119,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
                     store.Open(OpenFlags.ReadOnly);
                     var developmentCertificate = store.Certificates.Find(
                         X509FindType.FindBySubjectName,
-                        "IdentityService.Development",
+                        "Identity.Development",
                         validOnly: false);
 
                     store.Close();
@@ -134,7 +133,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Identity.Service
                 return certificates.Any(
                     c => _timeStampManager.IsValidPeriod(c.NotBefore, c.Expires) &&
                         c.Credentials.Key is X509SecurityKey key &&
-                        key.Certificate.Subject.Equals("CN=IdentityService.Development"));
+                        key.Certificate.Subject.Equals("CN=Identity.Development"));
             }
         }
     }

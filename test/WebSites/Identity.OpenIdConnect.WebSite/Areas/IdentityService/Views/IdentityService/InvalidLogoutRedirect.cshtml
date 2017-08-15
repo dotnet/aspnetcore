@@ -1,0 +1,7 @@
+@using Microsoft.IdentityModel.Protocols.OpenIdConnect
+@model OpenIdConnectMessage
+@{
+    ViewData["Title"] = "Invalid logout redirect";
+}
+<h2>@ViewData["Title"].</h2>
+<p class="text-warning">@Model.ErrorDescription</p>

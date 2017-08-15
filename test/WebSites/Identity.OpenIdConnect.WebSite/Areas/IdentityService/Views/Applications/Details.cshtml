@@ -1,0 +1,48 @@
+﻿@using Identity.OpenIdConnect.WebSite.Identity.Models.ApplicationViewModels
+@model ApplicationDetailsViewModel
+    <div>
+        <h4>View your application settings</h4>
+        <hr />
+        <ul class="list-unstyled">
+            <li class="h4">Name</li>
+            <li><a asp-action="ChangeName">@Model.Name</a></li>
+            <li class="h4">Application ID</li>
+            <li>@Model.ClientId</li>
+            <li class="h4">Keys</li>
+            <li>
+                @if (Model.HasClientSecret)
+                {
+                    <a asp-action="RegenerateClientSecret" class="btn btn-default">Regenerate key</a>
+                    <a asp-action="RemoveClientSecret" class="btn btn-default">Remove key</a>
+                }
+                else
+                {
+                    <a asp-action="GenerateClientSecret" class="btn btn-default">Create key</a>
+                }
+            </li>
+            <li class="h4">Scopes</li>
+            <li>
+                <ul class="list-inline">
+                    @foreach (var scope in @Model.Scopes)
+                    {
+                        <li><a asp-action="EditScope" asp-route-scope="@scope">@scope</a></li>
+                    }
+                </ul>
+            </li>
+            <li class="h4">Redirect uris</li>
+            @foreach (var redirectUri in @Model.RedirectUris)
+            {
+                <li><a asp-action="EditRedirectUri" asp-route-redirectUri="@redirectUri">@redirectUri</a></li>
+            }
+            <li class="h4">Logout uris</li>
+            @foreach (var logoutUri in @Model.LogoutUris)
+            {
+                <li><a asp-action="EditLogoutUri" asp-route-logoutUri="@logoutUri">@logoutUri</a></li>
+            }
+        </ul>
+        <hr />
+        <a asp-action="RemoveApplication" class="btn btn-danger">Delete application</a>
+        <a asp-action="AddScope" class="btn btn-default">Add scope</a>
+        <a asp-action="AddRedirectUri" class="btn btn-default">Add redirect uri</a>
+        <a asp-action="AddLogoutUri" class="btn btn-default">Add logout uri</a>
+    </div>

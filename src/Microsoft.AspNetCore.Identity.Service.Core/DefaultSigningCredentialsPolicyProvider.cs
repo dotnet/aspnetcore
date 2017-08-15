@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Identity.Service
                 var finalList = new List<SigningCredentialsDescriptor>();
                 foreach (var credential in credentialsFromSources.SelectMany(c => c))
                 {
-                    if (!_environment.IsDevelopment() && credential.Id.StartsWith("IdentityService.Development"))
+                    if (!_environment.IsDevelopment() && credential.Id.StartsWith("Identity.Development"))
                     {
                         continue;
                     }

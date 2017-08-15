@@ -1,0 +1,33 @@
+﻿@using Identity.OpenIdConnect.WebSite.Identity.Models.ApplicationViewModels
+@model CreateLogoutUriViewModel
+
+    @{
+        ViewData["Title"] = "Add a logout uri to your application";
+    }
+
+    <h2>@ViewData["Title"].</h2>
+    <div>
+        <ul class="list-unstyled">
+            <li class="h4">Name</li>
+            <li><a asp-action="Details">@Model.Name</a></li>
+            <li class="h4">Logout uris</li>
+
+            @foreach (var logoutUri in Model.LogoutUris)
+            {
+                <li>@logoutUri</li>
+            }
+        </ul>
+        <hr />
+        <form asp-action="AddLogoutUri" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="NewLogoutUri">New scope</label>
+                <input asp-for="NewLogoutUri" class="form-control" placeholder="New scope">
+                <span asp-validation-for="NewLogoutUri" class="text-danger"></span>
+            </div>
+            <button type="submit" class="btn btn-default">Add</button>
+        </form>
+    </div>
+    @section Scripts {
+        @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+    }

@@ -1,13 +1,14 @@
 ﻿using IdentityOIDCWebApplicationSample.Identity.Data;
 using IdentityOIDCWebApplicationSample.Identity.Models;
 using IdentityOIDCWebApplicationSample.Identity.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Extensions;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Diagnostics.Identity.Service;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Service;
-using Microsoft.AspNetCore.Identity.Service.AzureKeyVault;
 using Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity.Service.Extensions;
 using Microsoft.AspNetCore.Identity.Service.IntegratedWebClient;
@@ -41,9 +42,16 @@ namespace IdentityOIDCWebApplicationSample
                 .AddEntityFrameworkStores<IdentityServiceDbContext>()
                 .AddClientInfoBinding();
 
-            services
-                .AddWebApplicationAuthentication()
-                .WithIntegratedWebClient();
+            services.AddAuthentication(sharedOptions =>
+            {
+                sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                sharedOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+            })
+            .AddOpenIdConnect()
+            .AddCookie();
+            
+            services.WithIntegratedWebClient();
 
             services.AddTransient<IEmailSender, AuthMessageSender>();
             services.AddTransient<ISmsSender, AuthMessageSender>();

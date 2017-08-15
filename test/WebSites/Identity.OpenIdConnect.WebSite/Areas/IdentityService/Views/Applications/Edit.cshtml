@@ -1,0 +1,121 @@
+﻿@using Identity.OpenIdConnect.WebSite.Identity.Models.ApplicationViewModels
+@model UpdateApplicationViewModel
+
+@{
+    ViewData["Title"] = "Edit application details";
+}
+
+<h2>@ViewData["Title"].</h2>
+<div class="row">
+    <div class="col-md-12">
+        <section>
+            <form asp-controller="Applications" asp-action="ChangeName" method="post" class="form-horizontal">
+                <h4>Edit your application details.</h4>
+                <hr />
+                <div asp-validation-summary="All" class="text-danger"></div>
+                <input type="hidden" asp-for="Id" class="form-control" />
+                <div class="form-group">
+                    <label asp-for="Name" class="col-md-2 control-label"></label>
+                    <div class="col-md-10">
+                        <input asp-for="Name" class="form-control" />
+                        <span asp-validation-for="Name" class="text-danger"></span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <input class="btn btn-default" type="submit" value="Save" />
+                </div>
+            </form>
+            <div class="form-group">
+                <label asp-for="ClientId" class="col-md-2 control-label"></label>
+                <div class="col-md-8">
+                    <input asp-for="ClientId" class="form-control" disabled />
+                </div>
+            </div>
+            @if (Model.HasClientSecret)
+            {
+                <form asp-controller="Applications" asp-action="RegenerateClientSecret" asp-route-id="@Model.Id">
+                    <div class="form-group">
+                        <label asp-for="HasClientSecret" class="col-md-2 control-label"></label>
+                        <div class="col-md-8">
+                            <input type="password" value="........." class="form-control" disabled />
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="submit" class="btn btn-default" value="Regenerate credentials" />
+                    </div>
+                </form>
+            }
+            else
+            {
+                <form asp-controller="Applications" asp-action="GenerateClientSecret" asp-route-id="@Model.Id">
+                    <div class="col-md-2">
+                        <input type="submit" class="btn btn-default" value="Add client secret" />
+                    </div>
+                </form>
+            }
+            @for (int i = 0; i < Model.Scopes.Count; i++)
+            {
+                <form asp-controller="Applications" asp-action="RemoveScope" asp-route-id="@Model.Id" method="post" class="form-horizontal">
+                    <div class="form-group">
+                        <div class="col-md-10">
+                            <input type="hidden" asp-for="@Model.RemoveScope[i].Index" />
+                            <input asp-for="@Model.RemoveScope[i].Scope" readonly />
+                            <span asp-validation-for="@Model.RemoveScope[i].Scope" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-2">
+                            <input class="btn btn-default" type="submit" value="Update" />
+                        </div>
+                    </div>
+                </form>
+            }
+            <form asp-controller="Applications" asp-action="AddScope" asp-route-id="@Model.Id" method="post" class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-md-10">
+                        <input asp-for="@Model.AddScope.NewScope" />
+                        <span asp-validation-for="@Model.AddScope.NewScope" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-2">
+                        <input class="btn btn-default" type="submit" value="Add" />
+                    </div>
+                </div>
+            </form>
+            @for (int i = 0; i < Model.RedirectUris.Count; i++)
+            {
+                <form asp-controller="Applications" asp-action="UpdateRegisteredUri" asp-route-id="@Model.Id" method="post" class="form-horizontal">
+                    <div class="form-group">
+                        <input type="hidden" name="UpdateRegisteredUri[@i].Index" value="@Model.UpdateRegisteredUri[i].Index" />
+                        <input type="hidden" name="UpdateRegisteredUri[@i].RegisteredRedirectUri" value="@Model.UpdateRegisteredUri[i].RegisteredRedirectUri" />
+                        <div class="col-md-10">
+                            <input name="UpdateRegisteredUri[@i].UpdatedRedirectUri" class="form-control" value="@Model.UpdateRegisteredUri[i].RegisteredRedirectUri" />
+                            <span name="UpdateRegisteredUri[@i].UpdatedRedirectUri" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-2">
+                            <input class="btn btn-default" type="submit" value="Update" />
+                        </div>
+                    </div>
+                </form>
+                <form asp-controller="Applications" asp-action="UnregisterRedirectUri" asp-route-id="@Model.Id" method="post" class="form-horizontal">
+                    <div class="form-group">
+                        <input type="hidden" name="UnregisterRedirectUri[@i].Index" value="@Model.UnregisterRedirectUri[i].Index" />
+                        <input type="hidden" name="UnregisterRedirectUri[@i].RegisteredRedirectUri" value="@Model.UnregisterRedirectUri[i].RegisteredRedirectUri" />
+                        <input class="btn btn-default" type="submit" value="Unregister" />
+                    </div>
+                </form>
+            }
+            <form asp-controller="Applications" asp-action="RegisterRedirecturi" asp-route-id="@Model.Id" method="post" class="form-horizontal">
+                <div class="form-group">
+                    <div class="col-md-10">
+                        <input name="RegisterRedirectUri.NewRedirectUri" class="form-control" value="@Model.RegisterRedirectUri.NewRedirectUri" />
+                        <span name="RegisterRedirectUri.NewRedirectUri" class="text-danger"></span>
+                    </div>
+                    <div class="col-md-2">
+                        <input class="btn btn-default" type="submit" value="Add" />
+                    </div>
+                </div>
+            </form>
+        </section>
+    </div>
+</div>
+@section Scripts {
+    @{ await Html.RenderPartialAsync("_ValidationScriptsPartial"); }
+}

@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Identity.Service
             using (var store = new X509Store(StoreName.My, StoreLocation.CurrentUser))
             {
                 store.Open(OpenFlags.ReadOnly);
-                var cert = store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, "CN=IdentityService.Development", validOnly: false);
+                var cert = store.Certificates.Find(X509FindType.FindBySubjectDistinguishedName, "CN=Identity.Development", validOnly: false);
                 var valid = cert.OfType<X509Certificate2>().FirstOrDefault(c => _timeStampManager.IsValidPeriod(c.NotBefore, c.NotAfter));
                 store.Close();
 
