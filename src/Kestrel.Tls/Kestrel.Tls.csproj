@@ -9,6 +9,7 @@
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
     <EnableApiCheck>false</EnableApiCheck>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <IsPackable>false</IsPackable>
   </PropertyGroup>
 
   <ItemGroup>
