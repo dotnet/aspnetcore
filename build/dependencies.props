@@ -16,6 +16,10 @@
 
   <ItemGroup>
     <ExternalDependency Include="BenchmarkDotNet" Version="0.10.3" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="FSharp.Core" Version="4.2.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Reflection.Metadata" Version="1.5.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Threading.Tasks.Extensions" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="15.3.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Moq" Version="4.7.49" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Newtonsoft.Json" Version="10.0.1" Source="$(DefaultNuGetFeed)"/>
