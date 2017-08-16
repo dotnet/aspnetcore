@@ -383,7 +383,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
                .UseUrls(useUrlsAddress)
@@ -423,7 +423,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
                 .UseUrls($"http://127.0.0.1:0")
@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
                     {
-                        listenOptions.UseHttps("testCert.pfx", "testPassword");
+                        listenOptions.UseHttps(TestResources.TestCertificatePath, "testPassword");
                     });
                 })
                 .PreferHostingUrls(true)

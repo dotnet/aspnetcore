@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Tls</AssemblyName>
     <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Tls</RootNamespace>
@@ -10,8 +8,6 @@
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <NoWarn>CS1591;$(NoWarn)</NoWarn>
     <EnableApiCheck>false</EnableApiCheck>
-    <!-- TODO: remove when https://github.com/dotnet/sdk/pull/1270 is fixed -->
-    <GenerateResourceMSBuildRuntime>CurrentRuntime</GenerateResourceMSBuildRuntime>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
@@ -20,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
   </ItemGroup>
 
 </Project>

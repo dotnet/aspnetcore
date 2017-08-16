@@ -1,0 +1,24 @@
+<Project>
+  <Import Project="..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!--
+      Workaround for "Use executable flags in Microsoft.NET.Test.Sdk" (https://github.com/Microsoft/vstest/issues/792).
+      Remove when fixed.
+    -->
+    <HasRuntimeOutput>true</HasRuntimeOutput>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Moq" />
+    <PackageReference Include="xunit.analyzers" />
+    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="xunit" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)xunit.runner.json" Link="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

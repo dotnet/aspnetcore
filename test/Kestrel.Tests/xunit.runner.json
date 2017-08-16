@@ -1,5 +1,0 @@
-{
-  "$schema": "http://json.schemastore.org/xunit.runner.schema",
-  "methodDisplay": "method",
-  "longRunningTestSeconds": 60
-}

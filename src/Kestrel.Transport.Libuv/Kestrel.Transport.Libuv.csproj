@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv</AssemblyName>
     <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv</RootNamespace>
@@ -15,10 +13,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Libuv" Version="$(LibUvVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Options" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Libuv" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
   <ItemGroup>

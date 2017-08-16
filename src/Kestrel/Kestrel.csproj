@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <AssemblyName>Microsoft.AspNetCore.Server.Kestrel</AssemblyName>
     <RootNamespace>Microsoft.AspNetCore.Server.Kestrel</RootNamespace>
@@ -14,7 +12,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" />
   </ItemGroup>
 
   <ItemGroup>

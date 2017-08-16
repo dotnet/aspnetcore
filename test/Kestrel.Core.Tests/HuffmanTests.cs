@@ -52,7 +52,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         [Theory]
         [MemberData(nameof(HuffmanData))]
-        public void HuffmanEncodeDecode(int code, uint encoded, int bitLength)
+        public void HuffmanEncodeDecode(
+            int code,
+// Suppresses the warning about an unused theory parameter because
+// this test shares data with other methods
+#pragma warning disable xUnit1026
+            uint encoded,
+#pragma warning restore xUnit1026
+            int bitLength)
         {
             Assert.Equal(code, Huffman.Decode(Huffman.Encode(code).encoded, out var decodedBits));
             Assert.Equal(bitLength, decodedBits);
