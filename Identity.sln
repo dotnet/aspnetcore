@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26811.0
+VisualStudioVersion = 15.0.26815.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0F647068-6602-4E24-B1DC-8ED91481A50A}"
 EndProject
@@ -64,9 +64,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IdentityOIDCWebApplicationS
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSites", "WebSites", "{1F83D453-E094-4D28-BCFA-9E537ABB5AD6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Identity.OpenIdConnect.WebSite", "test\WebSites\Identity.OpenIdConnect.WebSite\Identity.OpenIdConnect.WebSite.csproj", "{D6FF6433-336F-42E0-8F3A-60F3787A0261}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.OpenIdConnect.WebSite", "test\WebSites\Identity.OpenIdConnect.WebSite\Identity.OpenIdConnect.WebSite.csproj", "{D6FF6433-336F-42E0-8F3A-60F3787A0261}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspnetCore.Identity.Service.FunctionalTests", "test\Microsoft.AspnetCore.Identity.Service.FunctionalTests\Microsoft.AspnetCore.Identity.Service.FunctionalTests.csproj", "{6E3E1BE7-CEAF-4565-AA0A-F5BE3FA7F39C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspnetCore.Identity.Service.FunctionalTests", "test\Microsoft.AspnetCore.Identity.Service.FunctionalTests\Microsoft.AspnetCore.Identity.Service.FunctionalTests.csproj", "{6E3E1BE7-CEAF-4565-AA0A-F5BE3FA7F39C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NativeWPFClient", "samples\NativeWPFClient\NativeWPFClient.csproj", "{39AA4E4D-5E62-4213-8641-BF8012D45DE4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -530,6 +532,22 @@ Global
 		{6E3E1BE7-CEAF-4565-AA0A-F5BE3FA7F39C}.Release|x64.Build.0 = Release|Any CPU
 		{6E3E1BE7-CEAF-4565-AA0A-F5BE3FA7F39C}.Release|x86.ActiveCfg = Release|Any CPU
 		{6E3E1BE7-CEAF-4565-AA0A-F5BE3FA7F39C}.Release|x86.Build.0 = Release|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Debug|x64.Build.0 = Debug|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Debug|x86.Build.0 = Debug|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Release|x64.ActiveCfg = Release|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Release|x64.Build.0 = Release|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Release|x86.ActiveCfg = Release|Any CPU
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -565,6 +583,7 @@ Global
 		{1F83D453-E094-4D28-BCFA-9E537ABB5AD6} = {52D59F18-62D2-4D17-8CF2-BE192445AF8E}
 		{D6FF6433-336F-42E0-8F3A-60F3787A0261} = {1F83D453-E094-4D28-BCFA-9E537ABB5AD6}
 		{6E3E1BE7-CEAF-4565-AA0A-F5BE3FA7F39C} = {52D59F18-62D2-4D17-8CF2-BE192445AF8E}
+		{39AA4E4D-5E62-4213-8641-BF8012D45DE4} = {58D94A0E-C2B7-43A7-8826-99ECBB1E0A50}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {B3F2A592-CCE0-40C2-8CA4-7B1293DED874}

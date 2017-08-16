@@ -1,0 +1,25 @@
+﻿<Window x:Class="NativeWPFClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:NativeWPFClient"
+        mc:Ignorable="d"
+        Title="MainWindow" Width="525" SizeToContent="Height">
+    <StackPanel Margin="0,0,0,0" VerticalAlignment="Stretch" Orientation="Vertical">
+        <Label Content="Base address" Margin="5,0" />
+        <TextBox Name="BaseAddress" Margin="5,0" TextWrapping="Wrap" Text="{Binding BaseAddress}" />
+        <Label Content="Redirect URI"  Margin="5,0" />
+        <TextBox Name="RedirectUri" Margin="5,0" TextWrapping="Wrap" Text="{Binding RedirectUri}"  />
+        <Label Content="Tenant" Margin="5,0"  />
+        <TextBox Name="Tenant" Margin="5,0" TextWrapping="Wrap" Text="{Binding Tenant}"  />
+        <Label Content="Policy" HorizontalAlignment="Left"  Margin="5,0" />
+        <TextBox Name="Policy" Margin="5,0" TextWrapping="Wrap" Text="{Binding Policy}"  />
+        <Label Content="Client ID" Margin="5,0" />
+        <TextBox Name="ClientID" Margin="5,0" TextWrapping="Wrap" Text="{Binding ClientId}"  />
+        <Label Content="Scopes" Margin="5,0" />
+        <TextBox Name="Scopes" Margin="5,0" TextWrapping="Wrap" Text="{Binding Scopes}"  />
+        <Button Name="Authorize" Margin="5,3" Click="Authorize_Click">Authorize</Button>
+        <Label Margin="5,0" Name="Result" Content="{Binding Result, Mode=TwoWay}"></Label>
+    </StackPanel>
+</Window>
