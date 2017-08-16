@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <AssemblyName>Microsoft.AspNetCore.Protocols.Abstractions</AssemblyName>
+    <RootNamespace>Microsoft.AspNetCore.Protocols.Abstractions</RootNamespace>
+    <Description>Core components of ASP.NET Core networking protocol stack.</Description>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore</PackageTags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <NoWarn>CS1591;$(NoWarn)</NoWarn>
+    <EnableApiCheck>false</EnableApiCheck>
+    <!-- TODO: remove when https://github.com/dotnet/sdk/pull/1270 is fixed -->
+    <GenerateResourceMSBuildRuntime>CurrentRuntime</GenerateResourceMSBuildRuntime>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Buffers" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.IO.Pipelines" Version="$(CoreFxLabVersion)" />
+    <PackageReference Include="System.Text.Encodings.Web.Utf8" Version="$(CoreFxLabVersion)" />
+
+    <!-- Override System.Memory and System.Runtime.CompilerServices.Unsafe to the ones we have on feed -->
+    <PackageReference Include="System.Memory" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(CoreFxVersion)" />
+  </ItemGroup>
+
+</Project>

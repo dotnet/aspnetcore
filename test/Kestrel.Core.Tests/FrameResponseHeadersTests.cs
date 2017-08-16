@@ -21,10 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frameContext = new FrameContext
             {
                 ServiceContext = new TestServiceContext(),
-                ConnectionInformation = new MockConnectionInformation
-                {
-                    PipeFactory = new PipeFactory()
-                },
+                PipeFactory = new PipeFactory(),
                 TimeoutControl = null
             };
 

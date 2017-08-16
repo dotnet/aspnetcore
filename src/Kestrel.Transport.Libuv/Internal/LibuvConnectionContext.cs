@@ -7,24 +7,17 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvConnectionContext : IConnectionInformation
+    public class LibuvConnectionContext : TransportConnection
     {
-        public LibuvConnectionContext()
-        {
-        }
-
         public LibuvConnectionContext(ListenerContext context)
         {
             ListenerContext = context;
         }
 
         public ListenerContext ListenerContext { get; set; }
-
-        public IPEndPoint RemoteEndPoint { get; set; }
-        public IPEndPoint LocalEndPoint { get; set; }
-
-        public PipeFactory PipeFactory => ListenerContext.Thread.PipeFactory;
-        public IScheduler InputWriterScheduler => ListenerContext.Thread;
-        public IScheduler OutputReaderScheduler => ListenerContext.Thread;
+        
+        public override PipeFactory PipeFactory => ListenerContext.Thread.PipeFactory;
+        public override IScheduler InputWriterScheduler => ListenerContext.Thread;
+        public override IScheduler OutputReaderScheduler => ListenerContext.Thread;
     }
 }

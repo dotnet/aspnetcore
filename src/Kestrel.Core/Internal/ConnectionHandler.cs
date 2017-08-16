@@ -2,8 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO.Pipelines;
+using System.Net;
 using System.Threading;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
@@ -24,38 +28,73 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _application = application;
         }
 
-        public IConnectionContext OnConnection(IConnectionInformation connectionInfo)
+        public void OnConnection(IFeatureCollection features)
         {
-            var inputPipe = connectionInfo.PipeFactory.Create(GetInputPipeOptions(connectionInfo.InputWriterScheduler));
-            var outputPipe = connectionInfo.PipeFactory.Create(GetOutputPipeOptions(connectionInfo.OutputReaderScheduler));
+            var connectionContext = new DefaultConnectionContext(features);
+
+            var transportFeature = connectionContext.Features.Get<IConnectionTransportFeature>();
+
+            var inputPipe = transportFeature.PipeFactory.Create(GetInputPipeOptions(transportFeature.InputWriterScheduler));
+            var outputPipe = transportFeature.PipeFactory.Create(GetOutputPipeOptions(transportFeature.OutputReaderScheduler));
 
             var connectionId = CorrelationIdGenerator.GetNextId();
             var frameConnectionId = Interlocked.Increment(ref _lastFrameConnectionId);
 
+            // Set the transport and connection id
+            connectionContext.ConnectionId = connectionId;
+            transportFeature.Connection = new PipeConnection(inputPipe.Reader, outputPipe.Writer);
+            var applicationConnection = new PipeConnection(outputPipe.Reader, inputPipe.Writer);
+
             if (!_serviceContext.ConnectionManager.NormalConnectionCount.TryLockOne())
             {
-                var goAway = new RejectionConnection(inputPipe, outputPipe, connectionId, _serviceContext);
+                var goAway = new RejectionConnection(inputPipe, outputPipe, connectionId, _serviceContext)
+                {
+                    Connection = applicationConnection
+                };
+
+                connectionContext.Features.Set<IConnectionApplicationFeature>(goAway);
+
                 goAway.Reject();
-                return goAway;
+                return;
             }
 
-            var connection = new FrameConnection(new FrameConnectionContext
+            var frameConnectionContext = new FrameConnectionContext
             {
                 ConnectionId = connectionId,
                 FrameConnectionId = frameConnectionId,
                 ServiceContext = _serviceContext,
-                ConnectionInformation = connectionInfo,
+                PipeFactory = connectionContext.PipeFactory,
                 ConnectionAdapters = _listenOptions.ConnectionAdapters,
                 Input = inputPipe,
-                Output = outputPipe,
-            });
+                Output = outputPipe
+            };
+
+            var connectionFeature = connectionContext.Features.Get<IHttpConnectionFeature>();
+
+            if (connectionFeature != null)
+            {
+                if (connectionFeature.LocalIpAddress != null)
+                {
+                    frameConnectionContext.LocalEndPoint = new IPEndPoint(connectionFeature.LocalIpAddress, connectionFeature.LocalPort);
+                }
+
+                if (connectionFeature.RemoteIpAddress != null)
+                {
+                    frameConnectionContext.RemoteEndPoint = new IPEndPoint(connectionFeature.RemoteIpAddress, connectionFeature.RemotePort);
+                }
+            }
+
+            var connection = new FrameConnection(frameConnectionContext)
+            {
+                Connection = applicationConnection
+            };
+
+            connectionContext.Features.Set<IConnectionApplicationFeature>(connection);
 
             // Since data cannot be added to the inputPipe by the transport until OnConnection returns,
             // Frame.ProcessRequestsAsync is guaranteed to unblock the transport thread before calling
             // application code.
-            connection.StartRequestProcessing<TContext>(_application);
-
-            return connection;
+            connection.StartRequestProcessing(_application);
         }
 
         // Internal for testing

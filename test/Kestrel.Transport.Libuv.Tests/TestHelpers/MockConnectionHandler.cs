@@ -3,6 +3,9 @@
 
 using System;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
@@ -12,26 +15,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
         public PipeOptions InputOptions { get; set; } = new PipeOptions();
         public PipeOptions OutputOptions { get; set; } = new PipeOptions();
 
-        public IConnectionContext OnConnection(IConnectionInformation connectionInfo)
+        public void OnConnection(IFeatureCollection features)
         {
-            Input = connectionInfo.PipeFactory.Create(InputOptions ?? new PipeOptions());
-            Output = connectionInfo.PipeFactory.Create(OutputOptions ?? new PipeOptions());
+            var connectionContext = new DefaultConnectionContext(features);
 
-            return new TestConnectionContext
+            Input = connectionContext.PipeFactory.Create(InputOptions ?? new PipeOptions());
+            Output = connectionContext.PipeFactory.Create(OutputOptions ?? new PipeOptions());
+
+            var context = new TestConnectionContext
             {
-                Input = Input.Writer,
-                Output = Output.Reader,
+                Connection = new PipeConnection(Output.Reader, Input.Writer)
             };
+
+            connectionContext.Features.Set<IConnectionApplicationFeature>(context);
         }
 
         public IPipe Input { get; private set; }
         public IPipe Output { get; private set; }
-        
-        private class TestConnectionContext : IConnectionContext
+
+        private class TestConnectionContext : IConnectionApplicationFeature
         {
             public string ConnectionId { get; }
-            public IPipeWriter Input { get; set; }
-            public IPipeReader Output { get; set; }
+            public IPipeConnection Connection { get; set; }
 
             public void Abort(Exception ex)
             {

@@ -699,10 +699,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var frame = new Frame<object>(null, new FrameContext
             {
                 ServiceContext = serviceContext,
-                ConnectionInformation = new MockConnectionInformation
-                {
-                    PipeFactory = _pipeFactory
-                },
+                PipeFactory = _pipeFactory,
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
                 Output = pipe
             });

@@ -2,7 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Diagnostics.Tracing;
+using System.Net;
 using System.Runtime.CompilerServices;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
@@ -26,15 +29,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         // - Avoid renaming methods or parameters marked with EventAttribute. EventSource uses these to form the event object.
 
         [NonEvent]
-        public void ConnectionStart(IConnectionContext context, IConnectionInformation information)
+        public void ConnectionStart(FrameConnection connection)
         {
             // avoid allocating strings unless this event source is enabled
             if (IsEnabled())
             {
                 ConnectionStart(
-                    context.ConnectionId,
-                    information.LocalEndPoint.ToString(),
-                    information.RemoteEndPoint.ToString());
+                    connection.ConnectionId,
+                    connection.LocalEndPoint.ToString(),
+                    connection.RemoteEndPoint.ToString());
             }
         }
 
@@ -53,7 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
         }
 
         [NonEvent]
-        public void ConnectionStop(IConnectionContext connection)
+        public void ConnectionStop(FrameConnection connection)
         {
             if (IsEnabled())
             {

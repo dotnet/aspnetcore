@@ -26,10 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 ServiceContext = new TestServiceContext(),
                 Input = Pipe.Reader,
-                ConnectionInformation = new MockConnectionInformation
-                {
-                    PipeFactory = _pipelineFactory
-                },
+                PipeFactory = _pipelineFactory,
                 TimeoutControl = Mock.Of<ITimeoutControl>()
             };
 

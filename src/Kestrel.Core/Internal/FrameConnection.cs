@@ -6,19 +6,20 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipelines;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class FrameConnection : IConnectionContext, ITimeoutControl
+    public class FrameConnection : IConnectionApplicationFeature, ITimeoutControl
     {
         private readonly FrameConnectionContext _context;
         private List<IAdaptedConnection> _adaptedConnections;
@@ -55,8 +56,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public string ConnectionId => _context.ConnectionId;
         public IPipeWriter Input => _context.Input.Writer;
         public IPipeReader Output => _context.Output.Reader;
+        public IPEndPoint LocalEndPoint => _context.LocalEndPoint;
+        public IPEndPoint RemoteEndPoint => _context.RemoteEndPoint;
 
-        private PipeFactory PipeFactory => _context.ConnectionInformation.PipeFactory;
+        private PipeFactory PipeFactory => _context.PipeFactory;
 
         // Internal for testing
         internal PipeOptions AdaptedInputPipeOptions => new PipeOptions
@@ -77,6 +80,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
 
+        public IPipeConnection Connection { get; set; }
+
         public void StartRequestProcessing<TContext>(IHttpApplication<TContext> application)
         {
             _lifetimeTask = ProcessRequestsAsync(application);
@@ -89,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 try
                 {
                     Log.ConnectionStart(ConnectionId);
-                    KestrelEventSource.Log.ConnectionStart(this, _context.ConnectionInformation);
+                    KestrelEventSource.Log.ConnectionStart(this);
 
                     AdaptedPipeline adaptedPipeline = null;
                     var adaptedPipelineTask = Task.CompletedTask;
@@ -156,7 +161,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _frame = new Frame<TContext>(application, new FrameContext
             {
                 ConnectionId = _context.ConnectionId,
-                ConnectionInformation = _context.ConnectionInformation,
+                PipeFactory = PipeFactory,
+                LocalEndPoint = LocalEndPoint,
+                RemoteEndPoint = RemoteEndPoint,
                 ServiceContext = _context.ServiceContext,
                 TimeoutControl = this,
                 Input = input,

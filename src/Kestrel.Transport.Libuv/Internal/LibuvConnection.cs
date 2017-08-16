@@ -5,15 +5,16 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO;
-using System.Threading.Tasks;
 using System.IO.Pipelines;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal.Networking;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 {
-    public class LibuvConnection : LibuvConnectionContext
+    public partial class LibuvConnection : LibuvConnectionContext
     {
         private const int MinAllocBufferSize = 2048;
 
@@ -24,7 +25,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             (handle, suggestedsize, state) => AllocCallback(handle, suggestedsize, state);
 
         private readonly UvStreamHandle _socket;
-        private IConnectionContext _connectionContext;
 
         private WritableBuffer? _currentWritableBuffer;
         private BufferHandle _bufferHandle;
@@ -35,14 +35,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
             if (_socket is UvTcpHandle tcpHandle)
             {
-                RemoteEndPoint = tcpHandle.GetPeerIPEndPoint();
-                LocalEndPoint = tcpHandle.GetSockIPEndPoint();
+                var remoteEndPoint = tcpHandle.GetPeerIPEndPoint();
+                var localEndPoint = tcpHandle.GetSockIPEndPoint();
+
+                RemoteAddress = remoteEndPoint.Address;
+                RemotePort = remoteEndPoint.Port;
+
+                LocalAddress = localEndPoint.Address;
+                LocalPort = localEndPoint.Port;
             }
         }
 
-        public string ConnectionId { get; set; }
-        public IPipeWriter Input { get; set; }
-        public LibuvOutputConsumer Output { get; set; }
+        public IPipeWriter Input => Application.Connection.Output;
+        public IPipeReader Output => Application.Connection.Input;
+
+        public LibuvOutputConsumer OutputConsumer { get; set; }
 
         private ILibuvTrace Log => ListenerContext.TransportContext.Log;
         private IConnectionHandler ConnectionHandler => ListenerContext.TransportContext.ConnectionHandler;
@@ -52,11 +59,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         {
             try
             {
-                _connectionContext = ConnectionHandler.OnConnection(this);
-                ConnectionId = _connectionContext.ConnectionId;
+                ConnectionHandler.OnConnection(this);
 
-                Input = _connectionContext.Input;
-                Output = new LibuvOutputConsumer(_connectionContext.Output, Thread, _socket, ConnectionId, Log);
+                OutputConsumer = new LibuvOutputConsumer(Output, Thread, _socket, ConnectionId, Log);
 
                 StartReading();
 
@@ -67,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     // This *must* happen after socket.ReadStart
                     // The socket output consumer is the only thing that can close the connection. If the
                     // output pipe is already closed by the time we start then it's fine since, it'll close gracefully afterwards.
-                    await Output.WriteOutputAsync();
+                    await OutputConsumer.WriteOutputAsync();
                 }
                 catch (UvException ex)
                 {
@@ -77,8 +82,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 {
                     // Now, complete the input so that no more reads can happen
                     Input.Complete(error ?? new ConnectionAbortedException());
-                    _connectionContext.Output.Complete(error);
-                    _connectionContext.OnConnectionClosed(error);
+                    Output.Complete(error);
+                    Application.OnConnectionClosed(error);
 
                     // Make sure it isn't possible for a paused read to resume reading after calling uv_close
                     // on the stream handle
@@ -173,7 +178,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                 }
 
-                _connectionContext.Abort(error);
+                Application.Abort(error);
                 // Complete after aborting the connection
                 Input.Complete(error);
             }
@@ -211,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 Log.ConnectionReadFin(ConnectionId);
                 var error = new IOException(ex.Message, ex);
 
-                _connectionContext.Abort(error);
+                Application.Abort(error);
                 Input.Complete(error);
             }
         }

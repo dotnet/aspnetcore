@@ -30,10 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 ConnectionId = "0123456789",
                 ConnectionAdapters = new List<IConnectionAdapter>(),
-                ConnectionInformation = new MockConnectionInformation
-                {
-                    PipeFactory = _pipeFactory
-                },
+                PipeFactory = _pipeFactory,
                 FrameConnectionId = long.MinValue,
                 Input = _pipeFactory.Create(),
                 Output = _pipeFactory.Create(),

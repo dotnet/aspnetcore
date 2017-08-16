@@ -3,12 +3,12 @@
 
 using System;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class RejectionConnection : IConnectionContext
+    public class RejectionConnection : IConnectionApplicationFeature
     {
         private readonly IKestrelTrace _log;
         private readonly IPipe _input;
@@ -26,6 +26,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public IPipeWriter Input => _input.Writer;
         public IPipeReader Output => _output.Reader;
 
+        public IPipeConnection Connection { get; set; }
+
         public void Reject()
         {
             KestrelEventSource.Log.ConnectionRejected(ConnectionId);
@@ -34,12 +36,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _output.Writer.Complete();
         }
 
-        // TODO: Remove these (https://github.com/aspnet/KestrelHttpServer/issues/1772)
-        void IConnectionContext.OnConnectionClosed(Exception ex)
+        void IConnectionApplicationFeature.OnConnectionClosed(Exception ex)
         {
         }
 
-        void IConnectionContext.Abort(Exception ex)
+        void IConnectionApplicationFeature.Abort(Exception ex)
         {
         }
     }

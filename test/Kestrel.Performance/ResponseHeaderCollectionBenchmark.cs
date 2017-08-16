@@ -177,10 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var frameContext = new FrameContext
             {
                 ServiceContext = serviceContext,
-                ConnectionInformation = new MockConnectionInformation
-                {
-                    PipeFactory = new PipeFactory()
-                }
+                PipeFactory = new PipeFactory()
             };
 
             var frame = new Frame<object>(application: null, frameContext: frameContext);

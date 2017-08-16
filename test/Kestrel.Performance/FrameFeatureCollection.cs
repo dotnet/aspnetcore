@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [Benchmark]
         public IHttpSendFileFeature GetLastViaGeneric()
         {
-            return _collection.Get<IHttpSendFileFeature> ();
+            return _collection.Get<IHttpSendFileFeature>();
         }
 
         private object Get(Type type)
@@ -85,10 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var frameContext = new FrameContext
             {
                 ServiceContext = serviceContext,
-                ConnectionInformation = new MockConnectionInformation
-                {
-                    PipeFactory = new PipeFactory()
-                }
+                PipeFactory = new PipeFactory()
             };
 
             _frame = new Frame<object>(application: null, frameContext: frameContext);

@@ -124,10 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var frame = new TestFrame<object>(application: null, context: new FrameContext
             {
                 ServiceContext = serviceContext,
-                ConnectionInformation = new MockConnectionInformation
-                {
-                    PipeFactory = pipeFactory
-                },
+                PipeFactory = pipeFactory,
                 TimeoutControl = new MockTimeoutControl(),
                 Input = input.Reader,
                 Output = output
