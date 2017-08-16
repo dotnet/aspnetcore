@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     internal class FrameRequestStream : ReadOnlyStream
     {
         private readonly IHttpBodyControlFeature _bodyControl;
-        private MessageBody _body;
+        private IMessageBody _body;
         private FrameStreamState _state;
         private Exception _error;
 
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void StartAcceptingReads(MessageBody body)
+        public void StartAcceptingReads(IMessageBody body)
         {
             // Only start if not aborted
             if (_state == FrameStreamState.Closed)

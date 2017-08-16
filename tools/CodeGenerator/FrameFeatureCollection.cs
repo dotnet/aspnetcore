@@ -19,8 +19,10 @@ namespace CodeGenerator
             return values.Select(formatter).Aggregate((a, b) => a + b);
         }
 
-        public static string GeneratedFile()
+        public static string GeneratedFile(string className, string namespaceSuffix, IEnumerable<Type> additionalFeatures = null)
         {
+            additionalFeatures = additionalFeatures ?? new Type[] { };
+
             var alwaysFeatures = new[]
             {
                 typeof(IHttpRequestFeature),
@@ -57,7 +59,7 @@ namespace CodeGenerator
                 typeof(IHttpSendFileFeature),
             };
 
-            var allFeatures = alwaysFeatures.Concat(commonFeatures).Concat(sometimesFeatures).Concat(rareFeatures);
+            var allFeatures = alwaysFeatures.Concat(commonFeatures).Concat(sometimesFeatures).Concat(rareFeatures).Concat(additionalFeatures);
 
             // NOTE: This list MUST always match the set of feature interfaces implemented by Frame.
             // See also: src/Kestrel/Http/Frame.FeatureCollection.cs
@@ -73,7 +75,7 @@ namespace CodeGenerator
                 typeof(IHttpMinRequestBodyDataRateFeature),
                 typeof(IHttpMinResponseDataRateFeature),
                 typeof(IHttpBodyControlFeature),
-            };
+            }.Concat(additionalFeatures);
 
             return $@"// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
@@ -81,9 +83,9 @@ namespace CodeGenerator
 using System;
 using System.Collections.Generic;
 
-namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
+namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.{namespaceSuffix}
 {{
-    public partial class Frame
+    public partial class {className}
     {{{Each(allFeatures, feature => $@"
         private static readonly Type {feature.Name}Type = typeof(global::{feature.FullName});")}
 {Each(allFeatures, feature => $@"

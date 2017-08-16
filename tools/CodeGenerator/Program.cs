@@ -3,6 +3,9 @@
 
 using System;
 using System.IO;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
 namespace CodeGenerator
 {
@@ -26,15 +29,16 @@ namespace CodeGenerator
                 return 1;
             }
 
-            Run(args[0], args[1], args[2]);
+            Run(args[0], args[1], args[2], args[3]);
 
             return 0;
         }
 
-        public static void Run(string knownHeadersPath, string frameFeaturesCollectionPath, string httpUtilitiesPath)
+        public static void Run(string knownHeadersPath, string frameFeatureCollectionPath, string http2StreamFeatureCollectionPath, string httpUtilitiesPath)
         {
             var knownHeadersContent = KnownHeaders.GeneratedFile();
-            var frameFeatureCollectionContent = FrameFeatureCollection.GeneratedFile();
+            var frameFeatureCollectionContent = FrameFeatureCollection.GeneratedFile(nameof(Frame), "Http");
+            var http2StreamFeatureCollectionContent = FrameFeatureCollection.GeneratedFile(nameof(Http2Stream), "Http2", new[] { typeof(IHttp2StreamIdFeature) });
             var httpUtilitiesContent = HttpUtilities.HttpUtilities.GeneratedFile();
 
             var existingKnownHeaders = File.Exists(knownHeadersPath) ? File.ReadAllText(knownHeadersPath) : "";
@@ -43,10 +47,16 @@ namespace CodeGenerator
                 File.WriteAllText(knownHeadersPath, knownHeadersContent);
             }
 
-            var existingFrameFeatureCollection = File.Exists(frameFeaturesCollectionPath) ? File.ReadAllText(frameFeaturesCollectionPath) : "";
+            var existingFrameFeatureCollection = File.Exists(frameFeatureCollectionPath) ? File.ReadAllText(frameFeatureCollectionPath) : "";
             if (!string.Equals(frameFeatureCollectionContent, existingFrameFeatureCollection))
             {
-                File.WriteAllText(frameFeaturesCollectionPath, frameFeatureCollectionContent);
+                File.WriteAllText(frameFeatureCollectionPath, frameFeatureCollectionContent);
+            }
+
+            var existingHttp2StreamFeatureCollection = File.Exists(http2StreamFeatureCollectionPath) ? File.ReadAllText(http2StreamFeatureCollectionPath) : "";
+            if (!string.Equals(http2StreamFeatureCollectionContent, existingHttp2StreamFeatureCollection))
+            {
+                File.WriteAllText(http2StreamFeatureCollectionPath, http2StreamFeatureCollectionContent);
             }
 
             var existingHttpUtilities = File.Exists(httpUtilitiesPath) ? File.ReadAllText(httpUtilitiesPath) : "";

@@ -13,7 +13,9 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -21,10 +23,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     public class FrameConnection : IConnectionApplicationFeature, ITimeoutControl
     {
+        private const int Http2ConnectionNotStarted = 0;
+        private const int Http2ConnectionStarted = 1;
+        private const int Http2ConnectionClosed = 2;
+
         private readonly FrameConnectionContext _context;
         private List<IAdaptedConnection> _adaptedConnections;
         private readonly TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private Frame _frame;
+        private Http2Connection _http2Connection;
+        private volatile int _http2ConnectionState;
 
         private long _lastTimestamp;
         private long _timeoutTimestamp = long.MaxValue;
@@ -116,6 +124,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     // _frame must be initialized before adding the connection to the connection manager
                     CreateFrame(application, input, output);
 
+                    // _http2Connection must be initialized before yield control to the transport thread,
+                    // to prevent a race condition where _http2Connection.Abort() is called just as
+                    // _http2Connection is about to be initialized.
+                    _http2Connection = new Http2Connection(new Http2ConnectionContext
+                    {
+                        ConnectionId = _context.ConnectionId,
+                        ServiceContext  = _context.ServiceContext,
+                        PipeFactory = PipeFactory,
+                        LocalEndPoint = LocalEndPoint,
+                        RemoteEndPoint = RemoteEndPoint,
+                        Input = input,
+                        Output = output
+                    });
+
                     // Do this before the first await so we don't yield control to the transport until we've
                     // added the connection to the connection manager
                     _context.ServiceContext.ConnectionManager.AddConnection(_context.FrameConnectionId, this);
@@ -128,7 +150,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         adaptedPipelineTask = adaptedPipeline.RunAsync(stream);
                     }
 
-                    await _frame.ProcessRequestsAsync();
+                    if (_frame.ConnectionFeatures?.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol == "h2" &&
+                        Interlocked.CompareExchange(ref _http2ConnectionState, Http2ConnectionStarted, Http2ConnectionNotStarted) == Http2ConnectionNotStarted)
+                    {
+                        await _http2Connection.ProcessAsync(application);
+                    }
+                    else
+                    {
+                        await _frame.ProcessRequestsAsync();
+                    }
+
                     await adaptedPipelineTask;
                     await _socketClosedTcs.Task;
                 }
@@ -173,10 +204,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public void OnConnectionClosed(Exception ex)
         {
-            Debug.Assert(_frame != null, $"{nameof(_frame)} is null");
-
-            // Abort the connection (if not already aborted)
-            _frame.Abort(ex);
+            Abort(ex);
 
             _socketClosedTcs.TrySetResult(null);
         }
@@ -185,7 +213,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             Debug.Assert(_frame != null, $"{nameof(_frame)} is null");
 
-            _frame.Stop();
+            if (Interlocked.Exchange(ref _http2ConnectionState, Http2ConnectionClosed) == Http2ConnectionStarted)
+            {
+                _http2Connection.Stop();
+            }
+            else
+            {
+                _frame.Stop();
+            }
 
             return _lifetimeTask;
         }
@@ -195,15 +230,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             Debug.Assert(_frame != null, $"{nameof(_frame)} is null");
 
             // Abort the connection (if not already aborted)
-            _frame.Abort(ex);
+            if (Interlocked.Exchange(ref _http2ConnectionState, Http2ConnectionClosed) == Http2ConnectionStarted)
+            {
+                _http2Connection.Abort(ex);
+            }
+            else
+            {
+                _frame.Abort(ex);
+            }
         }
 
         public Task AbortAsync(Exception ex)
         {
-            Debug.Assert(_frame != null, $"{nameof(_frame)} is null");
-
-            // Abort the connection (if not already aborted)
-            _frame.Abort(ex);
+            Abort(ex);
 
             return _lifetimeTask;
         }
