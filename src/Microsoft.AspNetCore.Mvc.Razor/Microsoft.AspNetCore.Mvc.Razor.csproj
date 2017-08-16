@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>ASP.NET Core MVC Razor view engine for CSHTML files.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
