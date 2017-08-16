@@ -25,6 +25,7 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
             var resourceId = Guid.NewGuid().ToString();
 
             var appBuilder = new CredentialsServerBuilder()
+                .EnsureDeveloperCertificate()
                 .ConfigureReferenceData(data => data
                     .CreateIntegratedWebClientApplication(clientId)
                     .CreateResourceApplication(resourceId, "ResourceApplication", "read")
@@ -122,6 +123,7 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
             var resourceId = Guid.NewGuid().ToString();
 
             var appBuilder = new CredentialsServerBuilder()
+                .EnsureDeveloperCertificate()
                 .ConfigureReferenceData(data => data
                     .CreateIntegratedWebClientApplication(clientId)
                     .CreateUser("testUser", "Pa$$w0rd"))
