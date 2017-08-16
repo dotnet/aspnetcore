@@ -4,7 +4,7 @@ describe('hubConnection', () => {
     eachTransportAndProtocol((transportType, protocol) => {
         describe(`${protocol.name} over ${signalR.TransportType[transportType]} transport`, () => {
             it(`can invoke server method and receive result`, done => {
-                const message = "Hi";
+                const message = "你好，世界！";
                 let hubConnection = new signalR.HubConnection(
                     new signalR.HttpConnection(TESTHUBENDPOINT_URL, { transport: transportType }), protocol);
                 hubConnection.onClosed = error => {
@@ -122,7 +122,7 @@ describe('hubConnection', () => {
             it(`can receive server calls`, done => {
                 let client = new signalR.HubConnection(
                     new signalR.HttpConnection(TESTHUBENDPOINT_URL, { transport: transportType }), protocol);
-                const message = "Hello SignalR";
+                const message = "你好 SignalR！";
 
                 let callbackPromise = new Promise((resolve, reject) => {
                     client.on("Message", msg => {
