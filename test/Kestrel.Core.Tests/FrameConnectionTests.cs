@@ -543,7 +543,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await _frameConnection.StopAsync().TimeoutAfter(TimeSpan.FromSeconds(5));
 
-            Assert.Equal(1, scopeObjects.Count);
+            Assert.Single(scopeObjects);
             var pairs = scopeObjects[0].ToDictionary(p => p.Key, p => p.Value);
             Assert.True(pairs.ContainsKey("ConnectionId"));
             Assert.Equal(_frameConnection.ConnectionId, pairs["ConnectionId"]);

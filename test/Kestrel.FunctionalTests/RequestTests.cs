@@ -1184,9 +1184,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        [Theory]
-        [MemberData(nameof(ConnectionAdapterData))]
-        public async Task HeadersAndStreamsAreReusedAcrossRequests(ListenOptions listenOptions)
+        [Fact]
+        public async Task HeadersAndStreamsAreReusedAcrossRequests()
         {
             var testContext = new TestServiceContext();
             var streamCount = 0;

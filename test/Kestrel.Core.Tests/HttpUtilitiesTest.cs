@@ -64,14 +64,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var block = new Span<byte>(Encoding.ASCII.GetBytes(input));
 
             // Act
-            HttpVersion knownVersion;
-            var result = block.GetKnownVersion(out knownVersion, out var length);
+            var result = block.GetKnownVersion(out HttpVersion knownVersion, out var length);
             string toString = null;
             if (knownVersion != HttpVersion.Unknown)
             {
                 toString = HttpUtilities.VersionToString(knownVersion);
             }
+
             // Assert
+            Assert.Equal(version, knownVersion);
             Assert.Equal(expectedResult, result);
             Assert.Equal(expectedKnownString, toString);
             Assert.Equal(expectedKnownString?.Length ?? 0, length);

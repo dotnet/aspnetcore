@@ -332,7 +332,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             string requestLine,
             string expectedMethod,
             string expectedRawTarget,
+// This warns that theory methods should use all of their parameters,
+// but this method is using a shared data collection with HttpParserTests.ParsesRequestLine and others.
+#pragma warning disable xUnit1026
             string expectedRawPath,
+#pragma warning restore xUnit1026
             string expectedDecodedPath,
             string expectedQueryString,
             string expectedHttpVersion)
