@@ -317,7 +317,7 @@ module.exports = {
 
 ## Hosting models
 
-NodeServices has a pluggable hosting/transport mechanism, because it is an abstraction over various possible ways to invoke Node.js from .NET. This allows more high-level facilities (e.g., for Angular prerendering) to be agnostic to the details of launching Node and communicating it - those high-level facilities can just trust that *somehow* we can invoke code in Node for them.
+NodeServices has a pluggable hosting/transport mechanism, because it is an abstraction over various possible ways to invoke Node.js from .NET. This allows more high-level facilities (e.g., for Angular prerendering) to be agnostic to the details of launching Node and communicating with it - those high-level facilities can just trust that *somehow* we can invoke code in Node for them.
 
 Using this abstraction, we could run Node inside the .NET process, in a separate process on the same machine, or even on a different machine altogether. At the time of writing, all the built-in hosting mechanisms work by launching Node as a separate process on the same machine as your .NET code.
 
