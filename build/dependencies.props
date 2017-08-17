@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="Libuv" Version="1.10.0" Source="$(AspNetCoreFeed)" />
+    <ExternalDependency Include="Libuv" Version="1.10.0" Source="$(AspNetCoreFeed)"/>
   </ItemGroup>
 
   <!-- nuget.org -->
@@ -17,14 +17,48 @@
   <ItemGroup>
     <ExternalDependency Include="BenchmarkDotNet" Version="0.10.3" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="FSharp.Core" Version="4.2.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.CSharp" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="15.3.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Moq" Version="4.7.49" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Newtonsoft.Json" Version="10.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Buffers" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.CodeDom" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Collections.Immutable" Version="1.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.ComponentModel.Annotations" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Composition.AttributedModel" Version="1.1.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Composition.Convention" Version="1.1.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Composition.Hosting" Version="1.1.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Composition.Runtime" Version="1.1.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Composition.TypedParts" Version="1.1.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Composition" Version="1.1.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Configuration.ConfigurationManager" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Data.SqlClient" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Diagnostics.DiagnosticSource" Version="4.4.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.IO.FileSystem.AccessControl" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.IO.Packaging" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.IO.Pipes.AccessControl" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.IO.Ports" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Json" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Numerics.Vectors" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Reflection.DispatchProxy" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Reflection.Metadata" Version="1.5.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Reflection.TypeExtensions" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Security.AccessControl" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Security.Cryptography.Cng" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Security.Cryptography.Pkcs" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Security.Cryptography.ProtectedData" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Security.Cryptography.Xml" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Security.Permissions" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Security.Principal.Windows" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.ServiceProcess.ServiceController" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Text.Encoding.CodePages" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Text.Encodings.Web" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Threading.AccessControl" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Threading.Tasks.Dataflow" Version="4.8.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Threading.Tasks.Extensions" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.ValueTuple" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="xunit.analyzers" Version="0.6.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="xunit.assert" Version="2.3.0-beta4-build3742" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="xunit.core" Version="2.3.0-beta4-build3742" Source="$(DefaultNuGetFeed)"/>
