@@ -720,8 +720,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             var serialized = JsonConvert.SerializeObject(patchDoc);
 
             // Assert
-            Assert.False(serialized.Contains("operations"));
-            Assert.False(serialized.Contains("Operations"));
+            Assert.DoesNotContain("operations", serialized);
+            Assert.DoesNotContain("Operations", serialized);
         }
 
         [Fact]
@@ -2061,7 +2061,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             patchDoc.ApplyTo(model);
 
             // Assert
-            Assert.Equal(1, model.Count);
+            Assert.Single(model);
             Assert.Equal(expected, model["WA"]);
         }
 
@@ -2080,7 +2080,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             deserialized.ApplyTo(model);
 
             // Assert
-            Assert.Equal(1, model.Count);
+            Assert.Single(model);
             Assert.Equal(expected, model["WA"]);
         }
 
