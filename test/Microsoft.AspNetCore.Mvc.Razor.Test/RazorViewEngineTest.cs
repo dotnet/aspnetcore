@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             {"page", "/Accounts/Index"},
         };
 
-        public static IEnumerable<string[]> AbsoluteViewPathData
+        public static IEnumerable<object[]> AbsoluteViewPathData
         {
             get
             {

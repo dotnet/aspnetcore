@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors.Internal
             // Assert
             var controller = Assert.Single(context.Result.Controllers);
             var action = Assert.Single(controller.Actions);
-            Assert.True(action.Filters.Any(f => f is DisableCorsAuthorizationFilter));
+            Assert.Contains(action.Filters, f => f is DisableCorsAuthorizationFilter);
             var selector = Assert.Single(action.Selectors);
             var constraint = Assert.Single(selector.ActionConstraints, c => c is HttpMethodActionConstraint);
             Assert.IsType<CorsHttpMethodActionConstraint>(constraint);

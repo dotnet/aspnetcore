@@ -471,8 +471,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var outputFormatterContext = GetOutputFormatterContext(sampleInput, typeof(DummyClass));
 
             // Act & Assert
-            await Assert.ThrowsAsync(typeof(SerializationException),
-                async () => await formatter.WriteAsync(outputFormatterContext));
+            await Assert.ThrowsAsync<SerializationException>(async () => await formatter.WriteAsync(outputFormatterContext));
         }
 
         [ConditionalFact]
@@ -489,8 +488,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var outputFormatterContext = GetOutputFormatterContext(parent, parent.GetType());
 
             // Act & Assert
-            await Assert.ThrowsAsync(typeof(SerializationException),
-                async () => await formatter.WriteAsync(outputFormatterContext));
+            await Assert.ThrowsAsync<SerializationException>(async () => await formatter.WriteAsync(outputFormatterContext));
         }
 
         [ConditionalFact]

@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Address[]>(modelBindingResult.Model);
-            Assert.Equal(1, model.Length);
+            Assert.Single(model);
             Assert.NotNull(model[0]);
 
             Assert.Equal(0, modelState.Count);
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.True(modelBindingResult.IsModelSet);
 
             var model = Assert.IsType<Address[]>(modelBindingResult.Model);
-            Assert.Equal(1, model.Length);
+            Assert.Single(model);
             Assert.Null(model[0]);
 
             Assert.Equal(0, modelState.Count);

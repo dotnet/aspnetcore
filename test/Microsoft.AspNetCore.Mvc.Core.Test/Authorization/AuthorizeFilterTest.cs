@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Authorization
         public void InvalidUser()
         {
             var authorizationContext = GetAuthorizationContext();
-            Assert.True(authorizationContext.HttpContext.User.Identities.Any(i => i.IsAuthenticated));
+            Assert.Contains(authorizationContext.HttpContext.User.Identities, i => i.IsAuthenticated);
         }
 
         [Fact]

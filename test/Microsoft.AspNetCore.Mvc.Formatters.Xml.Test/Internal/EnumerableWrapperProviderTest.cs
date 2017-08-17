@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
             Assert.NotNull(wrapped);
             var delegatingEnumerable = wrapped as DelegatingEnumerable<int, int>;
             Assert.NotNull(delegatingEnumerable);
-            Assert.Equal(0, delegatingEnumerable.Count());
+            Assert.Empty(delegatingEnumerable);
         }
 
         [Fact]

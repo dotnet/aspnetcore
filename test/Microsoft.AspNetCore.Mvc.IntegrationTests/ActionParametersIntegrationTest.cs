@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Model
             Assert.NotNull(modelBindingResult.Model);
             var boundModel = Assert.IsType<Person3>(modelBindingResult.Model);
-            Assert.Equal(1, boundModel.Address.Count);
+            Assert.Single(boundModel.Address);
             Assert.Equal("SomeStreet", boundModel.Address[0].Street);
 
             // ModelState
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(modelBindingResult.Model);
             var boundModel = Assert.IsType<Person4>(modelBindingResult.Model);
             Assert.NotNull(boundModel.Address);
-            Assert.Equal(1, boundModel.Address.Count());
+            Assert.Single(boundModel.Address);
             Assert.Equal("SomeStreet", boundModel.Address[0].Street);
 
             // ModelState
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(boundModel.Address);
 
             // Arrays should not be updated.
-            Assert.Equal(0, boundModel.Address.Count());
+            Assert.Empty(boundModel.Address);
 
             // ModelState
             Assert.True(modelState.IsValid);
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Model
             Assert.NotNull(modelBindingResult.Model);
             var boundModel = Assert.IsType<Person3>(modelBindingResult.Model);
-            Assert.Equal(1, boundModel.Address.Count);
+            Assert.Single(boundModel.Address);
             Assert.Equal("SomeStreet", boundModel.Address[0].Street);
 
             // ModelState
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             // Model
             Assert.NotNull(modelBindingResult.Model);
             var boundModel = Assert.IsType<Person4>(modelBindingResult.Model);
-            Assert.Equal(1, boundModel.Address.Count());
+            Assert.Single(boundModel.Address);
             Assert.Equal("SomeStreet", boundModel.Address[0].Street);
 
             // ModelState
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var boundModel = Assert.IsType<Person5>(modelBindingResult.Model);
 
             // Arrays should not be updated.
-            Assert.Equal(0, boundModel.Address.Count());
+            Assert.Empty(boundModel.Address);
 
             // ModelState
             Assert.True(modelState.IsValid);

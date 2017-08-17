@@ -208,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(0, response.Content.Headers.ContentLength);
 
             var responseBytes = await response.Content.ReadAsByteArrayAsync();
-            Assert.Equal(0, responseBytes.Length);
+            Assert.Empty(responseBytes);
         }
 
         [Fact]
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(0, response.Content.Headers.ContentLength);
 
             var responseBytes = await response.Content.ReadAsByteArrayAsync();
-            Assert.Equal(0, responseBytes.Length);
+            Assert.Empty(responseBytes);
         }
 
         [Theory]

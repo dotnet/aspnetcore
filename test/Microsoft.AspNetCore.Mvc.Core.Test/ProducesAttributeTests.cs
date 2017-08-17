@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
-            Assert.Equal(1, objectResult.ContentTypes.Count);
+            Assert.Single(objectResult.ContentTypes);
         }
 
         [Fact]
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Test
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
-            Assert.Equal(0, objectResult.ContentTypes.Count);
+            Assert.Empty(objectResult.ContentTypes);
         }
 
         [Theory]

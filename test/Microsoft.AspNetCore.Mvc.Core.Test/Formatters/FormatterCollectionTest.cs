@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             var formatter = Assert.Single(collection);
-            Assert.IsType(typeof(AnotherTestOutputFormatter), formatter);
+            Assert.IsType<AnotherTestOutputFormatter>(formatter);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             var formatter = Assert.Single(collection);
-            Assert.IsType(typeof(AnotherTestOutputFormatter), formatter);
+            Assert.IsType<AnotherTestOutputFormatter>(formatter);
         }
 
         private class TestOutputFormatter : TextOutputFormatter

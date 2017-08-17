@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var helpers2 = HtmlAttributePropertyHelper.GetProperties(anonymous.GetType());
 
             // Assert
-            Assert.Equal(1, helpers1.Length);
+            Assert.Single(helpers1);
             Assert.Same(helpers1, helpers2);
             Assert.Same(helpers1[0], helpers2[0]);
         }
@@ -97,8 +97,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             var helpers2 = PropertyHelper.GetProperties(anonymous.GetType());
 
             // Assert
-            Assert.Equal(1, helpers1.Length);
-            Assert.Equal(1, helpers2.Length);
+            Assert.Single(helpers1);
+            Assert.Single(helpers2);
 
             Assert.NotEqual<PropertyHelper[]>(helpers1, helpers2);
             Assert.NotEqual<PropertyHelper>(helpers1[0], helpers2[0]);

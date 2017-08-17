@@ -13,6 +13,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{3BA657BF-2
 	ProjectSection(SolutionItems) = preProject
 		test\Directory.Build.props = test\Directory.Build.props
 		test\Directory.Build.targets = test\Directory.Build.targets
+		test\MvcTests.ruleset = test\MvcTests.ruleset
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc", "src\Microsoft.AspNetCore.Mvc\Microsoft.AspNetCore.Mvc.csproj", "{079EFA1F-0B0A-4853-B27B-5780D111CD85}"

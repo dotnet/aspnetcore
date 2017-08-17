@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjecResult.StatusCode);
             var errors = Assert.IsType<SerializableError>(badRequestObjecResult.Value);
-            Assert.Equal(0, errors.Count);
+            Assert.Empty(errors);
         }
     }
 }

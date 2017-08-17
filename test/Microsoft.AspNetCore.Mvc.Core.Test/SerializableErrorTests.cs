@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc
             var serializableError = new SerializableError(modelState);
 
             // Assert
-            Assert.Equal(0, serializableError.Count);
+            Assert.Empty(serializableError);
         }
     }
 }

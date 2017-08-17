@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             Assert.Equal(new StringSegment("json"), result.SubType);
         }
 
-        public static IEnumerable<string[]> MediaTypesWithSuffixes
+        public static IEnumerable<object[]> MediaTypesWithSuffixes
         {
             get
             {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         [Theory]
-        [MemberData(nameof (MediaTypesWithSuffixes))]
+        [MemberData(nameof(MediaTypesWithSuffixes))]
         public void Constructor_CanParseSuffixedMediaTypes(
             string mediaType,
             string expectedSubTypeWithoutSuffix,

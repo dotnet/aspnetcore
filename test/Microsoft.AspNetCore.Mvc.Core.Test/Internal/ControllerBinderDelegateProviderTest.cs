@@ -139,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             await binderDelegate(controllerContext, controller, arguments);
 
             // Assert
-            Assert.Equal(1, arguments.Count);
+            Assert.Single(arguments);
             Assert.Equal(value, arguments["foo"]);
         }
 

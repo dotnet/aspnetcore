@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var metadata = provider.GetMetadataForProperties(typeof(ModelTypeWithIndexer)).ToArray();
 
             // Assert
-            Assert.Equal(1, metadata.Length);
+            Assert.Single(metadata);
             Assert.Single(metadata, m => m.PropertyName == "Property1");
         }
 

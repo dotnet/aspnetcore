@@ -1103,7 +1103,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             await invoker.InvokeAsync();
 
             // Assert
-            Assert.IsType(typeof(EmptyResult), result);
+            Assert.IsType<EmptyResult>(result);
         }
 
         [Fact]
@@ -1131,8 +1131,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             await invoker.InvokeAsync();
 
             // Assert
-            Assert.IsType(typeof(ObjectResult), result);
-            Assert.IsType(typeof(int), ((ObjectResult)result).Value);
+            Assert.IsType<ObjectResult>(result);
+            Assert.IsType<int>(((ObjectResult)result).Value);
             Assert.Equal(1, ((ObjectResult)result).Value);
         }
 

@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal
             // Assert
             Assert.NotNull(wrapper.SerializableError);
             Assert.Same(serializableError, wrapper.SerializableError);
-            Assert.Equal(1, wrapper.SerializableError.Count);
+            Assert.Single(wrapper.SerializableError);
             Assert.True(wrapper.SerializableError.ContainsKey("key1"));
             Assert.Equal("key1-error", wrapper.SerializableError["key1"]);
         }

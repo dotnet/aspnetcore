@@ -215,12 +215,10 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var formatter = new XmlSerializerInputFormatter();
 
             // Assert
-            Assert.True(formatter.SupportedMediaTypes
-                                 .Select(content => content.ToString())
-                                 .Contains("application/xml"));
-            Assert.True(formatter.SupportedMediaTypes
-                                 .Select(content => content.ToString())
-                                 .Contains("text/xml"));
+            Assert.Contains("application/xml", formatter.SupportedMediaTypes
+                                 .Select(content => content.ToString()));
+            Assert.Contains("text/xml", formatter.SupportedMediaTypes
+                                 .Select(content => content.ToString()));
         }
 
         [Fact]
@@ -230,8 +228,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var formatter = new XmlSerializerInputFormatter();
 
             // Assert
-            Assert.True(formatter.SupportedEncodings.Any(i => i.WebName == "utf-8"));
-            Assert.True(formatter.SupportedEncodings.Any(i => i.WebName == "utf-16"));
+            Assert.Contains(formatter.SupportedEncodings, i => i.WebName == "utf-8");
+            Assert.Contains(formatter.SupportedEncodings, i => i.WebName == "utf-16");
         }
 
         [Fact]
@@ -342,7 +340,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act & Assert
-            await Assert.ThrowsAsync(typeof(InvalidOperationException), () => formatter.ReadAsync(context));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => formatter.ReadAsync(context));
         }
 
         [ConditionalFact]
@@ -363,7 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act & Assert
-            await Assert.ThrowsAsync(typeof(InvalidOperationException), () => formatter.ReadAsync(context));
+            await Assert.ThrowsAsync<InvalidOperationException>(() => formatter.ReadAsync(context));
         }
 
         [Fact]
@@ -373,7 +371,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var formatter = new XmlSerializerInputFormatter();
 
             // Act & Assert
-            Assert.Throws(typeof(ArgumentException), () => formatter.MaxDepth = 0);
+            Assert.Throws<ArgumentException>(() => formatter.MaxDepth = 0);
         }
 
         [Fact]

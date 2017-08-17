@@ -1987,7 +1987,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.IsType<BadRequestObjectResult>(result);
             Assert.Equal(StatusCodes.Status400BadRequest, result.StatusCode);
             var errors = Assert.IsType<SerializableError>(result.Value);
-            Assert.Equal(0, errors.Count);
+            Assert.Empty(errors);
         }
 
         [Theory]

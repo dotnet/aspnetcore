@@ -652,14 +652,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ModelBindingHelper.ClearValidationStateForModel(modelMetadata, dictionary, modelKey);
 
             // Assert
-            Assert.Equal(0, dictionary["Name"].Errors.Count);
+            Assert.Empty(dictionary["Name"].Errors);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["Name"].ValidationState);
-            Assert.Equal(0, dictionary["Id"].Errors.Count);
+            Assert.Empty(dictionary["Id"].Errors);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["Id"].ValidationState);
-            Assert.Equal(0, dictionary["Category"].Errors.Count);
+            Assert.Empty(dictionary["Category"].Errors);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["Category"].ValidationState);
 
-            Assert.Equal(1, dictionary["Unrelated"].Errors.Count);
+            Assert.Single(dictionary["Unrelated"].Errors);
             Assert.Equal(ModelValidationState.Invalid, dictionary["Unrelated"].ValidationState);
         }
 
@@ -681,10 +681,10 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ModelBindingHelper.ClearValidationStateForModel(modelMetadata, dictionary, modelKey);
 
             // Assert
-            Assert.Equal(0, dictionary[string.Empty].Errors.Count);
+            Assert.Empty(dictionary[string.Empty].Errors);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary[string.Empty].ValidationState);
 
-            Assert.Equal(1, dictionary["Unrelated"].Errors.Count);
+            Assert.Single(dictionary["Unrelated"].Errors);
             Assert.Equal(ModelValidationState.Invalid, dictionary["Unrelated"].ValidationState);
         }
 
@@ -712,20 +712,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             ModelBindingHelper.ClearValidationStateForModel(modelMetadata, dictionary, modelKey);
 
             // Assert
-            Assert.Equal(0, dictionary["[0].Name"].Errors.Count);
+            Assert.Empty(dictionary["[0].Name"].Errors);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["[0].Name"].ValidationState);
-            Assert.Equal(0, dictionary["[0].Id"].Errors.Count);
+            Assert.Empty(dictionary["[0].Id"].Errors);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["[0].Id"].ValidationState);
-            Assert.Equal(0, dictionary["[0].Category"].Errors.Count);
+            Assert.Empty(dictionary["[0].Category"].Errors);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["[0].Category"].ValidationState);
-            Assert.Equal(0, dictionary["[1].Name"].Errors.Count);
+            Assert.Empty(dictionary["[1].Name"].Errors);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["[1].Name"].ValidationState);
-            Assert.Equal(0, dictionary["[1].Id"].Errors.Count);
+            Assert.Empty(dictionary["[1].Id"].Errors);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["[1].Id"].ValidationState);
-            Assert.Equal(0, dictionary["[1].Category"].Errors.Count);
+            Assert.Empty(dictionary["[1].Category"].Errors);
             Assert.Equal(ModelValidationState.Unvalidated, dictionary["[1].Category"].ValidationState);
 
-            Assert.Equal(1, dictionary["Unrelated"].Errors.Count);
+            Assert.Single(dictionary["Unrelated"].Errors);
             Assert.Equal(ModelValidationState.Invalid, dictionary["Unrelated"].ValidationState);
         }
 
@@ -761,7 +761,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             {
                 if (entry.StartsWith(prefix))
                 {
-                    Assert.Equal(0, dictionary[entry].Errors.Count);
+                    Assert.Empty(dictionary[entry].Errors);
                     Assert.Equal(ModelValidationState.Unvalidated, dictionary[entry].ValidationState);
                 }
             }

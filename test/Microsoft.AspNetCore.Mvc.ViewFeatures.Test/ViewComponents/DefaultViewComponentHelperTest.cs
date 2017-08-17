@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
 
             // Assert
             Assert.Equal(0, argumentDictionary.Count);
-            Assert.IsType(typeof(Dictionary<string,object>),argumentDictionary);
+            Assert.IsType<Dictionary<string,object>>(argumentDictionary);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 item =>
                 {
                     Assert.Equal("a", item.Key);
-                    Assert.IsType(typeof(int), item.Value);
+                    Assert.IsType<int>(item.Value);
                     Assert.Equal(0, item.Value);
                 });
         }
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 item =>
                 {
                     Assert.Equal("a", item.Key);
-                    Assert.IsType(typeof(int), item.Value);
+                    Assert.IsType<int>(item.Value);
                     Assert.Equal(0, item.Value);
                 });
         }
@@ -85,13 +85,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 item1 =>
                 {
                     Assert.Equal("a", item1.Key);
-                    Assert.IsType(typeof(int), item1.Value);
+                    Assert.IsType<int>(item1.Value);
                     Assert.Equal(0, item1.Value);
                 },
                 item2 =>
                 {
                     Assert.Equal("b", item2.Key);
-                    Assert.IsType(typeof(string), item2.Value);
+                    Assert.IsType<string>(item2.Value);
                     Assert.Equal("foo", item2.Value);
                 });
         }
@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 item =>
                 {
                     Assert.Equal("o", item.Key);
-                    Assert.IsType(typeof(object), item.Value);
+                    Assert.IsType<object>(item.Value);
                     Assert.Same(expectedValue, item.Value);
                 });
         }
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
                 item =>
                 {
                     Assert.Equal("a", item.Key);
-                    Assert.IsType(typeof(int), item.Value);
+                    Assert.IsType<int>(item.Value);
                     Assert.Equal(10, item.Value);
                 });
         }

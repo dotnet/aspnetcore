@@ -1076,8 +1076,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var model = new ThrowingProperty();
 
             // Act & Assert
-            Assert.Throws(
-                typeof(InvalidTimeZoneException),
+            Assert.Throws<InvalidTimeZoneException>(
                 () =>
                 {
                     validator.Validate(actionContext, validationState, string.Empty, model);

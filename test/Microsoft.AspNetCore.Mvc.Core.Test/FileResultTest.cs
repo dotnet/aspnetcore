@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc
             await result.ExecuteResultAsync(actionContext);
 
             // Assert
-            Assert.Equal(1, loggerSink.Writes.Count);
+            Assert.Single(loggerSink.Writes);
         }
 
         public static TheoryData<string, string> ContentDispositionData

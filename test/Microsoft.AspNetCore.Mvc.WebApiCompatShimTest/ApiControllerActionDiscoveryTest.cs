@@ -281,7 +281,7 @@ namespace System.Web.Http
                 var parameter = Assert.Single(action.Parameters);
                 Assert.Equal((new FromUriAttribute()).BindingSource, parameter.BindingInfo.BindingSource);
                 var optionalParameters = (HashSet<string>)action.Properties["OptionalParameters"];
-                Assert.False(optionalParameters.Contains(parameter.Name));
+                Assert.DoesNotContain(parameter.Name, optionalParameters);
             }
         }
 
@@ -366,7 +366,7 @@ namespace System.Web.Http
                 var parameter = Assert.Single(action.Parameters);
                 Assert.Equal((new FromUriAttribute()).BindingSource, parameter.BindingInfo.BindingSource);
                 var optionalParameters = (HashSet<string>)action.Properties["OptionalParameters"];
-                Assert.True(optionalParameters.Contains(parameter.Name));
+                Assert.Contains(parameter.Name, optionalParameters);
             }
         }
 

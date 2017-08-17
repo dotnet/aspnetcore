@@ -1024,7 +1024,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
             // Assert
             Assert.False(bindingContext.ModelState.IsValid);
-            Assert.Equal(1, bindingContext.ModelState["foo.NameNoAttribute"].Errors.Count);
+            Assert.Single(bindingContext.ModelState["foo.NameNoAttribute"].Errors);
             Assert.Equal("This is a different exception." + Environment.NewLine
                        + "Parameter name: value",
                          bindingContext.ModelState["foo.NameNoAttribute"].Errors[0].Exception.Message);

@@ -1337,7 +1337,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var actions = provider.GetDescriptors().Where(a => a.ActionName == actionName);
 
             // Assert
-            Assert.Equal(1, actions.Count());
+            Assert.Single(actions);
 
             var action = Assert.Single(actions, a => a.AttributeRouteInfo.Template == "A2");
             Assert.Equal(2, action.ActionConstraints.Count);

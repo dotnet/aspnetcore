@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var properties = modelExplorer.Properties.ToArray();
 
             // Assert
-            Assert.Equal(1, properties.Length);
+            Assert.Single(properties);
 
             var baseProperty = Assert.Single(properties, p => p.Metadata.PropertyName == "Base1");
             Assert.Equal(typeof(int), baseProperty.Metadata.ModelType);

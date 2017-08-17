@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Assert
             Assert.Equal(1, modelState.ErrorCount);
             Assert.Equal(nameof(Customer), modelState.First().Key);
-            Assert.Equal(1, modelState.First().Value.Errors.Count);
+            Assert.Single(modelState.First().Value.Errors);
             Assert.Equal(error, modelState.First().Value.Errors.First().ErrorMessage);
         }
 

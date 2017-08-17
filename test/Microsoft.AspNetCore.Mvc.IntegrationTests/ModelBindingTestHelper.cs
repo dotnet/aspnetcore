@@ -3,8 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Threading;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.ApplicationParts;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Internal;
@@ -100,11 +102,9 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Action<MvcOptions> updateOptions = null)
         {
             var httpContext = new DefaultHttpContext();
+            httpContext.Features.Set<IHttpRequestLifetimeFeature>(new CancellableRequestLifetimeFeature());
 
-            if (updateRequest != null)
-            {
-                updateRequest(httpContext.Request);
-            }
+            updateRequest?.Invoke(httpContext.Request);
 
             httpContext.RequestServices = GetServices(updateOptions);
             return httpContext;
@@ -127,6 +127,18 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             }
 
             return serviceCollection.BuildServiceProvider();
+        }
+
+        private class CancellableRequestLifetimeFeature : IHttpRequestLifetimeFeature
+        {
+            private readonly CancellationTokenSource _cts = new CancellationTokenSource();
+
+            public CancellationToken RequestAborted { get => _cts.Token; set => throw new NotImplementedException(); }
+
+            public void Abort()
+            {
+                _cts.Cancel();
+            }
         }
     }
 }

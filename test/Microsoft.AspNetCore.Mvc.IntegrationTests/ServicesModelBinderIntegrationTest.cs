@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Model
             var formatterArray = Assert.IsType<JsonOutputFormatter[]>(modelBindingResult.Model);
-            Assert.Equal(1, formatterArray.Length);
+            Assert.Single(formatterArray);
 
             // ModelState
             Assert.True(modelState.IsValid);
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // Model
             var actionResultArray = Assert.IsType<IActionResult[]>(modelBindingResult.Model);
-            Assert.Equal(0, actionResultArray.Length);
+            Assert.Empty(actionResultArray);
 
             // ModelState
             Assert.True(modelState.IsValid);

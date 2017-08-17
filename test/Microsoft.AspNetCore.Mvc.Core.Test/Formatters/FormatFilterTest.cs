@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
-            Assert.Equal(1, objectResult.ContentTypes.Count);
+            Assert.Single(objectResult.ContentTypes);
             MediaTypeAssert.Equal(mediaType, objectResult.ContentTypes[0]);
         }
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
-            Assert.Equal(1, objectResult.ContentTypes.Count);
+            Assert.Single(objectResult.ContentTypes);
             MediaTypeAssert.Equal(mediaType, objectResult.ContentTypes[0]);
         }
 
@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             var objectResult = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
-            Assert.Equal(1, objectResult.ContentTypes.Count);
+            Assert.Single(objectResult.ContentTypes);
             MediaTypeAssert.Equal(mediaType, objectResult.ContentTypes[0]);
         }
 
@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             var result = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
-            Assert.Equal(1, result.ContentTypes.Count);
+            Assert.Single(result.ContentTypes);
             MediaTypeAssert.Equal(mediaType, result.ContentTypes[0]);
         }
 
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
 
             // Assert
             var result = Assert.IsType<ObjectResult>(resultExecutingContext.Result);
-            Assert.Equal(0, result.ContentTypes.Count);
+            Assert.Empty(result.ContentTypes);
         }
 
 

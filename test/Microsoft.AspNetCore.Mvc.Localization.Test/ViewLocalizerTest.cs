@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Test
             var allLocalizedStrings = viewLocalizer.GetAllStrings(includeParentCultures: false).ToList();
 
             // Assert
-            Assert.Equal(1, allLocalizedStrings.Count);
+            Assert.Single(allLocalizedStrings);
             Assert.Equal("World", allLocalizedStrings.First().Value);
         }
 
