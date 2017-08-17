@@ -4,12 +4,14 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
@@ -197,6 +199,9 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                     case OpenIdConnectParameterNames.PostLogoutRedirectUri:
                         ValidatePostLogoutRedirectUri(actualValues, errors, htmlEncoded);
                         break;
+                    case OpenIdConnectParameterNames.MaxAge:
+                        ValidateMaxAge(actualValues, errors, htmlEncoded);
+                        break;
                     default:
                         throw new InvalidOperationException($"Unknown parameter \"{paramToValidate}\".");
                 }
@@ -262,6 +267,20 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
         private void ValidatePostLogoutRedirectUri(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
             ValidateParameter(OpenIdConnectParameterNames.PostLogoutRedirectUri, "https://example.com/signout-callback-oidc", actualParams, errors, htmlEncoded);
+
+        private void ValidateMaxAge(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded)
+        {
+            if(_options.MaxAge != null) 
+            {
+                string expectedMaxAge = Convert.ToInt64(Math.Floor(((TimeSpan)_options.MaxAge).TotalSeconds))
+                    .ToString(CultureInfo.InvariantCulture);
+                ValidateParameter(OpenIdConnectParameterNames.MaxAge, expectedMaxAge, actualQuery, errors, htmlEncoded);
+            }
+            else if(actualQuery.ContainsKey(OpenIdConnectParameterNames.MaxAge))
+            {
+                errors.Add($"Parameter {OpenIdConnectParameterNames.MaxAge} is present but it should be absent");
+            }
+        }
 
         private void ValidateParameter(
             string parameterName,

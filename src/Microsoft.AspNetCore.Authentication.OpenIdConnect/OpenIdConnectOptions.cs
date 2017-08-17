@@ -84,6 +84,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         {
             base.Validate();
 
+            if (MaxAge != null && MaxAge.Value < TimeSpan.Zero)
+            {
+                throw new InvalidOperationException("MaxAge must not be a negative TimeSpan.");
+            }
+
             if (string.IsNullOrEmpty(ClientId))
             {
                 throw new ArgumentException("Options.ClientId must be provided", nameof(ClientId));
@@ -158,6 +163,13 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
             get => (OpenIdConnectEvents)base.Events;
             set => base.Events = value;
         }
+
+        /// <summary>
+        /// Gets or sets the 'max_age'. If set the 'max_age' parameter will be sent with the authentication request. If the identity
+        /// provider has not actively authenticated the user within the length of time specified, the user will be prompted to
+        /// re-authenticate. By default no max_age is specified.
+        /// </summary>
+        public TimeSpan? MaxAge { get; set; } = null;
 
         /// <summary>
         /// Gets or sets the <see cref="OpenIdConnectProtocolValidator"/> that is used to ensure that the 'id_token' received

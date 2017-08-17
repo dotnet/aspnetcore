@@ -115,6 +115,21 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             );
         }
 
+        [Fact]
+        public Task ThrowsWhenMaxAgeIsNegative()
+        {
+            return TestConfigurationException<InvalidOperationException>(
+                o =>
+                {
+                    o.SignInScheme = "TestScheme";
+                    o.ClientId = "Test Id";
+                    o.Authority = TestServerBuilder.DefaultAuthority;
+                    o.MaxAge = TimeSpan.FromSeconds(-1);
+                },
+                ex => Assert.Equal("MaxAge must not be a negative TimeSpan.", ex.Message)
+            );
+        }
+
         private TestServer BuildTestServer(Action<OpenIdConnectOptions> options)
         {
             var builder = new WebHostBuilder()

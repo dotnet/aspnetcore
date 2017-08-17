@@ -409,5 +409,46 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync(ChallengeEndpoint));
             Assert.Equal("Cannot redirect to the authorization endpoint, the configuration may be missing or invalid.", exception.Message);
         }
+
+        [Fact]
+        public async Task Challenge_WithDefaultMaxAge_HasExpectedMaxAgeParam()
+        {
+            var settings = new TestSettings(
+                opt => 
+                { 
+                    opt.ClientId = "Test Id";
+                    opt.Authority = TestServerBuilder.DefaultAuthority;
+                });
+
+            var server = settings.CreateTestServer();
+            var transaction = await server.SendAsync(ChallengeEndpoint);
+
+            var res = transaction.Response;
+
+            settings.ValidateChallengeRedirect(
+                res.Headers.Location,
+                OpenIdConnectParameterNames.MaxAge);
+        }
+
+        [Fact]
+        public async Task Challenge_WithSpecificMaxAge_HasExpectedMaxAgeParam()
+        {
+            var settings = new TestSettings(
+                opt => 
+                { 
+                    opt.ClientId = "Test Id";
+                    opt.Authority = TestServerBuilder.DefaultAuthority;
+                    opt.MaxAge = TimeSpan.FromMinutes(20);
+                });
+
+            var server = settings.CreateTestServer();
+            var transaction = await server.SendAsync(ChallengeEndpoint);
+
+            var res = transaction.Response;
+
+            settings.ValidateChallengeRedirect(
+                res.Headers.Location,
+                OpenIdConnectParameterNames.MaxAge);
+        }
     }
 }

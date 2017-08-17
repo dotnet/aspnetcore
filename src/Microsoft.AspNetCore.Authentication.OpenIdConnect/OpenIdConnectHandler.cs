@@ -353,6 +353,14 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 Scope = string.Join(" ", Options.Scope)
             };
 
+            // Add the 'max_age' parameter to the authentication request if MaxAge is not null.
+            // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
+            if (Options.MaxAge != null)
+            {
+                message.MaxAge = Convert.ToInt64(Math.Floor(((TimeSpan)Options.MaxAge).TotalSeconds))
+                    .ToString(CultureInfo.InvariantCulture);
+            }
+
             // Omitting the response_mode parameter when it already corresponds to the default
             // response_mode used for the specified response_type is recommended by the specifications.
             // See http://openid.net/specs/oauth-v2-multiple-response-types-1_0.html#ResponseModes
