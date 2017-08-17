@@ -1,12 +1,12 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
-    <AspNetCoreVersion>2.0.0-*</AspNetCoreVersion>
+    <AspNetCoreVersion>2.0.0</AspNetCoreVersion>
     <AutoMapperVersion>5.0.2</AutoMapperVersion>
-    <InternalAspNetCoreSdkVersion>2.0.1-*</InternalAspNetCoreSdkVersion>
+    <InternalAspNetCoreSdkVersion>2.0.1-rtm-15400</InternalAspNetCoreSdkVersion>
     <JsonNetVersion>10.0.1</JsonNetVersion>
-    <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
-    <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
-    <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
-    <ThreadingDataflowVersion>4.8.0-*</ThreadingDataflowVersion>
+    <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
+    <NETStandardLibraryNETFrameworkVersion>2.0.0</NETStandardLibraryNETFrameworkVersion>
+    <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0</RuntimeFrameworkVersion>
+    <ThreadingDataflowVersion>4.8.0</ThreadingDataflowVersion>
   </PropertyGroup>
 </Project>
