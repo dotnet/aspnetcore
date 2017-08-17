@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
                 Assert.Equal(FileLength.ToString(), contentLength.First());
                 Assert.Null(response.Headers.TransferEncodingChunked);
-                Assert.Equal(FileLength, response.Content.ReadAsByteArrayAsync().Result.Length);
+                Assert.Equal(FileLength, (await response.Content.ReadAsByteArrayAsync()).Length);
             }
         }
 

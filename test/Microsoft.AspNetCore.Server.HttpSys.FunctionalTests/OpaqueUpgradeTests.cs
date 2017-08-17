@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(200, (int)response.StatusCode);
                 Assert.False(response.Headers.TransferEncodingChunked.HasValue, "Chunked");
                 Assert.Equal(0, response.Content.Headers.ContentLength);
-                Assert.Equal(string.Empty, response.Content.ReadAsStringAsync().Result);
+                Assert.Equal(string.Empty, await response.Content.ReadAsStringAsync());
             }
         }
 

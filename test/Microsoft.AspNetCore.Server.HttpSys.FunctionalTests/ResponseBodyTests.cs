@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public void ResponseBody_WriteContentLengthNotEnoughWritten_Throws()
+        public async Task ResponseBody_WriteContentLengthNotEnoughWritten_Throws()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
@@ -131,7 +131,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return httpContext.Response.Body.WriteAsync(new byte[5], 0, 5);
             }))
             {
-                Assert.Throws<AggregateException>(() => SendRequestAsync(address).Result);
+                await Assert.ThrowsAsync<HttpRequestException>(async () => await SendRequestAsync(address));
             }
         }
 

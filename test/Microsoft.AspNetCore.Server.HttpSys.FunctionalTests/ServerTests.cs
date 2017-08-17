@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         }
 
         [ConditionalFact]
-        public void Server_AppException_ClientReset()
+        public async Task Server_AppException_ClientReset()
         {
             string address;
             using (Utilities.CreateHttpServer(out address, httpContext =>
@@ -144,11 +144,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }))
             {
                 Task<string> requestTask = SendRequestAsync(address);
-                Assert.Throws<AggregateException>(() => requestTask.Result);
+                await Assert.ThrowsAsync<HttpRequestException>(async () => await requestTask);
 
                 // Do it again to make sure the server didn't crash
                 requestTask = SendRequestAsync(address);
-                Assert.Throws<AggregateException>(() => requestTask.Result);
+                await Assert.ThrowsAsync<HttpRequestException>(async () => await requestTask);
             }
         }
 
