@@ -16,6 +16,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private static readonly MessageBody _zeroContentLengthClose = new ForZeroContentLength(keepAlive: false);
         private static readonly MessageBody _zeroContentLengthKeepAlive = new ForZeroContentLength(keepAlive: true);
 
+        // For testing
+        internal static MessageBody ZeroContentLengthKeepAlive => _zeroContentLengthKeepAlive;
+
         private readonly Frame _context;
 
         private bool _send100Continue = true;

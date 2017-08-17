@@ -316,6 +316,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public void StopStreams() => _frameStreams.Stop();
 
+        // For testing
+        internal void ResetState()
+        {
+            _requestProcessingStatus = RequestProcessingStatus.RequestPending;
+        }
+
         public void Reset()
         {
             _onStarting = null;

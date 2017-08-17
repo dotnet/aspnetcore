@@ -3,6 +3,7 @@
 
 using System;
 using System.IO.Pipelines;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
@@ -16,68 +17,85 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
     [Config(typeof(CoreConfig))]
     public class FrameWritingBenchmark
     {
+        // Standard completed task
+        private static readonly Func<object, Task> _syncTaskFunc = (obj) => Task.CompletedTask;
+        // Non-standard completed task
+        private static readonly Task _psuedoAsyncTask = Task.FromResult(27);
+        private static readonly Func<object, Task> _psuedoAsyncTaskFunc = (obj) => _psuedoAsyncTask;
+
         private readonly TestFrame<object> _frame;
-        private readonly TestFrame<object> _frameChunked;
+        private readonly IPipe _outputPipe;
+
         private readonly byte[] _writeData;
 
         public FrameWritingBenchmark()
         {
-            _frame = MakeFrame();
-            _frameChunked = MakeFrame();
-            _writeData = new byte[1];
+            var pipeFactory = new PipeFactory();
+
+            _outputPipe = pipeFactory.Create();
+            _frame = MakeFrame(pipeFactory);
+            _writeData = Encoding.ASCII.GetBytes("Hello, World!");
         }
+
+        [Params(true, false)]
+        public bool WithHeaders { get; set; }
+
+        [Params(true, false)]
+        public bool Chunked { get; set; }
+
+        [Params(Startup.None, Startup.Sync, Startup.Async)]
+        public Startup OnStarting { get; set; }
 
         [Setup]
         public void Setup()
         {
             _frame.Reset();
-            _frame.RequestHeaders.Add("Content-Length", "1073741824");
+            if (Chunked)
+            {
+                _frame.RequestHeaders.Add("Transfer-Encoding", "chunked");
+            }
+            else
+            {
+                _frame.RequestHeaders.ContentLength = _writeData.Length;
+            }
 
-            _frameChunked.Reset();
-            _frameChunked.RequestHeaders.Add("Transfer-Encoding", "chunked");
+            if (!WithHeaders)
+            {
+                _frame.FlushAsync().GetAwaiter().GetResult();
+            }
+
+            ResetState();
+        }
+
+        private void ResetState()
+        {
+            if (WithHeaders)
+            {
+                _frame.ResetState();
+
+                switch (OnStarting)
+                {
+                    case Startup.Sync:
+                        _frame.OnStarting(_syncTaskFunc, null);
+                        break;
+                    case Startup.Async:
+                        _frame.OnStarting(_psuedoAsyncTaskFunc, null);
+                        break;
+                }
+            }
         }
 
         [Benchmark]
-        public async Task WriteAsync()
+        public Task WriteAsync()
         {
-            await _frame.WriteAsync(new ArraySegment<byte>(_writeData), default(CancellationToken));
+            ResetState();
+
+            return _frame.ResponseBody.WriteAsync(_writeData, 0, _writeData.Length, default(CancellationToken));
         }
 
-        [Benchmark]
-        public async Task WriteAsyncChunked()
+        private TestFrame<object> MakeFrame(PipeFactory pipeFactory)
         {
-            await _frameChunked.WriteAsync(new ArraySegment<byte>(_writeData), default(CancellationToken));
-        }
-
-        [Benchmark]
-        public async Task WriteAsyncAwaited()
-        {
-            await _frame.WriteAsyncAwaited(Task.CompletedTask, new ArraySegment<byte>(_writeData), default(CancellationToken));
-        }
-
-        [Benchmark]
-        public async Task WriteAsyncAwaitedChunked()
-        {
-            await _frameChunked.WriteAsyncAwaited(Task.CompletedTask, new ArraySegment<byte>(_writeData), default(CancellationToken));
-        }
-
-        [Benchmark]
-        public async Task ProduceEnd()
-        {
-            await _frame.ProduceEndAsync();
-        }
-
-        [Benchmark]
-        public async Task ProduceEndChunked()
-        {
-            await _frameChunked.ProduceEndAsync();
-        }
-
-        private TestFrame<object> MakeFrame()
-        {
-            var pipeFactory = new PipeFactory();
             var input = pipeFactory.Create();
-            var output = pipeFactory.Create();
 
             var serviceContext = new ServiceContext
             {
@@ -92,12 +110,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 ServiceContext = serviceContext,
                 PipeFactory = pipeFactory,
                 Input = input.Reader,
-                Output = output
+                Output = _outputPipe 
             });
 
             frame.Reset();
+            frame.InitializeStreams(MessageBody.ZeroContentLengthKeepAlive);
 
             return frame;
+        }
+
+        [Cleanup]
+        public void Cleanup()
+        {
+            var reader = _outputPipe.Reader;
+            if (reader.TryRead(out var readResult))
+            {
+                reader.Advance(readResult.Buffer.End);
+            }
+        }
+
+        public enum Startup
+        {
+            None,
+            Sync,
+            Async
         }
     }
 }
