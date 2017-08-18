@@ -35,7 +35,7 @@ namespace SampleApp
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
             TaskScheduler.UnobservedTaskException += (sender, e) =>
             {
@@ -89,7 +89,7 @@ namespace SampleApp
                 .UseStartup<Startup>()
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }

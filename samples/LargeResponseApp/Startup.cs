@@ -15,7 +15,6 @@ namespace LargeResponseApp
         private const int _chunkSize = 4096;
         private const int _defaultNumChunks = 16;
         private static byte[] _chunk = Encoding.UTF8.GetBytes(new string('a', _chunkSize));
-        private static Task _emptyTask = Task.FromResult<object>(null);
 
         public void Configure(IApplicationBuilder app)
         {
@@ -38,7 +37,7 @@ namespace LargeResponseApp
             });
         }
 
-        public static void Main(string[] args)
+        public static Task Main(string[] args)
         {
             var host = new WebHostBuilder()
                 .UseKestrel(options =>
@@ -49,7 +48,7 @@ namespace LargeResponseApp
                 .UseStartup<Startup>()
                 .Build();
 
-            host.Run();
+            return host.RunAsync();
         }
     }
 }
