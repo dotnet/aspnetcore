@@ -61,7 +61,10 @@ namespace Microsoft.AspNetCore.SignalR
 
             var connectionContext = new HubConnectionContext(output, connection);
 
-            await ProcessNegotiate(connectionContext);
+            if (!await ProcessNegotiate(connectionContext))
+            {
+                return;
+            }
 
             // Hubs support multiple producers so we set up this loop to copy
             // data written to the HubConnectionContext's channel to the transport channel
@@ -103,7 +106,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task ProcessNegotiate(HubConnectionContext connection)
+        private async Task<bool> ProcessNegotiate(HubConnectionContext connection)
         {
             while (await connection.Input.WaitToReadAsync())
             {
@@ -130,10 +133,12 @@ namespace Microsoft.AspNetCore.SignalR
 
                         connection.ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
 
-                        return;
+                        return true;
                     }
                 }
             }
+
+            return false;
         }
 
         private async Task RunHubAsync(HubConnectionContext connection)
