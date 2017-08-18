@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private readonly ClientWebSocket _webSocket = new ClientWebSocket();
         private Channel<byte[], SendMessage> _application;
         private readonly CancellationTokenSource _transportCts = new CancellationTokenSource();
+        private readonly CancellationTokenSource _receiveCts = new CancellationTokenSource();
         private readonly ILogger _logger;
         private string _connectionId;
 
@@ -80,7 +81,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             try
             {
-                while (!_transportCts.Token.IsCancellationRequested)
+                while (!_receiveCts.Token.IsCancellationRequested)
                 {
                     const int bufferSize = 4096;
                     var totalBytes = 0;
@@ -91,7 +92,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         var buffer = new ArraySegment<byte>(new byte[bufferSize]);
 
                         //Exceptions are handled above where the send and receive tasks are being run.
-                        receiveResult = await _webSocket.ReceiveAsync(buffer, _transportCts.Token);
+                        receiveResult = await _webSocket.ReceiveAsync(buffer, _receiveCts.Token);
                         if (receiveResult.MessageType == WebSocketMessageType.Close)
                         {
                             _logger.WebSocketClosed(_connectionId, receiveResult.CloseStatus);
@@ -129,14 +130,24 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         Buffer.BlockCopy(incomingMessage[0].Array, incomingMessage[0].Offset, messageBuffer, 0, incomingMessage[0].Count);
                     }
 
-                    _logger.MessageToApp(_connectionId, messageBuffer.Length);
-                    while (await _application.Out.WaitToWriteAsync(_transportCts.Token))
+                    try
                     {
-                        if (_application.Out.TryWrite(messageBuffer))
+                        if (!_transportCts.Token.IsCancellationRequested)
                         {
-                            incomingMessage.Clear();
-                            break;
+                            _logger.MessageToApp(_connectionId, messageBuffer.Length);
+                            while (await _application.Out.WaitToWriteAsync(_transportCts.Token))
+                            {
+                                if (_application.Out.TryWrite(messageBuffer))
+                                {
+                                    incomingMessage.Clear();
+                                    break;
+                                }
+                            }
                         }
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        _logger.CancelMessage(_connectionId);
                     }
                 }
             }
@@ -198,7 +209,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             finally
             {
                 _logger.SendStopped(_connectionId);
-                _transportCts.Cancel();
+                TriggerCancel();
             }
         }
 
@@ -248,7 +259,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     await _webSocket.CloseOutputAsync(WebSocketCloseStatus.NormalClosure, null, CancellationToken.None);
 
                     // shutdown the transport after a timeout in case the server does not send close frame
-                    _transportCts.CancelAfter(TimeSpan.FromSeconds(5));
+                    TriggerCancel();
                 }
             }
             catch (Exception ex)
@@ -257,6 +268,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 // try closing the webSocket twice.
                 _logger.ClosingWebSocketFailed(_connectionId, ex);
             }
+        }
+
+        private void TriggerCancel()
+        {
+            // Give server 5 seconds to respond with a close frame for graceful close.
+            _receiveCts.CancelAfter(TimeSpan.FromSeconds(5));
+            _transportCts.Cancel();
         }
     }
 }

@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await webSocketsTransport.StartAsync(new Uri(_serverFixture.WebSocketsUrl + "/echo"), channelConnection,
                     TransferMode.Binary, connectionId: string.Empty);
                 connectionToTransport.Out.TryComplete();
-                await webSocketsTransport.Running.OrTimeout();
+                await webSocketsTransport.Running.OrTimeout(TimeSpan.FromSeconds(10));
             }
         }
 

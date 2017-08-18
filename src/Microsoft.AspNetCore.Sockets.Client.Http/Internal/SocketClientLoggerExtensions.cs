@@ -62,6 +62,9 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
         private static readonly Action<ILogger, DateTime, string, Exception> _closingWebSocketFailed =
             LoggerMessage.Define<DateTime, string>(LogLevel.Information, 16, "{time}: Connection Id {connectionId}: Closing webSocket failed.");
 
+        private static readonly Action<ILogger, DateTime, string, Exception> _cancelMessage =
+            LoggerMessage.Define<DateTime, string>(LogLevel.Debug, 17, "{time}: Connection Id {connectionId}: Canceled passing message to application.");
+
         // Category: ServerSentEventsTransport and LongPollingTransport
         private static readonly Action<ILogger, DateTime, string, int, Uri, Exception> _sendingMessages =
             LoggerMessage.Define<DateTime, string, int, Uri>(LogLevel.Debug, 9, "{time}: Connection Id {connectionId}: Sending {count} message(s) to the server using url: {url}.");
@@ -280,6 +283,14 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             if (logger.IsEnabled(LogLevel.Information))
             {
                 _closingWebSocketFailed(logger, DateTime.Now, connectionId, exception);
+            }
+        }
+
+        public static void CancelMessage(this ILogger logger, string connectionId)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                _cancelMessage(logger, DateTime.Now, connectionId, null);
             }
         }
 
