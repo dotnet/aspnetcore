@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26710.3002
+VisualStudioVersion = 15.0.26802.3001
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
 EndProject
@@ -55,6 +55,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.MvcShim", "test\Microsoft.AspNetCore.Razor.Test.MvcShim\Microsoft.AspNetCore.Razor.Test.MvcShim.csproj", "{8F165A3F-A18C-4649-AA08-C0E1BA5F5C90}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.CodeAnalysis.Razor.Workspaces.Test", "test\Microsoft.CodeAnalysis.Razor.Workspaces.Test\Microsoft.CodeAnalysis.Razor.Workspaces.Test.csproj", "{C61AAE12-5007-4205-A220-68F354A7F235}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X", "src\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.csproj", "{F1538809-7347-45D2-A7AC-C1D89CF0BBD4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Test", "test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Test\Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.Test.csproj", "{296D4516-0323-4D28-955D-B0324E4F10BE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X", "test\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X\Microsoft.AspNetCore.Razor.Test.MvcShim.Version1_X.csproj", "{AC5CA24B-B81E-4B20-B193-2E3983B1896C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -222,6 +228,30 @@ Global
 		{C61AAE12-5007-4205-A220-68F354A7F235}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C61AAE12-5007-4205-A220-68F354A7F235}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
 		{C61AAE12-5007-4205-A220-68F354A7F235}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{F1538809-7347-45D2-A7AC-C1D89CF0BBD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1538809-7347-45D2-A7AC-C1D89CF0BBD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F1538809-7347-45D2-A7AC-C1D89CF0BBD4}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{F1538809-7347-45D2-A7AC-C1D89CF0BBD4}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{F1538809-7347-45D2-A7AC-C1D89CF0BBD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F1538809-7347-45D2-A7AC-C1D89CF0BBD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F1538809-7347-45D2-A7AC-C1D89CF0BBD4}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{F1538809-7347-45D2-A7AC-C1D89CF0BBD4}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{296D4516-0323-4D28-955D-B0324E4F10BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{296D4516-0323-4D28-955D-B0324E4F10BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{296D4516-0323-4D28-955D-B0324E4F10BE}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{296D4516-0323-4D28-955D-B0324E4F10BE}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{296D4516-0323-4D28-955D-B0324E4F10BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{296D4516-0323-4D28-955D-B0324E4F10BE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{296D4516-0323-4D28-955D-B0324E4F10BE}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{296D4516-0323-4D28-955D-B0324E4F10BE}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
+		{AC5CA24B-B81E-4B20-B193-2E3983B1896C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC5CA24B-B81E-4B20-B193-2E3983B1896C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AC5CA24B-B81E-4B20-B193-2E3983B1896C}.DebugNoVSIX|Any CPU.ActiveCfg = Debug|Any CPU
+		{AC5CA24B-B81E-4B20-B193-2E3983B1896C}.DebugNoVSIX|Any CPU.Build.0 = Debug|Any CPU
+		{AC5CA24B-B81E-4B20-B193-2E3983B1896C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AC5CA24B-B81E-4B20-B193-2E3983B1896C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AC5CA24B-B81E-4B20-B193-2E3983B1896C}.ReleaseNoVSIX|Any CPU.ActiveCfg = Release|Any CPU
+		{AC5CA24B-B81E-4B20-B193-2E3983B1896C}.ReleaseNoVSIX|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -247,5 +277,11 @@ Global
 		{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{8F165A3F-A18C-4649-AA08-C0E1BA5F5C90} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{C61AAE12-5007-4205-A220-68F354A7F235} = {92463391-81BE-462B-AC3C-78C6C760741F}
+		{F1538809-7347-45D2-A7AC-C1D89CF0BBD4} = {3C0D6505-79B3-49D0-B4C3-176F0F1836ED}
+		{296D4516-0323-4D28-955D-B0324E4F10BE} = {92463391-81BE-462B-AC3C-78C6C760741F}
+		{AC5CA24B-B81E-4B20-B193-2E3983B1896C} = {92463391-81BE-462B-AC3C-78C6C760741F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0035341D-175A-4D05-95E6-F1C2785A1E26}
 	EndGlobalSection
 EndGlobal
