@@ -1,7 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Performance</AssemblyName>
+    <!-- Using shorter assembly name instead of Microsoft.AspNetCore.Server.Kestrel.Performance because https://github.com/dotnet/BenchmarkDotNet/issues/498 -->
+    <AssemblyName>Kestrel.Performance</AssemblyName>
     <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Performance</RootNamespace>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
     <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
