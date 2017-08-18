@@ -64,10 +64,10 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     _request.Protocol,
                     _request.Method,
                     _request.Scheme,
-                    _request.Host,
-                    _request.PathBase,
-                    _request.Path,
-                    _request.QueryString,
+                    _request.Host.Value,
+                    _request.PathBase.Value,
+                    _request.Path.Value,
+                    _request.QueryString.Value,
                     _request.ContentType,
                     _request.ContentLength);
             }
