@@ -94,8 +94,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 // Full scan
                 var definedTypes = assembly.DefinedTypes.ToList();
 
-                var startupType1 = definedTypes.Where(info => info.Name.Equals(startupNameWithEnv, StringComparison.Ordinal));
-                var startupType2 = definedTypes.Where(info => info.Name.Equals(startupNameWithoutEnv, StringComparison.Ordinal));
+                var startupType1 = definedTypes.Where(info => info.Name.Equals(startupNameWithEnv, StringComparison.OrdinalIgnoreCase));
+                var startupType2 = definedTypes.Where(info => info.Name.Equals(startupNameWithoutEnv, StringComparison.OrdinalIgnoreCase));
 
                 var typeInfo = startupType1.Concat(startupType2).FirstOrDefault();
                 if (typeInfo != null)
@@ -140,14 +140,14 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             var methodNameWithNoEnv = string.Format(CultureInfo.InvariantCulture, methodName, "");
 
             var methods = startupType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.Static);
-            var selectedMethods = methods.Where(method => method.Name.Equals(methodNameWithEnv)).ToList();
+            var selectedMethods = methods.Where(method => method.Name.Equals(methodNameWithEnv, StringComparison.OrdinalIgnoreCase)).ToList();
             if (selectedMethods.Count > 1)
             {
                 throw new InvalidOperationException(string.Format("Having multiple overloads of method '{0}' is not supported.", methodNameWithEnv));
             }
             if (selectedMethods.Count == 0)
             {
-                selectedMethods = methods.Where(method => method.Name.Equals(methodNameWithNoEnv)).ToList();
+                selectedMethods = methods.Where(method => method.Name.Equals(methodNameWithNoEnv, StringComparison.OrdinalIgnoreCase)).ToList();
                 if (selectedMethods.Count > 1)
                 {
                     throw new InvalidOperationException(string.Format("Having multiple overloads of method '{0}' is not supported.", methodNameWithNoEnv));
