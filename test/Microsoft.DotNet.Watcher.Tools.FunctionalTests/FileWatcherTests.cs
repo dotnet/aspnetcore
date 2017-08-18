@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -120,8 +120,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     File.Move(srcFile, dstFile);
 
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
-                    Assert.True(filesChanged.Contains(srcFile));
-                    Assert.True(filesChanged.Contains(dstFile));
+                    Assert.Contains(srcFile, filesChanged);
+                    Assert.Contains(dstFile, filesChanged);
                 }
             });
         }
@@ -165,8 +165,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                     File.WriteAllText(testFileFullPath, string.Empty);
 
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
-                    Assert.True(filesChanged.Contains(subdir));
-                    Assert.True(filesChanged.Contains(testFileFullPath));
+                    Assert.Contains(subdir, filesChanged);
+                    Assert.Contains(testFileFullPath, filesChanged);
                 }
             });
         }
@@ -399,10 +399,10 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
                     Assert.True(changedEv.WaitOne(DefaultTimeout));
 
-                    Assert.True(filesChanged.Contains(f1));
-                    Assert.True(filesChanged.Contains(f2));
-                    Assert.True(filesChanged.Contains(f3));
-                    Assert.True(filesChanged.Contains(subdir));
+                    Assert.Contains(f1, filesChanged);
+                    Assert.Contains(f2, filesChanged);
+                    Assert.Contains(f3, filesChanged);
+                    Assert.Contains(subdir, filesChanged);
                 }
             });
         }

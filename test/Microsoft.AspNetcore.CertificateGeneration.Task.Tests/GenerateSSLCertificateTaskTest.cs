@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.CertificateGeneration.Task
             // Assert
             Assert.True(result);
             var certificates = GetTestCertificates();
-            Assert.Equal(1, certificates.Count);
-            Assert.Equal(1, task.Messages.Count);
+            Assert.Single(certificates);
+            Assert.Single(task.Messages);
             Assert.StartsWith($"Generated certificate {TestSubject}", task.Messages[0]);
         }
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.CertificateGeneration.Task
             Assert.True(result);
             var certificates = GetTestCertificates();
             Assert.Equal(2, certificates.Count);
-            Assert.Equal(1, task.Messages.Count);
+            Assert.Single(task.Messages);
             Assert.StartsWith($"Generated certificate {TestSubject}", task.Messages[0]);
         }
 
@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.CertificateGeneration.Task
             Assert.True(result);
             var certificates = GetTestCertificates();
             Assert.Equal(2, certificates.Count);
-            Assert.Equal(1, task.Messages.Count);
+            Assert.Single(task.Messages);
             Assert.StartsWith($"Generated certificate {TestSubject}", task.Messages[0]);
         }
 
@@ -105,8 +105,8 @@ namespace Microsoft.AspNetCore.CertificateGeneration.Task
             // Assert
             Assert.True(result);
             var certificates = GetTestCertificates();
-            Assert.Equal(1, certificates.Count);
-            Assert.Equal(1, task.Messages.Count);
+            Assert.Single(certificates);
+            Assert.Single(task.Messages);
             Assert.Equal($"A certificate with subject name '{TestSubject}' already exists. Skipping certificate generation.", task.Messages[0]);
         }
 
@@ -125,7 +125,7 @@ namespace Microsoft.AspNetCore.CertificateGeneration.Task
             Assert.True(result);
             var certificates = GetTestCertificates();
             Assert.Equal(2, certificates.Count);
-            Assert.Equal(1, task.Messages.Count);
+            Assert.Single(task.Messages);
             Assert.StartsWith($"Generated certificate {TestSubject}", task.Messages[0]);
         }
 
@@ -167,8 +167,10 @@ namespace Microsoft.AspNetCore.CertificateGeneration.Task
                 var signingRequest = new CertificateRequest(
                     new X500DistinguishedName(TestSubject), rsa, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 
-                var enhancedKeyUsage = new OidCollection();
-                enhancedKeyUsage.Add(new Oid("1.3.6.1.5.5.7.3.1", "Server Authentication"));
+                var enhancedKeyUsage = new OidCollection
+                {
+                    new Oid("1.3.6.1.5.5.7.3.1", "Server Authentication")
+                };
                 signingRequest.CertificateExtensions.Add(new X509EnhancedKeyUsageExtension(enhancedKeyUsage, critical: true));
                 signingRequest.CertificateExtensions.Add(new X509KeyUsageExtension(X509KeyUsageFlags.KeyEncipherment, critical: true));
                 signingRequest.CertificateExtensions.Add(

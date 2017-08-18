@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -78,7 +78,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 WorkingDirectory = SourceDirectory,
                 EnvironmentVariables =
                 {
-                    ["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString
+                    ["DOTNET_CLI_CONTEXT_VERBOSE"] = bool.TrueString,
+                    ["DOTNET_USE_POLLING_FILE_WATCHER"] = UsePollingWatcher.ToString(),
                 },
             };
 

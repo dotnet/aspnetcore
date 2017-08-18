@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -27,6 +27,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         [InlineData(false)]
         public async Task ChangeCompiledFile(bool usePollingWatcher)
         {
+            _app.UsePollingWatcher = usePollingWatcher;
             await _app.StartWatcherAsync();
 
             var types = await _app.GetCompiledAppDefinedTypes().TimeoutAfter(DefaultTimeout);
