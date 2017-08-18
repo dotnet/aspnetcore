@@ -32,34 +32,11 @@
     <MakeDir Directories="$(BuildDir);$(LineupBuildDir)" />
   </Target>
 
-  <Target Name="_ReadArtifactDependencyPackages" Condition=" '$(_DependencyPackagesDirectory)' != '' ">
-    <PropertyGroup>
-      <_DependencyPackagesDirectory>$([MSBuild]::NormalizeDirectory($(_DependencyPackagesDirectory)))</_DependencyPackagesDirectory>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <_DependencyPackageFiles Include="$(_DependencyPackagesDirectory)*.nupkg" Exclude="$(_DependencyPackagesDirectory)*.symbols.nupkg" />
-    </ItemGroup>
-
-    <RepoTasks.ReadPackageIdentity PackageFiles="@(_DependencyPackageFiles)">
-      <Output TaskParameter="PackageDefinitions" ItemName="ArtifactDependency" />
-    </RepoTasks.ReadPackageIdentity>
-  </Target>
-
-  <Target Name="GenerateLineup" DependsOnTargets="_GenerateBuildGraph;_ReadArtifactDependencyPackages">
-    <ItemGroup>
-      <_Dependency Remove="@(_Dependency)" />
-
-      <!-- order matters. It defines the precendence of what ends up in the lineup. -->
-      <_Dependency Include="@(PackagesProduced)" />
-      <_Dependency Include="@(ExternalDependency)" Exclude="@(_Dependency)"  />
-      <_Dependency Include="@(ArtifactDependency)" Exclude="@(_Dependency)" />
-    </ItemGroup>
-
+  <Target Name="GenerateLineup" DependsOnTargets="_GenerateBuildGraph">
     <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)..\lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
                 DestinationFolder="$(LineupBuildDir)"
                 Properties="version=$(Version)"
-                Dependencies="@(_Dependency)">
+                Dependencies="@(PackagesProduced);@(ExternalDependency)">
       <Output TaskParameter="Packages" ItemName="LineupPackage" />
     </PackNuSpec>
   </Target>
