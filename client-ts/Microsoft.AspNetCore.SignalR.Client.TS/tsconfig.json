@@ -1,7 +1,7 @@
 {
     "compileOnSave": true,
     "compilerOptions": {
-        "module": "umd",
+        "module": "commonjs",
         "target": "es6",
         "sourceMap": true,
         "emitDecoratorMetadata": true,
