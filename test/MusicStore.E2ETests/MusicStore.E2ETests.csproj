@@ -15,10 +15,6 @@
     <None Include="remoteDeploymentConfig.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
-  <ItemGroup Condition="'$(RUN_RUNTIME_STORE_TESTS)' == 'true'">
-    <PackageReference Include="Build.RS" Version="$(AspNetCoreVersion)" />
-  </ItemGroup>
-
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="$(AspNetCoreVersion)" />
