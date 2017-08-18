@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             _frame = new Frame<object>(application: null, frameContext: frameContext);
         }
 
-        [Setup]
+        [IterationSetup]
         public void Setup()
         {
             _collection = _frame;

@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return _frame.WriteAsync(new ArraySegment<byte>(_helloWorldPayload), default(CancellationToken));
         }
 
-        [Setup]
+        [IterationSetup]
         public void Setup()
         {
             var pipeFactory = new PipeFactory();

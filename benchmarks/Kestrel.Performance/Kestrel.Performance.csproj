@@ -23,7 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="BenchmarkDotNet" Version="0.10.9" NoWarn="KRB4002" />
   </ItemGroup>
 
 </Project>
