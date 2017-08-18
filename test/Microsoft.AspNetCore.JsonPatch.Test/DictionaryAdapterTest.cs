@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Assert
             Assert.True(addStatus);
             Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
-            Assert.Single(dictionary);
+            Assert.Equal(1, dictionary.Count);
             Assert.Equal("James", dictionary[nameKey]);
         }
 
@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Assert
             Assert.True(addStatus);
             Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
-            Assert.Single(dictionary);
+            Assert.Equal(1, dictionary.Count);
             Assert.Equal("James", dictionary[nameKey]);
 
             // Act
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Assert
             Assert.True(addStatus);
             Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
-            Assert.Single(dictionary);
+            Assert.Equal(1, dictionary.Count);
             Assert.Equal("James", dictionary[nameKey]);
 
             // Act
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Assert
             Assert.True(replaceStatus);
             Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
-            Assert.Single(dictionary);
+            Assert.Equal(1, dictionary.Count);
             Assert.Equal("James", dictionary[nameKey]);
         }
 
@@ -129,7 +129,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal(
                 string.Format("The target location specified by path segment '{0}' was not found.", nameKey),
                 message);
-            Assert.Empty(dictionary);
+            Assert.Equal(0, dictionary.Count);
         }
 
         [Fact]
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal(
                 string.Format("The target location specified by path segment '{0}' was not found.", nameKey),
                 message);
-            Assert.Empty(dictionary);
+            Assert.Equal(0, dictionary.Count);
         }
 
         [Fact]
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             //Assert
             Assert.True(removeStatus);
             Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
-            Assert.Empty(dictionary);
+            Assert.Equal(0, dictionary.Count);
         }
     }
 }
