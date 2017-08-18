@@ -27,6 +27,7 @@ namespace Microsoft.AspNetCore.SignalR
     {
         private static readonly Base64Encoder Base64Encoder = new Base64Encoder();
         private static readonly PassThroughEncoder PassThroughEncoder = new PassThroughEncoder();
+        private static readonly TimeSpan NegotiateTimeout = TimeSpan.FromSeconds(5);
 
         private readonly Dictionary<string, HubMethodDescriptor> _methods = new Dictionary<string, HubMethodDescriptor>(StringComparer.OrdinalIgnoreCase);
 
@@ -108,34 +109,45 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task<bool> ProcessNegotiate(HubConnectionContext connection)
         {
-            while (await connection.Input.WaitToReadAsync())
+            try
             {
-                while (connection.Input.TryRead(out var buffer))
+                using (var cts = new CancellationTokenSource())
                 {
-                    if (NegotiationProtocol.TryParseMessage(buffer, out var negotiationMessage))
+                    cts.CancelAfter(NegotiateTimeout);
+                    while (await connection.Input.WaitToReadAsync(cts.Token))
                     {
-                        var protocol = _protocolResolver.GetProtocol(negotiationMessage.Protocol, connection);
+                        while (connection.Input.TryRead(out var buffer))
+                        {
+                            if (NegotiationProtocol.TryParseMessage(buffer, out var negotiationMessage))
+                            {
+                                var protocol = _protocolResolver.GetProtocol(negotiationMessage.Protocol, connection);
 
-                        var transportCapabilities = connection.Features.Get<IConnectionTransportFeature>()?.TransportCapabilities
-                            ?? throw new InvalidOperationException("Unable to read transport capabilities.");
+                                var transportCapabilities = connection.Features.Get<IConnectionTransportFeature>()?.TransportCapabilities
+                                    ?? throw new InvalidOperationException("Unable to read transport capabilities.");
 
-                        var dataEncoder = (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) == 0)
-                            ? (IDataEncoder)Base64Encoder
-                            : PassThroughEncoder;
+                                var dataEncoder = (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) == 0)
+                                    ? (IDataEncoder)Base64Encoder
+                                    : PassThroughEncoder;
 
-                        var transferModeFeature = connection.Features.Get<ITransferModeFeature>() ??
-                            throw new InvalidOperationException("Unable to read transfer mode.");
+                                var transferModeFeature = connection.Features.Get<ITransferModeFeature>() ??
+                                    throw new InvalidOperationException("Unable to read transfer mode.");
 
-                        transferModeFeature.TransferMode =
-                            (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) != 0)
-                                ? TransferMode.Binary
-                                : TransferMode.Text;
+                                transferModeFeature.TransferMode =
+                                    (protocol.Type == ProtocolType.Binary && (transportCapabilities & TransferMode.Binary) != 0)
+                                        ? TransferMode.Binary
+                                        : TransferMode.Text;
 
-                        connection.ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
+                                connection.ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
 
-                        return true;
+                                return true;
+                            }
+                        }
                     }
                 }
+            }
+            catch (OperationCanceledException)
+            {
+                _logger.LogDebug("Negotiate was canceled.");
             }
 
             return false;

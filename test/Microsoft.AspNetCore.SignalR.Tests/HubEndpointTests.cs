@@ -60,6 +60,21 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task NegotiateTimesOut()
+        {
+            var serviceProvider = CreateServiceProvider();
+            var endPoint = serviceProvider.GetService<HubEndPoint<SimpleHub>>();
+
+            using (var client = new TestClient())
+            {
+                // TestClient automatically writes negotiate, for this test we want to assume negotiate never gets sent
+                client.Connection.Transport.In.TryRead(out var item);
+
+                await endPoint.OnConnectedAsync(client.Connection).OrTimeout(TimeSpan.FromSeconds(10));
+            }
+        }
+
+        [Fact]
         public async Task LifetimeManagerOnDisconnectedAsyncCalledIfLifetimeManagerOnConnectedAsyncThrows()
         {
             var mockLifetimeManager = new Mock<HubLifetimeManager<Hub>>();
