@@ -7,6 +7,7 @@
     <LineupBuildDir>$(ArtifactsDir)lineups\</LineupBuildDir>
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
+    <_DependencyLineupDir>$(RepositoryRoot).deps\lineups\</_DependencyLineupDir>
     <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)</_DependencyPackagesDirectory>
     <_RestoreGraphSpecsDirectory>$(IntermediateDir)package-specs\</_RestoreGraphSpecsDirectory>
 
@@ -32,11 +33,40 @@
     <MakeDir Directories="$(BuildDir);$(LineupBuildDir)" />
   </Target>
 
-  <Target Name="GenerateLineup" DependsOnTargets="_GenerateBuildGraph">
+  <Target Name="_ReadArtifactDependencyPackages">
+    <ItemGroup>
+      <_DependencyPackageFiles Include="$(_DependencyPackagesDirectory)*.nupkg"
+                               Exclude="$(_DependencyPackagesDirectory)*.symbols.nupkg"
+                               Condition=" '$(_DependencyPackagesDirectory)' != '' " />
+      <_DependencyLineupFiles Include="$(_DependencyLineupDir)*.nupkg"
+                              Exclude="$(_DependencyLineupDir)Internal.AspNetCore.Universe.Lineup.*.nupkg"
+                              Condition=" '$(_DependencyLineupDir)' != '' " />
+    </ItemGroup>
+
+    <RepoTasks.ReadPackageIdentity PackageFiles="@(_DependencyPackageFiles)">
+      <Output TaskParameter="PackageDefinitions" ItemName="ArtifactDependency" />
+    </RepoTasks.ReadPackageIdentity>
+
+    <RepoTasks.ReadPackageDependencies PackageFiles="@(_DependencyLineupFiles)">
+      <Output TaskParameter="PackageDefinitions" ItemName="DependencyLineupDependency" />
+    </RepoTasks.ReadPackageDependencies>
+  </Target>
+
+  <Target Name="GenerateLineup" DependsOnTargets="_GenerateBuildGraph;_ReadArtifactDependencyPackages">
+    <ItemGroup>
+      <_Dependency Remove="@(_Dependency)" />
+
+      <!-- order matters. It defines the precendence of what ends up in the lineup. -->
+      <_Dependency Include="@(PackagesProduced)" />
+      <_Dependency Include="@(ExternalDependency)" Exclude="@(_Dependency)"  />
+      <!-- avoid duplicating dependency lineups into the universe lineup -->
+      <_Dependency Include="@(ArtifactDependency)" Exclude="@(_Dependency);@(DependencyLineupDependency)" />
+    </ItemGroup>
+
     <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)..\lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
                 DestinationFolder="$(LineupBuildDir)"
                 Properties="version=$(Version)"
-                Dependencies="@(PackagesProduced);@(ExternalDependency)">
+                Dependencies="@(_Dependency)">
       <Output TaskParameter="Packages" ItemName="LineupPackage" />
     </PackNuSpec>
   </Target>
