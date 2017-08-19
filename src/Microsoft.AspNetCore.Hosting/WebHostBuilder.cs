@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Hosting
         {
             hostingStartupErrors = null;
 
-            _options = new WebHostOptions(_config);
+            _options = new WebHostOptions(_config, Assembly.GetEntryAssembly()?.GetName().Name);
 
             if (!_options.PreventHostingStartup)
             {
@@ -221,10 +221,9 @@ namespace Microsoft.AspNetCore.Hosting
             }
 
             var contentRootPath = ResolveContentRootPath(_options.ContentRootPath, AppContext.BaseDirectory);
-            var applicationName = _options.ApplicationName;
 
             // Initialize the hosting environment
-            _hostingEnvironment.Initialize(applicationName, contentRootPath, _options);
+            _hostingEnvironment.Initialize(contentRootPath, _options);
             _context.HostingEnvironment = _hostingEnvironment;
 
             var services = new ServiceCollection();

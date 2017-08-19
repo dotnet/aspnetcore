@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(nameof(ShutdownTestRun));
 
-                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test",
+                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "TestAssets",
                     "Microsoft.AspNetCore.Hosting.TestSites");
 
                 var deploymentParameters = new DeploymentParameters(
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
             {
                 var logger = loggerFactory.CreateLogger(nameof(ShutdownTestWaitForShutdown));
 
-                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test",
+                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "TestAssets",
                     "Microsoft.AspNetCore.Hosting.TestSites");
 
                 var deploymentParameters = new DeploymentParameters(

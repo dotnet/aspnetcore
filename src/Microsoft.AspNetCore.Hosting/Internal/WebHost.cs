@@ -166,7 +166,12 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 return;
             }
 
-            _startup = _hostingServiceProvider.GetRequiredService<IStartup>();
+            _startup = _hostingServiceProvider.GetService<IStartup>();
+
+            if (_startup == null)
+            {
+                throw new InvalidOperationException($"No startup configured. Please specify startup via WebHostBuilder.UseStartup, WebHostBuilder.Configure, injecting {nameof(IStartup)} or specifying the startup assembly via {nameof(WebHostDefaults.StartupAssemblyKey)} in the web host configuration.");
+            }
         }
 
         private RequestDelegate BuildApplication()

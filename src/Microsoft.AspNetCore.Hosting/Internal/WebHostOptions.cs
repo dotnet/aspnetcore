@@ -13,13 +13,16 @@ namespace Microsoft.AspNetCore.Hosting.Internal
         public WebHostOptions() { }
 
         public WebHostOptions(IConfiguration configuration)
+            : this(configuration, string.Empty) { }
+
+        public WebHostOptions(IConfiguration configuration, string applicationNameFallback)
         {
             if (configuration == null)
             {
                 throw new ArgumentNullException(nameof(configuration));
             }
 
-            ApplicationName = configuration[WebHostDefaults.ApplicationKey];
+            ApplicationName = configuration[WebHostDefaults.ApplicationKey] ?? applicationNameFallback;
             StartupAssembly = configuration[WebHostDefaults.StartupAssemblyKey];
             DetailedErrors = WebHostUtilities.ParseBool(configuration, WebHostDefaults.DetailedErrorsKey);
             CaptureStartupErrors = WebHostUtilities.ParseBool(configuration, WebHostDefaults.CaptureStartupErrorsKey);

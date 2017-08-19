@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var env = new HostingEnvironment();
 
-            env.Initialize("DummyApplication", Path.GetFullPath("."), new WebHostOptions(){ WebRoot = "testroot" });
+            env.Initialize(Path.GetFullPath("."), new WebHostOptions(){ WebRoot = "testroot" });
 
             Assert.Equal(Path.GetFullPath("."), env.ContentRootPath);
             Assert.Equal(Path.GetFullPath("testroot"), env.WebRootPath);
@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var env = new HostingEnvironment();
 
-            env.Initialize("DummyApplication", Path.GetFullPath("testroot"), new WebHostOptions());
+            env.Initialize(Path.GetFullPath("testroot"), new WebHostOptions());
 
             Assert.Equal(Path.GetFullPath("testroot"), env.ContentRootPath);
             Assert.Equal(Path.GetFullPath(Path.Combine("testroot", "wwwroot")), env.WebRootPath);
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var env = new HostingEnvironment();
 
-            env.Initialize("DummyApplication", Path.GetFullPath(Path.Combine("testroot", "wwwroot")), new WebHostOptions());
+            env.Initialize(Path.GetFullPath(Path.Combine("testroot", "wwwroot")), new WebHostOptions());
 
             Assert.Equal(Path.GetFullPath(Path.Combine("testroot", "wwwroot")), env.ContentRootPath);
             Assert.Null(env.WebRootPath);
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var env = new HostingEnvironment();
             env.EnvironmentName = "SomeName";
 
-            env.Initialize("DummyApplication", Path.GetFullPath("."), new WebHostOptions(){ Environment = "NewName" });
+            env.Initialize(Path.GetFullPath("."), new WebHostOptions(){ Environment = "NewName" });
 
             Assert.Equal("NewName", env.EnvironmentName);
         }

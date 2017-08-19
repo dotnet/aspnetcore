@@ -9,15 +9,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 {
     public static class HostingEnvironmentExtensions
     {
-        public static void Initialize(this IHostingEnvironment hostingEnvironment, string applicationName, string contentRootPath, WebHostOptions options)
+        public static void Initialize(this IHostingEnvironment hostingEnvironment, string contentRootPath, WebHostOptions options)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
-            }
-            if (string.IsNullOrEmpty(applicationName))
-            {
-                throw new ArgumentException("A valid non-empty application name must be provided.", nameof(applicationName));
             }
             if (string.IsNullOrEmpty(contentRootPath))
             {
@@ -28,7 +24,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                 throw new ArgumentException($"The content root '{contentRootPath}' does not exist.", nameof(contentRootPath));
             }
 
-            hostingEnvironment.ApplicationName = applicationName;
+            hostingEnvironment.ApplicationName = options.ApplicationName;
             hostingEnvironment.ContentRootPath = contentRootPath;
             hostingEnvironment.ContentRootFileProvider = new PhysicalFileProvider(hostingEnvironment.ContentRootPath);
 
