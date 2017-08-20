@@ -113,11 +113,11 @@ namespace Microsoft.AspNetCore.Authentication
         {
             if (scheme == null)
             {
-                var defaultChallengeScheme = await Schemes.GetDefaultChallengeSchemeAsync();
-                scheme = defaultChallengeScheme?.Name;
+                var defaultForbidScheme = await Schemes.GetDefaultForbidSchemeAsync();
+                scheme = defaultForbidScheme?.Name;
                 if (scheme == null)
                 {
-                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultChallengeScheme found.");
+                    throw new InvalidOperationException($"No authenticationScheme was specified, and there was no DefaultForbidScheme found.");
                 }
             }
 

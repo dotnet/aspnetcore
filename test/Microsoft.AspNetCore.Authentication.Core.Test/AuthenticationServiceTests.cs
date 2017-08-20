@@ -122,6 +122,20 @@ namespace Microsoft.AspNetCore.Authentication
             await Assert.ThrowsAsync<InvalidOperationException>(() => context.SignInAsync(new ClaimsPrincipal()));
         }
 
+        [Fact]
+        public async Task ServicesWithDefaultForbidMethod_CallsForbidMethod()
+        {
+            var services = new ServiceCollection().AddOptions().AddAuthenticationCore(o =>
+            {
+                o.AddScheme<ForbidHandler>("forbid", "whatever");
+                o.DefaultForbidScheme = "forbid";
+            }).BuildServiceProvider();
+            var context = new DefaultHttpContext();
+            context.RequestServices = services;
+
+            await context.ForbidAsync();
+        }
+
 
         private class BaseHandler : IAuthenticationHandler
         {
@@ -242,6 +256,44 @@ namespace Microsoft.AspNetCore.Authentication
             public Task SignOutAsync(AuthenticationProperties properties)
             {
                 return Task.FromResult(0);
+            }
+        }
+
+        private class ForbidHandler : IAuthenticationHandler, IAuthenticationRequestHandler, IAuthenticationSignInHandler, IAuthenticationSignOutHandler
+        {
+            public Task<AuthenticateResult> AuthenticateAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ChallengeAsync(AuthenticationProperties properties)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task ForbidAsync(AuthenticationProperties properties)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task<bool> HandleRequestAsync()
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task InitializeAsync(AuthenticationScheme scheme, HttpContext context)
+            {
+                return Task.FromResult(0);
+            }
+
+            public Task SignInAsync(ClaimsPrincipal user, AuthenticationProperties properties)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task SignOutAsync(AuthenticationProperties properties)
+            {
+                throw new NotImplementedException();
             }
         }
 
