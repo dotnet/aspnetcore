@@ -6,9 +6,9 @@ This is the home page of the ASP.NET Core source code repositories and is intend
 
 ASP.NET Core is a new open-source and cross-platform framework for building modern cloud based internet connected applications, such as web apps, IoT apps and mobile backends. ASP.NET Core apps can run on .NET Core or on the full .NET Framework. It was architected to provide an optimized development framework for apps that are deployed to the cloud or run on-premises. It consists of modular components with minimal overhead, so you retain flexibility while constructing your solutions. You can develop and run your ASP.NET Core apps cross-platform on Windows, Mac and Linux. [Learn more about ASP.NET Core](https://docs.microsoft.com/en-us/aspnet/core/).
 
-ASP.NET Core 1.1 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/1.1.0) for further details and check our [releases](https://github.com/aspnet/home/releases) for the latest patch release.
+ASP.NET Core 1.1 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/1.1.0) for further details.
 
-ASP.NET Core 2.0 Preview 2 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/2.0.0-preview2) for further details.
+ASP.NET Core 2.0 Preview 2 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/2.0.0-preview2) for further details and check our [releases](https://github.com/aspnet/home/releases) for the latest patch release.
 
 ## Get Started
 
