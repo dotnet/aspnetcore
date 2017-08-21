@@ -334,27 +334,37 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             return _self.With(SpanChunkGenerator.Null);
         }
 
-        public SpanConstructor AsAddTagHelper(string lookupText, params RazorError[] legacyErrors)
+        public SpanConstructor AsAddTagHelper(
+            string lookupText,
+            string directiveText,
+            string typePattern = null,
+            string assemblyName = null,
+            params RazorError[] legacyErrors)
         {
             var diagnostics = legacyErrors.Select(error => RazorDiagnostic.Create(error)).ToList();
             return _self
-                .With(new AddTagHelperChunkGenerator(lookupText, diagnostics))
+                .With(new AddTagHelperChunkGenerator(lookupText, directiveText, typePattern, assemblyName, diagnostics))
                 .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 
-        public SpanConstructor AsRemoveTagHelper(string lookupText, params RazorError[] legacyErrors)
+        public SpanConstructor AsRemoveTagHelper(
+            string lookupText,
+            string directiveText,
+            string typePattern = null,
+            string assemblyName = null,
+            params RazorError[] legacyErrors)
         {
             var diagnostics = legacyErrors.Select(error => RazorDiagnostic.Create(error)).ToList();
             return _self
-                .With(new RemoveTagHelperChunkGenerator(lookupText, diagnostics))
+                .With(new RemoveTagHelperChunkGenerator(lookupText, directiveText, typePattern, assemblyName, diagnostics))
                 .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 
-        public SpanConstructor AsTagHelperPrefixDirective(string prefix, params RazorError[] legacyErrors)
+        public SpanConstructor AsTagHelperPrefixDirective(string prefix, string directiveText, params RazorError[] legacyErrors)
         {
             var diagnostics = legacyErrors.Select(error => RazorDiagnostic.Create(error)).ToList();
             return _self
-                .With(new TagHelperPrefixDirectiveChunkGenerator(prefix, diagnostics))
+                .With(new TagHelperPrefixDirectiveChunkGenerator(prefix, directiveText, diagnostics))
                 .Accepts(AcceptedCharactersInternal.AnyExceptNewline);
         }
 

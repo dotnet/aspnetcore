@@ -10,13 +10,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class TagHelperPrefixDirectiveChunkGenerator : SpanChunkGenerator
     {
-        public TagHelperPrefixDirectiveChunkGenerator(string prefix, List<RazorDiagnostic> diagnostics)
+        public TagHelperPrefixDirectiveChunkGenerator(string prefix, string directiveText, List<RazorDiagnostic> diagnostics)
         {
             Prefix = prefix;
+            DirectiveText = directiveText;
             Diagnostics = diagnostics;
         }
 
         public string Prefix { get; }
+
+        public string DirectiveText { get; }
 
         public List<RazorDiagnostic> Diagnostics { get; }
 
@@ -31,7 +34,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var other = obj as TagHelperPrefixDirectiveChunkGenerator;
             return base.Equals(other) &&
                 Enumerable.SequenceEqual(Diagnostics, other.Diagnostics) &&
-                string.Equals(Prefix, other.Prefix, StringComparison.Ordinal);
+                string.Equals(Prefix, other.Prefix, StringComparison.Ordinal) &&
+                string.Equals(DirectiveText, other.DirectiveText, StringComparison.Ordinal);
         }
 
         /// <inheritdoc />
@@ -40,6 +44,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var combiner = HashCodeCombiner.Start();
             combiner.Add(base.GetHashCode());
             combiner.Add(Prefix, StringComparer.Ordinal);
+            combiner.Add(DirectiveText, StringComparer.Ordinal);
 
             return combiner.CombinedHash;
         }

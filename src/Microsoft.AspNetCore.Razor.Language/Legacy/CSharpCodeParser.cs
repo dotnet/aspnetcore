@@ -10,6 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal class CSharpCodeParser : TokenizerBackedParser<CSharpTokenizer, CSharpSymbol, CSharpSymbolType>
     {
+        private static HashSet<char> InvalidNonWhitespaceNameCharacters = new HashSet<char>(new[]
+        {
+            '@', '!', '<', '/', '?', '[', '>', ']', '=', '"', '\'', '*'
+        });
+
         private static readonly Func<CSharpSymbol, bool> IsValidStatementSpacingSymbol =
             IsSpacingToken(includeNewLines: true, includeComments: true);
 
@@ -1905,22 +1910,158 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         errors.Add(duplicateDiagnostic);
                     }
 
-                    return new TagHelperPrefixDirectiveChunkGenerator(prefix, errors);
+                    var parsedDirective = ParseDirective(prefix, Span.Start, TagHelperDirectiveType.TagHelperPrefix, errors);
+
+                    return new TagHelperPrefixDirectiveChunkGenerator(
+                        prefix,
+                        parsedDirective.DirectiveText,
+                        errors);
                 });
+        }
+
+        // Internal for testing.
+        internal void ValidateTagHelperPrefix(
+            string prefix,
+            SourceLocation directiveLocation,
+            List<RazorDiagnostic> diagnostics)
+        {
+            foreach (var character in prefix)
+            {
+                // Prefixes are correlated with tag names, tag names cannot have whitespace.
+                if (char.IsWhiteSpace(character) || InvalidNonWhitespaceNameCharacters.Contains(character))
+                {
+                    diagnostics.Add(
+                        RazorDiagnostic.Create(
+                            new RazorError(
+                                Resources.FormatInvalidTagHelperPrefixValue(SyntaxConstants.CSharp.TagHelperPrefixKeyword, character, prefix),
+                                directiveLocation,
+                                prefix.Length)));
+
+                    return;
+                }
+            }
+        }
+
+        private ParsedDirective ParseDirective(
+            string directiveText,
+            SourceLocation directiveLocation,
+            TagHelperDirectiveType directiveType,
+            List<RazorDiagnostic> errors)
+        {
+            var offset = 0;
+            directiveText = directiveText.Trim();
+            if (directiveText.Length >= 2 &&
+                directiveText.StartsWith("\"", StringComparison.Ordinal) &&
+                directiveText.EndsWith("\"", StringComparison.Ordinal))
+            {
+                directiveText = directiveText.Substring(1, directiveText.Length - 2);
+                if (string.IsNullOrEmpty(directiveText))
+                {
+                    offset = 1;
+                }
+            }
+
+            // If this is the "string literal" form of a directive, we'll need to postprocess the location
+            // and content.
+            //
+            // Ex: @addTagHelper "*, Microsoft.AspNetCore.CoolLibrary"
+            //                    ^                                 ^
+            //                  Start                              End
+            if (Span.Symbols.Count == 1 && (Span.Symbols[0] as CSharpSymbol)?.Type == CSharpSymbolType.StringLiteral)
+            {
+                offset += Span.Symbols[0].Content.IndexOf(directiveText, StringComparison.Ordinal);
+
+                // This is safe because inside one of these directives all of the text needs to be on the
+                // same line.
+                var original = directiveLocation;
+                directiveLocation = new SourceLocation(
+                    original.FilePath,
+                    original.AbsoluteIndex + offset,
+                    original.LineIndex,
+                    original.CharacterIndex + offset);
+            }
+
+            var parsedDirective = new ParsedDirective()
+            {
+                DirectiveText = directiveText
+            };
+
+            if (directiveType == TagHelperDirectiveType.TagHelperPrefix)
+            {
+                ValidateTagHelperPrefix(parsedDirective.DirectiveText, directiveLocation, errors);
+
+                return parsedDirective;
+            }
+
+            return ParseAddOrRemoveDirective(parsedDirective, directiveLocation, errors);
+        }
+
+        // Internal for testing.
+        internal ParsedDirective ParseAddOrRemoveDirective(ParsedDirective directive, SourceLocation directiveLocation, List<RazorDiagnostic> errors)
+        {
+            var text = directive.DirectiveText;
+            var lookupStrings = text?.Split(new[] { ',' });
+
+            // Ensure that we have valid lookupStrings to work with. The valid format is "typeName, assemblyName"
+            if (lookupStrings == null ||
+                lookupStrings.Any(string.IsNullOrWhiteSpace) ||
+                lookupStrings.Length != 2)
+            {
+                errors.Add(
+                    RazorDiagnostic.Create(
+                        new RazorError(
+                            Resources.FormatInvalidTagHelperLookupText(text),
+                            directiveLocation,
+                            Math.Max(text.Length, 1))));
+
+                return directive;
+            }
+
+            var trimmedAssemblyName = lookupStrings[1].Trim();
+
+            // + 1 is for the comma separator in the lookup text.
+            var assemblyNameIndex =
+                lookupStrings[0].Length + 1 + lookupStrings[1].IndexOf(trimmedAssemblyName, StringComparison.Ordinal);
+            var assemblyNamePrefix = directive.DirectiveText.Substring(0, assemblyNameIndex);
+
+            directive.TypePattern = lookupStrings[0].Trim();
+            directive.AssemblyName = trimmedAssemblyName;
+
+            return directive;
         }
 
         protected virtual void AddTagHelperDirective()
         {
             TagHelperDirective(
                 SyntaxConstants.CSharp.AddTagHelperKeyword,
-                (lookupText, errors) => new AddTagHelperChunkGenerator(lookupText, errors));
+                (lookupText, errors) =>
+                {
+                    var parsedDirective = ParseDirective(lookupText, Span.Start, TagHelperDirectiveType.AddTagHelper, errors);
+
+                    return new AddTagHelperChunkGenerator(
+                        lookupText,
+                        parsedDirective.DirectiveText,
+                        parsedDirective.TypePattern,
+                        parsedDirective.AssemblyName,
+                        errors);
+                });
         }
 
         protected virtual void RemoveTagHelperDirective()
         {
             TagHelperDirective(
                 SyntaxConstants.CSharp.RemoveTagHelperKeyword,
-                (lookupText, errors) => new RemoveTagHelperChunkGenerator(lookupText, errors));
+                (lookupText, errors) =>
+                {
+                    var parsedDirective = ParseDirective(lookupText, Span.Start, TagHelperDirectiveType.RemoveTagHelper, errors);
+
+                    return new RemoveTagHelperChunkGenerator(
+                        lookupText,
+                        parsedDirective.DirectiveText,
+                        parsedDirective.TypePattern,
+                        parsedDirective.AssemblyName,
+                        errors);
+                });
         }
 
         [Conditional("DEBUG")]
@@ -2092,6 +2233,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 }
                 return sym.Content;
             }
+        }
+
+        internal class ParsedDirective
+        {
+            public string DirectiveText { get; set; }
+
+            public string AssemblyName { get; set; }
+
+            public string TypePattern { get; set; }
         }
     }
 }

@@ -39,7 +39,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                         length: 1))
             };
 
-
             var content =
             @"
 @addTagHelper """;
@@ -85,7 +84,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                         length: 1))
             };
 
-
             var content =
             @"
 @removeTagHelper """;
@@ -130,7 +128,6 @@ namespace Microsoft.AspNetCore.Razor.Language
                         new SourceLocation(17 + Environment.NewLine.Length, 1, 17),
                         length: 1))
             };
-
 
             var content =
             @"
@@ -459,259 +456,6 @@ namespace Microsoft.AspNetCore.Razor.Language
             Assert.Equal(new[] { initialError, expectedRewritingError }, outputTree.Diagnostics);
         }
 
-        [Theory]
-        [InlineData("foo,assemblyName", 4)]
-        [InlineData("foo, assemblyName", 5)]
-        [InlineData("   foo, assemblyName", 8)]
-        [InlineData("   foo   , assemblyName", 11)]
-        [InlineData("foo,    assemblyName", 8)]
-        [InlineData("   foo   ,    assemblyName   ", 14)]
-        public void ParseAddOrRemoveDirective_CalculatesAssemblyLocationInLookupText(string text, int assemblyLocation)
-        {
-            // Arrange
-            var phase = new DefaultRazorTagHelperBinderPhase();
-
-            var directive = new TagHelperDirectiveDescriptor()
-            {
-                DirectiveText = text,
-                DirectiveType = TagHelperDirectiveType.AddTagHelper,
-                Location = SourceLocation.Zero,
-                Diagnostics = new List<RazorDiagnostic>(),
-            };
-
-            var expected = new SourceLocation(assemblyLocation, 0, assemblyLocation);
-
-            // Act
-            var result = phase.ParseAddOrRemoveDirective(directive);
-
-            // Assert
-            Assert.Empty(directive.Diagnostics);
-            Assert.Equal("foo", result.TypePattern);
-            Assert.Equal("assemblyName", result.AssemblyName);
-            Assert.Equal(expected, result.AssemblyNameLocation);
-        }
-
-        public static TheoryData InvalidTagHelperPrefixData
-        {
-            get
-            {
-                var directiveLocation1 = new SourceLocation(1, 2, 3);
-                var directiveLocation2 = new SourceLocation(4, 5, 6);
-
-                var invalidTagHelperPrefixValueError =
-                    "Invalid tag helper directive '{0}' value. '{1}' is not allowed in prefix '{2}'.";
-
-                return new TheoryData<IEnumerable<TagHelperDirectiveDescriptor>, IEnumerable<RazorError>>
-                {
-                    {
-                        new[]
-                        {
-                            new TagHelperDirectiveDescriptor
-                            {
-                                DirectiveText = "th ",
-                                Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
-                                Diagnostics = new List<RazorDiagnostic>(),
-                            },
-                        },
-                        new[]
-                        {
-                            new RazorError(
-                                string.Format(
-                                    invalidTagHelperPrefixValueError,
-                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                                    ' ',
-                                    "th "),
-                                directiveLocation1,
-                                length: 3)
-                        }
-                    },
-                    {
-                        new[]
-                        {
-                            new TagHelperDirectiveDescriptor
-                            {
-                                DirectiveText = "th\t",
-                                Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
-                                Diagnostics = new List<RazorDiagnostic>(),
-                            }
-                        },
-                        new[]
-                        {
-                            new RazorError(
-                                string.Format(
-                                    invalidTagHelperPrefixValueError,
-                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                                    '\t',
-                                    "th\t"),
-                                directiveLocation1,
-                                length: 3)
-                        }
-                    },
-                    {
-                        new[]
-                        {
-                            new TagHelperDirectiveDescriptor
-                            {
-                                DirectiveText = "th" + Environment.NewLine,
-                                Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
-                                Diagnostics = new List<RazorDiagnostic>(),
-                            }
-                        },
-                        new[]
-                        {
-                            new RazorError(
-                                string.Format(
-                                    invalidTagHelperPrefixValueError,
-                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                                    Environment.NewLine[0],
-                                    "th" + Environment.NewLine),
-                                directiveLocation1,
-                                length: 2 + Environment.NewLine.Length)
-                        }
-                    },
-                    {
-                        new[]
-                        {
-                            new TagHelperDirectiveDescriptor
-                            {
-                                DirectiveText = " th ",
-                                Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
-                                Diagnostics = new List<RazorDiagnostic>(),
-                            }
-                        },
-                        new[]
-                        {
-                            new RazorError(
-                                string.Format(
-                                    invalidTagHelperPrefixValueError,
-                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                                    ' ',
-                                    " th "),
-                                directiveLocation1,
-                                length: 4)
-                        }
-                    },
-                    {
-                        new[]
-                        {
-                            new TagHelperDirectiveDescriptor
-                            {
-                                DirectiveText = "@",
-                                Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
-                                Diagnostics = new List<RazorDiagnostic>(),
-                            }
-                        },
-                        new[]
-                        {
-                            new RazorError(
-                                string.Format(
-                                    invalidTagHelperPrefixValueError,
-                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                                    '@',
-                                    "@"),
-                                directiveLocation1,
-                                length: 1)
-                        }
-                    },
-                    {
-                        new[]
-                        {
-                            new TagHelperDirectiveDescriptor
-                            {
-                                DirectiveText = "t@h",
-                                Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
-                                Diagnostics = new List<RazorDiagnostic>(),
-                            }
-                        },
-                        new[]
-                        {
-                            new RazorError(
-                                string.Format(
-                                    invalidTagHelperPrefixValueError,
-                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                                    '@',
-                                    "t@h"),
-                                directiveLocation1,
-                                length: 3)
-                        }
-                    },
-                    {
-                        new[]
-                        {
-                            new TagHelperDirectiveDescriptor
-                            {
-                                DirectiveText = "!",
-                                Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
-                                Diagnostics = new List<RazorDiagnostic>(),
-                            }
-                        },
-                        new[]
-                        {
-                            new RazorError(
-                                string.Format(
-                                    invalidTagHelperPrefixValueError,
-                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                                    '!',
-                                    "!"),
-                                directiveLocation1,
-                                length: 1)
-                        }
-                    },
-                    {
-                        new[]
-                        {
-                            new TagHelperDirectiveDescriptor
-                            {
-                                DirectiveText = "!th",
-                                Location = directiveLocation1,
-                                DirectiveType = TagHelperDirectiveType.TagHelperPrefix,
-                                Diagnostics = new List<RazorDiagnostic>(),
-                            }
-                        },
-                        new[]
-                        {
-                            new RazorError(
-                                string.Format(
-                                    invalidTagHelperPrefixValueError,
-                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
-                                    '!',
-                                    "!th"),
-                                directiveLocation1,
-                                length: 3)
-                        }
-                    },
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(InvalidTagHelperPrefixData))]
-        public void IsValidTagHelperPrefix_ValidatesPrefix(
-            object directives,
-            object expectedErrors)
-        {
-            // Arrange
-            var expectedDiagnostics = ((IEnumerable<RazorError>)expectedErrors).Select(RazorDiagnostic.Create);
-            var tagHelperDirectives = (IEnumerable<TagHelperDirectiveDescriptor>)directives;
-            var phase = new DefaultRazorTagHelperBinderPhase();
-
-            // Act
-            foreach (var directive in tagHelperDirectives)
-            {
-                Assert.False(phase.IsValidTagHelperPrefix(directive.DirectiveText, directive.Location, directive.Diagnostics));
-            }
-
-            // Assert
-            Assert.Equal(expectedDiagnostics, tagHelperDirectives.SelectMany(directive => directive.Diagnostics));
-        }
-
         private static string AssemblyA => "TestAssembly";
 
         private static string AssemblyB => "AnotherAssembly";
@@ -755,87 +499,53 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             get
             {
-                // directiveDescriptors, expected prefix
-                return new TheoryData<IEnumerable<TagHelperDirectiveDescriptor>, string>
+                // source, expected prefix
+                return new TheoryData<string, string>
                 {
                     {
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("", TagHelperDirectiveType.TagHelperPrefix),
-                            CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, " + AssemblyA,
-                                TagHelperDirectiveType.AddTagHelper),
-                        },
+                        $@"
+@tagHelperPrefix """"
+@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, TestAssembly",
                         null
                     },
                     {
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("th:", TagHelperDirectiveType.TagHelperPrefix),
-                            CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, " + AssemblyA,
-                                TagHelperDirectiveType.AddTagHelper),
-                        },
+                        $@"
+@tagHelperPrefix th:
+@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, {AssemblyA}",
                         "th:"
                     },
                     {
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("th:", TagHelperDirectiveType.TagHelperPrefix)
-                        },
+                        $@"
+@addTagHelper *, {AssemblyA}
+@tagHelperPrefix th:",
                         "th:"
                     },
                     {
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("th-", TagHelperDirectiveType.TagHelperPrefix),
-                            CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, " + AssemblyA,
-                                TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNetCore.Razor.TagHelpers.ValidInherited*, " + AssemblyA,
-                                TagHelperDirectiveType.AddTagHelper)
-                        },
+                        $@"
+@tagHelperPrefix th-
+@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, {AssemblyA}
+@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.ValidInherited*, {AssemblyA}",
                         "th-"
                     },
                     {
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("", TagHelperDirectiveType.TagHelperPrefix),
-                            CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, " + AssemblyA,
-                                TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNetCore.Razor.TagHelpers.ValidInherited*, " + AssemblyA,
-                                TagHelperDirectiveType.AddTagHelper)
-                        },
+                        $@"
+@tagHelperPrefix 
+@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, {AssemblyA}
+@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.ValidInherited*, {AssemblyA}",
                         null
                     },
                     {
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("th", TagHelperDirectiveType.TagHelperPrefix),
-                            CreateTagHelperDirectiveDescriptor(
-                                "*, " + AssemblyA,
-                                TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                "*, " + AssemblyB,
-                                TagHelperDirectiveType.AddTagHelper),
-                        },
+                        $@"
+@tagHelperPrefix ""th""
+@addTagHelper *, {AssemblyA}
+@addTagHelper *, {AssemblyB}",
                         "th"
                     },
                     {
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor(
-                                "*, " + AssemblyA,
-                                TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("th:-", TagHelperDirectiveType.TagHelperPrefix),
-                            CreateTagHelperDirectiveDescriptor(
-                                "*, " + AssemblyB,
-                                TagHelperDirectiveType.AddTagHelper),
-                        },
+                        $@"
+@addTagHelper *, {AssemblyA}
+@tagHelperPrefix th:-
+@addTagHelper *, {AssemblyB}",
                         "th:-"
                     },
                 };
@@ -844,192 +554,143 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         [Theory]
         [MemberData(nameof(ProcessTagHelperPrefixData))]
-        public void ProcessTagHelperPrefix_ParsesPrefixFromDirectives(
-            object directiveDescriptors,
+        public void DirectiveVisitor_ExtractsPrefixFromSyntaxTree(
+            string source,
             string expectedPrefix)
         {
             // Arrange
-            var phase = new DefaultRazorTagHelperBinderPhase();
-            var document = RazorCodeDocument.Create(new StringSourceDocument("Test content", encoding: Encoding.UTF8, filePath: "TestFile"));
-            var tagHelperDirectives = (IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors;
+            var sourceDocument = TestRazorSourceDocument.Create(source, fileName: "TestFile");
+            var parser = new RazorParser();
+            var syntaxTree = parser.Parse(sourceDocument);
+            var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor(tagHelpers: new List<TagHelperDescriptor>());
 
             // Act
-            var prefix = phase.ProcessTagHelperPrefix(((IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors).ToList(), document);
+            visitor.VisitBlock(syntaxTree.Root);
 
             // Assert
-            Assert.Empty(tagHelperDirectives.SelectMany(directive => directive.Diagnostics));
-            Assert.Equal(expectedPrefix, prefix);
+            Assert.Equal(expectedPrefix, visitor.TagHelperPrefix);
         }
 
-        public static TheoryData ProcessDirectivesData
+        public static TheoryData ProcessTagHelperMatchesData
         {
             get
             {
-                return new TheoryData<IEnumerable<TagHelperDescriptor>, // tagHelpers
-                                      IEnumerable<TagHelperDirectiveDescriptor>, // directiveDescriptors
-                                      IEnumerable<TagHelperDescriptor>> // expectedDescriptors
+                // source, taghelpers, expected descriptors
+                return new TheoryData<string, TagHelperDescriptor[], TagHelperDescriptor[]>
                 {
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}",
                         new [] { Valid_PlainTagHelperDescriptor, },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper)
-                        },
                         new [] { Valid_PlainTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@addTagHelper *, {AssemblyB}",
                         new [] { Valid_PlainTagHelperDescriptor, String_TagHelperDescriptor },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyB, TagHelperDirectiveType.AddTagHelper)
-                        },
                         new [] { Valid_PlainTagHelperDescriptor, String_TagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@removeTagHelper *, {AssemblyB}",
                         new [] { Valid_PlainTagHelperDescriptor, String_TagHelperDescriptor },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
-                        },
                         new [] { Valid_PlainTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@addTagHelper *, {AssemblyB}
+@removeTagHelper *, {AssemblyA}",
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor, String_TagHelperDescriptor },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyB, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper)
-                        },
                         new [] { String_TagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper {Valid_PlainTagHelperDescriptor.Name}, {AssemblyA}
+@addTagHelper *, {AssemblyA}",
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor, },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor(
-                                Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA,
-                                TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper)
-                        },
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@removeTagHelper {Valid_PlainTagHelperDescriptor.Name}, {AssemblyA}",
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor, },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA,
-                                TagHelperDirectiveType.RemoveTagHelper)
-                        },
                         new [] { Valid_InheritedTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@removeTagHelper *, {AssemblyA}
+@addTagHelper *, {AssemblyA}",
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor, },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA,
-                                TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper)
-                        },
                         new [] { Valid_InheritedTagHelperDescriptor, Valid_PlainTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@addTagHelper *, {AssemblyA}",
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor, },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                        },
                         new [] { Valid_InheritedTagHelperDescriptor, Valid_PlainTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, {AssemblyA}",
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor, },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNetCore.Razor.TagHelpers.ValidPlain*, " + AssemblyA,
-                                TagHelperDirectiveType.AddTagHelper),
-                        },
                         new [] { Valid_PlainTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper Microsoft.AspNetCore.Razor.TagHelpers.*, {AssemblyA}",
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor, },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNetCore.Razor.TagHelpers.*, " + AssemblyA,
-                                TagHelperDirectiveType.AddTagHelper),
-                        },
                         new [] { Valid_PlainTagHelperDescriptor, Valid_PlainTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@removeTagHelper Microsoft.AspNetCore.Razor.TagHelpers.ValidP*, {AssemblyA}
+@addTagHelper *, {AssemblyA}",
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor, },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                "Microsoft.AspNetCore.Razor.TagHelpers.ValidP*, " + AssemblyA,
-                                TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper)
-                        },
                         new [] { Valid_InheritedTagHelperDescriptor, Valid_PlainTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@removeTagHelper Str*, {AssemblyB}",
                         new [] { Valid_PlainTagHelperDescriptor, String_TagHelperDescriptor, },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("Str*, " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
-                        },
                         new [] { Valid_PlainTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@removeTagHelper *, {AssemblyB}",
                         new [] { Valid_PlainTagHelperDescriptor, String_TagHelperDescriptor, },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
-                        },
                         new [] { Valid_PlainTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@addTagHelper System.{String_TagHelperDescriptor.Name}, {AssemblyB}",
                         new [] { Valid_PlainTagHelperDescriptor, String_TagHelperDescriptor, },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("System." + String_TagHelperDescriptor.Name + ", " + AssemblyB, TagHelperDirectiveType.AddTagHelper)
-                        },
                         new [] { Valid_PlainTagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@addTagHelper *, {AssemblyB}
+@removeTagHelper Microsoft.*, {AssemblyA}",
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor, String_TagHelperDescriptor },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyB, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("Microsoft.*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper)
-                        },
                         new [] { String_TagHelperDescriptor }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@addTagHelper *, {AssemblyB}
+@removeTagHelper ?Microsoft*, {AssemblyA}
+@removeTagHelper System.{String_TagHelperDescriptor.Name}, {AssemblyB}",
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor, String_TagHelperDescriptor },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor(
-                                "*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                "*, " + AssemblyB, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                "?Microsoft*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                "System." + String_TagHelperDescriptor.Name + ", " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
-                        },
                         new []
                         {
                             Valid_InheritedTagHelperDescriptor,
@@ -1038,18 +699,12 @@ namespace Microsoft.AspNetCore.Razor.Language
                         }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@addTagHelper *, {AssemblyB}
+@removeTagHelper TagHelper*, {AssemblyA}
+@removeTagHelper System.{String_TagHelperDescriptor.Name}, {AssemblyB}",
                         new [] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor, String_TagHelperDescriptor },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor(
-                                "*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                "*, " + AssemblyB, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                "TagHelper*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(
-                                "System." + String_TagHelperDescriptor.Name + ", " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
-                        },
                         new []
                         {
                             Valid_InheritedTagHelperDescriptor,
@@ -1062,165 +717,145 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Theory]
-        [MemberData(nameof(ProcessDirectivesData))]
-        public void ProcessDirectives_FiltersTagHelpersByDirectives(
+        [MemberData(nameof(ProcessTagHelperMatchesData))]
+        public void DirectiveVisitor_FiltersTagHelpersByDirectives(
+            string source,
             object tagHelpers,
-            object directiveDescriptors,
             object expectedDescriptors)
         {
             // Arrange
-            var phase = new DefaultRazorTagHelperBinderPhase();
-            var tagHelperDirectives = (IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors;
-            var expected = (IEnumerable<TagHelperDescriptor>)expectedDescriptors;
+            var expected = (TagHelperDescriptor[])expectedDescriptors;
+            var sourceDocument = TestRazorSourceDocument.Create(source, fileName: "TestFile");
+            var parser = new RazorParser();
+            var syntaxTree = parser.Parse(sourceDocument);
+            var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor((TagHelperDescriptor[])tagHelpers);
 
             // Act
-            var results = phase.ProcessDirectives(
-                new List<TagHelperDirectiveDescriptor>(tagHelperDirectives),
-                new List<TagHelperDescriptor>((IEnumerable<TagHelperDescriptor>)tagHelpers));
+            visitor.VisitBlock(syntaxTree.Root);
 
             // Assert
-            Assert.Empty(tagHelperDirectives.SelectMany(directive => directive.Diagnostics));
-            Assert.Equal(expected.Count(), results.Count());
+            Assert.Equal(expected.Count(), visitor.Matches.Count());
 
             foreach (var expectedDescriptor in expected)
             {
-                Assert.Contains(expectedDescriptor, results, TagHelperDescriptorComparer.Default);
+                Assert.Contains(expectedDescriptor, visitor.Matches, TagHelperDescriptorComparer.Default);
             }
         }
 
-        public static TheoryData ProcessDirectives_EmptyResultData
+        public static TheoryData ProcessTagHelperMatches_EmptyResultData
         {
             get
             {
-                return new TheoryData<IEnumerable<TagHelperDescriptor>, IEnumerable<TagHelperDirectiveDescriptor>>
+                // source, taghelpers
+                return new TheoryData<string, IEnumerable<TagHelperDescriptor>>
                 {
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@removeTagHelper *, {AssemblyA}",
                         new TagHelperDescriptor[]
                         {
                             Valid_PlainTagHelperDescriptor,
-                        },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
                         }
                     },
                     {
-                        new TagHelperDescriptor[]
-                        {
-                            Valid_PlainTagHelperDescriptor,
-                            Valid_InheritedTagHelperDescriptor,
-                        },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_InheritedTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                        }
-                    },
-                    {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@removeTagHelper {Valid_PlainTagHelperDescriptor.Name}, {AssemblyA}
+@removeTagHelper {Valid_InheritedTagHelperDescriptor.Name}, {AssemblyA}",
                         new TagHelperDescriptor[]
                         {
                             Valid_PlainTagHelperDescriptor,
                             Valid_InheritedTagHelperDescriptor,
-                            String_TagHelperDescriptor,
-                        },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyB, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
                         }
                     },
                     {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@addTagHelper *, {AssemblyB}
+@removeTagHelper *, {AssemblyA}
+@removeTagHelper *, {AssemblyB}",
                         new TagHelperDescriptor[]
                         {
                             Valid_PlainTagHelperDescriptor,
                             Valid_InheritedTagHelperDescriptor,
                             String_TagHelperDescriptor,
-                        },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyB, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_InheritedTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(String_TagHelperDescriptor.Name + ", " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
                         }
                     },
                     {
-                        new TagHelperDescriptor[0],
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                        }
-                    },
-                    {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@addTagHelper *, {AssemblyB}
+@removeTagHelper {Valid_PlainTagHelperDescriptor.Name}, {AssemblyA}
+@removeTagHelper {Valid_InheritedTagHelperDescriptor.Name}, {AssemblyA}
+@removeTagHelper {String_TagHelperDescriptor.Name}, {AssemblyB}",
                         new TagHelperDescriptor[]
                         {
                             Valid_PlainTagHelperDescriptor,
-                        },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("Mic*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
+                            Valid_InheritedTagHelperDescriptor,
+                            String_TagHelperDescriptor,
                         }
                     },
                     {
+                        $@"
+@removeTagHelper *, {AssemblyA}
+@removeTagHelper {Valid_PlainTagHelperDescriptor.Name}, {AssemblyA}",
+                        new TagHelperDescriptor[0]
+                    },
+                    {
+                        $@"
+@addTagHelper *, {AssemblyA}
+@removeTagHelper Mic*, {AssemblyA}",
+                        new TagHelperDescriptor[]
+                        {
+                            Valid_PlainTagHelperDescriptor,
+                        }
+                    },
+                    {
+                        $@"
+@addTagHelper Mic*, {AssemblyA}
+@removeTagHelper {Valid_PlainTagHelperDescriptor.Name}, {AssemblyA}
+@removeTagHelper {Valid_InheritedTagHelperDescriptor.Name}, {AssemblyA}",
                         new TagHelperDescriptor[]
                         {
                             Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor
-                        },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("Mic*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_PlainTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor(Valid_InheritedTagHelperDescriptor.Name + ", " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper)
                         }
                     },
                     {
+                        $@"
+@addTagHelper Microsoft.*, {AssemblyA}
+@addTagHelper System.*, {AssemblyB}
+@removeTagHelper Microsoft.AspNetCore.Razor.TagHelpers*, {AssemblyA}
+@removeTagHelper System.*, {AssemblyB}",
                         new TagHelperDescriptor[]
                         {
                             Valid_PlainTagHelperDescriptor,
                             Valid_InheritedTagHelperDescriptor,
                             String_TagHelperDescriptor,
-                        },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("Microsoft.*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("System.*, " + AssemblyB, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("Microsoft.AspNetCore.Razor.TagHelpers*, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor("System.*, " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
                         }
                     },
                     {
+                        $@"
+@addTagHelper ?icrosoft.*, {AssemblyA}
+@addTagHelper ?ystem.*, {AssemblyB}
+@removeTagHelper *?????r, {AssemblyA}
+@removeTagHelper Sy??em.*, {AssemblyB}",
                         new TagHelperDescriptor[]
                         {
                             Valid_PlainTagHelperDescriptor,
                             Valid_InheritedTagHelperDescriptor,
                             String_TagHelperDescriptor,
-                        },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("?icrosoft.*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("?ystem.*, " + AssemblyB, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("*?????r, " + AssemblyA, TagHelperDirectiveType.RemoveTagHelper),
-                            CreateTagHelperDirectiveDescriptor("Sy??em.*, " + AssemblyB, TagHelperDirectiveType.RemoveTagHelper)
                         }
                     },
                     {
+                        $@"
+@addTagHelper ?i?crosoft.*, {AssemblyA}
+@addTagHelper ??ystem.*, {AssemblyB}",
                         new TagHelperDescriptor[]
                         {
                             Valid_PlainTagHelperDescriptor,
                             Valid_InheritedTagHelperDescriptor,
                             String_TagHelperDescriptor,
-                        },
-                        new []
-                        {
-                            CreateTagHelperDirectiveDescriptor("?i?crosoft.*, " + AssemblyA, TagHelperDirectiveType.AddTagHelper),
-                            CreateTagHelperDirectiveDescriptor("??ystem.*, " + AssemblyB, TagHelperDirectiveType.AddTagHelper),
                         }
                     },
                 };
@@ -1228,119 +863,22 @@ namespace Microsoft.AspNetCore.Razor.Language
         }
 
         [Theory]
-        [MemberData(nameof(ProcessDirectives_EmptyResultData))]
+        [MemberData(nameof(ProcessTagHelperMatches_EmptyResultData))]
         public void ProcessDirectives_CanReturnEmptyDescriptorsBasedOnDirectiveDescriptors(
-            object tagHelpers,
-            object directiveDescriptors)
+            string source,
+            object tagHelpers)
         {
             // Arrange
-            var tagHelperDirectives = (IEnumerable<TagHelperDirectiveDescriptor>)directiveDescriptors;
-            var phase = new DefaultRazorTagHelperBinderPhase();
+            var sourceDocument = TestRazorSourceDocument.Create(source, fileName: "TestFile");
+            var parser = new RazorParser();
+            var syntaxTree = parser.Parse(sourceDocument);
+            var visitor = new DefaultRazorTagHelperBinderPhase.DirectiveVisitor((TagHelperDescriptor[])tagHelpers);
 
             // Act
-            var results = phase.ProcessDirectives(
-                new List<TagHelperDirectiveDescriptor>(tagHelperDirectives),
-                new List<TagHelperDescriptor>((IEnumerable<TagHelperDescriptor>)tagHelpers));
+            visitor.VisitBlock(syntaxTree.Root);
 
             // Assert
-            Assert.Empty(results);
-        }
-
-        public static TheoryData<string> ProcessDirectives_IgnoresSpacesData
-        {
-            get
-            {
-                var assemblyName = Valid_PlainTagHelperDescriptor.AssemblyName;
-                var typeName = Valid_PlainTagHelperDescriptor.Name;
-                return new TheoryData<string>
-                {
-                    $"{typeName},{assemblyName}",
-                    $"    {typeName},{assemblyName}",
-                    $"{typeName}    ,{assemblyName}",
-                    $"    {typeName}    ,{assemblyName}",
-                    $"{typeName},    {assemblyName}",
-                    $"{typeName},{assemblyName}    ",
-                    $"{typeName},    {assemblyName}    ",
-                    $"    {typeName},    {assemblyName}    ",
-                    $"    {typeName}    ,    {assemblyName}    "
-                };
-            }
-        }
-
-        [Theory]
-        [MemberData(nameof(ProcessDirectives_IgnoresSpacesData))]
-        public void ProcessDirectives_IgnoresSpaces(string directiveText)
-        {
-            // Arrange
-            var phase = new DefaultRazorTagHelperBinderPhase();
-            var directives = new[]
-            {
-                new TagHelperDirectiveDescriptor()
-                {
-                    DirectiveText = directiveText,
-                    DirectiveType = TagHelperDirectiveType.AddTagHelper,
-                    Diagnostics = new List<RazorDiagnostic>(),
-                }
-            };
-
-            // Act
-            var results = phase.ProcessDirectives(
-                directives,
-                new[] { Valid_PlainTagHelperDescriptor, Valid_InheritedTagHelperDescriptor });
-
-            // Assert
-            Assert.Empty(directives[0].Diagnostics);
-
-            var single = Assert.Single(results);
-            Assert.Equal(Valid_PlainTagHelperDescriptor, single, TagHelperDescriptorComparer.Default);
-        }
-
-        [Theory]
-        [InlineData("", 1)]
-        [InlineData("*,", 2)]
-        [InlineData("?,", 2)]
-        [InlineData(",", 1)]
-        [InlineData(",,,", 3)]
-        [InlineData("First, ", 7)]
-        [InlineData("First , ", 8)]
-        [InlineData(" ,Second", 8)]
-        [InlineData(" , Second", 9)]
-        [InlineData("SomeType,", 9)]
-        [InlineData("SomeAssembly", 12)]
-        [InlineData("First,Second,Third", 18)]
-        public void DescriptorResolver_CreatesErrorIfInvalidLookupText_DoesNotThrow(string directiveText, int errorLength)
-        {
-            // Arrange
-            var phase = new DefaultRazorTagHelperBinderPhase();
-
-            var directive = new TagHelperDirectiveDescriptor()
-            {
-                DirectiveText = directiveText,
-                DirectiveType = TagHelperDirectiveType.AddTagHelper,
-                Location = new SourceLocation(1, 2, 3),
-                Diagnostics = new List<RazorDiagnostic>(),
-            };
-
-            var expectedErrorMessage = string.Format(
-                "Invalid tag helper directive look up text '{0}'. The correct look up text " +
-                "format is: \"name, assemblyName\".",
-                directiveText);
-
-            var expectedError = RazorDiagnostic.Create(
-                new RazorError(
-                    expectedErrorMessage,
-                    new SourceLocation(1, 2, 3),
-                    errorLength));
-
-
-            // Act
-            var result = phase.ParseAddOrRemoveDirective(directive);
-
-            // Assert
-            Assert.Null(result);
-
-            var error = Assert.Single(directive.Diagnostics);
-            Assert.Equal(expectedError, error);
+            Assert.Empty(visitor.Matches);
         }
 
         private static TagHelperDescriptor CreatePrefixedValidPlainDescriptor(string prefix)
@@ -1356,19 +894,6 @@ namespace Microsoft.AspNetCore.Razor.Language
         private static TagHelperDescriptor CreatePrefixedStringDescriptor(string prefix)
         {
             return String_TagHelperDescriptor;
-        }
-
-        private static TagHelperDirectiveDescriptor CreateTagHelperDirectiveDescriptor(
-            string directiveText,
-            TagHelperDirectiveType directiveType)
-        {
-            return new TagHelperDirectiveDescriptor
-            {
-                DirectiveText = directiveText,
-                Location = SourceLocation.Zero,
-                DirectiveType = directiveType,
-                Diagnostics = new List<RazorDiagnostic>(),
-            };
         }
 
         private static RazorSourceDocument CreateTestSourceDocument()

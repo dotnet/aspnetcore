@@ -350,7 +350,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                             .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"*, Foo\"")
-                        .AsAddTagHelper("\"*, Foo\"")));
+                        .AsAddTagHelper(
+                            "\"*, Foo\"",
+                            "*, Foo",
+                            "*",
+                            "Foo")));
         }
 
         [Fact]
@@ -370,7 +374,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                .Accepts(AcceptedCharactersInternal.None),
                         Factory.Code("\"*, Foo\"")
                             .AsAddTagHelper(
-                                "\"*, Foo\"", 
+                                "\"*, Foo\"",
+                                "*, Foo",
+                                "*",
+                                "Foo",
                                 new RazorError(Resources.FormatDirectiveMustAppearAtStartOfLine("addTagHelper"), new SourceLocation(4, 0, 4), 12))),
                     Factory.Code(Environment.NewLine).AsStatement(),
                     Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
@@ -1009,7 +1016,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"\"")
-                        .AsTagHelperPrefixDirective("\"\"")));
+                        .AsTagHelperPrefixDirective("\"\"", string.Empty)));
         }
 
         [Fact]
@@ -1022,7 +1029,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo")
-                        .AsTagHelperPrefixDirective("Foo")));
+                        .AsTagHelperPrefixDirective("Foo", "Foo")));
         }
 
         [Fact]
@@ -1035,7 +1042,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo\"")
-                        .AsTagHelperPrefixDirective("\"Foo\"")));
+                        .AsTagHelperPrefixDirective("\"Foo\"", "Foo")));
         }
 
         [Fact]
@@ -1054,7 +1061,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
-                        .AsTagHelperPrefixDirective(string.Empty, expectedError)
+                        .AsTagHelperPrefixDirective(string.Empty, string.Empty, expectedError)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
@@ -1069,6 +1076,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
                 new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4),
+                new RazorError(
+                    Resources.FormatInvalidTagHelperPrefixValue(SyntaxConstants.CSharp.TagHelperPrefixKeyword, '"', "\"Foo"),
                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)
             };
 
@@ -1080,7 +1090,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
-                        .AsTagHelperPrefixDirective("\"Foo", expectedErrors)));
+                        .AsTagHelperPrefixDirective("\"Foo", "\"Foo", expectedErrors)));
         }
 
         [Fact]
@@ -1094,6 +1104,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     absoluteIndex: 23, lineIndex: 0, columnIndex: 23, length: 1),
                 new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.TagHelperPrefixKeyword),
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 7),
+                new RazorError(
+                    Resources.FormatInvalidTagHelperPrefixValue(SyntaxConstants.CSharp.TagHelperPrefixKeyword, ' ', "Foo   \""),
                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 7)
             };
 
@@ -1105,43 +1118,76 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo   \"")
-                        .AsTagHelperPrefixDirective("Foo   \"", expectedErrors)));
+                        .AsTagHelperPrefixDirective("Foo   \"", "Foo   \"", expectedErrors)));
         }
 
         [Fact]
-        public void RemoveTagHelperDirective_NoValue_Succeeds()
+        public void RemoveTagHelperDirective_NoValue_Invalid()
         {
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText(string.Empty),
+                    new SourceLocation(18, 0, 18),
+                    length: 1)
+            };
+
             ParseBlockTest("@removeTagHelper \"\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"\"")
-                        .AsRemoveTagHelper("\"\"")));
+                        .AsRemoveTagHelper(
+                            "\"\"",
+                            string.Empty,
+                            legacyErrors: expectedErrors)));
         }
 
         [Fact]
-        public void RemoveTagHelperDirective_Succeeds()
+        public void RemoveTagHelperDirective_InvalidLookupText_AddsError()
         {
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText("Foo"),
+                    new SourceLocation(17, 0, 17),
+                    length: 3)
+            };
+
             ParseBlockTest("@removeTagHelper Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo")
-                        .AsRemoveTagHelper("Foo")));
+                        .AsRemoveTagHelper(
+                            "Foo",
+                            "Foo",
+                            legacyErrors: expectedErrors)));
         }
 
         [Fact]
-        public void RemoveTagHelperDirective_WithQuotes_Succeeds()
+        public void RemoveTagHelperDirective_WithQuotes_InvalidLookupText_AddsError()
         {
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText("Foo"),
+                    new SourceLocation(18, 0, 18),
+                    length: 3)
+            };
+
             ParseBlockTest("@removeTagHelper \"Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo\"")
-                        .AsRemoveTagHelper("\"Foo\"")));
+                        .AsRemoveTagHelper(
+                            "\"Foo\"",
+                            "Foo",
+                            legacyErrors: expectedErrors)));
         }
 
         [Fact]
@@ -1153,7 +1199,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + "     ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo,   Bar    ")
-                        .AsRemoveTagHelper("Foo,   Bar")
+                        .AsRemoveTagHelper(
+                            "Foo,   Bar",
+                            "Foo,   Bar",
+                            "Foo",
+                            "Bar")
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
@@ -1161,9 +1211,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public void RemoveTagHelperDirective_RequiresValue()
         {
             // Arrange
-            var expectedError = new RazorError(
-                LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15);
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
+                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 15),
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText(string.Empty),
+                    new SourceLocation(17, 0, 17),
+                    length: 1),
+            };
 
             // Act & Assert
             ParseBlockTest("@removeTagHelper ",
@@ -1172,7 +1229,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
-                        .AsRemoveTagHelper(string.Empty, expectedError)
+                        .AsRemoveTagHelper(string.Empty, string.Empty, legacyErrors: expectedErrors)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
@@ -1187,7 +1244,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
                 new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4),
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText("\"Foo"),
+                    new SourceLocation(17, 0, 17),
+                    length: 4),
             };
 
             // Act & Assert
@@ -1197,7 +1258,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
-                        .AsRemoveTagHelper("\"Foo", expectedErrors)));
+                        .AsRemoveTagHelper("\"Foo", "\"Foo", legacyErrors: expectedErrors)));
         }
 
         [Fact]
@@ -1211,7 +1272,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     absoluteIndex: 20, lineIndex: 0, columnIndex: 20, length: 1),
                 new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.RemoveTagHelperKeyword),
-                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4)
+                    absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 4),
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText("Foo\""),
+                    new SourceLocation(17, 0, 17),
+                    length: 4),
             };
 
             // Act & Assert
@@ -1221,48 +1286,81 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo\"")
-                        .AsRemoveTagHelper("Foo\"", expectedErrors)
+                        .AsRemoveTagHelper("Foo\"", "Foo\"", legacyErrors: expectedErrors)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
         [Fact]
-        public void AddTagHelperDirective_NoValue_Succeeds()
+        public void AddTagHelperDirective_NoValue_Invalid()
         {
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText(string.Empty),
+                    new SourceLocation(15, 0, 15),
+                    length: 1)
+            };
+
             ParseBlockTest("@addTagHelper \"\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"\"")
-                        .AsAddTagHelper("\"\"")));
+                        .AsAddTagHelper(
+                            "\"\"",
+                            string.Empty,
+                            legacyErrors: expectedErrors)));
         }
 
         [Fact]
-        public void AddTagHelperDirective_Succeeds()
+        public void AddTagHelperDirective_InvalidLookupText_AddsError()
         {
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText("Foo"),
+                    new SourceLocation(14, 0, 14),
+                    length: 3)
+            };
+
             ParseBlockTest("@addTagHelper Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo")
-                        .AsAddTagHelper("Foo")));
+                        .AsAddTagHelper(
+                            "Foo",
+                            "Foo",
+                            legacyErrors: expectedErrors)));
         }
 
         [Fact]
-        public void AddTagHelperDirective_WithQuotes_Succeeds()
+        public void AddTagHelperDirective_WithQuotes_InvalidLookupText_AddsError()
         {
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText("Foo"),
+                    new SourceLocation(15, 0, 15),
+                    length: 3)
+            };
+
             ParseBlockTest("@addTagHelper \"Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo\"")
-                        .AsAddTagHelper("\"Foo\"")));
+                        .AsAddTagHelper(
+                            "\"Foo\"",
+                            "Foo",
+                            legacyErrors: expectedErrors)));
         }
 
         [Fact]
-        public void AddTagHelperDirectiveSupportsSpaces()
+        public void AddTagHelperDirective_SupportsSpaces()
         {
             ParseBlockTest("@addTagHelper     Foo,   Bar    ",
                 new DirectiveBlock(
@@ -1270,16 +1368,28 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + "     ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo,   Bar    ")
-                        .AsAddTagHelper("Foo,   Bar")));
+                        .AsAddTagHelper(
+                            "Foo,   Bar",
+                            "Foo,   Bar",
+                            "Foo",
+                            "Bar")
+                        .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
         [Fact]
-        public void AddTagHelperDirectiveRequiresValue()
+        public void AddTagHelperDirective_RequiresValue()
         {
             // Arrange
-            var expectedError = new RazorError(
-                LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.AddTagHelperKeyword),
-                absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 12);
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    LegacyResources.FormatParseError_DirectiveMustHaveValue(SyntaxConstants.CSharp.AddTagHelperKeyword),
+                    absoluteIndex: 1, lineIndex: 0, columnIndex: 1, length: 12),
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText(string.Empty),
+                    new SourceLocation(14, 0, 14),
+                    length: 1),
+            };
 
             // Act & Assert
             ParseBlockTest("@addTagHelper ",
@@ -1288,7 +1398,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
-                        .AsAddTagHelper(string.Empty, expectedError)
+                        .AsAddTagHelper(string.Empty, string.Empty, legacyErrors: expectedErrors)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
@@ -1303,7 +1413,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 1),
                 new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.AddTagHelperKeyword),
-                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4)
+                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4),
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText("\"Foo"),
+                    new SourceLocation(14, 0, 14),
+                    length: 4),
             };
 
             // Act & Assert
@@ -1313,7 +1427,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
-                        .AsAddTagHelper("\"Foo", expectedErrors)));
+                        .AsAddTagHelper("\"Foo", "\"Foo", legacyErrors: expectedErrors)));
         }
 
         [Fact]
@@ -1327,7 +1441,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     absoluteIndex: 17, lineIndex: 0, columnIndex: 17, length: 1),
                 new RazorError(
                     LegacyResources.FormatParseError_IncompleteQuotesAroundDirective(SyntaxConstants.CSharp.AddTagHelperKeyword),
-                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4)
+                    absoluteIndex: 14, lineIndex: 0, columnIndex: 14, length: 4),
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText("Foo\""),
+                    new SourceLocation(14, 0, 14),
+                    length: 4),
             };
 
             // Act & Assert
@@ -1337,7 +1455,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo\"")
-                        .AsAddTagHelper("Foo\"", expectedErrors)
+                        .AsAddTagHelper("Foo\"", "Foo\"", legacyErrors: expectedErrors)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
         }
 
@@ -1611,6 +1729,245 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode("namespace").Accepts(AcceptedCharactersInternal.None)));
         }
 
+        public static TheoryData InvalidTagHelperPrefixData
+        {
+            get
+            {
+                var directiveLocation = new SourceLocation(1, 2, 3);
+
+                var invalidTagHelperPrefixValueError =
+                    "Invalid tag helper directive '{0}' value. '{1}' is not allowed in prefix '{2}'.";
+
+                return new TheoryData<string, SourceLocation, IEnumerable<RazorError>>
+                {
+                    {
+                        "th ",
+                        directiveLocation,
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    ' ',
+                                    "th "),
+                                directiveLocation,
+                                length: 3)
+                        }
+                    },
+                    {
+                        "th\t",
+                        directiveLocation,
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    '\t',
+                                    "th\t"),
+                                directiveLocation,
+                                length: 3)
+                        }
+                    },
+                    {
+                        "th" + Environment.NewLine,
+                        directiveLocation,
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    Environment.NewLine[0],
+                                    "th" + Environment.NewLine),
+                                directiveLocation,
+                                length: 2 + Environment.NewLine.Length)
+                        }
+                    },
+                    {
+                        " th ",
+                        directiveLocation,
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    ' ',
+                                    " th "),
+                                directiveLocation,
+                                length: 4)
+                        }
+                    },
+                    {
+                        "@",
+                        directiveLocation,
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    '@',
+                                    "@"),
+                                directiveLocation,
+                                length: 1)
+                        }
+                    },
+                    {
+                        "t@h",
+                        directiveLocation,
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    '@',
+                                    "t@h"),
+                                directiveLocation,
+                                length: 3)
+                        }
+                    },
+                    {
+                        "!",
+                        directiveLocation,
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    '!',
+                                    "!"),
+                                directiveLocation,
+                                length: 1)
+                        }
+                    },
+                    {
+                        "!th",
+                        directiveLocation,
+                        new[]
+                        {
+                            new RazorError(
+                                string.Format(
+                                    invalidTagHelperPrefixValueError,
+                                    SyntaxConstants.CSharp.TagHelperPrefixKeyword,
+                                    '!',
+                                    "!th"),
+                                directiveLocation,
+                                length: 3)
+                        }
+                    },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(InvalidTagHelperPrefixData))]
+        public void ValidateTagHelperPrefix_ValidatesPrefix(
+            string directiveText,
+            SourceLocation directiveLocation,
+            object expectedErrors)
+        {
+            // Arrange
+            var expectedDiagnostics = ((IEnumerable<RazorError>)expectedErrors).Select(RazorDiagnostic.Create);
+            var source = TestRazorSourceDocument.Create();
+            var options = RazorParserOptions.CreateDefault();
+            var context = new ParserContext(source, options);
+
+            var parser = new CSharpCodeParser(context);
+            var diagnostics = new List<RazorDiagnostic>();
+
+            // Act
+            parser.ValidateTagHelperPrefix(directiveText, directiveLocation, diagnostics);
+
+            // Assert
+            Assert.Equal(expectedDiagnostics, diagnostics);
+        }
+
+        [Theory]
+        [InlineData("foo,assemblyName", 4)]
+        [InlineData("foo, assemblyName", 5)]
+        [InlineData("   foo, assemblyName", 8)]
+        [InlineData("   foo   , assemblyName", 11)]
+        [InlineData("foo,    assemblyName", 8)]
+        [InlineData("   foo   ,    assemblyName   ", 14)]
+        public void ParseAddOrRemoveDirective_CalculatesAssemblyLocationInLookupText(string text, int assemblyLocation)
+        {
+            // Arrange
+            var source = TestRazorSourceDocument.Create();
+            var options = RazorParserOptions.CreateDefault();
+            var context = new ParserContext(source, options);
+
+            var parser = new CSharpCodeParser(context);
+
+            var directive = new CSharpCodeParser.ParsedDirective()
+            {
+                DirectiveText = text,
+            };
+
+            var diagnostics = new List<RazorDiagnostic>();
+            var expected = new SourceLocation(assemblyLocation, 0, assemblyLocation);
+
+            // Act
+            var result = parser.ParseAddOrRemoveDirective(directive, SourceLocation.Zero, diagnostics);
+
+            // Assert
+            Assert.Empty(diagnostics);
+            Assert.Equal("foo", result.TypePattern);
+            Assert.Equal("assemblyName", result.AssemblyName);
+        }
+
+        [Theory]
+        [InlineData("", 1)]
+        [InlineData("*,", 2)]
+        [InlineData("?,", 2)]
+        [InlineData(",", 1)]
+        [InlineData(",,,", 3)]
+        [InlineData("First, ", 7)]
+        [InlineData("First , ", 8)]
+        [InlineData(" ,Second", 8)]
+        [InlineData(" , Second", 9)]
+        [InlineData("SomeType,", 9)]
+        [InlineData("SomeAssembly", 12)]
+        [InlineData("First,Second,Third", 18)]
+        public void ParseAddOrRemoveDirective_CreatesErrorIfInvalidLookupText_DoesNotThrow(string directiveText, int errorLength)
+        {
+            // Arrange
+            var source = TestRazorSourceDocument.Create();
+            var options = RazorParserOptions.CreateDefault();
+            var context = new ParserContext(source, options);
+
+            var parser = new CSharpCodeParser(context);
+
+            var expectedErrorMessage = string.Format(
+                "Invalid tag helper directive look up text '{0}'. The correct look up text " +
+                "format is: \"name, assemblyName\".",
+                directiveText);
+
+            var directive = new CSharpCodeParser.ParsedDirective()
+            {
+                DirectiveText = directiveText
+            };
+
+            var diagnostics = new List<RazorDiagnostic>();
+            var expectedError = RazorDiagnostic.Create(
+                new RazorError(
+                    expectedErrorMessage,
+                    new SourceLocation(1, 2, 3),
+                    errorLength));
+
+            // Act
+            var result = parser.ParseAddOrRemoveDirective(directive, new SourceLocation(1, 2, 3), diagnostics);
+
+            // Assert
+            Assert.Same(directive, result);
+
+            var error = Assert.Single(diagnostics);
+            Assert.Equal(expectedError, error);
+        }
 
         internal virtual void ParseCodeBlockTest(
             string document,
