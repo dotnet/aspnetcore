@@ -21,7 +21,6 @@ namespace ConsoleApplication
                 // Since .NET Core 1.1, the HTTP hosting model has become basically as fast as the Socket hosting model
                 //options.UseSocketHosting();
 
-                options.ProjectPath = Directory.GetCurrentDirectory();
                 options.WatchFileExtensions = new string[] {}; // Don't watch anything
             });
             var serviceProvider = services.BuildServiceProvider();
