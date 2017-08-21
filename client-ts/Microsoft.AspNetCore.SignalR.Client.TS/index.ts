@@ -4,4 +4,4 @@ export * from "./HttpClient"
 export * from "./HubConnection"
 export * from "./Transports"
 export * from "./Loggers"
-
+export * from "./MessagePackHubProtocol"

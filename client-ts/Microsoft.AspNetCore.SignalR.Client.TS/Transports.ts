@@ -179,6 +179,12 @@ export class LongPollingTransport implements ITransport {
     connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> {
         this.url = url;
         this.shouldPoll = true;
+
+        if (requestedTransferMode === TransferMode.Binary && (typeof new XMLHttpRequest().responseType !== "string")) {
+            // This will work if we fix: https://github.com/aspnet/SignalR/issues/742
+            throw new Error("Binary protocols over XmlHttpRequest not implementing advanced features are not supported.");
+        }
+
         this.poll(this.url, requestedTransferMode);
         return Promise.resolve(requestedTransferMode);
     }
@@ -197,9 +203,13 @@ export class LongPollingTransport implements ITransport {
             if (pollXhr.status == 200) {
                 if (this.onDataReceived) {
                     try {
-                        if (pollXhr.response) {
-                            this.logger.log(LogLevel.Information, `(LongPolling transport) data received: ${pollXhr.response}`);
-                            this.onDataReceived(pollXhr.response);
+                        let response = transferMode === TransferMode.Text
+                            ? pollXhr.responseText
+                            : pollXhr.response;
+
+                        if (response) {
+                            this.logger.log(LogLevel.Information, `(LongPolling transport) data received: ${response}`);
+                            this.onDataReceived(response);
                         }
                         else {
                             this.logger.log(LogLevel.Information, "(LongPolling transport) timed out");

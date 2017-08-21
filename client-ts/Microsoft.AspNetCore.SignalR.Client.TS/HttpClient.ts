@@ -33,7 +33,7 @@ export class HttpClient implements IHttpClient {
             xhr.send(content);
             xhr.onload = () => {
                 if (xhr.status >= 200 && xhr.status < 300) {
-                    resolve(xhr.response);
+                    resolve(xhr.response || xhr.responseText);
                 }
                 else {
                     reject(new HttpError(xhr.statusText, xhr.status));
