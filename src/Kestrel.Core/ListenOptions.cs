@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 
@@ -14,9 +16,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
     /// Describes either an <see cref="IPEndPoint"/>, Unix domain socket path, or a file descriptor for an already open
     /// socket that Kestrel should bind to or open.
     /// </summary>
-    public class ListenOptions : IEndPointInformation
+    public class ListenOptions : IEndPointInformation, IConnectionBuilder
     {
         private FileHandleType _handleType;
+        private readonly List<Func<ConnectionDelegate, ConnectionDelegate>> _components = new List<Func<ConnectionDelegate, ConnectionDelegate>>();
 
         internal ListenOptions(IPEndPoint endPoint)
         {
@@ -126,6 +129,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         /// </remarks>
         public List<IConnectionAdapter> ConnectionAdapters { get; } = new List<IConnectionAdapter>();
 
+        public IServiceProvider ApplicationServices => KestrelServerOptions?.ApplicationServices;
+
+        internal Action<ListenOptions> Configure { get; set; } = _ => { };
+
         /// <summary>
         /// Gets the name of this endpoint to display on command-line when the web server starts.
         /// </summary>
@@ -149,5 +156,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         public override string ToString() => GetDisplayName();
+
+        public IConnectionBuilder Use(Func<ConnectionDelegate, ConnectionDelegate> middleware)
+        {
+            _components.Add(middleware);
+            return this;
+        }
+
+        public ConnectionDelegate Build()
+        {
+            ConnectionDelegate app = context =>
+            {
+                return Task.CompletedTask;
+            };
+
+            for (int i = _components.Count - 1; i >= 0; i--)
+            {
+                var component = _components[i];
+                app = component(app);
+            }
+
+            return app;
+        }
     }
 }

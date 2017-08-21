@@ -110,8 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         public void Setup()
         {
             var pipeFactory = new PipeFactory();
-            var input = pipeFactory.Create();
-            var output = pipeFactory.Create();
+            var pair = pipeFactory.CreateConnectionPair();
 
             var serviceContext = new ServiceContext
             {
@@ -126,8 +125,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 ServiceContext = serviceContext,
                 PipeFactory = pipeFactory,
                 TimeoutControl = new MockTimeoutControl(),
-                Input = input.Reader,
-                Output = output
+                Application = pair.Application,
+                Transport = pair.Transport
             });
 
             frame.Reset();

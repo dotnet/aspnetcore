@@ -40,13 +40,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public Http2Connection(Http2ConnectionContext context)
         {
             _context = context;
-            _frameWriter = new Http2FrameWriter(context.Output);
+            _frameWriter = new Http2FrameWriter(context.Transport.Output, context.Application.Input);
             _hpackDecoder = new HPackDecoder();
         }
 
         public string ConnectionId => _context.ConnectionId;
 
-        public IPipeReader Input => _context.Input;
+        public IPipeReader Input => _context.Transport.Input;
 
         public IKestrelTrace Log => _context.ServiceContext.Log;
 

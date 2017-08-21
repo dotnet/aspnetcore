@@ -5,35 +5,35 @@ using System;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
 {
-    public class AdaptedPipeline
+    public class AdaptedPipeline : IPipeConnection
     {
         private const int MinAllocBufferSize = 2048;
 
-        private readonly IKestrelTrace _trace;
-        private readonly IPipe _transportOutputPipe;
-        private readonly IPipeReader _transportInputPipeReader;
+        private readonly IPipeConnection _transport;
+        private readonly IPipeConnection _application;
 
-        public AdaptedPipeline(IPipeReader transportInputPipeReader,
-                               IPipe transportOutputPipe,
+        public AdaptedPipeline(IPipeConnection transport,
+                               IPipeConnection application,
                                IPipe inputPipe,
-                               IPipe outputPipe,
-                               IKestrelTrace trace)
+                               IPipe outputPipe)
         {
-            _transportInputPipeReader = transportInputPipeReader;
-            _transportOutputPipe = transportOutputPipe;
+            _transport = transport;
+            _application = application;
             Input = inputPipe;
             Output = outputPipe;
-            _trace = trace;
         }
 
         public IPipe Input { get; }
 
         public IPipe Output { get; }
+
+        IPipeReader IPipeConnection.Input => Input.Reader;
+
+        IPipeWriter IPipeConnection.Output => Output.Writer;
 
         public async Task RunAsync(Stream stream)
         {
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                         if (result.IsCancelled)
                         {
                             // Forward the cancellation to the transport pipe
-                            _transportOutputPipe.Reader.CancelPendingRead();
+                            _application.Input.CancelPendingRead();
                             break;
                         }
 
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
             finally
             {
                 Output.Reader.Complete();
-                _transportOutputPipe.Writer.Complete(error);
+                _transport.Output.Complete();
             }
         }
 
@@ -161,8 +161,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal
                 Input.Writer.Complete(error);
                 // The application could have ended the input pipe so complete
                 // the transport pipe as well
-                _transportInputPipeReader.Complete();
+                _transport.Input.Complete();
             }
+        }
+
+        public void Dispose()
+        {
         }
     }
 }

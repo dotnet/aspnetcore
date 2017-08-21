@@ -22,29 +22,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers
             Input = connectionContext.PipeFactory.Create(InputOptions ?? new PipeOptions());
             Output = connectionContext.PipeFactory.Create(OutputOptions ?? new PipeOptions());
 
-            var context = new TestConnectionContext
-            {
-                Connection = new PipeConnection(Output.Reader, Input.Writer)
-            };
+            var feature = connectionContext.Features.Get<IConnectionTransportFeature>();
 
-            connectionContext.Features.Set<IConnectionApplicationFeature>(context);
+            connectionContext.Transport = new PipeConnection(Input.Reader, Output.Writer);
+            feature.Application = new PipeConnection(Output.Reader, Input.Writer);
         }
 
         public IPipe Input { get; private set; }
         public IPipe Output { get; private set; }
-
-        private class TestConnectionContext : IConnectionApplicationFeature
-        {
-            public string ConnectionId { get; }
-            public IPipeConnection Connection { get; set; }
-
-            public void Abort(Exception ex)
-            {
-            }
-
-            public void OnConnectionClosed(Exception ex)
-            {
-            }
-        }
     }
 }

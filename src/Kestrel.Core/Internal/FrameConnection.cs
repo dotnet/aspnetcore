@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -21,14 +20,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class FrameConnection : IConnectionApplicationFeature, ITimeoutControl
+    public class FrameConnection : ITimeoutControl
     {
         private const int Http2ConnectionNotStarted = 0;
         private const int Http2ConnectionStarted = 1;
         private const int Http2ConnectionClosed = 2;
 
         private readonly FrameConnectionContext _context;
-        private List<IAdaptedConnection> _adaptedConnections;
+        private IList<IAdaptedConnection> _adaptedConnections;
         private readonly TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private Frame _frame;
         private Http2Connection _http2Connection;
@@ -62,8 +61,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public bool TimedOut { get; private set; }
 
         public string ConnectionId => _context.ConnectionId;
-        public IPipeWriter Input => _context.Input.Writer;
-        public IPipeReader Output => _context.Output.Reader;
         public IPEndPoint LocalEndPoint => _context.LocalEndPoint;
         public IPEndPoint RemoteEndPoint => _context.RemoteEndPoint;
 
@@ -88,14 +85,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private IKestrelTrace Log => _context.ServiceContext.Log;
 
-        public IPipeConnection Connection { get; set; }
-
-        public void StartRequestProcessing<TContext>(IHttpApplication<TContext> application)
+        public Task StartRequestProcessing<TContext>(IHttpApplication<TContext> application)
         {
-            _lifetimeTask = ProcessRequestsAsync(application);
+            return _lifetimeTask = ProcessRequestsAsync(application);
         }
 
-        private async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> application)
+        private async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication)
         {
             using (BeginConnectionScope())
             {
@@ -106,23 +101,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                     AdaptedPipeline adaptedPipeline = null;
                     var adaptedPipelineTask = Task.CompletedTask;
-                    var input = _context.Input.Reader;
-                    var output = _context.Output;
+                    var transport = _context.Transport;
+                    var application = _context.Application;
+
 
                     if (_context.ConnectionAdapters.Count > 0)
                     {
-                        adaptedPipeline = new AdaptedPipeline(input,
-                                                              output,
-                                                              PipeFactory.Create(AdaptedInputPipeOptions),
-                                                              PipeFactory.Create(AdaptedOutputPipeOptions),
-                                                              Log);
+                        adaptedPipeline = new AdaptedPipeline(transport,
+                                                              application,
+                                                               PipeFactory.Create(AdaptedInputPipeOptions),
+                                                               PipeFactory.Create(AdaptedOutputPipeOptions));
 
-                        input = adaptedPipeline.Input.Reader;
-                        output = adaptedPipeline.Output;
+                        transport = adaptedPipeline;
                     }
 
                     // _frame must be initialized before adding the connection to the connection manager
-                    CreateFrame(application, input, output);
+                    CreateFrame(httpApplication, transport, application);
 
                     // _http2Connection must be initialized before yield control to the transport thread,
                     // to prevent a race condition where _http2Connection.Abort() is called just as
@@ -130,12 +124,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     _http2Connection = new Http2Connection(new Http2ConnectionContext
                     {
                         ConnectionId = _context.ConnectionId,
-                        ServiceContext  = _context.ServiceContext,
+                        ServiceContext = _context.ServiceContext,
                         PipeFactory = PipeFactory,
                         LocalEndPoint = LocalEndPoint,
                         RemoteEndPoint = RemoteEndPoint,
-                        Input = input,
-                        Output = output
+                        Application = application,
+                        Transport = transport
                     });
 
                     // Do this before the first await so we don't yield control to the transport until we've
@@ -153,7 +147,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     if (_frame.ConnectionFeatures?.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol == "h2" &&
                         Interlocked.CompareExchange(ref _http2ConnectionState, Http2ConnectionStarted, Http2ConnectionNotStarted) == Http2ConnectionNotStarted)
                     {
-                        await _http2Connection.ProcessAsync(application);
+                        await _http2Connection.ProcessAsync(httpApplication);
                     }
                     else
                     {
@@ -187,9 +181,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
         }
 
-        internal void CreateFrame<TContext>(IHttpApplication<TContext> application, IPipeReader input, IPipe output)
+        internal void CreateFrame<TContext>(IHttpApplication<TContext> httpApplication, IPipeConnection transport, IPipeConnection application)
         {
-            _frame = new Frame<TContext>(application, new FrameContext
+            _frame = new Frame<TContext>(httpApplication, new FrameContext
             {
                 ConnectionId = _context.ConnectionId,
                 PipeFactory = PipeFactory,
@@ -197,8 +191,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 RemoteEndPoint = RemoteEndPoint,
                 ServiceContext = _context.ServiceContext,
                 TimeoutControl = this,
-                Input = input,
-                Output = output
+                Transport = transport,
+                Application = application
             });
         }
 
@@ -268,7 +262,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             var features = new FeatureCollection();
             var connectionAdapters = _context.ConnectionAdapters;
-            var stream = new RawStream(_context.Input.Reader, _context.Output.Writer);
+            var stream = new RawStream(_context.Transport.Input, _context.Transport.Output);
             var adapterContext = new ConnectionAdapterContext(features, stream);
             _adaptedConnections = new List<IAdaptedConnection>(connectionAdapters.Count);
 

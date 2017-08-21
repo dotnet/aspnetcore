@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public IPEndPoint LocalEndPoint { get; set; }
         public IPEndPoint RemoteEndPoint { get; set; }
 
-        public IPipeReader Input { get; set; }
-        public IPipe Output { get; set; }
+        public IPipeConnection Transport { get; set; }
+        public IPipeConnection Application { get; set; }
     }
 }

@@ -48,8 +48,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             {
                 connectionHandler.OnConnection(this);
 
-                _input = Application.Connection.Output;
-                _output = Application.Connection.Input;
+                _input = Application.Output;
+                _output = Application.Input;
 
                 // Spawn send and receive logic
                 Task receiveTask = DoReceive();
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             }
             finally
             {
-                Application.Abort(error);
+                Abort(error);
                 _input.Complete(error);
             }
         }
@@ -229,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             }
             finally
             {
-                Application.OnConnectionClosed(error);
+                Close(error);
                 _output.Complete(error);
             }
         }

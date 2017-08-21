@@ -19,13 +19,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly Http2Frame _outgoingFrame = new Http2Frame();
         private readonly object _writeLock = new object();
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
-        private readonly IPipe _output;
+        private readonly IPipeWriter _outputWriter;
+        private readonly IPipeReader _outputReader;
 
         private bool _completed;
 
-        public Http2FrameWriter(IPipe output)
+        public Http2FrameWriter(IPipeWriter outputPipeWriter, IPipeReader outputPipeReader)
         {
-            _output = output;
+            _outputWriter = outputPipeWriter;
+            _outputReader = outputPipeReader;
         }
 
         public void Abort(Exception ex)
@@ -33,8 +35,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             lock (_writeLock)
             {
                 _completed = true;
-                _output.Reader.CancelPendingRead();
-                _output.Writer.Complete(ex);
+                _outputReader.CancelPendingRead();
+                _outputWriter.Complete(ex);
             }
         }
 
@@ -173,7 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 return;
             }
 
-            var writeableBuffer = _output.Writer.Alloc(1);
+            var writeableBuffer = _outputWriter.Alloc(1);
             writeableBuffer.Write(data);
             await writeableBuffer.FlushAsync(cancellationToken);
         }

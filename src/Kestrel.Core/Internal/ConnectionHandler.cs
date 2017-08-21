@@ -1,31 +1,27 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.IO.Pipelines;
-using System.Net;
-using System.Threading;
-using Microsoft.AspNetCore.Hosting.Server;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class ConnectionHandler<TContext> : IConnectionHandler
+    public class ConnectionHandler : IConnectionHandler
     {
-        private static long _lastFrameConnectionId = long.MinValue;
-
-        private readonly ListenOptions _listenOptions;
         private readonly ServiceContext _serviceContext;
-        private readonly IHttpApplication<TContext> _application;
+        private readonly ConnectionDelegate _connectionDelegate;
 
-        public ConnectionHandler(ListenOptions listenOptions, ServiceContext serviceContext, IHttpApplication<TContext> application)
+        public ConnectionHandler(ServiceContext serviceContext, ConnectionDelegate connectionDelegate)
         {
-            _listenOptions = listenOptions;
             _serviceContext = serviceContext;
-            _application = application;
+            _connectionDelegate = connectionDelegate;
         }
 
         public void OnConnection(IFeatureCollection features)
@@ -34,89 +30,57 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             var transportFeature = connectionContext.Features.Get<IConnectionTransportFeature>();
 
-            var inputPipe = transportFeature.PipeFactory.Create(GetInputPipeOptions(transportFeature.InputWriterScheduler));
-            var outputPipe = transportFeature.PipeFactory.Create(GetOutputPipeOptions(transportFeature.OutputReaderScheduler));
+            // REVIEW: Unfortunately, we still need to use the service context to create the pipes since the settings
+            // for the scheduler and limits are specified here
+            var inputOptions = GetInputPipeOptions(_serviceContext, transportFeature.InputWriterScheduler);
+            var outputOptions = GetOutputPipeOptions(_serviceContext, transportFeature.OutputReaderScheduler);
 
-            var connectionId = CorrelationIdGenerator.GetNextId();
-            var frameConnectionId = Interlocked.Increment(ref _lastFrameConnectionId);
+            var pair = connectionContext.PipeFactory.CreateConnectionPair(inputOptions, outputOptions);
 
             // Set the transport and connection id
-            connectionContext.ConnectionId = connectionId;
-            transportFeature.Connection = new PipeConnection(inputPipe.Reader, outputPipe.Writer);
-            var applicationConnection = new PipeConnection(outputPipe.Reader, inputPipe.Writer);
+            connectionContext.ConnectionId = CorrelationIdGenerator.GetNextId();
+            connectionContext.Transport = pair.Transport;
 
-            if (!_serviceContext.ConnectionManager.NormalConnectionCount.TryLockOne())
+            // This *must* be set before returning from OnConnection
+            transportFeature.Application = pair.Application;
+
+            // REVIEW: This task should be tracked by the server for graceful shutdown
+            // Today it's handled specifically for http but not for aribitrary middleware
+            _ = Execute(connectionContext);
+        }
+
+        private async Task Execute(ConnectionContext connectionContext)
+        {
+            try
             {
-                var goAway = new RejectionConnection(inputPipe, outputPipe, connectionId, _serviceContext)
-                {
-                    Connection = applicationConnection
-                };
-
-                connectionContext.Features.Set<IConnectionApplicationFeature>(goAway);
-
-                goAway.Reject();
-                return;
+                await _connectionDelegate(connectionContext);
             }
-
-            var frameConnectionContext = new FrameConnectionContext
+            catch (Exception ex)
             {
-                ConnectionId = connectionId,
-                FrameConnectionId = frameConnectionId,
-                ServiceContext = _serviceContext,
-                PipeFactory = connectionContext.PipeFactory,
-                ConnectionAdapters = _listenOptions.ConnectionAdapters,
-                Input = inputPipe,
-                Output = outputPipe
-            };
-
-            var connectionFeature = connectionContext.Features.Get<IHttpConnectionFeature>();
-
-            if (connectionFeature != null)
-            {
-                if (connectionFeature.LocalIpAddress != null)
-                {
-                    frameConnectionContext.LocalEndPoint = new IPEndPoint(connectionFeature.LocalIpAddress, connectionFeature.LocalPort);
-                }
-
-                if (connectionFeature.RemoteIpAddress != null)
-                {
-                    frameConnectionContext.RemoteEndPoint = new IPEndPoint(connectionFeature.RemoteIpAddress, connectionFeature.RemotePort);
-                }
+                _serviceContext.Log.LogCritical(0, ex, $"{nameof(ConnectionHandler)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
             }
-
-            var connection = new FrameConnection(frameConnectionContext)
-            {
-                Connection = applicationConnection
-            };
-
-            connectionContext.Features.Set<IConnectionApplicationFeature>(connection);
-
-            // Since data cannot be added to the inputPipe by the transport until OnConnection returns,
-            // Frame.ProcessRequestsAsync is guaranteed to unblock the transport thread before calling
-            // application code.
-            connection.StartRequestProcessing(_application);
         }
 
         // Internal for testing
-        internal PipeOptions GetInputPipeOptions(IScheduler writerScheduler) => new PipeOptions
+        internal static PipeOptions GetInputPipeOptions(ServiceContext serviceContext, IScheduler writerScheduler) => new PipeOptions
         {
-            ReaderScheduler = _serviceContext.ThreadPool,
+            ReaderScheduler = serviceContext.ThreadPool,
             WriterScheduler = writerScheduler,
-            MaximumSizeHigh = _serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
-            MaximumSizeLow = _serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
+            MaximumSizeHigh = serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0,
+            MaximumSizeLow = serviceContext.ServerOptions.Limits.MaxRequestBufferSize ?? 0
         };
 
-        internal PipeOptions GetOutputPipeOptions(IScheduler readerScheduler) => new PipeOptions
+        internal static PipeOptions GetOutputPipeOptions(ServiceContext serviceContext, IScheduler readerScheduler) => new PipeOptions
         {
             ReaderScheduler = readerScheduler,
-            WriterScheduler = _serviceContext.ThreadPool,
-            MaximumSizeHigh = GetOutputResponseBufferSize(),
-            MaximumSizeLow = GetOutputResponseBufferSize()
+            WriterScheduler = serviceContext.ThreadPool,
+            MaximumSizeHigh = GetOutputResponseBufferSize(serviceContext),
+            MaximumSizeLow = GetOutputResponseBufferSize(serviceContext)
         };
 
-        private long GetOutputResponseBufferSize()
+        private static long GetOutputResponseBufferSize(ServiceContext serviceContext)
         {
-            var bufferSize = _serviceContext.ServerOptions.Limits.MaxResponseBufferSize;
+            var bufferSize = serviceContext.ServerOptions.Limits.MaxResponseBufferSize;
             if (bufferSize == 0)
             {
                 // 0 = no buffering so we need to configure the pipe so the the writer waits on the reader directly

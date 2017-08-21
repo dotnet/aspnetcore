@@ -24,7 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private bool _completed = false;
 
-        private readonly IPipe _pipe;
+        private readonly IPipeWriter _pipeWriter;
+        private readonly IPipeReader _outputPipeReader;
 
         // https://github.com/dotnet/corefxlab/issues/1334
         // Pipelines don't support multiple awaiters on flush
@@ -34,12 +35,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private Action _flushCompleted;
 
         public OutputProducer(
-            IPipe pipe,
+            IPipeReader outputPipeReader,
+            IPipeWriter pipeWriter,
             string connectionId,
             IKestrelTrace log,
             ITimeoutControl timeoutControl)
         {
-            _pipe = pipe;
+            _outputPipeReader = outputPipeReader;
+            _pipeWriter = pipeWriter;
             _connectionId = connectionId;
             _timeoutControl = timeoutControl;
             _log = log;
@@ -70,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return;
                 }
 
-                var buffer = _pipe.Writer.Alloc(1);
+                var buffer = _pipeWriter.Alloc(1);
                 callback(buffer, state);
                 buffer.Commit();
             }
@@ -87,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
                 _log.ConnectionDisconnect(_connectionId);
                 _completed = true;
-                _pipe.Writer.Complete();
+                _pipeWriter.Complete();
             }
         }
 
@@ -103,8 +106,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 _log.ConnectionDisconnect(_connectionId);
                 _completed = true;
 
-                _pipe.Reader.CancelPendingRead();
-                _pipe.Writer.Complete(error);
+                _outputPipeReader.CancelPendingRead();
+                _pipeWriter.Complete(error);
             }
         }
 
@@ -122,7 +125,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     return Task.CompletedTask;
                 }
 
-                writableBuffer = _pipe.Writer.Alloc(1);
+                writableBuffer = _pipeWriter.Alloc(1);
                 var writer = new WritableBufferWriter(writableBuffer);
                 if (buffer.Count > 0)
                 {

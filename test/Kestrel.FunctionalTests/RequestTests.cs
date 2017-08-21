@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -37,7 +38,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
     {
         private const int _connectionStartedEventId = 1;
         private const int _connectionResetEventId = 19;
-        private const int _semaphoreWaitTimeout = 2500;
+        private static readonly int _semaphoreWaitTimeout = Debugger.IsAttached ? 10000 : 2500;
 
         private readonly ITestOutputHelper _output;
 

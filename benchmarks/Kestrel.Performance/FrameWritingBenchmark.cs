@@ -24,16 +24,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private static readonly Func<object, Task> _psuedoAsyncTaskFunc = (obj) => _psuedoAsyncTask;
 
         private readonly TestFrame<object> _frame;
-        private readonly IPipe _outputPipe;
+        private (IPipeConnection Transport, IPipeConnection Application) _pair;
 
         private readonly byte[] _writeData;
 
         public FrameWritingBenchmark()
         {
-            var pipeFactory = new PipeFactory();
-
-            _outputPipe = pipeFactory.Create();
-            _frame = MakeFrame(pipeFactory);
+            _frame = MakeFrame();
             _writeData = Encoding.ASCII.GetBytes("Hello, World!");
         }
 
@@ -93,9 +90,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             return _frame.ResponseBody.WriteAsync(_writeData, 0, _writeData.Length, default(CancellationToken));
         }
 
-        private TestFrame<object> MakeFrame(PipeFactory pipeFactory)
+        private TestFrame<object> MakeFrame()
         {
-            var input = pipeFactory.Create();
+            var pipeFactory = new PipeFactory();
+            var pair = pipeFactory.CreateConnectionPair();
+            _pair = pair;
 
             var serviceContext = new ServiceContext
             {
@@ -109,8 +108,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             {
                 ServiceContext = serviceContext,
                 PipeFactory = pipeFactory,
-                Input = input.Reader,
-                Output = _outputPipe 
+                Application = pair.Application,
+                Transport = pair.Transport
             });
 
             frame.Reset();
@@ -122,7 +121,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [IterationCleanup]
         public void Cleanup()
         {
-            var reader = _outputPipe.Reader;
+            var reader = _pair.Application.Input;
             if (reader.TryRead(out var readResult))
             {
                 reader.Advance(readResult.Buffer.End);

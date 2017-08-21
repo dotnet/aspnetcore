@@ -13,12 +13,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public string ConnectionId { get; set; }
         public long FrameConnectionId { get; set; }
         public ServiceContext ServiceContext { get; set; }
-        public List<IConnectionAdapter> ConnectionAdapters { get; set; }
+        public IList<IConnectionAdapter> ConnectionAdapters { get; set; }
         public PipeFactory PipeFactory { get; set; }
         public IPEndPoint LocalEndPoint { get; set; }
         public IPEndPoint RemoteEndPoint { get; set; }
-
-        public IPipe Input { get; set; }
-        public IPipe Output { get; set; }
+        public IPipeConnection Transport { get; set; }
+        public IPipeConnection Application { get; set; }
     }
 }

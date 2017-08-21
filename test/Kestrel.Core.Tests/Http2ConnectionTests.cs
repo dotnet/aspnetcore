@@ -73,8 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private static readonly byte[] _noData = new byte[0];
 
         private readonly PipeFactory _pipeFactory = new PipeFactory();
-        private readonly IPipe _inputPipe;
-        private readonly IPipe _outputPipe;
+        private readonly (IPipeConnection Transport, IPipeConnection Application) _pair;
         private readonly Http2ConnectionContext _connectionContext;
         private readonly Http2Connection _connection;
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
@@ -99,8 +98,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public Http2ConnectionTests()
         {
-            _inputPipe = _pipeFactory.Create();
-            _outputPipe = _pipeFactory.Create();
+            _pair = _pipeFactory.CreateConnectionPair();
 
             _noopApplication = context => Task.CompletedTask;
 
@@ -213,8 +211,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 ServiceContext = new TestServiceContext(),
                 PipeFactory = _pipeFactory,
-                Input = _inputPipe.Reader,
-                Output = _outputPipe
+                Application = _pair.Application,
+                Transport = _pair.Transport
             };
             _connection = new Http2Connection(_connectionContext);
         }
@@ -1201,7 +1199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private async Task SendAsync(ArraySegment<byte> span)
         {
-            var writableBuffer = _inputPipe.Writer.Alloc(1);
+            var writableBuffer = _pair.Application.Output.Alloc(1);
             writableBuffer.Write(span);
             await writableBuffer.FlushAsync();
         }
@@ -1413,7 +1411,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             while (true)
             {
-                var result = await _outputPipe.Reader.ReadAsync();
+                var result = await _pair.Application.Input.ReadAsync();
                 var buffer = result.Buffer;
                 var consumed = buffer.Start;
                 var examined = buffer.End;
@@ -1429,7 +1427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 }
                 finally
                 {
-                    _outputPipe.Reader.Advance(consumed, examined);
+                    _pair.Application.Input.Advance(consumed, examined);
                 }
             }
         }
@@ -1456,7 +1454,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         private Task StopConnectionAsync(int expectedLastStreamId, bool ignoreNonGoAwayFrames)
         {
-            _inputPipe.Writer.Complete();
+            _pair.Application.Output.Complete();
 
             return WaitForConnectionStopAsync(expectedLastStreamId, ignoreNonGoAwayFrames);
         }
@@ -1486,7 +1484,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Assert.Equal(expectedErrorCode, frame.GoAwayErrorCode);
 
             await _connectionTask;
-            _inputPipe.Writer.Complete();
+            _pair.Application.Output.Complete();
         }
 
         private async Task WaitForStreamErrorAsync(int expectedStreamId, Http2ErrorCode expectedErrorCode, bool ignoreNonRstStreamFrames)

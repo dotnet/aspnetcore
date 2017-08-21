@@ -1,14 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO.Pipelines;
 using System.Net;
-using System.Text;
-using Microsoft.AspNetCore.Protocols.Features;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
 {
     public abstract partial class TransportConnection
     {
+        private readonly TaskCompletionSource<object> _abortTcs = new TaskCompletionSource<object>();
+        private readonly TaskCompletionSource<object> _closedTcs = new TaskCompletionSource<object>();
+
         public TransportConnection()
         {
             _currentIConnectionIdFeature = this;
@@ -28,6 +29,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
         public virtual IScheduler OutputReaderScheduler { get; }
 
         public IPipeConnection Transport { get; set; }
-        public IConnectionApplicationFeature Application => (IConnectionApplicationFeature)_currentIConnectionApplicationFeature;
+        public IPipeConnection Application { get; set; }
+
+        protected void Abort(Exception exception)
+        {
+            if (exception == null)
+            {
+                _abortTcs.TrySetResult(null);
+            }
+            else
+            {
+                _abortTcs.TrySetException(exception);
+            }
+        }
+
+        protected void Close(Exception exception)
+        {
+            if (exception == null)
+            {
+                _closedTcs.TrySetResult(null);
+            }
+            else
+            {
+                _closedTcs.TrySetException(exception);
+            }
+        }
     }
 }

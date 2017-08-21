@@ -135,7 +135,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 async Task OnBind(ListenOptions endpoint)
                 {
-                    var connectionHandler = new ConnectionHandler<TContext>(endpoint, ServiceContext, application);
+                    // Add the connection limit middleware
+                    endpoint.UseConnectionLimit(ServiceContext);
+
+                    // Configure the user delegate
+                    endpoint.Configure(endpoint);
+
+                    // Add the HTTP middleware as the terminal connection middleware
+                    endpoint.UseHttpServer(endpoint.ConnectionAdapters, ServiceContext, application);
+
+                    var connectionHandler = new ConnectionHandler(ServiceContext, endpoint.Build()); 
                     var transport = _transportFactory.Create(endpoint, connectionHandler);
                     _transports.Add(transport);
 

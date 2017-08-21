@@ -1,7 +1,9 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.IO.Pipelines;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -22,9 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.ServerOptions.Limits.MaxResponseBufferSize = maxResponseBufferSize;
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
-            var connectionHandler = new ConnectionHandler<object>(listenOptions: null, serviceContext: serviceContext, application: null);
             var mockScheduler = Mock.Of<IScheduler>();
-            var outputPipeOptions = connectionHandler.GetOutputPipeOptions(readerScheduler: mockScheduler);
+            var outputPipeOptions = ConnectionHandler.GetOutputPipeOptions(serviceContext, readerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, outputPipeOptions.MaximumSizeLow);
             Assert.Equal(expectedMaximumSizeHigh, outputPipeOptions.MaximumSizeHigh);
@@ -41,9 +42,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             serviceContext.ServerOptions.Limits.MaxRequestBufferSize = maxRequestBufferSize;
             serviceContext.ThreadPool = new LoggingThreadPool(null);
 
-            var connectionHandler = new ConnectionHandler<object>(listenOptions: null, serviceContext: serviceContext, application: null);
             var mockScheduler = Mock.Of<IScheduler>();
-            var inputPipeOptions = connectionHandler.GetInputPipeOptions(writerScheduler: mockScheduler);
+            var inputPipeOptions = ConnectionHandler.GetInputPipeOptions(serviceContext, writerScheduler: mockScheduler);
 
             Assert.Equal(expectedMaximumSizeLow, inputPipeOptions.MaximumSizeLow);
             Assert.Equal(expectedMaximumSizeHigh, inputPipeOptions.MaximumSizeHigh);

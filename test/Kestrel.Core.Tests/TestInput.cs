@@ -20,12 +20,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             _memoryPool = new MemoryPool();
             _pipelineFactory = new PipeFactory();
-            Pipe = _pipelineFactory.Create();
+            var pair = _pipelineFactory.CreateConnectionPair();
+            Transport = pair.Transport;
+            Application = pair.Application;
 
             FrameContext = new FrameContext
             {
                 ServiceContext = new TestServiceContext(),
-                Input = Pipe.Reader,
+                Application = Application,
+                Transport = Transport,
                 PipeFactory = _pipelineFactory,
                 TimeoutControl = Mock.Of<ITimeoutControl>()
             };
@@ -34,28 +37,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Frame.FrameControl = Mock.Of<IFrameControl>();
         }
 
-        public IPipe Pipe { get; }
+        public IPipeConnection Transport { get; }
+
+        public IPipeConnection Application { get; }
 
         public PipeFactory PipeFactory => _pipelineFactory;
 
-        public FrameContext FrameContext { get;  }
+        public FrameContext FrameContext { get; }
 
         public Frame Frame { get; set; }
 
         public void Add(string text)
         {
             var data = Encoding.ASCII.GetBytes(text);
-            Pipe.Writer.WriteAsync(data).Wait();
+            Application.Output.WriteAsync(data).Wait();
         }
 
         public void Fin()
         {
-            Pipe.Writer.Complete();
+            Application.Output.Complete();
         }
 
         public void Cancel()
         {
-            Pipe.Reader.CancelPendingRead();
+            Transport.Input.CancelPendingRead();
         }
 
         public void Dispose()

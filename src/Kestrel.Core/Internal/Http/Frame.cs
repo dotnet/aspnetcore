@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _keepAliveTicks = ServerOptions.Limits.KeepAliveTimeout.Ticks;
             _requestHeadersTimeoutTicks = ServerOptions.Limits.RequestHeadersTimeout.Ticks;
 
-            Output = new OutputProducer(frameContext.Output, frameContext.ConnectionId, frameContext.ServiceContext.Log, TimeoutControl);
+            Output = new OutputProducer(frameContext.Application.Input, frameContext.Transport.Output, frameContext.ConnectionId, frameContext.ServiceContext.Log, TimeoutControl);
             RequestBodyPipe = CreateRequestBodyPipe();
         }
 
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private IPEndPoint RemoteEndPoint => _frameContext.RemoteEndPoint;
 
         public IFeatureCollection ConnectionFeatures { get; set; }
-        public IPipeReader Input => _frameContext.Input;
+        public IPipeReader Input => _frameContext.Transport.Input;
         public OutputProducer Output { get; }
         public ITimeoutControl TimeoutControl => _frameContext.TimeoutControl;
 

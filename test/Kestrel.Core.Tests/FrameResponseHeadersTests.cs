@@ -18,10 +18,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public void InitialDictionaryIsEmpty()
         {
+            var factory = new PipeFactory();
+            var pair = factory.CreateConnectionPair();
             var frameContext = new FrameContext
             {
                 ServiceContext = new TestServiceContext(),
-                PipeFactory = new PipeFactory(),
+                PipeFactory = factory,
+                Application = pair.Application,
+                Transport = pair.Transport,
                 TimeoutControl = null
             };
 

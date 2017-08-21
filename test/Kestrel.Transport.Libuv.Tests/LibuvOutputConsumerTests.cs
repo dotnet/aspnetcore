@@ -683,7 +683,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
 
         private OutputProducer CreateOutputProducer(PipeOptions pipeOptions, CancellationTokenSource cts = null)
         {
-            var pipe = _pipeFactory.Create(pipeOptions);
+            var pair = _pipeFactory.CreateConnectionPair(pipeOptions, pipeOptions);
 
             var logger = new TestApplicationErrorLogger();
             var serviceContext = new TestServiceContext
@@ -694,14 +694,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var transportContext = new TestLibuvTransportContext { Log = new LibuvTrace(logger) };
 
             var socket = new MockSocket(_mockLibuv, _libuvThread.Loop.ThreadId, transportContext.Log);
-            var consumer = new LibuvOutputConsumer(pipe.Reader, _libuvThread, socket, "0", transportContext.Log);
+            var consumer = new LibuvOutputConsumer(pair.Application.Input, _libuvThread, socket, "0", transportContext.Log);
 
             var frame = new Frame<object>(null, new FrameContext
             {
                 ServiceContext = serviceContext,
                 PipeFactory = _pipeFactory,
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
-                Output = pipe
+                Application = pair.Application,
+                Transport = pair.Transport
             });
 
             if (cts != null)
@@ -709,7 +710,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 frame.RequestAborted.Register(cts.Cancel);
             }
 
-            var ignore = WriteOutputAsync(consumer, pipe.Reader, frame);
+            var ignore = WriteOutputAsync(consumer, pair.Application.Input, frame);
 
             return frame.Output;
         }

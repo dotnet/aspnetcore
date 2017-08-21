@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public FrameConnectionTests()
         {
             _pipeFactory = new PipeFactory();
+            var pair = _pipeFactory.CreateConnectionPair();
 
             _frameConnectionContext = new FrameConnectionContext
             {
@@ -32,8 +33,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 ConnectionAdapters = new List<IConnectionAdapter>(),
                 PipeFactory = _pipeFactory,
                 FrameConnectionId = long.MinValue,
-                Input = _pipeFactory.Create(),
-                Output = _pipeFactory.Create(),
+                Application = pair.Application,
+                Transport = pair.Transport,
                 ServiceContext = new TestServiceContext
                 {
                     SystemClock = new SystemClock()
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockDebugger = new Mock<IDebugger>();
             mockDebugger.SetupGet(g => g.IsAttached).Returns(true);
             _frameConnection.Debugger = mockDebugger.Object;
-            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Transport, _frameConnectionContext.Application);
 
             var now = DateTimeOffset.Now;
             _frameConnection.Tick(now);
@@ -101,7 +102,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _frameConnectionContext.ServiceContext.Log = logger;
 
-            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Transport, _frameConnectionContext.Application);
             _frameConnection.Frame.Reset();
 
             // Initialize timestamp
@@ -128,7 +129,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Transport, _frameConnectionContext.Application);
             _frameConnection.Frame.Reset();
 
             // Initialize timestamp
@@ -170,7 +171,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Transport, _frameConnectionContext.Application);
             _frameConnection.Frame.Reset();
 
             // Initialize timestamp
@@ -247,7 +248,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Transport, _frameConnectionContext.Application);
             _frameConnection.Frame.Reset();
 
             // Initialize timestamp
@@ -315,7 +316,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Transport, _frameConnectionContext.Application);
             _frameConnection.Frame.Reset();
 
             // Initialize timestamp
@@ -377,7 +378,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Transport, _frameConnectionContext.Application);
             _frameConnection.Frame.Reset();
 
             var startTime = systemClock.UtcNow;
@@ -418,7 +419,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Transport, _frameConnectionContext.Application);
             _frameConnection.Frame.Reset();
             _frameConnection.Frame.RequestAborted.Register(() =>
             {
@@ -452,7 +453,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Transport, _frameConnectionContext.Application);
             _frameConnection.Frame.Reset();
             _frameConnection.Frame.RequestAborted.Register(() =>
             {
@@ -494,7 +495,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var mockLogger = new Mock<IKestrelTrace>();
             _frameConnectionContext.ServiceContext.Log = mockLogger.Object;
 
-            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Input.Reader, _frameConnectionContext.Output);
+            _frameConnection.CreateFrame(new DummyApplication(), _frameConnectionContext.Transport, _frameConnectionContext.Application);
             _frameConnection.Frame.Reset();
             _frameConnection.Frame.RequestAborted.Register(() =>
             {
@@ -531,7 +532,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StartRequestProcessingCreatesLogScopeWithConnectionId()
         {
-            _frameConnection.StartRequestProcessing(new DummyApplication());
+            _ = _frameConnection.StartRequestProcessing(new DummyApplication());
 
             var scopeObjects = ((TestKestrelTrace)_frameConnectionContext.ServiceContext.Log)
                                     .Logger

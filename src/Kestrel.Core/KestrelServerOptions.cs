@@ -100,8 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var listenOptions = new ListenOptions(endPoint) { KestrelServerOptions = this };
-            configure(listenOptions);
+            var listenOptions = new ListenOptions(endPoint) { KestrelServerOptions = this, Configure = configure };
             ListenOptions.Add(listenOptions);
         }
 
@@ -132,8 +131,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var listenOptions = new ListenOptions(socketPath) { KestrelServerOptions = this };
-            configure(listenOptions);
+            var listenOptions = new ListenOptions(socketPath) { KestrelServerOptions = this, Configure = configure };
             ListenOptions.Add(listenOptions);
         }
 
@@ -156,8 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
                 throw new ArgumentNullException(nameof(configure));
             }
 
-            var listenOptions = new ListenOptions(handle) { KestrelServerOptions = this };
-            configure(listenOptions);
+            var listenOptions = new ListenOptions(handle) { KestrelServerOptions = this, Configure = configure };
             ListenOptions.Add(listenOptions);
         }
     }

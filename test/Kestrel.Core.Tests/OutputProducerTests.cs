@@ -55,7 +55,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var pipe = _pipeFactory.Create(pipeOptions);
             var serviceContext = new TestServiceContext();
             var socketOutput = new OutputProducer(
-                pipe,
+                pipe.Reader,
+                pipe.Writer,
                 "0",
                 serviceContext.Log,
                 Mock.Of<ITimeoutControl>());
