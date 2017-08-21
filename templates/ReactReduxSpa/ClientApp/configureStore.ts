@@ -9,7 +9,7 @@ export default function configureStore(history: History, initialState?: Applicat
     // Build middleware. These are functions that can process the actions before they reach the store.
     const windowIfDefined = typeof window === 'undefined' ? null : window as any;
     // If devTools is installed, connect to it
-    const devToolsExtension = windowIfDefined && windowIfDefined.devToolsExtension as () => GenericStoreEnhancer;
+    const devToolsExtension = windowIfDefined && windowIfDefined.__REDUX_DEVTOOLS_EXTENSION__ as () => GenericStoreEnhancer;
     const createStoreWithMiddleware = compose(
         applyMiddleware(thunk, routerMiddleware(history)),
         devToolsExtension ? devToolsExtension() : <S>(next: StoreEnhancerStoreCreator<S>) => next
