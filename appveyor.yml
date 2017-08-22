@@ -18,8 +18,6 @@ build_script:
   - npm run build
   - ps: Pop-Location
 artifacts:
-  - path: templates\package-builder\dist\artifacts\generator-aspnetcore-spa.tar.gz
-    name: generator-aspnetcore-spa
   - path: templates\package-builder\dist\artifacts\*.nupkg
     name: Microsoft.AspNetCore.SpaTemplates
     type: NuGetPackage
