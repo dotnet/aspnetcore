@@ -109,9 +109,12 @@ namespace Microsoft.CodeAnalysis.Razor
 
             void UpdateCompletions(string attributeName, BoundAttributeDescriptor possibleDescriptor)
             {
-                if (completionContext.Attributes.Any(attribute => string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase)))
+                if (completionContext.Attributes.Any(attribute => string.Equals(attribute.Key, attributeName, StringComparison.OrdinalIgnoreCase)) &&
+                    (completionContext.CurrentAttributeName == null ||
+                    !string.Equals(attributeName, completionContext.CurrentAttributeName, StringComparison.OrdinalIgnoreCase)))
                 {
-                    // Attribute is already present on this element it shouldn't exist in the completion list.
+                    // Attribute is already present on this element and it is not the attribute in focus.
+                    // It shouldn't exist in the completion list.
                     return;
                 }
 

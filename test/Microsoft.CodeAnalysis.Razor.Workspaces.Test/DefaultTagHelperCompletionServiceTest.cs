@@ -62,6 +62,108 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         [Fact]
+        public void GetAttributeCompletions_ReturnsCompletionForAlreadySuppliedAttribute_IfCurrentAttributeMatches()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule
+                        .RequireTagName("div")
+                        .RequireAttributeDescriptor(attribute => attribute.Name("repeat")))
+                    .BoundAttributeDescriptor(attribute => attribute
+                        .Name("visible")
+                        .TypeName(typeof(bool).FullName)
+                        .PropertyName("Visible"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("*"))
+                    .BoundAttributeDescriptor(attribute => attribute
+                        .Name("class")
+                        .TypeName(typeof(string).FullName)
+                        .PropertyName("Class"))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["onclick"] = new HashSet<BoundAttributeDescriptor>(),
+                ["visible"] = new HashSet<BoundAttributeDescriptor>()
+                {
+                    documentDescriptors[0].BoundAttributes.Last()
+                }
+            });
+
+            var existingCompletions = new[] { "onclick" };
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                attributes: new Dictionary<string, string>()
+                {
+                    ["class"] = "something",
+                    ["repeat"] = "4",
+                    ["visible"] = "false",
+                },
+                currentTagName: "div",
+                currentAttributeName: "visible");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
+        public void GetAttributeCompletions_DoesNotReturnAlreadySuppliedAttribute_IfCurrentAttributeDoesNotMatch()
+        {
+            // Arrange
+            var documentDescriptors = new[]
+            {
+                TagHelperDescriptorBuilder.Create("DivTagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule
+                        .RequireTagName("div")
+                        .RequireAttributeDescriptor(attribute => attribute.Name("repeat")))
+                    .BoundAttributeDescriptor(attribute => attribute
+                        .Name("visible")
+                        .TypeName(typeof(bool).FullName)
+                        .PropertyName("Visible"))
+                    .Build(),
+                TagHelperDescriptorBuilder.Create("StyleTagHelper", "TestAssembly")
+                    .TagMatchingRuleDescriptor(rule => rule.RequireTagName("*"))
+                    .BoundAttributeDescriptor(attribute => attribute
+                        .Name("class")
+                        .TypeName(typeof(string).FullName)
+                        .PropertyName("Class"))
+                    .Build(),
+            };
+            var expectedCompletions = AttributeCompletionResult.Create(new Dictionary<string, HashSet<BoundAttributeDescriptor>>()
+            {
+                ["onclick"] = new HashSet<BoundAttributeDescriptor>()
+            });
+
+            var existingCompletions = new[] { "onclick" };
+            var completionContext = BuildAttributeCompletionContext(
+                documentDescriptors,
+                existingCompletions,
+                attributes: new Dictionary<string, string>()
+                {
+                    ["class"] = "something",
+                    ["repeat"] = "4",
+                    ["visible"] = "false",
+                },
+                currentTagName: "div",
+                currentAttributeName: "repeat");
+            var service = CreateTagHelperCompletionFactsService();
+
+            // Act
+            var completions = service.GetAttributeCompletions(completionContext);
+
+            // Assert
+            AssertCompletionsAreEquivalent(expectedCompletions, completions);
+        }
+
+        [Fact]
         public void GetAttributeCompletions_PossibleDescriptorsReturnUnboundRequiredAttributesWithExistingCompletions()
         {
             // Arrange
@@ -947,6 +1049,7 @@ namespace Microsoft.CodeAnalysis.Razor
             IEnumerable<TagHelperDescriptor> descriptors,
             IEnumerable<string> existingCompletions,
             string currentTagName,
+            string currentAttributeName = null,
             IEnumerable<KeyValuePair<string, string>> attributes = null,
             string tagHelperPrefix = "")
         {
@@ -956,6 +1059,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 documentContext,
                 existingCompletions,
                 currentTagName,
+                currentAttributeName,
                 attributes,
                 currentParentTagName: "body",
                 inHTMLSchema: (tag) => tag == "strong" || tag == "b" || tag == "bold" || tag == "li" || tag == "div");

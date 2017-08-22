@@ -13,6 +13,7 @@ namespace Microsoft.CodeAnalysis.Razor
             TagHelperDocumentContext documentContext,
             IEnumerable<string> existingCompletions,
             string currentTagName,
+            string currentAttributeName,
             IEnumerable<KeyValuePair<string, string>> attributes,
             string currentParentTagName,
             Func<string, bool> inHTMLSchema)
@@ -45,6 +46,7 @@ namespace Microsoft.CodeAnalysis.Razor
             DocumentContext = documentContext;
             ExistingCompletions = existingCompletions;
             CurrentTagName = currentTagName;
+            CurrentAttributeName = currentAttributeName;
             Attributes = attributes;
             CurrentParentTagName = currentParentTagName;
             InHTMLSchema = inHTMLSchema;
@@ -55,6 +57,8 @@ namespace Microsoft.CodeAnalysis.Razor
         public IEnumerable<string> ExistingCompletions { get; }
 
         public string CurrentTagName { get; }
+
+        public string CurrentAttributeName { get; }
 
         public IEnumerable<KeyValuePair<string, string>> Attributes { get; }
 
