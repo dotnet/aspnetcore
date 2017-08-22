@@ -483,8 +483,8 @@ namespace Microsoft.AspNetCore.HttpOverrides
             var options = new ForwardedHeadersOptions();
             Assert.True(options.ForwardedHeaders == ForwardedHeaders.None);
             Assert.Equal(1, options.ForwardLimit);
-            Assert.Equal(1, options.KnownNetworks.Count());
-            Assert.Equal(1, options.KnownProxies.Count());
+            Assert.Single(options.KnownNetworks);
+            Assert.Single(options.KnownProxies);
         }
 
         [Fact]
