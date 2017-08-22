@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration.Tests
                 Mock.Of<ICertificateStoreLoader>());
 
             var loadedCertificates = certificateLoader.Load(configuration.GetSection("TestConfig:Certificate"));
-            Assert.Equal(1, loadedCertificates.Count());
+            Assert.Single(loadedCertificates);
             Assert.Same(certificate, loadedCertificates.ElementAt(0));
             certificateFileLoader.VerifyAll();
         }
@@ -126,11 +126,11 @@ namespace Microsoft.AspNetCore.Certificates.Configuration.Tests
                 certificateStoreLoader.Object);
 
             var loadedCertificates = certificateLoader.Load(configuration.GetSection("TestConfig:Certificate"));
-            Assert.Equal(1, loadedCertificates.Count());
+            Assert.Single(loadedCertificates);
             Assert.Same(certificate, loadedCertificates.ElementAt(0));
             certificateStoreLoader.VerifyAll();
         }
-        
+
         [Fact]
         public void ReturnsNull_SingleCertificateName_Store_NotFoundInStore()
         {
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration.Tests
                 certificateStoreLoader.Object);
 
             var loadedCertificates = certificateLoader.Load(configuration.GetSection("TestConfig:Certificate"));
-            Assert.Equal(0, loadedCertificates.Count());
+            Assert.Empty(loadedCertificates);
             certificateStoreLoader.VerifyAll();
         }
 
@@ -480,7 +480,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration.Tests
                     ["Certificates:Certificate2:Subject"] = "localhost",
                     ["Certificates:Certificate2:StoreName"] = "My",
                     ["Certificates:Certificate2:StoreLocation"] = "CurrentUser",
-                    ["TestConfig:Certificate"] = "Certificate1;Certificate2"
+                    ["TestConfig:Certificate"] = certificateNames,
                 })
                 .Build();
 
@@ -504,7 +504,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration.Tests
                 certificateStoreLoader.Object);
 
             var loadedCertificates = certificateLoader.Load(configuration.GetSection("TestConfig:Certificate"));
-            Assert.Equal(1, loadedCertificates.Count());
+            Assert.Single(loadedCertificates);
             Assert.Same(certificate, loadedCertificates.ElementAt(0));
             certificateFileLoader.VerifyAll();
             certificateStoreLoader.VerifyAll();
@@ -537,7 +537,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration.Tests
                 Mock.Of<ICertificateStoreLoader>());
 
             var loadedCertificates = certificateLoader.Load(configuration.GetSection("TestConfig:Certificate"));
-            Assert.Equal(1, loadedCertificates.Count());
+            Assert.Single(loadedCertificates);
             Assert.Same(certificate, loadedCertificates.ElementAt(0));
             certificateFileLoader.VerifyAll();
         }
@@ -599,7 +599,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration.Tests
                 certificateStoreLoader.Object);
 
             var loadedCertificates = certificateLoader.Load(configuration.GetSection("TestConfig:Certificate"));
-            Assert.Equal(1, loadedCertificates.Count());
+            Assert.Single(loadedCertificates);
             Assert.Same(certificate, loadedCertificates.ElementAt(0));
             certificateStoreLoader.VerifyAll();
         }
@@ -627,7 +627,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration.Tests
                 certificateStoreLoader.Object);
 
             var loadedCertificates = certificateLoader.Load(configuration.GetSection("TestConfig:Certificate"));
-            Assert.Equal(0, loadedCertificates.Count());
+            Assert.Empty(loadedCertificates);
             certificateStoreLoader.Verify(loader => loader.Load("localhost", "My", StoreLocation.CurrentUser, It.IsAny<bool>()));
         }
 
@@ -785,7 +785,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration.Tests
                 certificateStoreLoader.Object);
 
             var loadedCertificates = certificateLoader.Load(configuration.GetSection("TestConfig:Certificates"));
-            Assert.Equal(1, loadedCertificates.Count());
+            Assert.Single(loadedCertificates);
             Assert.Same(certificate, loadedCertificates.ElementAt(0));
             certificateStoreLoader.Verify(loader => loader.Load("notfound.com", "Root", StoreLocation.LocalMachine, It.IsAny<bool>()));
             certificateStoreLoader.Verify(loader => loader.Load("localhost", "My", StoreLocation.CurrentUser, It.IsAny<bool>()));
@@ -927,7 +927,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration.Tests
                 certificateStoreLoader.Object);
 
             var loadedCertificates = certificateLoader.Load(configuration.GetSection("TestConfig:Certificates"));
-            Assert.Equal(1, loadedCertificates.Count());
+            Assert.Single(loadedCertificates);
             Assert.Same(certificate, loadedCertificates.ElementAt(0));
         }
 
@@ -1003,7 +1003,7 @@ namespace Microsoft.AspNetCore.Certificates.Configuration.Tests
                 Mock.Of<ICertificateStoreLoader>());
 
             var loadedCertificates = certificateLoader.Load(configuration.GetSection("TestConfig:Certificates"));
-            Assert.Equal(0, loadedCertificates.Count());
+            Assert.Empty(loadedCertificates);
             Assert.Single(logger.LogMessages, logMessage =>
                 logMessage.LogLevel == LogLevel.Warning &&
                 logMessage.Message == "Unable to find a matching certificate for subject 'localhost' in store 'My' in 'CurrentUser'.");

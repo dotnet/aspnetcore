@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             // Act
             var context = hostingApplication.CreateContext(features);
 
-            Assert.Equal(1, logger.Scopes.Count);
+            Assert.Single(logger.Scopes);
             var pairs = ((IReadOnlyList<KeyValuePair<string, object>>)logger.Scopes[0]).ToDictionary(p => p.Key, p => p.Value);
             Assert.Equal("some correlation id", pairs["CorrelationId"].ToString());
         }

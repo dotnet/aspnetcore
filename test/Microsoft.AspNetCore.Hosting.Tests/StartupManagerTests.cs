@@ -244,7 +244,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
 
             var ex = Assert.Throws<TargetInvocationException>(() => startup.ConfigureDelegate(app));
-            Assert.IsAssignableFrom(typeof(InvalidOperationException), ex.InnerException);
+            Assert.IsAssignableFrom<InvalidOperationException>(ex.InnerException);
         }
 
         [Fact]
@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
 
-            Assert.IsType(typeof(MyContainer), app.ApplicationServices);
+            Assert.IsType<MyContainer>(app.ApplicationServices);
             Assert.True(((MyContainer)app.ApplicationServices).FancyMethodCalled);
         }
 
@@ -275,7 +275,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
 
-            Assert.IsType(typeof(MyContainer), app.ApplicationServices);
+            Assert.IsType<MyContainer>(app.ApplicationServices);
             Assert.True(((MyContainer)app.ApplicationServices).FancyMethodCalled);
         }
 
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             var app = new ApplicationBuilder(services);
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
 
-            Assert.IsType(typeof(MyContainer), app.ApplicationServices);
+            Assert.IsType<MyContainer>(app.ApplicationServices);
             Assert.Equal(((MyContainer)app.ApplicationServices).Environment, EnvironmentName.Production);
         }
 
@@ -338,7 +338,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             app.ApplicationServices = startup.ConfigureServicesDelegate(serviceCollection);
 
             Assert.NotNull(app.ApplicationServices);
-            Assert.IsNotType(typeof(MyContainer), app.ApplicationServices);
+            Assert.IsNotType<MyContainer>(app.ApplicationServices);
         }
 
         public class MyContainerStartupWithOverloads

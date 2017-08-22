@@ -920,7 +920,7 @@ namespace Microsoft.AspNetCore.Hosting
                 .UseStartup<BadConfigureServicesStartup>();
 
             var ex = Assert.Throws<InvalidOperationException>(() => builder.Build());
-            Assert.True(ex.Message.Contains("ConfigureServices"));
+            Assert.Contains("ConfigureServices", ex.Message);
         }
 
         public class BadConfigureServicesStartup

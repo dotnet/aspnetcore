@@ -768,7 +768,7 @@ namespace Microsoft.AspNetCore.Hosting
             using (var host = (WebHost)builder.Build())
             {
                 var sink = host.Services.GetRequiredService<ITestSink>();
-                Assert.True(sink.Writes.Any(w => w.State.ToString() == "From startup"));
+                Assert.Contains(sink.Writes, w => w.State.ToString() == "From startup");
             }
         }
 
@@ -865,7 +865,7 @@ namespace Microsoft.AspNetCore.Hosting
             using (var host = (WebHost)builder.Build())
             {
                 var sink = host.Services.GetRequiredService<ITestSink>();
-                Assert.True(sink.Writes.Any(w => w.Exception?.Message == "Startup exception"));
+                Assert.Contains(sink.Writes, w => w.Exception?.Message == "Startup exception");
             }
         }
 
@@ -887,7 +887,7 @@ namespace Microsoft.AspNetCore.Hosting
             Assert.Throws<InvalidOperationException>(() => builder.Build());
 
             Assert.NotNull(testSink);
-            Assert.True(testSink.Writes.Any(w => w.Exception?.Message == "Startup exception"));
+            Assert.Contains(testSink.Writes, w => w.Exception?.Message == "Startup exception");
         }
 
         [Fact]

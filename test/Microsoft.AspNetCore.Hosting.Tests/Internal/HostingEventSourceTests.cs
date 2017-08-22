@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             Assert.Equal(EventLevel.Informational, eventData.Level);
             Assert.Same(hostingEventSource, eventData.EventSource);
             Assert.Null(eventData.Message);
-            Assert.Equal(0, eventData.Payload.Count);
+            Assert.Empty(eventData.Payload);
         }
 
         [Fact]
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             Assert.Equal(EventLevel.Error, eventData.Level);
             Assert.Same(hostingEventSource, eventData.EventSource);
             Assert.Null(eventData.Message);
-            Assert.Equal(0, eventData.Payload.Count);
+            Assert.Empty(eventData.Payload);
         }
 
         private static Exception GetException()
