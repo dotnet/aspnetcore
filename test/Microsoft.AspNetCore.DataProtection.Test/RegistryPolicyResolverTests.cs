@@ -55,8 +55,8 @@ namespace Microsoft.AspNetCore.DataProtection
             // Assert
             var actualKeyEscrowSinks = context.KeyEscrowSinks.ToArray();
             Assert.Equal(2, actualKeyEscrowSinks.Length);
-            Assert.IsType(typeof(MyKeyEscrowSink1), actualKeyEscrowSinks[0]);
-            Assert.IsType(typeof(MyKeyEscrowSink2), actualKeyEscrowSinks[1]);
+            Assert.IsType<MyKeyEscrowSink1>(actualKeyEscrowSinks[0]);
+            Assert.IsType<MyKeyEscrowSink2>(actualKeyEscrowSinks[1]);
         }
 
         [ConditionalFact]

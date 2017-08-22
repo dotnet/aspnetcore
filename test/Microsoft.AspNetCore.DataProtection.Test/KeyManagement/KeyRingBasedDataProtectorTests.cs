@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
 
             // Act & assert
             var ex = ExceptionAssert2.ThrowsCryptographicException(() => protector.Protect(new byte[0]));
-            Assert.IsAssignableFrom(typeof(MockException), ex.InnerException);
+            Assert.IsAssignableFrom<MockException>(ex.InnerException);
         }
 
         [Fact]
@@ -291,11 +291,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
                 newPurpose: "purpose");
 
             // Act
-            bool requiresMigration, wasRevoked;
             byte[] retVal = ((IPersistedDataProtector)protector).DangerousUnprotect(protectedData,
                 ignoreRevocationErrors: true,
-                requiresMigration: out requiresMigration,
-                wasRevoked: out wasRevoked);
+                requiresMigration: out var requiresMigration,
+                wasRevoked: out var wasRevoked);
 
             // Assert
             Assert.Equal(expectedPlaintext, retVal);
@@ -342,11 +341,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Assert.Equal(expectedPlaintext, retVal);
 
             // Act & assert - IPersistedDataProtector
-            bool requiresMigration, wasRevoked;
             retVal = ((IPersistedDataProtector)protector).DangerousUnprotect(protectedData,
                 ignoreRevocationErrors: false,
-                requiresMigration: out requiresMigration,
-                wasRevoked: out wasRevoked);
+                requiresMigration: out var requiresMigration,
+                wasRevoked: out var wasRevoked);
             Assert.Equal(expectedPlaintext, retVal);
             Assert.False(requiresMigration);
             Assert.False(wasRevoked);
@@ -393,11 +391,10 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             Assert.Equal(expectedPlaintext, retVal);
 
             // Act & assert - IPersistedDataProtector
-            bool requiresMigration, wasRevoked;
             retVal = ((IPersistedDataProtector)protector).DangerousUnprotect(protectedData,
                 ignoreRevocationErrors: false,
-                requiresMigration: out requiresMigration,
-                wasRevoked: out wasRevoked);
+                requiresMigration: out var requiresMigration,
+                wasRevoked: out var wasRevoked);
             Assert.Equal(expectedPlaintext, retVal);
             Assert.True(requiresMigration);
             Assert.False(wasRevoked);

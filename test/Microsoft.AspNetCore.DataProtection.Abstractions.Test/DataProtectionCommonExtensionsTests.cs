@@ -251,7 +251,7 @@ namespace Microsoft.AspNetCore.DataProtection
             {
                 mockProtector.Object.Protect("Hello\ud800");
             });
-            Assert.IsAssignableFrom(typeof(EncoderFallbackException), ex.InnerException);
+            Assert.IsAssignableFrom<EncoderFallbackException>(ex.InnerException);
         }
 
         [Fact]
@@ -293,7 +293,7 @@ namespace Microsoft.AspNetCore.DataProtection
             {
                 mockProtector.Object.Unprotect("AQIDBAU");
             });
-            Assert.IsAssignableFrom(typeof(DecoderFallbackException), ex.InnerException);
+            Assert.IsAssignableFrom<DecoderFallbackException>(ex.InnerException);
         }
 
         [Fact]

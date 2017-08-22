@@ -476,7 +476,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var keys = RunGetAllKeysCore(xml, mockActivator.Object).ToArray();
 
             // Assert
-            Assert.Equal(1, keys.Length);
+            Assert.Single(keys);
             Assert.Equal(new Guid("09712588-ba68-438a-a5ee-fe842b3453b2"), keys[0].KeyId);
             Assert.Same(expectedDescriptor, keys[0].Descriptor);
         }
@@ -515,7 +515,7 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var keys = RunGetAllKeysCore(xml, mockActivator.Object).ToArray();
 
             // Assert
-            Assert.Equal(1, keys.Length);
+            Assert.Single(keys);
             Assert.Equal(new Guid("49c0cda9-0232-4d8c-a541-de20cc5a73d6"), keys[0].KeyId);
             Assert.Same(expectedDescriptor, keys[0].Descriptor);
         }

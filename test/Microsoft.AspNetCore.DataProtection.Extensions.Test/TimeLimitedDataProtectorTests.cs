@@ -78,8 +78,7 @@ namespace Microsoft.AspNetCore.DataProtection
             var timeLimitedProtector = new TimeLimitedDataProtector(mockInnerProtector.Object);
 
             // Act
-            DateTimeOffset actualExpiration;
-            var retVal = timeLimitedProtector.UnprotectCore(new byte[] { 0x10, 0x11 }, now, out actualExpiration);
+            var retVal = timeLimitedProtector.UnprotectCore(new byte[] { 0x10, 0x11 }, now, out var actualExpiration);
 
             // Assert
             Assert.Equal(expectedExpiration, actualExpiration);
@@ -103,8 +102,8 @@ namespace Microsoft.AspNetCore.DataProtection
             var timeLimitedProtector = new TimeLimitedDataProtector(mockInnerProtector.Object);
 
             // Act & assert
-            DateTimeOffset unused;
-            var ex = Assert.Throws<CryptographicException>(() => timeLimitedProtector.UnprotectCore(new byte[] { 0x10, 0x11 }, now, out unused));
+            var ex = Assert.Throws<CryptographicException>(()
+                => timeLimitedProtector.UnprotectCore(new byte[] { 0x10, 0x11 }, now, out var _));
 
             // Assert
             Assert.Equal(Resources.FormatTimeLimitedDataProtector_PayloadExpired(expectedExpiration), ex.Message);
@@ -124,8 +123,8 @@ namespace Microsoft.AspNetCore.DataProtection
             var timeLimitedProtector = new TimeLimitedDataProtector(mockInnerProtector.Object);
 
             // Act & assert
-            DateTimeOffset unused;
-            var ex = Assert.Throws<CryptographicException>(() => timeLimitedProtector.Unprotect(new byte[] { 0x10, 0x11 }, out unused));
+            var ex = Assert.Throws<CryptographicException>(()
+                => timeLimitedProtector.Unprotect(new byte[] { 0x10, 0x11 }, out var _));
 
             // Assert
             Assert.Equal(Resources.TimeLimitedDataProtector_PayloadInvalid, ex.Message);
@@ -141,8 +140,8 @@ namespace Microsoft.AspNetCore.DataProtection
             var timeLimitedProtector = new TimeLimitedDataProtector(mockInnerProtector.Object);
 
             // Act & assert
-            DateTimeOffset unused;
-            var ex = Assert.Throws<CryptographicException>(() => timeLimitedProtector.Unprotect(new byte[] { 0x10, 0x11 }, out unused));
+            var ex = Assert.Throws<CryptographicException>(()
+                => timeLimitedProtector.Unprotect(new byte[] { 0x10, 0x11 }, out var _));
 
             // Assert
             Assert.Equal(Resources.CryptCommon_GenericError, ex.Message);
@@ -162,8 +161,9 @@ namespace Microsoft.AspNetCore.DataProtection
             byte[] timeLimitedProtectedPayload = timeLimitedProtector.Protect(new byte[] { 0x11, 0x22, 0x33, 0x44 }, expectedExpiration);
 
             // Assert
-            DateTimeOffset actualExpiration;
-            Assert.Equal(new byte[] { 0x11, 0x22, 0x33, 0x44 }, timeLimitedProtector.UnprotectCore(timeLimitedProtectedPayload, StringToDateTime("2010-01-01 00:00:00Z"), out actualExpiration));
+            Assert.Equal(
+                new byte[] { 0x11, 0x22, 0x33, 0x44 },
+                timeLimitedProtector.UnprotectCore(timeLimitedProtectedPayload, StringToDateTime("2010-01-01 00:00:00Z"), out var actualExpiration));
             Assert.Equal(expectedExpiration, actualExpiration);
 
             // the two providers shouldn't be able to talk to one another (due to the purpose chaining)

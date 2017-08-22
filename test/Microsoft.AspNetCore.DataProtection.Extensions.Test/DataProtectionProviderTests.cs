@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
                 // Step 3: validate that there's now a single key in the directory and that it's not protected
                 var allFiles = directory.GetFiles();
-                Assert.Equal(1, allFiles.Length);
+                Assert.Single(allFiles);
                 Assert.StartsWith("key-", allFiles[0].Name, StringComparison.OrdinalIgnoreCase);
                 string fileText = File.ReadAllText(allFiles[0].FullName);
                 Assert.Contains("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
                 // Step 3: validate that there's now a single key in the directory and that it's protected with DPAPI
                 var allFiles = directory.GetFiles();
-                Assert.Equal(1, allFiles.Length);
+                Assert.Single(allFiles);
                 Assert.StartsWith("key-", allFiles[0].Name, StringComparison.OrdinalIgnoreCase);
                 string fileText = File.ReadAllText(allFiles[0].FullName);
                 Assert.DoesNotContain("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.DataProtection
 
                     // Step 3: validate that there's now a single key in the directory and that it's is protected using the certificate
                     var allFiles = directory.GetFiles();
-                    Assert.Equal(1, allFiles.Length);
+                    Assert.Single(allFiles);
                     Assert.StartsWith("key-", allFiles[0].Name, StringComparison.OrdinalIgnoreCase);
                     string fileText = File.ReadAllText(allFiles[0].FullName);
                     Assert.DoesNotContain("Warning: the key below is in an unencrypted form.", fileText, StringComparison.Ordinal);

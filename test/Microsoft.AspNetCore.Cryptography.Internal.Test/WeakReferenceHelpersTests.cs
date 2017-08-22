@@ -20,10 +20,9 @@ namespace Microsoft.AspNetCore.Cryptography
             var retVal = WeakReferenceHelpers.GetSharedInstance(ref wr, () => newInstance);
 
             // Assert
-            MyDisposable target;
             Assert.NotNull(wr);
             Assert.NotSame(wrOriginal, wr);
-            Assert.True(wr.TryGetTarget(out target));
+            Assert.True(wr.TryGetTarget(out var target));
             Assert.Same(newInstance, target);
             Assert.Same(newInstance, retVal);
             Assert.False(newInstance.HasBeenDisposed);
@@ -40,9 +39,8 @@ namespace Microsoft.AspNetCore.Cryptography
             var retVal = WeakReferenceHelpers.GetSharedInstance(ref wr, () => newInstance);
 
             // Assert
-            MyDisposable target;
             Assert.NotNull(wr);
-            Assert.True(wr.TryGetTarget(out target));
+            Assert.True(wr.TryGetTarget(out var target));
             Assert.Same(newInstance, target);
             Assert.Same(newInstance, retVal);
             Assert.False(newInstance.HasBeenDisposed);
@@ -65,9 +63,8 @@ namespace Microsoft.AspNetCore.Cryptography
             });
 
             // Assert
-            MyDisposable target;
             Assert.NotNull(wr);
-            Assert.True(wr.TryGetTarget(out target));
+            Assert.True(wr.TryGetTarget(out var target));
             Assert.Same(instanceThatWillBeCreatedFirst, target);
             Assert.Same(instanceThatWillBeCreatedFirst, retVal);
             Assert.False(instanceThatWillBeCreatedFirst.HasBeenDisposed);

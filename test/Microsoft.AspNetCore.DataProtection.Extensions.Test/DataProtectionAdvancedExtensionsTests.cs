@@ -86,8 +86,7 @@ namespace Microsoft.AspNetCore.DataProtection
             mockDataProtector.Setup(o => o.Unprotect(new byte[] { 0x01, 0x02 }, out controlExpiration)).Returns(Encoding.UTF8.GetBytes("this is plaintext"));
 
             // Act
-            DateTimeOffset testExpiration;
-            string unprotectedPayload = mockDataProtector.Object.Unprotect(SampleEncodedString, out testExpiration);
+            string unprotectedPayload = mockDataProtector.Object.Unprotect(SampleEncodedString, out var testExpiration);
 
             // Assert
             Assert.Equal("this is plaintext", unprotectedPayload);

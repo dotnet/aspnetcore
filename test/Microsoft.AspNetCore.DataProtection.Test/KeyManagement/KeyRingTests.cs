@@ -57,9 +57,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var keyRing = new KeyRing(key3, new[] { key1, key2 });
 
             // Assert
-            bool unused;
             Assert.Equal(key3.KeyId, keyRing.DefaultKeyId);
-            Assert.Equal(key3.CreateEncryptor(), keyRing.GetAuthenticatedEncryptorByKeyId(key3.KeyId, out unused));
+            Assert.Equal(key3.CreateEncryptor(), keyRing.GetAuthenticatedEncryptorByKeyId(key3.KeyId, out var _));
         }
 
         [Fact]
@@ -77,9 +76,8 @@ namespace Microsoft.AspNetCore.DataProtection.KeyManagement
             var keyRing = new KeyRing(key2, new[] { key1, key2 });
 
             // Assert
-            bool isRevoked;
             Assert.Equal(0, key1.NumTimesCreateEncryptorInstanceCalled);
-            Assert.Same(expectedEncryptorInstance1, keyRing.GetAuthenticatedEncryptorByKeyId(key1.KeyId, out isRevoked));
+            Assert.Same(expectedEncryptorInstance1, keyRing.GetAuthenticatedEncryptorByKeyId(key1.KeyId, out var isRevoked));
             Assert.True(isRevoked);
             Assert.Equal(1, key1.NumTimesCreateEncryptorInstanceCalled);
             Assert.Same(expectedEncryptorInstance1, keyRing.GetAuthenticatedEncryptorByKeyId(key1.KeyId, out isRevoked));

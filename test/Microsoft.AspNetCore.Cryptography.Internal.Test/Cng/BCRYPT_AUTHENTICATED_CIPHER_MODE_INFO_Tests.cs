@@ -11,11 +11,8 @@ namespace Microsoft.AspNetCore.Cryptography.Cng
         [Fact]
         public void Init_SetsProperties()
         {
-            // Arrange
-            BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO cipherModeInfo;
-
             // Act
-            BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO.Init(out cipherModeInfo);
+            BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO.Init(out var cipherModeInfo);
 
             // Assert
             Assert.Equal((uint)sizeof(BCRYPT_AUTHENTICATED_CIPHER_MODE_INFO), cipherModeInfo.cbSize);
