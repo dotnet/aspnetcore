@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.False(response.Headers.TransferEncodingChunked.HasValue);
                 Assert.True(response.Headers.Date.HasValue);
                 Assert.Equal("Microsoft-HTTPAPI/2.0", response.Headers.Server.ToString());
-                Assert.Equal(1, response.Content.Headers.Count());
+                Assert.Single(response.Content.Headers);
                 Assert.Equal(0, response.Content.Headers.ContentLength);
             }
         }
@@ -224,7 +224,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(2, response.Headers.GetValues("Custom1").Count());
                 Assert.Equal("value1a", response.Headers.GetValues("Custom1").First());
                 Assert.Equal("value1b", response.Headers.GetValues("Custom1").Skip(1).First());
-                Assert.Equal(1, response.Headers.GetValues("Custom2").Count());
+                Assert.Single(response.Headers.GetValues("Custom2"));
                 Assert.Equal("value2a, value2b", response.Headers.GetValues("Custom2").First());
             }
         }
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 Assert.Equal(2, response.Headers.GetValues("Custom1").Count());
                 Assert.Equal("value1a", response.Headers.GetValues("Custom1").First());
                 Assert.Equal("value1b", response.Headers.GetValues("Custom1").Skip(1).First());
-                Assert.Equal(1, response.Headers.GetValues("Custom2").Count());
+                Assert.Single(response.Headers.GetValues("Custom2"));
                 Assert.Equal("value2a, value2b", response.Headers.GetValues("Custom2").First());
             }
         }

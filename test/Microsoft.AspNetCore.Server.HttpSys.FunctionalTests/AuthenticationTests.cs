@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
+                Assert.Empty(response.Headers.WwwAuthenticate);
             }
         }
 
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
+                Assert.Empty(response.Headers.WwwAuthenticate);
             }
         }
 
@@ -306,12 +306,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        [ConditionalTheory]
-        [InlineData(AuthenticationSchemes.Negotiate)]
-        [InlineData(AuthenticationSchemes.NTLM)]
-        // [InlineData(AuthenticationSchemes.Digest)]
-        [InlineData(AuthenticationSchemes.Basic)]
-        public async Task AuthTypes_Forbid_Forbidden(AuthenticationSchemes authType)
+        [ConditionalFact]
+        public async Task AuthTypes_Forbid_Forbidden()
         {
             var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM | /*AuthenticationSchemes.Digest |*/ AuthenticationSchemes.Basic;
             using (var server = Utilities.CreateDynamicHost(authTypes, AllowAnoymous, out var address, httpContext =>
@@ -324,7 +320,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var response = await SendRequestAsync(address);
                 Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-                Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
+                Assert.Empty(response.Headers.WwwAuthenticate);
             }
         }
 
@@ -345,7 +341,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var response = await SendRequestAsync(address, useDefaultCredentials: true);
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                Assert.Equal(1, response.Headers.WwwAuthenticate.Count);
+                Assert.Single(response.Headers.WwwAuthenticate);
                 Assert.Equal(authType.ToString(), response.Headers.WwwAuthenticate.First().Scheme);
             }
         }

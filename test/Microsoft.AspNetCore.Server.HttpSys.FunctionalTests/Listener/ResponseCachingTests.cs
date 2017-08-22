@@ -1083,7 +1083,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 response = await SendRequestAsync(address, "GET", "Range", "bytes=0-10,15-20");
                 Assert.Equal(206, (int)response.StatusCode);
                 Assert.Equal("1", response.Headers.GetValues("x-request-count").FirstOrDefault());
-                Assert.True(response.Content.Headers.GetValues("content-type").First().StartsWith("multipart/byteranges;"));
+                Assert.StartsWith("multipart/byteranges;", response.Content.Headers.GetValues("content-type").First());
             }
         }
 
@@ -1145,7 +1145,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 response = await SendRequestAsync(address, "GET", "Range", "bytes=0-" + (rangeLength - 1) + "," + rangeLength + "-" + (rangeLength + rangeLength - 1), HttpCompletionOption.ResponseHeadersRead);
                 Assert.Equal(206, (int)response.StatusCode);
                 Assert.Equal("1", response.Headers.GetValues("x-request-count").FirstOrDefault());
-                Assert.True(response.Content.Headers.GetValues("content-type").First().StartsWith("multipart/byteranges;"));
+                Assert.StartsWith("multipart/byteranges;", response.Content.Headers.GetValues("content-type").First());
             }
         }
 

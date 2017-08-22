@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 var response = await responseTask;
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal(0, response.Headers.WwwAuthenticate.Count);
+                Assert.Empty(response.Headers.WwwAuthenticate);
             }
         }
 

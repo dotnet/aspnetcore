@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 IEnumerable<string> contentLength;
                 Assert.False(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
                 Assert.True(response.Headers.TransferEncodingChunked.Value);
-                Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+                Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }
 
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 Assert.True(response.Content.Headers.TryGetValues("content-length", out contentLength), "Content-Length");
                 Assert.Equal("0", contentLength.First());
                 Assert.Null(response.Headers.TransferEncodingChunked);
-                Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+                Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }
 
