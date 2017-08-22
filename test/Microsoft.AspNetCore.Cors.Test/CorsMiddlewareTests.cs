@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
                 // Assert
                 response.EnsureSuccessStatusCode();
-                Assert.Equal(1, response.Headers.Count());
+                Assert.Single(response.Headers);
                 Assert.Equal("Cross origin response", await response.Content.ReadAsStringAsync());
                 Assert.Equal("http://localhost:5001", response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin).FirstOrDefault());
             }
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
 
                 // Assert
                 response.EnsureSuccessStatusCode();
-                Assert.Equal(1, response.Headers.Count());
+                Assert.Single(response.Headers);
                 Assert.Equal("http://localhost:5001", response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin).FirstOrDefault());
             }
         }
