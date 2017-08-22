@@ -61,6 +61,7 @@ namespace Microsoft.AspNetCore.Http.Internal
                 Domain = options.Domain,
                 Path = options.Path,
                 Expires = options.Expires,
+                MaxAge = options.MaxAge,
                 Secure = options.Secure,
                 SameSite = (Net.Http.Headers.SameSiteMode)options.SameSite,
                 HttpOnly = options.HttpOnly

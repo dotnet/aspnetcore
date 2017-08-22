@@ -68,6 +68,11 @@ namespace Microsoft.AspNetCore.Http
         public virtual TimeSpan? Expiration { get; set; }
 
         /// <summary>
+        /// Gets or sets the max-age for the cookie.
+        /// </summary>
+        public virtual TimeSpan? MaxAge { get; set; }
+
+        /// <summary>
         /// Creates the cookie options from the given <paramref name="context"/>.
         /// </summary>
         /// <param name="context">The <see cref="HttpContext"/>.</param>
@@ -92,6 +97,7 @@ namespace Microsoft.AspNetCore.Http
                 Path = Path ?? "/",
                 SameSite = SameSite,
                 HttpOnly = HttpOnly,
+                MaxAge = MaxAge,
                 Domain = Domain,
                 Secure = SecurePolicy == CookieSecurePolicy.Always || (SecurePolicy == CookieSecurePolicy.SameAsRequest && context.Request.IsHttps),
                 Expires = Expiration.HasValue ? expiresFrom.Add(Expiration.Value) : default(DateTimeOffset?)

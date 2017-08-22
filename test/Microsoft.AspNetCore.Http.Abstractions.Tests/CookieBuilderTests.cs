@@ -39,6 +39,16 @@ namespace Microsoft.AspNetCore.Http.Abstractions.Tests
         }
 
         [Fact]
+        public void ComputesMaxAge()
+        {
+            Assert.Null(new CookieBuilder().Build(new DefaultHttpContext()).MaxAge);
+
+            var now = TimeSpan.FromHours(1);
+            var options = new CookieBuilder { MaxAge = now }.Build(new DefaultHttpContext());
+            Assert.Equal(now, options.MaxAge);
+        }
+
+        [Fact]
         public void CookieBuilderPreservesDefaultPath()
         {
             Assert.Equal(new CookieOptions().Path, new CookieBuilder().Build(new DefaultHttpContext()).Path);

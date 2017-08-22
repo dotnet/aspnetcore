@@ -53,5 +53,11 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <returns>true if a cookie must not be accessible by client-side script; otherwise, false.</returns>
         public bool HttpOnly { get; set; }
+
+        /// <summary>
+        /// Gets or sets the max-age for the cookie.
+        /// </summary>
+        /// <returns>The max-age date and time for the cookie.</returns>
+        public TimeSpan? MaxAge { get; set; }
     }
 }
