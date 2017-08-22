@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.Hosting
     {
         /// <summary>
         /// Gets or sets the name of the environment. This property is automatically set by the host to the value
-        /// of the "ASPNETCORE_ENVIRONMENT" environment variable.
+        /// of the "ASPNETCORE_ENVIRONMENT" environment variable, or "environment" as specified in any other configuration source.
         /// </summary>
         string EnvironmentName { get; set; }
-        
+
         /// <summary>
         /// Gets or sets the name of the application. This property is automatically set by the host to the assembly containing
         /// the application entry point.
