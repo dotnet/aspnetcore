@@ -83,6 +83,11 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             throw new NotImplementedException();
         }
 
+        // Compatibility for 1.X projects
+        protected void DefineSection(string name, Func<object, Task> section)
+        {
+        }
+
         public virtual void DefineSection(string name, RenderAsyncDelegate section)
         {
         }

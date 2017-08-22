@@ -42,7 +42,7 @@ global::System.Object Section1 = null;
 
 #line default
 #line hidden
-            DefineSection("Section1", async() => {
+            DefineSection("Section1", async(__razor_section_writer) => {
                 __InputTestTagHelper = CreateTagHelper<global::InputTestTagHelper>();
 #line 13 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
 __InputTestTagHelper.For = ModelExpressionProvider.CreateModelExpression(ViewData, __model => __model.Date);

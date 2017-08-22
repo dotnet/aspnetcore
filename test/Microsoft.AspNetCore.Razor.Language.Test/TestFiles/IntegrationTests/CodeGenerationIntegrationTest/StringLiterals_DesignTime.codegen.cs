@@ -23,10 +23,10 @@ global::System.Object WriteLiteralsToInHereAlso = null;
         #pragma warning disable 1998
         public async System.Threading.Tasks.Task ExecuteAsync()
         {
-            DefineSection("WriteLiteralsToInHere", async() => {
+            DefineSection("WriteLiteralsToInHere", async(__razor_section_writer) => {
             }
             );
-            DefineSection("WriteLiteralsToInHereAlso", async() => {
+            DefineSection("WriteLiteralsToInHereAlso", async(__razor_section_writer) => {
             }
             );
         }

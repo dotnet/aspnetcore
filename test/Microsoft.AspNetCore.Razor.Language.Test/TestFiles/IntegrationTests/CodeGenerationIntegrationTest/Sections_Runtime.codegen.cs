@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #line default
 #line hidden
             WriteLiteral("\r\n<div>This is in the Body>\r\n\r\n");
-            DefineSection("Section2", async() => {
+            DefineSection("Section2", async(__razor_section_writer) => {
                 WriteLiteral("\r\n    <div");
                 BeginWriteAttribute("class", " class=\"", 109, "\"", 128, 2);
                 WriteAttributeValue("", 117, "some", 117, 4, true);
@@ -30,12 +30,12 @@ WriteAttributeValue(" ", 121, thing, 122, 6, false);
             }
             );
             WriteLiteral("\r\n");
-            DefineSection("Section1", async() => {
+            DefineSection("Section1", async(__razor_section_writer) => {
                 WriteLiteral("\r\n    <div>This is in Section 1</div>\r\n");
             }
             );
             WriteLiteral("\r\n");
-            DefineSection("NestedDelegates", async() => {
+            DefineSection("NestedDelegates", async(__razor_section_writer) => {
                 WriteLiteral("\r\n");
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
        Func<dynamic, object> f = 

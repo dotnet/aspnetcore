@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 <p>This is line 84</p><br>
 
 ");
-            DefineSection("WriteLiteralsToInHere", async() => {
+            DefineSection("WriteLiteralsToInHere", async(__razor_section_writer) => {
                 WriteLiteral(@"
     <p>This is line 1 nested</p>
     <p>This is line 2 nested</p>
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 <p>This is line 42</p>
 <p>This is line 43</p>hi!");
             WriteLiteral("\r\n");
-            DefineSection("WriteLiteralsToInHereAlso", async() => {
+            DefineSection("WriteLiteralsToInHereAlso", async(__razor_section_writer) => {
                 WriteLiteral(@"
     <p>This is line 1 nested</p>
     <p>This is line 2 nested</p>

@@ -33,7 +33,7 @@ global::System.Object NestedDelegates = null;
 
 #line default
 #line hidden
-            DefineSection("Section2", async() => {
+            DefineSection("Section2", async(__razor_section_writer) => {
 #line 8 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
                 __o = thing;
 
@@ -41,10 +41,10 @@ global::System.Object NestedDelegates = null;
 #line hidden
             }
             );
-            DefineSection("Section1", async() => {
+            DefineSection("Section1", async(__razor_section_writer) => {
             }
             );
-            DefineSection("NestedDelegates", async() => {
+            DefineSection("NestedDelegates", async(__razor_section_writer) => {
 #line 16 "TestFiles/IntegrationTests/CodeGenerationIntegrationTest/Sections.cshtml"
        Func<dynamic, object> f = 
 

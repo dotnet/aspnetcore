@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests.TestFiles
 #line default
 #line hidden
             WriteLiteral("\r\n");
-            DefineSection("MySection", async() => {
+            DefineSection("MySection", async(__razor_section_writer) => {
                 WriteLiteral("\r\n    <div>\r\n        ");
                 __tagHelperExecutionContext = __tagHelperScopeManager.Begin("mytaghelper", global::Microsoft.AspNetCore.Razor.TagHelpers.TagMode.StartTagAndEndTag, "test", async() => {
                     WriteLiteral("\r\n            In None ContentBehavior.\r\n            ");
