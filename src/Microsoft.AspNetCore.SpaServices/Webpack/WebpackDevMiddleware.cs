@@ -15,6 +15,12 @@ namespace Microsoft.AspNetCore.Builder
     {
         private const string DefaultConfigFile = "webpack.config.js";
 
+        private static readonly JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
+        {
+            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            TypeNameHandling = TypeNameHandling.None
+        };
+
         /// <summary>
         /// Enables Webpack dev middleware support. This hosts an instance of the Webpack compiler in memory
         /// in your application so that you can always serve up-to-date Webpack-built resources without having
@@ -88,7 +94,7 @@ namespace Microsoft.AspNetCore.Builder
             };
             var devServerInfo =
                 nodeServices.InvokeExportAsync<WebpackDevServerInfo>(nodeScript.FileName, "createWebpackDevServer",
-                    JsonConvert.SerializeObject(devServerOptions, new JsonSerializerSettings() { ContractResolver = new DefaultContractResolver() })).Result;
+                    JsonConvert.SerializeObject(devServerOptions, jsonSerializerSettings)).Result;
 
             // If we're talking to an older version of aspnet-webpack, it will return only a single PublicPath,
             // not an array of PublicPaths. Handle that scenario.
