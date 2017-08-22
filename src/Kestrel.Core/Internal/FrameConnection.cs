@@ -92,92 +92,87 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private async Task ProcessRequestsAsync<TContext>(IHttpApplication<TContext> httpApplication)
         {
-            using (BeginConnectionScope())
+            try
             {
-                try
+                KestrelEventSource.Log.ConnectionStart(this);
+
+                AdaptedPipeline adaptedPipeline = null;
+                var adaptedPipelineTask = Task.CompletedTask;
+                var transport = _context.Transport;
+                var application = _context.Application;
+
+
+                if (_context.ConnectionAdapters.Count > 0)
                 {
-                    Log.ConnectionStart(ConnectionId);
-                    KestrelEventSource.Log.ConnectionStart(this);
+                    adaptedPipeline = new AdaptedPipeline(transport,
+                                                          application,
+                                                           PipeFactory.Create(AdaptedInputPipeOptions),
+                                                           PipeFactory.Create(AdaptedOutputPipeOptions));
 
-                    AdaptedPipeline adaptedPipeline = null;
-                    var adaptedPipelineTask = Task.CompletedTask;
-                    var transport = _context.Transport;
-                    var application = _context.Application;
-
-
-                    if (_context.ConnectionAdapters.Count > 0)
-                    {
-                        adaptedPipeline = new AdaptedPipeline(transport,
-                                                              application,
-                                                               PipeFactory.Create(AdaptedInputPipeOptions),
-                                                               PipeFactory.Create(AdaptedOutputPipeOptions));
-
-                        transport = adaptedPipeline;
-                    }
-
-                    // _frame must be initialized before adding the connection to the connection manager
-                    CreateFrame(httpApplication, transport, application);
-
-                    // _http2Connection must be initialized before yield control to the transport thread,
-                    // to prevent a race condition where _http2Connection.Abort() is called just as
-                    // _http2Connection is about to be initialized.
-                    _http2Connection = new Http2Connection(new Http2ConnectionContext
-                    {
-                        ConnectionId = _context.ConnectionId,
-                        ServiceContext = _context.ServiceContext,
-                        PipeFactory = PipeFactory,
-                        LocalEndPoint = LocalEndPoint,
-                        RemoteEndPoint = RemoteEndPoint,
-                        Application = application,
-                        Transport = transport
-                    });
-
-                    // Do this before the first await so we don't yield control to the transport until we've
-                    // added the connection to the connection manager
-                    _context.ServiceContext.ConnectionManager.AddConnection(_context.FrameConnectionId, this);
-                    _lastTimestamp = _context.ServiceContext.SystemClock.UtcNow.Ticks;
-
-                    if (adaptedPipeline != null)
-                    {
-                        // Stream can be null here and run async will close the connection in that case
-                        var stream = await ApplyConnectionAdaptersAsync();
-                        adaptedPipelineTask = adaptedPipeline.RunAsync(stream);
-                    }
-
-                    if (_frame.ConnectionFeatures?.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol == "h2" &&
-                        Interlocked.CompareExchange(ref _http2ConnectionState, Http2ConnectionStarted, Http2ConnectionNotStarted) == Http2ConnectionNotStarted)
-                    {
-                        await _http2Connection.ProcessAsync(httpApplication);
-                    }
-                    else
-                    {
-                        await _frame.ProcessRequestsAsync();
-                    }
-
-                    await adaptedPipelineTask;
-                    await _socketClosedTcs.Task;
+                    transport = adaptedPipeline;
                 }
-                catch (Exception ex)
+
+                // _frame must be initialized before adding the connection to the connection manager
+                CreateFrame(httpApplication, transport, application);
+
+                // _http2Connection must be initialized before yield control to the transport thread,
+                // to prevent a race condition where _http2Connection.Abort() is called just as
+                // _http2Connection is about to be initialized.
+                _http2Connection = new Http2Connection(new Http2ConnectionContext
                 {
-                    Log.LogError(0, ex, $"Unexpected exception in {nameof(FrameConnection)}.{nameof(ProcessRequestsAsync)}.");
-                }
-                finally
+                    ConnectionId = _context.ConnectionId,
+                    ServiceContext = _context.ServiceContext,
+                    PipeFactory = PipeFactory,
+                    LocalEndPoint = LocalEndPoint,
+                    RemoteEndPoint = RemoteEndPoint,
+                    Application = application,
+                    Transport = transport
+                });
+
+                // Do this before the first await so we don't yield control to the transport until we've
+                // added the connection to the connection manager
+                _context.ServiceContext.ConnectionManager.AddConnection(_context.FrameConnectionId, this);
+                _lastTimestamp = _context.ServiceContext.SystemClock.UtcNow.Ticks;
+
+                if (adaptedPipeline != null)
                 {
-                    _context.ServiceContext.ConnectionManager.RemoveConnection(_context.FrameConnectionId);
-                    DisposeAdaptedConnections();
-
-                    if (_frame.WasUpgraded)
-                    {
-                        _context.ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
-                    }
-                    else
-                    {
-                        _context.ServiceContext.ConnectionManager.NormalConnectionCount.ReleaseOne();
-                    }
-
-                    Log.ConnectionStop(ConnectionId);
-                    KestrelEventSource.Log.ConnectionStop(this);
+                    // Stream can be null here and run async will close the connection in that case
+                    var stream = await ApplyConnectionAdaptersAsync();
+                    adaptedPipelineTask = adaptedPipeline.RunAsync(stream);
                 }
+
+                if (_frame.ConnectionFeatures?.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol == "h2" &&
+                    Interlocked.CompareExchange(ref _http2ConnectionState, Http2ConnectionStarted, Http2ConnectionNotStarted) == Http2ConnectionNotStarted)
+                {
+                    await _http2Connection.ProcessAsync(httpApplication);
+                }
+                else
+                {
+                    await _frame.ProcessRequestsAsync();
+                }
+
+                await adaptedPipelineTask;
+                await _socketClosedTcs.Task;
+            }
+            catch (Exception ex)
+            {
+                Log.LogError(0, ex, $"Unexpected exception in {nameof(FrameConnection)}.{nameof(ProcessRequestsAsync)}.");
+            }
+            finally
+            {
+                _context.ServiceContext.ConnectionManager.RemoveConnection(_context.FrameConnectionId);
+                DisposeAdaptedConnections();
+
+                if (_frame.WasUpgraded)
+                {
+                    _context.ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
+                }
+                else
+                {
+                    _context.ServiceContext.ConnectionManager.NormalConnectionCount.ReleaseOne();
+                }
+
+                KestrelEventSource.Log.ConnectionStop(this);
             }
         }
 
@@ -496,16 +491,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 _writeTimingWrites--;
             }
-        }
-
-        private IDisposable BeginConnectionScope()
-        {
-            if (Log.IsEnabled(LogLevel.Critical))
-            {
-                return Log.BeginScope(new ConnectionLogScope(ConnectionId));
-            }
-
-            return null;
         }
     }
 }

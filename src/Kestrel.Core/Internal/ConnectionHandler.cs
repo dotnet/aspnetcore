@@ -24,6 +24,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _connectionDelegate = connectionDelegate;
         }
 
+        private IKestrelTrace Log => _serviceContext.Log;
+
         public void OnConnection(IFeatureCollection features)
         {
             var connectionContext = new DefaultConnectionContext(features);
@@ -51,14 +53,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private async Task Execute(ConnectionContext connectionContext)
         {
-            try
+            using (BeginConnectionScope(connectionContext))
             {
-                await _connectionDelegate(connectionContext);
+                Log.ConnectionStart(connectionContext.ConnectionId);
+
+                try
+                {
+                    await _connectionDelegate(connectionContext);
+                }
+                catch (Exception ex)
+                {
+                    Log.LogCritical(0, ex, $"{nameof(ConnectionHandler)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
+                }
+
+                Log.ConnectionStop(connectionContext.ConnectionId);
             }
-            catch (Exception ex)
+        }
+
+        private IDisposable BeginConnectionScope(ConnectionContext connectionContext)
+        {
+            if (Log.IsEnabled(LogLevel.Critical))
             {
-                _serviceContext.Log.LogCritical(0, ex, $"{nameof(ConnectionHandler)}.{nameof(Execute)}() {connectionContext.ConnectionId}");
+                return Log.BeginScope(new ConnectionLogScope(connectionContext.ConnectionId));
             }
+
+            return null;
         }
 
         // Internal for testing
