@@ -15,6 +15,8 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class WatchableApp : IDisposable
     {
+        private static readonly TimeSpan DefaultMessageTimeOut = TimeSpan.FromSeconds(30);
+
         private const string StartedMessage = "Started";
         private const string ExitingMessage = "Exiting";
 
@@ -39,16 +41,16 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         public string SourceDirectory { get; }
 
         public Task HasRestarted()
-            => Process.GetOutputLineAsync(StartedMessage).TimeoutAfter(TimeSpan.FromMinutes(2));
+            => Process.GetOutputLineAsync(StartedMessage).TimeoutAfter(DefaultMessageTimeOut);
 
         public Task HasExited()
-            => Process.GetOutputLineAsync(ExitingMessage);
+            => Process.GetOutputLineAsync(ExitingMessage).TimeoutAfter(DefaultMessageTimeOut);
 
         public bool UsePollingWatcher { get; set; }
 
         public async Task<int> GetProcessId()
         {
-            var line = await Process.GetOutputLineAsync(l => l.StartsWith("PID ="));
+            var line = await Process.GetOutputLineAsync(l => l.StartsWith("PID =")).TimeoutAfter(DefaultMessageTimeOut);
             var pid = line.Split('=').Last();
             return int.Parse(pid);
         }

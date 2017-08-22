@@ -14,8 +14,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 {
     public class GlobbingAppTests : IDisposable
     {
-        private static readonly TimeSpan DefaultTimeout = TimeSpan.FromSeconds(30);
-
         private GlobbingApp _app;
         public GlobbingAppTests(ITestOutputHelper logger)
         {
@@ -30,7 +28,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             _app.UsePollingWatcher = usePollingWatcher;
             await _app.StartWatcherAsync();
 
-            var types = await _app.GetCompiledAppDefinedTypes().TimeoutAfter(DefaultTimeout);
+            var types = await _app.GetCompiledAppDefinedTypes();
             Assert.Equal(2, types);
 
             var fileToChange = Path.Combine(_app.SourceDirectory, "include", "Foo.cs");
@@ -38,7 +36,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
             File.WriteAllText(fileToChange, programCs);
 
             await _app.HasRestarted();
-            types = await _app.GetCompiledAppDefinedTypes().TimeoutAfter(DefaultTimeout);
+            types = await _app.GetCompiledAppDefinedTypes();
             Assert.Equal(2, types);
         }
 
@@ -47,14 +45,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             await _app.StartWatcherAsync();
 
-            var types = await _app.GetCompiledAppDefinedTypes().TimeoutAfter(DefaultTimeout);
+            var types = await _app.GetCompiledAppDefinedTypes();
             Assert.Equal(2, types);
 
             var fileToChange = Path.Combine(_app.SourceDirectory, "include", "Foo.cs");
             File.Delete(fileToChange);
 
             await _app.HasRestarted();
-            types = await _app.GetCompiledAppDefinedTypes().TimeoutAfter(DefaultTimeout);
+            types = await _app.GetCompiledAppDefinedTypes();
             Assert.Equal(1, types);
         }
 
@@ -63,14 +61,14 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
         {
             await _app.StartWatcherAsync();
 
-            var types = await _app.GetCompiledAppDefinedTypes().TimeoutAfter(DefaultTimeout);
+            var types = await _app.GetCompiledAppDefinedTypes();
             Assert.Equal(2, types);
 
             var folderToDelete = Path.Combine(_app.SourceDirectory, "include");
             Directory.Delete(folderToDelete, recursive: true);
 
             await _app.HasRestarted();
-            types = await _app.GetCompiledAppDefinedTypes().TimeoutAfter(DefaultTimeout);
+            types = await _app.GetCompiledAppDefinedTypes();
             Assert.Equal(1, types);
         }
 
@@ -131,7 +129,7 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
 
             public async Task<int> GetCompiledAppDefinedTypes()
             {
-                var definedTypesMessage = await Process.GetOutputLineAsync(m => m.StartsWith("Defined types = "));
+                var definedTypesMessage = await Process.GetOutputLineAsync(m => m.StartsWith("Defined types = ")).TimeoutAfter(TimeSpan.FromSeconds(30));
                 return int.Parse(definedTypesMessage.Split('=').Last());
             }
         }
