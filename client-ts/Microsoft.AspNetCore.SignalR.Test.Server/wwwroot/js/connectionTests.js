@@ -29,7 +29,11 @@ describe('connection', () => {
     eachTransport(transportType => {
         it(`over ${signalR.TransportType[transportType]} can send and receive messages`, done => {
             const message = "Hello World!";
-            let connection = new signalR.HttpConnection(ECHOENDPOINT_URL, { transport: transportType });
+            let connection = new signalR.HttpConnection(ECHOENDPOINT_URL,
+                {
+                    transport: transportType,
+                    logger: new signalR.ConsoleLogger(signalR.LogLevel.Information)
+                });
 
             let received = "";
             connection.onDataReceived = data => {

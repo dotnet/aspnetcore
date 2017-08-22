@@ -3,6 +3,8 @@ import { IConnection } from "./IConnection"
 import { ITransport, TransferMode, TransportType, WebSocketTransport, ServerSentEventsTransport, LongPollingTransport } from "./Transports"
 import { IHttpClient, HttpClient } from "./HttpClient"
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions"
+import { ILogger, LogLevel } from "./ILogger"
+import { NullLogger } from "./Loggers"
 
 const enum ConnectionState {
     Initial,
@@ -19,10 +21,11 @@ interface INegotiateResponse {
 export class HttpConnection implements IConnection {
     private connectionState: ConnectionState;
     private url: string;
-    private connectionId: string;
-    private httpClient: IHttpClient;
+    private readonly httpClient: IHttpClient;
+    private readonly logger: ILogger;
+    private readonly options: IHttpConnectionOptions;
     private transport: ITransport;
-    private options: IHttpConnectionOptions;
+    private connectionId: string;
     private startPromise: Promise<void>;
 
     readonly features: any = {};
@@ -30,6 +33,7 @@ export class HttpConnection implements IConnection {
     constructor(url: string, options: IHttpConnectionOptions = {}) {
         this.url = url;
         this.httpClient = options.httpClient || new HttpClient();
+        this.logger = options.logger || new NullLogger();
         this.connectionState = ConnectionState.Initial;
         this.options = options;
     }
@@ -74,7 +78,7 @@ export class HttpConnection implements IConnection {
             this.changeState(ConnectionState.Connecting, ConnectionState.Connected);
         }
         catch (e) {
-            console.log("Failed to start the connection. " + e);
+            this.logger.log(LogLevel.Error, "Failed to start the connection. " + e);
             this.connectionState = ConnectionState.Disconnected;
             this.transport = null;
             throw e;
@@ -86,13 +90,13 @@ export class HttpConnection implements IConnection {
             transport = TransportType[availableTransports[0]];
         }
         if (transport === TransportType.WebSockets && availableTransports.indexOf(TransportType[transport]) >= 0) {
-            return new WebSocketTransport();
+            return new WebSocketTransport(this.logger);
         }
         if (transport === TransportType.ServerSentEvents && availableTransports.indexOf(TransportType[transport]) >= 0) {
-            return new ServerSentEventsTransport(this.httpClient);
+            return new ServerSentEventsTransport(this.httpClient, this.logger);
         }
         if (transport === TransportType.LongPolling && availableTransports.indexOf(TransportType[transport]) >= 0) {
-            return new LongPollingTransport(this.httpClient);
+            return new LongPollingTransport(this.httpClient, this.logger);
         }
 
         if (this.isITransport(transport)) {

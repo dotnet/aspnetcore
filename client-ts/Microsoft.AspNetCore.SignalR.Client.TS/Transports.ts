@@ -1,6 +1,7 @@
 import { DataReceived, TransportClosed } from "./Common"
 import { IHttpClient } from "./HttpClient"
 import { HttpError } from "./HttpError"
+import { ILogger, LogLevel } from "./ILogger"
 
 export enum TransportType {
     WebSockets,
@@ -22,7 +23,12 @@ export interface ITransport {
 }
 
 export class WebSocketTransport implements ITransport {
+    private readonly logger: ILogger;
     private webSocket: WebSocket;
+
+    constructor(logger: ILogger) {
+        this.logger = logger;
+    }
 
     connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> {
 
@@ -35,7 +41,7 @@ export class WebSocketTransport implements ITransport {
             }
 
             webSocket.onopen = (event: Event) => {
-                console.log(`WebSocket connected to ${url}`);
+                this.logger.log(LogLevel.Information, `WebSocket connected to ${url}`);
                 this.webSocket = webSocket;
                 resolve(requestedTransferMode);
             };
@@ -45,7 +51,7 @@ export class WebSocketTransport implements ITransport {
             };
 
             webSocket.onmessage = (message: MessageEvent) => {
-                console.log(`(WebSockets transport) data received: ${message.data}`);
+                this.logger.log(LogLevel.Information, `(WebSockets transport) data received: ${message.data}`);
                 if (this.onDataReceived) {
                     this.onDataReceived(message.data);
                 }
@@ -86,12 +92,14 @@ export class WebSocketTransport implements ITransport {
 }
 
 export class ServerSentEventsTransport implements ITransport {
+    private readonly httpClient: IHttpClient;
+    private readonly logger: ILogger;
     private eventSource: EventSource;
     private url: string;
-    private httpClient: IHttpClient;
 
-    constructor(httpClient: IHttpClient) {
+    constructor(httpClient: IHttpClient, logger: ILogger) {
         this.httpClient = httpClient;
+        this.logger = logger;
     }
 
     connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> {
@@ -107,7 +115,7 @@ export class ServerSentEventsTransport implements ITransport {
                 eventSource.onmessage = (e: MessageEvent) => {
                     if (this.onDataReceived) {
                         try {
-                            console.log(`(SSE transport) data received: ${e.data}`);
+                            this.logger.log(LogLevel.Information, `(SSE transport) data received: ${e.data}`);
                             this.onDataReceived(e.data);
                         } catch (error) {
                             if (this.onClosed) {
@@ -128,7 +136,7 @@ export class ServerSentEventsTransport implements ITransport {
                 }
 
                 eventSource.onopen = () => {
-                    console.log(`SSE connected to ${this.url}`);
+                    this.logger.log(LogLevel.Information, `SSE connected to ${this.url}`);
                     this.eventSource = eventSource;
                     // SSE is a text protocol
                     resolve(TransferMode.Text);
@@ -156,13 +164,16 @@ export class ServerSentEventsTransport implements ITransport {
 }
 
 export class LongPollingTransport implements ITransport {
+    private readonly httpClient: IHttpClient;
+    private readonly logger: ILogger;
+
     private url: string;
-    private httpClient: IHttpClient;
     private pollXhr: XMLHttpRequest;
     private shouldPoll: boolean;
 
-    constructor(httpClient: IHttpClient) {
+    constructor(httpClient: IHttpClient, logger: ILogger) {
         this.httpClient = httpClient;
+        this.logger = logger;
     }
 
     connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> {
@@ -187,11 +198,11 @@ export class LongPollingTransport implements ITransport {
                 if (this.onDataReceived) {
                     try {
                         if (pollXhr.response) {
-                            console.log(`(LongPolling transport) data received: ${pollXhr.response}`);
+                            this.logger.log(LogLevel.Information, `(LongPolling transport) data received: ${pollXhr.response}`);
                             this.onDataReceived(pollXhr.response);
                         }
                         else {
-                            console.log(`(LongPolling transport) timed out`);
+                            this.logger.log(LogLevel.Information, "(LongPolling transport) timed out");
                         }
                     } catch (error) {
                         if (this.onClosed) {
