@@ -227,8 +227,8 @@ namespace Microsoft.AspNetCore.Http
             Assert.True(Assert.IsType<bool>(context.Items["after"]));
             Assert.NotNull(middlewareFactory.Created);
             Assert.NotNull(middlewareFactory.Released);
-            Assert.IsType(typeof(Middleware), middlewareFactory.Created);
-            Assert.IsType(typeof(Middleware), middlewareFactory.Released);
+            Assert.IsType<Middleware>(middlewareFactory.Created);
+            Assert.IsType<Middleware>(middlewareFactory.Released);
             Assert.Same(middlewareFactory.Created, middlewareFactory.Released);
         }
 

@@ -15,12 +15,11 @@ namespace Microsoft.Net.Http.Headers
         {
             // We don't need to validate all possible date values, since they're already tested in HttpRuleParserTest.
             // Just make sure the parser calls HttpRuleParser methods correctly.
-            DateTimeOffset result;
-            Assert.True(HeaderUtilities.TryParseDate(input, out result));
+            Assert.True(HeaderUtilities.TryParseDate(input, out var result));
             Assert.Equal(expected, result);
         }
 
-        private static IEnumerable<object[]> ValidStringData()
+        public static IEnumerable<object[]> ValidStringData()
         {
             yield return new object[] { "Tue, 15 Nov 1994 08:12:31 GMT", new DateTimeOffset(1994, 11, 15, 8, 12, 31, TimeSpan.Zero) };
             yield return new object[] { "      Sunday, 06-Nov-94 08:49:37 GMT   ", new DateTimeOffset(1994, 11, 6, 8, 49, 37, TimeSpan.Zero) };
@@ -32,12 +31,11 @@ namespace Microsoft.Net.Http.Headers
         [MemberData(nameof(InvalidStringData))]
         public void TryParse_SetOfInvalidValueStrings_ReturnsFalse(string input)
         {
-            DateTimeOffset result;
-            Assert.False(HeaderUtilities.TryParseDate(input, out result));
+            Assert.False(HeaderUtilities.TryParseDate(input, out var result));
             Assert.Equal(new DateTimeOffset(), result);
         }
 
-        private static IEnumerable<object[]> InvalidStringData()
+        public static IEnumerable<object[]> InvalidStringData()
         {
             yield return new object[] { null };
             yield return new object[] { string.Empty };

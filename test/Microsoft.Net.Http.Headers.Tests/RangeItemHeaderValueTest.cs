@@ -136,7 +136,7 @@ namespace Microsoft.Net.Http.Headers
             Assert.True(RangeHeaderValue.TryParse("byte=" + input, out result), input);
 
             var ranges = result.Ranges.ToArray();
-            Assert.Equal(1, ranges.Length);
+            Assert.Single(ranges);
 
             var range = ranges.First();
 

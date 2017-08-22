@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-            Assert.Equal(1, section.Headers.Count);
+            Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
             var buffer = new MemoryStream();
             await section.Body.CopyToAsync(buffer);
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-            Assert.Equal(1, section.Headers.Count);
+            Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
             var buffer = new MemoryStream();
             await section.Body.CopyToAsync(buffer);
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-            Assert.Equal(1, section.Headers.Count);
+            Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
             var buffer = new MemoryStream();
             await section.Body.CopyToAsync(buffer);
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-            Assert.Equal(1, section.Headers.Count);
+            Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
             var buffer = new MemoryStream();
             await section.Body.CopyToAsync(buffer);
@@ -216,7 +216,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-            Assert.Equal(1, section.Headers.Count);
+            Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
             var buffer = new MemoryStream();
             await section.Body.CopyToAsync(buffer);
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-            Assert.Equal(1, section.Headers.Count);
+            Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
             var buffer = new MemoryStream();
             await section.Body.CopyToAsync(buffer);
@@ -289,7 +289,7 @@ namespace Microsoft.AspNetCore.WebUtilities
             //first section can be read successfully
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-            Assert.Equal(1, section.Headers.Count);
+            Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\"", section.Headers["Content-Disposition"][0]);
             var read = section.Body.Read(buffer, 0, buffer.Length);
             Assert.Equal("text default", GetString(buffer, read));
@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-            Assert.Equal(1, section.Headers.Count);
+            Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\" filename=\"a\uFFFD!.txt\"", section.Headers["Content-Disposition"][0]);
             var buffer = new MemoryStream();
             await section.Body.CopyToAsync(buffer);
@@ -371,7 +371,7 @@ namespace Microsoft.AspNetCore.WebUtilities
 
             var section = await reader.ReadNextSectionAsync();
             Assert.NotNull(section);
-            Assert.Equal(1, section.Headers.Count);
+            Assert.Single(section.Headers);
             Assert.Equal("form-data; name=\"text\" filename=\"a\uFFFDU.txt\"", section.Headers["Content-Disposition"][0]);
             var buffer = new MemoryStream();
             await section.Body.CopyToAsync(buffer);

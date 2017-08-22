@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.Authentication
             Assert.Null(props.GetTokenValue("One"));
             Assert.Null(props.GetTokenValue("Two"));
             Assert.Null(props.GetTokenValue("Three"));
-            Assert.Equal(1, props.GetTokens().Count());
+            Assert.Single(props.GetTokens());
         }
 
         [Fact]

@@ -138,8 +138,7 @@ namespace Microsoft.AspNetCore.Http
             var source = new PathString(sourcePath);
             var test = new PathString(testPath);
 
-            PathString remaining;
-            var result = source.StartsWithSegments(test, out remaining);
+            var result = source.StartsWithSegments(test, out var remaining);
 
             Assert.Equal(expectedResult, result);
         }
@@ -181,26 +180,33 @@ namespace Microsoft.AspNetCore.Http
             var source = new PathString(sourcePath);
             var test = new PathString(testPath);
 
-            PathString remaining;
-            var result = source.StartsWithSegments(test, comparison, out remaining);
+            var result = source.StartsWithSegments(test, comparison, out var remaining);
 
             Assert.Equal(expectedResult, result);
         }
 
         [Theory]
-        [InlineData("unreserved", "/abc123.-_~", "/abc123.-_~")]
-        [InlineData("colon", "/:", "/:")]
-        [InlineData("at", "/@", "/@")]
-        [InlineData("sub-delims", "/!$&'()*+,;=", "/!$&'()*+,;=")]
-        [InlineData("reserved", "/?#[]", "/%3F%23%5B%5D")]
-        [InlineData("pct-encoding", "/单行道", "/%E5%8D%95%E8%A1%8C%E9%81%93")]
-        [InlineData("mixed1", "/index/单行道=(x*y)[abc]", "/index/%E5%8D%95%E8%A1%8C%E9%81%93=(x*y)%5Babc%5D")]
-        [InlineData("mixed2", "/index/单行道=(x*y)[abc]_", "/index/%E5%8D%95%E8%A1%8C%E9%81%93=(x*y)%5Babc%5D_")]
-        [InlineData("encoded", "/http%3a%2f%2f[foo]%3A5000/", "/http%3a%2f%2f%5Bfoo%5D%3A5000/")]
-        [InlineData("encoded", "/http%3a%2f%2f[foo]%3A5000/%", "/http%3a%2f%2f%5Bfoo%5D%3A5000/%25")]
-        [InlineData("encoded", "/http%3a%2f%2f[foo]%3A5000/%2", "/http%3a%2f%2f%5Bfoo%5D%3A5000/%252")]
-        [InlineData("encoded", "/http%3a%2f%2f[foo]%3A5000/%2F", "/http%3a%2f%2f%5Bfoo%5D%3A5000/%2F")]
-        public void ToUriComponentEscapeCorrectly(string category, string input, string expected)
+        // unreserved
+        [InlineData("/abc123.-_~", "/abc123.-_~")]
+        // colon
+        [InlineData("/:", "/:")]
+        // at
+        [InlineData("/@", "/@")]
+        // sub-delims
+        [InlineData("/!$&'()*+,;=", "/!$&'()*+,;=")]
+        // reserved
+        [InlineData("/?#[]", "/%3F%23%5B%5D")]
+        // pct-encoding
+        [InlineData("/单行道", "/%E5%8D%95%E8%A1%8C%E9%81%93")]
+        // mixed
+        [InlineData("/index/单行道=(x*y)[abc]", "/index/%E5%8D%95%E8%A1%8C%E9%81%93=(x*y)%5Babc%5D")]
+        [InlineData("/index/单行道=(x*y)[abc]_", "/index/%E5%8D%95%E8%A1%8C%E9%81%93=(x*y)%5Babc%5D_")]
+        // encoded
+        [InlineData("/http%3a%2f%2f[foo]%3A5000/", "/http%3a%2f%2f%5Bfoo%5D%3A5000/")]
+        [InlineData("/http%3a%2f%2f[foo]%3A5000/%", "/http%3a%2f%2f%5Bfoo%5D%3A5000/%25")]
+        [InlineData("/http%3a%2f%2f[foo]%3A5000/%2", "/http%3a%2f%2f%5Bfoo%5D%3A5000/%252")]
+        [InlineData("/http%3a%2f%2f[foo]%3A5000/%2F", "/http%3a%2f%2f%5Bfoo%5D%3A5000/%2F")]
+        public void ToUriComponentEscapeCorrectly(string input, string expected)
         {
             var path = new PathString(input);
 

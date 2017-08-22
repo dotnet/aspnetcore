@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.WebUtilities
         public void ParseQueryWithEmptyKeyWorks()
         {
             var collection = QueryHelpers.ParseQuery("?=value1&=");
-            Assert.Equal(1, collection.Count);
+            Assert.Single(collection);
             Assert.Equal(new[] { "value1", "" }, collection[""]);
         }
 

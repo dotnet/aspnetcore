@@ -223,9 +223,7 @@ namespace Microsoft.Net.Http.Headers
         [MemberData(nameof(CookieHeaderDataSet))]
         public void CookieHeaderValue_TryParse_AcceptsValidValues(CookieHeaderValue cookie, string expectedValue)
         {
-            CookieHeaderValue header;
-            var result = CookieHeaderValue.TryParse(expectedValue, out header);
-            Assert.True(result);
+            Assert.True(CookieHeaderValue.TryParse(expectedValue, out var header));
 
             Assert.Equal(cookie, header);
             Assert.Equal(expectedValue, header.ToString());
@@ -242,10 +240,7 @@ namespace Microsoft.Net.Http.Headers
         [MemberData(nameof(InvalidCookieHeaderDataSet))]
         public void CookieHeaderValue_TryParse_RejectsInvalidValues(string value)
         {
-            CookieHeaderValue header;
-            var result = CookieHeaderValue.TryParse(value, out header);
-
-            Assert.False(result);
+            Assert.False(CookieHeaderValue.TryParse(value, out var _));
         }
 
         [Theory]
@@ -270,8 +265,7 @@ namespace Microsoft.Net.Http.Headers
         [MemberData(nameof(ListOfCookieHeaderDataSet))]
         public void CookieHeaderValue_TryParseList_AcceptsValidValues(IList<CookieHeaderValue> cookies, string[] input)
         {
-            IList<CookieHeaderValue> results;
-            var result = CookieHeaderValue.TryParseList(input, out results);
+            var result = CookieHeaderValue.TryParseList(input, out var results);
             Assert.True(result);
 
             Assert.Equal(cookies, results);
@@ -281,8 +275,7 @@ namespace Microsoft.Net.Http.Headers
         [MemberData(nameof(ListOfCookieHeaderDataSet))]
         public void CookieHeaderValue_TryParseStrictList_AcceptsValidValues(IList<CookieHeaderValue> cookies, string[] input)
         {
-            IList<CookieHeaderValue> results;
-            var result = CookieHeaderValue.TryParseStrictList(input, out results);
+            var result = CookieHeaderValue.TryParseStrictList(input, out var results);
             Assert.True(result);
 
             Assert.Equal(cookies, results);
@@ -301,25 +294,31 @@ namespace Microsoft.Net.Http.Headers
         [MemberData(nameof(ListWithInvalidCookieHeaderDataSet))]
         public void CookieHeaderValue_TryParseList_ExcludesInvalidValues(IList<CookieHeaderValue> cookies, string[] input)
         {
-            IList<CookieHeaderValue> results;
-            var result = CookieHeaderValue.TryParseList(input, out results);
+            var result = CookieHeaderValue.TryParseList(input, out var results);
             Assert.Equal(cookies, results);
             Assert.Equal(cookies?.Count > 0, result);
         }
 
         [Theory]
         [MemberData(nameof(ListWithInvalidCookieHeaderDataSet))]
-        public void CookieHeaderValue_ParseStrictList_ThrowsForAnyInvalidValues(IList<CookieHeaderValue> cookies, string[] input)
+        public void CookieHeaderValue_ParseStrictList_ThrowsForAnyInvalidValues(
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
+            IList<CookieHeaderValue> cookies,
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
+            string[] input)
         {
             Assert.Throws<FormatException>(() => CookieHeaderValue.ParseStrictList(input));
         }
 
         [Theory]
         [MemberData(nameof(ListWithInvalidCookieHeaderDataSet))]
-        public void CookieHeaderValue_TryParseStrictList_FailsForAnyInvalidValues(IList<CookieHeaderValue> cookies, string[] input)
+        public void CookieHeaderValue_TryParseStrictList_FailsForAnyInvalidValues(
+#pragma warning disable xUnit1026 // Theory methods should use all of their parameters
+            IList<CookieHeaderValue> cookies, 
+#pragma warning restore xUnit1026 // Theory methods should use all of their parameters
+            string[] input)
         {
-            IList<CookieHeaderValue> results;
-            var result = CookieHeaderValue.TryParseStrictList(input, out results);
+            var result = CookieHeaderValue.TryParseStrictList(input, out var results);
             Assert.Null(results);
             Assert.False(result);
         }

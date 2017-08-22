@@ -283,7 +283,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
 
             return new MemoryStream(data.ToArray());
         }
-        private static IEnumerable<object[]> HttpRequestNullData()
+
+        public static IEnumerable<object[]> HttpRequestNullData()
         {
             yield return new object[] { null, Encoding.UTF8, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
             yield return new object[] { new MemoryStream(), null, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
@@ -291,7 +292,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             yield return new object[] { new MemoryStream(), Encoding.UTF8, ArrayPool<byte>.Shared, null };
         }
 
-        private static IEnumerable<object[]> HttpRequestDisposeData()
+        public static IEnumerable<object[]> HttpRequestDisposeData()
         {
             yield return new object[] { new Action<HttpRequestStreamReader>((httpRequestStreamReader) =>
             {

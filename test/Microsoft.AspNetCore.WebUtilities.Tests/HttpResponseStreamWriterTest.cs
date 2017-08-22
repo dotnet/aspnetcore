@@ -521,7 +521,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             }
         }
 
-        private static IEnumerable<object[]> HttpResponseStreamWriterData()
+        public static IEnumerable<object[]> HttpResponseStreamWriterData()
         {
             yield return new object[] { null, Encoding.UTF8, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
             yield return new object[] { new MemoryStream(), null, ArrayPool<byte>.Shared, ArrayPool<char>.Shared };
@@ -529,7 +529,7 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
             yield return new object[] { new MemoryStream(), Encoding.UTF8, ArrayPool<byte>.Shared, null };
         }
 
-        private static IEnumerable<object[]> HttpResponseDisposeData()
+        public static IEnumerable<object[]> HttpResponseDisposeData()
         {
             yield return new object[] { new Action<HttpResponseStreamWriter>((httpResponseStreamWriter) =>
             {
@@ -549,7 +549,8 @@ namespace Microsoft.AspNetCore.WebUtilities.Test
                 httpResponseStreamWriter.Flush();
             })};
         }
-        private static IEnumerable<object[]> HttpResponseDisposeDataAsync()
+
+        public static IEnumerable<object[]> HttpResponseDisposeDataAsync()
         {
             yield return new object[] { new Func<HttpResponseStreamWriter, Task>(async (httpResponseStreamWriter) =>
             {
