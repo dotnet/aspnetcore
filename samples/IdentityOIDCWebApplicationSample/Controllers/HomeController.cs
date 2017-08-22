@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using IdentityOIDCWebApplicationSample.Models;
+using Microsoft.Net.Http.Headers;
 
 namespace IdentityOIDCWebApplicationSample.Controllers
 {
@@ -24,9 +25,7 @@ namespace IdentityOIDCWebApplicationSample.Controllers
 
         public IActionResult Contact()
         {
-            ViewData["Message"] = "Your contact page.";
-
-            return View();
+            return Ok(new { Message = $"API Called with token {HttpContext.Request.Headers[HeaderNames.Authorization]}" });
         }
 
         public IActionResult Error()

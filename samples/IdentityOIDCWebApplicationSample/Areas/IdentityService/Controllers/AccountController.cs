@@ -1,4 +1,5 @@
-﻿using System.Linq;
+﻿using System;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using IdentityOIDCWebApplicationSample.Identity.Models;
@@ -9,8 +10,10 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.Service;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace IdentityOIDCWebApplicationSample.Identity.Controllers
 {
@@ -41,6 +44,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
         }
 
         [HttpGet]
+        [MsalFilter]
         public async Task<IActionResult> Login(string returnUrl = null)
         {
             // Clear the existing external cookie to ensure a clean login process
@@ -48,6 +52,25 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
 
             ViewData["ReturnUrl"] = returnUrl;
             return View();
+        }
+
+        [AttributeUsage(System.AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
+        sealed class MsalFilterAttribute : Attribute, IResultFilter
+        {
+            public void OnResultExecuted(ResultExecutedContext context)
+            {
+            }
+
+            public void OnResultExecuting(ResultExecutingContext context)
+            {
+                if(context.HttpContext.Request.Headers.TryGetValue(HeaderNames.UserAgent, out var header) &&
+                    header.Equals("Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.2; WOW64; Trident/7.0; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0)") &&
+                    context.Result is ViewResult view &&
+                    view.ViewName == null)
+                {
+                    view.ViewName = "Login.MSAL";
+                }
+            }
         }
 
         [HttpPost]
