@@ -83,6 +83,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         private HttpRequestTarget _requestTargetForm = HttpRequestTarget.Unknown;
         private Uri _absoluteRequestTarget;
+        private string _scheme = null;
 
         public Frame(FrameContext frameContext)
         {
@@ -338,7 +339,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             MaxRequestBodySize = ServerOptions.Limits.MaxRequestBodySize;
             AllowSynchronousIO = ServerOptions.AllowSynchronousIO;
             TraceIdentifier = null;
-            Scheme = null;
             Method = null;
             PathBase = null;
             Path = null;
@@ -362,19 +362,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             RequestHeaders = FrameRequestHeaders;
             ResponseHeaders = FrameResponseHeaders;
 
-            if (ConnectionFeatures != null)
+            if (_scheme == null)
             {
-                foreach (var feature in ConnectionFeatures)
-                {
-                    // Set the scheme to https if there's an ITlsConnectionFeature
-                    if (feature.Key == typeof(ITlsConnectionFeature))
-                    {
-                        Scheme = "https";
-                    }
-
-                    FastFeatureSet(feature.Key, feature.Value);
-                }
+                var tlsFeature = ConnectionFeatures?[typeof(ITlsConnectionFeature)];
+                _scheme = tlsFeature != null ? "https" : "http";
             }
+
+            Scheme = _scheme;
 
             _manuallySetRequestAbortToken = null;
             _abortedCts = null;

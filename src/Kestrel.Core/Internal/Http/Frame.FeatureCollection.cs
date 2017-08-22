@@ -251,13 +251,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         object IFeatureCollection.this[Type key]
         {
-            get => FastFeatureGet(key);
+            get => FastFeatureGet(key) ?? ConnectionFeatures?[key];
             set => FastFeatureSet(key, value);
         }
 
         TFeature IFeatureCollection.Get<TFeature>()
         {
-            return (TFeature)FastFeatureGet(typeof(TFeature));
+            return (TFeature)(FastFeatureGet(typeof(TFeature)) ?? ConnectionFeatures?[typeof(TFeature)]);
         }
 
         void IFeatureCollection.Set<TFeature>(TFeature instance)
