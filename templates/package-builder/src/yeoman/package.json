@@ -1,12 +1,9 @@
 {
   "name": "generator-aspnetcore-spa",
   "version": "1.0.0",
-  "description": "Single-Page App templates for ASP.NET Core",
+  "description": "DEPRECATED. Do not use. Use 'dotnet new' to create ASP.NET Core Single-Page Application projects instead.",
   "author": "Microsoft",
   "license": "Apache-2.0",
-  "files": [
-    "app"
-  ],
   "keywords": [
     "yeoman-generator"
   ],
@@ -18,12 +15,5 @@
     "url": "https://github.com/aspnet/JavaScriptServices.git"
   },
   "dependencies": {
-    "chalk": "^1.1.3",
-    "glob": "^7.0.3",
-    "node-uuid": "^1.4.7",
-    "to-pascal-case": "^1.0.0",
-    "yeoman-generator": "^0.20.2",
-    "yeoman-option-or-prompt": "^1.0.2",
-    "yosay": "^1.1.1"
   }
 }

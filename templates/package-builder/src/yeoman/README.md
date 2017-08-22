@@ -1,14 +1,15 @@
-Generates ASP.NET Core projects for single-page applications.
+# Please use "dotnet new" templates instead
 
-Can generate projects with:
+As of .NET Core 2.0, it's no longer necessary to use Yeoman to create new Single-Page Application projects.
 
- * Angular
- * Aurelia
- * Knockout
- * React
- * React with Redux
- * Vue
+Using the .NET Core 2.0 SDK, you can run any of the following commands in an empty directory, without needing to install any external packages first:
 
-For more information about features and usage, see [this blog post](https://blogs.msdn.microsoft.com/webdev/2017/02/14/building-single-page-applications-on-asp-net-core-with-javascriptservices/).
+ * `dotnet new angular`
+ * `dotnet new react`
+ * `dotnet new redux`
 
-To learn more about the underlying technologies, or to report any issues, see [this project's GitHub repo](https://github.com/aspnet/JavaScriptServices).
+Or, if you want to create an Aurelia, Knockout, or Vue application, you should run `dotnet new --install Microsoft.AspNetCore.SpaTemplates::*` first. This will add `aurelia`, `knockout`, and `vue` templates to `dotnet new`.
+
+#### This Yeoman generator is DEPRECATED
+
+Please don't use `generator-aspnetcore-spa` to create new projects. Its output is outdated and no longer maintained. Instead, use `dotnet new` as described above (or if you're on Windows and use Visual Studio, you can just use *File->New Project* to create Angular, React, or React+Redux projects).
