@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
 
                 // Assert
                 contextMock.VerifyGet(c => c.Request.Query, Times.AtLeastOnce());
-                Assert.True(response.Contains("<title>ASP.NET Core Logs</title>"));
+                Assert.Contains("<title>ASP.NET Core Logs</title>", response);
             }
         }
 
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
 
                 // Assert
                 contextMock.VerifyGet(c => c.Request.Query, Times.AtLeastOnce());
-                Assert.True(response.Contains("Invalid Id"));
+                Assert.Contains("Invalid Id", response);
             }
         }
 

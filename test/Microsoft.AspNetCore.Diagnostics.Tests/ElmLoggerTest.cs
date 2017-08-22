@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             var store = t.Item2;
 
             var testThread = new TestThread(logger);
-            Thread workerThread = new Thread(testThread.work);
+            Thread workerThread = new Thread(testThread.Work);
 
             // Act
             workerThread.Start();
@@ -168,7 +168,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
             var store = t.Item2;
 
             var testThread = new TestThread(logger);
-            Thread workerThread = new Thread(testThread.work);
+            Thread workerThread = new Thread(testThread.Work);
 
             // Act
             workerThread.Start();
@@ -193,11 +193,11 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
                 .Root;
             Assert.NotNull(root2);
 
-            Assert.Equal(0, root1.Children.Count);
+            Assert.Empty(root1.Children);
             Assert.Equal(2, root1.Messages.Count);
-            Assert.Equal(1, root2.Children.Count);
+            Assert.Single(root2.Children);
             Assert.Equal(12, root2.Messages.Count);
-            Assert.Equal(0, root2.Children.First().Children.Count);
+            Assert.Empty(root2.Children.First().Children);
             Assert.Equal(3, root2.Children.First().Messages.Count);
         }
 
@@ -327,7 +327,7 @@ namespace Microsoft.AspNetCore.Diagnostics.Tests
                 _logger = logger;
             }
 
-            public void work()
+            public void Work()
             {
                 using (_logger.BeginScope("test12"))
                 {
