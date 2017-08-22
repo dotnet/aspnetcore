@@ -344,34 +344,7 @@ Example - The following `Completion` message is a protocol error because it has 
 
 Items in the arguments array within the `Invocation` message type, as well as the `item` value of the `StreamItem` message and the `result` value of the `Completion` message, encode values which have meaning to each particular Binder. A general guideline for encoding/decoding these values is provided in the "Type Mapping" section at the end of this document, but Binders should provide configuration to applications to allow them to customize these mappings. These mappings need not be self-describing, because when decoding the value, the Binder is expected to know the destination type (by looking up the definition of the method indicated by the Target).
 
-JSON payloads are wrapped in an outer message framing to support batching over various transports and to ease the parsing.
-
-#### Text-based encoding
-
-The body will be formatted as below and encoded in UTF-8. Identifiers in square brackets `[]` indicate fields defined below, and parenthesis `()` indicate grouping.
-
-```
-([Length]:[Body];)([Length]:[Body];)... continues until end of the connection ...
-```
-
-* `[Length]` - Length of the `[Body]` field in bytes, specified as UTF-8 digits (`0`-`9`, terminated by `:`). If the body is a binary frame, this length indicates the number of Base64-encoded characters, not the number of bytes in the final decoded message!
-* `[Body]` - The body of the message, the content of which depends upon the value of `[Type]`
-
-Note: If there is no `[Body]` for a frame, there does still need to be a `:` and `;` delimiting the body. So, for example, the following is an encoding of a single text frame `A`: `1:A;`
-
-For example, when sending the following frames (`\n` indicates the actual Line Feed character, not an escape sequence):
-
-* "Hello\nWorld"
-* `<<no body>>`
-
-The encoding will be as follows
-
-```
-11:Hello
-World;0:;
-```
-
-Note that the final frame still ends with the `;` terminator, and that since the body may contain `;`, newlines, etc., the length is specified in order to know exactly where the body ends.
+JSON payloads are separated with the record separator (0x1e) to ease the parsing.
 
 ## MessagePack (MsgPack) encoding
 
@@ -642,3 +615,23 @@ The encoding will be as follows, as a list of binary digits in hex (text in pare
 0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x02                (start of frame; 64-bit integer value: 2)
 0x01 0x02                                              (body)
 ```
+
+#### Binary encoding over text protocols
+
+In case of sending messages using binary encoding over text transports (e.g. ServerSentEvents transport) messages should be Base64 encoded and use the following format:
+
+```
+([Length]:[Body];)([Length]:[Body];)... continues until end of the connection ...
+```
+* `[Length]` - Length of the `[Body]` field in bytes, specified as UTF-8 digits (`0`-`9`, terminated by `:`). indicating the number of Base64-encoded characters (not the number of bytes in the final decoded message).
+* `[Body]` - Base64-encoded message
+
+For example the following MsgPack payload (note: the payload consists of the length prefix and the MsgPack message):
+
+0x00 0x00 0x00 0x00 0x00 0x00 0x10 0x95 0x01 0xa1 0x31 0xc3 0xa8 0x4d 0x79 0x4d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+
+will look like this:
+
+32:AAAAAAAAABCVAaExw6hNeU1ldGhvZJEq;
+
+when sending over a text transport.
