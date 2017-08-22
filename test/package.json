@@ -23,8 +23,7 @@
     "selenium-standalone": "^5.9.0",
     "tree-kill": "^1.1.0",
     "typescript": "^2.1.4",
-    "webdriverio": "^4.5.0",
-    "yo": "^1.8.5"
+    "webdriverio": "^4.5.0"
   },
   "devDependencies": {
     "wdio-junit-reporter": "^0.2.0",

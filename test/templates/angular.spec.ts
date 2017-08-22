@@ -1,21 +1,24 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import * as rimraf from 'rimraf';
 import { expect } from 'chai';
-import { generateProjectSync } from './util/yeoman';
+import { generateProjectSync } from './util/dotnetnew';
 import { AspNetProcess, AspNetCoreEnviroment, defaultUrl, publishProjectSync } from './util/aspnet';
 import { getValue, getCssPropertyValue } from './util/webdriverio';
 
-// First, generate a new project using the locally-built generator-aspnetcore-spa
+// First, generate a new project using the locally-built templates package
 // Do this outside the Mocha fixture, otherwise Mocha will time out
 const appDir = path.resolve(__dirname, '../generated/angular');
 const publishedAppDir = path.resolve(appDir, './bin/Release/published');
+const publishedAppDllName = path.basename(appDir) + '.dll';
 if (!process.env.SKIP_PROJECT_GENERATION) {
-    generateProjectSync(appDir, {
-        framework: 'angular',
-        name: 'Test App',
-        tests: true
-    });
+    generateProjectSync(appDir, 'angular');
     publishProjectSync(appDir, publishedAppDir);
+
+    // Clear out any artifacts produced during publishing so they don't affect
+    // the dev-mode application
+    rimraf.sync(path.join(appDir, 'ClientApp/dist'));
+    rimraf.sync(path.join(appDir, 'wwwroot/dist'));
 }
 
 function testBasicNavigation() {
@@ -95,6 +98,6 @@ describe('Angular template: dev mode', () => {
 });
 
 describe('Angular template: production mode', () => {
-    AspNetProcess.RunInMochaContext(publishedAppDir, AspNetCoreEnviroment.production, 'TestApp.dll');
+    AspNetProcess.RunInMochaContext(publishedAppDir, AspNetCoreEnviroment.production, publishedAppDllName);
     testBasicNavigation();
 });
