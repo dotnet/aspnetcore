@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             var filters = server.Host.Services.GetServices<IStartupFilter>()
                 .OfType<IISSetupFilter>();
 
-            Assert.Equal(1, filters.Count());
+            Assert.Single(filters);
         }
     }
 }
