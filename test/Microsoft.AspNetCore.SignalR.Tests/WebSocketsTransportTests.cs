@@ -83,7 +83,19 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var sendTcs = new TaskCompletionSource<object>();
                 connectionToTransport.Out.TryWrite(new SendMessage(new byte[] { 0x42 }, sendTcs));
-                await sendTcs.Task;
+                try
+                {
+                    await sendTcs.Task;
+                }
+                catch (OperationCanceledException)
+                {
+                    // Because the server and client are run in the same process there is a race where websocket.SendAsync
+                    // can send a message but before returning be suspended allowing the server to run the EchoEndpoint and
+                    // send a close frame which triggers a cancellation token on the client and cancels the websocket.SendAsync.
+                    // Our solution to this is to just catch OperationCanceledException from the sent message if the race happens
+                    // because we know the send went through, and its safe to check the response.
+                }
+
                 // The echo endpoint closes the connection immediately after sending response which should stop the transport
                 await webSocketsTransport.Running.OrTimeout();
 
