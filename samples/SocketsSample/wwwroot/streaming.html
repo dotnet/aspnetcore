@@ -35,6 +35,7 @@
             let connectButton = document.getElementById('connectButton');
             let disconnectButton = document.getElementById('disconnectButton');
 
+            let logger = new signalR.ConsoleLogger(signalR.LogLevel.Information);
             let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
 
             let invocationCounter = 0;
@@ -53,8 +54,8 @@
             });
 
             click('connectButton', function () {
-                let http = new signalR.HttpConnection(url, { transport: transportType });
-                connection = new signalR.HubConnection(http);
+                let http = new signalR.HttpConnection(url, { transport: transportType, logger: logger });
+                connection = new signalR.HubConnection(http, logger);
 
                 connection.onClosed = function () {
                     channelButton.disabled = true;
