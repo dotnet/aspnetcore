@@ -1,5 +1,5 @@
-To generator the Yeoman generator, execute:
+To generator the package generator, execute:
 
     npm run build
 
-Output will appear in the `generator-aspnetcore-spa` directory.
+Output will appear in the `dist/artifacts` directory.

@@ -1,11 +1,11 @@
 {
   "name": "generator-aspnetcore-spa-generator",
   "version": "1.0.0",
-  "description": "Creates the Yeoman generator and 'dotnet new' package for ASP.NET Core SPA templates",
+  "description": "Creates the 'dotnet new' package for ASP.NET Core SPA templates",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "build": "tsc && node ./tmp/build/build.js"
+    "build": "tsc && node ./tmp/build.js"
   },
   "author": "Microsoft",
   "license": "Apache-2.0",
@@ -28,7 +28,6 @@
     "@types/node": "^6.0.45",
     "@types/node-uuid": "0.0.28",
     "@types/rimraf": "0.0.28",
-    "@types/yeoman-generator": "0.0.30",
     "typescript": "^2.0.0"
   }
 }

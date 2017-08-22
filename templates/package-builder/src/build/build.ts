@@ -10,7 +10,6 @@ import * as targz from 'tar.gz';
 
 const isWindows = /^win/.test(process.platform);
 const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', '.csproj', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx'];
-const yeomanGeneratorSource = './src/yeoman';
 const webToolsVSPackageGuid = '{0CD94836-1526-4E85-87D3-FB5274C5AFC9}';
 
 const dotNetPackages = {
@@ -98,31 +97,6 @@ function getBuildNumber(): string {
 
     // For local builds, use timestamp
     return Math.floor((new Date().valueOf() - new Date(2017, 0, 1).valueOf()) / (60*1000)) + '-local';
-}
-
-function buildYeomanNpmPackage(outputRoot: string) {
-    const outputTemplatesRoot = path.join(outputRoot, 'app/templates');
-    rimraf.sync(outputTemplatesRoot);
-
-    // Copy template files
-    const filenameReplacements = [
-        { from: /.*\.csproj$/, to: 'tokenreplace-namePascalCase.csproj' }
-    ];
-    const contentReplacements = [
-        // Currently, there are none
-    ];
-    _.forEach(templates, (templateConfig, templateName) => {
-        const outputDir = path.join(outputTemplatesRoot, templateName);
-        writeTemplate(templateConfig.dir, outputDir, contentReplacements, filenameReplacements);
-    });
-
-    // Also copy the generator files (that's the compiled .js files, plus all other non-.ts files)
-    const tempRoot = './tmp';
-    copyRecursive(path.join(tempRoot, 'yeoman'), outputRoot, '**/*.js');
-    copyRecursive(yeomanGeneratorSource, outputRoot, '**/!(*.ts)');
-
-    // Clean up
-    rimraf.sync(tempRoot);
 }
 
 function buildDotNetNewNuGetPackages(outputDir: string) {
@@ -275,12 +249,10 @@ function buildDotNetNewNuGetPackage(packageId: string) {
     });
 
     // Create the .nuspec file
-    const yeomanPackageVersion = JSON.parse(fs.readFileSync(path.join(yeomanGeneratorSource, 'package.json'), 'utf8')).version;
     const nuspecContentTemplate = fs.readFileSync(`./src/dotnetnew/${ packageId }.nuspec`);
     writeFileEnsuringDirExists(outputRoot,
         `${ packageId }.nuspec`,
         applyContentReplacements(nuspecContentTemplate, [
-            { from: /\{yeomanversion\}/g, to: yeomanPackageVersion },
             { from: /\{buildnumber\}/g, to: getBuildNumber() },
         ])
     );
@@ -313,16 +285,7 @@ function runPrepublishScripts(rootDir: string, scripts: string[]) {
 
 const distDir = './dist';
 const artifactsDir = path.join(distDir, 'artifacts');
-const yeomanOutputRoot = path.join(distDir, 'generator-aspnetcore-spa');
 
 rimraf.sync(distDir);
 mkdirp.sync(artifactsDir);
-buildYeomanNpmPackage(yeomanOutputRoot);
 buildDotNetNewNuGetPackages(artifactsDir);
-
-// Finally, create a .tar.gz file containing the built generator-aspnetcore-spa.
-// The CI system can treat this as the final built artifact.
-// Note that the targz APIs only come in async flavor.
-targz().compress(yeomanOutputRoot, path.join(artifactsDir, 'generator-aspnetcore-spa.tar.gz'), err => {
-    if (err) { throw err; }
-});
