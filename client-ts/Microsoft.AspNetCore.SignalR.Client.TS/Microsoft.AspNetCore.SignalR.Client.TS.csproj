@@ -52,7 +52,7 @@
       Command="git checkout HEAD -- $(MSBuildThisFileDirectory)../package-lock.json"
       Condition="$(IsGitRepository) AND '$(VersionSuffix)' != ''" />
     <ItemGroup>
-      <TSClient Include="$(MSBuildThisFileDirectory)../signalr-client*.tgz" />
+      <TSClient Include="$(MSBuildThisFileDirectory)../aspnet-signalr-client*.tgz" />
     </ItemGroup>
     <Move SourceFiles="@(TSClient)" DestinationFolder="$(PackageOutputPath)" />
   </Target>
