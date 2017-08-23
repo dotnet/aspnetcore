@@ -4,6 +4,10 @@
   "description": "DEPRECATED. Do not use. Use 'dotnet new' to create ASP.NET Core Single-Page Application projects instead.",
   "author": "Microsoft",
   "license": "Apache-2.0",
+  "files": [
+    "app",
+    "README.md"
+  ],
   "keywords": [
     "yeoman-generator"
   ],
@@ -15,5 +19,8 @@
     "url": "https://github.com/aspnet/JavaScriptServices.git"
   },
   "dependencies": {
+    "marked": "^0.3.6",
+    "marked-terminal": "^2.0.0",
+    "yeoman-generator": "^1.0.0"
   }
 }
