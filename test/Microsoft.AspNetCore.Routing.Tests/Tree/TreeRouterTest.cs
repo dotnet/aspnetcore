@@ -1819,8 +1819,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             Assert.Empty(context.RouteData.Routers);
 
-            Assert.Equal(1, nestedRouters.Count);
-            Assert.Equal(next.Object.GetType(), nestedRouters[0].GetType());
+            var router = Assert.Single(nestedRouters);
+            Assert.Equal(next.Object.GetType(), router.GetType());
         }
 
         [Fact]
@@ -1861,8 +1861,8 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             Assert.Empty(context.RouteData.Routers);
 
-            Assert.Equal(1, nestedRouters.Count);
-            Assert.Equal(next.Object.GetType(), nestedRouters[0].GetType());
+            var router = Assert.Single(nestedRouters);
+            Assert.Equal(next.Object.GetType(), router.GetType());
         }
 
         [Fact]
