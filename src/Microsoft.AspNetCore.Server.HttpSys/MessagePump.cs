@@ -25,9 +25,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private int _acceptorCounts;
         private Action<object> _processRequest;
 
-        private bool _stopping;
+        private volatile int _stopping;
         private int _outstandingRequests;
-        private TaskCompletionSource<object> _shutdownSignal;
+        private readonly TaskCompletionSource<object> _shutdownSignal = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+        private int _shutdownSignalCompleted;
 
         private readonly ServerAddressesFeature _serverAddresses;
 
@@ -56,12 +57,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             _processRequest = new Action<object>(ProcessRequestAsync);
             _maxAccepts = _options.MaxAccepts;
-            _shutdownSignal = new TaskCompletionSource<object>();
         }
 
         internal HttpSysListener Listener { get; }
 
         public IFeatureCollection Features { get; }
+
+        private bool Stopping => _stopping == 1;
 
         public Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {
@@ -146,7 +148,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private async void ProcessRequestsWorker()
         {
             int workerIndex = Interlocked.Increment(ref _acceptorCounts);
-            while (!_stopping && workerIndex <= _maxAccepts)
+            while (!Stopping && workerIndex <= _maxAccepts)
             {
                 // Receive a request
                 RequestContext requestContext;
@@ -156,8 +158,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 catch (Exception exception)
                 {
-                    Contract.Assert(_stopping);
-                    if (_stopping)
+                    Contract.Assert(Stopping);
+                    if (Stopping)
                     {
                         LogHelper.LogDebug(_logger, "ListenForNextRequestAsync-Stopping", exception);
                     }
@@ -186,7 +188,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var requestContext = requestContextObj as RequestContext;
             try
             {
-                if (_stopping)
+                if (Stopping)
                 {
                     SetFatalResponse(requestContext, 503);
                     return;
@@ -227,7 +229,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 finally
                 {
-                    if (Interlocked.Decrement(ref _outstandingRequests) == 0 && _stopping)
+                    if (Interlocked.Decrement(ref _outstandingRequests) == 0 && Stopping)
                     {
                         LogHelper.LogInfo(_logger, "All requests drained.");
                         _shutdownSignal.TrySetResult(0);
@@ -250,28 +252,51 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            _stopping = true;
-            // Wait for active requests to drain
-            if (_outstandingRequests > 0)
+            void RegisterCancelation()
             {
-                LogHelper.LogInfo(_logger, "Stopping, waiting for " + _outstandingRequests + " request(s) to drain.");
-
-                var waitForStop = new TaskCompletionSource<object>();
                 cancellationToken.Register(() =>
                 {
-                    LogHelper.LogInfo(_logger, "Timed out, terminating " + _outstandingRequests + " request(s).");
-                    waitForStop.TrySetResult(0);
+                    if (Interlocked.Exchange(ref _shutdownSignalCompleted, 1) == 0)
+                    {
+                        LogHelper.LogInfo(_logger, "Canceled, terminating " + _outstandingRequests + " request(s).");
+                        _shutdownSignal.TrySetResult(null);
+                    }
                 });
-
-                return Task.WhenAny(_shutdownSignal.Task, waitForStop.Task);
             }
 
-            return Task.CompletedTask;
+            if (Interlocked.Exchange(ref _stopping, 1) == 1)
+            {
+                RegisterCancelation();
+
+                return _shutdownSignal.Task;
+            }
+
+            try
+            {
+                // Wait for active requests to drain
+                if (_outstandingRequests > 0)
+                {
+                    LogHelper.LogInfo(_logger, "Stopping, waiting for " + _outstandingRequests + " request(s) to drain.");
+                    RegisterCancelation();
+                }
+                else
+                {
+                    _shutdownSignal.TrySetResult(null);
+                }
+            }
+            catch (Exception ex)
+            {
+                _shutdownSignal.TrySetException(ex);
+            }
+
+            return _shutdownSignal.Task;
         }
 
         public void Dispose()
         {
-            _stopping = true;
+            _stopping = 1;
+            _shutdownSignal.TrySetResult(null);
+
             Listener.Dispose();
         }
 
