@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
                 Assert.Equal(HttpStatusCode.Moved, response.StatusCode);
                 Assert.Equal(requestUrl + "/" + queryString, response.Headers.GetValues("Location").FirstOrDefault());
-                Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+                Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }
 

@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.StaticFiles
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
                 Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
-                Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+                Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
             }
         }
 
@@ -187,7 +187,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             }
         }
 
-        public static IEnumerable<string[]> MissingFiles => new[]
+        public static IEnumerable<object[]> MissingFiles => new[]
         {
             new[] {"", @".", "/missing.file"},
             new[] {"/subdir", @".", "/subdir/missing.file"},
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.StaticFiles
             new[] {"", @"./", "/xunit.xml"}
         };
 
-        public static IEnumerable<string[]> ExistingFiles => new[]
+        public static IEnumerable<object[]> ExistingFiles => new[]
         {
             new[] {"", @".", "/TestDocument.txt"},
             new[] {"/somedir", @".", "/somedir/TestDocument.txt"},

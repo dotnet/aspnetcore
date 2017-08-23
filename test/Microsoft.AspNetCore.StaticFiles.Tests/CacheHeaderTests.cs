@@ -412,13 +412,13 @@ namespace Microsoft.AspNetCore.StaticFiles
         }
 
 
-        public static IEnumerable<object> SupportedMethods => new[]
+        public static IEnumerable<object[]> SupportedMethods => new[]
         {
             new [] { HttpMethod.Get },
             new [] { HttpMethod.Head }
         };
 
-        public static IEnumerable<object> UnsupportedMethods => new[]
+        public static IEnumerable<object[]> UnsupportedMethods => new[]
         {
             new [] { HttpMethod.Post },
             new [] { HttpMethod.Put },

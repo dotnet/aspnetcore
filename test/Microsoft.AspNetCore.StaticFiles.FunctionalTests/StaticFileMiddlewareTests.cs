@@ -146,12 +146,12 @@ namespace Microsoft.AspNetCore.StaticFiles
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                     Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
                     Assert.True(response.Content.Headers.ContentLength == fileInfo.Length);
-                    Assert.Equal(0, (await response.Content.ReadAsByteArrayAsync()).Length);
+                    Assert.Empty((await response.Content.ReadAsByteArrayAsync()));
                 }
             }
         }
 
-        public static IEnumerable<string[]> ExistingFiles => new[]
+        public static IEnumerable<object[]> ExistingFiles => new[]
         {
             new[] {"", @".", "/TestDocument.txt"},
             new[] {"/somedir", @".", "/somedir/TestDocument.txt"},
