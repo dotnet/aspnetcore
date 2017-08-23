@@ -11,11 +11,11 @@
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
-      "path": "WebApplicationBasic.csproj"
+      "path": "VueSpa.csproj"
     }
   ],
   "shortName": "vue",
-  "sourceName": "WebApplicationBasic",
+  "sourceName": "VueSpa",
   "sources": [
     {
       "source": "./",

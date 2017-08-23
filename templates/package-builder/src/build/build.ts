@@ -9,17 +9,11 @@ import * as childProcess from 'child_process';
 import * as targz from 'tar.gz';
 
 const isWindows = /^win/.test(process.platform);
-const textFileExtensions = ['.gitignore', '.config', '.cs', '.cshtml', '.csproj', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx'];
 
 const dotNetPackages = [
     'Microsoft.DotNet.Web.Spa.ProjectTemplates',
     'Microsoft.AspNetCore.SpaTemplates'
 ];
-
-function isTextFile(filename: string): boolean {
-    return textFileExtensions.indexOf(path.extname(filename).toLowerCase()) >= 0
-        || textFileExtensions.indexOf(path.basename(filename)) >= 0;
-}
 
 function writeFileEnsuringDirExists(root: string, filename: string, contents: string | Buffer) {
     let fullPath = path.join(root, filename);
@@ -45,18 +39,9 @@ function applyContentReplacements(sourceContent: Buffer, contentReplacements: { 
     return new Buffer(sourceText, 'utf8');
 }
 
-function writeTemplate(sourceRoot: string, destRoot: string, contentReplacements: { from: RegExp, to: string }[], filenameReplacements: { from: RegExp, to: string }[]) {
+function writeTemplate(sourceRoot: string, destRoot: string) {
     listFilesExcludingGitignored(sourceRoot).forEach(fn => {
         let sourceContent = fs.readFileSync(path.join(sourceRoot, fn));
-        if (isTextFile(fn)) {
-            sourceContent = applyContentReplacements(sourceContent, contentReplacements);
-        }
-
-        // Also apply replacements in filenames
-        filenameReplacements.forEach(replacement => {
-            fn = fn.replace(replacement.from, replacement.to);
-        });
-
         writeFileEnsuringDirExists(destRoot, fn, sourceContent);
     });
 }
@@ -93,20 +78,13 @@ function buildDotNetNewNuGetPackage(packageId: string) {
     rimraf.sync(outputRoot);
 
     // Copy template files
-    const sourceProjectName = 'WebApplicationBasic';
-    const projectGuid = '00000000-0000-0000-0000-000000000000';
-    const filenameReplacements = [
-        { from: /.*\.csproj$/, to: `${sourceProjectName}.csproj` }
-    ];
-    const contentReplacements = [];
-
     const packageSourceRootDir = path.join('../', packageId);
     const templatesInPackage = fs.readdirSync(path.join(packageSourceRootDir, 'Content'));
 
     _.forEach(templatesInPackage, templateName => {
         const templateSourceDir = path.join(packageSourceRootDir, 'Content', templateName);
         const templateOutputDir = path.join(outputRoot, 'Content', templateName);
-        writeTemplate(templateSourceDir, templateOutputDir, contentReplacements, filenameReplacements);
+        writeTemplate(templateSourceDir, templateOutputDir);
     });
 
     // Create the .nuspec file

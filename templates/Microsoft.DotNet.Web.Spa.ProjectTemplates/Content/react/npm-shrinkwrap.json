@@ -1,5 +1,5 @@
 {
-  "name": "WebApplicationBasic",
+  "name": "ReactSpa",
   "version": "0.0.0",
   "dependencies": {
     "@types/history": {

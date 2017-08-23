@@ -11,11 +11,11 @@
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
-      "path": "WebApplicationBasic.csproj"
+      "path": "ReactSpa.csproj"
     }
   ],
   "shortName": "react",
-  "sourceName": "WebApplicationBasic",
+  "sourceName": "ReactSpa",
   "sources": [
     {
       "source": "./",

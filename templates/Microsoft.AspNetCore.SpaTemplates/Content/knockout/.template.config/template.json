@@ -11,11 +11,11 @@
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
-      "path": "WebApplicationBasic.csproj"
+      "path": "KnockoutSpa.csproj"
     }
   ],
   "shortName": "knockout",
-  "sourceName": "WebApplicationBasic",
+  "sourceName": "KnockoutSpa",
   "sources": [
     {
       "source": "./",

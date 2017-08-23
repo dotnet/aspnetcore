@@ -11,11 +11,11 @@
   "preferNameDirectory": true,
   "primaryOutputs": [
     {
-      "path": "WebApplicationBasic.csproj"
+      "path": "AureliaSpa.csproj"
     }
   ],
   "shortName": "aurelia",
-  "sourceName": "WebApplicationBasic",
+  "sourceName": "AureliaSpa",
   "sources": [
     {
       "source": "./",
