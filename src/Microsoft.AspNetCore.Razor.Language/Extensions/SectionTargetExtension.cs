@@ -22,9 +22,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 .Write(node.SectionName)
                 .Write("\", ");
 
-            using (context.CodeWriter.BuildAsyncLambda(DefaultWriterName))
+            if (context.Options.DesignTime)
             {
-                context.RenderChildren(node);
+                using (context.CodeWriter.BuildAsyncLambda(DefaultWriterName))
+                {
+                    context.RenderChildren(node);
+                }
+            }
+            else
+            {
+                using (context.CodeWriter.BuildAsyncLambda())
+                {
+                    context.RenderChildren(node);
+                }
             }
 
             context.CodeWriter.WriteEndMethodInvocation(endLine: true);

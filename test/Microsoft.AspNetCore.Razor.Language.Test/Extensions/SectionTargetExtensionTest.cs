@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             extension.WriteSection(context, node);
 
             // Assert
-            var expected = @"CreateSection(""MySection"", async(__razor_section_writer) => {
+            var expected = @"CreateSection(""MySection"", async() => {
     Render Children
 }
 );

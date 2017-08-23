@@ -51,7 +51,7 @@ namespace AspNetCore
             BeginContext(117, 26, true);
             WriteLiteral("\r\n<div>Some body</div>\r\n\r\n");
             EndContext();
-            DefineSection("Section1", async(__razor_section_writer) => {
+            DefineSection("Section1", async() => {
                 BeginContext(162, 43, true);
                 WriteLiteral("\r\n    <div>This is in Section 1</div>\r\n    ");
                 EndContext();
