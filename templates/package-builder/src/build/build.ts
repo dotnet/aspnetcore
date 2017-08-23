@@ -11,24 +11,10 @@ import * as targz from 'tar.gz';
 const isWindows = /^win/.test(process.platform);
 const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', '.csproj', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx'];
 
-const dotNetPackages = {
-    builtIn: 'Microsoft.DotNet.Web.Spa.ProjectTemplates',
-    extra: 'Microsoft.AspNetCore.SpaTemplates'
-};
-
-interface TemplateConfig {
-    dir: string;
-    dotNetPackageId: string;
-}
-
-const templates: { [key: string]: TemplateConfig } = {
-    'angular': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/AngularSpa/' },
-    'aurelia': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/AureliaSpa/' },
-    'knockout': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/KnockoutSpa/' },
-    'react-redux': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/ReactReduxSpa/' },
-    'react': { dotNetPackageId: dotNetPackages.builtIn, dir: '../../templates/ReactSpa/' },
-    'vue': { dotNetPackageId: dotNetPackages.extra, dir: '../../templates/VueSpa/' }
-};
+const dotNetPackages = [
+    'Microsoft.DotNet.Web.Spa.ProjectTemplates',
+    'Microsoft.AspNetCore.SpaTemplates'
+];
 
 function isTextFile(filename: string): boolean {
     return textFileExtensions.indexOf(path.extname(filename).toLowerCase()) >= 0
@@ -117,18 +103,18 @@ function buildDotNetNewNuGetPackage(packageId: string) {
         { from: /\btemplate_gitignore$/, to: '.gitignore' }
     ];
     const contentReplacements = [];
-    _.forEach(templates, (templateConfig, templateName) => {
-        // Only include templates matching the output package ID
-        if (templateConfig.dotNetPackageId !== packageId) {
-            return;
-        }
 
+    const packageSourceRootDir = path.join('../', packageId);
+    const templatesInPackage = fs.readdirSync(path.join(packageSourceRootDir, 'Content'));
+
+    _.forEach(templatesInPackage, templateName => {
+        const templateSourceDir = path.join(packageSourceRootDir, 'Content', templateName);
         const templateOutputDir = path.join(outputRoot, 'Content', templateName);
-        writeTemplate(templateConfig.dir, templateOutputDir, contentReplacements, filenameReplacements);
+        writeTemplate(templateSourceDir, templateOutputDir, contentReplacements, filenameReplacements);
     });
 
     // Create the .nuspec file
-    const nuspecContentTemplate = fs.readFileSync(`./src/dotnetnew/${ packageId }.nuspec`);
+    const nuspecContentTemplate = fs.readFileSync(path.join(packageSourceRootDir, `${ packageId }.nuspec`));
     writeFileEnsuringDirExists(outputRoot,
         `${ packageId }.nuspec`,
         applyContentReplacements(nuspecContentTemplate, [

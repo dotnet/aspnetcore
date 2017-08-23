@@ -33,12 +33,12 @@ npm-debug.log
 # files with that name (https://github.com/npm/npm/issues/1862). So, each template instead has a template_gitignore
 # file which gets renamed after the files are copied. And so any files that need to be excluded in the source
 # repo have to be excluded here.
-/templates/*/node_modules/
-/templates/*/wwwroot/dist/
-/templates/*/ClientApp/dist/
-/templates/*/yarn.lock
+/templates/*/*/*/node_modules/
+/templates/*/*/*/wwwroot/dist/
+/templates/*/*/*/ClientApp/dist/
+/templates/*/*/*/yarn.lock
 .vscode/
 
-/templates/*/Properties/launchSettings.json
+/templates/*/*/*/Properties/launchSettings.json
 global.json
 korebuild-lock.txt
