@@ -9,7 +9,7 @@ import * as childProcess from 'child_process';
 import * as targz from 'tar.gz';
 
 const isWindows = /^win/.test(process.platform);
-const textFileExtensions = ['.gitignore', 'template_gitignore', '.config', '.cs', '.cshtml', '.csproj', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx'];
+const textFileExtensions = ['.gitignore', '.config', '.cs', '.cshtml', '.csproj', '.html', '.js', '.json', '.jsx', '.md', '.nuspec', '.ts', '.tsx'];
 
 const dotNetPackages = [
     'Microsoft.DotNet.Web.Spa.ProjectTemplates',
@@ -28,10 +28,7 @@ function writeFileEnsuringDirExists(root: string, filename: string, contents: st
 }
 
 function listFilesExcludingGitignored(root: string): string[] {
-    // Note that the gitignore files, prior to be written by the generator, are called 'template_gitignore'
-    // instead of '.gitignore'. This is a workaround for Yeoman doing strange stuff with .gitignore files
-    // (it renames them to .npmignore, which is not helpful).
-    let gitIgnorePath = path.join(root, 'template_gitignore');
+    let gitIgnorePath = path.join(root, '.gitignore');
     let gitignoreEvaluator = fs.existsSync(gitIgnorePath)
         ? gitignore.compile(fs.readFileSync(gitIgnorePath, 'utf8'))
         : { accepts: () => true };
@@ -99,8 +96,7 @@ function buildDotNetNewNuGetPackage(packageId: string) {
     const sourceProjectName = 'WebApplicationBasic';
     const projectGuid = '00000000-0000-0000-0000-000000000000';
     const filenameReplacements = [
-        { from: /.*\.csproj$/, to: `${sourceProjectName}.csproj` },
-        { from: /\btemplate_gitignore$/, to: '.gitignore' }
+        { from: /.*\.csproj$/, to: `${sourceProjectName}.csproj` }
     ];
     const contentReplacements = [];
 
