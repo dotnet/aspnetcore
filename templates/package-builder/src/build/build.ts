@@ -30,28 +30,11 @@ function listFilesExcludingGitignored(root: string): string[] {
         .filter(fn => gitignoreEvaluator.accepts(fn));
 }
 
-function applyContentReplacements(sourceContent: Buffer, contentReplacements: { from: RegExp, to: string }[]) {
-    let sourceText = sourceContent.toString('utf8');
-    contentReplacements.forEach(replacement => {
-        sourceText = sourceText.replace(replacement.from, replacement.to);
-    });
-
-    return new Buffer(sourceText, 'utf8');
-}
-
 function writeTemplate(sourceRoot: string, destRoot: string) {
     listFilesExcludingGitignored(sourceRoot).forEach(fn => {
         let sourceContent = fs.readFileSync(path.join(sourceRoot, fn));
         writeFileEnsuringDirExists(destRoot, fn, sourceContent);
     });
-}
-
-function copyRecursive(sourceRoot: string, destRoot: string, matchGlob: string) {
-    glob.sync(matchGlob, { cwd: sourceRoot, dot: true, nodir: true })
-        .forEach(fn => {
-            const sourceContent = fs.readFileSync(path.join(sourceRoot, fn));
-            writeFileEnsuringDirExists(destRoot, fn, sourceContent);
-        });
 }
 
 function getBuildNumber(): string {
@@ -88,23 +71,25 @@ function buildDotNetNewNuGetPackage(packageId: string) {
     });
 
     // Create the .nuspec file
-    const nuspecContentTemplate = fs.readFileSync(path.join(packageSourceRootDir, `${ packageId }.nuspec`));
+    const nuspecFilename = `${ packageId }.nuspec`;
+    const nuspecContentTemplate = fs.readFileSync(path.join(packageSourceRootDir, nuspecFilename));
     writeFileEnsuringDirExists(outputRoot,
-        `${ packageId }.nuspec`,
-        applyContentReplacements(nuspecContentTemplate, [
-            { from: /\{buildnumber\}/g, to: getBuildNumber() },
-        ])
+        nuspecFilename,
+        nuspecContentTemplate
     );
 
     // Invoke NuGet to create the final package
     const nugetExe = path.join(process.cwd(), './bin/NuGet.exe');
     const nugetStartInfo = { cwd: outputRoot, stdio: 'inherit' };
+    const packageVersion = `1.0.${ getBuildNumber() }`;
+    const nugetArgs = ['pack', nuspecFilename, '-Version', packageVersion];
     if (isWindows) {
         // Invoke NuGet.exe directly
-        childProcess.spawnSync(nugetExe, ['pack'], nugetStartInfo);
+        childProcess.spawnSync(nugetExe, nugetArgs, nugetStartInfo);
     } else {
         // Invoke via Mono (relying on that being available)
-        childProcess.spawnSync('mono', [nugetExe, 'pack'], nugetStartInfo);
+        nugetArgs.unshift(nugetExe);
+        childProcess.spawnSync('mono', nugetArgs, nugetStartInfo);
     }
 
     // Clean up

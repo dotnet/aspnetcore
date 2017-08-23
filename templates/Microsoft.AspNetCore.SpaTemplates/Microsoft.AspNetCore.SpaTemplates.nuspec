@@ -2,7 +2,7 @@
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
     <metadata>
         <id>Microsoft.AspNetCore.SpaTemplates</id>
-        <version>1.0.{buildnumber}</version>
+        <version>0.0.0</version>
         <description>Single Page Application templates for ASP.NET Core</description>
         <authors>Microsoft</authors>
         <language>en-US</language>
