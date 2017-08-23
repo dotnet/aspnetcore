@@ -72,7 +72,7 @@ namespace Identity.OpenIdConnect.WebSite
             {
                 app.UseDeveloperExceptionPage();
                 app.UseDatabaseErrorPage();
-                app.UseDevelopmentCertificateErrorPage(Configuration);
+                //app.UseDevelopmentCertificateErrorPage(Configuration);
             }
             else
             {

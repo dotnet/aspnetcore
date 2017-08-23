@@ -8,6 +8,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="test-cert.pfx">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\WebSites\Identity.OpenIdConnect.WebSite\Identity.OpenIdConnect.WebSite.csproj" />
   </ItemGroup>
 
