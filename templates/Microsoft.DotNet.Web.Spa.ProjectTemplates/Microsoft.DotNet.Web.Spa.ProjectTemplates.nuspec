@@ -14,4 +14,10 @@
             <packageType name="Template" />
         </packageTypes>
     </metadata>
+    <files>
+        <file 
+            src="**/*"
+            exclude="*/node_modules/**;*/bin/**;*/obj/**;*/.vs/**;*/.vscode/**;*/ClientApp/dist/**;*/wwwroot/dist/**"
+            target="Content" />
+    </files>
 </package>

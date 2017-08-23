@@ -18,7 +18,7 @@ build_script:
   - npm run build
   - ps: Pop-Location
 artifacts:
-  - path: templates\package-builder\dist\artifacts\*.nupkg
+  - path: templates\package-builder\artifacts\*.nupkg
     name: Microsoft.AspNetCore.SpaTemplates
     type: NuGetPackage
 #  - ps: .\build.ps1

@@ -15,28 +15,6 @@ const dotNetPackages = [
     'Microsoft.AspNetCore.SpaTemplates'
 ];
 
-function writeFileEnsuringDirExists(root: string, filename: string, contents: string | Buffer) {
-    let fullPath = path.join(root, filename);
-    mkdirp.sync(path.dirname(fullPath));
-    fs.writeFileSync(fullPath, contents);
-}
-
-function listFilesExcludingGitignored(root: string): string[] {
-    let gitIgnorePath = path.join(root, '.gitignore');
-    let gitignoreEvaluator = fs.existsSync(gitIgnorePath)
-        ? gitignore.compile(fs.readFileSync(gitIgnorePath, 'utf8'))
-        : { accepts: () => true };
-    return glob.sync('**/*', { cwd: root, dot: true, nodir: true })
-        .filter(fn => gitignoreEvaluator.accepts(fn));
-}
-
-function writeTemplate(sourceRoot: string, destRoot: string) {
-    listFilesExcludingGitignored(sourceRoot).forEach(fn => {
-        let sourceContent = fs.readFileSync(path.join(sourceRoot, fn));
-        writeFileEnsuringDirExists(destRoot, fn, sourceContent);
-    });
-}
-
 function getBuildNumber(): string {
     if (process.env.APPVEYOR_BUILD_NUMBER) {
         return process.env.APPVEYOR_BUILD_NUMBER;
@@ -52,35 +30,17 @@ function buildDotNetNewNuGetPackages(outputDir: string) {
         const dotNetNewNupkgPath = buildDotNetNewNuGetPackage(packageId);
 
         // Move the .nupkg file to the output dir
+        mkdirp.sync(outputDir);
         fs.renameSync(dotNetNewNupkgPath, path.join(outputDir, path.basename(dotNetNewNupkgPath)));
     });
 }
 
 function buildDotNetNewNuGetPackage(packageId: string) {
-    const outputRoot = './dist/dotnetnew';
-    rimraf.sync(outputRoot);
-
-    // Copy template files
-    const packageSourceRootDir = path.join('../', packageId);
-    const templatesInPackage = fs.readdirSync(path.join(packageSourceRootDir, 'Content'));
-
-    _.forEach(templatesInPackage, templateName => {
-        const templateSourceDir = path.join(packageSourceRootDir, 'Content', templateName);
-        const templateOutputDir = path.join(outputRoot, 'Content', templateName);
-        writeTemplate(templateSourceDir, templateOutputDir);
-    });
-
-    // Create the .nuspec file
-    const nuspecFilename = `${ packageId }.nuspec`;
-    const nuspecContentTemplate = fs.readFileSync(path.join(packageSourceRootDir, nuspecFilename));
-    writeFileEnsuringDirExists(outputRoot,
-        nuspecFilename,
-        nuspecContentTemplate
-    );
-
     // Invoke NuGet to create the final package
+    const packageSourceRootDir = path.join('../', packageId);
+    const nuspecFilename = `${ packageId }.nuspec`;
     const nugetExe = path.join(process.cwd(), './bin/NuGet.exe');
-    const nugetStartInfo = { cwd: outputRoot, stdio: 'inherit' };
+    const nugetStartInfo = { cwd: packageSourceRootDir, stdio: 'inherit' };
     const packageVersion = `1.0.${ getBuildNumber() }`;
     const nugetArgs = ['pack', nuspecFilename, '-Version', packageVersion];
     if (isWindows) {
@@ -92,15 +52,7 @@ function buildDotNetNewNuGetPackage(packageId: string) {
         childProcess.spawnSync('mono', nugetArgs, nugetStartInfo);
     }
 
-    // Clean up
-    rimraf.sync('./tmp');
-
-    return glob.sync(path.join(outputRoot, './*.nupkg'))[0];
+    return glob.sync(path.join(packageSourceRootDir, './*.nupkg'))[0];
 }
 
-const distDir = './dist';
-const artifactsDir = path.join(distDir, 'artifacts');
-
-rimraf.sync(distDir);
-mkdirp.sync(artifactsDir);
-buildDotNetNewNuGetPackages(artifactsDir);
+buildDotNetNewNuGetPackages('./artifacts');
