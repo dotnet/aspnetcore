@@ -205,14 +205,14 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             IdentityResultAssert.IsSuccess(await userMgr.CreateAsync(user));
             IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, roleName));
             var roles = await userMgr.GetRolesAsync(user);
-            Assert.Equal(1, roles.Count());
+            Assert.Single(roles);
             IdentityResultAssert.IsSuccess(await roleMgr.DeleteAsync(role));
             Assert.Null(await roleMgr.FindByNameAsync(roleName));
             Assert.False(await roleMgr.RoleExistsAsync(roleName));
             // REVIEW: We should throw if deleteing a non empty role?
             roles = await userMgr.GetRolesAsync(user);
 
-            Assert.Equal(0, roles.Count());
+            Assert.Empty(roles);
         }
 
         [ConditionalFact]
@@ -233,12 +233,12 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             IdentityResultAssert.IsSuccess(await userMgr.AddToRoleAsync(user, roleName));
 
             var roles = await userMgr.GetRolesAsync(user);
-            Assert.Equal(1, roles.Count());
+            Assert.Single(roles);
 
             IdentityResultAssert.IsSuccess(await userMgr.DeleteAsync(user));
 
             roles = await userMgr.GetRolesAsync(user);
-            Assert.Equal(0, roles.Count());
+            Assert.Empty(roles);
         }
 
         [ConditionalFact]

@@ -83,13 +83,13 @@ namespace Microsoft.AspNetCore.Identity.Test
             // Assert
             var manager = userManager.Object;
             Assert.NotNull(identity);
-            Assert.Equal(1, principal.Identities.Count());
+            Assert.Single(principal.Identities);
             Assert.Equal(IdentityConstants.ApplicationScheme, identity.AuthenticationType);
             var claims = identity.Claims.ToList();
             Assert.NotNull(claims);
-            Assert.True(
-                claims.Any(c => c.Type == manager.Options.ClaimsIdentity.UserNameClaimType && c.Value == user.UserName));
-            Assert.True(claims.Any(c => c.Type == manager.Options.ClaimsIdentity.UserIdClaimType && c.Value == user.Id));
+            Assert.Contains(
+                claims, c => c.Type == manager.Options.ClaimsIdentity.UserNameClaimType && c.Value == user.UserName);
+            Assert.Contains(claims, c => c.Type == manager.Options.ClaimsIdentity.UserIdClaimType && c.Value == user.Id);
             Assert.Equal(supportRoles, claims.Any(c => c.Type == manager.Options.ClaimsIdentity.RoleClaimType && c.Value == "Admin"));
             Assert.Equal(supportRoles, claims.Any(c => c.Type == manager.Options.ClaimsIdentity.RoleClaimType && c.Value == "Local"));
             foreach (var cl in userClaims)

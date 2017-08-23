@@ -132,7 +132,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             // Assert
             Assert.False(result.Succeeded);
             Assert.True(result.IsLockedOut);
-            Assert.True(logStore.ToString().Contains($"User {user.Id} is currently locked out."));
+            Assert.Contains($"User {user.Id} is currently locked out.", logStore.ToString());
             manager.Verify();
         }
 
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             // Assert
             Assert.False(result.Succeeded);
             Assert.True(result.IsLockedOut);
-            Assert.True(logStore.ToString().Contains($"User {user.Id} is currently locked out."));
+            Assert.Contains($"User {user.Id} is currently locked out.", logStore.ToString());
             manager.Verify();
         }
 
@@ -493,7 +493,13 @@ namespace Microsoft.AspNetCore.Identity.Test
         [InlineData(true, false)]
         [InlineData(false, true)]
         [InlineData(false, false)]
-        public async Task CanResignIn(bool isPersistent, bool externalLogin)
+        public async Task CanResignIn(
+            // Suppress warning that says theory methods should use all of their parameters.
+            // See comments below about why this isn't used.
+#pragma warning disable xUnit1026
+            bool isPersistent,
+#pragma warning restore xUnit1026
+            bool externalLogin)
         {
             // Setup
             var user = new TestUser { UserName = "Foo" };
@@ -707,7 +713,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             // Assert
             Assert.False(result.Succeeded);
             Assert.False(checkResult.Succeeded);
-            Assert.True(logStore.ToString().Contains($"User {user.Id} failed to provide the correct password."));
+            Assert.Contains($"User {user.Id} failed to provide the correct password.", logStore.ToString());
             manager.Verify();
             context.Verify();
         }

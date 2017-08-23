@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Identity.Test
                 IdentityResultAssert.IsFailure(result);
                 foreach (var error in errors)
                 {
-                    Assert.True(result.Errors.Any(e => e.Description == error));
+                    Assert.Contains(result.Errors, e => e.Description == error);
                 }
             }
         }

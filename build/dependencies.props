@@ -12,8 +12,9 @@
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
     <OwinVersion>3.0.1</OwinVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
-    <TestSdkVersion>15.3.0-*</TestSdkVersion>
-    <XunitVersion>2.3.0-beta2-*</XunitVersion>
+    <TestSdkVersion>15.3.0</TestSdkVersion>
+    <XunitAnalyzersVersion>0.6.1</XunitAnalyzersVersion>
+    <XunitVersion>2.3.0-beta4-build3742</XunitVersion>
     <XunitVersionInSpecProjects>2.2.0</XunitVersionInSpecProjects>
   </PropertyGroup>
 </Project>
