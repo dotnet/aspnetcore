@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     public class HtmlTagsTest : CsHtmlMarkupParserTestBase
     {
-        public static IEnumerable<string[]> VoidElementNames
+        public static IEnumerable<object[]> VoidElementNames
         {
             get
             {

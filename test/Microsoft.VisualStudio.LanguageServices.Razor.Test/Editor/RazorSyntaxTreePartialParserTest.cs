@@ -17,69 +17,20 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         {
             get
             {
-                // change, (Block)expectedDocument
-                return new TheoryData<TestEdit, MarkupBlock>
+                return new TheoryData<TestEdit>
                 {
-                    {
-                        CreateInsertionChange("<p></p>", 2, " "),
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock("p"))
-                    },
-                    {
-                        CreateInsertionChange("<p></p>", 6, " "),
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock("p"))
-                    },
-                    {
-                        CreateInsertionChange("<p some-attr></p>", 12, " "),
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "p",
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    new TagHelperAttributeNode(
-                                        "some-attr",
-                                        value: null,
-                                        attributeStructure: AttributeStructure.Minimized)
-                                }))
-                    },
-                    {
-                        CreateInsertionChange("<p some-attr></p>", 12, "ibute"),
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "p",
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    new TagHelperAttributeNode(
-                                        "some-attribute",
-                                        value: null,
-                                        attributeStructure: AttributeStructure.Minimized)
-                                }))
-                    },
-                    {
-                        CreateInsertionChange("<p some-attr></p>", 2, " before"),
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "p",
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    new TagHelperAttributeNode(
-                                        "before",
-                                        value: null,
-                                        attributeStructure: AttributeStructure.Minimized),
-                                    new TagHelperAttributeNode(
-                                        "some-attr",
-                                        value: null,
-                                        attributeStructure: AttributeStructure.Minimized)
-                                }))
-                    },
+                    CreateInsertionChange("<p></p>", 2, " "),
+                    CreateInsertionChange("<p></p>", 6, " "),
+                    CreateInsertionChange("<p some-attr></p>", 12, " "),
+                    CreateInsertionChange("<p some-attr></p>", 12, "ibute"),
+                    CreateInsertionChange("<p some-attr></p>", 2, " before"),
                 };
             }
         }
 
         [Theory]
         [MemberData(nameof(TagHelperPartialParseRejectData))]
-        public void TagHelperTagBodiesRejectPartialChanges(object objectEdit, object expectedDocument)
+        public void TagHelperTagBodiesRejectPartialChanges(object objectEdit)
         {
             // Arrange
             var edit = (TestEdit)objectEdit;
@@ -112,108 +63,26 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 var factory = new SpanFactory();
 
                 // change, (Block)expectedDocument, partialParseResult
-                return new TheoryData<TestEdit, MarkupBlock, PartialParseResultInternal>
+                return new TheoryData<TestEdit, PartialParseResultInternal>
                 {
                     {
                         CreateInsertionChange("<p str-attr='@DateTime'></p>", 22, "."),
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "p",
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    new TagHelperAttributeNode(
-                                        "str-attr",
-                                        new MarkupBlock(
-                                            new MarkupBlock(
-                                                new ExpressionBlock(
-                                                    factory.CodeTransition(),
-                                                    factory
-                                                        .Code("DateTime.")
-                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)))),
-                                        AttributeStructure.SingleQuotes)
-                                })),
                         PartialParseResultInternal.Accepted | PartialParseResultInternal.Provisional
                     },
                     {
                         CreateInsertionChange("<p obj-attr='DateTime'></p>", 21, "."),
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "p",
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    new TagHelperAttributeNode(
-                                        "obj-attr",
-                                        factory.CodeMarkup("DateTime."),
-                                        AttributeStructure.SingleQuotes)
-                                })),
                         PartialParseResultInternal.Accepted
                     },
                     {
                         CreateInsertionChange("<p obj-attr='1 + DateTime'></p>", 25, "."),
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "p",
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    new TagHelperAttributeNode(
-                                        "obj-attr",
-                                        factory.CodeMarkup("1 + DateTime."),
-                                        AttributeStructure.SingleQuotes)
-                                })),
                         PartialParseResultInternal.Accepted
                     },
                     {
                         CreateInsertionChange("<p before-attr str-attr='@DateTime' after-attr></p>", 34, "."),
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "p",
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    new TagHelperAttributeNode(
-                                        "before-attr",
-                                        value: null,
-                                        attributeStructure: AttributeStructure.Minimized),
-                                    new TagHelperAttributeNode(
-                                        "str-attr",
-                                        new MarkupBlock(
-                                            new MarkupBlock(
-                                                new ExpressionBlock(
-                                                    factory.CodeTransition(),
-                                                    factory
-                                                        .Code("DateTime.")
-                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace)))),
-                                        AttributeStructure.SingleQuotes),
-                                    new TagHelperAttributeNode(
-                                        "after-attr",
-                                        value: null,
-                                        attributeStructure: AttributeStructure.Minimized),
-                                })),
                         PartialParseResultInternal.Accepted | PartialParseResultInternal.Provisional
                     },
                     {
                         CreateInsertionChange("<p str-attr='before @DateTime after'></p>", 29, "."),
-                        new MarkupBlock(
-                            new MarkupTagHelperBlock(
-                                "p",
-                                attributes: new List<TagHelperAttributeNode>
-                                {
-                                    new TagHelperAttributeNode(
-                                        "str-attr",
-                                        new MarkupBlock(
-                                            factory.Markup("before"),
-                                            new MarkupBlock(
-                                                factory.Markup(" "),
-                                                new ExpressionBlock(
-                                                    factory.CodeTransition(),
-                                                    factory
-                                                        .Code("DateTime.")
-                                                        .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
-                                                        .Accepts(AcceptedCharactersInternal.NonWhiteSpace))),
-                                            factory.Markup(" after")),
-                                        AttributeStructure.SingleQuotes)
-                                })),
                         PartialParseResultInternal.Accepted | PartialParseResultInternal.Provisional
                     },
                 };
@@ -222,10 +91,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         [Theory]
         [MemberData(nameof(TagHelperAttributeAcceptData))]
-        public void TagHelperAttributesAreLocatedAndAcceptChangesCorrectly(
-            object editObject,
-            object expectedDocument,
-            object partialParseResultObject)
+        public void TagHelperAttributesAreLocatedAndAcceptChangesCorrectly(object editObject, object partialParseResultObject)
         {
             // Arrange
             var edit = (TestEdit)editObject;
