@@ -25,19 +25,24 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             _outputHelper = outputHelper;
         }
 
-        [Fact]
-        public async Task DotnetNewWebRunsInWebApp()
+        [Theory]
+        [InlineData("web", "Hello World!")]
+        [InlineData("razor", "Learn how to build ASP.NET apps that can run anywhere.")]
+        [InlineData("mvc", "Learn how to build ASP.NET apps that can run anywhere.")]
+        public async Task DotnetNewWebRunsInWebApp(string template, string expected)
         {
-            using (var logger = GetLogger())
+            var testId = nameof(DotnetNewWebRunsInWebApp) + template;
+
+            using (var logger = GetLogger(testId))
             {
                 Assert.NotNull(_fixture.Azure);
 
-                var site = await _fixture.Deploy("Templates\\BasicAppServices.json", null);
-                var testDirectory = GetTestDirectory();
+                var site = await _fixture.Deploy("Templates\\BasicAppServices.json", baseName: testId);
+                var testDirectory = GetTestDirectory(testId);
 
                 var dotnet = DotNet(logger, testDirectory);
 
-                var result = await dotnet.ExecuteAsync("new web");
+                var result = await dotnet.ExecuteAsync("new " + template);
                 result.AssertSuccess();
 
                 await site.BuildPublishProfileAsync(testDirectory.FullName);
@@ -49,7 +54,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                 {
                     var getResult = await httpClient.GetAsync("/");
                     getResult.EnsureSuccessStatusCode();
-                    Assert.Equal("Hello World!", await getResult.Content.ReadAsStringAsync());
+                    Assert.Contains(expected, await getResult.Content.ReadAsStringAsync());
                 }
             }
         }
