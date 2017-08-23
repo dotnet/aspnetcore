@@ -1,0 +1,17 @@
+<Project>
+  <PropertyGroup>
+    <FunctionalTestsProject>$(RepositoryRoot)test\Microsoft.AspNetCore.AzureAppServices.FunctionalTests\Microsoft.AspNetCore.AzureAppServices.FunctionalTests.csproj</FunctionalTestsProject>
+  </PropertyGroup>
+  <ItemGroup>
+    <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj" />
+
+    <ExcludeFromTest
+      Condition="'$(AntaresTests)' != ''"
+      Include="$(RepositoryRoot)test\*\*.csproj"
+      Exclude="$(FunctionalTestsProject)" />
+
+    <ExcludeFromTest
+      Condition="'$(AntaresTests)' == ''"
+      Include="$(FunctionalTestsProject)" />
+   </ItemGroup>
+ </Project>

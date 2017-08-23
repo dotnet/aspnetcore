@@ -5,11 +5,13 @@
     <ApplicationInsightsVersion>2.1.1</ApplicationInsightsVersion>
     <InternalAspNetCoreSdkVersion>2.1.1-*</InternalAspNetCoreSdkVersion>
     <MoqVersion>4.7.49</MoqVersion>
+    <MicrosoftAzureManagementFluentVersion>1.1.3</MicrosoftAzureManagementFluentVersion>
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0-*</NETStandardLibraryNETFrameworkVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0</TestSdkVersion>
     <XdtVersion>1.4.0</XdtVersion>
     <XunitVersion>2.3.0-beta4-build3742</XunitVersion>
+    <WindowsAzureStorageVersion>8.3.0</WindowsAzureStorageVersion>
   </PropertyGroup>
 </Project>
