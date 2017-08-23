@@ -18,6 +18,7 @@
 
     <PackageReference Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Editor" Version="$(VsShellVersion)" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(VsShellVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(RoslynDevVersion)" />
 

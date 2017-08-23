@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
 using Timer = System.Timers.Timer;
 
@@ -145,7 +146,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         {
             _foregroundThreadAffinitizedObject.AssertIsBackground();
 
-            var textViews = DefaultTextViewRazorDocumentTrackerService.GetTextViews(_textBuffer);
+            var textViews = Array.Empty<ITextView>();
 
             foreach (var textView in textViews)
             {

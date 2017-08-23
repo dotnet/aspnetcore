@@ -3,6 +3,7 @@
   <PropertyGroup>
     <VsixVersion>15.5</VsixVersion>
     <VsixVersion Condition="'$(BuildNumber)'!=''">$(VsixVersion).$(BuildNumber)</VsixVersion>
+    <VsixVersion Condition="'$(BuildNumber)'==''">$(VsixVersion).999999</VsixVersion>
     <MinimumVisualStudioVersion>15.0</MinimumVisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
     <NuGetPackageImportStamp>

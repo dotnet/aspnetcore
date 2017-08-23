@@ -7,15 +7,15 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor;
-using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.LanguageServices.Razor.Editor;
 
 namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
 {
     public class RazorDocumentInfoViewModel : NotifyPropertyChanged
     {
-        private readonly RazorDocumentTracker _documentTracker;
+        private readonly VisualStudioDocumentTracker _documentTracker;
 
-        public RazorDocumentInfoViewModel(RazorDocumentTracker documentTracker)
+        public RazorDocumentInfoViewModel(VisualStudioDocumentTracker documentTracker)
         {
             if (documentTracker == null)
             {
@@ -25,7 +25,7 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
             _documentTracker = documentTracker;
         }
 
-        public bool IsSupportedDocument => _documentTracker.IsSupportedDocument;
+        public bool IsSupportedDocument => _documentTracker.IsSupportedProject;
 
         public Project Project
         {
@@ -41,8 +41,6 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
         }
 
         public ProjectId ProjectId => _documentTracker.ProjectId;
-
-        public SourceTextContainer TextContainer => _documentTracker.TextContainer;
 
         public Workspace Workspace => _documentTracker.Workspace;
 

@@ -19,34 +19,13 @@
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
                 <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
-                <RowDefinition Height="*"/>
             </Grid.RowDefinitions>
             <Label Grid.Column="0" Grid.Row="0" Content="Project"/>
             <Label Grid.Column="1" Grid.Row="0" Content="{Binding Project.Name}"/>
             <Label Grid.Column="0" Grid.Row="1" Content="Is Supported"/>
             <Label Grid.Column="1" Grid.Row="1" Content="{Binding IsSupportedDocument}"/>
-            <Label Grid.Column="0" Grid.Row="2" Content="Text Container"/>
-            <Label Grid.Column="1" Grid.Row="2" Content="{Binding TextContainer}"/>
-            <Label Grid.Column="0" Grid.Row="3" Content="Workspace"/>
-            <Label Grid.Column="1" Grid.Row="3" Content="{Binding Workspace}"/>
-            <Label Grid.Column="0" Grid.Row="4" Content="Razor Lang"/>
-            <Label Grid.Column="1" Grid.Row="4" Content="{Binding RazorLanguageServices}"/>
-            <Label Grid.Column="0" Grid.Row="5" Content="Resolver"/>
-            <Label Grid.Column="1" Grid.Row="5" Content="{Binding TagHelperResolver}"/>
-            <Label Grid.Column="0" Grid.Row="6" Content="Syntax Facts"/>
-            <Label Grid.Column="1" Grid.Row="6" Content="{Binding RazorSyntaxFactsService}"/>
-            <Label Grid.Column="0" Grid.Row="7" Content="Template Eng"/>
-            <Label Grid.Column="1" Grid.Row="7" Content="{Binding RazorTemplateEngineFactoryService}"/>
-            <Label Grid.Column="0" Grid.Row="8" Content="Completion Service"/>
-            <Label Grid.Column="1" Grid.Row="8" Content="{Binding TagHelperCompletionService}"/>
-            <Label Grid.Column="0" Grid.Row="9" Content="TH Facts"/>
-            <Label Grid.Column="1" Grid.Row="9" Content="{Binding TagHelperFactsService}"/>
+            <Label Grid.Column="0" Grid.Row="2" Content="Workspace"/>
+            <Label Grid.Column="1" Grid.Row="2" Content="{Binding Workspace}"/>
         </Grid>
     </StackPanel>
 </UserControl>

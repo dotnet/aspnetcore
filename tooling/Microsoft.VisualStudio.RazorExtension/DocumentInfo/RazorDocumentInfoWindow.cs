@@ -9,7 +9,7 @@ using System.Windows;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.LanguageServices.Razor;
+using Microsoft.VisualStudio.LanguageServices.Razor.Editor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text.Editor;
@@ -21,13 +21,13 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
     internal class RazorDocumentInfoWindow : ToolWindowPane
     {
         private IVsEditorAdaptersFactoryService _adapterFactory;
-        private TextViewRazorDocumentTrackerService _documentTrackerService;
+        private VisualStudioDocumentTrackerFactory _documentTrackerService;
         private IVsTextManager _textManager;
         private IVsRunningDocumentTable _rdt;
         
         private uint _cookie;
         private ITextView _textView;
-        private RazorDocumentTracker _documentTracker;
+        private VisualStudioDocumentTracker _documentTracker;
 
         public RazorDocumentInfoWindow() 
             : base(null)
@@ -43,7 +43,7 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
 
             var component = (IComponentModel)GetService(typeof(SComponentModel));
             _adapterFactory = component.GetService<IVsEditorAdaptersFactoryService>();
-            _documentTrackerService = component.GetService<TextViewRazorDocumentTrackerService>();
+            _documentTrackerService = component.GetService<VisualStudioDocumentTrackerFactory>();
             
             _textManager = (IVsTextManager)GetService(typeof(SVsTextManager));
             _rdt = (IVsRunningDocumentTable)GetService(typeof(SVsRunningDocumentTable));
@@ -78,7 +78,7 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
                     _documentTracker.ContextChanged -= DocumentTracker_ContextChanged;
                 }
 
-                _documentTracker = _documentTrackerService.CreateTracker(textView);
+                _documentTracker = _documentTrackerService.GetTracker(textView);
                 _documentTracker.ContextChanged += DocumentTracker_ContextChanged;
 
                 ((FrameworkElement)Content).DataContext = new RazorDocumentInfoViewModel(_documentTracker);
