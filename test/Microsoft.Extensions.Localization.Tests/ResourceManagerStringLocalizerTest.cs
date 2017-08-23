@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Globalization;
@@ -132,8 +132,8 @@ namespace Microsoft.Extensions.Localization
             var value = localizer["a key!"];
 
             // Assert
-            Assert.Equal(1, Sink.Writes.Count);
-            Assert.Equal("ResourceManagerStringLocalizer searched for 'a key!' in 'Resources.TestResource' with culture 'en-US'.", Sink.Writes.First().State.ToString());
+            var write = Assert.Single(Sink.Writes);
+            Assert.Equal("ResourceManagerStringLocalizer searched for 'a key!' in 'Resources.TestResource' with culture 'en-US'.", write.State.ToString());
         }
 
         [Theory]

@@ -1,4 +1,4 @@
-// Copyright (c) .NET Foundation. All rights reserved. 
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Localization
             var options = new RequestLocalizationOptions();
 
             // Act/Assert
-            Assert.Throws(typeof(ArgumentNullException), () => options.DefaultRequestCulture = null);
+            Assert.Throws<ArgumentNullException>(() => options.DefaultRequestCulture = null);
         }
 
         [Fact]
