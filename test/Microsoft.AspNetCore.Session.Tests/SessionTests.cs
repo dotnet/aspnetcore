@@ -51,8 +51,7 @@ namespace Microsoft.AspNetCore.Session
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
-                IEnumerable<string> values;
-                Assert.False(response.Headers.TryGetValues("Set-Cookie", out values));
+                Assert.False(response.Headers.TryGetValues("Set-Cookie", out var _));
             }
         }
 
@@ -82,9 +81,8 @@ namespace Microsoft.AspNetCore.Session
                 var client = server.CreateClient();
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
-                IEnumerable<string> values;
-                Assert.True(response.Headers.TryGetValues("Set-Cookie", out values));
-                Assert.Equal(1, values.Count());
+                Assert.True(response.Headers.TryGetValues("Set-Cookie", out var values));
+                Assert.Single(values);
                 Assert.True(!string.IsNullOrWhiteSpace(values.First()));
             }
         }
@@ -131,9 +129,8 @@ namespace Microsoft.AspNetCore.Session
                 var client = server.CreateClient();
                 var response = await client.GetAsync(requestUri);
                 response.EnsureSuccessStatusCode();
-                IEnumerable<string> values;
-                Assert.True(response.Headers.TryGetValues("Set-Cookie", out values));
-                Assert.Equal(1, values.Count());
+                Assert.True(response.Headers.TryGetValues("Set-Cookie", out var values));
+                Assert.Single(values);
                 if (shouldBeSecureOnly)
                 {
                     Assert.Contains("; secure", values.First());
@@ -570,8 +567,7 @@ namespace Microsoft.AspNetCore.Session
                     app.UseSession();
                     app.Run(context =>
                     {
-                        byte[] value;
-                        Assert.False(context.Session.TryGetValue("key", out value));
+                        Assert.False(context.Session.TryGetValue("key", out var value));
                         Assert.Null(value);
                         Assert.Equal(string.Empty, context.Session.Id);
                         Assert.False(context.Session.Keys.Any());
@@ -597,7 +593,7 @@ namespace Microsoft.AspNetCore.Session
 
             var sessionLogMessages = sink.Writes;
 
-            Assert.Equal(1, sessionLogMessages.Count);
+            Assert.Single(sessionLogMessages);
             Assert.Contains("Session cache read exception", sessionLogMessages[0].State.ToString());
             Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
         }
@@ -691,7 +687,7 @@ namespace Microsoft.AspNetCore.Session
 
             var sessionLogMessages = sink.Writes;
 
-            Assert.Equal(1, sessionLogMessages.Count);
+            Assert.Single(sessionLogMessages);
             Assert.Contains("Error closing the session.", sessionLogMessages[0].State.ToString());
             Assert.Equal(LogLevel.Error, sessionLogMessages[0].LogLevel);
         }
