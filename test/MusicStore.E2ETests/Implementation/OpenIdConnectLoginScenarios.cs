@@ -32,13 +32,13 @@ namespace E2ETests
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await DoPostAsync("Account/ExternalLogin", content);
-            Assert.Equal<string>("https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/authorize", response.Headers.Location?.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
+            Assert.Equal("https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/authorize", response.Headers.Location?.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
             var queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location?.Query));
-            Assert.Equal<string>("c99497aa-3ee2-4707-b8a8-c33f51323fef", queryItems["client_id"]);
-            Assert.Equal<string>("form_post", queryItems["response_mode"]);
-            Assert.Equal<string>("code id_token", queryItems["response_type"]);
-            Assert.Equal<string>("openid profile", queryItems["scope"]);
-            Assert.Equal<string>("ValidStateData", queryItems["state"]);
+            Assert.Equal("c99497aa-3ee2-4707-b8a8-c33f51323fef", queryItems["client_id"]);
+            Assert.Equal("form_post", queryItems["response_mode"]);
+            Assert.Equal("code id_token", queryItems["response_type"]);
+            Assert.Equal("openid profile", queryItems["scope"]);
+            Assert.Equal("ValidStateData", queryItems["state"]);
 
             // Workaround for https://github.com/dotnet/corefx/issues/21250
             Assert.True(response.Headers.TryGetValues("Set-Cookie", out var setCookieValues));
@@ -123,11 +123,11 @@ namespace E2ETests
             }
 
             Assert.DoesNotContain(IdentityCookieName, GetCookieNames());
-            Assert.Equal<string>(
+            Assert.Equal(
                 "https://login.windows.net/4afbc689-805b-48cf-a24c-d4aa3248a248/oauth2/logout",
                 response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
             queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
-            Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "signout-callback-oidc", queryItems["post_logout_redirect_uri"]);
+            Assert.Equal(_deploymentResult.ApplicationBaseUri + "signout-callback-oidc", queryItems["post_logout_redirect_uri"]);
 
             response = await DoGetAsync(queryItems["post_logout_redirect_uri"] + "?state=" + queryItems["state"]);
             Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);

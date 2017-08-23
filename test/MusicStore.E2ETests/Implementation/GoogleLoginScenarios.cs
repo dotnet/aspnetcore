@@ -32,15 +32,15 @@ namespace E2ETests
 
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await DoPostAsync("Account/ExternalLogin", content);
-            Assert.Equal<string>("https://accounts.google.com/o/oauth2/auth", response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
+            Assert.Equal("https://accounts.google.com/o/oauth2/auth", response.Headers.Location.AbsoluteUri.Replace(response.Headers.Location.Query, string.Empty));
             var queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
-            Assert.Equal<string>("code", queryItems["response_type"]);
-            Assert.Equal<string>("offline", queryItems["access_type"]);
-            Assert.Equal<string>("[ClientId]", queryItems["client_id"]);
-            Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "signin-google", queryItems["redirect_uri"]);
-            Assert.Equal<string>("openid profile email", queryItems["scope"]);
-            Assert.Equal<string>("ValidStateData", queryItems["state"]);
-            Assert.Equal<string>("custom", queryItems["custom_redirect_uri"]);
+            Assert.Equal("code", queryItems["response_type"]);
+            Assert.Equal("offline", queryItems["access_type"]);
+            Assert.Equal("[ClientId]", queryItems["client_id"]);
+            Assert.Equal(_deploymentResult.ApplicationBaseUri + "signin-google", queryItems["redirect_uri"]);
+            Assert.Equal("openid profile email", queryItems["scope"]);
+            Assert.Equal("ValidStateData", queryItems["state"]);
+            Assert.Equal("custom", queryItems["custom_redirect_uri"]);
             //Check for the correlation cookie
             // Workaround for https://github.com/dotnet/corefx/issues/21250
             Assert.True(response.Headers.TryGetValues("Set-Cookie", out var setCookieValues));

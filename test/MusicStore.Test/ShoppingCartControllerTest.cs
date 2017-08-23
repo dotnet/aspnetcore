@@ -57,7 +57,7 @@ namespace MusicStore.Controllers
             Assert.Null(viewResult.ViewName);
 
             var model = Assert.IsType<ShoppingCartViewModel>(viewResult.ViewData.Model);
-            Assert.Equal(0, model.CartItems.Count);
+            Assert.Empty(model.CartItems);
             Assert.Equal(0, model.CartTotal);
         }
 
@@ -83,7 +83,7 @@ namespace MusicStore.Controllers
             Assert.Null(viewResult.ViewName);
 
             var model = Assert.IsType<ShoppingCartViewModel>(viewResult.ViewData.Model);
-            Assert.Equal(0, model.CartItems.Count);
+            Assert.Empty(model.CartItems);
             Assert.Equal(0, model.CartTotal);
         }
 
@@ -148,7 +148,7 @@ namespace MusicStore.Controllers
 
             // Assert
             var cart = ShoppingCart.GetCart(dbContext, httpContext);
-            Assert.Equal(1, (await cart.GetCartItems()).Count);
+            Assert.Single(await cart.GetCartItems());
             Assert.Equal(albumId, (await cart.GetCartItems()).Single().AlbumId);
 
             var redirectResult = Assert.IsType<RedirectToActionResult>(result);
@@ -209,7 +209,7 @@ namespace MusicStore.Controllers
             Assert.Equal(" has been removed from your shopping cart.", viewModel.Message);
 
             var cart = ShoppingCart.GetCart(dbContext, httpContext);
-            Assert.False((await cart.GetCartItems()).Any(c => c.CartItemId == cartItemId));
+            Assert.DoesNotContain((await cart.GetCartItems()), c => c.CartItemId == cartItemId);
         }
 
         private static CartItem[] CreateTestCartItems(string cartId, decimal itemPrice, int numberOfItem)

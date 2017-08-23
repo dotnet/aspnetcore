@@ -165,7 +165,7 @@ namespace E2ETests
             var response = await DoGetAsync("Admin/StoreManager/");
             await ThrowIfResponseStatusNotOk(response);
             var responseContent = await response.Content.ReadAsStringAsync();
-            Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "Admin/StoreManager/", response.RequestMessage.RequestUri.AbsoluteUri);
+            Assert.Equal(_deploymentResult.ApplicationBaseUri + "Admin/StoreManager/", response.RequestMessage.RequestUri.AbsoluteUri);
             _logger.LogInformation("Successfully acccessed the store inventory");
         }
 
@@ -189,7 +189,7 @@ namespace E2ETests
             {
                 Assert.Contains("<title>Log in – ASP.NET MVC Music Store</title>", responseContent, StringComparison.OrdinalIgnoreCase);
                 Assert.Contains("<h4>Use a local account to log in.</h4>", responseContent, StringComparison.OrdinalIgnoreCase);
-                Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + PrefixBaseAddress("Account/Login?ReturnUrl=%2F{0}%2FAdmin%2FStoreManager%2F"), response.RequestMessage.RequestUri.AbsoluteUri);
+                Assert.Equal(_deploymentResult.ApplicationBaseUri + PrefixBaseAddress("Account/Login?ReturnUrl=%2F{0}%2FAdmin%2FStoreManager%2F"), response.RequestMessage.RequestUri.AbsoluteUri);
                 _logger.LogInformation("Redirected to login page as expected.");
             }
             else
@@ -250,7 +250,7 @@ namespace E2ETests
             responseContent = await response.Content.ReadAsStringAsync();
 
             //Account verification
-            Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "Account/Register", response.RequestMessage.RequestUri.AbsoluteUri);
+            Assert.Equal(_deploymentResult.ApplicationBaseUri + "Account/Register", response.RequestMessage.RequestUri.AbsoluteUri);
             Assert.Contains("For DEMO only: You can click this link to confirm the email:", responseContent, StringComparison.OrdinalIgnoreCase);
             var startIndex = responseContent.IndexOf("[[<a href=\"", 0) + "[[<a href=\"".Length;
             var endIndex = responseContent.IndexOf("\">link</a>]]", startIndex);
@@ -397,7 +397,7 @@ namespace E2ETests
             var content = new FormUrlEncodedContent(formParameters.ToArray());
             response = await DoPostAsync("Admin/StoreManager/create", content);
             responseContent = await response.Content.ReadAsStringAsync();
-            Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "Admin/StoreManager", response.RequestMessage.RequestUri.AbsoluteUri);
+            Assert.Equal(_deploymentResult.ApplicationBaseUri + "Admin/StoreManager", response.RequestMessage.RequestUri.AbsoluteUri);
             Assert.Contains(albumName, responseContent);
             _logger.LogInformation("Successfully created an album with name '{album}' in the store", albumName);
             return albumName;

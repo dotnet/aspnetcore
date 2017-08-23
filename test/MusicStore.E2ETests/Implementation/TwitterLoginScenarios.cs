@@ -35,8 +35,8 @@ namespace E2ETests
             response = await DoPostAsync("Account/ExternalLogin", content);
             Assert.StartsWith("https://api.twitter.com/oauth/authenticate", response.Headers.Location.ToString());
             var queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
-            Assert.Equal<string>("custom", queryItems["custom_redirect_uri"]);
-            Assert.Equal<string>("valid_oauth_token", queryItems["oauth_token"]);
+            Assert.Equal("custom", queryItems["custom_redirect_uri"]);
+            Assert.Equal("valid_oauth_token", queryItems["oauth_token"]);
             //Check for the correlation cookie
             Assert.NotNull(_httpClientHandler.CookieContainer.GetCookies(new Uri(_deploymentResult.ApplicationBaseUri))["__TwitterState"]);
 

@@ -34,12 +34,12 @@ namespace E2ETests
             response = await DoPostAsync("Account/ExternalLogin", content);
             Assert.StartsWith("https://login.microsoftonline.com/common/oauth2/v2.0/authorize", response.Headers.Location.ToString());
             var queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
-            Assert.Equal<string>("code", queryItems["response_type"]);
-            Assert.Equal<string>("[ClientId]", queryItems["client_id"]);
-            Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "signin-microsoft", queryItems["redirect_uri"]);
-            Assert.Equal<string>("https://graph.microsoft.com/user.read wl.basic wl.signin", queryItems["scope"]);
-            Assert.Equal<string>("ValidStateData", queryItems["state"]);
-            Assert.Equal<string>("custom", queryItems["custom_redirect_uri"]);
+            Assert.Equal("code", queryItems["response_type"]);
+            Assert.Equal("[ClientId]", queryItems["client_id"]);
+            Assert.Equal(_deploymentResult.ApplicationBaseUri + "signin-microsoft", queryItems["redirect_uri"]);
+            Assert.Equal("https://graph.microsoft.com/user.read wl.basic wl.signin", queryItems["scope"]);
+            Assert.Equal("ValidStateData", queryItems["state"]);
+            Assert.Equal("custom", queryItems["custom_redirect_uri"]);
 
             //Check for the correlation cookie
             // Workaround for https://github.com/dotnet/corefx/issues/21250

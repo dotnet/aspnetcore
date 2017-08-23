@@ -34,12 +34,12 @@ namespace E2ETests
             response = await DoPostAsync("Account/ExternalLogin", content);
             Assert.StartsWith("https://www.facebook.com/v2.6/dialog/oauth", response.Headers.Location.ToString());
             var queryItems = new QueryCollection(QueryHelpers.ParseQuery(response.Headers.Location.Query));
-            Assert.Equal<string>("code", queryItems["response_type"]);
-            Assert.Equal<string>("[AppId]", queryItems["client_id"]);
-            Assert.Equal<string>(_deploymentResult.ApplicationBaseUri + "signin-facebook", queryItems["redirect_uri"]);
-            Assert.Equal<string>("public_profile,email,read_friendlists,user_checkins", queryItems["scope"]);
-            Assert.Equal<string>("ValidStateData", queryItems["state"]);
-            Assert.Equal<string>("custom", queryItems["custom_redirect_uri"]);
+            Assert.Equal("code", queryItems["response_type"]);
+            Assert.Equal("[AppId]", queryItems["client_id"]);
+            Assert.Equal(_deploymentResult.ApplicationBaseUri + "signin-facebook", queryItems["redirect_uri"]);
+            Assert.Equal("public_profile,email,read_friendlists,user_checkins", queryItems["scope"]);
+            Assert.Equal("ValidStateData", queryItems["state"]);
+            Assert.Equal("custom", queryItems["custom_redirect_uri"]);
             //Check for the correlation cookie
             // Workaround for https://github.com/dotnet/corefx/issues/21250
             Assert.True(response.Headers.TryGetValues("Set-Cookie", out var setCookieValues));
