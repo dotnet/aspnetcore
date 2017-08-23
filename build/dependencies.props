@@ -27,6 +27,16 @@
     <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="15.3.309" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Build.Utilities.Core" Version="15.3.309" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Build" Version="15.3.309" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Features" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.CodeAnalysis" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.CSharp" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="2.0.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.14.1" Source="$(DefaultNuGetFeed)"/>
@@ -37,6 +47,17 @@
     <ExternalDependency Include="Microsoft.Owin.Security" Version="3.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Owin.Testing" Version="3.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Owin" Version="3.0.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="15.0.26606" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.0.26606" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6070" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26606" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30319" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61030" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50727" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="9.0.30729" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="1.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Moq" Version="4.7.49" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="MsgPack.Cli" Version="0.9.0-beta2" Source="$(DefaultNuGetFeed)"/>
@@ -72,10 +93,10 @@
     <ExternalDependency Include="System.Numerics.Vectors" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Reactive.Linq" Version="3.1.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Reflection.DispatchProxy" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Reflection.Emit" Version="4.3.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Reflection.Metadata" Version="1.5.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Reflection.TypeExtensions" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Runtime.CompilerServices.Unsafe" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
-    <ExternalDependency Include="System.Reflection.Emit" Version="4.3.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Runtime.InteropServices.RuntimeInformation" Version="4.3.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Security.AccessControl" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Security.Cryptography.Cng" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
