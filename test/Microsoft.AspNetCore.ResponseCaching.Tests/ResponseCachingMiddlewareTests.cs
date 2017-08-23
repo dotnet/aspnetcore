@@ -200,7 +200,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             // Verify modifications in the past succeeds
             context.CachedResponseHeaders[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
             Assert.True(ResponseCachingMiddleware.ContentIsNotModified(context));
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Single(sink.Writes);
 
             // Verify modifications at present succeeds
             context.CachedResponseHeaders[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow);
@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             context.CachedResponseHeaders[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));
             context.CachedResponseHeaders[HeaderNames.LastModified] = HeaderUtilities.FormatDate(utcNow - TimeSpan.FromSeconds(10));
             Assert.True(ResponseCachingMiddleware.ContentIsNotModified(context));
-            Assert.Equal(1, sink.Writes.Count);
+            Assert.Single(sink.Writes);
 
             // Verify modifications at present
             context.CachedResponseHeaders[HeaderNames.Date] = HeaderUtilities.FormatDate(utcNow + TimeSpan.FromSeconds(10));

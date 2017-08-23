@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.ResponseCaching.Tests
             var stream = new SegmentWriteStream(1);
 
             Assert.True(stream.CanWrite);
-            Assert.Equal(0, stream.GetSegments().Count);
+            Assert.Empty(stream.GetSegments());
             Assert.False(stream.CanWrite);
         }
 
