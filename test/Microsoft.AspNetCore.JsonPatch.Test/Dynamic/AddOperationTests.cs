@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("NewInt", 1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             obj.Test = 1;
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("NewInt", 1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("Nested/NewInt", 1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("Nested/NewInt", 1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -115,7 +115,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("Nested/StringProperty", "A");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("Nested/NewInt", 1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -158,7 +158,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("DynamicProperty/NewInt", 1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("DynamicProperty/StringProperty", "B");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             dynamic valueToAdd = new { IntValue = 1, StringValue = "test", GuidValue = Guid.NewGuid() };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("ComplexProperty", valueToAdd);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -227,7 +227,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("StringProperty", "B");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -249,7 +249,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             doc.StringProperty = "A";
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("StringProperty", "B");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             doc.InBetweenFirst.InBetweenSecond.StringProperty = "A";
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("/InBetweenFirst/InBetweenSecond/StringProperty", "B");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             doc.Nested.DynamicProperty.InBetweenFirst.InBetweenSecond.StringProperty = "A";
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("/Nested/DynamicProperty/InBetweenFirst/InBetweenSecond/StringProperty", "B");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -325,7 +325,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("DynamicProperty/OtherProperty/IntProperty", 1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("baz/bat", "qux");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -382,13 +382,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         }
 
         [Fact]
-        public void ShouldReplacePropertyWithDifferentCase()
+        public void ShouldNotReplacePropertyWithDifferentCase()
         {
             dynamic doc = new ExpandoObject();
             doc.StringProperty = "A";
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("stringproperty", "B");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -396,7 +396,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             deserialized.ApplyTo(doc);
 
-            Assert.Equal("B", doc.StringProperty);
+            Assert.Equal("A", doc.StringProperty);
+            Assert.Equal("B", doc.stringproperty);
         }
 
         [Fact]
@@ -408,7 +409,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("IntegerList/0", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -426,7 +427,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             doc.IntegerList = new List<int>() { 1, 2, 3 };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("IntegerList/-1", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -450,7 +451,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("integerlist/0", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -470,7 +471,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("IntegerList/4", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -494,7 +495,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("IntegerList/0", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -514,7 +515,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("IntegerList/-1", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -538,7 +539,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Add("IntegerList/-", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);

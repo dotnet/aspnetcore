@@ -20,20 +20,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             var list = (IList)target;
 
-            Type typeArgument = null;
-            if (!TryGetListTypeArgument(list, out typeArgument, out errorMessage))
+            if (!TryGetListTypeArgument(list, out var typeArgument, out errorMessage))
             {
                 return false;
             }
 
-            PositionInfo positionInfo;
-            if (!TryGetPositionInfo(list, segment, OperationType.Add, out positionInfo, out errorMessage))
+            if (!TryGetPositionInfo(list, segment, OperationType.Add, out var positionInfo, out errorMessage))
             {
                 return false;
             }
 
-            object convertedValue = null;
-            if (!TryConvertValue(value, typeArgument, segment, out convertedValue, out errorMessage))
+            if (!TryConvertValue(value, typeArgument, segment, out var convertedValue, out errorMessage))
             {
                 return false;
             }
@@ -60,15 +57,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             var list = (IList)target;
 
-            Type typeArgument = null;
-            if (!TryGetListTypeArgument(list, out typeArgument, out errorMessage))
+            if (!TryGetListTypeArgument(list, out var typeArgument, out errorMessage))
             {
                 value = null;
                 return false;
             }
 
-            PositionInfo positionInfo;
-            if (!TryGetPositionInfo(list, segment, OperationType.Get, out positionInfo, out errorMessage))
+            if (!TryGetPositionInfo(list, segment, OperationType.Get, out var positionInfo, out errorMessage))
             {
                 value = null;
                 return false;
@@ -95,14 +90,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             var list = (IList)target;
 
-            Type typeArgument = null;
-            if (!TryGetListTypeArgument(list, out typeArgument, out errorMessage))
+            if (!TryGetListTypeArgument(list, out var typeArgument, out errorMessage))
             {
                 return false;
             }
 
-            PositionInfo positionInfo;
-            if (!TryGetPositionInfo(list, segment, OperationType.Remove, out positionInfo, out errorMessage))
+            if (!TryGetPositionInfo(list, segment, OperationType.Remove, out var positionInfo, out errorMessage))
             {
                 return false;
             }
@@ -129,20 +122,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             var list = (IList)target;
 
-            Type typeArgument = null;
-            if (!TryGetListTypeArgument(list, out typeArgument, out errorMessage))
+            if (!TryGetListTypeArgument(list, out var typeArgument, out errorMessage))
             {
                 return false;
             }
 
-            PositionInfo positionInfo;
-            if (!TryGetPositionInfo(list, segment, OperationType.Replace, out positionInfo, out errorMessage))
+            if (!TryGetPositionInfo(list, segment, OperationType.Replace, out var positionInfo, out errorMessage))
             {
                 return false;
             }
 
-            object convertedValue = null;
-            if (!TryConvertValue(value, typeArgument, segment, out convertedValue, out errorMessage))
+            if (!TryConvertValue(value, typeArgument, segment, out var convertedValue, out errorMessage))
             {
                 return false;
             }
@@ -175,7 +165,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            int index = -1;
+            var index = -1;
             if (!int.TryParse(segment, out index))
             {
                 value = null;
@@ -257,7 +247,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return true;
             }
 
-            int position = -1;
+            var position = -1;
             if (int.TryParse(segment, out position))
             {
                 if (position >= 0 && position < list.Count)

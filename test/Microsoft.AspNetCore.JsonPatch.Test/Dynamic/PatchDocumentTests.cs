@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void InvalidPathAtBeginningShouldThrowException()
         {
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             var exception = Assert.Throws<JsonPatchException>(() =>
             {
                 patchDoc.Add("//NewInt", 1);
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void InvalidPathAtEndShouldThrowException()
         {
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             var exception = Assert.Throws<JsonPatchException>(() =>
             {
                 patchDoc.Add("NewInt//", 1);
@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void InvalidPathWithDotShouldThrowException()
         {
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             var exception = Assert.Throws<JsonPatchException>(() =>
             {
                 patchDoc.Add("NewInt.Test", 1);
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 AnotherStringProperty = "B"
             };
 
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Copy("StringProperty", "AnotherStringProperty");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -77,10 +77,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
                 AnotherStringProperty = "B"
             };
 
-            JsonPatchDocument<SimpleDTO> patchDocTyped = new JsonPatchDocument<SimpleDTO>();
+            var patchDocTyped = new JsonPatchDocument<SimpleDTO>();
             patchDocTyped.Copy<string>(o => o.StringProperty, o => o.AnotherStringProperty);
 
-            JsonPatchDocument patchDocUntyped = new JsonPatchDocument();
+            var patchDocUntyped = new JsonPatchDocument();
             patchDocUntyped.Copy("StringProperty", "AnotherStringProperty");
 
             var serializedTyped = JsonConvert.SerializeObject(patchDocTyped);

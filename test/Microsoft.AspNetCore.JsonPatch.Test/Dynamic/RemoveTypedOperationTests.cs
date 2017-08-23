@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Remove("StringProperty");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Remove("IntegerList/2");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Remove("IntegerList/3");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Remove("IntegerList/-1");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Remove("IntegerList/-");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Remove("SimpleDTO/StringProperty");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Remove("SimpleDTO/IntegerList/2");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Remove("SimpleDTO/IntegerList/3");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Remove("SimpleDTO/IntegerList/-1");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Remove("SimpleDTO/IntegerList/-");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);

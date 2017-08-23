@@ -98,10 +98,6 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             get
             {
-                var model = new Class1();
-                yield return new object[] { model, "/Items/Name", model.Items };
-                yield return new object[] { model.Items, "/Name", model.Items };
-
                 var nestedModel = new Class1Nested();
                 nestedModel.Customers.Add(new Class1());
                 yield return new object[] { nestedModel, "/Customers/0/Items/Name", nestedModel.Customers[0].Items };

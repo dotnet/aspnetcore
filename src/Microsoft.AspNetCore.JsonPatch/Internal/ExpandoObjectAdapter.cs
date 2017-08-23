@@ -16,9 +16,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             object value,
             out string errorMessage)
         {
+            var contract = (JsonDictionaryContract)contractResolver.ResolveContract(target.GetType());
+            var key = contract.DictionaryKeyResolver(segment);
             var dictionary = (IDictionary<string, object>)target;
-
-            var key = dictionary.GetKeyUsingCaseInsensitiveSearch(segment);
 
             // As per JsonPatch spec, if a key already exists, adding should replace the existing value
             dictionary[key] = ConvertValue(dictionary, key, value);
@@ -34,9 +34,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             out object value,
             out string errorMessage)
         {
+            var contract = (JsonDictionaryContract)contractResolver.ResolveContract(target.GetType());
+            var key = contract.DictionaryKeyResolver(segment);
             var dictionary = (IDictionary<string, object>)target;
 
-            var key = dictionary.GetKeyUsingCaseInsensitiveSearch(segment);
             value = dictionary[key];
 
             errorMessage = null;
@@ -49,9 +50,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             IContractResolver contractResolver,
             out string errorMessage)
         {
+            var contract = (JsonDictionaryContract)contractResolver.ResolveContract(target.GetType());
+            var key = contract.DictionaryKeyResolver(segment);
             var dictionary = (IDictionary<string, object>)target;
-
-            var key = dictionary.GetKeyUsingCaseInsensitiveSearch(segment);
 
             // As per JsonPatch spec, the target location must exist for remove to be successful
             if (!dictionary.ContainsKey(key))
@@ -73,9 +74,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             object value,
             out string errorMessage)
         {
+            var contract = (JsonDictionaryContract)contractResolver.ResolveContract(target.GetType());
+            var key = contract.DictionaryKeyResolver(segment);
             var dictionary = (IDictionary<string, object>)target;
-
-            var key = dictionary.GetKeyUsingCaseInsensitiveSearch(segment);
 
             // As per JsonPatch spec, the target location must exist for remove to be successful
             if (!dictionary.ContainsKey(key))
@@ -105,9 +106,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
+            var contract = (JsonDictionaryContract)contractResolver.ResolveContract(target.GetType());
+            var key = contract.DictionaryKeyResolver(segment);
             var dictionary = (IDictionary<string, object>)expandoObject;
-
-            var key = dictionary.GetKeyUsingCaseInsensitiveSearch(segment);
 
             if (dictionary.ContainsKey(key))
             {
@@ -125,8 +126,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         private object ConvertValue(IDictionary<string, object> dictionary, string key, object newValue)
         {
-            object existingValue = null;
-            if (dictionary.TryGetValue(key, out existingValue))
+            if (dictionary.TryGetValue(key, out var existingValue))
             {
                 if (existingValue != null)
                 {

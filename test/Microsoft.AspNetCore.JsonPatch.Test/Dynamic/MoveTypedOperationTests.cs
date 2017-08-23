@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Move("StringProperty", "AnotherStringProperty");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Move("IntegerList/0", "IntegerList/1");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Move("IntegerList/0", "IntegerList/-");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Move("IntegerList/0", "IntegerValue");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Move("IntegerValue", "IntegerList/0");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Move("IntegerValue", "IntegerList/-");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);

@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
-using Microsoft.AspNetCore.JsonPatch.Helpers;
 using Microsoft.AspNetCore.JsonPatch.Internal;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json.Serialization;
@@ -22,12 +20,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             IContractResolver contractResolver,
             Action<JsonPatchError> logErrorAction)
         {
-            if (contractResolver == null)
-            {
-                throw new ArgumentNullException(nameof(contractResolver));
-            }
-
-            ContractResolver = contractResolver;
+            ContractResolver = contractResolver ?? throw new ArgumentNullException(nameof(contractResolver));
             LogErrorAction = logErrorAction;
         }
 
@@ -144,10 +137,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             var parsedPath = new ParsedPath(path);
             var visitor = new ObjectVisitor(parsedPath, ContractResolver);
 
-            IAdapter adapter;
             var target = objectToApplyTo;
-            string errorMessage;
-            if (!visitor.TryVisit(ref target, out adapter, out errorMessage))
+            if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
             {
                 var error = CreatePathNotFoundError(objectToApplyTo, path, operation, errorMessage);
                 ErrorReporter(error);
@@ -197,9 +188,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 throw new ArgumentNullException(nameof(objectToApplyTo));
             }
 
-            object propertyValue;
             // Get value at 'from' location and add that value to the 'path' location
-            if (TryGetValue(operation.from, objectToApplyTo, operation, out propertyValue))
+            if (TryGetValue(operation.from, objectToApplyTo, operation, out var propertyValue))
             {
                 // remove that value
                 Remove(operation.from, objectToApplyTo, operation);
@@ -253,10 +243,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             var parsedPath = new ParsedPath(path);
             var visitor = new ObjectVisitor(parsedPath, ContractResolver);
 
-            IAdapter adapter;
             var target = objectToApplyTo;
-            string errorMessage;
-            if (!visitor.TryVisit(ref target, out adapter, out errorMessage))
+            if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
             {
                 var error = CreatePathNotFoundError(objectToApplyTo, path, operationToReport, errorMessage);
                 ErrorReporter(error);
@@ -306,10 +294,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             var parsedPath = new ParsedPath(operation.path);
             var visitor = new ObjectVisitor(parsedPath, ContractResolver);
 
-            IAdapter adapter;
             var target = objectToApplyTo;
-            string errorMessage;
-            if (!visitor.TryVisit(ref target, out adapter, out errorMessage))
+            if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
             {
                 var error = CreatePathNotFoundError(objectToApplyTo, operation.path, operation, errorMessage);
                 ErrorReporter(error);
@@ -358,9 +344,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
                 throw new ArgumentNullException(nameof(objectToApplyTo));
             }
 
-            object propertyValue;
             // Get value at 'from' location and add that value to the 'path' location
-            if (TryGetValue(operation.from, objectToApplyTo, operation, out propertyValue))
+            if (TryGetValue(operation.from, objectToApplyTo, operation, out var propertyValue))
             {
                 // Create deep copy
                 var copyResult = ConversionResultProvider.CopyTo(propertyValue, propertyValue.GetType());
@@ -406,10 +391,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             var parsedPath = new ParsedPath(fromLocation);
             var visitor = new ObjectVisitor(parsedPath, ContractResolver);
 
-            IAdapter adapter;
             var target = objectToGetValueFrom;
-            string errorMessage;
-            if (!visitor.TryVisit(ref target, out adapter, out errorMessage))
+            if (!visitor.TryVisit(ref target, out var adapter, out var errorMessage))
             {
                 var error = CreatePathNotFoundError(objectToGetValueFrom, fromLocation, operation, errorMessage);
                 ErrorReporter(error);
