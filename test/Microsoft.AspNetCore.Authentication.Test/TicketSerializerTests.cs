@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Authentication
                 serializer.Write(writer, ticket);
                 stream.Position = 0;
                 var readTicket = serializer.Read(reader);
-                Assert.Equal(0, readTicket.Principal.Identities.Count());
+                Assert.Empty(readTicket.Principal.Identities);
                 Assert.Equal("bye", readTicket.Properties.RedirectUri);
                 Assert.Equal("Hello", readTicket.AuthenticationScheme);
             }
@@ -50,7 +50,7 @@ namespace Microsoft.AspNetCore.Authentication
                 serializer.Write(writer, ticket);
                 stream.Position = 0;
                 var readTicket = serializer.Read(reader);
-                Assert.Equal(1, readTicket.Principal.Identities.Count());
+                Assert.Single(readTicket.Principal.Identities);
                 Assert.Equal("misc", readTicket.Principal.Identity.AuthenticationType);
                 Assert.Equal("bootstrap", readTicket.Principal.Identities.First().BootstrapContext);
             }
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Authentication
                 serializer.Write(writer, ticket);
                 stream.Position = 0;
                 var readTicket = serializer.Read(reader);
-                Assert.Equal(1, readTicket.Principal.Identities.Count());
+                Assert.Single(readTicket.Principal.Identities);
                 Assert.Equal("misc", readTicket.Principal.Identity.AuthenticationType);
 
                 var identity = (ClaimsIdentity) readTicket.Principal.Identity;
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.Authentication
                 serializer.Write(writer, ticket);
                 stream.Position = 0;
                 var readTicket = serializer.Read(reader);
-                Assert.Equal(1, readTicket.Principal.Identities.Count());
+                Assert.Single(readTicket.Principal.Identities);
                 Assert.Equal("misc", readTicket.Principal.Identity.AuthenticationType);
 
                 var readClaim = readTicket.Principal.FindFirst("type");

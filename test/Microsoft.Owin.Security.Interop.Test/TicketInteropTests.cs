@@ -35,7 +35,7 @@ namespace Microsoft.Owin.Security.Interop.Test
             var newTicket = newSerializer.Deserialize(bytes);
 
             Assert.NotNull(newTicket);
-            Assert.Equal(1, newTicket.Principal.Identities.Count());
+            Assert.Single(newTicket.Principal.Identities);
             var newIdentity = newTicket.Principal.Identity as ClaimsIdentity;
             Assert.NotNull(newIdentity);
             Assert.Equal("scheme", newIdentity.AuthenticationType);

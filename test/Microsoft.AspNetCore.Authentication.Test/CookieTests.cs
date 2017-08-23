@@ -54,8 +54,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var transaction = await SendAsync(server, "http://example.com/challenge?X-Requested-With=XMLHttpRequest");
             Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
             var responded = transaction.Response.Headers.GetValues("Location");
-            Assert.Equal(1, responded.Count());
-            Assert.True(responded.Single().StartsWith("http://example.com/login"));
+            Assert.Single(responded);
+            Assert.StartsWith("http://example.com/login", responded.Single());
         }
 
         [Fact]
@@ -65,8 +65,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var transaction = await SendAsync(server, "http://example.com/forbid?X-Requested-With=XMLHttpRequest");
             Assert.Equal(HttpStatusCode.Forbidden, transaction.Response.StatusCode);
             var responded = transaction.Response.Headers.GetValues("Location");
-            Assert.Equal(1, responded.Count());
-            Assert.True(responded.Single().StartsWith("http://example.com/denied"));
+            Assert.Single(responded);
+            Assert.StartsWith("http://example.com/denied", responded.Single());
         }
 
         [Fact]
@@ -76,8 +76,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var transaction = await SendAsync(server, "http://example.com/signout?X-Requested-With=XMLHttpRequest&ReturnUrl=/");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
             var responded = transaction.Response.Headers.GetValues("Location");
-            Assert.Equal(1, responded.Count());
-            Assert.True(responded.Single().StartsWith("/"));
+            Assert.Single(responded);
+            Assert.StartsWith("/", responded.Single());
         }
 
         [Fact]
@@ -87,8 +87,8 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var transaction = await SendAsync(server, "http://example.com/challenge?X-Requested-With=XMLHttpRequest&ReturnUrl=/");
             Assert.Equal(HttpStatusCode.Unauthorized, transaction.Response.StatusCode);
             var responded = transaction.Response.Headers.GetValues("Location");
-            Assert.Equal(1, responded.Count());
-            Assert.True(responded.Single().StartsWith("http://example.com/Account/Login"));
+            Assert.Single(responded);
+            Assert.StartsWith("http://example.com/Account/Login", responded.Single());
         }
 
         [Fact]
@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
 
             // signout wins over renew
             var transaction4 = await server.SendAsync("http://example.com/signout", transaction3.SetCookie[0]);
-            Assert.Equal(1, transaction4.SetCookie.Count());
+            Assert.Single(transaction4.SetCookie);
             Assert.Contains(".AspNetCore.Cookies=; expires=", transaction4.SetCookie[0]);
         }
 
@@ -717,7 +717,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             new Uri("http://example.com/base"));
 
             var transaction1 = await SendAsync(server, "http://example.com/base/testpath");
-            Assert.True(transaction1.SetCookie.Contains("path=/base"));
+            Assert.Contains("path=/base", transaction1.SetCookie);
         }
 
         [Fact]
@@ -848,7 +848,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var transaction = await server.SendAsync("http://example.com");
 
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
-            Assert.True(transaction.SetCookie[0].StartsWith("One="));
+            Assert.StartsWith("One=", transaction.SetCookie[0]);
         }
 
         [Fact]
@@ -871,7 +871,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             var transaction = await server.SendAsync("http://example.com");
 
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
-            Assert.True(transaction.SetCookie[0].StartsWith("One="));
+            Assert.StartsWith("One=", transaction.SetCookie[0]);
         }
 
         [Fact]
