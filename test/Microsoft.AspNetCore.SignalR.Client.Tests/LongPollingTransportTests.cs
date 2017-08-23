@@ -316,7 +316,7 @@ namespace Microsoft.AspNetCore.Client.Tests
                     Assert.Equal(2, sentRequests.Count);
 
                     // Check the messages received
-                    Assert.Equal(1, messages.Count);
+                    Assert.Single(messages);
                     Assert.Equal(message1Payload, messages[0]);
                 }
                 finally
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Client.Tests
                     await longPollingTransport.Running.OrTimeout();
                     await connectionToTransport.In.Completion.OrTimeout();
 
-                    Assert.Equal(1, sentRequests.Count);
+                    Assert.Single(sentRequests);
                     Assert.Equal(new byte[] { (byte)'H', (byte)'e', (byte)'l', (byte)'l', (byte)'o', (byte)'W', (byte)'o', (byte)'r', (byte)'l', (byte)'d'
                     }, sentRequests[0]);
                 }

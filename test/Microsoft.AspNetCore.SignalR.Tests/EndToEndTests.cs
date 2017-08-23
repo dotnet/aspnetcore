@@ -97,9 +97,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+// Suppress this warning to workaround https://github.com/xunit/xunit/issues/1424
+#pragma warning disable xUnit1026
         [Theory]
         [MemberData(nameof(TransportTypesAndTransferModes))]
         public async Task ConnectionCanSendAndReceiveMessages(TransportType transportType, TransferMode requestedTransferMode)
+#pragma warning restore xUnit1026
         {
             using (StartLog(out var loggerFactory, testName: $"ConnectionCanSendAndReceiveMessages_{transportType.ToString()}"))
             {

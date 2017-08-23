@@ -12,11 +12,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Encoders
     public class LengthPrefixedTextMessageParserTests
     {
         [Theory]
-        [InlineData(0, "0:;", "")]
-        [InlineData(0, "3:ABC;", "ABC")]
-        [InlineData(0, "11:A\nR\rC\r\n;DEF;", "A\nR\rC\r\n;DEF")]
-        [InlineData(4, "12:Hello, World;", "Hello, World")]
-        public void ReadTextMessage(int chunkSize, string encoded, string payload)
+        [InlineData("0:;", "")]
+        [InlineData("3:ABC;", "ABC")]
+        [InlineData("11:A\nR\rC\r\n;DEF;", "A\nR\rC\r\n;DEF")]
+        [InlineData("12:Hello, World;", "Hello, World")]
+        public void ReadTextMessage(string encoded, string payload)
         {
             ReadOnlyBuffer<byte> buffer = Encoding.UTF8.GetBytes(encoded);
 

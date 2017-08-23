@@ -499,7 +499,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var invocation = Assert.IsType<InvocationMessage>(result);
                     Assert.Equal("Broadcast", invocation.Target);
-                    Assert.Equal(1, invocation.Arguments.Length);
+                    Assert.Single(invocation.Arguments);
                     Assert.Equal("test", invocation.Arguments[0]);
                 }
 
@@ -587,7 +587,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var hubMessage = await secondClient.ReadAsync().OrTimeout();
                 var invocation = Assert.IsType<InvocationMessage>(hubMessage);
                 Assert.Equal("Send", invocation.Target);
-                Assert.Equal(1, invocation.Arguments.Length);
+                Assert.Single(invocation.Arguments);
                 Assert.Equal("test", invocation.Arguments[0]);
 
                 // kill the connections
@@ -640,7 +640,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var hubMessage = await secondClient.ReadAsync().OrTimeout();
                 var invocation = Assert.IsType<InvocationMessage>(hubMessage);
                 Assert.Equal("Send", invocation.Target);
-                Assert.Equal(1, invocation.Arguments.Length);
+                Assert.Single(invocation.Arguments);
                 Assert.Equal("test", invocation.Arguments[0]);
 
                 // kill the connections
@@ -673,7 +673,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var hubMessage = await secondClient.ReadAsync().OrTimeout();
                 var invocation = Assert.IsType<InvocationMessage>(hubMessage);
                 Assert.Equal("Send", invocation.Target);
-                Assert.Equal(1, invocation.Arguments.Length);
+                Assert.Single(invocation.Arguments);
                 Assert.Equal("test", invocation.Arguments[0]);
 
                 // kill the connections
@@ -705,7 +705,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var hubMessage = await secondClient.ReadAsync().OrTimeout();
                 var invocation = Assert.IsType<InvocationMessage>(hubMessage);
                 Assert.Equal("Send", invocation.Target);
-                Assert.Equal(1, invocation.Arguments.Length);
+                Assert.Single(invocation.Arguments);
                 Assert.Equal("test", invocation.Arguments[0]);
 
                 // kill the connections

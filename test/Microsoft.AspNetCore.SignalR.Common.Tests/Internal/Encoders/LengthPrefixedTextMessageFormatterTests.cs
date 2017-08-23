@@ -30,11 +30,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Internal.Encoders
         }
 
         [Theory]
-        [InlineData(8, "0:;", "")]
-        [InlineData(8, "3:ABC;", "ABC")]
-        [InlineData(8, "11:A\nR\rC\r\n;DEF;", "A\nR\rC\r\n;DEF")]
-        [InlineData(256, "11:A\nR\rC\r\n;DEF;", "A\nR\rC\r\n;DEF")]
-        public void WriteMessage(int chunkSize, string encoded, string payload)
+        [InlineData("0:;", "")]
+        [InlineData("3:ABC;", "ABC")]
+        [InlineData("11:A\nR\rC\r\n;DEF;", "A\nR\rC\r\n;DEF")]
+        public void WriteMessage(string encoded, string payload)
         {
             var message = Encoding.UTF8.GetBytes(payload);
             var output = new MemoryStream();
