@@ -1537,6 +1537,24 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// </summary>
         /// <returns>Task</returns>
         [Fact]
+        public async Task ChangePhoneNumberTokenIsInt()
+        {
+            if (ShouldSkipDbTests())
+            {
+                return;
+            }
+            var manager = CreateManager();
+            var user = CreateTestUser(phoneNumber: "123-456-7890");
+            IdentityResultAssert.IsSuccess(await manager.CreateAsync(user));
+            var token1 = await manager.GenerateChangePhoneNumberTokenAsync(user, "111-111-1111");
+            Assert.True(int.TryParse(token1, out var ignored));
+        }
+
+        /// <summary>
+        /// Test.
+        /// </summary>
+        /// <returns>Task</returns>
+        [Fact]
         public async Task ChangePhoneNumberFailsWithWrongToken()
         {
             if (ShouldSkipDbTests())
@@ -1550,7 +1568,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var stamp = await manager.GetSecurityStampAsync(user);
             IdentityResultAssert.IsFailure(await manager.ChangePhoneNumberAsync(user, "111-111-1111", "bogus"),
                 "Invalid token.");
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyUserTokenAsync() failed with purpose: ChangePhoneNumber:111-111-1111 for user { await manager.GetUserIdAsync(user)}.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyChangePhoneNumberTokenAsync() failed for user { await manager.GetUserIdAsync(user)}.");
             Assert.False(await manager.IsPhoneNumberConfirmedAsync(user));
             Assert.Equal("123-456-7890", await manager.GetPhoneNumberAsync(user));
             Assert.Equal(stamp, await manager.GetSecurityStampAsync(user));
@@ -1605,7 +1623,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(await manager.VerifyChangePhoneNumberTokenAsync(user, token2, num2));
             Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, token2, num1));
             Assert.False(await manager.VerifyChangePhoneNumberTokenAsync(user, token1, num2));
-            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyUserTokenAsync() failed with purpose: ChangePhoneNumber:111-123-4567 for user {await manager.GetUserIdAsync(user)}.");
+            IdentityResultAssert.VerifyLogMessage(manager.Logger, $"VerifyChangePhoneNumberTokenAsync() failed for user {await manager.GetUserIdAsync(user)}.");
         }
 
         /// <summary>
