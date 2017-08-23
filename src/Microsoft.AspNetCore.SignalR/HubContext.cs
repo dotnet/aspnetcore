@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+
 namespace Microsoft.AspNetCore.SignalR
 {
     public class HubContext<THub> : IHubContext<THub>, IHubClients where THub : Hub
@@ -19,6 +21,11 @@ namespace Microsoft.AspNetCore.SignalR
         public virtual IClientProxy All { get; }
 
         public virtual IGroupManager Groups { get; }
+
+        public IClientProxy AllExcept(IReadOnlyList<string> excludedIds)
+        {
+            return new AllClientsExceptProxy<THub>(_lifetimeManager, excludedIds);
+        }
 
         public virtual IClientProxy Client(string connectionId)
         {

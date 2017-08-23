@@ -26,6 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
         private readonly ISubscriber _bus;
         private readonly ILogger _logger;
         private readonly RedisOptions _options;
+        private readonly string _channelNamePrefix = typeof(THub).FullName;
 
         // This serializer is ONLY use to transmit the data through redis, it has no connection to the serializer used on each connection.
         private readonly JsonSerializer _serializer = new JsonSerializer
@@ -60,7 +61,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             var previousBroadcastTask = Task.CompletedTask;
 
-            var channelName = typeof(THub).FullName;
+            var channelName = _channelNamePrefix;
             _logger.LogInformation("Subscribing to channel: {channel}", channelName);
             _bus.Subscribe(channelName, async (c, data) =>
             {
@@ -68,7 +69,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
                 _logger.LogTrace("Received message from redis channel {channel}", channelName);
 
-                var message = DeserializeMessage(data);
+                var message = DeserializeMessage<HubMessage>(data);
 
                 // TODO: This isn't going to work when we allow JsonSerializer customization or add Protobuf
                 var tasks = new List<Task>(_connections.Count);
@@ -80,34 +81,67 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
                 previousBroadcastTask = Task.WhenAll(tasks);
             });
+
+            var allExceptTask = Task.CompletedTask;
+            channelName = _channelNamePrefix + ".AllExcept";
+            _logger.LogInformation("Subscribing to channel: {channel}", channelName);
+            _bus.Subscribe(channelName, async (c, data) =>
+            {
+                await allExceptTask;
+
+                _logger.LogTrace("Received message from redis channel {channel}", channelName);
+
+                var message = DeserializeMessage<RedisExcludeClientsMessage>(data);
+                var excludedIds = message.ExcludedIds;
+
+                // TODO: This isn't going to work when we allow JsonSerializer customization or add Protobuf
+
+                var tasks = new List<Task>(_connections.Count);
+
+                foreach (var connection in _connections)
+                {
+                    if (!excludedIds.Contains(connection.ConnectionId))
+                    {
+                        tasks.Add(WriteAsync(connection, message));
+                    }
+                }
+
+                allExceptTask = Task.WhenAll(tasks);
+            });
         }
 
         public override Task InvokeAllAsync(string methodName, object[] args)
         {
             var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
 
-            return PublishAsync(typeof(THub).FullName, message);
+            return PublishAsync(_channelNamePrefix, message);
+        }
+
+        public override Task InvokeAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        {
+            var message = new RedisExcludeClientsMessage(GetInvocationId(), nonBlocking: true, target: methodName, excludedIds: excludedIds, arguments: args);
+            return PublishAsync(_channelNamePrefix + ".AllExcept", message);
         }
 
         public override Task InvokeConnectionAsync(string connectionId, string methodName, object[] args)
         {
             var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
 
-            return PublishAsync(typeof(THub).FullName + "." + connectionId, message);
+            return PublishAsync(_channelNamePrefix + "." + connectionId, message);
         }
 
         public override Task InvokeGroupAsync(string groupName, string methodName, object[] args)
         {
             var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
 
-            return PublishAsync(typeof(THub).FullName + ".group." + groupName, message);
+            return PublishAsync(_channelNamePrefix + ".group." + groupName, message);
         }
 
         public override Task InvokeUserAsync(string userId, string methodName, object[] args)
         {
             var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
 
-            return PublishAsync(typeof(THub).FullName + ".user." + userId, message);
+            return PublishAsync(_channelNamePrefix + ".user." + userId, message);
         }
 
         private async Task PublishAsync(string channel, HubMessage hubMessage)
@@ -136,7 +170,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             _connections.Add(connection);
 
-            var connectionChannel = typeof(THub).FullName + "." + connection.ConnectionId;
+            var connectionChannel = _channelNamePrefix + "." + connection.ConnectionId;
             redisSubscriptions.Add(connectionChannel);
 
             var previousConnectionTask = Task.CompletedTask;
@@ -146,15 +180,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             {
                 await previousConnectionTask;
 
-                var message = DeserializeMessage(data);
+                var message = DeserializeMessage<HubMessage>(data);
 
                 previousConnectionTask = WriteAsync(connection, message);
             });
 
-
             if (connection.User.Identity.IsAuthenticated)
             {
-                var userChannel = typeof(THub).FullName + ".user." + connection.User.Identity.Name;
+                var userChannel = _channelNamePrefix + ".user." + connection.User.Identity.Name;
                 redisSubscriptions.Add(userChannel);
 
                 var previousUserTask = Task.CompletedTask;
@@ -164,7 +197,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 {
                     await previousUserTask;
 
-                    var message = DeserializeMessage(data);
+                    var message = DeserializeMessage<HubMessage>(data);
 
                     previousUserTask = WriteAsync(connection, message);
                 });
@@ -208,7 +241,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
         public override async Task AddGroupAsync(string connectionId, string groupName)
         {
-            var groupChannel = typeof(THub).FullName + ".group." + groupName;
+            var groupChannel = _channelNamePrefix + ".group." + groupName;
             var connection = _connections[connectionId];
             if (connection == null)
             {
@@ -246,7 +279,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     // want to do concurrent writes to the outgoing connections
                     await previousTask;
 
-                    var message = DeserializeMessage(data);
+                    var message = DeserializeMessage<HubMessage>(data);
 
                     var tasks = new List<Task>(group.Connections.Count);
                     foreach (var groupConnection in group.Connections)
@@ -265,7 +298,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
         public override async Task RemoveGroupAsync(string connectionId, string groupName)
         {
-            var groupChannel = typeof(THub).FullName + ".group." + groupName;
+            var groupChannel = _channelNamePrefix + ".group." + groupName;
 
             GroupData group;
             if (!_groups.TryGetValue(groupChannel, out group))
@@ -329,15 +362,12 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             return invocationId.ToString();
         }
 
-        private HubMessage DeserializeMessage(RedisValue data)
+        private T DeserializeMessage<T>(RedisValue data)
         {
-            HubMessage message;
-            using (var reader = new JsonTextReader(new StreamReader(new MemoryStream((byte[])data))))
+            using (var reader = new JsonTextReader(new StreamReader(new MemoryStream(data))))
             {
-                message = (HubMessage)_serializer.Deserialize(reader);
+                return (T)_serializer.Deserialize(reader);
             }
-
-            return message;
         }
 
         private class LoggerTextWriter : TextWriter
@@ -359,6 +389,17 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             public override void WriteLine(string value)
             {
                 _logger.LogDebug(value);
+            }
+        }
+
+        public class RedisExcludeClientsMessage : InvocationMessage
+        {
+            public IReadOnlyList<string> ExcludedIds;
+
+            public RedisExcludeClientsMessage(string invocationId, bool nonBlocking, string target, IReadOnlyList<string> excludedIds, params object[] arguments)
+                : base(invocationId, nonBlocking, target, arguments)
+            {
+                ExcludedIds = excludedIds;
             }
         }
 

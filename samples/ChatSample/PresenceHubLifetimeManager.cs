@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.AspNetCore.SignalR.Redis;
-using System.Linq;
 
 namespace ChatSample
 {
@@ -139,6 +140,11 @@ namespace ChatSample
         public override Task InvokeAllAsync(string methodName, object[] args)
         {
             return _wrappedHubLifetimeManager.InvokeAllAsync(methodName, args);
+        }
+
+        public override Task InvokeAllExceptAsync(string methodName, object[] args, IReadOnlyList<string> excludedIds)
+        {
+            return _wrappedHubLifetimeManager.InvokeAllExceptAsync(methodName, args, excludedIds);
         }
 
         public override Task InvokeConnectionAsync(string connectionId, string methodName, object[] args)

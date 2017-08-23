@@ -124,7 +124,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public async Task<string> SendInvocationAsync(string methodName, bool nonBlocking, params object[] args)
         {
             var invocationId = GetInvocationId();
-
             var payload = _protocolReaderWriter.WriteMessage(new InvocationMessage(invocationId, nonBlocking, methodName, args));
             await Application.Out.WriteAsync(payload);
 
