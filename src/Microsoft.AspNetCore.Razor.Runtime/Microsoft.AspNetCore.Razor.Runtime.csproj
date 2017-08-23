@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Summary>Runtime components for rendering Razor pages and implementing tag helpers.</Summary>
     <Description>$(Summary)
@@ -11,10 +9,8 @@ Microsoft.AspNetCore.Razor.TagHelpers.HtmlAttributeNameAttribute
 Microsoft.AspNetCore.Razor.TagHelpers.HtmlTargetElementAttribute
 Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>aspnetcore;cshtml;razor;taghelper;taghelpers</PackageTags>
+    <PackageTags>$(PackageTags);taghelper;taghelpers</PackageTags>
   </PropertyGroup>
 
   <ItemGroup>

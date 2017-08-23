@@ -1,13 +1,13 @@
 <Project>
 
-  <Import Project="dependencies.props" />
-  <Import Project="..\version.xml" />
+  <Import Project="build\dependencies.props" />
+  <Import Project="version.xml" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
     <RepositoryUrl>https://github.com/aspnet/Razor</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
     <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
@@ -19,10 +19,6 @@
 
   <ItemGroup>
     <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkVersion)" PrivateAssets="All" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' AND '$(OutputType)'=='library'">
-    <PackageReference Include="NETStandard.Library" Version="$(NETStandardImplicitPackageVersion)" />
   </ItemGroup>
 
 </Project>

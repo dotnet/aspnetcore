@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>Builds Razor pages for views in a project. For internal use only.</Description>
     <TargetFramework>netcoreapp2.0</TargetFramework>

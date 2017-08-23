@@ -20,6 +20,8 @@
     <ExtensionInstallationRoot>CommonExtensions</ExtensionInstallationRoot>
     <ExtensionInstallationFolder>Microsoft\RazorLanguageServices</ExtensionInstallationFolder>
     <IsProductComponent>true</IsProductComponent>
+    <ImportDirectoryBuildProps>false</ImportDirectoryBuildProps>
+    <ImportDirectoryBuildTargets>false</ImportDirectoryBuildTargets>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -239,8 +241,8 @@
     <SuppressFromVsix Include="System.Xml.XPath.dll" />
     <SuppressFromVsix Include="System.Xml.XPath.XDocument.dll" />
   </ItemGroup>
-  
-  <!-- 
+
+  <!--
     Begin workaround for https://github.com/dotnet/sdk/issues/433
 
     The VS SDK doesn't understand the new SDK-style of projects, so  we need to manually add our project

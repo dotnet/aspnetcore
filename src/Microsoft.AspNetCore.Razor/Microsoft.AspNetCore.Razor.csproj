@@ -1,13 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor parser and code generation infrastructure.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>aspnetcore;cshtml;razor</PackageTags>
   </PropertyGroup>
 
 </Project>

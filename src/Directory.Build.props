@@ -1,0 +1,13 @@
+<Project>
+  <Import Project="..\Directory.Build.props"/>
+
+  <PropertyGroup>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageTags>aspnetcore;cshtml;razor</PackageTags>
+  </PropertyGroup>
+
+  <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' AND '$(OutputType)'=='library'">
+    <PackageReference Include="NETStandard.Library" Version="$(NETStandardImplicitPackageVersion)" />
+  </ItemGroup>
+</Project>

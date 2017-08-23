@@ -1,8 +1,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26803.3009
+VisualStudioVersion = 15.0.26820.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{3C0D6505-79B3-49D0-B4C3-176F0F1836ED}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{92463391-81BE-462B-AC3C-78C6C760741F}"
 EndProject
@@ -13,8 +16,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{F8C12DD6-659D-405A-AA27-FB22AD92A010}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
-		build\common.props = build\common.props
 		build\dependencies.props = build\dependencies.props
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
@@ -214,5 +218,8 @@ Global
 		{82C23CF8-95FF-40F7-BF50-3AD9EE21ED58} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{8F165A3F-A18C-4649-AA08-C0E1BA5F5C90} = {92463391-81BE-462B-AC3C-78C6C760741F}
 		{C61AAE12-5007-4205-A220-68F354A7F235} = {92463391-81BE-462B-AC3C-78C6C760741F}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {057E86AD-8BD3-4E03-978C-42B8A5A3C024}
 	EndGlobalSection
 EndGlobal

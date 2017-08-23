@@ -1,15 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <TargetFrameworks>net46</TargetFrameworks>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <RootNamespace>Microsoft.VisualStudio.LanguageServices.Razor</RootNamespace>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor design-time infrastructure.</Description>
-    <PackageTags>aspnetcore;cshtml;razor</PackageTags>
     <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
@@ -22,7 +15,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
-    
+
     <PackageReference Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.Editor" Version="$(VsShellVersion)" />
     <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevVersion)" />

@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <TargetFramework>net461</TargetFramework>
     <PreserveCompilationContext>true</PreserveCompilationContext>
@@ -23,7 +21,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
-    
+
     <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
   </ItemGroup>
 
