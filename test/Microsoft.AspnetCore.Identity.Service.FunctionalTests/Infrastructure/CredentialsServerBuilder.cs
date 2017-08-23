@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Linq;
 using System.Net.Http;
-using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
 using Identity.OpenIdConnect.WebSite;
 using Identity.OpenIdConnect.WebSite.Identity.Data;
@@ -25,7 +23,7 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
         public CredentialsServerBuilder()
         {
             Server = new MvcWebApplicationBuilder<Startup>()
-                .UseSolutionRelativeContentRoot(@".\test\WebSites\Identity.OpenIdConnect.WebSite")
+                .UseSolutionRelativeContentRoot(@"./test/WebSites/Identity.OpenIdConnect.WebSite")
                 .UseApplicationAssemblies();
         }
 
