@@ -10,9 +10,10 @@ using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
-using Microsoft.CSharp;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
@@ -491,7 +492,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
-                await firstClient.SendInvocationAsync("BroadcastMethod", "test").OrTimeout();
+                await firstClient.SendInvocationAsync(nameof(MethodHub.BroadcastMethod), "test").OrTimeout();
 
                 foreach (var result in await Task.WhenAll(
                     firstClient.ReadAsync(),
@@ -813,6 +814,43 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task HubOptionsCanUseCustomJsonSerializerSettings()
+        {
+            var serviceProvider = CreateServiceProvider(services =>
+            {
+                services.AddSignalR(o =>
+                {
+                    o.JsonSerializerSettings = new JsonSerializerSettings
+                    {
+                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                    };
+                });
+            });
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                await client.SendInvocationAsync(nameof(MethodHub.BroadcastItem)).OrTimeout();
+
+                var message = await client.ReadAsync().OrTimeout() as InvocationMessage;
+
+                var customItem = message.Arguments[0].ToString();
+                // Originally "Message" and "paramName"
+                Assert.Contains("message", customItem);
+                Assert.Contains("paramName", customItem);
+
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
+            }
+        }
+
         private static void AssertHubMessage(HubMessage expected, HubMessage actual)
         {
             // We aren't testing InvocationIds here
@@ -1058,6 +1096,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public Task BroadcastMethod(string message)
             {
                 return Clients.All.InvokeAsync("Broadcast", message);
+            }
+
+            public Task BroadcastItem()
+            {
+                return Clients.All.InvokeAsync("Broadcast", new { Message = "test", paramName = "test" });
             }
 
             public Task<int> TaskValueMethod()
