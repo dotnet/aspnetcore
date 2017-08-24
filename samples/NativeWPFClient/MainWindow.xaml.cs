@@ -29,25 +29,25 @@ namespace NativeWPFClient
         {
             InitializeComponent();
             // Local client
-            //DataContext = new NativeWPFClientViewModel
-            //{
-            //    BaseAddress = "https://localhost/",
-            //    RedirectUri = "urn:ietf:wg:oauth:2.0:oob",
-            //    Tenant = "IdentityService",
-            //    Policy = "signinsignup",
-            //    ClientId = "777f6733-a5ef-49d5-bc0a-877e89ed768b",
-            //    Scopes = "read"
-            //};
-
             DataContext = new NativeWPFClientViewModel
             {
-                BaseAddress = "https://login.microsoftonline.com/",
+                BaseAddress = "https://localhost:44324/",
                 RedirectUri = "urn:ietf:wg:oauth:2.0:oob",
-                Tenant = "jacalvarb2c.onmicrosoft.com",
-                Policy = "B2C_1_signinsignup",
-                ClientId = "42291769-0dc8-4497-9cbc-d3879783d6e7",
-                Scopes = "https://jacalvarb2c.onmicrosoft.com/ProtectedApi/read"
+                Tenant = "IdentityService",
+                Policy = "signinsignup",
+                ClientId = "06D7C2FB-A66A-41AD-9509-77BDDFAB111B",
+                Scopes = "https://localhost/DFC7191F-FF74-42B9-A292-08FEA80F5B20/v2.0/ProtectedApi/read"
             };
+
+            // DataContext = new NativeWPFClientViewModel
+            // {
+            //     BaseAddress = "https://login.microsoftonline.com/",
+            //     RedirectUri = "urn:ietf:wg:oauth:2.0:oob",
+            //     Tenant = "jacalvarb2c.onmicrosoft.com",
+            //     Policy = "B2C_1_signinsignup",
+            //     ClientId = "42291769-0dc8-4497-9cbc-d3879783d6e7",
+            //     Scopes = "https://jacalvarb2c.onmicrosoft.com/ProtectedApi/read"
+            // };
 
             ViewModel.Result = "Hit authorize to sign in";
         }

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Identity.Service;
 using Microsoft.EntityFrameworkCore.Migrations;
 
@@ -305,44 +306,95 @@ namespace IdentityOIDCWebApplicationSample.Identity.Data.Migrations
                 column: "NormalizedUserName",
                 unique: true);
 
-            // Seed client application
-            var clientAppId = "4122031F-D3A2-4C1A-B25E-2A55B2A32FAC";
-            var clientId = "56A33E6A-ADFE-47EA-BBFE-40F4AE4C55BA";
-            migrationBuilder.Sql($@"INSERT INTO AspNetApplications (Id,ClientId,Name)
-VALUES (N'{clientAppId}',N'{clientId}',N'IdentityOIDCWebApplicationSample')");
-            //migrationBuilder.InsertData(
-            //    table: "AspNetApplications",
-            //    columns: new[] { "Id", "ClientId", "Name" },
-            //    values: new object[,]
-            //    {
-            //        { clientAppId, clientId, "IdentityOIDCWebApplicationSample" }
-            //    });
+            // Seed client applications
+            var integratedClientClientId = "56A33E6A-ADFE-47EA-BBFE-40F4AE4C55BA";
+            RegisterApplication(migrationBuilder,
+                integratedClientClientId,
+                "IdentityOIDCWebApplicationSample",
+                new[] { ApplicationScope.OpenId.Scope },
+                new[] { "urn:self:aspnet:identity:integrated" },
+                new[] { "urn:self:aspnet:identity:integrated" });
 
-            var clientOpenIdScopeId = "7F4F91FE-87F5-41DC-B111-3DC5FC186E35";
-            migrationBuilder.Sql($@"INSERT INTO AspNetScopes (Id,ApplicationId,Value)
-VALUES (N'{clientOpenIdScopeId}',N'{clientAppId}',N'{ApplicationScope.OpenId.Scope}')");
-            //migrationBuilder.InsertData(
-            //    table: "AspNetScopes",
-            //    columns: new[] { "Id", "ApplicationId", "Value" },
-            //    values: new object[,]
-            //    {
-            //        { clientOpenIdScopeId, clientAppId, ApplicationScope.OpenId.Scope },
-            //    });
+            var mobileAppId = "06D7C2FB-A66A-41AD-9509-77BDDFAB111B";
+            RegisterApplication(migrationBuilder,
+                mobileAppId,
+                "MobileApplication",
+                new[] { ApplicationScope.OpenId.Scope, ApplicationScope.OfflineAccess.Scope },
+                new[] { "urn:ietf:wg:oauth:2.0:oob" },
+                new[] { "urn:ietf:wg:oauth:2.0:oob" });
 
-            var clientRedirectUriId = "849B8050-0DEC-4A96-B234-8A08695A1526";
-            var clientLogoutRedirectUriId = "9F24EA98-4375-4CE2-A37C-95832F19D75D";
-            migrationBuilder.Sql($@"INSERT INTO AspNetRedirectUris (Id, ApplicationId, IsLogout, Value)
-VALUES (N'{clientRedirectUriId}',N'{clientAppId}','false',N'urn:self:aspnet:identity:integrated')");
-            migrationBuilder.Sql($@"INSERT INTO AspNetRedirectUris (Id, ApplicationId, IsLogout, Value)
-VALUES (N'{clientLogoutRedirectUriId}',N'{clientAppId}','true',N'urn:self:aspnet:identity:integrated')");
-            //migrationBuilder.InsertData(
-            //    table: "AspNetRedirectUris",
-            //    columns: new[] { "Id", "ApplicationId", "IsLogout", "Value" },
-            //    values: new object[,]
-            //    {
-            //        { clientRedirectUriId, clientAppId, false, "urn:self:aspnet:identity:integrated"},
-            //        { clientLogoutRedirectUriId, clientAppId, true, "urn:self:aspnet:identity:integrated" }
-            //    });
+            var protectedApi = "6EA3533F-DD7B-4C34-AAAD-3C493B72D7A5";
+            RegisterApplication(migrationBuilder,
+                protectedApi,
+                "ProtectedApi",
+                new[] { "read" },
+                new string[] { },
+                new string[] { });
+
+            var spaClientId = "CDA53D17-6683-4EA7-B6D7-B6DB23E60DED";
+            RegisterApplication(migrationBuilder,
+                spaClientId,
+                "SPA",
+                new[] { ApplicationScope.OpenId.Scope },
+                new[] { "https://localhost:44324/Spa.html" },
+                new[] { "https://localhost:44324/Spa.html" });
+        }
+
+        private void RegisterApplication(
+            MigrationBuilder migrationBuilder,
+            string clientId,
+            string name,
+            string[] scopes,
+            string[] redirectUris,
+            string[] logoutRedirectUris)
+        {
+            var clientAppId = Guid.NewGuid().ToString();
+            migrationBuilder.InsertData(
+                table: "AspNetApplications",
+                columns: new[] { "Id", "ClientId", "Name" },
+                values: new object[,]
+                {
+                    { clientAppId, clientId, name }
+                });
+
+            var scopeValues = new object[scopes.Length, 3];
+
+            for (int i = 0; i < scopes.Length; i++)
+            {
+                scopeValues.SetValue(Guid.NewGuid().ToString(), i, 0);
+                scopeValues.SetValue(clientAppId, i, 1);
+                scopeValues.SetValue(scopes[i], i, 2);
+            }
+
+            migrationBuilder.InsertData(
+                table: "AspNetScopes",
+                columns: new[] { "Id", "ApplicationId", "Value" },
+                values: scopeValues);
+
+            var redirectUriValues = new object[redirectUris.Length + logoutRedirectUris.Length, 4];
+
+            for (var i = 0; i < redirectUris.Length; i++)
+            {
+                var clientRedirectUriId = Guid.NewGuid().ToString();
+                redirectUriValues.SetValue(clientRedirectUriId, i, 0);
+                redirectUriValues.SetValue(clientAppId, i, 1);
+                redirectUriValues.SetValue(false, i, 2);
+                redirectUriValues.SetValue(redirectUris[i], i, 3);
+            }
+
+            for (var i = redirectUris.Length; i < redirectUris.Length + logoutRedirectUris.Length; i++)
+            {
+                var clientLogoutUriId = Guid.NewGuid().ToString();
+                redirectUriValues.SetValue(clientLogoutUriId, i, 0);
+                redirectUriValues.SetValue(clientAppId, i, 1);
+                redirectUriValues.SetValue(true, i, 2);
+                redirectUriValues.SetValue(logoutRedirectUris[i - redirectUris.Length], i, 3);
+            }
+
+            migrationBuilder.InsertData(
+                table: "AspNetRedirectUris",
+                columns: new[] { "Id", "ApplicationId", "IsLogout", "Value" },
+                values: redirectUriValues);
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)

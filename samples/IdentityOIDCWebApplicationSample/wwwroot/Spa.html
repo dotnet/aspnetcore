@@ -36,18 +36,22 @@
     <script class="pre">
         // The current application coordinates were pre-registered in a B2C tenant.
         var applicationConfig = {
-            clientID: '4c0e3ab6-3bdc-4eca-80ab-89669d974e13',
+            clientID: 'CDA53D17-6683-4EA7-B6D7-B6DB23E60DED',
+            redirectUri: "https://localhost:44324/Spa.html",
             authority: "https://localhost:44324/tfp/IdentityService/signinsignup",
-            b2cScopes: ["https://localhost/DFC7191F-FF74-42B9-A292-08FEA80F5B20/v2.0/spa/read"],
+            b2cScopes: ["https://localhost/DFC7191F-FF74-42B9-A292-08FEA80F5B20/v2.0/ProtectedApi/read"], // <<issuer>>/<<resourceAppName>>/<<resourceAppScope>>.
             webApi: 'https://localhost:44324/Home/Contact',
         };
     </script>
 
     <script>
         "use strict";
-        var clientApplication = new Msal.UserAgentApplication(applicationConfig.clientID, applicationConfig.authority, function (errorDesc, token, error, tokenType) {
+        var clientApplication = new Msal.UserAgentApplication(
+            applicationConfig.clientID,
+            applicationConfig.authority,
+            function (errorDesc, token, error, tokenType) {
             // Called after loginRedirect or acquireTokenPopup
-        });
+        }, { redirectUri: applicationConfig.redirectUri });
 
         function login() {
             clientApplication.loginPopup(applicationConfig.b2cScopes).then(function (idToken) {
