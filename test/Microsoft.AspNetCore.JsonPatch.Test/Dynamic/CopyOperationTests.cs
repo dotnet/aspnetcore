@@ -6,7 +6,7 @@ using System.Dynamic;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class CopyOperationTests
     {
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         public void NestedCopy()
         {
             dynamic doc = new ExpandoObject();
-            doc.SimpleDTO = new SimpleDTO()
+            doc.SimpleObject = new SimpleObject()
             {
                 StringProperty = "A",
                 AnotherStringProperty = "B"
@@ -130,82 +130,82 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Copy("SimpleDTO/StringProperty", "SimpleDTO/AnotherStringProperty");
+            patchDoc.Copy("SimpleObject/StringProperty", "SimpleObject/AnotherStringProperty");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
             deserialized.ApplyTo(doc);
 
-            Assert.Equal("A", doc.SimpleDTO.AnotherStringProperty);
+            Assert.Equal("A", doc.SimpleObject.AnotherStringProperty);
         }
 
         [Fact]
         public void NestedCopyInList()
         {
             dynamic doc = new ExpandoObject();
-            doc.SimpleDTO = new SimpleDTO()
+            doc.SimpleObject = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Copy("SimpleDTO/IntegerList/0", "SimpleDTO/IntegerList/1");
+            patchDoc.Copy("SimpleObject/IntegerList/0", "SimpleObject/IntegerList/1");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
             deserialized.ApplyTo(doc);
 
-            Assert.Equal(new List<int>() { 1, 1, 2, 3 }, doc.SimpleDTO.IntegerList);
+            Assert.Equal(new List<int>() { 1, 1, 2, 3 }, doc.SimpleObject.IntegerList);
         }
 
         [Fact]
         public void NestedCopyFromListToEndOfList()
         {
             dynamic doc = new ExpandoObject();
-            doc.SimpleDTO = new SimpleDTO()
+            doc.SimpleObject = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Copy("SimpleDTO/IntegerList/0", "SimpleDTO/IntegerList/-");
+            patchDoc.Copy("SimpleObject/IntegerList/0", "SimpleObject/IntegerList/-");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
             deserialized.ApplyTo(doc);
 
-            Assert.Equal(new List<int>() { 1, 2, 3, 1 }, doc.SimpleDTO.IntegerList);
+            Assert.Equal(new List<int>() { 1, 2, 3, 1 }, doc.SimpleObject.IntegerList);
         }
 
         [Fact]
         public void NestedCopyFromListToNonList()
         {
             dynamic doc = new ExpandoObject();
-            doc.SimpleDTO = new SimpleDTO()
+            doc.SimpleObject = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Copy("SimpleDTO/IntegerList/0", "SimpleDTO/IntegerValue");
+            patchDoc.Copy("SimpleObject/IntegerList/0", "SimpleObject/IntegerValue");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
             deserialized.ApplyTo(doc);
 
-            Assert.Equal(1, doc.SimpleDTO.IntegerValue);
+            Assert.Equal(1, doc.SimpleObject.IntegerValue);
         }
 
         [Fact]
         public void NestedCopyFromNonListToList()
         {
             dynamic doc = new ExpandoObject();
-            doc.SimpleDTO = new SimpleDTO()
+            doc.SimpleObject = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
@@ -213,19 +213,19 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Copy("SimpleDTO/IntegerValue", "SimpleDTO/IntegerList/0");
+            patchDoc.Copy("SimpleObject/IntegerValue", "SimpleObject/IntegerList/0");
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
             deserialized.ApplyTo(doc);
 
-            Assert.Equal(new List<int>() { 5, 1, 2, 3 }, doc.SimpleDTO.IntegerList);
+            Assert.Equal(new List<int>() { 5, 1, 2, 3 }, doc.SimpleObject.IntegerList);
         }
 
         [Fact]
         public void NestedCopyToEndOfList()
         {
             dynamic doc = new ExpandoObject();
-            doc.SimpleDTO = new SimpleDTO()
+            doc.SimpleObject = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
@@ -233,13 +233,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Copy("SimpleDTO/IntegerValue", "SimpleDTO/IntegerList/-");
+            patchDoc.Copy("SimpleObject/IntegerValue", "SimpleObject/IntegerList/-");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
             deserialized.ApplyTo(doc);
 
-            Assert.Equal(new List<int>() { 1, 2, 3, 5 }, doc.SimpleDTO.IntegerList);
+            Assert.Equal(new List<int>() { 1, 2, 3, 5 }, doc.SimpleObject.IntegerList);
         }
     }
 }

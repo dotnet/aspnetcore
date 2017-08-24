@@ -15,13 +15,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         public ObjectVisitor(ParsedPath path, IContractResolver contractResolver)
         {
-            if (contractResolver == null)
-            {
-                throw new ArgumentNullException(nameof(contractResolver));
-            }
-
             _path = path;
-            _contractResolver = contractResolver;
+            _contractResolver = contractResolver ?? throw new ArgumentNullException(nameof(contractResolver));
         }
 
         public bool TryVisit(ref object target, out IAdapter adapter, out string errorMessage)
@@ -38,8 +33,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Traverse until the penultimate segment to get the target object and adapter
             for (var i = 0; i < _path.Segments.Count - 1; i++)
             {
-                object next;
-                if (!adapter.TryTraverse(target, _path.Segments[i], _contractResolver, out next, out errorMessage))
+                if (!adapter.TryTraverse(target, _path.Segments[i], _contractResolver, out var next, out errorMessage))
                 {
                     adapter = null;
                     return false;
@@ -58,6 +52,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             if (targetObject is ExpandoObject)
             {
                 return new ExpandoObjectAdapter();
+            }
+            else if (targetObject is IDynamicMetaObjectProvider)
+            {
+                return new DynamicObjectAdapter();
             }
             else if (targetObject is IDictionary)
             {

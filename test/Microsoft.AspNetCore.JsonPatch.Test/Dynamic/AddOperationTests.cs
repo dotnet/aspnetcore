@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class AddOperationTests
     {
@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             dynamic doc = new
             {
                 Test = 1,
-                nested = new NestedDTO()
+                nested = new NestedObject()
             };
 
             // create patch
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             dynamic doc = new
             {
                 Test = 1,
-                nested = new NestedDTO()
+                nested = new NestedObject()
             };
 
             // create patch
@@ -152,7 +152,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void AddNewPropertyToExpandoOjectInTypedObject()
         {
-            var doc = new NestedDTO()
+            var doc = new NestedObject()
             {
                 DynamicProperty = new ExpandoObject()
             };
@@ -175,7 +175,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             dynamic dynamicProperty = new ExpandoObject();
             dynamicProperty.StringProperty = "A";
 
-            var doc = new NestedDTO()
+            var doc = new NestedObject()
             {
                 DynamicProperty = dynamicProperty
             };
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         public void AddResultsShouldReplaceInNestedInDynamic()
         {
             dynamic doc = new ExpandoObject();
-            doc.Nested = new NestedDTO();
+            doc.Nested = new NestedObject();
             doc.Nested.DynamicProperty = new ExpandoObject();
             doc.Nested.DynamicProperty.InBetweenFirst = new ExpandoObject();
             doc.Nested.DynamicProperty.InBetweenFirst.InBetweenSecond = new ExpandoObject();
@@ -319,7 +319,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             //   the root of the document, nor a member of an existing object, nor a
             //   member of an existing array.
 
-            var doc = new NestedDTO()
+            var doc = new NestedObject()
             {
                 DynamicProperty = new ExpandoObject()
             };

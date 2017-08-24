@@ -11,276 +11,242 @@ namespace Microsoft.AspNetCore.JsonPatch
             = new ResourceManager("Microsoft.AspNetCore.JsonPatch.Resources", typeof(Resources).GetTypeInfo().Assembly);
 
         /// <summary>
-        /// The type of the property at path '{0}' could not be determined.
-        /// </summary>
-        internal static string CannotDeterminePropertyType
-        {
-            get { return GetString("CannotDeterminePropertyType"); }
-        }
-
-        /// <summary>
-        /// The type of the property at path '{0}' could not be determined.
-        /// </summary>
-        internal static string FormatCannotDeterminePropertyType(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("CannotDeterminePropertyType"), p0);
-        }
-
-        /// <summary>
         /// The property at '{0}' could not be copied.
         /// </summary>
-        internal static string CannotCannotCopyProperty
+        internal static string CannotCopyProperty
         {
-            get { return GetString("CannotCannotCopyProperty"); }
+            get => GetString("CannotCopyProperty");
         }
 
         /// <summary>
         /// The property at '{0}' could not be copied.
         /// </summary>
         internal static string FormatCannotCopyProperty(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("CannotCopyProperty"), p0);
+
+        /// <summary>
+        /// The type of the property at path '{0}' could not be determined.
+        /// </summary>
+        internal static string CannotDeterminePropertyType
         {
-            return string.Format(CultureInfo.CurrentCulture, GetString("CannotCannotCopyProperty"), p0);
+            get => GetString("CannotDeterminePropertyType");
         }
+
+        /// <summary>
+        /// The type of the property at path '{0}' could not be determined.
+        /// </summary>
+        internal static string FormatCannotDeterminePropertyType(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("CannotDeterminePropertyType"), p0);
 
         /// <summary>
         /// The '{0}' operation at path '{1}' could not be performed.
         /// </summary>
         internal static string CannotPerformOperation
         {
-            get { return GetString("CannotPerformOperation"); }
+            get => GetString("CannotPerformOperation");
         }
 
         /// <summary>
         /// The '{0}' operation at path '{1}' could not be performed.
         /// </summary>
         internal static string FormatCannotPerformOperation(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("CannotPerformOperation"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("CannotPerformOperation"), p0, p1);
 
         /// <summary>
         /// The property at '{0}' could not be read.
         /// </summary>
         internal static string CannotReadProperty
         {
-            get { return GetString("CannotReadProperty"); }
+            get => GetString("CannotReadProperty");
         }
 
         /// <summary>
         /// The property at '{0}' could not be read.
         /// </summary>
         internal static string FormatCannotReadProperty(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("CannotReadProperty"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("CannotReadProperty"), p0);
 
         /// <summary>
         /// The property at path '{0}' could not be updated.
         /// </summary>
         internal static string CannotUpdateProperty
         {
-            get { return GetString("CannotUpdateProperty"); }
+            get => GetString("CannotUpdateProperty");
         }
 
         /// <summary>
         /// The property at path '{0}' could not be updated.
         /// </summary>
         internal static string FormatCannotUpdateProperty(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("CannotUpdateProperty"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("CannotUpdateProperty"), p0);
 
         /// <summary>
         /// The index value provided by path segment '{0}' is out of bounds of the array size.
         /// </summary>
         internal static string IndexOutOfBounds
         {
-            get { return GetString("IndexOutOfBounds"); }
+            get => GetString("IndexOutOfBounds");
         }
 
         /// <summary>
         /// The index value provided by path segment '{0}' is out of bounds of the array size.
         /// </summary>
         internal static string FormatIndexOutOfBounds(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("IndexOutOfBounds"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("IndexOutOfBounds"), p0);
 
         /// <summary>
         /// The path segment '{0}' is invalid for an array index.
         /// </summary>
         internal static string InvalidIndexValue
         {
-            get { return GetString("InvalidIndexValue"); }
+            get => GetString("InvalidIndexValue");
         }
 
         /// <summary>
         /// The path segment '{0}' is invalid for an array index.
         /// </summary>
         internal static string FormatInvalidIndexValue(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidIndexValue"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidIndexValue"), p0);
 
         /// <summary>
         /// The type '{0}' was malformed and could not be parsed.
         /// </summary>
         internal static string InvalidJsonPatchDocument
         {
-            get { return GetString("InvalidJsonPatchDocument"); }
+            get => GetString("InvalidJsonPatchDocument");
         }
 
         /// <summary>
         /// The type '{0}' was malformed and could not be parsed.
         /// </summary>
         internal static string FormatInvalidJsonPatchDocument(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidJsonPatchDocument"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidJsonPatchDocument"), p0);
 
         /// <summary>
         /// Invalid JsonPatch operation '{0}'.
         /// </summary>
         internal static string InvalidJsonPatchOperation
         {
-            get { return GetString("InvalidJsonPatchOperation"); }
+            get => GetString("InvalidJsonPatchOperation");
         }
 
         /// <summary>
         /// Invalid JsonPatch operation '{0}'.
         /// </summary>
         internal static string FormatInvalidJsonPatchOperation(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidJsonPatchOperation"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidJsonPatchOperation"), p0);
 
         /// <summary>
         /// The provided string '{0}' is an invalid path.
         /// </summary>
         internal static string InvalidValueForPath
         {
-            get { return GetString("InvalidValueForPath"); }
+            get => GetString("InvalidValueForPath");
         }
 
         /// <summary>
         /// The provided string '{0}' is an invalid path.
         /// </summary>
         internal static string FormatInvalidValueForPath(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidValueForPath"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidValueForPath"), p0);
 
         /// <summary>
         /// The value '{0}' is invalid for target location.
         /// </summary>
         internal static string InvalidValueForProperty
         {
-            get { return GetString("InvalidValueForProperty"); }
+            get => GetString("InvalidValueForProperty");
         }
 
         /// <summary>
         /// The value '{0}' is invalid for target location.
         /// </summary>
         internal static string FormatInvalidValueForProperty(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("InvalidValueForProperty"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidValueForProperty"), p0);
 
         /// <summary>
         /// '{0}' must be of type '{1}'.
         /// </summary>
         internal static string ParameterMustMatchType
         {
-            get { return GetString("ParameterMustMatchType"); }
+            get => GetString("ParameterMustMatchType");
         }
 
         /// <summary>
         /// '{0}' must be of type '{1}'.
         /// </summary>
         internal static string FormatParameterMustMatchType(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ParameterMustMatchType"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ParameterMustMatchType"), p0, p1);
 
         /// <summary>
         /// The type '{0}' which is an array is not supported for json patch operations as it has a fixed size.
         /// </summary>
         internal static string PatchNotSupportedForArrays
         {
-            get { return GetString("PatchNotSupportedForArrays"); }
+            get => GetString("PatchNotSupportedForArrays");
         }
 
         /// <summary>
         /// The type '{0}' which is an array is not supported for json patch operations as it has a fixed size.
         /// </summary>
         internal static string FormatPatchNotSupportedForArrays(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PatchNotSupportedForArrays"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("PatchNotSupportedForArrays"), p0);
 
         /// <summary>
         /// The type '{0}' which is a non generic list is not supported for json patch operations. Only generic list types are supported.
         /// </summary>
         internal static string PatchNotSupportedForNonGenericLists
         {
-            get { return GetString("PatchNotSupportedForNonGenericLists"); }
+            get => GetString("PatchNotSupportedForNonGenericLists");
         }
 
         /// <summary>
         /// The type '{0}' which is a non generic list is not supported for json patch operations. Only generic list types are supported.
         /// </summary>
         internal static string FormatPatchNotSupportedForNonGenericLists(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("PatchNotSupportedForNonGenericLists"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("PatchNotSupportedForNonGenericLists"), p0);
 
         /// <summary>
         /// The target location specified by path segment '{0}' was not found.
         /// </summary>
         internal static string TargetLocationAtPathSegmentNotFound
         {
-            get { return GetString("TargetLocationAtPathSegmentNotFound"); }
+            get => GetString("TargetLocationAtPathSegmentNotFound");
         }
 
         /// <summary>
         /// The target location specified by path segment '{0}' was not found.
         /// </summary>
         internal static string FormatTargetLocationAtPathSegmentNotFound(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TargetLocationAtPathSegmentNotFound"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TargetLocationAtPathSegmentNotFound"), p0);
 
         /// <summary>
         /// For operation '{0}', the target location specified by path '{1}' was not found.
         /// </summary>
         internal static string TargetLocationNotFound
         {
-            get { return GetString("TargetLocationNotFound"); }
+            get => GetString("TargetLocationNotFound");
         }
 
         /// <summary>
         /// For operation '{0}', the target location specified by path '{1}' was not found.
         /// </summary>
         internal static string FormatTargetLocationNotFound(object p0, object p1)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("TargetLocationNotFound"), p0, p1);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("TargetLocationNotFound"), p0, p1);
 
         /// <summary>
         /// The test operation is not supported.
         /// </summary>
         internal static string TestOperationNotSupported
         {
-            get { return GetString("TestOperationNotSupported"); }
+            get => GetString("TestOperationNotSupported");
         }
 
         /// <summary>
         /// The test operation is not supported.
         /// </summary>
         internal static string FormatTestOperationNotSupported()
-        {
-            return GetString("TestOperationNotSupported");
-        }
+            => GetString("TestOperationNotSupported");
 
         private static string GetString(string name, params string[] formatterNames)
         {

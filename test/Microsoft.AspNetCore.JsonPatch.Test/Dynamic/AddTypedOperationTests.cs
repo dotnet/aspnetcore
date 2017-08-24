@@ -6,14 +6,14 @@ using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class AddTypedOperationTests
     {
         [Fact]
         public void AddToListNegativePosition()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
@@ -37,11 +37,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void AddToListInList()
         {
-            var doc = new SimpleDTOWithNestedDTO()
+            var doc = new SimpleObjectWithNestedObject()
             {
-                ListOfSimpleDTO = new List<SimpleDTO>()
+                ListOfSimpleObject = new List<SimpleObject>()
                 {
-                     new SimpleDTO()
+                     new SimpleObject()
                      {
                          IntegerList = new List<int>() { 1, 2, 3 }
                      }
@@ -50,23 +50,23 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Add("ListOfSimpleDTO/0/IntegerList/0", 4);
+            patchDoc.Add("ListOfSimpleObject/0/IntegerList/0", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
             deserialized.ApplyTo(doc);
-            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, doc.ListOfSimpleDTO[0].IntegerList);
+            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, doc.ListOfSimpleObject[0].IntegerList);
         }
 
         [Fact]
         public void AddToListInListInvalidPositionTooSmall()
         {
-            var doc = new SimpleDTOWithNestedDTO()
+            var doc = new SimpleObjectWithNestedObject()
             {
-                ListOfSimpleDTO = new List<SimpleDTO>()
+                ListOfSimpleObject = new List<SimpleObject>()
                 {
-                    new SimpleDTO()
+                    new SimpleObject()
                     {
                         IntegerList = new List<int>() { 1, 2, 3 }
                     }
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Add("ListOfSimpleDTO/-1/IntegerList/0", 4);
+            patchDoc.Add("ListOfSimpleObject/-1/IntegerList/0", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
@@ -92,11 +92,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void AddToListInListInvalidPositionTooLarge()
         {
-            var doc = new SimpleDTOWithNestedDTO()
+            var doc = new SimpleObjectWithNestedObject()
             {
-                ListOfSimpleDTO = new List<SimpleDTO>()
+                ListOfSimpleObject = new List<SimpleObject>()
                 {
-                     new SimpleDTO()
+                     new SimpleObject()
                      {
                         IntegerList = new List<int>() { 1, 2, 3 }
                      }
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             };
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Add("ListOfSimpleDTO/20/IntegerList/0", 4);
+            patchDoc.Add("ListOfSimpleObject/20/IntegerList/0", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);

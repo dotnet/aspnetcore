@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.AspNetCore.JsonPatch
 {
-    public class SimpleDTOWithNullCheck
+    public class SimpleObjectWithNullCheck
     {
         private string stringProperty;
 

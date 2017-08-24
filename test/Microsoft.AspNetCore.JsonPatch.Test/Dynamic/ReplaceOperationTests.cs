@@ -9,21 +9,21 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class ReplaceOperationTests
     {
         [Fact]
         public void ReplaceGuidTest()
         {
-            dynamic doc = new SimpleDTO()
+            dynamic doc = new SimpleObject()
             {
                 GuidValue = Guid.NewGuid()
             };
 
             var newGuid = Guid.NewGuid();
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("GuidValue", newGuid);
 
             // serialize & deserialize
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             var newGuid = Guid.NewGuid();
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("GuidValue", newGuid);
 
             // serialize & deserialize
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             var newGuid = Guid.NewGuid();
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("nestedobject/GuidValue", newGuid);
 
             // serialize & deserialize
@@ -84,19 +84,19 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         public void ReplaceNestedObjectTest()
         {
             dynamic doc = new ExpandoObject();
-            doc.SimpleDTO = new SimpleDTO()
+            doc.SimpleDTO = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
-            var newDTO = new SimpleDTO()
+            var newDTO = new SimpleObject()
             {
                 DoubleValue = 1
             };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("SimpleDTO", newDTO);
 
             // serialize & deserialize
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             doc.IntegerList = new List<int>() { 1, 2, 3 };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("IntegerList/0", 5);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             doc.IntegerList = new List<int>() { 1, 2, 3 };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("IntegerList", new List<int>() { 4, 5, 6 });
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -150,13 +150,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         public void ReplaceInListInList()
         {
             dynamic doc = new ExpandoObject();
-            doc.SimpleDTOList = new List<SimpleDTO>() {
-                new SimpleDTO() {
+            doc.SimpleDTOList = new List<SimpleObject>() {
+                new SimpleObject() {
                     IntegerList = new List<int>(){1,2,3}
                 }};
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("SimpleDTOList/0/IntegerList/0", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -171,13 +171,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         public void ReplaceInListInListAtEnd()
         {
             dynamic doc = new ExpandoObject();
-            doc.SimpleDTOList = new List<SimpleDTO>() {
-                new SimpleDTO() {
+            doc.SimpleDTOList = new List<SimpleObject>() {
+                new SimpleObject() {
                     IntegerList = new List<int>(){1,2,3}
                 }};
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("SimpleDTOList/0/IntegerList/-", 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -195,7 +195,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             doc.IntegerList = new List<int>() { 1, 2, 3 };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("IntegerList", new List<int>() { 4, 5, 6 });
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             doc.IntegerList = new List<int>() { 1, 2, 3 };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("IntegerList", new Collection<int>() { 4, 5, 6 });
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             doc.IntegerList = new List<int>() { 1, 2, 3 };
 
             // create patch
-            JsonPatchDocument patchDoc = new JsonPatchDocument();
+            var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("IntegerList/-", 5);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);

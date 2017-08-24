@@ -5,12 +5,9 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.JsonPatch
 {
-    public class JsonPropertyComplexNameDTO
+    public class JsonPropertyObject
     {
-        [JsonProperty("foo/bar~")]
-        public string FooSlashBars { get; set; }
-
-        [JsonProperty("foo/~")]
-        public SimpleDTO FooSlashTilde { get; set; }
+        [JsonProperty("AnotherName")]
+        public string Name { get; set; }
     }
 }

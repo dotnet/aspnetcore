@@ -6,7 +6,7 @@ using System.Dynamic;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class MoveOperationTests
     {
@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             Assert.Equal("A", doc.AnotherStringProperty);
 
             var cont = doc as IDictionary<string, object>;
-            cont.TryGetValue("StringProperty", out var valueFromDictionary);
+            cont.TryGetValue("StringProperty", out object valueFromDictionary);
             Assert.Null(valueFromDictionary);
         }
 
@@ -60,7 +60,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         {
             dynamic doc = new ExpandoObject();
             doc.StringProperty = "A";
-            doc.SimpleDTO = new SimpleDTO() { AnotherStringProperty = "B" };
+            doc.SimpleDTO = new SimpleObject() { AnotherStringProperty = "B" };
 
             // create patch
             var patchDoc = new JsonPatchDocument();
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             Assert.Equal("A", doc.SimpleDTO.AnotherStringProperty);
 
             var cont = doc as IDictionary<string, object>;
-            cont.TryGetValue("StringProperty", out var valueFromDictionary);
+            cont.TryGetValue("StringProperty", out object valueFromDictionary);
             Assert.Null(valueFromDictionary);
         }
 
@@ -83,7 +83,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         {
             dynamic doc = new ExpandoObject();
             doc.StringProperty = "A";
-            doc.SimpleDTO = new SimpleDTO() { AnotherStringProperty = "B" };
+            doc.SimpleDTO = new SimpleObject() { AnotherStringProperty = "B" };
 
             // create patch
             var patchDoc = new JsonPatchDocument();
@@ -102,7 +102,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         public void NestedMove()
         {
             dynamic doc = new ExpandoObject();
-            doc.Nested = new SimpleDTO()
+            doc.Nested = new SimpleObject()
             {
                 StringProperty = "A",
                 AnotherStringProperty = "B"
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         public void NestedMoveInList()
         {
             dynamic doc = new ExpandoObject();
-            doc.Nested = new SimpleDTO()
+            doc.Nested = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
@@ -181,7 +181,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         public void NestedMoveFromListToEndOfList()
         {
             dynamic doc = new ExpandoObject();
-            doc.Nested = new SimpleDTO()
+            doc.Nested = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         public void NestedMoveFomListToNonList()
         {
             dynamic doc = new ExpandoObject();
-            doc.Nested = new SimpleDTO()
+            doc.Nested = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             deserialized.ApplyTo(doc);
 
             var cont = doc as IDictionary<string, object>;
-            cont.TryGetValue("IntegerValue", out var valueFromDictionary);
+            cont.TryGetValue("IntegerValue", out object valueFromDictionary);
             Assert.Null(valueFromDictionary);
 
             Assert.Equal(new List<int>() { 5, 1, 2, 3 }, doc.IntegerList);
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         public void NestedMoveFromNonListToList()
         {
             dynamic doc = new ExpandoObject();
-            doc.Nested = new SimpleDTO()
+            doc.Nested = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
@@ -311,7 +311,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         public void NestedMoveToEndOfList()
         {
             dynamic doc = new ExpandoObject();
-            doc.Nested = new SimpleDTO()
+            doc.Nested = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }

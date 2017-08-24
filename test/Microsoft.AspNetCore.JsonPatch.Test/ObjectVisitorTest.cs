@@ -46,11 +46,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             // Arrange
             var visitor = new ObjectVisitor(new ParsedPath(path), new DefaultContractResolver());
-            IAdapter adapter = null;
-            string message = null;
 
             // Act
-            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+            var visitStatus = visitor.TryVisit(ref targetObject, out var adapter, out var message);
 
             // Assert
             Assert.True(visitStatus);
@@ -81,11 +79,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             // Arrange
             var visitor = new ObjectVisitor(new ParsedPath(path), new DefaultContractResolver());
-            IAdapter adapter = null;
-            string message = null;
 
             // Act
-            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+            var visitStatus = visitor.TryVisit(ref targetObject, out var adapter, out var message);
 
             // Assert
             Assert.True(visitStatus);
@@ -112,11 +108,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             // Arrange
             var visitor = new ObjectVisitor(new ParsedPath(path), new DefaultContractResolver());
-            IAdapter adapter = null;
-            string message = null;
 
             // Act
-            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+            var visitStatus = visitor.TryVisit(ref targetObject, out var adapter, out var message);
 
             // Assert
             Assert.True(visitStatus);
@@ -146,11 +140,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             // Arrange
             var visitor = new ObjectVisitor(new ParsedPath(path), new DefaultContractResolver());
-            IAdapter adapter = null;
-            string message = null;
 
             // Act
-            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+            var visitStatus = visitor.TryVisit(ref targetObject, out var adapter, out var message);
 
             // Assert
             Assert.True(visitStatus);
@@ -168,11 +160,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var visitor = new ObjectVisitor(new ParsedPath($"/Customers/{position}/States/-"), new DefaultContractResolver());
             var automobileDepartment = new Class1Nested();
             object targetObject = automobileDepartment;
-            IAdapter adapter = null;
-            string message = null;
 
             // Act
-            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+            var visitStatus = visitor.TryVisit(ref targetObject, out var adapter, out var message);
 
             // Assert
             Assert.False(visitStatus);
@@ -190,11 +180,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var visitor = new ObjectVisitor(new ParsedPath($"/Customers/{position}/States/-"), new DefaultContractResolver());
             var automobileDepartment = new Class1Nested();
             object targetObject = automobileDepartment;
-            IAdapter adapter = null;
-            string message = null;
 
             // Act
-            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+            var visitStatus = visitor.TryVisit(ref targetObject, out var adapter, out var message);
 
             // Assert
             Assert.False(visitStatus);
@@ -211,16 +199,30 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var visitor = new ObjectVisitor(new ParsedPath($"/NonExisting"), new DefaultContractResolver());
             var model = new Class1();
             object targetObject = model;
-            IAdapter adapter = null;
-            string message = null;
 
             // Act
-            var visitStatus = visitor.TryVisit(ref targetObject, out adapter, out message);
+            var visitStatus = visitor.TryVisit(ref targetObject, out var adapter, out var message);
 
             // Assert
             Assert.True(visitStatus);
             Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
             Assert.IsType<PocoAdapter>(adapter);
+        }
+
+        [Fact]
+        public void Visit_NullTarget_ReturnsNullAdapter()
+        {
+            // Arrange
+            var visitor = new ObjectVisitor(new ParsedPath("test"), new DefaultContractResolver());
+
+            // Act
+            object target = null;
+            var visitStatus = visitor.TryVisit(ref target, out var adapter, out var message);
+
+            // Assert
+            Assert.False(visitStatus);
+            Assert.Null(adapter);
+            Assert.Null(message);
         }
     }
 }

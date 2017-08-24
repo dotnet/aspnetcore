@@ -20,10 +20,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             dictionary[nameKey] = "Mike";
             var dictionaryAdapter = new DictionaryAdapter();
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            string message = null;
 
             // Act
-            var addStatus = dictionaryAdapter.TryAdd(dictionary, nameKey, resolver.Object, "James", out message);
+            var addStatus = dictionaryAdapter.TryAdd(dictionary, nameKey, resolver.Object, "James", out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -38,12 +37,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var dictionaryAdapter = new DictionaryAdapter();
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            string message = null;
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            var addStatus = dictionaryAdapter.TryAdd(dictionary, nameKey, resolver.Object, "James", out message);
+            var addStatus = dictionaryAdapter.TryAdd(dictionary, nameKey, resolver.Object, "James", out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -52,8 +50,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal("James", dictionary[nameKey]);
 
             // Act
-            object outValue = null;
-            addStatus = dictionaryAdapter.TryGet(dictionary, nameKey.ToUpper(), resolver.Object, out outValue, out message);
+            addStatus = dictionaryAdapter.TryGet(dictionary, nameKey.ToUpper(), resolver.Object, out var outValue, out message);
 
             // Assert
             Assert.True(addStatus);
@@ -67,12 +64,11 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             // Arrange
             var dictionaryAdapter = new DictionaryAdapter();
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            string message = null;
             var nameKey = "Name";
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
 
             // Act
-            var addStatus = dictionaryAdapter.TryAdd(dictionary, nameKey, resolver.Object, "James", out message);
+            var addStatus = dictionaryAdapter.TryAdd(dictionary, nameKey, resolver.Object, "James", out var message);
 
             // Assert
             Assert.True(addStatus);
@@ -81,8 +77,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal("James", dictionary[nameKey]);
 
             // Act
-            object outValue = null;
-            addStatus = dictionaryAdapter.TryGet(dictionary, nameKey, resolver.Object, out outValue, out message);
+            addStatus = dictionaryAdapter.TryGet(dictionary, nameKey, resolver.Object, out var outValue, out message);
 
             // Assert
             Assert.True(addStatus);
@@ -99,10 +94,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             dictionary.Add(nameKey, "Mike");
             var dictionaryAdapter = new DictionaryAdapter();
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            string message = null;
 
             // Act
-            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, nameKey, resolver.Object, "James", out message);
+            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, nameKey, resolver.Object, "James", out var message);
 
             // Assert
             Assert.True(replaceStatus);
@@ -119,10 +113,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
             var dictionaryAdapter = new DictionaryAdapter();
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            string message = null;
 
             // Act
-            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, nameKey, resolver.Object, "Mike", out message);
+            var replaceStatus = dictionaryAdapter.TryReplace(dictionary, nameKey, resolver.Object, "Mike", out var message);
 
             // Assert
             Assert.False(replaceStatus);
@@ -140,10 +133,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var dictionary = new Dictionary<string, object>(StringComparer.Ordinal);
             var dictionaryAdapter = new DictionaryAdapter();
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            string message = null;
 
             // Act
-            var removeStatus = dictionaryAdapter.TryRemove(dictionary, nameKey, resolver.Object, out message);
+            var removeStatus = dictionaryAdapter.TryRemove(dictionary, nameKey, resolver.Object, out var message);
 
             // Assert
             Assert.False(removeStatus);
@@ -162,10 +154,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             dictionary[nameKey] = "James";
             var dictionaryAdapter = new DictionaryAdapter();
             var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
-            string message = null;
 
             // Act
-            var removeStatus = dictionaryAdapter.TryRemove(dictionary, nameKey, resolver.Object, out message);
+            var removeStatus = dictionaryAdapter.TryRemove(dictionary, nameKey, resolver.Object, out var message);
 
             //Assert
             Assert.True(removeStatus);

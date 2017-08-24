@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class PatchDocumentTests
     {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void NonGenericPatchDocToGenericMustSerialize()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 AnotherStringProperty = "B"
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
             patchDoc.Copy("StringProperty", "AnotherStringProperty");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             deserialized.ApplyTo(doc);
 
@@ -71,14 +71,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void GenericPatchDocToNonGenericMustSerialize()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 AnotherStringProperty = "B"
             };
 
-            var patchDocTyped = new JsonPatchDocument<SimpleDTO>();
-            patchDocTyped.Copy<string>(o => o.StringProperty, o => o.AnotherStringProperty);
+            var patchDocTyped = new JsonPatchDocument<SimpleObject>();
+            patchDocTyped.Copy(o => o.StringProperty, o => o.AnotherStringProperty);
 
             var patchDocUntyped = new JsonPatchDocument();
             patchDocUntyped.Copy("StringProperty", "AnotherStringProperty");

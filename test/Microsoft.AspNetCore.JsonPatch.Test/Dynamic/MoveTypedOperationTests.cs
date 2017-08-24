@@ -5,14 +5,14 @@ using System.Collections.Generic;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class MoveTypedOperationTests
     {
         [Fact]
         public void Move()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 AnotherStringProperty = "B"
@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void MoveInList()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void MoveFromListToEndOfList()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void MoveFomListToNonList()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void MoveFromNonListToList()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void MoveToEndOfList()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }

@@ -6,14 +6,14 @@ using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Newtonsoft.Json;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class RemoveTypedOperationTests
     {
         [Fact]
         public void Remove()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A"
             };
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void RemoveFromList()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
@@ -53,7 +53,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void RemoveFromListInvalidPositionTooLarge()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void RemoveFromListInvalidPositionTooSmall()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void RemoveFromEndOfList()
         {
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
@@ -121,9 +121,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void NestedRemove()
         {
-            var doc = new SimpleDTOWithNestedDTO()
+            var doc = new SimpleObjectWithNestedObject()
             {
-                SimpleDTO = new SimpleDTO()
+                SimpleObject = new SimpleObject()
                 {
                     StringProperty = "A"
                 }
@@ -131,22 +131,22 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Remove("SimpleDTO/StringProperty");
+            patchDoc.Remove("SimpleObject/StringProperty");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
             deserialized.ApplyTo(doc);
 
-            Assert.Null(doc.SimpleDTO.StringProperty);
+            Assert.Null(doc.SimpleObject.StringProperty);
         }
 
         [Fact]
         public void NestedRemoveFromList()
         {
-            var doc = new SimpleDTOWithNestedDTO()
+            var doc = new SimpleObjectWithNestedObject()
             {
-                SimpleDTO = new SimpleDTO()
+                SimpleObject = new SimpleObject()
                 {
                     IntegerList = new List<int>() { 1, 2, 3 }
                 }
@@ -154,22 +154,22 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Remove("SimpleDTO/IntegerList/2");
+            patchDoc.Remove("SimpleObject/IntegerList/2");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
             deserialized.ApplyTo(doc);
 
-            Assert.Equal(new List<int>() { 1, 2 }, doc.SimpleDTO.IntegerList);
+            Assert.Equal(new List<int>() { 1, 2 }, doc.SimpleObject.IntegerList);
         }
 
         [Fact]
         public void NestedRemoveFromListInvalidPositionTooLarge()
         {
-            var doc = new SimpleDTOWithNestedDTO()
+            var doc = new SimpleObjectWithNestedObject()
             {
-                SimpleDTO = new SimpleDTO()
+                SimpleObject = new SimpleObject()
                 {
                     IntegerList = new List<int>() { 1, 2, 3 }
                 }
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Remove("SimpleDTO/IntegerList/3");
+            patchDoc.Remove("SimpleObject/IntegerList/3");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
@@ -194,9 +194,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void NestedRemoveFromListInvalidPositionTooSmall()
         {
-            var doc = new SimpleDTOWithNestedDTO()
+            var doc = new SimpleObjectWithNestedObject()
             {
-                SimpleDTO = new SimpleDTO()
+                SimpleObject = new SimpleObject()
                 {
                     IntegerList = new List<int>() { 1, 2, 3 }
                 }
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Remove("SimpleDTO/IntegerList/-1");
+            patchDoc.Remove("SimpleObject/IntegerList/-1");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
@@ -221,9 +221,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
         [Fact]
         public void NestedRemoveFromEndOfList()
         {
-            var doc = new SimpleDTOWithNestedDTO()
+            var doc = new SimpleObjectWithNestedObject()
             {
-                SimpleDTO = new SimpleDTO()
+                SimpleObject = new SimpleObject()
                 {
                     IntegerList = new List<int>() { 1, 2, 3 }
                 }
@@ -231,14 +231,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Test.Dynamic
 
             // create patch
             var patchDoc = new JsonPatchDocument();
-            patchDoc.Remove("SimpleDTO/IntegerList/-");
+            patchDoc.Remove("SimpleObject/IntegerList/-");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
 
             deserialized.ApplyTo(doc);
 
-            Assert.Equal(new List<int>() { 1, 2 }, doc.SimpleDTO.IntegerList);
+            Assert.Equal(new List<int>() { 1, 2 }, doc.SimpleObject.IntegerList);
         }
     }
 }

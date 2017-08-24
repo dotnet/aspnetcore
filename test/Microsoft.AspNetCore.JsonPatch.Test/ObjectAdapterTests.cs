@@ -16,13 +16,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddResultsShouldReplace()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A"
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<string>(o => o.StringProperty, "B");
 
             // Act
@@ -36,17 +36,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddResultsShouldReplaceWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A"
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<string>(o => o.StringProperty, "B");
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -59,13 +59,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4, 0);
 
             // Act
@@ -79,17 +79,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4, 0);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -102,13 +102,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToIntegerIList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerIList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerIList, 4, 0);
 
             // Act
@@ -122,17 +122,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToIntegerIListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerIList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerIList, 4, 0);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -145,13 +145,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToListInvalidPositionTooLarge()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4, 4);
 
             // Act & Assert
@@ -165,17 +165,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToListInvalidPositionTooLargeWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4, 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { deserialized.ApplyTo(doc); });
@@ -188,16 +188,16 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToListInvalidPositionTooLarge_LogsError()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4, 4);
 
-            var logger = new TestErrorLogger<SimpleDTO>();
+            var logger = new TestErrorLogger<SimpleObject>();
 
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
 
@@ -212,13 +212,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToListAtBeginning()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4, 0);
 
             // Act
@@ -232,17 +232,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToListAtBeginningWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4, 0);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -255,13 +255,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToListInvalidPositionTooSmall()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4, -1);
 
             // Act & Assert
@@ -275,17 +275,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToListInvalidPositionTooSmallWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4, -1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { deserialized.ApplyTo(doc); });
@@ -298,16 +298,16 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToListInvalidPositionTooSmall_LogsError()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4, -1);
 
-            var logger = new TestErrorLogger<SimpleDTO>();
+            var logger = new TestErrorLogger<SimpleObject>();
 
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
 
@@ -321,13 +321,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToListAppend()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4);
 
             // Act
@@ -341,17 +341,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddToListAppendWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerList, 4);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -364,13 +364,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void Remove()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A"
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<string>(o => o.StringProperty);
 
             // Act
@@ -384,17 +384,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void RemoveWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A"
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<string>(o => o.StringProperty);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -407,13 +407,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void RemoveFromList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<int>(o => o.IntegerList, 2);
 
             // Act
@@ -427,17 +427,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void RemoveFromListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<int>(o => o.IntegerList, 2);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -450,13 +450,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void RemoveFromListInvalidPositionTooLarge()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<int>(o => o.IntegerList, 3);
 
             // Act & Assert
@@ -470,17 +470,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void RemoveFromListInvalidPositionTooLargeWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<int>(o => o.IntegerList, 3);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { deserialized.ApplyTo(doc); });
@@ -493,16 +493,16 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void RemoveFromListInvalidPositionTooLarge_LogsError()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<int>(o => o.IntegerList, 3);
 
-            var logger = new TestErrorLogger<SimpleDTO>();
+            var logger = new TestErrorLogger<SimpleObject>();
 
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
 
@@ -517,13 +517,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void RemoveFromListInvalidPositionTooSmall()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<int>(o => o.IntegerList, -1);
 
             // Act & Assert
@@ -537,17 +537,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void RemoveFromListInvalidPositionTooSmallWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<int>(o => o.IntegerList, -1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() => { deserialized.ApplyTo(doc); });
@@ -560,16 +560,16 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void RemoveFromListInvalidPositionTooSmall_LogsError()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<int>(o => o.IntegerList, -1);
 
-            var logger = new TestErrorLogger<SimpleDTO>();
+            var logger = new TestErrorLogger<SimpleObject>();
 
 
             patchDoc.ApplyTo(doc, logger.LogErrorMessage);
@@ -585,13 +585,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void RemoveFromEndOfList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<int>(o => o.IntegerList);
 
             // Act
@@ -605,17 +605,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void RemoveFromEndOfListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<int>(o => o.IntegerList);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -628,14 +628,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void Replace()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 DecimalValue = 10
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<string>(o => o.StringProperty, "B");
 
             patchDoc.Replace(o => o.DecimalValue, 12);
@@ -652,13 +652,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void Replace_DTOWithNullCheck()
         {
             // Arrange
-            var doc = new SimpleDTOWithNullCheck()
+            var doc = new SimpleObjectWithNullCheck()
             {
                 StringProperty = "A",
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTOWithNullCheck>();
+            var patchDoc = new JsonPatchDocument<SimpleObjectWithNullCheck>();
             patchDoc.Replace(o => o.StringProperty, "B");
 
             // Act
@@ -672,20 +672,20 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 DecimalValue = 10
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<string>(o => o.StringProperty, "B");
 
             patchDoc.Replace(o => o.DecimalValue, 12);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -699,7 +699,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void SerializationMustNotIncudeEnvelope()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 DecimalValue = 10,
@@ -709,7 +709,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace(o => o.StringProperty, "B");
             patchDoc.Replace(o => o.DecimalValue, 12);
             patchDoc.Replace(o => o.DoubleValue, 12);
@@ -728,7 +728,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void DeserializationMustWorkWithoutEnvelope()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 DecimalValue = 10,
@@ -738,7 +738,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace(o => o.StringProperty, "B");
             patchDoc.Replace(o => o.DecimalValue, 12);
             patchDoc.Replace(o => o.DoubleValue, 12);
@@ -749,23 +749,23 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             var serialized = JsonConvert.SerializeObject(patchDoc);
 
             // Act
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Assert
-            Assert.IsType<JsonPatchDocument<SimpleDTO>>(deserialized);
+            Assert.IsType<JsonPatchDocument<SimpleObject>>(deserialized);
         }
 
         [Fact]
         public void DeserializationMustFailWithEnvelope()
         {
             // Arrange
-            string serialized = "{\"Operations\": [{ \"op\": \"replace\", \"path\": \"/title\", \"value\": \"New Title\"}]}";
+            var serialized = "{\"Operations\": [{ \"op\": \"replace\", \"path\": \"/title\", \"value\": \"New Title\"}]}";
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() =>
             {
                 var deserialized
-                    = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+                    = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
             });
 
             Assert.Equal("The type 'JsonPatchDocument`1' was malformed and could not be parsed.", exception.Message);
@@ -775,7 +775,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void SerializationTests()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 DecimalValue = 10,
@@ -785,7 +785,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace(o => o.StringProperty, "B");
             patchDoc.Replace(o => o.DecimalValue, 12);
             patchDoc.Replace(o => o.DoubleValue, 12);
@@ -794,7 +794,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
 
             // serialize & deserialize
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserizalized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserizalized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserizalized.ApplyTo(doc);
@@ -811,19 +811,19 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void SerializeAndReplaceGuidTest()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 GuidValue = Guid.NewGuid()
             };
 
             var newGuid = Guid.NewGuid();
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace(o => o.GuidValue, newGuid);
 
             // serialize & deserialize
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserizalized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserizalized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserizalized.ApplyTo(doc);
@@ -836,48 +836,48 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void SerializeAndReplaceNestedObjectTest()
         {
             // Arrange
-            var doc = new SimpleDTOWithNestedDTO()
+            var doc = new SimpleObjectWithNestedObject()
             {
-                SimpleDTO = new SimpleDTO()
+                SimpleObject = new SimpleObject()
                 {
                     IntegerValue = 5,
                     IntegerList = new List<int>() { 1, 2, 3 }
                 }
             };
 
-            var newDTO = new SimpleDTO()
+            var newDTO = new SimpleObject()
             {
                 DoubleValue = 1
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTOWithNestedDTO>();
-            patchDoc.Replace(o => o.SimpleDTO, newDTO);
+            var patchDoc = new JsonPatchDocument<SimpleObjectWithNestedObject>();
+            patchDoc.Replace(o => o.SimpleObject, newDTO);
 
             // serialize & deserialize
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTOWithNestedDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObjectWithNestedObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
 
             // Assert
-            Assert.Equal(1, doc.SimpleDTO.DoubleValue);
-            Assert.Equal(0, doc.SimpleDTO.IntegerValue);
-            Assert.Null(doc.SimpleDTO.IntegerList);
+            Assert.Equal(1, doc.SimpleObject.DoubleValue);
+            Assert.Equal(0, doc.SimpleObject.IntegerValue);
+            Assert.Null(doc.SimpleObject.IntegerList);
         }
 
         [Fact]
         public void ReplaceInList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<int>(o => o.IntegerList, 5, 0);
 
             // Act
@@ -891,17 +891,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceInListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<int>(o => o.IntegerList, 5, 0);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -914,13 +914,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceFullList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<List<int>>(o => o.IntegerList, new List<int>() { 4, 5, 6 });
 
             // Act
@@ -934,17 +934,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceFullListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<List<int>>(o => o.IntegerList, new List<int>() { 4, 5, 6 });
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -957,13 +957,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceFullListFromEnumerable()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<IEnumerable<int>>(o => o.IntegerList, new List<int>() { 4, 5, 6 });
 
             // Act
@@ -977,17 +977,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceFullListFromEnumerableWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<IEnumerable<int>>(o => o.IntegerList, new List<int>() { 4, 5, 6 });
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1000,13 +1000,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceFullListWithCollection()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<IEnumerable<int>>(o => o.IntegerList, new Collection<int>() { 4, 5, 6 });
 
             // Act
@@ -1020,17 +1020,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceFullListWithCollectionWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<IEnumerable<int>>(o => o.IntegerList, new Collection<int>() { 4, 5, 6 });
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1043,13 +1043,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceAtEndOfList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<int>(o => o.IntegerList, 5);
 
             // Act
@@ -1063,16 +1063,16 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceAtEndOfListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<int>(o => o.IntegerList, 5);
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1085,13 +1085,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceInListInvalidInvalidPositionTooLarge()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<int>(o => o.IntegerList, 5, 3);
 
             // Act & Assert
@@ -1108,16 +1108,16 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceInListInvalidInvalidPositionTooLargeWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<int>(o => o.IntegerList, 5, 3);
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() =>
@@ -1133,13 +1133,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceInListInvalidPositionTooSmall()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<int>(o => o.IntegerList, 5, -1);
 
             // Act & Assert
@@ -1156,17 +1156,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void ReplaceInListInvalidPositionTooSmallWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Replace<int>(o => o.IntegerList, 5, -1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act & Assert
             var exception = Assert.Throws<JsonPatchException>(() =>
@@ -1182,14 +1182,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void Copy()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 AnotherStringProperty = "B"
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<string>(o => o.StringProperty, o => o.AnotherStringProperty);
 
             // Act
@@ -1203,17 +1203,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void CopyWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 AnotherStringProperty = "B"
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<string>(o => o.StringProperty, o => o.AnotherStringProperty);
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1226,13 +1226,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void CopyInList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<int>(o => o.IntegerList, 0, o => o.IntegerList, 1);
 
             // Act
@@ -1246,17 +1246,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void CopyInListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<int>(o => o.IntegerList, 0, o => o.IntegerList, 1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1269,13 +1269,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void CopyFromListToEndOfList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<int>(o => o.IntegerList, 0, o => o.IntegerList);
 
             // Act
@@ -1289,17 +1289,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void CopyFromListToEndOfListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<int>(o => o.IntegerList, 0, o => o.IntegerList);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1312,13 +1312,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void CopyFromListToNonList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<int>(o => o.IntegerList, 0, o => o.IntegerValue);
 
             // Act
@@ -1332,17 +1332,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void CopyFromListToNonListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<int>(o => o.IntegerList, 0, o => o.IntegerValue);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1355,14 +1355,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void CopyFromNonListToList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<int>(o => o.IntegerValue, o => o.IntegerList, 0);
 
             // Act
@@ -1376,18 +1376,18 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void CopyFromNonListToListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<int>(o => o.IntegerValue, o => o.IntegerList, 0);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1400,14 +1400,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void CopyToEndOfList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<int>(o => o.IntegerValue, o => o.IntegerList);
 
             // Act
@@ -1421,18 +1421,18 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void CopyToEndOfListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Copy<int>(o => o.IntegerValue, o => o.IntegerList);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1445,14 +1445,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void Move()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 AnotherStringProperty = "B"
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<string>(o => o.StringProperty, o => o.AnotherStringProperty);
 
             // Act
@@ -1467,18 +1467,18 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void MoveWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A",
                 AnotherStringProperty = "B"
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<string>(o => o.StringProperty, o => o.AnotherStringProperty);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1492,13 +1492,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void MoveInList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<int>(o => o.IntegerList, 0, o => o.IntegerList, 1);
 
             // Act
@@ -1512,17 +1512,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void MoveInListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<int>(o => o.IntegerList, 0, o => o.IntegerList, 1);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1535,13 +1535,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void MoveFromListToEndOfList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<int>(o => o.IntegerList, 0, o => o.IntegerList);
 
             // Act
@@ -1555,17 +1555,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void MoveFromListToEndOfListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<int>(o => o.IntegerList, 0, o => o.IntegerList);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1578,13 +1578,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void MoveFomListToNonList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<int>(o => o.IntegerList, 0, o => o.IntegerValue);
 
             // Act
@@ -1599,17 +1599,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void MoveFomListToNonListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<int>(o => o.IntegerList, 0, o => o.IntegerValue);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1623,14 +1623,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void MoveFromNonListToList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<int>(o => o.IntegerValue, o => o.IntegerList, 0);
 
             // Act
@@ -1645,18 +1645,18 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void MoveFromNonListToListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<int>(o => o.IntegerValue, o => o.IntegerList, 0);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1670,14 +1670,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void MoveToEndOfList()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<int>(o => o.IntegerValue, o => o.IntegerList);
 
             // Act
@@ -1692,18 +1692,18 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void MoveToEndOfListWithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerValue = 5,
                 IntegerList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Move<int>(o => o.IntegerValue, o => o.IntegerList);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);
@@ -1950,13 +1950,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddMember_OnPOCO_WithNullPropertyValue_ShouldAddPropertyValue()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = null
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<string>(o => o.StringProperty, "B");
 
             // Act
@@ -2175,13 +2175,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void AddElement_ToList_OnPOCO_ShouldAddValue_AtSuppliedPosition()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 IntegerIList = new List<int>() { 1, 2, 3 }
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Add<int>(o => o.IntegerIList, 4, 0);
 
             // Act
@@ -2193,7 +2193,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
 
         class Class3
         {
-            public SimpleDTO SimpleDTOProperty { get; set; } = new SimpleDTO();
+            public SimpleObject SimpleObjectProperty { get; set; } = new SimpleObject();
         }
 
         [Fact]
@@ -2202,19 +2202,19 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             // Arrange
             var model = new Class3()
             {
-                SimpleDTOProperty = new SimpleDTO()
+                SimpleObjectProperty = new SimpleObject()
                 {
                     IntegerIList = new List<int>() { 1, 2, 3 }
                 }
             };
             var patchDoc = new JsonPatchDocument<Class3>();
-            patchDoc.Add<int>(o => o.SimpleDTOProperty.IntegerIList, value: 4, position: 0);
+            patchDoc.Add<int>(o => o.SimpleObjectProperty.IntegerIList, value: 4, position: 0);
 
             // Act
             patchDoc.ApplyTo(model);
 
             // Assert
-            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, model.SimpleDTOProperty.IntegerIList);
+            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, model.SimpleObjectProperty.IntegerIList);
         }
 
         [Fact]
@@ -2223,13 +2223,13 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             // Arrange
             var model = new Class3()
             {
-                SimpleDTOProperty = new SimpleDTO()
+                SimpleObjectProperty = new SimpleObject()
                 {
                     IntegerIList = new List<int>() { 1, 2, 3 }
                 }
             };
             var patchDoc = new JsonPatchDocument<Class3>();
-            patchDoc.Add<int>(o => o.SimpleDTOProperty.IntegerIList, value: 4, position: 0);
+            patchDoc.Add<int>(o => o.SimpleObjectProperty.IntegerIList, value: 4, position: 0);
             var serialized = JsonConvert.SerializeObject(patchDoc);
             var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<Class3>>(serialized);
 
@@ -2237,7 +2237,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
             deserialized.ApplyTo(model);
 
             // Assert
-            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, model.SimpleDTOProperty.IntegerIList);
+            Assert.Equal(new List<int>() { 4, 1, 2, 3 }, model.SimpleObjectProperty.IntegerIList);
         }
 
         class Class4
@@ -2267,17 +2267,17 @@ namespace Microsoft.AspNetCore.JsonPatch.Adapters
         public void Remove_OnNonReferenceType_POCOProperty_ShouldSetDefaultValue_WithSerialization()
         {
             // Arrange
-            var doc = new SimpleDTO()
+            var doc = new SimpleObject()
             {
                 StringProperty = "A"
             };
 
             // create patch
-            var patchDoc = new JsonPatchDocument<SimpleDTO>();
+            var patchDoc = new JsonPatchDocument<SimpleObject>();
             patchDoc.Remove<string>(o => o.StringProperty);
 
             var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleDTO>>(serialized);
+            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument<SimpleObject>>(serialized);
 
             // Act
             deserialized.ApplyTo(doc);

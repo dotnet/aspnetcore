@@ -1,9 +1,9 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.JsonPatch
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public class InheritedDTO : SimpleDTO
+    public class InheritedObject : SimpleObject
     {
         public string AdditionalStringProperty { get; set; }
     }
