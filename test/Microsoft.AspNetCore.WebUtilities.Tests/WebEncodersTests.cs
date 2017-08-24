@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.WebUtilities
 {
     public class WebEncodersTests
     {
+
         [Theory]
         [InlineData("", 1, 0)]
         [InlineData("", 0, 1)]
@@ -40,6 +40,26 @@ namespace Microsoft.AspNetCore.WebUtilities
             {
                 var retVal = WebEncoders.Base64UrlEncode(input, offset, count);
             });
+        }
+
+        [Fact]
+        public void DataOfVariousLengthRoundTripCorrectly()
+        {
+            for (int length = 0; length != 256; ++length)
+            {
+                var data = new byte[length];
+                for (int index = 0; index != length; ++index)
+                {
+                    data[index] = (byte)(5 + length + (index * 23));
+                }
+                string text = WebEncoders.Base64UrlEncode(data);
+                byte[] result = WebEncoders.Base64UrlDecode(text);
+
+                for (int index = 0; index != length; ++index)
+                {
+                    Assert.Equal(data[index], result[index]);
+                }
+            }
         }
     }
 }
