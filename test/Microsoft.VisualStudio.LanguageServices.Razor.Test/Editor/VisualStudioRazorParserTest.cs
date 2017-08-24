@@ -18,20 +18,20 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 {
-    public class VisualStudioRazorParserTest
+    public class VisualStudioRazorParserTest : ForegroundDispatcherTestBase
     {
         private const string TestLinePragmaFileName = "C:\\This\\Path\\Is\\Just\\For\\Line\\Pragmas.cshtml";
 
         [Fact]
         public void ConstructorRequiresNonNullPhysicalPath()
         {
-            Assert.Throws<ArgumentException>("filePath", () => new VisualStudioRazorParser(new TestTextBuffer(null), CreateTemplateEngine(), null, new TestCompletionBroker()));
+            Assert.Throws<ArgumentException>("filePath", () => new VisualStudioRazorParser(Dispatcher, new TestTextBuffer(null), CreateTemplateEngine(), null, new TestCompletionBroker()));
         }
 
         [Fact]
         public void ConstructorRequiresNonEmptyPhysicalPath()
         {
-            Assert.Throws<ArgumentException>("filePath", () => new VisualStudioRazorParser(new TestTextBuffer(null), CreateTemplateEngine(), string.Empty, new TestCompletionBroker()));
+            Assert.Throws<ArgumentException>("filePath", () => new VisualStudioRazorParser(Dispatcher, new TestTextBuffer(null), CreateTemplateEngine(), string.Empty, new TestCompletionBroker()));
         }
 
         [Fact]
@@ -40,7 +40,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             // Arrange
             var original = new StringTextSnapshot("Foo @bar Baz");
             var testBuffer = new TestTextBuffer(original);
-            using (var parser = new VisualStudioRazorParser(testBuffer, CreateTemplateEngine(), TestLinePragmaFileName, new TestCompletionBroker()))
+            using (var parser = new VisualStudioRazorParser(Dispatcher, testBuffer, CreateTemplateEngine(), TestLinePragmaFileName, new TestCompletionBroker()))
             {
                 parser._idleTimer.Interval = 100;
                 var changed = new StringTextSnapshot("Foo @bap Daz");
@@ -519,9 +519,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             RunTypeKeywordTest("class");
         }
 
-        private static TestParserManager CreateParserManager(ITextSnapshot originalSnapshot)
+        private TestParserManager CreateParserManager(ITextSnapshot originalSnapshot, int idleDelay = 50)
         {
-            var parser = new VisualStudioRazorParser(new TestTextBuffer(originalSnapshot), CreateTemplateEngine(), TestLinePragmaFileName, new TestCompletionBroker());
+            var parser = new VisualStudioRazorParser(Dispatcher, new TestTextBuffer(originalSnapshot), CreateTemplateEngine(), TestLinePragmaFileName, new TestCompletionBroker());
 
             return new TestParserManager(parser);
         }
@@ -552,7 +552,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             return templateEngine;
         }
 
-        private static void RunTypeKeywordTest(string keyword)
+        private void RunTypeKeywordTest(string keyword)
         {
             // Arrange
             var before = "@" + keyword.Substring(0, keyword.Length - 1);

@@ -120,6 +120,15 @@
   <data name="ArgumentCannotBeNullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or an empty string.</value>
   </data>
+  <data name="ForegroundDispatcher_AssertBackgroundThread" xml:space="preserve">
+    <value>{0} must be called on a background thread.</value>
+  </data>
+  <data name="ForegroundDispatcher_AssertForegroundThread" xml:space="preserve">
+    <value>{0} must be called on the foreground thread.</value>
+  </data>
+  <data name="ForegroundDispatcher_NoMethodNamePlaceholder" xml:space="preserve">
+    <value>The method</value>
+  </data>
   <data name="UnexpectedException" xml:space="preserve">
     <value>An unexpected exception occurred when invoking '{0}.{1}' on the Razor language service.</value>
   </data>

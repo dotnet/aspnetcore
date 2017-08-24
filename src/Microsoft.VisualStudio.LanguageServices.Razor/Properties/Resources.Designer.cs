@@ -25,6 +25,48 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             => GetString("ArgumentCannotBeNullOrEmpty");
 
         /// <summary>
+        /// {0} must be called on a background thread.
+        /// </summary>
+        internal static string ForegroundDispatcher_AssertBackgroundThread
+        {
+            get => GetString("ForegroundDispatcher_AssertBackgroundThread");
+        }
+
+        /// <summary>
+        /// {0} must be called on a background thread.
+        /// </summary>
+        internal static string FormatForegroundDispatcher_AssertBackgroundThread(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ForegroundDispatcher_AssertBackgroundThread"), p0);
+
+        /// <summary>
+        /// {0} must be called on the foreground thread.
+        /// </summary>
+        internal static string ForegroundDispatcher_AssertForegroundThread
+        {
+            get => GetString("ForegroundDispatcher_AssertForegroundThread");
+        }
+
+        /// <summary>
+        /// {0} must be called on the foreground thread.
+        /// </summary>
+        internal static string FormatForegroundDispatcher_AssertForegroundThread(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ForegroundDispatcher_AssertForegroundThread"), p0);
+
+        /// <summary>
+        /// The method
+        /// </summary>
+        internal static string ForegroundDispatcher_NoMethodNamePlaceholder
+        {
+            get => GetString("ForegroundDispatcher_NoMethodNamePlaceholder");
+        }
+
+        /// <summary>
+        /// The method
+        /// </summary>
+        internal static string FormatForegroundDispatcher_NoMethodNamePlaceholder()
+            => GetString("ForegroundDispatcher_NoMethodNamePlaceholder");
+
+        /// <summary>
         /// An unexpected exception occurred when invoking '{0}.{1}' on the Razor language service.
         /// </summary>
         internal static string UnexpectedException

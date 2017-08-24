@@ -22,11 +22,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private const int IdleDelay = 3000;
         private readonly ICompletionBroker _completionBroker;
         private readonly BackgroundParser _parser;
-        private readonly ForegroundThreadAffinitizedObject _foregroundThreadAffinitizedObject;
+        private readonly ForegroundDispatcher _dispatcher;
         private RazorSyntaxTreePartialParser _partialParser;
 
-        public VisualStudioRazorParser(ITextBuffer buffer, RazorTemplateEngine templateEngine, string filePath, ICompletionBroker completionBroker)
+        public VisualStudioRazorParser(ForegroundDispatcher dispatcher, ITextBuffer buffer, RazorTemplateEngine templateEngine, string filePath, ICompletionBroker completionBroker)
         {
+            if (dispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(dispatcher));
+            }
+
             if (buffer == null)
             {
                 throw new ArgumentNullException(nameof(buffer));
@@ -47,6 +52,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(completionBroker));
             }
 
+            _dispatcher = dispatcher;
             TemplateEngine = templateEngine;
             FilePath = filePath;
             _textBuffer = buffer;
@@ -56,7 +62,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             _idleTimer = new Timer(IdleDelay);
             _idleTimer.Elapsed += Onidle;
             _parser.ResultsReady += OnResultsReady;
-            _foregroundThreadAffinitizedObject = new ForegroundThreadAffinitizedObject();
 
             _parser.Start();
         }
@@ -80,7 +85,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         public void Dispose()
         {
-            _foregroundThreadAffinitizedObject.AssertIsForeground();
+            _dispatcher.AssertForegroundThread();
 
             _textBuffer.Changed -= TextBuffer_OnChanged;
             _parser.Dispose();
@@ -89,7 +94,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         private void TextBuffer_OnChanged(object sender, TextContentChangedEventArgs contentChange)
         {
-            _foregroundThreadAffinitizedObject.AssertIsForeground();
+            _dispatcher.AssertForegroundThread();
 
             if (contentChange.Changes.Count > 0)
             {
@@ -144,7 +149,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         private void Onidle(object sender, ElapsedEventArgs e)
         {
-            _foregroundThreadAffinitizedObject.AssertIsBackground();
+            _dispatcher.AssertBackgroundThread();
 
             var textViews = Array.Empty<ITextView>();
 
@@ -162,7 +167,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         private void OnResultsReady(object sender, DocumentStructureChangedEventArgs args)
         {
-            _foregroundThreadAffinitizedObject.AssertIsBackground();
+            _dispatcher.AssertBackgroundThread();
 
             if (DocumentStructureChanged != null)
             {
