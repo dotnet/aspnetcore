@@ -5,7 +5,7 @@ import * as rimraf from 'rimraf';
 import * as mkdirp from 'mkdirp';
 
 const templatePackageName = 'Microsoft.DotNet.Web.Spa.ProjectTemplates';
-const templatePackageArtifactsDir = '../templates/package-builder/dist/artifacts';
+const templatePackageArtifactsDir = '../templates/package-builder/artifacts';
 
 export function generateProjectSync(targetDir: string, templateName: string) {
     installTemplatePackage(targetDir, templatePackageName, templateName);
