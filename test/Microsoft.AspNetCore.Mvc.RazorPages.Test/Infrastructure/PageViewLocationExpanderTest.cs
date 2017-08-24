@@ -1,13 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text;
+using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Razor;
-using Microsoft.AspNetCore.Razor.Language;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
@@ -34,6 +31,28 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
         {
             // Arrange
             var context = CreateContext(pageName: null);
+            var locations = new string[]
+            {
+                "/ignore-me",
+            };
+
+            var expander = new PageViewLocationExpander();
+
+            // Act
+            var actual = expander.ExpandViewLocations(context, locations);
+
+            // Assert
+            Assert.Equal(locations, actual);
+        }
+
+        [Fact]
+        public void ExpandLocations_NoOp_ForNonPageWithPageName()
+        {
+            // Verifies the fix for https://github.com/aspnet/Mvc/issues/6660. This ensures that when PageViewLocationExpander is called
+            // from a non-Razor Page with a route value for "
+            // Arrange
+            var context = CreateContext(pageName: "test");
+            context.ActionContext.ActionDescriptor = new ControllerActionDescriptor();
             var locations = new string[]
             {
                 "/ignore-me",
@@ -125,8 +144,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         private ViewLocationExpanderContext CreateContext(string viewName = "_LoginPartial.cshtml", string pageName = null)
         {
+            var actionContext = new ActionContext
+            {
+                ActionDescriptor = new PageActionDescriptor(),
+            };
+
             return new ViewLocationExpanderContext(
-                new ActionContext(),
+                actionContext,
                 viewName,
                 controllerName: null,
                 areaName: null,
@@ -134,6 +158,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
                 isMainPage: true)
             {
                 Values = new Dictionary<string, string>(),
+                
             };
         }
     }
