@@ -2,7 +2,7 @@
   "name": "ReactReduxSpa",
   "private": true,
   "version": "0.0.0",
-  "dependencies": {
+  "devDependencies": {
     "@types/history": "4.6.0",
     "@types/react": "15.0.35",
     "@types/react-dom": "15.5.1",
