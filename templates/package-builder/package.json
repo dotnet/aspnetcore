@@ -10,24 +10,11 @@
   "author": "Microsoft",
   "license": "Apache-2.0",
   "dependencies": {
-    "@types/chalk": "^0.4.31",
-    "@types/semver": "^5.3.30",
-    "diff": "^2.2.2",
-    "gitignore-parser": "0.0.2",
-    "glob": "^7.0.3",
-    "lodash": "^4.11.1",
-    "mkdirp": "^0.5.1",
-    "rimraf": "^2.5.2",
-    "semver": "^5.3.0",
-    "tar.gz": "^1.0.5"
+    "mkdirp": "^0.5.1"
   },
   "devDependencies": {
-    "@types/glob": "^5.0.30",
-    "@types/lodash": "^4.14.37",
     "@types/mkdirp": "^0.3.29",
     "@types/node": "^6.0.45",
-    "@types/node-uuid": "0.0.28",
-    "@types/rimraf": "0.0.28",
     "typescript": "^2.0.0"
   }
 }
