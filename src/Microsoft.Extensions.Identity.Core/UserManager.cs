@@ -1579,10 +1579,12 @@ namespace Microsoft.AspNetCore.Identity
         /// <returns>
         /// The <see cref="Task"/> that represents the asynchronous operation, containing the telephone change number token.
         /// </returns>
-        public virtual Task<string> GenerateChangePhoneNumberTokenAsync(TUser user, string phoneNumber)
+        public virtual async Task<string> GenerateChangePhoneNumberTokenAsync(TUser user, string phoneNumber)
         {
             ThrowIfDisposed();
-            return GenerateUserTokenAsync(user, Options.Tokens.ChangePhoneNumberTokenProvider, ChangePhoneNumberTokenPurpose + ":" + phoneNumber);
+            return Rfc6238AuthenticationService.GenerateCode(
+                await CreateSecurityTokenAsync(user), phoneNumber)
+                    .ToString(CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -1596,16 +1598,21 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="Task"/> that represents the asynchronous operation, returning true if the <paramref name="token"/>
         /// is valid, otherwise false.
         /// </returns>
-        public virtual Task<bool> VerifyChangePhoneNumberTokenAsync(TUser user, string token, string phoneNumber)
+        public virtual async Task<bool> VerifyChangePhoneNumberTokenAsync(TUser user, string token, string phoneNumber)
         {
             ThrowIfDisposed();
-            if (user == null)
-            {
-                throw new ArgumentNullException(nameof(user));
-            }
 
-            // Make sure the token is valid and the stamp matches
-            return VerifyUserTokenAsync(user, Options.Tokens.ChangePhoneNumberTokenProvider, ChangePhoneNumberTokenPurpose+":"+ phoneNumber, token);
+            var securityToken = await CreateSecurityTokenAsync(user);
+            int code;
+            if (securityToken != null && Int32.TryParse(token, out code))
+            {
+                if (Rfc6238AuthenticationService.ValidateCode(securityToken, code, phoneNumber))
+                {
+                    return true;
+                }
+            }
+            Logger.LogWarning(8, "VerifyChangePhoneNumberTokenAsync() failed for user {userId}.", await GetUserIdAsync(user));
+            return false;
         }
 
         /// <summary>
