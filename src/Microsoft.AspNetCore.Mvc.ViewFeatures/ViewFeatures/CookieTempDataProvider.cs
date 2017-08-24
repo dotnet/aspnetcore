@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                     var encodedValue = _chunkingCookieManager.GetRequestCookie(context, _options.Cookie.Name);
                     if (!string.IsNullOrEmpty(encodedValue))
                     {
-                        var protectedData = Base64UrlTextEncoder.Decode(encodedValue);
+                        var protectedData = WebEncoders.Base64UrlDecode(encodedValue);
                         var unprotectedData = _dataProtector.Unprotect(protectedData);
                         var tempData = _tempDataSerializer.Deserialize(unprotectedData);
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             {
                 var bytes = _tempDataSerializer.Serialize(values);
                 bytes = _dataProtector.Protect(bytes);
-                var encodedValue = Base64UrlTextEncoder.Encode(bytes);
+                var encodedValue = WebEncoders.Base64UrlEncode(bytes);
                 _chunkingCookieManager.AppendResponseCookie(context, _options.Cookie.Name, encodedValue, cookieOptions);
             }
             else
