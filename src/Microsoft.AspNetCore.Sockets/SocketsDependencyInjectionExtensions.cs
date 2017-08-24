@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection.Extensions;
-using Microsoft.Extensions.Hosting;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -12,7 +11,6 @@ namespace Microsoft.Extensions.DependencyInjection
         public static IServiceCollection AddSocketsCore(this IServiceCollection services)
         {
             services.TryAddSingleton<ConnectionManager>();
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, SocketsApplicationLifetimeService>());
             return services;
         }
     }

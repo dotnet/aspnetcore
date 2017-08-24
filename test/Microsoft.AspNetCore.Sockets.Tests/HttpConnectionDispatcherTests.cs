@@ -1049,7 +1049,7 @@ namespace Microsoft.AspNetCore.Sockets.Tests
 
         private static ConnectionManager CreateConnectionManager()
         {
-            return new ConnectionManager(new Logger<ConnectionManager>(new LoggerFactory()));
+            return new ConnectionManager(new Logger<ConnectionManager>(new LoggerFactory()), new EmptyApplicationLifetime());
         }
 
         private string GetContentAsString(Stream body)

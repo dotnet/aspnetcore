@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.Extensions.Logging;
 using Xunit;
@@ -183,9 +184,26 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             connectionManager.Scan();
         }
 
-        private static ConnectionManager CreateConnectionManager()
+        [Fact]
+        public async Task ApplicationLifetimeIsHookedUp()
         {
-            return new ConnectionManager(new Logger<ConnectionManager>(new LoggerFactory()));
+            var appLifetime = new TestApplicationLifetime();
+            var connectionManager = CreateConnectionManager(appLifetime);
+
+            appLifetime.Start();
+
+            var connection = connectionManager.CreateConnection();
+
+            appLifetime.StopApplication();
+
+            // Connection should be disposed so this should complete immediately
+            Assert.False(await connection.Application.Out.WaitToWriteAsync().OrTimeout());
+        }
+
+        private static ConnectionManager CreateConnectionManager(IApplicationLifetime lifetime = null)
+        {
+            lifetime = lifetime ?? new EmptyApplicationLifetime();
+            return new ConnectionManager(new Logger<ConnectionManager>(new LoggerFactory()), lifetime);
         }
     }
 }

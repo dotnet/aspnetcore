@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -21,9 +22,12 @@ namespace Microsoft.AspNetCore.Sockets
         private object _executionLock = new object();
         private bool _disposed;
 
-        public ConnectionManager(ILogger<ConnectionManager> logger)
+        public ConnectionManager(ILogger<ConnectionManager> logger, IApplicationLifetime appLifetime)
         {
             _logger = logger;
+
+            appLifetime.ApplicationStarted.Register(() => Start());
+            appLifetime.ApplicationStopping.Register(() => CloseConnections());
         }
 
         public void Start()
