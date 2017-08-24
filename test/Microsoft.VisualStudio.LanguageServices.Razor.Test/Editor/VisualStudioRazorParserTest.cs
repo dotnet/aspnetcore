@@ -213,7 +213,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             var changed = new StringTextSnapshot("foo @DateT. baz");
             var original = new StringTextSnapshot("foo @DateT baz");
             var edit = new TestEdit(10, 0, original, 1, changed, ".");
-            using (var manager = CreateParserManager(original, idleDelay: 250))
+            using (var manager = CreateParserManager(original))
             {
                 void ApplyAndVerifyPartialChange(TestEdit testEdit, string expectedCode)
                 {
@@ -259,7 +259,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             var changed = new StringTextSnapshot("foo @DateTime. baz");
             var original = new StringTextSnapshot("foo @DateTime baz");
             var edit = new TestEdit(13, 0, original, 1, changed, ".");
-            using (var manager = CreateParserManager(original, idleDelay: 250))
+            using (var manager = CreateParserManager(original))
             {
                 void ApplyAndVerifyPartialChange(TestEdit testEdit, string expectedCode)
                 {
@@ -311,7 +311,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             var original = new StringTextSnapshot("foo @date baz");
             var changed = new StringTextSnapshot("foo @date. baz");
             var edit = new TestEdit(9, 0, original, 1, changed, ".");
-            using (var manager = CreateParserManager(original, idleDelay: 250))
+            using (var manager = CreateParserManager(original))
             {
                 void ApplyAndVerifyPartialChange(Action applyEdit, string expectedCode)
                 {
@@ -411,7 +411,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             var factory = new SpanFactory();
             var dotTyped = new TestEdit(8, 0, new StringTextSnapshot("foo @foo bar"), 1, new StringTextSnapshot("foo @foo. bar"), ".");
             var charTyped = new TestEdit(9, 0, new StringTextSnapshot("foo @foo. bar"), 1, new StringTextSnapshot("foo @foo.b bar"), "b");
-            using (var manager = CreateParserManager(dotTyped.OldSnapshot, idleDelay: 250))
+            using (var manager = CreateParserManager(dotTyped.OldSnapshot))
             {
                 manager.InitializeWithDocument(dotTyped.OldSnapshot);
 
@@ -519,12 +519,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             RunTypeKeywordTest("class");
         }
 
-        private static TestParserManager CreateParserManager(ITextSnapshot originalSnapshot, int idleDelay = 50)
+        private static TestParserManager CreateParserManager(ITextSnapshot originalSnapshot)
         {
             var parser = new VisualStudioRazorParser(new TestTextBuffer(originalSnapshot), CreateTemplateEngine(), TestLinePragmaFileName, new TestCompletionBroker());
 
-            // Normal idle delay is 3000 milliseconds, for testing we want it to be far shorter.
-            parser._idleTimer.Interval = idleDelay;
             return new TestParserManager(parser);
         }
 
@@ -611,6 +609,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 _reparseComplete = new ManualResetEventSlim();
                 _testBuffer = (TestTextBuffer)parser._textBuffer;
                 ParseCount = 0;
+
+                // Change idle delay to be huge in order to enable us to take control of when idle methods fire.
+                parser._idleTimer.Interval = TimeSpan.FromMinutes(2).TotalMilliseconds;
                 _parser = parser;
                 parser.DocumentStructureChanged += (sender, args) =>
                 {
@@ -667,8 +668,15 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
             public void WaitForReparse()
             {
+                Assert.True(_parser._idleTimer.Enabled, "Expected the parser to be waiting for an idle invocation but it was not.");
+
+                _parser._idleTimer.Stop();
+                _parser._idleTimer.Interval = 50;
+                _parser._idleTimer.Start();
                 DoWithTimeoutIfNotDebugging(_reparseComplete.Wait);
                 _reparseComplete.Reset();
+                Assert.False(_parser._idleTimer.Enabled);
+                _parser._idleTimer.Interval = TimeSpan.FromMinutes(2).TotalMilliseconds;
             }
 
             public void Dispose()
