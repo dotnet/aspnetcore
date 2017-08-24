@@ -39,5 +39,13 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             var builder = services.AddIdentity<StringUser, StringRole>().AddEntityFrameworkStores<TestDbContext>();
         }
 
+        [Fact]
+        public void AddEntityFrameworkStoresCanInferKeyWithGenericBase()
+        {
+            var services = new ServiceCollection();
+            // This used to throw
+            var builder = services.AddIdentity<IdentityUser<string>, IdentityRole<string>>().AddEntityFrameworkStores<TestDbContext>();
+        }
+
     }
 }
