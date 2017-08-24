@@ -219,7 +219,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         [ConditionalFact]
         public async Task Server_ClientDisconnects_CallCanceled()
         {
-            TimeSpan interval = TimeSpan.FromSeconds(1);
+            TimeSpan interval = TimeSpan.FromSeconds(10);
             ManualResetEvent received = new ManualResetEvent(false);
             ManualResetEvent aborted = new ManualResetEvent(false);
             ManualResetEvent canceled = new ManualResetEvent(false);
