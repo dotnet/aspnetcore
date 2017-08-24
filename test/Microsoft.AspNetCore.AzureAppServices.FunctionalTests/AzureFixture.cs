@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                 .Create();
         }
 
-        private static string GetRequiredEnvironmentVariable(string name)
+        public static string GetRequiredEnvironmentVariable(string name)
         {
             var authFile = Environment.GetEnvironmentVariable(name);
             if (string.IsNullOrEmpty(authFile))

@@ -32,7 +32,7 @@
       },
       "resources": [
         {
-          "type": "extensions",
+          "type": "siteextensions",
           "name": "[parameters('extensionName')]",
           "apiVersion": "2015-08-01",
           "location": "West US 2",

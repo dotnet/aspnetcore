@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 {
     public class TestCommand
     {
-        private string _dotnetPath = GetDotnetPath();
+        public static string DotnetPath { get; } = GetDotnetPath();
 
         private static string GetDotnetPath()
         {
@@ -75,6 +75,13 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             Logger.LogInformation($"Executing - {resolvedCommand} {args} - {WorkingDirectoryInfo()}");
 
             return await ExecuteAsyncInternal(resolvedCommand, args);
+        }
+
+        public virtual async Task<CommandResult> ExecuteAndAssertAsync(string args = "")
+        {
+            var result = await ExecuteAsync(args);
+            result.AssertSuccess();
+            return result;
         }
 
         private async Task<CommandResult> ExecuteAsyncInternal(string executable, string args)
@@ -200,7 +207,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
         {
             if (executable == "dotnet")
             {
-                executable = _dotnetPath;
+                executable = DotnetPath;
                 return;
             }
 

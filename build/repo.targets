@@ -2,7 +2,7 @@
 
   <PropertyGroup>
       <SiteExtensionProjectDirectory>$(RepositoryRoot)src\Microsoft.AspNetCore.AzureAppServices.TestBundle\</SiteExtensionProjectDirectory>
-      <PublishFeed Condition="$(PublishFeed) == ''">https://dotnet.myget.org/F/aspnetcore-ci-dev/</PublishFeed>
+      <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-ci-dev/</SiteExtensionFeed>
       <DotnetChannel>master</DotnetChannel>
       <DotnetVersion>coherent</DotnetVersion>
   </PropertyGroup>
@@ -30,9 +30,9 @@
 
     <PushNuGetPackages
       Packages="@(RepositoryNupkgs)"
-      Feed="$(PublishFeed)"
+      Feed="$(SiteExtensionFeed)"
       ApiKey="$(APIKey)"
-      Timeout="6000"/>
+      TimeoutSeconds="600"/>
 
   </Target>
 

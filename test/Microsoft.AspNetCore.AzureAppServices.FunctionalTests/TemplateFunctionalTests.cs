@@ -1,10 +1,15 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
+using System.Xml.Linq;
 using Microsoft.Azure.Management.AppService.Fluent;
 using Microsoft.Azure.Management.AppService.Fluent.Models;
 using Xunit;
@@ -35,20 +40,15 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
             using (var logger = GetLogger(testId))
             {
-                Assert.NotNull(_fixture.Azure);
-
                 var site = await _fixture.Deploy("Templates\\BasicAppServices.json", baseName: testId);
                 var testDirectory = GetTestDirectory(testId);
-
                 var dotnet = DotNet(logger, testDirectory);
 
-                var result = await dotnet.ExecuteAsync("new " + template);
-                result.AssertSuccess();
+                await dotnet.ExecuteAndAssertAsync("new " + template);
 
                 await site.BuildPublishProfileAsync(testDirectory.FullName);
 
-                result = await dotnet.ExecuteAsync("publish /p:PublishProfile=Profile");
-                result.AssertSuccess();
+                await dotnet.ExecuteAndAssertAsync("publish /p:PublishProfile=Profile");
 
                 using (var httpClient = site.CreateClient())
                 {
@@ -57,6 +57,81 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                     Assert.Contains(expected, await getResult.Content.ReadAsStringAsync());
                 }
             }
+        }
+
+        [Theory]
+        [InlineData("web", "Hello World!")]
+        [InlineData("razor", "Learn how to build ASP.NET apps that can run anywhere.")]
+        [InlineData("mvc", "Learn how to build ASP.NET apps that can run anywhere.")]
+        public async Task DotnetNewWebRunsWebAppOnLatestRuntime(string template, string expected)
+        {
+            var testId = nameof(DotnetNewWebRunsWebAppOnLatestRuntime) + template;
+
+            using (var logger = GetLogger(testId))
+            {
+                var site = await _fixture.Deploy("Templates\\AppServicesWithSiteExtensions.json",
+                    baseName: testId,
+                    additionalArguments: new Dictionary<string, string>
+                    {
+                        { "extensionFeed", AzureFixture.GetRequiredEnvironmentVariable("SiteExtensionFeed") },
+                        { "extensionName", "AspNetCoreTestBundle" },
+                        { "extensionVersion", GetAssemblyInformationalVersion() },
+                    });
+
+                var testDirectory = GetTestDirectory(testId);
+                var dotnet = DotNet(logger, testDirectory);
+
+                await dotnet.ExecuteAndAssertAsync("new " + template);
+
+                FixAspNetCoreVersion(testDirectory);
+
+                await dotnet.ExecuteAndAssertAsync("restore");
+
+                await site.BuildPublishProfileAsync(testDirectory.FullName);
+
+                await dotnet.ExecuteAndAssertAsync("publish /p:PublishProfile=Profile");
+
+                using (var httpClient = site.CreateClient())
+                {
+                    var getResult = await httpClient.GetAsync("/");
+                    getResult.EnsureSuccessStatusCode();
+                    Assert.Contains(expected, await getResult.Content.ReadAsStringAsync());
+                }
+            }
+        }
+
+        private static void FixAspNetCoreVersion(DirectoryInfo testDirectory)
+        {
+            // TODO: Temporary workaround for broken templates in latest CLI
+
+            var csproj = testDirectory.GetFiles("*.csproj").Single().FullName;
+            var projectContents = XDocument.Load(csproj);
+            var packageReference = projectContents
+                .Descendants("PackageReference")
+                .Single(element => (string) element.Attribute("Include") == "Microsoft.AspNetCore.All");
+
+            // Detect what version of aspnet core was shipped with this CLI installation
+            var aspnetCoreVersion =
+                new DirectoryInfo(
+                    Path.Combine(
+                        Path.GetDirectoryName(TestCommand.DotnetPath),
+                        "store", "x86", "netcoreapp2.0", "microsoft.aspnetcore"))
+                .GetDirectories()
+                .Single()
+                .Name;
+
+            packageReference.Attribute("Version").Value = aspnetCoreVersion;
+            projectContents.Save(csproj);
+        }
+
+        private string GetAssemblyInformationalVersion()
+        {
+            var assemblyInformationalVersionAttribute = typeof(TemplateFunctionalTests).Assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>();
+            if (assemblyInformationalVersionAttribute == null)
+            {
+                throw new InvalidOperationException("Tests assembly lacks AssemblyInformationalVersionAttribute");
+            }
+            return assemblyInformationalVersionAttribute.InformationalVersion;
         }
 
         private TestLogger GetLogger([CallerMemberName] string callerName = null)
