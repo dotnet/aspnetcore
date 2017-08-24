@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <returns>Base64 encoded string modified with non-URL encodable characters</returns>
         public static string Encode(byte[] data)
         {
-            return WebUtilities.Base64UrlTextEncoder.Encode(data);
+            return WebUtilities.WebEncoders.Base64UrlEncode(data);
         }
 
         /// <summary>
@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Authentication
         /// <returns>The decoded data.</returns>
         public static byte[] Decode(string text)
         {
-            return WebUtilities.Base64UrlTextEncoder.Decode(text);
+            return WebUtilities.WebEncoders.Base64UrlDecode(text);
         }
     }
 }
