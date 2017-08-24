@@ -5,6 +5,7 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.SignalR.Client.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Client
@@ -28,7 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             ResultType = resultType;
             Logger = logger;
 
-            Logger.LogTrace("Invocation {invocationId} created", InvocationId);
+            Logger.InvocationCreated(InvocationId);
         }
 
         public static InvocationRequest Invoke(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, out Task<object> result)
@@ -54,7 +55,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         public virtual void Dispose()
         {
-            Logger.LogTrace("Invocation {invocationId} disposed", InvocationId);
+            Logger.InvocationDisposed(InvocationId);
 
             // Just in case it hasn't already been completed
             Cancel();
@@ -75,10 +76,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             public override void Complete(object result)
             {
-                Logger.LogTrace("Invocation {invocationId} marked as completed.", InvocationId);
+                Logger.InvocationCompleted(InvocationId);
                 if (result != null)
                 {
-                    Logger.LogError("Invocation {invocationId} received a completion result, but was invoked as a streaming invocation.", InvocationId);
+                    Logger.ReceivedUnexpectedComplete(InvocationId);
                     _channel.Out.TryComplete(new InvalidOperationException("Server provided a result in a completion response to a streamed invocation."));
                 }
                 else
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             public override void Fail(Exception exception)
             {
-                Logger.LogTrace("Invocation {invocationId} marked as failed.", InvocationId);
+                Logger.InvocationFailed(InvocationId);
                 _channel.Out.TryComplete(exception);
             }
 
@@ -97,7 +98,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             {
                 try
                 {
-                    Logger.LogTrace("Invocation {invocationId} received stream item.", InvocationId);
                     while (!_channel.Out.TryWrite(item))
                     {
                         if (!await _channel.Out.WaitToWriteAsync())
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
                 catch (Exception ex)
                 {
-                    Logger.LogError(ex, "Invocation {invocationId} caused an error trying to write a stream item.", InvocationId);
+                    Logger.ErrorWritingStreamItem(InvocationId, ex);
                 }
                 return true;
             }
@@ -132,19 +132,19 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             public override void Complete(object result)
             {
-                Logger.LogTrace("Invocation {invocationId} marked as completed.", InvocationId);
+                Logger.InvocationCompleted(InvocationId);
                 _completionSource.TrySetResult(result);
             }
 
             public override void Fail(Exception exception)
             {
-                Logger.LogTrace("Invocation {invocationId} marked as failed.", InvocationId);
+                Logger.InvocationFailed(InvocationId);
                 _completionSource.TrySetException(exception);
             }
 
             public override ValueTask<bool> StreamItem(object item)
             {
-                Logger.LogError("Invocation {invocationId} received stream item but was invoked as a non-streamed invocation.", InvocationId);
+                Logger.StreamItemOnNonStreamInvocation(InvocationId);
                 _completionSource.TrySetException(new InvalidOperationException("Streaming methods must be invoked using HubConnection.Stream"));
 
                 // We "delivered" the stream item successfully as far as the caller cares

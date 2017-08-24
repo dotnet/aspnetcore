@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26706.0
+VisualStudioVersion = 15.0.26730.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DA69F624-5398-4884-87E4-B816698CDE65}"
 EndProject
@@ -55,6 +55,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{6CEC3D
 		test\Common\ChannelExtensions.cs = test\Common\ChannelExtensions.cs
 		test\Common\ServerFixture.cs = test\Common\ServerFixture.cs
 		test\Common\TaskExtensions.cs = test\Common\TaskExtensions.cs
+		test\Common\TestHelpers.cs = test\Common\TestHelpers.cs
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "client-ts", "client-ts", "{3A76C5A2-79ED-49BC-8BDC-6A3A766FFA1B}"
