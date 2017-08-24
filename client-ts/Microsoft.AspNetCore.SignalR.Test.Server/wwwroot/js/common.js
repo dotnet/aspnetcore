@@ -1,22 +1,24 @@
 const ECHOENDPOINT_URL = `http://${document.location.host}/echo`;
 
+function getTransportTypes() {
+    let transportTypes = [ signalR.TransportType.WebSockets ];
+    if (typeof (EventSource) !== "undefined") {
+        transportTypes.push(signalR.TransportType.ServerSentEvents);
+    }
+    transportTypes.push(signalR.TransportType.LongPolling);
+
+    return transportTypes;
+}
+
 function eachTransport(action) {
-    let transportTypes = [
-        signalR.TransportType.WebSockets,
-        signalR.TransportType.ServerSentEvents,
-        signalR.TransportType.LongPolling ];
-    transportTypes.forEach(t => action(t));
+    getTransportTypes().forEach(t => action(t));
 }
 
 function eachTransportAndProtocol(action) {
-    let transportTypes = [
-        signalR.TransportType.WebSockets,
-        signalR.TransportType.ServerSentEvents,
-        signalR.TransportType.LongPolling ];
     let protocols = [
         new signalR.JsonHubProtocol(),
         new signalRMsgPack.MessagePackHubProtocol()
     ];
-    transportTypes.forEach(t =>
+    getTransportTypes().forEach(t =>
         protocols.forEach(p => action(t, p)));
 }
