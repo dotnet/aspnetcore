@@ -240,7 +240,13 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             var controllerName = GetNormalizedRouteValue(actionContext, ControllerKey);
             var areaName = GetNormalizedRouteValue(actionContext, AreaKey);
-            var razorPageName = GetNormalizedRouteValue(actionContext, PageKey);
+            string razorPageName = null;
+            if (actionContext.ActionDescriptor.RouteValues.ContainsKey(PageKey))
+            {
+                // Only calculate the Razor Page name if "page" is registered in RouteValues.
+                razorPageName = GetNormalizedRouteValue(actionContext, PageKey);
+            }
+
             var expanderContext = new ViewLocationExpanderContext(
                 actionContext,
                 pageName,
@@ -270,8 +276,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                 expanderContext.IsMainPage,
                 expanderValues);
 
-            ViewLocationCacheResult cacheResult;
-            if (!ViewLookupCache.TryGetValue(cacheKey, out cacheResult))
+            if (!ViewLookupCache.TryGetValue(cacheKey, out ViewLocationCacheResult cacheResult))
             {
                 _logger.ViewLookupCacheMiss(cacheKey.ViewName, cacheKey.ControllerName);
                 cacheResult = OnCacheMiss(expanderContext, cacheKey);

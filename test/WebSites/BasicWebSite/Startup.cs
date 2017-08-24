@@ -44,6 +44,7 @@ namespace BasicWebSite
                 routes.MapRoute("ActionAsMethod", "{controller}/{action}",
                     defaults: new { controller = "Home", action = "Index" });
 
+                routes.MapRoute("PageRoute", "{controller}/{action}/{page}");
             });
         }
     }

@@ -1791,6 +1791,79 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
             Assert.Equal(expected, actual);
         }
 
+        [Fact]
+        public void ViewEngine_DoesNotSetPageValue_IfItIsNotSpecifiedInRouteValues()
+        {
+            // Arrange
+            var routeValues = new Dictionary<string, object>
+            {
+                { "controller", "MyController" },
+                { "action", "MyAction" }
+            };
+
+            var expected = new[] { "some-seed" };
+            var expander = new Mock<IViewLocationExpander>();
+            expander
+                .Setup(e => e.PopulateValues(It.IsAny<ViewLocationExpanderContext>()))
+                .Callback((ViewLocationExpanderContext c) =>
+                {
+                    Assert.Equal("MyController", c.ControllerName);
+                    Assert.Null(c.PageName);
+                })
+                .Verifiable();
+
+            expander
+                .Setup(e => e.ExpandViewLocations(
+                    It.IsAny<ViewLocationExpanderContext>(),
+                    It.IsAny<IEnumerable<string>>()))
+                .Returns(expected);
+
+            var viewEngine = CreateViewEngine(expanders: new[] { expander.Object });
+            var context = GetActionContext(routeValues);
+
+            // Act
+            viewEngine.FindView(context, viewName: "Test-view", isMainPage: true);
+
+            // Assert
+            expander.Verify();
+        }
+
+        [Fact]
+        public void ViewEngine_SetsPageValue_IfItIsSpecifiedInRouteValues()
+        {
+            // Arrange
+            var routeValues = new Dictionary<string, object>
+            {
+                { "page", "MyPage" },
+            };
+
+            var expected = new[] { "some-seed" };
+            var expander = new Mock<IViewLocationExpander>();
+            expander
+                .Setup(e => e.PopulateValues(It.IsAny<ViewLocationExpanderContext>()))
+                .Callback((ViewLocationExpanderContext c) =>
+                {
+                    Assert.Equal("MyPage", c.PageName);
+                })
+                .Verifiable();
+
+            expander
+                .Setup(e => e.ExpandViewLocations(
+                    It.IsAny<ViewLocationExpanderContext>(),
+                    It.IsAny<IEnumerable<string>>()))
+                .Returns(expected);
+
+            var viewEngine = CreateViewEngine(expanders: new[] { expander.Object });
+            var context = GetActionContext(routeValues);
+            context.ActionDescriptor.RouteValues["page"] = "MyPage";
+
+            // Act
+            viewEngine.FindView(context, viewName: "MyView", isMainPage: true);
+
+            // Assert
+            expander.Verify();
+        }
+
         // Return RazorViewEngine with a page factory provider that is always successful.
         private RazorViewEngine CreateSuccessfulViewEngine()
         {
@@ -1931,8 +2004,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
                       optionsAccessor,
                       new FileProviderRazorProject(
                           Mock.Of<IRazorViewEngineFileProviderAccessor>(a => a.FileProvider == new TestFileProvider())))
-                      {
-                      }
+            {
+            }
 
             public TestableRazorViewEngine(
                 IRazorPageFactoryProvider pageFactory,

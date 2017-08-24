@@ -10,13 +10,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
     {
         public IEnumerable<string> ExpandViewLocations(ViewLocationExpanderContext context, IEnumerable<string> viewLocations)
         {
-            if (string.IsNullOrEmpty(context.PageName))
+            if ((context.ActionContext.ActionDescriptor is PageActionDescriptor) && !string.IsNullOrEmpty(context.PageName))
             {
-                // Not a page - just act natural.
-                return viewLocations;
+                return ExpandPageHierarchy();
             }
 
-            return ExpandPageHierarchy();
+            // Not a page - just act natural.
+            return viewLocations;
 
             IEnumerable<string> ExpandPageHierarchy()
             {
