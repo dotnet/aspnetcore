@@ -95,7 +95,6 @@
     <Content Include="WebConfiguration.png">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
-    <None Include="project.json" />
     <None Include="source.extension.vsixmanifest">
       <SubType>Designer</SubType>
     </None>
@@ -207,6 +206,15 @@
       <IncludeOutputGroupsInVSIXLocalOnly>
       </IncludeOutputGroupsInVSIXLocalOnly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <!--
+      Versions must be written here instead of being set as MSBuild variable.
+      See https://github.com/dotnet/project-system/issues/2129.
+    -->
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26606" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="15.0.26606" />
+    <PackageReference Include="Microsoft.VSSDK.BuildTools" Version="15.1.192" />
   </ItemGroup>
   <ItemDefinitionGroup>
     <SuppressFromVsix>

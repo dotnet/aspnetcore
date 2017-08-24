@@ -22,7 +22,10 @@
     <StreamJsonRpcVersion>1.1.92</StreamJsonRpcVersion>
     <TestSdkVersion>15.3.0</TestSdkVersion>
 
-    <!-- Must keep in sync with tooling\Microsoft.VisualStudio.RazorExtension\project.json -->
+    <!--
+      Must keep in sync with tooling\Microsoft.VisualStudio.RazorExtension\ until we can use this MSBuild property.
+      See https://github.com/dotnet/project-system/issues/2129
+     -->
     <VsShellVersion>15.0.26606</VsShellVersion>
 
     <XunitAnalyzersVersion>0.6.1</XunitAnalyzersVersion>
