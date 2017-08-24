@@ -47,6 +47,7 @@
     <ExternalDependency Include="Microsoft.Owin.Security" Version="3.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Owin.Testing" Version="3.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Owin" Version="3.0.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.ComponentModelHost" Version="15.0.26606" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.VisualStudio.Editor" Version="15.0.26606" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.VisualStudio.Language.Intellisense" Version="15.0.26606" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
