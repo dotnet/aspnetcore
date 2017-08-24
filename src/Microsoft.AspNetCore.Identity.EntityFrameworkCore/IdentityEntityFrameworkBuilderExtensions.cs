@@ -96,15 +96,16 @@ namespace Microsoft.Extensions.DependencyInjection
 
         private static TypeInfo FindGenericBaseType(Type currentType, Type genericBaseType)
         {
-            var type = currentType.GetTypeInfo();
-            while (type.BaseType != null)
+            var type = currentType;
+            while (type != null)
             {
-                type = type.BaseType.GetTypeInfo();
+                var typeInfo = type.GetTypeInfo();
                 var genericType = type.IsGenericType ? type.GetGenericTypeDefinition() : null;
                 if (genericType != null && genericType == genericBaseType)
                 {
-                    return type;
+                    return typeInfo;
                 }
+                type = type.BaseType;
             }
             return null;
         }
