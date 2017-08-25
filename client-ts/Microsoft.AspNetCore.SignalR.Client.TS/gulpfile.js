@@ -1,8 +1,11 @@
-const gulp = require('gulp');
+const gulp       = require('gulp');
 const browserify = require('browserify');
-const ts = require('gulp-typescript');
-const source = require('vinyl-source-stream');
-const del = require('del');
+const ts         = require('gulp-typescript');
+const source     = require('vinyl-source-stream');
+const buffer     = require('vinyl-buffer');
+const del        = require('del');
+const rename     = require('gulp-rename');
+const babel      = require('gulp-babel');
 
 const tsProject = ts.createProject('./tsconfig.json');
 const clientOutDir = tsProject.options.outDir;
@@ -17,18 +20,25 @@ gulp.task('compile-ts-client', () => {
         .pipe(gulp.dest(clientOutDir));
 });
 
-gulp.task('browserify-client', ['compile-ts-client'], () => {
-    return browserify(clientOutDir + '/HubConnection.js', {standalone: 'signalR'})
+function browserifyModule(sourceFileName, namespace, targetFileName) {
+    const browserOutDir = clientOutDir + '/../browser';
+
+    return browserify(clientOutDir + '/' + sourceFileName, {standalone: namespace})
         .bundle()
-        .pipe(source('signalr-client.js'))
-        .pipe(gulp.dest(clientOutDir + '/../browser'));
+        .pipe(source(targetFileName))
+        .pipe(gulp.dest(browserOutDir))
+        .pipe(buffer())
+        .pipe(rename({ extname: '.min.js' }))
+        .pipe(babel({presets: ['minify']}))
+        .pipe(gulp.dest(browserOutDir));
+}
+
+gulp.task('browserify-client', ['compile-ts-client'], () => {
+    return browserifyModule('HubConnection.js', 'signalR', 'signalr-client.js');
 });
 
 gulp.task('browserify-msgpackprotocol', ['compile-ts-client'], () => {
-    return browserify(clientOutDir + '/MessagePackHubProtocol.js', {standalone: 'signalRMsgPack'})
-        .bundle()
-        .pipe(source('signalr-msgpackprotocol.js'))
-        .pipe(gulp.dest(clientOutDir + '/../browser'));
+    return browserifyModule('MessagePackHubProtocol.js', 'signalRMsgPack', 'signalr-msgpackprotocol.js');
 });
 
 gulp.task('browserify', [ 'browserify-client', 'browserify-msgpackprotocol']);
