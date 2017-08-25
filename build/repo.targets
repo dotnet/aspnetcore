@@ -1,26 +1,27 @@
 <Project>
 
   <PropertyGroup>
+      <SiteExtensionWorkingDirectory>$(RepositoryRoot).test-dotnet\</SiteExtensionWorkingDirectory>
       <SiteExtensionProjectDirectory>$(RepositoryRoot)src\Microsoft.AspNetCore.AzureAppServices.TestBundle\</SiteExtensionProjectDirectory>
       <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-ci-dev/</SiteExtensionFeed>
       <DotnetChannel>master</DotnetChannel>
       <DotnetVersion>coherent</DotnetVersion>
   </PropertyGroup>
 
-  <Target Name="BuildSiteExtension">
+  <ItemGroup>
+    <DotNetCoreSdk Include="coherent" Channel="master" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="x86" />
+  </ItemGroup>
+
+  <Target Name="BuildSiteExtension" DependsOnTargets="InstallDotNet">
 
     <PropertyGroup>
-      <SiteExtensionWorkingDirectory>$(RepositoryRoot).test-dotnet\</SiteExtensionWorkingDirectory>
       <CliVersionRelativePath>build\dotnet.version</CliVersionRelativePath>
     </PropertyGroup>
 
-    <RemoveDir Directories="$(SiteExtensionWorkingDirectory)" />
-    <Exec Command="$(MSBuildThisFileDirectory)\dotnet-install.cmd -Channel $(DotnetChannel) -Version $(DotnetVersion) -Architecture x86 -InstallDir $(SiteExtensionWorkingDirectory) -NoPath" />
     <MSBuild Projects="$(SiteExtensionProjectDirectory)Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj"
       Targets="Restore;Pack"
-      Properties="DotnetHomeDirectory=$(SiteExtensionWorkingDirectory)" />
+      Properties="DotnetHomeDirectory=$(SiteExtensionWorkingDirectory);BuildNumber=$(BuildNumber)" />
 
-    <Exec Command="$(SiteExtensionWorkingDirectory)dotnet --version > $(RepositoryRoot)artifacts\$(CliVersionRelativePath)" />
   </Target>
 
   <Target Name="PushSiteExtension">

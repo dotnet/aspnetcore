@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             }
 
             var readAllText = File.ReadAllText(template);
-            var deployment = await Azure.Deployments.Define(GetTimestampedName("Deployment"))
+            var deployment = await Azure.Deployments.Define(GetTimestampedName("D" + baseName))
                 .WithExistingResourceGroup(ResourceGroup)
                 .WithTemplate(readAllText)
                 .WithParameters(ToParametersObject(parameters))

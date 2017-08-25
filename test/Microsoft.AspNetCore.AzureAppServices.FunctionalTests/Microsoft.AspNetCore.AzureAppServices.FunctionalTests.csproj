@@ -9,6 +9,7 @@
 
   <ItemGroup>
     <None Include="Templates\*.*" CopyToOutputDirectory="PreserveNewest" />
+    <ContentWithTargetPath Include="NuGet.config.template" CopyToOutputDirectory="PreserveNewest" TargetPath="NuGet.config"/>
   </ItemGroup>
 
   <ItemGroup>

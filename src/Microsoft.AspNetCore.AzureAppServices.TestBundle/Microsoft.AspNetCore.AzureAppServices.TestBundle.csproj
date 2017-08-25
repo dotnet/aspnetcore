@@ -24,7 +24,7 @@
   <ItemGroup>
     <Content Include="applicationHost.xdt" />
     <Content Include="$(OutputPath)\Microsoft.Web.Xdt.Extensions.dll" PackagePath="content" />
-    <Content Include="$(DotnetHomeDirectory)\**\*.*" Exclude="$(DotnetHomeDirectory)\**\nuGetPackagesArchive.lzma" Condition="$(DotnetHomeDirectory) != ''" PackagePath="content\%(RecursiveDir)%(FileName)%(Extension)" />
+    <Content Include="$(DotnetHomeDirectory)**\*.*" Exclude="$(DotnetHomeDirectory)**\nuGetPackagesArchive.lzma" Condition="$(DotnetHomeDirectory) != ''" PackagePath="content\%(RecursiveDir)%(FileName)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>
