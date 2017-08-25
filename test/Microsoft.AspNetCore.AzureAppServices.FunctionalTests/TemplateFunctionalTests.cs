@@ -114,7 +114,8 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             var csproj = testDirectory.GetFiles("*.csproj").Single().FullName;
             var projectContents = XDocument.Load(csproj);
             var packageReferences = projectContents
-                .Descendants("PackageReference");
+                .Descendants("PackageReference")
+                .Concat(projectContents.Descendants("DotNetCliToolReference"));
 
             foreach (var packageReference in packageReferences)
             {
