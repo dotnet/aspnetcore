@@ -60,7 +60,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 completionContext.CurrentTagName,
                 completionContext.Attributes,
                 completionContext.CurrentParentTagName,
-                parentIsTagHelper: false);
+                completionContext.CurrentParentIsTagHelper);
 
             var applicableDescriptors = applicableTagHelperBinding?.Descriptors ?? Enumerable.Empty<TagHelperDescriptor>();
             var unprefixedTagName = completionContext.CurrentTagName.Substring(prefix.Length);

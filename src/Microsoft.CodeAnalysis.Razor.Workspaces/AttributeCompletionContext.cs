@@ -16,6 +16,7 @@ namespace Microsoft.CodeAnalysis.Razor
             string currentAttributeName,
             IEnumerable<KeyValuePair<string, string>> attributes,
             string currentParentTagName,
+            bool currentParentIsTagHelper,
             Func<string, bool> inHTMLSchema)
         {
             if (documentContext == null)
@@ -49,6 +50,7 @@ namespace Microsoft.CodeAnalysis.Razor
             CurrentAttributeName = currentAttributeName;
             Attributes = attributes;
             CurrentParentTagName = currentParentTagName;
+            CurrentParentIsTagHelper = currentParentIsTagHelper;
             InHTMLSchema = inHTMLSchema;
         }
 
@@ -63,6 +65,8 @@ namespace Microsoft.CodeAnalysis.Razor
         public IEnumerable<KeyValuePair<string, string>> Attributes { get; }
 
         public string CurrentParentTagName { get; }
+
+        public bool CurrentParentIsTagHelper { get; }
 
         public Func<string, bool> InHTMLSchema { get; }
     }
