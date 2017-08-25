@@ -11,31 +11,30 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Temporarily disable package downgrade warnings.  Revert when RoslynDevVersion >= RoslynVersion. -->
-    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevVersion)" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.EditorFeatures.Text" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" />
+    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
+    <PackageReference Include="Microsoft.VisualStudio.Editor" />
+    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" />
+    <PackageReference Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" />
+    <PackageReference Include="Microsoft.VisualStudio.LanguageServices" />
+    <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.10.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.8.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.9.0" />
+    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" />
+    <PackageReference Include="Newtonsoft.Json" Version="9.0.1">
+      <!-- We need to use this version of Json.Net to maintain consistency with Visual Studio. -->
+      <NoWarn>KRB4002</NoWarn>
+    </PackageReference>
+  </ItemGroup>
 
-    <PackageReference Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Editor" Version="$(VsShellVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" Version="$(VsShellVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(RoslynDevVersion)" />
-
-    <!-- All of the VS 'interop' assemblies have permanently fixed versions. -->
-    <PackageReference Include="Microsoft.VisualStudio.OLE.Interop" Version="7.10.6070" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.15.0" Version="$(VsShellVersion)" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50727" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="9.0.30729" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.10.0" Version="10.0.30319" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.11.0" Version="11.0.61030" />
-    <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.12.0" Version="12.0.30110" />
-    <PackageReference Include="Microsoft.VisualStudio.Language.Intellisense" Version="$(VsShellVersion)" />
-
-    <!-- We need to use this version of Json.Net to maintain consistency with Visual Studio. -->
-    <PackageReference Include="Newtonsoft.Json" Version="9.0.1" />
-
+  <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.CodeAnalysis.Razor.Workspaces\Microsoft.CodeAnalysis.Razor.Workspaces.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Razor.Language\Microsoft.AspNetCore.Razor.Language.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Mvc.Razor.Extensions\Microsoft.AspNetCore.Mvc.Razor.Extensions.csproj" />
