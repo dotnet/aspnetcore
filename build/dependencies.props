@@ -42,6 +42,9 @@
     <ExternalDependency Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.14.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="2.1.4" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="15.3.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.NETCore.App" Version="1.0.5" TargetFramework="netcoreapp1.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.NETCore.App" Version="1.1.2" TargetFramework="netcoreapp1.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.NETCore.App" Version="2.0.0" TargetFramework="netcoreapp2.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.NETCore.Windows.ApiSets" Version="1.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Owin.Security.Cookies" Version="3.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Owin.Security" Version="3.0.1" Source="$(DefaultNuGetFeed)"/>
@@ -62,6 +65,7 @@
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="1.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Moq" Version="4.7.49" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="MsgPack.Cli" Version="0.9.0-beta2" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="1.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Newtonsoft.Json" Version="10.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Remotion.Linq" Version="2.2.0-alpha-002" Source="$(DefaultNuGetFeed)"/>
