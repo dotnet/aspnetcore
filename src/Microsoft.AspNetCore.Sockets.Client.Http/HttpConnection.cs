@@ -88,7 +88,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _transportFactory = transportFactory ?? throw new ArgumentNullException(nameof(transportFactory));
         }
 
-        public Task StartAsync()
+        public async Task StartAsync() => await StartAsyncCore().ForceAsync();
+
+        private Task StartAsyncCore()
         {
             if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Connecting, ConnectionState.Initial)
                 != ConnectionState.Initial)
@@ -357,7 +359,10 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger.EndReceive(_connectionId);
         }
 
-        public async Task SendAsync(byte[] data, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task SendAsync(byte[] data, CancellationToken cancellationToken = default(CancellationToken)) =>
+            await SendAsyncCore(data, cancellationToken).ForceAsync();
+
+        private async Task SendAsyncCore(byte[] data, CancellationToken cancellationToken)
         {
             if (data == null)
             {
@@ -389,7 +394,9 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
         }
 
-        public async Task DisposeAsync()
+        public async Task DisposeAsync() => await DisposeAsyncCore().ForceAsync();
+
+        private async Task DisposeAsyncCore()
         {
             _logger.StoppingClient(_connectionId);
 
