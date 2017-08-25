@@ -9,7 +9,7 @@ Install `Microsoft.Extensions.Caching.SqlConfig.Tools` as a `DotNetCliToolRefere
 
 ```xml
   <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.Extensions.Caching.SqlConfig.Tools" Version="1.0.0" />
+    <DotNetCliToolReference Include="Microsoft.Extensions.Caching.SqlConfig.Tools" Version="2.0.0" />
   </ItemGroup>
 ```
 
