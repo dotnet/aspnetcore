@@ -1,5 +1,7 @@
 <Project>
   <ItemGroup>
     <DotNetCoreRuntime Include="2.0.0" />
+    <PackageLineup Include="Internal.AspNetCore.Universe.Lineup" Version="2.1.0-*" />
+    <PackageLineup Include="Internal.AspNetCore.Partners.Lineup" Version="2.1.0-*" />
   </ItemGroup>
 </Project>

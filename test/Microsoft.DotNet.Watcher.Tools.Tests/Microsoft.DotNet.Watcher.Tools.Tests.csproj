@@ -15,8 +15,4 @@
     <ProjectReference Include="..\..\src\Microsoft.DotNet.Watcher.Tools\Microsoft.DotNet.Watcher.Tools.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
-  </ItemGroup>
-
 </Project>

@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Microsoft.DotNet.Watcher.Tools.Tests
 {
@@ -21,7 +22,14 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
         {
             Func<string, string> normalize = p => p.Replace('\\', '/');
             var expected = new HashSet<string>(expectedFiles.Select(normalize));
-            Assert.True(expected.SetEquals(actualFiles.Where(p => !string.IsNullOrEmpty(p)).Select(normalize)), "File sets should be equal");
+            var actual = new HashSet<string>(actualFiles.Where(p => !string.IsNullOrEmpty(p)).Select(normalize));
+            if (!expected.SetEquals(actual))
+            {
+                throw new AssertActualExpectedException(
+                    expected: string.Join("\n", expected),
+                    actual: string.Join("\n", actual),
+                    userMessage: "File sets should be equal");
+            }
         }
     }
 }

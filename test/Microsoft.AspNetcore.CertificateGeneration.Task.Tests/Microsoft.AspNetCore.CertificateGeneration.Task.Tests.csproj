@@ -8,4 +8,8 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.CertificateGeneration.Task\Microsoft.AspNetCore.CertificateGeneration.Task.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Build.Utilities.Core" />
+  </ItemGroup>
+
 </Project>

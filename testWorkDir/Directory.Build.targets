@@ -1,0 +1,3 @@
+<Project>
+<!-- Deliberately empty to prevent test apps from importing source props and targets. -->
+</Project>
