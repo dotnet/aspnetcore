@@ -22,6 +22,7 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
         private readonly RequestDelegate _next;
         private readonly ConditionalProxyMiddlewareOptions _options;
         private readonly string _pathPrefix;
+        private readonly bool _pathPrefixIsRoot;
 
         public ConditionalProxyMiddleware(
             RequestDelegate next,
@@ -35,6 +36,7 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
 
             _next = next;
             _pathPrefix = pathPrefix;
+            _pathPrefixIsRoot = string.Equals(_pathPrefix, "/", StringComparison.Ordinal);
             _options = options;
             _httpClient = new HttpClient(new HttpClientHandler());
             _httpClient.Timeout = _options.RequestTimeout;
@@ -42,7 +44,7 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
 
         public async Task Invoke(HttpContext context)
         {
-            if (context.Request.Path.StartsWithSegments(_pathPrefix))
+            if (context.Request.Path.StartsWithSegments(_pathPrefix) || _pathPrefixIsRoot)
             {
                 var didProxyRequest = await PerformProxyRequest(context);
                 if (didProxyRequest)

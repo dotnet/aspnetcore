@@ -17,7 +17,10 @@ namespace Microsoft.AspNetCore.Builder
 
         private static readonly JsonSerializerSettings jsonSerializerSettings = new JsonSerializerSettings
         {
-            ContractResolver = new CamelCasePropertyNamesContractResolver(),
+            // Note that the aspnet-webpack JS code specifically expects options to be serialized with
+            // PascalCase property names, so it's important to be explicit about this contract resolver
+            ContractResolver = new DefaultContractResolver(),
+
             TypeNameHandling = TypeNameHandling.None
         };
 
