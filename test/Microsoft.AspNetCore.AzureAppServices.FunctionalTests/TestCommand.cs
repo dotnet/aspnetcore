@@ -13,32 +13,9 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 {
     public class TestCommand
     {
-        public static string DotnetPath { get; } = GetDotnetPath();
-
-        private static string GetDotnetPath()
-        {
-            var current = new DirectoryInfo(Directory.GetCurrentDirectory());
-            while (current != null)
-            {
-                var dotnetSubdir = new DirectoryInfo(Path.Combine(current.FullName, ".test-dotnet"));
-                if (dotnetSubdir.Exists)
-                {
-                    var dotnetName = Path.Combine(dotnetSubdir.FullName, "dotnet.exe");
-                    if (!File.Exists(dotnetName))
-                    {
-                        throw new InvalidOperationException("dotnet directory was found but dotnet.exe is not in it");
-                    }
-                    return dotnetName;
-                }
-                current = current.Parent;
-            }
-
-            throw new InvalidOperationException("dotnet executable was not found");
-        }
-
         private List<string> _cliGeneratedEnvironmentVariables = new List<string> { "MSBuildSDKsPath" };
 
-        protected string _command;
+        public string Command { get; }
 
         public Process CurrentProcess { get; private set; }
 
@@ -53,7 +30,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
         public TestCommand(string command)
         {
-            _command = command;
+            Command = command;
         }
 
         public void KillTree()
@@ -68,9 +45,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
         public virtual async Task<CommandResult> ExecuteAsync(string args = "")
         {
-            var resolvedCommand = _command;
-
-            ResolveCommand(ref resolvedCommand, ref args);
+            var resolvedCommand = Command;
 
             Logger.LogInformation($"Executing - {resolvedCommand} {args} - {WorkingDirectoryInfo()}");
 
@@ -201,17 +176,6 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             {
                 strings.RemoveAt(count - 1);
             }
-        }
-
-        private void ResolveCommand(ref string executable, ref string args)
-        {
-            if (executable == "dotnet")
-            {
-                executable = DotnetPath;
-                return;
-            }
-
-            throw new ArgumentOutOfRangeException(nameof(executable));
         }
 
         private void RemoveCliGeneratedEnvironmentVariablesFrom(ProcessStartInfo psi)

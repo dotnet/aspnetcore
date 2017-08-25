@@ -10,6 +10,7 @@
   <ItemGroup>
     <None Include="Templates\*.*" CopyToOutputDirectory="PreserveNewest" />
     <ContentWithTargetPath Include="NuGet.config.template" CopyToOutputDirectory="PreserveNewest" TargetPath="NuGet.config"/>
+    <ContentWithTargetPath Include="global.json.template" CopyToOutputDirectory="PreserveNewest" TargetPath="global.json"/>
   </ItemGroup>
 
   <ItemGroup>

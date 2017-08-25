@@ -5,13 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net.Http;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using Microsoft.Azure.Management.AppService.Fluent;
-using Microsoft.Azure.Management.AppService.Fluent.Models;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -42,7 +39,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             {
                 var site = await _fixture.Deploy("Templates\\BasicAppServices.json", baseName: testId);
                 var testDirectory = GetTestDirectory(testId);
-                var dotnet = DotNet(logger, testDirectory);
+                var dotnet = DotNet(logger, testDirectory, "2.0");
 
                 await dotnet.ExecuteAndAssertAsync("new " + template);
 
@@ -79,11 +76,11 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                     });
 
                 var testDirectory = GetTestDirectory(testId);
-                var dotnet = DotNet(logger, testDirectory);
+                var dotnet = DotNet(logger, testDirectory, "latest");
 
                 await dotnet.ExecuteAndAssertAsync("new " + template);
 
-                FixAspNetCoreVersion(testDirectory);
+                FixAspNetCoreVersion(testDirectory, dotnet.Command);
 
                 await dotnet.ExecuteAndAssertAsync("restore");
 
@@ -100,27 +97,36 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             }
         }
 
-        private static void FixAspNetCoreVersion(DirectoryInfo testDirectory)
+        private static void FixAspNetCoreVersion(DirectoryInfo testDirectory, string dotnetPath)
         {
             // TODO: Temporary workaround for broken templates in latest CLI
-
-            var csproj = testDirectory.GetFiles("*.csproj").Single().FullName;
-            var projectContents = XDocument.Load(csproj);
-            var packageReference = projectContents
-                .Descendants("PackageReference")
-                .Single(element => (string) element.Attribute("Include") == "Microsoft.AspNetCore.All");
 
             // Detect what version of aspnet core was shipped with this CLI installation
             var aspnetCoreVersion =
                 new DirectoryInfo(
-                    Path.Combine(
-                        Path.GetDirectoryName(TestCommand.DotnetPath),
-                        "store", "x86", "netcoreapp2.0", "microsoft.aspnetcore"))
-                .GetDirectories()
-                .Single()
-                .Name;
+                        Path.Combine(
+                            Path.GetDirectoryName(dotnetPath),
+                            "store", "x64", "netcoreapp2.0", "microsoft.aspnetcore"))
+                    .GetDirectories()
+                    .Single()
+                    .Name;
 
-            packageReference.Attribute("Version").Value = aspnetCoreVersion;
+            var csproj = testDirectory.GetFiles("*.csproj").Single().FullName;
+            var projectContents = XDocument.Load(csproj);
+            var packageReferences = projectContents
+                .Descendants("PackageReference");
+
+            foreach (var packageReference in packageReferences)
+            {
+                var packageName = (string)packageReference.Attribute("Include");
+
+                if (packageName == "Microsoft.AspNetCore.All" ||
+                    packageName == "Microsoft.VisualStudio.Web.CodeGeneration.Tools")
+                {
+                    packageReference.Attribute("Version").Value = aspnetCoreVersion;
+                }
+            }
+
             projectContents.Save(csproj);
         }
 
@@ -140,14 +146,36 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             return new TestLogger(factory, factory.CreateLogger(callerName));
         }
 
-        private TestCommand DotNet(TestLogger logger, DirectoryInfo workingDirectory)
+        private TestCommand DotNet(TestLogger logger, DirectoryInfo workingDirectory, string sufix)
         {
-            return new TestCommand("dotnet")
+            return new TestCommand(GetDotnetPath(sufix))
             {
                 Logger = logger,
                 WorkingDirectory = workingDirectory.FullName
             };
         }
+
+        private static string GetDotnetPath(string sufix)
+        {
+            var current = new DirectoryInfo(Directory.GetCurrentDirectory());
+            while (current != null)
+            {
+                var dotnetSubdir = new DirectoryInfo(Path.Combine(current.FullName, ".test-dotnet", sufix));
+                if (dotnetSubdir.Exists)
+                {
+                    var dotnetName = Path.Combine(dotnetSubdir.FullName, "dotnet.exe");
+                    if (!File.Exists(dotnetName))
+                    {
+                        throw new InvalidOperationException("dotnet directory was found but dotnet.exe is not in it");
+                    }
+                    return dotnetName;
+                }
+                current = current.Parent;
+            }
+
+            throw new InvalidOperationException("dotnet executable was not found");
+        }
+
 
         private DirectoryInfo GetTestDirectory([CallerMemberName] string callerName = null)
         {

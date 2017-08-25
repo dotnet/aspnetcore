@@ -1,7 +1,8 @@
 <Project>
 
   <PropertyGroup>
-      <SiteExtensionWorkingDirectory>$(RepositoryRoot).test-dotnet\</SiteExtensionWorkingDirectory>
+      <TestDotNetPath>$(RepositoryRoot).test-dotnet\</TestDotNetPath>
+      <SiteExtensionWorkingDirectory>$(TestDotNetPath)extension\</SiteExtensionWorkingDirectory>
       <SiteExtensionProjectDirectory>$(RepositoryRoot)src\Microsoft.AspNetCore.AzureAppServices.TestBundle\</SiteExtensionProjectDirectory>
       <SiteExtensionFeed Condition="$(SiteExtensionFeed) == ''">https://dotnet.myget.org/F/aspnetcore-ci-dev/</SiteExtensionFeed>
       <DotnetChannel>master</DotnetChannel>
@@ -9,7 +10,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreSdk Include="coherent" Channel="master" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="x86" />
+    <DotNetCoreSdk Include="coherent" Channel="master" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="x86" Condition="'$(AntaresSiteExtension)' != ''"/>
+    <DotNetCoreSdk Include="coherent" Channel="master" InstallDir="$(TestDotNetPath)latest\" Condition="'$(AntaresTests)' != ''"/>
+    <DotNetCoreSdk Include="2.0.0" InstallDir="$(TestDotNetPath)2.0\" Condition="'$(AntaresTests)' != ''"/>
   </ItemGroup>
 
   <Target Name="BuildSiteExtension" DependsOnTargets="InstallDotNet">
