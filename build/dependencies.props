@@ -123,6 +123,7 @@
     <ExternalDependency Include="xunit.analyzers" Version="0.6.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="xunit.assert" Version="2.3.0-beta4-build3742" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="xunit.core" Version="2.3.0-beta4-build3742" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="xunit.extensibility.core" Version="2.3.0-beta4-build3742" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="xunit.runner.visualstudio" Version="2.3.0-beta4-build3742" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="xunit" Version="2.3.0-beta4-build3742" Source="$(DefaultNuGetFeed)"/>
   </ItemGroup>
