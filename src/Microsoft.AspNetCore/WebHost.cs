@@ -8,11 +8,9 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore
 {
@@ -124,8 +122,7 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from environment variables,
         ///     configures the <see cref="ILoggerFactory"/> to log to the console and debug output,
         ///     enables IIS integration,
-        ///     enables the ability for frameworks to bind their options to their default configuration sections,
-        ///     and adds the developer exception page when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development'
+        ///     and enables the ability for frameworks to bind their options to their default configuration sections.
         /// </remarks>
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
         public static IWebHostBuilder CreateDefaultBuilder() =>
@@ -144,8 +141,7 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from supplied command line args,
         ///     configures the <see cref="ILoggerFactory"/> to log to the console and debug output,
         ///     enables IIS integration,
-        ///     enables the ability for frameworks to bind their options to their default configuration sections,
-        ///     and adds the developer exception page when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development'
+        ///     and enables the ability for frameworks to bind their options to their default configuration sections.
         /// </remarks>
         /// <param name="args">The command line args.</param>
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
