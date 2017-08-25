@@ -1,9 +1,8 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Target Name="_ResolveInputArguments">
     <PropertyGroup>
-      <_MvcRazorOutputPath Condition="'$(MvcRazorOutputPath)'!=''">$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))</_MvcRazorOutputPath>
-      <_MvcRazorOutputPath Condition="'$(_MvcRazorOutputPath)'==''">$(IntermediateOutputPath)</_MvcRazorOutputPath>
-      <_MvcRazorOutputFullPath>$(_MvcRazorOutputPath)$(AssemblyName).PrecompiledViews.dll</_MvcRazorOutputFullPath>
+      <MvcRazorOutputPath Condition="'$(MvcRazorOutputPath)'==''">$(IntermediateOutputPath)</MvcRazorOutputPath>
+      <_MvcRazorOutputFullPath Condition="'$(_MvcRazorOutputFullPath)'==''">$([MSBuild]::EnsureTrailingSlash('$(MvcRazorOutputPath)'))$(AssemblyName).PrecompiledViews.dll</_MvcRazorOutputFullPath>
       <_MvcRazorResponseFilePath>$(IntermediateOutputPath)microsoft.aspnetcore.mvc.razor.viewcompilation.rsp</_MvcRazorResponseFilePath>
 
       <MvcRazorContentRoot Condition="'$(MvcRazorContentRoot)'==''">$(MSBuildProjectDirectory)</MvcRazorContentRoot>
@@ -25,7 +24,7 @@
     <CallTarget Targets="_MvcRazorPrecompile" />
   </Target>
 
-  <Target Name="_MvcRazorPrecompile" DependsOnTargets="_RunForCore;_RunForDesktop" />
+  <Target Name="_MvcRazorPrecompile" DependsOnTargets="_RunForCore;_RunForCoreWithRID;_RunForDesktop" />
 
   <PropertyGroup>
     <_MvcViewCompilationTasksPath Condition="'$(_MvcViewCompilationTasksPath)'==''">$(MSBuildThisFileDirectory)$(MSBuildThisFileName).Tasks.dll</_MvcViewCompilationTasksPath>
@@ -58,6 +57,22 @@
     </PropertyGroup>
 
     <Exec Command="$(ExecArgs)" WorkingDirectory="$(MSBuildProjectDirectory)" />
+  </Target>
+
+  <Target
+    Name="_RunForCoreWithRID"
+    DependsOnTargets="_ResolveInputArguments;_CreateResponseFileForMvcRazorPrecompile"
+    Condition="'$(TargetFrameworkIdentifier)'=='.NETCoreApp' AND '$(RuntimeIdentifier)'!=''">
+
+    <ItemGroup>
+      <_RazorCompilationProject Include="$(MSBuildProjectFullPath)">
+        <AdditionalProperties>RuntimeIdentifier=;MvcRazorOutputPath=$(MvcRazorOutputPath)</AdditionalProperties>
+      </_RazorCompilationProject>
+    </ItemGroup>
+
+    <MSBuild
+      Projects="@(_RazorCompilationProject)"
+      Targets="Build;MvcRazorPrecompile" />
   </Target>
 
   <Target
@@ -109,7 +124,7 @@
     <ItemGroup>
       <_ResponseFileLines Include="
         $(MSBuildProjectDirectory);
-        --output-path=$(_MvcRazorOutputPath);
+        --output-path=$(MvcRazorOutputPath);
         --application-name=$(AssemblyName);
         --content-root=$(MvcRazorContentRoot);" />
 
@@ -144,7 +159,7 @@
 
   <Target Name="_MvcRazorResolveFilesToCompute"
     AfterTargets="ComputeRefAssembliesToPublish"
-    Condition="'$(MvcRazorCompileOnPublish)'=='true' AND ('$(TargetFrameworkIdentifier)'!='.NETCoreApp' OR '$(RuntimeIdentifier)'=='')">
+    Condition="'$(MvcRazorCompileOnPublish)'=='true'">
 
     <PropertyGroup>
       <_MvcRazorOutputPdbFullPath>$([System.IO.Path]::ChangeExtension('$(_MvcRazorOutputFullPath)', '.pdb'))</_MvcRazorOutputPdbFullPath>

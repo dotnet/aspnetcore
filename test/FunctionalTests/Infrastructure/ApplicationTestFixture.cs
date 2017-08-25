@@ -29,18 +29,21 @@ namespace FunctionalTests
         protected abstract DeploymentParameters GetDeploymentParameters();
 
         protected DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
+            => GetDeploymentParameters(ApplicationPath, ApplicationName, flavor);
+
+        public static DeploymentParameters GetDeploymentParameters(string applicationPath, string applicationName, RuntimeFlavor flavor)
         {
             var telemetryOptOut = new KeyValuePair<string, string>(
                 DotnetCLITelemetryOptOut,
                 "1");
 
             var deploymentParameters = new DeploymentParameters(
-                ApplicationPath,
+                applicationPath,
                 ServerType.Kestrel,
                 flavor,
                 RuntimeArchitecture.x64)
             {
-                ApplicationName = ApplicationName,
+                ApplicationName = applicationName,
                 PublishApplicationBeforeDeployment = true,
                 TargetFramework = flavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
                 Configuration = "Release",
