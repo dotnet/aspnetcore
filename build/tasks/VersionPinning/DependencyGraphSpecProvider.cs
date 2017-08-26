@@ -55,6 +55,7 @@ namespace RepoTasks.VersionPinning
                 "/v:q",
                 "/p:BuildProjectReferences=false",
                 $"/p:RestoreGraphOutputPath=\"{outputFile}\"",
+                "/p:KoreBuildRestoreTargetsImported=true",
             };
 
             psi.Arguments = string.Join(" ", arguments);

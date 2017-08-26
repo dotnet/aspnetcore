@@ -4,7 +4,7 @@
     <!-- Restore locally-built lineups into a temp directory, not the global cache. -->
     <PolicyRestorePackagesPath>$([MSBuild]::NormalizeDirectory($(Universe_IntermediateDir)))packages\</PolicyRestorePackagesPath>
     <!-- Restore from the locally-built artifacts directory -->
-    <PolicyRestoreAdditionalSources Condition=" '$(Universe_LineupBuildDir)' != '' ">$(PolicyRestoreAdditionalSources);$([MSBuild]::NormalizeDirectory($(Universe_LineupBuildDir)))</PolicyRestoreAdditionalSources>
-    <PolicyRestoreAdditionalSources Condition=" '$(Universe_DependencyLineupDir)' != '' ">$(PolicyRestoreAdditionalSources);$([MSBuild]::NormalizeDirectory($(Universe_DependencyLineupDir)))</PolicyRestoreAdditionalSources>
+    <PolicyRestoreAdditionalSources Condition=" Exists('$(Universe_LineupBuildDir)') ">$(PolicyRestoreAdditionalSources);$(Universe_LineupBuildDir)</PolicyRestoreAdditionalSources>
+    <PolicyRestoreAdditionalSources Condition=" Exists('$(Universe_DependencyLineupDir)') ">$(PolicyRestoreAdditionalSources);$(Universe_DependencyLineupDir)</PolicyRestoreAdditionalSources>
   </PropertyGroup>
 </Project>
