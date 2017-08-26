@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         /// <summary>
         /// Creates and adds an <see cref="IPageApplicationModelConvention"/> that invokes an action on the
-        /// <see cref="PageApplicationModel"/> for the page with the speciifed name.
+        /// <see cref="PageApplicationModel"/> for the page with the specified name.
         /// </summary>
         /// <param name="pageName">The name of the page e.g. <c>/Users/List</c></param>
         /// <param name="action">The <see cref="Action"/>.</param>
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 
         /// <summary>
         /// Creates and adds an <see cref="IPageRouteModelConvention"/> that invokes an action on the
-        /// <see cref="PageRouteModel"/> for the page with the speciifed name.
+        /// <see cref="PageRouteModel"/> for the page with the specified name.
         /// </summary>
         /// <param name="pageName">The name of the page e.g. <c>/Users/List</c></param>
         /// <param name="action">The <see cref="Action"/>.</param>
