@@ -13,6 +13,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
     public class HttpConnectionMiddleware<TContext>
     {
+        private static Action<Exception, object> _completeTcs = CompleteTcs;
+
         private static long _lastFrameConnectionId = long.MinValue;
 
         private readonly IList<IConnectionAdapter> _connectionAdapters;
@@ -67,22 +69,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             var processingTask = connection.StartRequestProcessing(_application);
 
             var inputTcs = new TaskCompletionSource<object>();
+            var outputTcs = new TaskCompletionSource<object>();
 
-            // Abort the frame when the transport writer completes
-            connectionContext.Transport.Input.OnWriterCompleted((error, state) =>
-            {
-                var tcs = (TaskCompletionSource<object>)state;
-
-                if (error != null)
-                {
-                    tcs.TrySetException(error);
-                }
-                else
-                {
-                    tcs.TrySetResult(null);
-                }
-            },
-            inputTcs);
+            // The reason we don't fire events directly from these callbacks is because it seems
+            // like the transport callbacks root the state object (even after it fires)
+            connectionContext.Transport.Input.OnWriterCompleted(_completeTcs, inputTcs);
+            connectionContext.Transport.Output.OnReaderCompleted(_completeTcs, outputTcs);
 
             inputTcs.Task.ContinueWith((task, state) =>
             {
@@ -90,7 +82,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             },
             connection, TaskContinuationOptions.ExecuteSynchronously);
 
+            outputTcs.Task.ContinueWith((task, state) =>
+            {
+                ((FrameConnection)state).OnConnectionClosed(task.Exception?.InnerException);
+            },
+            connection, TaskContinuationOptions.ExecuteSynchronously);
+
             return processingTask;
+        }
+
+        private static void CompleteTcs(Exception error, object state)
+        {
+            var tcs = (TaskCompletionSource<object>)state;
+
+            if (error != null)
+            {
+                tcs.TrySetException(error);
+            }
+            else
+            {
+                tcs.TrySetResult(null);
+            }
         }
     }
 }

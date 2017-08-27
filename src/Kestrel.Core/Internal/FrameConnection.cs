@@ -28,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private readonly FrameConnectionContext _context;
         private IList<IAdaptedConnection> _adaptedConnections;
+        private readonly TaskCompletionSource<object> _socketClosedTcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
         private Frame _frame;
         private Http2Connection _http2Connection;
         private volatile int _http2ConnectionState;
@@ -151,6 +152,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 }
 
                 await adaptedPipelineTask;
+                await _socketClosedTcs.Task;
             }
             catch (Exception ex)
             {
@@ -187,6 +189,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 Transport = transport,
                 Application = application
             });
+        }
+
+        public void OnConnectionClosed(Exception ex)
+        {
+            Abort(ex);
+
+            _socketClosedTcs.TrySetResult(null);
         }
 
         public Task StopAsync()
