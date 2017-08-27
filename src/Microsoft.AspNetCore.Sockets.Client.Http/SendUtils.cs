@@ -5,10 +5,10 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -16,9 +16,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     internal static class SendUtils
     {
-        private static readonly string DefaultUserAgent = "Microsoft.AspNetCore.SignalR.Client/0.0.0";
-        public static readonly ProductInfoHeaderValue DefaultUserAgentHeader = ProductInfoHeaderValue.Parse(DefaultUserAgent);
-
         public static async Task SendMessages(Uri sendUrl, Channel<byte[], SendMessage> application, HttpClient httpClient,
             CancellationTokenSource transportCts, ILogger logger, string connectionId)
         {
@@ -41,7 +38,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                         // Send them in a single post
                         var request = new HttpRequestMessage(HttpMethod.Post, sendUrl);
-                        request.Headers.UserAgent.Add(DefaultUserAgentHeader);
+                        request.Headers.UserAgent.Add(Constants.UserAgentHeader);
 
                         // TODO: We can probably use a pipeline here or some kind of pooled memory.
                         // But where do we get the pool from? ArrayBufferPool.Instance?

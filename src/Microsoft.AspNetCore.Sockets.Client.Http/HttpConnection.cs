@@ -9,8 +9,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Sockets.Features;
+using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
+using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.AspNetCore.Sockets.Http.Internal;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.Logging;
@@ -200,10 +201,13 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 // Get a connection ID from the server
                 logger.EstablishingConnection(url);
                 using (var request = new HttpRequestMessage(HttpMethod.Options, url))
-                using (var response = await httpClient.SendAsync(request))
                 {
-                    response.EnsureSuccessStatusCode();
-                    return await ParseNegotiateResponse(response, logger);
+                    request.Headers.UserAgent.Add(Constants.UserAgentHeader);
+                    using (var response = await httpClient.SendAsync(request))
+                    {
+                        response.EnsureSuccessStatusCode();
+                        return await ParseNegotiateResponse(response, logger);
+                    }
                 }
             }
             catch (Exception ex)

@@ -7,6 +7,7 @@ using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.Sockets.Client.Http;
 using Microsoft.AspNetCore.Sockets.Client.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 while (!cancellationToken.IsCancellationRequested)
                 {
                     var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
-                    request.Headers.UserAgent.Add(SendUtils.DefaultUserAgentHeader);
+                    request.Headers.UserAgent.Add(Constants.UserAgentHeader);
 
                     var response = await _httpClient.SendAsync(request, cancellationToken);
                     response.EnsureSuccessStatusCode();

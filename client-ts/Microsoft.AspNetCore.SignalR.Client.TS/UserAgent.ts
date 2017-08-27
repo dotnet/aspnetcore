@@ -1,0 +1,1 @@
+﻿export const UserAgent = "Microsoft.AspNetCore.Sockets.Client.Http-js/1.0.0-alpha";

@@ -1,4 +1,5 @@
 import { HttpError } from "./HttpError"
+import { UserAgent } from "./UserAgent"
 
 export interface IHttpClient {
     get(url: string, headers?: Map<string, string>): Promise<string>;
@@ -25,7 +26,7 @@ export class HttpClient implements IHttpClient {
 
             xhr.open(method, url, true);
             xhr.setRequestHeader("X-Requested-With", "XMLHttpRequest");
-
+            xhr.setRequestHeader("User-Agent", UserAgent);
             if (headers) {
                 headers.forEach((value, header) => xhr.setRequestHeader(header, value));
             }
