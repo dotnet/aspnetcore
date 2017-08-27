@@ -256,8 +256,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             _requestTargetForm = HttpRequestTarget.Unknown;
             _absoluteRequestTarget = null;
             QueryString = null;
-            StatusCode = StatusCodes.Status200OK;
-            ReasonPhrase = null;
+            _statusCode = StatusCodes.Status200OK;
+            _reasonPhrase = null;
 
             RemoteIpAddress = RemoteEndPoint?.Address;
             RemotePort = RemoteEndPoint?.Port ?? 0;

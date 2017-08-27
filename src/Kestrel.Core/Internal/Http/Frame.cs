@@ -347,8 +347,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _absoluteRequestTarget = null;
             QueryString = null;
             _httpVersion = Http.HttpVersion.Unknown;
-            StatusCode = StatusCodes.Status200OK;
-            ReasonPhrase = null;
+            _statusCode = StatusCodes.Status200OK;
+            _reasonPhrase = null;
 
             RemoteIpAddress = RemoteEndPoint?.Address;
             RemotePort = RemoteEndPoint?.Port ?? 0;
