@@ -158,11 +158,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 if (_httpVersion == Http.HttpVersion.Http11)
                 {
-                    return "HTTP/1.1";
+                    return HttpUtilities.Http11Version;
                 }
                 if (_httpVersion == Http.HttpVersion.Http10)
                 {
-                    return "HTTP/1.0";
+                    return HttpUtilities.Http10Version;
                 }
 
                 return string.Empty;
@@ -173,11 +173,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             {
                 // GetKnownVersion returns versions which ReferenceEquals interned string
                 // As most common path, check for this only in fast-path and inline
-                if (ReferenceEquals(value, "HTTP/1.1"))
+                if (ReferenceEquals(value, HttpUtilities.Http11Version))
                 {
                     _httpVersion = Http.HttpVersion.Http11;
                 }
-                else if (ReferenceEquals(value, "HTTP/1.0"))
+                else if (ReferenceEquals(value, HttpUtilities.Http10Version))
                 {
                     _httpVersion = Http.HttpVersion.Http10;
                 }
@@ -191,11 +191,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         [MethodImpl(MethodImplOptions.NoInlining)]
         private void HttpVersionSetSlow(string value)
         {
-            if (value == "HTTP/1.1")
+            if (value == HttpUtilities.Http11Version)
             {
                 _httpVersion = Http.HttpVersion.Http11;
             }
-            else if (value == "HTTP/1.0")
+            else if (value == HttpUtilities.Http10Version)
             {
                 _httpVersion = Http.HttpVersion.Http10;
             }
@@ -1224,7 +1224,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             Method = method != HttpMethod.Custom
                 ? HttpUtilities.MethodToString(method) ?? string.Empty
                 : customMethod.GetAsciiStringNonNullCharacters();
-            HttpVersion = HttpUtilities.VersionToString(version);
+            _httpVersion = version;
 
             Debug.Assert(RawTarget != null, "RawTarget was not set");
             Debug.Assert(Method != null, "Method was not set");
