@@ -19,8 +19,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private readonly Socket _socket;
         private readonly SocketTransport _transport;
 
-        private IPipeWriter _input;
-        private IPipeReader _output;
         private IList<ArraySegment<byte>> _sendBufferList;
         private const int MinAllocBufferSize = 2048;
 
@@ -47,9 +45,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             try
             {
                 connectionHandler.OnConnection(this);
-
-                _input = Application.Output;
-                _output = Application.Input;
 
                 // Spawn send and receive logic
                 Task receiveTask = DoReceive();
@@ -86,7 +81,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 while (true)
                 {
                     // Ensure we have some reasonable amount of buffer space
-                    var buffer = _input.Alloc(MinAllocBufferSize);
+                    var buffer = Input.Alloc(MinAllocBufferSize);
 
                     try
                     {
@@ -135,8 +130,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             }
             finally
             {
-                Abort(error);
-                _input.Complete(error);
+                Input.Complete(error);
             }
         }
 
@@ -168,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 while (true)
                 {
                     // Wait for data to write from the pipe producer
-                    var result = await _output.ReadAsync();
+                    var result = await Output.ReadAsync();
                     var buffer = result.Buffer;
 
                     if (result.IsCancelled)
@@ -205,7 +199,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                     }
                     finally
                     {
-                        _output.Advance(buffer.End);
+                        Output.Advance(buffer.End);
                     }
                 }
 
@@ -229,8 +223,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             }
             finally
             {
-                Close(error);
-                _output.Complete(error);
+                Output.Complete(error);
             }
         }
 

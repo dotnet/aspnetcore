@@ -990,6 +990,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task ConnectionClosesWhenFinReceivedBeforeRequestCompletes(ListenOptions listenOptions)
         {
             var testContext = new TestServiceContext();
+            // FIN callbacks are scheduled so run inline to make this test more reliable
+            testContext.ThreadPool = new InlineLoggingThreadPool(testContext.Log);
 
             using (var server = new TestServer(TestApp.EchoAppChunked, testContext, listenOptions))
             {

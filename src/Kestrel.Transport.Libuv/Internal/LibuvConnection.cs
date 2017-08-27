@@ -46,9 +46,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             }
         }
 
-        public IPipeWriter Input => Application.Output;
-        public IPipeReader Output => Application.Input;
-
         public LibuvOutputConsumer OutputConsumer { get; set; }
 
         private ILibuvTrace Log => ListenerContext.TransportContext.Log;
@@ -83,7 +80,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     // Now, complete the input so that no more reads can happen
                     Input.Complete(error ?? new ConnectionAbortedException());
                     Output.Complete(error);
-                    Close(error);
 
                     // Make sure it isn't possible for a paused read to resume reading after calling uv_close
                     // on the stream handle
@@ -178,7 +174,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     }
                 }
 
-                Abort(error);
                 // Complete after aborting the connection
                 Input.Complete(error);
             }
@@ -216,7 +211,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                 Log.ConnectionReadFin(ConnectionId);
                 var error = new IOException(ex.Message, ex);
 
-                Abort(error);
                 Input.Complete(error);
             }
         }

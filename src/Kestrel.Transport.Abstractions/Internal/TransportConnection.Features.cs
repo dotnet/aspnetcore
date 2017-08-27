@@ -109,16 +109,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal
             set => Application = value;
         }
 
-        Task IConnectionTransportFeature.ConnectionAborted
-        {
-            get => _abortTcs.Task;
-        }
-
-        Task IConnectionTransportFeature.ConnectionClosed
-        {
-            get => _closedTcs.Task;
-        }
-
         object IFeatureCollection.this[Type key]
         {
             get => FastFeatureGet(key);

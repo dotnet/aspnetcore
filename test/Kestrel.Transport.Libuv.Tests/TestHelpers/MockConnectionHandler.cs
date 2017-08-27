@@ -3,6 +3,7 @@
 
 using System;
 using System.IO.Pipelines;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Protocols.Features;

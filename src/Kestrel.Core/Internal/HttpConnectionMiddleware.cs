@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -63,25 +64,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             var connection = new FrameConnection(frameConnectionContext);
 
-            // The order here is important, start request processing so that
-            // the frame is created before this yields. Events need to be wired up
-            // afterwards
             var processingTask = connection.StartRequestProcessing(_application);
 
-            // Wire up the events an forward calls to the frame connection
-            // It's important that these execute synchronously because graceful
-            // connection close is order sensative (for now)
-            connectionContext.ConnectionAborted.ContinueWith((task, state) =>
-            {
-                // Unwrap the aggregate exception
-                ((FrameConnection)state).Abort(task.Exception?.InnerException);
-            },
-            connection, TaskContinuationOptions.ExecuteSynchronously);
+            var inputTcs = new TaskCompletionSource<object>();
 
-            connectionContext.ConnectionClosed.ContinueWith((task, state) =>
+            // Abort the frame when the transport writer completes
+            connectionContext.Transport.Input.OnWriterCompleted((error, state) =>
             {
-                // Unwrap the aggregate exception
-                ((FrameConnection)state).OnConnectionClosed(task.Exception?.InnerException);
+                var tcs = (TaskCompletionSource<object>)state;
+
+                if (error != null)
+                {
+                    tcs.TrySetException(error);
+                }
+                else
+                {
+                    tcs.TrySetResult(null);
+                }
+            },
+            inputTcs);
+
+            inputTcs.Task.ContinueWith((task, state) =>
+            {
+                ((FrameConnection)state).Abort(task.Exception?.InnerException);
             },
             connection, TaskContinuationOptions.ExecuteSynchronously);
 
