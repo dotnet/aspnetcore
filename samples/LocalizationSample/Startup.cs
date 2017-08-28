@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Microsoft.Extensions.Logging;
 
 namespace LocalizationSample
 {
@@ -154,6 +155,7 @@ $@"<!doctype html>
                 .Build();
 
             var host = new WebHostBuilder()
+                .ConfigureLogging(factory => factory.AddConsole())
                 .UseKestrel()
                 .UseConfiguration(config)
                 .UseIISIntegration()

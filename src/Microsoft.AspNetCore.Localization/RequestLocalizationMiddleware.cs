@@ -5,10 +5,11 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
@@ -24,6 +25,7 @@ namespace Microsoft.AspNetCore.Localization
 
         private readonly RequestDelegate _next;
         private readonly RequestLocalizationOptions _options;
+        private ILogger _logger;
 
         /// <summary>
         /// Creates a new <see cref="RequestLocalizationMiddleware"/>.
@@ -33,17 +35,12 @@ namespace Microsoft.AspNetCore.Localization
         /// <see cref="RequestLocalizationMiddleware"/>.</param>
         public RequestLocalizationMiddleware(RequestDelegate next, IOptions<RequestLocalizationOptions> options)
         {
-            if (next == null)
-            {
-                throw new ArgumentNullException(nameof(next));
-            }
-
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
 
-            _next = next;
+            _next = next ?? throw new ArgumentNullException(nameof(next));
             _options = options.Value;
         }
 
@@ -68,52 +65,65 @@ namespace Microsoft.AspNetCore.Localization
                 foreach (var provider in _options.RequestCultureProviders)
                 {
                     var providerResultCulture = await provider.DetermineProviderCultureResult(context);
-                    if (providerResultCulture != null)
+                    if (providerResultCulture == null)
                     {
-                        var cultures = providerResultCulture.Cultures;
-                        var uiCultures = providerResultCulture.UICultures;
+                        continue;
+                    }
+                    var cultures = providerResultCulture.Cultures;
+                    var uiCultures = providerResultCulture.UICultures;
 
-                        CultureInfo cultureInfo = null;
-                        CultureInfo uiCultureInfo = null;
-                        if (_options.SupportedCultures != null)
+                    CultureInfo cultureInfo = null;
+                    CultureInfo uiCultureInfo = null;
+                    if (_options.SupportedCultures != null)
+                    {
+                        cultureInfo = GetCultureInfo(
+                            cultures,
+                            _options.SupportedCultures,
+                            _options.FallBackToParentCultures);
+
+                        if (cultureInfo == null)
                         {
-                            cultureInfo = GetCultureInfo(
-                                cultures,
-                                _options.SupportedCultures,
-                                _options.FallBackToParentCultures);
+                            EnsureLogger(context);
+                            _logger?.UnsupportedCultures(provider.GetType().Name, cultures);
                         }
+                    }
 
-                        if (_options.SupportedUICultures != null)
+                    if (_options.SupportedUICultures != null)
+                    {
+                        uiCultureInfo = GetCultureInfo(
+                            uiCultures,
+                            _options.SupportedUICultures,
+                            _options.FallBackToParentUICultures);
+
+                        if (uiCultureInfo == null)
                         {
-                            uiCultureInfo = GetCultureInfo(
-                                uiCultures,
-                                _options.SupportedUICultures,
-                                _options.FallBackToParentUICultures);
+                            EnsureLogger(context);
+                           _logger?.UnsupportedCultures(provider.GetType().Name, uiCultures);
                         }
+                    }
 
-                        if (cultureInfo == null && uiCultureInfo == null)
-                        {
-                            continue;
-                        }
+                    if (cultureInfo == null && uiCultureInfo == null)
+                    {
+                        continue;
+                    }
 
-                        if (cultureInfo == null && uiCultureInfo != null)
-                        {
-                            cultureInfo = _options.DefaultRequestCulture.Culture;
-                        }
+                    if (cultureInfo == null && uiCultureInfo != null)
+                    {
+                        cultureInfo = _options.DefaultRequestCulture.Culture;
+                    }
 
-                        if (cultureInfo != null && uiCultureInfo == null)
-                        {
-                            uiCultureInfo = _options.DefaultRequestCulture.UICulture;
-                        }
+                    if (cultureInfo != null && uiCultureInfo == null)
+                    {
+                        uiCultureInfo = _options.DefaultRequestCulture.UICulture;
+                    }
 
-                        var result = new RequestCulture(cultureInfo, uiCultureInfo);
+                    var result = new RequestCulture(cultureInfo, uiCultureInfo);
 
-                        if (result != null)
-                        {
-                            requestCulture = result;
-                            winningProvider = provider;
-                            break;
-                        }
+                    if (result != null)
+                    {
+                        requestCulture = result;
+                        winningProvider = provider;
+                        break;
                     }
                 }
             }
@@ -123,6 +133,11 @@ namespace Microsoft.AspNetCore.Localization
             SetCurrentThreadCulture(requestCulture);
 
             await _next(context);
+        }
+
+        private void EnsureLogger(HttpContext context)
+        {
+            _logger = _logger ?? context.RequestServices.GetService<ILogger<RequestLocalizationMiddleware>>();
         }
 
         private static void SetCurrentThreadCulture(RequestCulture requestCulture)
