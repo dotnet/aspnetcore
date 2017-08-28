@@ -9,12 +9,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Caching.Redis" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Redis" />
+    <PackageReference Include="Microsoft.Extensions.Caching.SqlServer" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
   </ItemGroup>
 
 </Project>
