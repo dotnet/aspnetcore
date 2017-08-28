@@ -1,8 +1,10 @@
-const ECHOENDPOINT_URL = `http://${document.location.host}/echo`;
+"use strict";
+
+var ECHOENDPOINT_URL = "http://" + document.location.host + "/echo";
 
 function getTransportTypes() {
-    let transportTypes = [ signalR.TransportType.WebSockets ];
-    if (typeof (EventSource) !== "undefined") {
+    var transportTypes = [signalR.TransportType.WebSockets];
+    if (typeof EventSource !== "undefined") {
         transportTypes.push(signalR.TransportType.ServerSentEvents);
     }
     transportTypes.push(signalR.TransportType.LongPolling);
@@ -11,14 +13,16 @@ function getTransportTypes() {
 }
 
 function eachTransport(action) {
-    getTransportTypes().forEach(t => action(t));
+    getTransportTypes().forEach(function (t) {
+        return action(t);
+    });
 }
 
 function eachTransportAndProtocol(action) {
-    let protocols = [
-        new signalR.JsonHubProtocol(),
-        new signalRMsgPack.MessagePackHubProtocol()
-    ];
-    getTransportTypes().forEach(t =>
-        protocols.forEach(p => action(t, p)));
+    var protocols = [new signalR.JsonHubProtocol(), new signalRMsgPack.MessagePackHubProtocol()];
+    getTransportTypes().forEach(function (t) {
+        return protocols.forEach(function (p) {
+            return action(t, p);
+        });
+    });
 }

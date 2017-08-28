@@ -1,22 +1,24 @@
+'use strict';
+
 describe('WebSockets', function () {
-    it('can be used to connect to SignalR', done => {
-        const message = "message";
+    it('can be used to connect to SignalR', function (done) {
+        var message = "message";
 
-        let webSocket = new WebSocket(ECHOENDPOINT_URL.replace(/^http/, "ws"));
+        var webSocket = new WebSocket(ECHOENDPOINT_URL.replace(/^http/, "ws"));
 
-        webSocket.onopen = () => {
+        webSocket.onopen = function () {
             webSocket.send(message);
         };
 
         var received = "";
-        webSocket.onmessage = event => {
+        webSocket.onmessage = function (event) {
             received += event.data;
             if (received === message) {
                 webSocket.close();
             }
         };
 
-        webSocket.onclose = event => {
+        webSocket.onclose = function (event) {
             if (!event.wasClean) {
                 fail("connection closed with unexpected status code: " + event.code + " " + event.reason);
             }

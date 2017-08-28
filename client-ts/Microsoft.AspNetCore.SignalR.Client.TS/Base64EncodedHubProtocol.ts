@@ -15,7 +15,7 @@ export class Base64EncodedHubProtocol implements IHubProtocol {
     parseMessages(input: any): HubMessage[] {
         // The format of the message is `size:message;`
         let pos = input.indexOf(":");
-        if (pos == -1 || !input.endsWith(";")) {
+        if (pos == -1 || input[input.length - 1] != ';') {
             throw new Error("Invalid payload.");
         }
 

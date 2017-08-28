@@ -55,11 +55,10 @@ export class HubConnection {
                 case MessageType.Completion:
                     let callback = this.callbacks.get(message.invocationId);
                     if (callback != null) {
-                        callback(message);
-
                         if (message.type == MessageType.Completion) {
                             this.callbacks.delete(message.invocationId);
                         }
+                        callback(message);
                     }
                     break;
                 default:
