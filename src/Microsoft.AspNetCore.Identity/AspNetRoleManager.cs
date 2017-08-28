@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Identity
         }
 
         /// <summary>
-        /// The cancellation token assocated with the current HttpContext.RequestAborted or CancellationToken.None if unavailable.
+        /// The cancellation token associated with the current HttpContext.RequestAborted or CancellationToken.None if unavailable.
         /// </summary>
         protected override CancellationToken CancellationToken => _cancel;
     }
