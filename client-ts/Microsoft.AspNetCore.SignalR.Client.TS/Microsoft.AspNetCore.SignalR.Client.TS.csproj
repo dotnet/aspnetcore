@@ -46,10 +46,10 @@
     <Exec Command="npm version $(ModuleVersion)" WorkingDirectory="$(MSBuildThisFileDirectory).." Condition="'$(VersionSuffix)' != ''" />
     <Exec Command="npm pack" WorkingDirectory="$(MSBuildThisFileDirectory).." />
     <Exec
-      Command="git checkout HEAD -- $(MSBuildThisFileDirectory)../package.json"
+      Command='git checkout HEAD -- "$(MSBuildThisFileDirectory)../package.json"'
       Condition="$(IsGitRepository) AND '$(VersionSuffix)' != ''" />
     <Exec
-      Command="git checkout HEAD -- $(MSBuildThisFileDirectory)../package-lock.json"
+      Command='git checkout HEAD -- "$(MSBuildThisFileDirectory)../package-lock.json"'
       Condition="$(IsGitRepository) AND '$(VersionSuffix)' != ''" />
     <ItemGroup>
       <TSClient Include="$(MSBuildThisFileDirectory)../aspnet-signalr-client*.tgz" />
