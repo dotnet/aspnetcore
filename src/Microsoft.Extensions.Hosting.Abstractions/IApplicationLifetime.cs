@@ -3,7 +3,7 @@
 
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Hosting
+namespace Microsoft.Extensions.Hosting
 {
     /// <summary>
     /// Allows consumers to perform cleanup during a graceful shutdown.
