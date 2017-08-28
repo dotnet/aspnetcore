@@ -7,8 +7,10 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -17,6 +19,10 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
     [Collection("Azure")]
     public class TemplateFunctionalTests
     {
+        private const string RuntimeInformationMiddlewareType = "Microsoft.AspNetCore.AzureAppServices.FunctionalTests.RuntimeInformationMiddleware";
+
+        private const string RuntimeInformationMiddlewareFile = "Templates\\RuntimeInformationMiddleware.cs";
+
         readonly AzureFixture _fixture;
 
         private readonly ITestOutputHelper _outputHelper;
@@ -43,6 +49,8 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
                 await dotnet.ExecuteAndAssertAsync("new " + template);
 
+                InjectMiddlware(testDirectory, RuntimeInformationMiddlewareType, RuntimeInformationMiddlewareFile);
+
                 await site.BuildPublishProfileAsync(testDirectory.FullName);
 
                 await dotnet.ExecuteAndAssertAsync("publish /p:PublishProfile=Profile");
@@ -52,6 +60,12 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                     var getResult = await httpClient.GetAsync("/");
                     getResult.EnsureSuccessStatusCode();
                     Assert.Contains(expected, await getResult.Content.ReadAsStringAsync());
+
+                    getResult = await httpClient.GetAsync("/runtimeInfo");
+                    getResult.EnsureSuccessStatusCode();
+
+                    var runtimeInfo = JsonConvert.DeserializeObject<RuntimeInfo>(await getResult.Content.ReadAsStringAsync());
+                    ValidateRuntimeInfo(runtimeInfo, dotnet.Command);
                 }
             }
         }
@@ -80,6 +94,8 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
                 await dotnet.ExecuteAndAssertAsync("new " + template);
 
+                InjectMiddlware(testDirectory, RuntimeInformationMiddlewareType, RuntimeInformationMiddlewareFile);
+
                 FixAspNetCoreVersion(testDirectory, dotnet.Command);
 
                 await dotnet.ExecuteAndAssertAsync("restore");
@@ -93,8 +109,50 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                     var getResult = await httpClient.GetAsync("/");
                     getResult.EnsureSuccessStatusCode();
                     Assert.Contains(expected, await getResult.Content.ReadAsStringAsync());
+
+                    getResult = await httpClient.GetAsync("/runtimeInfo");
+                    getResult.EnsureSuccessStatusCode();
+
+                    var runtimeInfo = JsonConvert.DeserializeObject<RuntimeInfo>(await getResult.Content.ReadAsStringAsync());
+                    ValidateRuntimeInfo(runtimeInfo, dotnet.Command);
                 }
             }
+        }
+
+        private void ValidateRuntimeInfo(RuntimeInfo runtimeInfo, string dotnetPath)
+        {
+            var storeModules = PathUtilities.GetStoreModules(dotnetPath);
+
+            var runtimeModules = PathUtilities.GetSharedRuntimeAssemblies(dotnetPath);
+
+            foreach (var runtimeInfoModule in runtimeInfo.Modules)
+            {
+                if (storeModules.Any(f => runtimeInfoModule.ModuleName.StartsWith(f, StringComparison.InvariantCultureIgnoreCase)))
+                {
+                    Assert.Contains("store\\x86\\netcoreapp2.0\\", runtimeInfoModule.FileName);
+                }
+
+                // Native modules would prefer to be loaded from windows folder, skip them
+                if (runtimeModules.Any(f => runtimeInfoModule.ModuleName.StartsWith(f, StringComparison.InvariantCultureIgnoreCase)) &&
+                    runtimeInfoModule.FileName.IndexOf("windows\\system32", StringComparison.InvariantCultureIgnoreCase) == -1)
+                {
+                    Assert.Contains("shared\\Microsoft.NETCore.App\\", runtimeInfoModule.FileName);
+                }
+            }
+        }
+
+        private static void InjectMiddlware(DirectoryInfo projectRoot, string typeName, string fileName)
+        {
+            // Copy implementation file to project directory
+            var implementationFile = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+            var destinationImplementationFile = Path.Combine(projectRoot.FullName, Path.GetFileName(fileName));
+            File.Copy(implementationFile, destinationImplementationFile, true);
+
+            // Register middleware in Startup.cs/Configure
+            var startupFile = Path.Combine(projectRoot.FullName, "Startup.cs");
+            var startupText = File.ReadAllText(startupFile);
+            startupText = Regex.Replace(startupText, "public void Configure\\([^{]+{", match => match.Value + $" app.UseMiddleware<{typeName}>();");
+            File.WriteAllText(startupFile, startupText);
         }
 
         private static void FixAspNetCoreVersion(DirectoryInfo testDirectory, string dotnetPath)
@@ -102,14 +160,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             // TODO: Temporary workaround for broken templates in latest CLI
 
             // Detect what version of aspnet core was shipped with this CLI installation
-            var aspnetCoreVersion =
-                new DirectoryInfo(
-                        Path.Combine(
-                            Path.GetDirectoryName(dotnetPath),
-                            "store", "x64", "netcoreapp2.0", "microsoft.aspnetcore"))
-                    .GetDirectories()
-                    .Single()
-                    .Name;
+            var aspnetCoreVersion = PathUtilities.GetBundledAspNetCoreVersion(dotnetPath);
 
             var csproj = testDirectory.GetFiles("*.csproj").Single().FullName;
             var projectContents = XDocument.Load(csproj);
@@ -149,14 +200,14 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
         private TestCommand DotNet(TestLogger logger, DirectoryInfo workingDirectory, string sufix)
         {
-            return new TestCommand(GetDotnetPath(sufix))
+            return new TestCommand(GetDotNetPath(sufix))
             {
                 Logger = logger,
                 WorkingDirectory = workingDirectory.FullName
             };
         }
 
-        private static string GetDotnetPath(string sufix)
+        private static string GetDotNetPath(string sufix)
         {
             var current = new DirectoryInfo(Directory.GetCurrentDirectory());
             while (current != null)
