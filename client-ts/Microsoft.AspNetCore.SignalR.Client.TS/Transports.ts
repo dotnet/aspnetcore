@@ -2,7 +2,6 @@ import { DataReceived, TransportClosed } from "./Common"
 import { IHttpClient } from "./HttpClient"
 import { HttpError } from "./HttpError"
 import { ILogger, LogLevel } from "./ILogger"
-import { UserAgent } from "./UserAgent"
 
 export enum TransportType {
     WebSockets,
@@ -196,7 +195,6 @@ export class LongPollingTransport implements ITransport {
         }
 
         let pollXhr = new XMLHttpRequest();
-        pollXhr.setRequestHeader("User-Agent", UserAgent);
         if (transferMode === TransferMode.Binary) {
             pollXhr.responseType = "arraybuffer";
         }
