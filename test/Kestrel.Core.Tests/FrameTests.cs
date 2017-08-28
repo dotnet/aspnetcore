@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public void Dispose()
         {
             _transport.Input.Complete();
-            _application.Output.Complete();
+            _transport.Output.Complete();
 
             _application.Input.Complete();
             _application.Output.Complete();
