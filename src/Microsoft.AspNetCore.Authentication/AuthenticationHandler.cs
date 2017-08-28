@@ -142,7 +142,7 @@ namespace Microsoft.AspNetCore.Authentication
                     Logger.AuthenticationSchemeNotAuthenticated(Scheme.Name);
                 }
             }
-            else if (result?.Failure != null)
+            else
             {
                 Logger.AuthenticationSchemeNotAuthenticatedWithFailure(Scheme.Name, result.Failure.Message);
             }

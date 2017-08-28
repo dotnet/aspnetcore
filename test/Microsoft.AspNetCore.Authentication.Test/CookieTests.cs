@@ -1325,11 +1325,11 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             res.StatusCode = 200;
             res.ContentType = "text/xml";
             var xml = new XElement("xml");
-            if (result != null && result?.Ticket?.Principal != null)
+            if (result?.Ticket?.Principal != null)
             {
                 xml.Add(result.Ticket.Principal.Claims.Select(claim => new XElement("claim", new XAttribute("type", claim.Type), new XAttribute("value", claim.Value))));
             }
-            if (result != null && result?.Ticket?.Properties != null)
+            if (result?.Ticket?.Properties != null)
             {
                 xml.Add(result.Ticket.Properties.Items.Select(extra => new XElement("extra", new XAttribute("type", extra.Key), new XAttribute("value", extra.Value))));
             }
