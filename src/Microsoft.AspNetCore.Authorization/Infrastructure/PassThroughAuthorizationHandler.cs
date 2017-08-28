@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Microsoft.AspNetCore.Authorization.Infrastructure
 {
     /// <summary>
-    /// Infrastructre class which allows an <see cref="IAuthorizationRequirement"/> to
+    /// Infrastructure class which allows an <see cref="IAuthorizationRequirement"/> to
     /// be its own <see cref="IAuthorizationHandler"/>.
     /// </summary>
     public class PassThroughAuthorizationHandler : IAuthorizationHandler

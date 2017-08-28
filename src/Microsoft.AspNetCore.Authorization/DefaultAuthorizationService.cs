@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <param name="handlers">The handlers used to fulfill <see cref="IAuthorizationRequirement"/>s.</param>
         /// <param name="logger">The logger used to log messages, warnings and errors.</param>  
         /// <param name="contextFactory">The <see cref="IAuthorizationHandlerContextFactory"/> used to create the context to handle the authorization.</param>  
-        /// <param name="evaluator">The <see cref="IAuthorizationEvaluator"/> used to determine if authorzation was successful.</param>  
+        /// <param name="evaluator">The <see cref="IAuthorizationEvaluator"/> used to determine if authorization was successful.</param>  
         /// <param name="options">The <see cref="AuthorizationOptions"/> used.</param>  
         public DefaultAuthorizationService(IAuthorizationPolicyProvider policyProvider, IAuthorizationHandlerProvider handlers, ILogger<DefaultAuthorizationService> logger, IAuthorizationHandlerContextFactory contextFactory, IAuthorizationEvaluator evaluator, IOptions<AuthorizationOptions> options)
         {
@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <param name="resource">The resource to evaluate the requirements against.</param>
         /// <param name="requirements">The requirements to evaluate.</param>
         /// <returns>
-        /// A flag indicating whether authorization has succeded.
+        /// A flag indicating whether authorization has succeeded.
         /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
         /// </returns>
         public async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object resource, IEnumerable<IAuthorizationRequirement> requirements)
@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Authorization
         /// <param name="resource">The resource the policy should be checked with.</param>
         /// <param name="policyName">The name of the policy to check against a specific context.</param>
         /// <returns>
-        /// A flag indicating whether authorization has succeded.
+        /// A flag indicating whether authorization has succeeded.
         /// This value is <value>true</value> when the user fulfills the policy otherwise <value>false</value>.
         /// </returns>
         public async Task<AuthorizationResult> AuthorizeAsync(ClaimsPrincipal user, object resource, string policyName)
