@@ -3,8 +3,14 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26621.2
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E9D63F97-6078-42AD-BFD3-F956BF921BB5}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A189F10C-3A9C-4F81-83D0-32E5FE50DAD8}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Session", "src\Microsoft.AspNetCore.Session\Microsoft.AspNetCore.Session.csproj", "{71802736-F640-4733-9671-02D267EDD76A}"
 EndProject
@@ -16,10 +22,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SessionSample", "samples\Se
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionItems", "{3B45F658-5BF1-4E07-BE9C-6F5110AC2277}"
 	ProjectSection(SolutionItems) = preProject
+		.appveyor.yml = .appveyor.yml
 		.gitattributes = .gitattributes
 		.gitignore = .gitignore
 		.travis.yml = .travis.yml
-		appveyor.yml = appveyor.yml
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		NuGet.config = NuGet.config
 		NuGetPackageVerifier.json = NuGetPackageVerifier.json
 		README.md = README.md
