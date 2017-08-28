@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Mvc.ApplicationModels
 {
     /// <summary>
-    /// Allows customization of the of the <see cref="PageRouteModel"/>.
+    /// Allows customization of the <see cref="PageRouteModel"/>.
     /// </summary>
     public interface IPageRouteModelConvention : IPageConvention
     {
