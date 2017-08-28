@@ -12,13 +12,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Process.Sources" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Testing" />
+    <PackageReference Include="Microsoft.Extensions.Process.Sources" />
 
-    <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="$(MicrosoftAzureManagementFluentVersion)" />
-    <PackageReference Include="WindowsAzure.Storage" Version="$(WindowsAzureStorageVersion)" />
+    <PackageReference Include="Microsoft.Azure.Management.Fluent" />
+    <PackageReference Include="WindowsAzure.Storage" />
   </ItemGroup>
 
 </Project>
