@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                         "text/bar; p1=p1-value; charset=us-ascii"
                     },
 
-                    // Content type set on action result takes precedence over the conten type set on http response
+                    // Content type set on action result takes precedence over the content type set on http response
                     {
                         MediaTypeHeaderValue.Parse("text/foo; charset=us-ascii"),
                         "text/bar",

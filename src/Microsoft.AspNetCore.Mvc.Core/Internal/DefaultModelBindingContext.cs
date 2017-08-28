@@ -272,7 +272,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             var scope = EnterNestedScope();
 
             // Only filter if the new BindingSource affects the value providers. Otherwise we want
-            // to preserve the currrent state.
+            // to preserve the current state.
             if (modelMetadata.BindingSource != null && !modelMetadata.BindingSource.IsGreedy)
             {
                 ValueProvider = FilterValueProvider(OriginalValueProvider, modelMetadata.BindingSource);

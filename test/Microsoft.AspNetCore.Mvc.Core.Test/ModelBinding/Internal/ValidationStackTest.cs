@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Internal
             PreLoad(preloadCount, validationStack);
 
             // Act & Assert
-            // Poping null when it's not there must not throw
+            // Popping null when it's not there must not throw
             validationStack.Pop(null);
         }
 

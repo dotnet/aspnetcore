@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// passing parameter <paramref name="container"/> to lazily evaluate the value.
         /// </summary>
         /// <param name="container">The <see cref="object"/> that <see cref="Value"/> will be evaluated from.</param>
-        /// <param name="propertyInfo">The <see cref="PropertyInfo"/> that will be used to evalute <see cref="Value"/>.</param>
+        /// <param name="propertyInfo">The <see cref="PropertyInfo"/> that will be used to evaluate <see cref="Value"/>.</param>
         public ViewDataInfo(object container, PropertyInfo propertyInfo)
             : this(container, propertyInfo, _propertyInfoResolver)
         {

@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
                     "'<PreserveCompilationContext>true</PreserveCompilationContext>'." +
                     $"For functional tests to work they need to either run from the build output folder or the {Path.GetFileName(depsFile.FullName)} " +
                     $"file from your application's output directory must be copied" +
-                    "to the folder where the tests are running on. A common cause for this error is having shadow copying enabled when the" +
+                    "to the folder where the tests are running on. A common cause for this error is having shadow copying enabled when the " +
                     "tests run.");
             }
 

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         /// <summary>
-        /// Creats a new instance of <see cref="PageHandlerModel"/> from a given <see cref="PageHandlerModel"/>.
+        /// Creates a new instance of <see cref="PageHandlerModel"/> from a given <see cref="PageHandlerModel"/>.
         /// </summary>
         /// <param name="other">The <see cref="PageHandlerModel"/> which needs to be copied.</param>
         public PageHandlerModel(PageHandlerModel other)

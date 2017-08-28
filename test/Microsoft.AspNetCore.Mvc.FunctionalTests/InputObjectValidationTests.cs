@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Assert
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Equal("User has been registerd : " + sampleName,
+            Assert.Equal("User has been registered : " + sampleName,
                 await response.Content.ReadAsStringAsync());
         }
 

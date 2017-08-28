@@ -791,7 +791,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         [Fact]
         public void Action_RouteValueInvalidation_AffectsOtherRouteValues()
         {
-            // Arrage
+            // Arrange
             var services = CreateServices();
             var routeBuilder = CreateRouteBuilder(services);
 
@@ -835,7 +835,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
         [Fact]
         public void Action_RouteValueInvalidation_DoesNotAffectActionAndController_ActionPassedInRouteValues()
         {
-            // Arrage
+            // Arrange
             var services = CreateServices();
             var routeBuilder = CreateRouteBuilder(services);
 
@@ -898,7 +898,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             string virtualPath,
             string expected)
         {
-            // Arrage
+            // Arrange
             var router = Mock.Of<IRouter>();
             var pathData = new VirtualPathData(router, virtualPath)
             {
@@ -921,7 +921,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             string virtualPath,
             string expected)
         {
-            // Arrage
+            // Arrange
             var fragmentValue = "fragment-value";
             expected += $"#{fragmentValue}";
             var router = Mock.Of<IRouter>();
@@ -954,7 +954,7 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             string fragment,
             string expected)
         {
-            // Arrage
+            // Arrange
             var router = Mock.Of<IRouter>();
             var pathData = new VirtualPathData(router, virtualPath)
             {

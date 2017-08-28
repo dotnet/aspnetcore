@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc
         private Func<ModelMetadata, bool> _propertyFilter;
 
         /// <summary>
-        /// Creates a new instace of <see cref="BindAttribute"/>.
+        /// Creates a new instance of <see cref="BindAttribute"/>.
         /// </summary>
         /// <param name="include">Names of parameters to include in binding.</param>
         public BindAttribute(params string[] include)

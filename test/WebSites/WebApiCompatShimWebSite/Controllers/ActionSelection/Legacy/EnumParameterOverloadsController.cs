@@ -7,7 +7,7 @@ using System.Web.Http;
 
 namespace WebApiCompatShimWebSite
 {
-    // This was ported from the WebAPI 5.2 codebase. Kept the same intentionally for compatability.
+    // This was ported from the WebAPI 5.2 codebase. Kept the same intentionally for compatibility.
     [ActionSelectionFilter]
     public class EnumParameterOverloadsController : ApiController
     {

@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
 
         /// <summary>
         /// The declared type which could be wrapped/un-wrapped by a different type 
-        /// during serialization or de-serializatoin.
+        /// during serialization or deserialization.
         /// </summary>
         public Type DeclaredType { get; }
 

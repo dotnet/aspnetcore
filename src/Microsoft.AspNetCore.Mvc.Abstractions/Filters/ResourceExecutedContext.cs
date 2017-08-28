@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
         /// <summary>
         /// Gets or sets a value which indicates whether or not execution was canceled by a resource filter.
-        /// If true, then a resource filter short-circuted execution by setting
+        /// If true, then a resource filter short-circuited execution by setting
         /// <see cref="ResourceExecutingContext.Result"/>.
         /// </summary>
         public virtual bool Canceled { get; set; }

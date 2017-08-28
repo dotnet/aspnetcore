@@ -273,7 +273,7 @@ END:VCARD
         [Fact]
         public async Task ProducesAttribute_OnDerivedAction_OverridesTheValueOnBaseAction()
         {
-            // Arange
+            // Arrange
             var expectedContentType = MediaTypeHeaderValue.Parse(
                 "application/custom_NoProducesContentOnClassController_Action;charset=utf-8");
             var expectedBody = "NoProducesContentOnClassController";

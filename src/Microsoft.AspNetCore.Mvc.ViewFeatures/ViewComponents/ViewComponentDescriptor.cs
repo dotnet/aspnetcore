@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewComponents
         /// <remarks>
         /// <para>
         /// The full name is defaulted to the full namespace of the view component class, prepended to
-        /// the the class name with a '.' character as the separator. If the view component class uses
+        /// the class name with a '.' character as the separator. If the view component class uses
         /// <code>ViewComponent</code> as a suffix, the suffix will be omitted from the <see cref="FullName"/>.
         /// </para>
         /// <example>

@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Capture the current context into the feature. This will later be used in the end middleware to continue
             // the execution flow to later MVC layers.
             // Example:
-            // this filter -> user-middleware1 -> user-middleware2 -> the-end-middleware -> resouce filters or model binding
+            // this filter -> user-middleware1 -> user-middleware2 -> the-end-middleware -> resource filters or model binding
             var feature = new MiddlewareFilterFeature()
             {
                 ResourceExecutionDelegate = next,

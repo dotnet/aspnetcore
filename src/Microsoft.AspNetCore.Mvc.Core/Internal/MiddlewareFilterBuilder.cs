@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // or model binding), add a middleware at the end of the user provided pipeline which make sure to continue
             // this flow.
             // Example:
-            // middleware filter -> user-middleware1 -> user-middleware2 -> end-middleware -> resouce filters or model binding
+            // middleware filter -> user-middleware1 -> user-middleware2 -> end-middleware -> resource filters or model binding
             nestedAppBuilder.Run(async (httpContext) =>
             {
                 var feature = httpContext.Features.Get<IMiddlewareFilterFeature>();

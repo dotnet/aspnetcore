@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     /// with a higher value of Scope execute later in the pipeline. See <c>Microsoft.AspNetCore.Mvc.FilterScope</c>
     /// for commonly used scopes.
     ///
-    /// For <see cref="IExceptionFilter"/> implementions, the filter runs only after an exception has occurred,
+    /// For <see cref="IExceptionFilter"/> implementations, the filter runs only after an exception has occurred,
     /// and so the observed order of execution will be opposite that of other filters.
     /// </remarks>
     public class FilterDescriptor

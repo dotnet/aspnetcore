@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         public string DisplayFormatString { get; set; }
 
         /// <summary>
-        /// Gets or sets a delegate delegate which is used to get a value for the
+        /// Gets or sets a delegate which is used to get a value for the
         /// display name of the model. See <see cref="ModelMetadata.DisplayName"/>.
         /// </summary>
         public Func<string> DisplayName { get; set; }

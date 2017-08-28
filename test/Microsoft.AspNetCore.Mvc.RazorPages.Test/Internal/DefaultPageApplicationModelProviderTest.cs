@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 });
         }
 
-        // We want to test the the 'empty' page has no bound properties, and no handler methods.
+        // We want to test the 'empty' page has no bound properties, and no handler methods.
         [Fact]
         public void OnProvidersExecuting_EmptyPage()
         {
@@ -353,7 +353,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Same(typeof(EmptyPage).GetTypeInfo(), pageModel.PageType);
         }
 
-        // We want to test the the 'empty' page and pagemodel has no bound properties, and no handler methods.
+        // We want to test the 'empty' page and pagemodel has no bound properties, and no handler methods.
         [Fact]
         public void OnProvidersExecuting_EmptyPageModel()
         {

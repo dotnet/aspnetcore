@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc.ApplicationModels
         }
 
         /// <summary>
-        /// Creats a new instance of <see cref="PropertyModel"/> from a given <see cref="PropertyModel"/>.
+        /// Creates a new instance of <see cref="PropertyModel"/> from a given <see cref="PropertyModel"/>.
         /// </summary>
         /// <param name="other">The <see cref="PropertyModel"/> which needs to be copied.</param>
         public PropertyModel(PropertyModel other)

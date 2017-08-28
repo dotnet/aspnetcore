@@ -15,6 +15,6 @@ module.exports = function (grunt) {
     grunt.registerTask("default", ["bower:install"]);
 
     // The following line loads the grunt plugins.
-    // This line needs to be at the end of this this file.
+    // This line needs to be at the end of this file.
     grunt.loadNpmTasks("grunt-bower-task");
 };

@@ -523,7 +523,7 @@ Products: Music Systems, Televisions (3)";
             Assert.Equal(expected, response, ignoreLineEndingDifferences: true);
         }
 
-        // We want to make sure that for 'wierd' model expressions involving:
+        // We want to make sure that for 'weird' model expressions involving:
         // - fields
         // - statics
         // - private
@@ -531,7 +531,7 @@ Products: Music Systems, Televisions (3)";
         // These tests verify that we don't throw, and can evaluate the expression to get the model
         // value. One quirk of behavior for these cases is that we can't return a correct model metadata
         // instance (this is true for anything other than a public instance property). We're not overly
-        // concerned with that, and so the accuracy of the model metadata is is not verified by the test.
+        // concerned with that, and so the accuracy of the model metadata is not verified by the test.
         [Theory]
         [InlineData("GetWeirdWithHtmlHelpers")]
         [InlineData("GetWeirdWithTagHelpers")]

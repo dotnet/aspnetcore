@@ -4,7 +4,7 @@
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
     /// <summary>
-    /// Metadata which specificies the data source for model binding.
+    /// Metadata which specifies the data source for model binding.
     /// </summary>
     public interface IBindingSourceMetadata
     {

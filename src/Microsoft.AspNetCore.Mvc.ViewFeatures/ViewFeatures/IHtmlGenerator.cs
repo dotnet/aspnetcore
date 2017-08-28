@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="controllerName">The name of the controller.</param>
         /// <param name="protocol">The protocol (scheme) for the generated link.</param>
         /// <param name="hostname">The hostname for the generated link.</param>
-        /// <param name="fragment">The fragment for the genrated link.</param>
+        /// <param name="fragment">The fragment for the generated link.</param>
         /// <param name="routeValues">
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="pageHandler">The page handler.</param>
         /// <param name="protocol">The protocol (scheme) for the generated link.</param>
         /// <param name="hostname">The hostname for the generated link.</param>
-        /// <param name="fragment">The fragment for the genrated link.</param>
+        /// <param name="fragment">The fragment for the generated link.</param>
         /// <param name="routeValues">
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically
@@ -254,7 +254,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         /// <param name="routeName">The name of the route to use for link generation.</param>
         /// <param name="protocol">The protocol (scheme) for the generated link.</param>
         /// <param name="hostName">The hostname for the generated link.</param>
-        /// <param name="fragment">The fragment for the genrated link.</param>
+        /// <param name="fragment">The fragment for the generated link.</param>
         /// <param name="routeValues">
         /// An <see cref="object"/> that contains the parameters for a route. The parameters are retrieved through
         /// reflection by examining the properties of the <see cref="object"/>. This <see cref="object"/> is typically

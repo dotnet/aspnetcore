@@ -129,12 +129,12 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                     },
                     // Constants are not supported.
                     {
-                        // Namespace never appears in expresison name. "Model" there doesn't matter.
+                        // Namespace never appears in expression name. "Model" there doesn't matter.
                         (Expression<Func<TestModel, int>>)(m => Microsoft.AspNetCore.Mvc.ViewFeatures.Model.Constants.WoodstockYear),
                         string.Empty
                     },
                     {
-                        // Class name never appears in expresion name. "Model" there doesn't matter.
+                        // Class name never appears in expression name. "Model" there doesn't matter.
                         (Expression<Func<TestModel, int>>)(m => Model.Constants.WoodstockYear),
                         string.Empty
                     },

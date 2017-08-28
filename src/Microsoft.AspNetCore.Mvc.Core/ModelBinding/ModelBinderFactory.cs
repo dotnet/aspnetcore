@@ -106,7 +106,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 return NoOpBinder.Instance;
             }
 
-            // A non-null token will usually be passed in at the the top level (ParameterDescriptor likely).
+            // A non-null token will usually be passed in at the top level (ParameterDescriptor likely).
             // This prevents us from treating a parameter the same as a collection-element - which could
             // happen looking at just model metadata.
             var key = new Key(providerContext.Metadata, token);
@@ -253,7 +253,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
                 }
 
                 // For non-root nodes we use the ModelMetadata as the cache token. This ensures that all non-root
-                // nodes with the same metadata will have the the same binder. This is OK because for an non-root
+                // nodes with the same metadata will have the same binder. This is OK because for an non-root
                 // node there's no opportunity to customize binding info like there is for a parameter.
                 var token = metadata;
 

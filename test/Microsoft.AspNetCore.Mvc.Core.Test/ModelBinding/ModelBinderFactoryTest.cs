@@ -530,8 +530,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.Equal(1, widgetIdProvider.SuccessCount);
         }
 
-        // This is a really wierd case, but I wanted to make sure it's covered so it doesn't
-        // blow up in wierd ways.
+        // This is a really weird case, but I wanted to make sure it's covered so it doesn't
+        // blow up in weird ways.
         //
         // If a binder provider tries to recursively create itself, but then returns null, we've
         // already returned and possibly cached the PlaceholderBinder instance, we want to make sure that

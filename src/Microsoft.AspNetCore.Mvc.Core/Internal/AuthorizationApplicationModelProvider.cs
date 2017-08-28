@@ -64,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static AuthorizeFilter GetFilter(IAuthorizationPolicyProvider policyProvider, IEnumerable<IAuthorizeData> authData)
         {
             // The default policy provider will make the same policy for given input, so make it only once.
-            // This will always execute syncronously.
+            // This will always execute synchronously.
             if (policyProvider.GetType() == typeof(DefaultAuthorizationPolicyProvider))
             {
                 var policy = AuthorizationPolicy.CombineAsync(policyProvider, authData).GetAwaiter().GetResult();

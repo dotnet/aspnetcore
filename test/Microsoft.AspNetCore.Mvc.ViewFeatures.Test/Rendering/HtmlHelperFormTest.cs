@@ -589,7 +589,7 @@ namespace Microsoft.AspNetCore.Mvc.Rendering
             // Act & Assert
             using (var form = htmlHelper.BeginForm(FormMethod.Post, antiforgery: false, htmlAttributes: null))
             {
-                // This call will ouput a token.
+                // This call will output a token.
                 Assert.Equal("antiforgery", Assert.IsType<TagBuilder>(htmlHelper.AntiForgeryToken()).TagName);
             }
 

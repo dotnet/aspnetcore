@@ -538,7 +538,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => new ChallengeResult(properties);
 
         /// <summary>
-        /// Creates a <see cref="ChallengeResult"/> with the specified specified authentication schemes and
+        /// Creates a <see cref="ChallengeResult"/> with the specified authentication schemes and
         /// <paramref name="properties" />.
         /// </summary>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
@@ -649,7 +649,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
 
         /// <summary>
         /// Creates a <see cref="ForbidResult"/> (<see cref="StatusCodes.Status403Forbidden"/> by default) with the 
-        /// specified specified authentication schemes and <paramref name="properties" />.
+        /// specified authentication schemes and <paramref name="properties" />.
         /// </summary>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the authentication
         /// challenge.</param>
@@ -1502,7 +1502,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => new SignInResult(authenticationScheme, principal);
 
         /// <summary>
-        /// Creates a <see cref="SignInResult"/> with the specified specified authentication scheme and
+        /// Creates a <see cref="SignInResult"/> with the specified authentication scheme and
         /// <paramref name="properties" />.
         /// </summary>
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> containing the user claims.</param>
@@ -1524,7 +1524,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
             => new SignOutResult(authenticationSchemes);
 
         /// <summary>
-        /// Creates a <see cref="SignOutResult"/> with the specified specified authentication schemes and
+        /// Creates a <see cref="SignOutResult"/> with the specified authentication schemes and
         /// <paramref name="properties" />.
         /// </summary>
         /// <param name="properties"><see cref="AuthenticationProperties"/> used to perform the sign-out operation.</param>

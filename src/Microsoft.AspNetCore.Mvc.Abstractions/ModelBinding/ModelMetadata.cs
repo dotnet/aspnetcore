@@ -419,7 +419,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// <inheritdoc />
         public override int GetHashCode()
         {
-            // Normaly caching the hashcode would be dangerous, but Identity is deeply immutable so this is safe.
+            // Normally caching the hashcode would be dangerous, but Identity is deeply immutable so this is safe.
             if (_hashCode == null)
             {
                 _hashCode = Identity.GetHashCode();

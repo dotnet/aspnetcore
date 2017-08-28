@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
         /// The startup code defined in <typeparamref name = "TStartup" /> will be executed to configure the application.
         /// </para>
         /// <para>
-        /// This constructor will infer the application root directive by searching for a solution file tht matches the pattern
+        /// This constructor will infer the application root directive by searching for a solution file that matches the pattern
         /// <paramref name="solutionSearchPattern"/> and then appending the path <paramref name="solutionRelativePath"/>
         /// to the solution directory.The application root directory will be used to discover views and content files.
         /// </para>

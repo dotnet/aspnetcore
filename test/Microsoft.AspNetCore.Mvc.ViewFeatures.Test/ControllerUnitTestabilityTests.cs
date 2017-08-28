@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    // Tests Controler for the unit testability with which users can simply instantiate contollers for unit tests
+    // Tests Controller for the unit testability with which users can simply instantiate controllers for unit tests
     public class ControllerUnitTestabilityTests
     {
         [Theory]

@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         }
 
         /// <summary>
-        /// Gets the <see cref="Type"/> defining the model property respresented by the current
+        /// Gets the <see cref="Type"/> defining the model property represented by the current
         /// instance, or <c>null</c> if the current instance does not represent a property.
         /// </summary>
         public Type ContainerType { get; private set; }

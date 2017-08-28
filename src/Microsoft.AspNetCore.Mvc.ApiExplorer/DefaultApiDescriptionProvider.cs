@@ -610,7 +610,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                 // For any property which is a leaf node, we don't want to keep traversing:
                 //
                 //  1)  Collections - while it's possible to have binder attributes on the inside of a collection,
-                //      it hardly seems useful, and would result in some very wierd binding.
+                //      it hardly seems useful, and would result in some very weird binding.
                 //
                 //  2)  Simple Types - These are generally part of the .net framework - primitives, or types which have a
                 //      type converter from string.

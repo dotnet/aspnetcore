@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 namespace Microsoft.AspNetCore.Mvc.DataAnnotations
 {
     /// <summary>
-    /// Interface so that adapters provide their relevent values to error messages.
+    /// Interface so that adapters provide their relevant values to error messages.
     /// </summary>
     public interface IAttributeAdapter : IClientModelValidator
     {

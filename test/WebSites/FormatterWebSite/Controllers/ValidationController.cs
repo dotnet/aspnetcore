@@ -19,7 +19,7 @@ namespace FormatterWebSite
                     ModelState["Designation"].Errors[0].ErrorMessage);
             }
 
-            return Content("User has been registerd : " + user.Name);
+            return Content("User has been registered : " + user.Name);
         }
 
         [HttpPost]

@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(typeInfo));
             }
 
-            // For attribute routes on a controller, we want want to support 'overriding' routes on a derived
+            // For attribute routes on a controller, we want to support 'overriding' routes on a derived
             // class. So we need to walk up the hierarchy looking for the first class to define routes.
             //
             // Then we want to 'filter' the set of attributes, so that only the effective routes apply.
@@ -291,7 +291,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             //TODO: modify comment
             // Now we need to determine the action selection info (cross-section of routes and constraints)
             //
-            // For attribute routes on a action, we want want to support 'overriding' routes on a
+            // For attribute routes on a action, we want to support 'overriding' routes on a
             // virtual method, but allow 'overriding'. So we need to walk up the hierarchy looking
             // for the first definition to define routes.
             //
@@ -377,7 +377,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return false;
             }
 
-            // Overriden methods from Object class, e.g. Equals(Object), GetHashCode(), etc., are not valid.
+            // Overridden methods from Object class, e.g. Equals(Object), GetHashCode(), etc., are not valid.
             if (methodInfo.GetBaseDefinition().DeclaringType == typeof(object))
             {
                 return false;

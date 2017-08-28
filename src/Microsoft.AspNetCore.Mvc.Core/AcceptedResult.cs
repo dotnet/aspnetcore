@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// provided.
         /// </summary>
         /// <param name="locationUri">The location at which the status of requested content can be monitored
-        /// It is an optional paramater and may be null</param>
+        /// It is an optional parameter and may be null</param>
         /// <param name="value">The value to format in the entity body.</param>
         public AcceptedResult(Uri locationUri, object value)
             : base(value)

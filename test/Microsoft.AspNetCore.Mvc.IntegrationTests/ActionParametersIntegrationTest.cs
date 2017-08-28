@@ -597,7 +597,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
         }
 
         // By default the ComplexTypeModelBinder fails to construct models for types with no parameterless constructor,
-        // but a developer could change this behavior by overridng CreateModel
+        // but a developer could change this behavior by overriding CreateModel
         private class CustomComplexTypeModelBinder : ComplexTypeModelBinder
         {
             public CustomComplexTypeModelBinder(IDictionary<ModelMetadata, IModelBinder> propertyBinders)

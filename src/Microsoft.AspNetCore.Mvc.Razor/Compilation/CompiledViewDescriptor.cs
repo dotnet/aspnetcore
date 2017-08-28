@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Compilation
         public string RelativePath { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="RazorViewAttribute"/> decorating the sview.
+        /// Gets or sets the <see cref="RazorViewAttribute"/> decorating the view.
         /// </summary>
         public RazorViewAttribute ViewAttribute { get; set; }
 

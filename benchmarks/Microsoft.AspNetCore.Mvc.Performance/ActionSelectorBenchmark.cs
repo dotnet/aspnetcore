@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Performance
     {
         private const int Seed = 1000;
 
-        // About 35 or so plausable sounding conventional routing actions.
+        // About 35 or so plausible sounding conventional routing actions.
         //
         // We include some duplicates here, because that's what happens when you have one method that handles
         // GET and one that handles POST.

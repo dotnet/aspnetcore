@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <param name="url">The URL to redirect to.</param>
         /// <param name="permanent">Specifies whether the redirect should be permanent (301) or temporary (302).</param>
-        /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the intial request method.</param>
+        /// <param name="preserveMethod">If set to true, make the temporary redirect (307) or permanent redirect (308) preserve the initial request method.</param>
         public RedirectResult(string url, bool permanent, bool preserveMethod)
         {
             if (url == null)

@@ -273,7 +273,7 @@ namespace Microsoft.TestCommon
         /// <param name="variation">The test data variation with which to create the related <see cref="Type"/>.</param>
         /// <returns>The related <see cref="Type"/> for the <see cref="TestData.Type"/> as given by the test data variation.</returns>
         /// <example>
-        /// For example, if the given <see cref="TestData"/> was created for <see cref="string"/> test data and the varation parameter
+        /// For example, if the given <see cref="TestData"/> was created for <see cref="string"/> test data and the variation parameter
         /// was <see cref="TestDataVariations.AsList"/> then the returned type would be <see cref="List<string>"/>.
         /// </example>
         public Type GetAsTypeOrNull(TestDataVariations variation)

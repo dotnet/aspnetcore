@@ -526,7 +526,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                         if (exceptionContext.Exception == null || exceptionContext.ExceptionHandled)
                         {
-                            // We don't need to do anthing to trigger a short circuit. If there's another
+                            // We don't need to do anything to trigger a short circuit. If there's another
                             // exception filter on the stack it will check the same set of conditions
                             // and then just skip itself.
                             _logger.ExceptionFilterShortCircuited(filter);
@@ -566,7 +566,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                             if (exceptionContext.Exception == null || exceptionContext.ExceptionHandled)
                             {
-                                // We don't need to do anthing to trigger a short circuit. If there's another
+                                // We don't need to do anything to trigger a short circuit. If there's another
                                 // exception filter on the stack it will check the same set of conditions
                                 // and then just skip itself.
                                 _logger.ExceptionFilterShortCircuited(filter);

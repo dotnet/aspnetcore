@@ -14,7 +14,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
     public interface IRazorPage
     {
         /// <summary>
-        /// Gets or sets the view context of the renderign view.
+        /// Gets or sets the view context of the rendering view.
         /// </summary>
         ViewContext ViewContext { get; set; }
 
