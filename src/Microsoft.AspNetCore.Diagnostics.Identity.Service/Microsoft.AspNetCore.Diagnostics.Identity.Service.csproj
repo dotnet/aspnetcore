@@ -21,10 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <DotNetCliToolReference Include="RazorPageGenerator" Version="$(AspNetCoreVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Compile Update="Strings.Designer.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
