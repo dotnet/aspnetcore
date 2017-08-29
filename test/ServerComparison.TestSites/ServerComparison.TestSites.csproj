@@ -7,16 +7,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" Version="$(AspNetCoreModuleVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.AspNetCoreModule" />
+    <PackageReference Include="Microsoft.AspNetCore.ResponseCompression" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.HttpSys" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <PackageReference Include="Microsoft.AspNetCore.WebUtilities" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Net.Http.Headers" />
   </ItemGroup>
 
 </Project>

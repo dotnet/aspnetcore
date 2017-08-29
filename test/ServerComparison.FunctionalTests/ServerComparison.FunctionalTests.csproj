@@ -10,15 +10,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" Version="$(AspNetCoreIntegrationTestingVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Net.Http.Headers" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Serilog.Extensions.Logging" Version="1.4.0" />
-    <PackageReference Include="Serilog.Sinks.File" Version="3.2.0" />
-    <PackageReference Include="xunit" Version="$(XunitVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IntegrationTesting" />
+    <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Testing" />
+    <PackageReference Include="Microsoft.Net.Http.Headers" />
+    <PackageReference Include="Serilog.Extensions.Logging" />
+    <PackageReference Include="Serilog.Sinks.File" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 
 </Project>
