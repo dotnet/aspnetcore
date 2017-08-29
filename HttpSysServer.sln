@@ -1,20 +1,28 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{99D5E5F3-88F5-4CCF-8D8C-717C8925DF09}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{E183C826-1360-4DFF-9994-F33CED5C8525}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{3A1E31E3-2794-4CA3-B8E2-253E96BDE514}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{5E9B546C-17AC-4BDF-BCB3-5955D4755ED8}"
 	ProjectSection(SolutionItems) = preProject
+		.appveyor.yml = .appveyor.yml
 		.travis.yml = .travis.yml
-		appveyor.yml = appveyor.yml
 		build.cmd = build.cmd
 		build.ps1 = build.ps1
 		build.sh = build.sh
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		NuGet.config = NuGet.config
 		version.xml = version.xml
 	EndProjectSection
@@ -33,7 +41,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Server
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{85914BA9-4168-48C5-9C3F-E2E8B1479A6E}"
 	ProjectSection(SolutionItems) = preProject
-		build\common.props = build\common.props
 		build\dependencies.props = build\dependencies.props
 		build\Key.snk = build\Key.snk
 	EndProjectSection
@@ -124,5 +131,8 @@ Global
 		{8BFA392A-8B67-4454-916B-67C545EDFAEF} = {3A1E31E3-2794-4CA3-B8E2-253E96BDE514}
 		{E837249E-E666-4DF2-AFC3-7A4D70234F9F} = {E183C826-1360-4DFF-9994-F33CED5C8525}
 		{85914BA9-4168-48C5-9C3F-E2E8B1479A6E} = {5E9B546C-17AC-4BDF-BCB3-5955D4755ED8}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {34B42B42-FA09-41AB-9216-14073990C504}
 	EndGlobalSection
 EndGlobal
