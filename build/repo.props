@@ -1,6 +1,8 @@
-<Project>
+﻿<Project>
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Hosting.TestSites\Microsoft.AspNetCore.Hosting.TestSites.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\TestStartupAssembly1\TestStartupAssembly1.csproj" />
+    <PackageLineup Include="Internal.AspNetCore.Universe.Lineup" Version="2.1.0-*" />
+    <PackageLineup Include="Internal.AspNetCore.Partners.Lineup" Version="2.1.0-*" />
   </ItemGroup>
 </Project>
