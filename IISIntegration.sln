@@ -1,16 +1,24 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26405.2
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{04B1EDB6-E967-4D25-89B9-E6F8304038CD}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{0EF45656-B25D-40D8-959C-726EAF185E60}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		NuGet.Config = NuGet.Config
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{EF30B533-D715-421A-92B7-92FEF460AC9C}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{C74B8F36-FD2F-45C9-9B8A-00E7CF0126A9}"
 EndProject
@@ -24,7 +32,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestSites", "test\TestSites
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{7E80C58E-9CC8-450C-8A8D-94FC76428150}"
 	ProjectSection(SolutionItems) = preProject
-		build\common.props = build\common.props
 		build\dependencies.props = build\dependencies.props
 		build\Key.snk = build\Key.snk
 		build\repo.props = build\repo.props
@@ -112,5 +119,8 @@ Global
 		{4106DB10-E09F-480E-9CE6-B39235512EE6} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
 		{F54715C3-88D8-49E3-A291-C13570FE81FC} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
 		{4E3E1F5C-CD52-4CC0-A35F-D1FA1685D2FA} = {EF30B533-D715-421A-92B7-92FEF460AC9C}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DB4F868D-E1AE-4FD7-9333-69FA15B268C5}
 	EndGlobalSection
 EndGlobal
