@@ -49,24 +49,37 @@
     <ul id="message-list"></ul>
 </body>
 </html>
-<script src="lib/signalr-client/signalr-client.js"></script>
+<script type="text/javascript">
+    if (typeof Promise === 'undefined')
+    {
+        document.write(
+            '<script type="text/javascript" src="lib/signalr-client/signalr-clientES5.js"><\/script>' +
+            '<script type="text/javascript" src="lib/signalr-client/signalr-msgpackprotocolES5.js"><\/script>');
+    }
+    else
+    {
+        document.write(
+            '<script type="text/javascript" src="lib/signalr-client/signalr-client.js"><\/script>' +
+            '<script type="text/javascript" src="lib/signalr-client/signalr-msgpackprotocol.js"><\/script>');
+    }
+</script>
 <script src="utils.js"></script>
 <script>
 var isConnected = false;
-function invoke(connection, method, ...args) {
+function invoke(connection, method) {
     if (!isConnected) {
         return;
     }
     var argsArray = Array.prototype.slice.call(arguments);
     connection.invoke.apply(connection, argsArray.slice(1))
-            .then(result => {
+            .then(function(result) {
                 console.log("invocation completed successfully: " + (result === null ? '(null)' : result));
 
                 if (result) {
                     addLine('message-list', result);
                 }
             })
-            .catch(err => {
+            .catch(function(err) {
                 addLine('message-list', err, 'red');
             });
 }
@@ -87,17 +100,17 @@ let disconnectButton = document.getElementById('disconnect');
 disconnectButton.disabled = true;
 var connection;
 
-click('connect', event => {
+click('connect', function(event) {
     connectButton.disabled = true;
     disconnectButton.disabled = false;
-    console.log(`http://${document.location.host}/${hubRoute}`);
-    let http = new signalR.HttpConnection(`http://${document.location.host}/${hubRoute}`, { transport: transportType, logger: logger });
+    console.log('http://' + document.location.host + '/' + hubRoute);
+    let http = new signalR.HttpConnection('http://' + document.location.host + '/' + hubRoute, { transport: transportType, logger: logger });
     connection = new signalR.HubConnection(http, logger);
-    connection.on('Send', msg => {
+    connection.on('Send', function(msg) {
         addLine('message-list', msg);
     });
 
-    connection.onClosed = e => {
+    connection.onClosed = function(e) {
         if (e) {
             addLine('message-list', 'Connection closed with error: ' + e, 'red');
         }
@@ -107,46 +120,46 @@ click('connect', event => {
     }
 
     connection.start()
-        .then(() => {
+        .then(function() {
             isConnected = true;
             addLine('message-list', 'Connected successfully', 'green');
         })
-        .catch(err => {
+        .catch(function(err) {
             addLine('message-list', err, 'red');
         });
 });
 
-click('disconnect', event => {
+click('disconnect', function(event) {
     connectButton.disabled = false;
     disconnectButton.disabled = true;
     connection.stop()
-        .then(() => {
+        .then(function() {
             isConnected = false;
         });
 });
 
-click('broadcast', event => {
+click('broadcast', function(event) {
     let data = getText('message-text');
     invoke(connection, 'Send', data);
 });
 
-click('join-group', event => {
+click('join-group', function(event) {
     let groupName = getText('message-text');
     invoke(connection, 'JoinGroup', groupName);
 });
 
-click('leave-group', event => {
+click('leave-group', function(event) {
     let groupName = getText('message-text');
     invoke(connection, 'LeaveGroup', groupName);
 });
 
-click('groupmsg', event => {
+click('groupmsg', function(event) {
     let groupName = getText('target');
     let message = getText('private-message-text');
     invoke(connection, 'SendToGroup', groupName, message);
 });
 
-click('send', event => {
+click('send', function(event) {
     let data = getText('me-message-text');
     invoke(connection, 'Echo', data);
 });

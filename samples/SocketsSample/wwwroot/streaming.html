@@ -23,10 +23,23 @@
     <ul id="resultsList"></ul>
 
     <ul id="messages"></ul>
-    <script src="lib/signalr-client/signalr-client.js"></script>
+    <script type="text/javascript">
+        if (typeof Promise === 'undefined')
+        {
+            document.write(
+                '<script type="text/javascript" src="lib/signalr-client/signalr-clientES5.js"><\/script>' +
+                '<script type="text/javascript" src="lib/signalr-client/signalr-msgpackprotocolES5.js"><\/script>');
+        }
+        else
+        {
+            document.write(
+                '<script type="text/javascript" src="lib/signalr-client/signalr-client.js"><\/script>' +
+                '<script type="text/javascript" src="lib/signalr-client/signalr-msgpackprotocol.js"><\/script>');
+        }
+    </script>
     <script src="utils.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             let resultsList = document.getElementById('resultsList');
             let channelButton = document.getElementById('channelButton');
             let observableButton = document.getElementById('observableButton');
@@ -42,7 +55,7 @@
 
             document.getElementById('transportName').innerHTML = signalR.TransportType[transportType];
 
-            let url = `http://${document.location.host}/streaming`
+            let url = 'http://' + document.location.host + '/streaming';
             let connection = null;
 
             click('clearButton', function () {
@@ -87,17 +100,17 @@
             function run(method) {
                 let id = invocationCounter;
                 invocationCounter += 1;
-                addLine('resultsList', `running ${method}(${id}) ...`);
+                addLine('resultsList', 'running ' + method + '(' + id + ') ...');
                 connection.stream(method, 10, (Math.random() * 5) * 200).subscribe({
                     closed: false,
                     next: function (item) {
-                        addLine('resultsList', `${method}(${id}): ${item}`);
+                        addLine('resultsList', method + '(' + id + '): ' + item);
                     },
                     error: function (err) {
-                        addLine('resultsList', `${method}(${id}): ${err}`, 'red');
+                        addLine('resultsList', method + '(' + id + '):' + err, 'red');
                     },
                     complete: function () {
-                        addLine('resultsList', `${method}(${id}): complete`, 'green');
+                        addLine('resultsList', method + '(' +  id + '): complete', 'green');
                     }
                 });
             }

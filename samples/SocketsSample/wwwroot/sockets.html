@@ -13,32 +13,41 @@
     </form>
 
     <ul id="messages"></ul>
-    <script src="lib/signalr-client/signalr-client.js"></script>
+    <script type="text/javascript">
+        if (typeof Promise === 'undefined')
+        {
+            document.write('<script type="text/javascript" src="lib/signalr-client/signalr-clientES5.js"><\/script>');
+        }
+        else
+        {
+            document.write('<script type="text/javascript" src="lib/signalr-client/signalr-client.js"><\/script>');
+        }
+    </script>
     <script src="utils.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', function() {
             let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
 
             document.getElementById('transportName').innerHTML = signalR.TransportType[transportType];
 
-            let url = `http://${document.location.host}/chat`
+            let url = 'http://' + document.location.host + '/chat';
             let connection = new signalR.HttpConnection(url, { transport: transportType, logger: new signalR.ConsoleLogger(signalR.LogLevel.Information) });
 
-            connection.onDataReceived = data => {
+            connection.onDataReceived =  function(data) {
                 let child = document.createElement('li');
                 child.innerText = data;
                 document.getElementById('messages').appendChild(child);
             };
 
-            document.getElementById('sendmessage').addEventListener('submit', event => {
+            document.getElementById('sendmessage').addEventListener('submit', function(event) {
                 let data = document.getElementById('data').value;
                 connection.send(data);
                 event.preventDefault();
             });
 
-            connection.start().then(() => {
+            connection.start().then(function() {
                 console.log("Opened");
-            }, () => {
+            }, function() {
                 console.log("Error opening connection");
             });
         });

@@ -28,7 +28,10 @@
   </ItemGroup>
 
   <Target Name="CopyTSClient" BeforeTargets="AfterBuild">
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\..\client-ts\dist\browser\signalr-client.js" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-client" />
+    <ItemGroup>
+      <SignalRJSClientFiles Include="$(MSBuildThisFileDirectory)..\..\client-ts\dist\browser\*" />
+    </ItemGroup>
+    <Copy SourceFiles="@(SignalRJSClientFiles)" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-client" />
   </Target>
 
 </Project>

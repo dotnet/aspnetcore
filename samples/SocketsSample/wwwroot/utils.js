@@ -11,7 +11,7 @@ function getParameterByName(name, url) {
 }
 
 function click(id, callback) {
-    document.getElementById(id).addEventListener('click', event => {
+    document.getElementById(id).addEventListener('click', function (event) {
         callback(event);
         event.preventDefault();
     });
