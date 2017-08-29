@@ -10,7 +10,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
         public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             SyntaxConstants.CSharp.SectionKeyword,
             DirectiveKind.RazorBlock,
-            builder => builder.AddMemberToken());
+            builder =>
+            {
+                builder.AddMemberToken();
+                builder.Description = Resources.SectionDirective_Description;
+            });
 
         public static void Register(IRazorEngineBuilder builder)
         {

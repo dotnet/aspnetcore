@@ -25,6 +25,34 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             => GetString("ArgumentCannotBeNullOrEmpy");
 
         /// <summary>
+        /// Declare a property and inject a service from the application's service container into it.
+        /// </summary>
+        internal static string InjectDirective_Description
+        {
+            get => GetString("InjectDirective_Description");
+        }
+
+        /// <summary>
+        /// Declare a property and inject a service from the application's service container into it.
+        /// </summary>
+        internal static string FormatInjectDirective_Description()
+            => GetString("InjectDirective_Description");
+
+        /// <summary>
+        /// Specify the view or page model for the current document.
+        /// </summary>
+        internal static string ModelDirective_Description
+        {
+            get => GetString("ModelDirective_Description");
+        }
+
+        /// <summary>
+        /// Specify the view or page model for the current document.
+        /// </summary>
+        internal static string FormatModelDirective_Description()
+            => GetString("ModelDirective_Description");
+
+        /// <summary>
         /// The 'inherits' keyword is not allowed when a '{0}' keyword is used.
         /// </summary>
         internal static string MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword
@@ -95,6 +123,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             => string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorParser_InvalidPropertyType"), p0, p1, p2);
 
         /// <summary>
+        /// Specify the base namespace for the current document.
+        /// </summary>
+        internal static string NamespaceDirective_Description
+        {
+            get => GetString("NamespaceDirective_Description");
+        }
+
+        /// <summary>
+        /// Specify the base namespace for the current document.
+        /// </summary>
+        internal static string FormatNamespaceDirective_Description()
+            => GetString("NamespaceDirective_Description");
+
+        /// <summary>
         /// The '@{0}' directive specified in {1} file will not be imported. The directive must appear at the top of each Razor cshtml file.
         /// </summary>
         internal static string PageDirectiveCannotBeImported
@@ -107,6 +149,20 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         /// </summary>
         internal static string FormatPageDirectiveCannotBeImported(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("PageDirectiveCannotBeImported"), p0, p1);
+
+        /// <summary>
+        /// Declare the current document as a Razor Page.
+        /// </summary>
+        internal static string PageDirective_Description
+        {
+            get => GetString("PageDirective_Description");
+        }
+
+        /// <summary>
+        /// Declare the current document as a Razor Page.
+        /// </summary>
+        internal static string FormatPageDirective_Description()
+            => GetString("PageDirective_Description");
 
         private static string GetString(string name, params string[] formatterNames)
         {

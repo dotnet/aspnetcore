@@ -598,6 +598,90 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatCodeWriter_InvalidNewLine(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("CodeWriter_InvalidNewLine"), p0);
 
+        /// <summary>
+        /// Register Tag Helpers for use in the current document.
+        /// </summary>
+        internal static string AddTagHelperDirective_Description
+        {
+            get => GetString("AddTagHelperDirective_Description");
+        }
+
+        /// <summary>
+        /// Register Tag Helpers for use in the current document.
+        /// </summary>
+        internal static string FormatAddTagHelperDirective_Description()
+            => GetString("AddTagHelperDirective_Description");
+
+        /// <summary>
+        /// Specify a C# code block.
+        /// </summary>
+        internal static string FunctionsDirective_Description
+        {
+            get => GetString("FunctionsDirective_Description");
+        }
+
+        /// <summary>
+        /// Specify a C# code block.
+        /// </summary>
+        internal static string FormatFunctionsDirective_Description()
+            => GetString("FunctionsDirective_Description");
+
+        /// <summary>
+        /// Specify the base class for the current document.
+        /// </summary>
+        internal static string InheritsDirective_Description
+        {
+            get => GetString("InheritsDirective_Description");
+        }
+
+        /// <summary>
+        /// Specify the base class for the current document.
+        /// </summary>
+        internal static string FormatInheritsDirective_Description()
+            => GetString("InheritsDirective_Description");
+
+        /// <summary>
+        /// Remove Tag Helpers for use in the current document.
+        /// </summary>
+        internal static string RemoveTagHelperDirective_Description
+        {
+            get => GetString("RemoveTagHelperDirective_Description");
+        }
+
+        /// <summary>
+        /// Remove Tag Helpers for use in the current document.
+        /// </summary>
+        internal static string FormatRemoveTagHelperDirective_Description()
+            => GetString("RemoveTagHelperDirective_Description");
+
+        /// <summary>
+        /// Define a section to be rendered in the configured layout page.
+        /// </summary>
+        internal static string SectionDirective_Description
+        {
+            get => GetString("SectionDirective_Description");
+        }
+
+        /// <summary>
+        /// Define a section to be rendered in the configured layout page.
+        /// </summary>
+        internal static string FormatSectionDirective_Description()
+            => GetString("SectionDirective_Description");
+
+        /// <summary>
+        /// Specify a prefix that is required in an element name for it to be included in Tag Helper processing.
+        /// </summary>
+        internal static string TagHelperPrefixDirective_Description
+        {
+            get => GetString("TagHelperPrefixDirective_Description");
+        }
+
+        /// <summary>
+        /// Specify a prefix that is required in an element name for it to be included in Tag Helper processing.
+        /// </summary>
+        internal static string FormatTagHelperPrefixDirective_Description()
+            => GetString("TagHelperPrefixDirective_Description");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

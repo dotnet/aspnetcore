@@ -14,6 +14,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             {
                 builder.AddTypeToken();
                 builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+                builder.Description = Resources.FunctionsDirective_Description;
             });
 
         public static void Register(IRazorEngineBuilder builder)

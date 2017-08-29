@@ -12,7 +12,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevVersion)" NoWarn="KRB4002" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevVersion)" NoWarn="KRB4002" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(RoslynDevVersion)" NoWarn="KRB4002" />
     <PackageReference Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevVersion)" NoWarn="KRB4002" />
     <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevVersion)" NoWarn="KRB4002" />
     <PackageReference Include="Microsoft.VisualStudio.ComponentModelHost" />
@@ -28,6 +28,7 @@
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.8.0" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop.9.0" />
     <PackageReference Include="Microsoft.VisualStudio.Shell.Interop" />
+
     <PackageReference Include="Newtonsoft.Json" Version="9.0.1">
       <!-- We need to use this version of Json.Net to maintain consistency with Visual Studio. -->
       <NoWarn>KRB4002</NoWarn>

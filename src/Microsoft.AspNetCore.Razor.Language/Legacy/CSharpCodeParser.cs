@@ -21,17 +21,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         internal static readonly DirectiveDescriptor AddTagHelperDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
             SyntaxConstants.CSharp.AddTagHelperKeyword,
             DirectiveKind.SingleLine,
-            builder => builder.AddStringToken());
+            builder =>
+            {
+                builder.AddStringToken();
+                builder.Description = Resources.AddTagHelperDirective_Description;
+            });
 
         internal static readonly DirectiveDescriptor RemoveTagHelperDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
             SyntaxConstants.CSharp.RemoveTagHelperKeyword,
             DirectiveKind.SingleLine,
-            builder => builder.AddStringToken());
+            builder =>
+            {
+                builder.AddStringToken();
+                builder.Description = Resources.RemoveTagHelperDirective_Description;
+            });
 
         internal static readonly DirectiveDescriptor TagHelperPrefixDirectiveDescriptor = DirectiveDescriptor.CreateDirective(
             SyntaxConstants.CSharp.TagHelperPrefixKeyword,
             DirectiveKind.SingleLine,
-            builder => builder.AddStringToken());
+            builder =>
+            {
+                builder.AddStringToken();
+                builder.Description = Resources.TagHelperPrefixDirective_Description;
+            });
 
         internal static readonly IEnumerable<DirectiveDescriptor> DefaultDirectiveDescriptors = new DirectiveDescriptor[]
         {

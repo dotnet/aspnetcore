@@ -9,7 +9,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
     {
         public static readonly DirectiveDescriptor Directive = DirectiveDescriptor.CreateDirective(
             SyntaxConstants.CSharp.FunctionsKeyword,
-            DirectiveKind.CodeBlock);
+            DirectiveKind.CodeBlock,
+            builder =>
+            {
+                builder.Description = Resources.FunctionsDirective_Description;
+            });
 
         public static void Register(IRazorEngineBuilder builder)
         {

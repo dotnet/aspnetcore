@@ -19,6 +19,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         private AspNetCore.Razor.Language.Legacy.Span _lastAutoCompleteSpan;
         private BackgroundParser _parser;
 
+        // For testing only.
+        internal RazorEditorParser(RazorCodeDocument codeDocument)
+        {
+            CodeDocument = codeDocument;
+        }
+
         public RazorEditorParser(RazorTemplateEngine templateEngine, string filePath)
         {
             if (templateEngine == null)
@@ -51,6 +57,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
         // Internal for testing.
         internal RazorSyntaxTree CurrentSyntaxTree { get; private set; }
+
+        internal RazorCodeDocument CodeDocument { get; private set; }
 
         // Internal for testing.
         internal bool LastResultProvisional { get; private set; }
@@ -156,6 +164,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             using (_parser.SynchronizeMainThreadState())
             {
                 CurrentSyntaxTree = args.CodeDocument.GetSyntaxTree();
+                CodeDocument = args.CodeDocument;
                 _lastChangeOwner = null;
             }
 

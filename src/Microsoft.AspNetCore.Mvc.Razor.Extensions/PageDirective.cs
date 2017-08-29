@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 builder.AddOptionalStringToken();
                 builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+                builder.Description = Resources.PageDirective_Description;
             });
 
         private PageDirective(string routeTemplate, IntermediateNode directiveNode)

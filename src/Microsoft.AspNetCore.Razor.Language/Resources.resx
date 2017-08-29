@@ -243,4 +243,22 @@
   <data name="CodeWriter_InvalidNewLine" xml:space="preserve">
     <value>Invalid newline sequence '{0}'. Support newline sequences are '\r\n' and '\n'.</value>
   </data>
+  <data name="AddTagHelperDirective_Description" xml:space="preserve">
+    <value>Register Tag Helpers for use in the current document.</value>
+  </data>
+  <data name="FunctionsDirective_Description" xml:space="preserve">
+    <value>Specify a C# code block.</value>
+  </data>
+  <data name="InheritsDirective_Description" xml:space="preserve">
+    <value>Specify the base class for the current document.</value>
+  </data>
+  <data name="RemoveTagHelperDirective_Description" xml:space="preserve">
+    <value>Remove Tag Helpers for use in the current document.</value>
+  </data>
+  <data name="SectionDirective_Description" xml:space="preserve">
+    <value>Define a section to be rendered in the configured layout page.</value>
+  </data>
+  <data name="TagHelperPrefixDirective_Description" xml:space="preserve">
+    <value>Specify a prefix that is required in an element name for it to be included in Tag Helper processing.</value>
+  </data>
 </root>

@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 builder.AddTypeToken().AddMemberToken();
                 builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
+                builder.Description = Resources.InjectDirective_Description;
             });
 
         public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)

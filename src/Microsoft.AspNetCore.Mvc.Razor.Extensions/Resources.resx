@@ -120,6 +120,12 @@
   <data name="ArgumentCannotBeNullOrEmpy" xml:space="preserve">
     <value>Value cannot be null or empty.</value>
   </data>
+  <data name="InjectDirective_Description" xml:space="preserve">
+    <value>Declare a property and inject a service from the application's service container into it.</value>
+  </data>
+  <data name="ModelDirective_Description" xml:space="preserve">
+    <value>Specify the view or page model for the current document.</value>
+  </data>
   <data name="MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword" xml:space="preserve">
     <value>The 'inherits' keyword is not allowed when a '{0}' keyword is used.</value>
   </data>
@@ -135,7 +141,13 @@
   <data name="MvcRazorParser_InvalidPropertyType" xml:space="preserve">
     <value>Invalid tag helper property '{0}.{1}'. Dictionary values must not be of type '{2}'.</value>
   </data>
+  <data name="NamespaceDirective_Description" xml:space="preserve">
+    <value>Specify the base namespace for the current document.</value>
+  </data>
   <data name="PageDirectiveCannotBeImported" xml:space="preserve">
     <value>The '@{0}' directive specified in {1} file will not be imported. The directive must appear at the top of each Razor cshtml file.</value>
+  </data>
+  <data name="PageDirective_Description" xml:space="preserve">
+    <value>Declare the current document as a Razor Page.</value>
   </data>
 </root>

@@ -26,6 +26,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private readonly ForegroundDispatcher _dispatcher;
         private RazorSyntaxTreePartialParser _partialParser;
 
+        // For testing only
+        internal VisualStudioRazorParser(RazorCodeDocument codeDocument)
+        {
+            CodeDocument = codeDocument;
+        }
+
         public VisualStudioRazorParser(ForegroundDispatcher dispatcher, ITextBuffer buffer, RazorTemplateEngine templateEngine, string filePath, ICompletionBroker completionBroker)
         {
             if (dispatcher == null)

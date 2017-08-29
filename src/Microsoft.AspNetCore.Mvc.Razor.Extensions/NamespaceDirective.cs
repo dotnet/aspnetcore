@@ -21,6 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             {
                 builder.AddNamespaceToken();
                 builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+                builder.Description = Resources.NamespaceDirective_Description;
             });
 
         public static void Register(IRazorEngineBuilder builder)
