@@ -1,17 +1,25 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.14
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation", "src\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation.csproj", "{4339FC9B-AEC6-442A-B413-A41555ED76C7}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionFiles", "SolutionFiles", "{01707B64-7DC7-4B5A-B0BB-7CD2773AA297}"
 	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		NuGet.config = NuGet.config
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{02F7AA35-91AF-491E-9F0E-03CFAF86C720}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{0398AFFF-505E-4283-89DA-BBD9D28B53DB}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FunctionalTests", "test\FunctionalTests\FunctionalTests.csproj", "{46C9A4B2-8B1C-451B-B670-C194901D66AC}"
 EndProject
@@ -19,12 +27,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Ra
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{87FEE984-F627-4F1E-8995-E5F969B85A19}"
 	ProjectSection(SolutionItems) = preProject
-		build\common-testapps.props = build\common-testapps.props
-		build\common.props = build\common.props
 		build\dependencies.props = build\dependencies.props
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "testapps", "testapps", "{0DC7C88C-E3DB-46DF-B47E-AC5ECB2A16B7}"
+	ProjectSection(SolutionItems) = preProject
+		testapps\Directory.Build.props = testapps\Directory.Build.props
+		testapps\Directory.Build.targets = testapps\Directory.Build.targets
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SimpleApp", "testapps\SimpleApp\SimpleApp.csproj", "{8B7C86DF-FA69-4F3F-A22B-6BFCCBBCEDE0}"
 EndProject
@@ -53,6 +63,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RazorPagesApp", "testapps\RazorPagesApp\RazorPagesApp.csproj", "{779BACC4-B20E-4F73-A9C7-350443CF1941}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{75244EBD-DFBD-4C4B-9543-C135AC142C7F}"
+	ProjectSection(SolutionItems) = preProject
+		tools\Directory.Build.props = tools\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86", "tools\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86\Microsoft.AspNetCore.Mvc.Razor.ViewCompilation-x86.csproj", "{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D}"
 EndProject
@@ -307,5 +320,8 @@ Global
 		{779BACC4-B20E-4F73-A9C7-350443CF1941} = {0DC7C88C-E3DB-46DF-B47E-AC5ECB2A16B7}
 		{DFB86DBD-17DA-4A97-A4FD-00D6E5160B3D} = {75244EBD-DFBD-4C4B-9543-C135AC142C7F}
 		{996D4DEB-1701-435E-8048-1E65790C2050} = {02F7AA35-91AF-491E-9F0E-03CFAF86C720}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {177268A1-F5B2-451E-8ABE-BEF0C572481A}
 	EndGlobalSection
 EndGlobal
