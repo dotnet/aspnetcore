@@ -57,6 +57,9 @@ namespace IdentityOIDCWebApplicationSample
             services.AddTransient<ISmsSender, AuthMessageSender>();
 
             services.AddMvc();
+
+            // Workaround for MSAL.js sending the logout request with the wrong casing.
+            services.Configure<CookieAuthenticationOptions>(IdentityServiceOptions.CookieAuthenticationScheme, c => c.Cookie.Path = "/");
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
