@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>Redis storage support as key store.</Description>
     <VersionPrefix>0.4.0</VersionPrefix>

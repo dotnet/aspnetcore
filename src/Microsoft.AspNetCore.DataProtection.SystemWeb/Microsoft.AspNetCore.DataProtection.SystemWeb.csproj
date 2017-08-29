@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>A component to allow the ASP.NET Core data protection stack to work with the ASP.NET 4.x &lt;machineKey&gt; element.</Description>
     <TargetFramework>net461</TargetFramework>

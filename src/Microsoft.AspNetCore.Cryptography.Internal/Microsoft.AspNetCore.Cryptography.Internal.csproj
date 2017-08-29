@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>Infrastructure for ASP.NET Core cryptographic packages. Applications and libraries should not reference this package directly.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
