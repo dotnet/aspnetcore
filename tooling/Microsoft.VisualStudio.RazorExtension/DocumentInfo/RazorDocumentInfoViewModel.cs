@@ -40,7 +40,7 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
             }
         }
 
-        public ProjectId ProjectId => _documentTracker.ProjectId;
+        public ProjectId ProjectId => _documentTracker.Project?.Id;
 
         public Workspace Workspace => _documentTracker.Workspace;
 
@@ -55,7 +55,6 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
         public TagHelperCompletionService TagHelperCompletionService => RazorLanguageServices?.GetRequiredService<TagHelperCompletionService>();
 
         public TagHelperFactsService TagHelperFactsService => RazorLanguageServices?.GetRequiredService<TagHelperFactsService>();
-
     }
 }
 

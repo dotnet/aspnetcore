@@ -11,5 +11,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public abstract IVsHierarchy GetHierarchy(ITextBuffer textBuffer);
 
         public abstract bool IsSupportedProject(IVsHierarchy hierarchy);
+
+        public abstract string GetProjectPath(IVsHierarchy hierarchy);
     }
 }

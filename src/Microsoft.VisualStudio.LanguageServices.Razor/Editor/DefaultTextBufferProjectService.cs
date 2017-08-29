@@ -61,6 +61,17 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             return hierarchy;
         }
 
+        public override string GetProjectPath(IVsHierarchy hierarchy)
+        {
+            if (hierarchy == null)
+            {
+                throw new ArgumentNullException(nameof(hierarchy));
+            }
+
+            ErrorHandler.ThrowOnFailure(((IVsProject)hierarchy).GetMkDocument((uint)VSConstants.VSITEMID.Root, out var path), VSConstants.E_NOTIMPL);
+            return path;
+        }
+
         public override bool IsSupportedProject(IVsHierarchy hierarchy)
         {
             if (hierarchy == null)

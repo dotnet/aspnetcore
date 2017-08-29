@@ -15,7 +15,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         public abstract bool IsSupportedProject { get; }
 
-        public abstract ProjectId ProjectId { get; }
+        public abstract Project Project { get; }
 
         public abstract Workspace Workspace { get; }
 

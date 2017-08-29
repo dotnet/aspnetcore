@@ -8,9 +8,9 @@ using System.Diagnostics;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.Text.Projection;
 using Microsoft.VisualStudio.Utilities;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
@@ -21,6 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     [Export(typeof(VisualStudioDocumentTrackerFactory))]
     internal class DefaultVisualStudioDocumentTrackerFactory : VisualStudioDocumentTrackerFactory, IWpfTextViewConnectionListener
     {
+        private readonly ProjectSnapshotManager _projectManager;
         private readonly TextBufferProjectService _projectService;
         private readonly Workspace _workspace;
 
@@ -39,6 +40,34 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(workspace));
             }
             
+            _projectService = projectService;
+            _workspace = workspace;
+
+            _projectManager = workspace.Services.GetLanguageServices(RazorLanguage.Name).GetRequiredService<ProjectSnapshotManager>();
+        }
+
+        // This is only for testing. We want to avoid using the actual Roslyn GetService methods in unit tests.
+        internal DefaultVisualStudioDocumentTrackerFactory(
+            ProjectSnapshotManager projectManager,
+            TextBufferProjectService projectService,
+            [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
+        {
+            if (projectManager == null)
+            {
+                throw new ArgumentNullException(nameof(projectManager));
+            }
+
+            if (projectService == null)
+            {
+                throw new ArgumentNullException(nameof(projectService));
+            }
+
+            if (workspace == null)
+            {
+                throw new ArgumentNullException(nameof(workspace));
+            }
+
+            _projectManager = projectManager;
             _projectService = projectService;
             _workspace = workspace;
         }
@@ -96,7 +125,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 DefaultVisualStudioDocumentTracker tracker;
                 if (!textBuffer.Properties.TryGetProperty(typeof(VisualStudioDocumentTracker), out tracker))
                 {
-                    tracker = new DefaultVisualStudioDocumentTracker(_projectService, _workspace, textBuffer);
+                    tracker = new DefaultVisualStudioDocumentTracker(_projectManager, _projectService, _workspace, textBuffer);
                     textBuffer.Properties.AddProperty(typeof(VisualStudioDocumentTracker), tracker);
                 }
 

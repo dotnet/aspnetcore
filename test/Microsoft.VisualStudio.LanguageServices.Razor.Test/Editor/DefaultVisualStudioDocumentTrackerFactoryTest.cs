@@ -5,6 +5,7 @@ using System;
 using System.Collections.ObjectModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -17,9 +18,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 {
     public class DefaultVisualStudioDocumentTrackerFactoryTest
     {
+        private ProjectSnapshotManager ProjectManager { get; } = Mock.Of<ProjectSnapshotManager>(
+            p => p.FindProject(It.IsAny<string>()) == Mock.Of<ProjectSnapshot>() &&
+            p.Subscribe() == Mock.Of<ProjectSnapshotListener>());
+
         private TextBufferProjectService ProjectService { get; } = Mock.Of<TextBufferProjectService>(
-                s => s.GetHierarchy(It.IsAny<ITextBuffer>()) == Mock.Of<IVsHierarchy>() &&
-                s.IsSupportedProject(It.IsAny<IVsHierarchy>()) == true);
+            s => s.GetHierarchy(It.IsAny<ITextBuffer>()) == Mock.Of<IVsHierarchy>() &&
+            s.IsSupportedProject(It.IsAny<IVsHierarchy>()) == true);
 
         private Workspace Workspace { get; } = new AdhocWorkspace();
 
@@ -31,7 +36,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void SubjectBuffersConnected_ForNonRazorTextBuffer_DoesNothing()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
@@ -51,7 +56,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void SubjectBuffersConnected_ForRazorTextBufferWithoutTracker_CreatesTrackerAndTracksTextView()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
@@ -73,7 +78,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void SubjectBuffersConnected_ForRazorTextBufferWithoutTracker_CreatesTrackerAndTracksTextView_ForMultipleBuffers()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
@@ -103,7 +108,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void SubjectBuffersConnected_ForRazorTextBufferWithTracker_DoesNotAddDuplicateTextViewEntry()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
@@ -113,7 +118,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             };
 
             // Preload the buffer's properties with a tracker, so it's like we've already tracked this one.
-            var tracker = new DefaultVisualStudioDocumentTracker(ProjectService, Workspace, buffers[0]);
+            var tracker = new DefaultVisualStudioDocumentTracker(ProjectManager, ProjectService, Workspace, buffers[0]);
             tracker.TextViewsInternal.Add(textView);
             buffers[0].Properties.AddProperty(typeof(VisualStudioDocumentTracker), tracker);
 
@@ -129,7 +134,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void SubjectBuffersConnected_ForRazorTextBufferWithTracker_AddsEntryForADifferentTextView()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
 
             var textView1 = Mock.Of<IWpfTextView>();
             var textView2 = Mock.Of<IWpfTextView>();
@@ -140,7 +145,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             };
 
             // Preload the buffer's properties with a tracker, so it's like we've already tracked this one.
-            var tracker = new DefaultVisualStudioDocumentTracker(ProjectService, Workspace, buffers[0]);
+            var tracker = new DefaultVisualStudioDocumentTracker(ProjectManager, ProjectService, Workspace, buffers[0]);
             tracker.TextViewsInternal.Add(textView1);
             buffers[0].Properties.AddProperty(typeof(VisualStudioDocumentTracker), tracker);
 
@@ -156,7 +161,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void SubjectBuffersDisconnected_ForAnyTextBufferWithTracker_RemovesTextView()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
 
             var textView1 = Mock.Of<IWpfTextView>();
             var textView2 = Mock.Of<IWpfTextView>();
@@ -168,12 +173,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             };
 
             // Preload the buffer's properties with a tracker, so it's like we've already tracked this one.
-            var tracker = new DefaultVisualStudioDocumentTracker(ProjectService, Workspace, buffers[0]);
+            var tracker = new DefaultVisualStudioDocumentTracker(ProjectManager, ProjectService, Workspace, buffers[0]);
             tracker.TextViewsInternal.Add(textView1);
             tracker.TextViewsInternal.Add(textView2);
             buffers[0].Properties.AddProperty(typeof(VisualStudioDocumentTracker), tracker);
 
-            tracker = new DefaultVisualStudioDocumentTracker(ProjectService, Workspace, buffers[1]);
+            tracker = new DefaultVisualStudioDocumentTracker(ProjectManager, ProjectService, Workspace, buffers[1]);
             tracker.TextViewsInternal.Add(textView1);
             tracker.TextViewsInternal.Add(textView2);
             buffers[1].Properties.AddProperty(typeof(VisualStudioDocumentTracker), tracker);
@@ -193,7 +198,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void SubjectBuffersDisconnected_ForAnyTextBufferWithoutTracker_DoesNothing()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
@@ -213,7 +218,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void GetTracker_ForRazorTextBufferWithTracker_ReturnsTheFirstTracker()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
 
             var buffers = new Collection<ITextBuffer>()
             {
@@ -225,7 +230,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             var textView = Mock.Of<IWpfTextView>(v => v.BufferGraph == bufferGraph);
 
             // Preload the buffer's properties with a tracker, so it's like we've already tracked this one.
-            var tracker = new DefaultVisualStudioDocumentTracker(ProjectService, Workspace, buffers[0]);
+            var tracker = new DefaultVisualStudioDocumentTracker(ProjectManager, ProjectService, Workspace, buffers[0]);
             tracker.TextViewsInternal.Add(textView);
             buffers[0].Properties.AddProperty(typeof(VisualStudioDocumentTracker), tracker);
 
@@ -240,7 +245,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void GetTracker_WithoutRazorBuffer_ReturnsNull()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
 
             var buffers = new Collection<ITextBuffer>();
 
