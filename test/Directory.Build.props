@@ -2,9 +2,9 @@
   <Import Project="..\Directory.Build.props" />
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" />
+    <PackageReference Include="xunit" />
+    <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
 </Project>
