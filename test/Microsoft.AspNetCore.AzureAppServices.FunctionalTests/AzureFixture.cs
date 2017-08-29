@@ -18,6 +18,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Rest;
 using Newtonsoft.Json.Linq;
+using OperatingSystem = Microsoft.Azure.Management.AppService.Fluent.OperatingSystem;
 
 namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 {
@@ -64,7 +65,8 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             Plan = Azure.AppServices.AppServicePlans.Define(servicePlanName)
                 .WithRegion(Region.USWest2)
                 .WithExistingResourceGroup(ResourceGroup)
-                .WithFreePricingTier()
+                .WithPricingTier(PricingTier.BasicB1)
+                .WithOperatingSystem(OperatingSystem.Windows)
                 .Create();
         }
 

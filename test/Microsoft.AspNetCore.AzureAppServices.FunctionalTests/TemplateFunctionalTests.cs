@@ -34,49 +34,15 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
         }
 
         [Theory]
-        [InlineData("web", "Hello World!")]
-        [InlineData("razor", "Learn how to build ASP.NET apps that can run anywhere.")]
-        [InlineData("mvc", "Learn how to build ASP.NET apps that can run anywhere.")]
-        public async Task DotnetNewWebRunsInWebApp(string template, string expected)
+        [InlineData("2.0", "web", "Hello World!")]
+        [InlineData("2.0", "razor", "Learn how to build ASP.NET apps that can run anywhere.")]
+        [InlineData("2.0", "mvc", "Learn how to build ASP.NET apps that can run anywhere.")]
+        [InlineData("latest", "web", "Hello World!")]
+        [InlineData("latest", "razor", "Learn how to build ASP.NET apps that can run anywhere.")]
+        [InlineData("latest", "mvc", "Learn how to build ASP.NET apps that can run anywhere.")]
+        public async Task DotnetNewWebRunsWebAppOnLatestRuntime(string dotnetVersion, string template, string expected)
         {
-            var testId = nameof(DotnetNewWebRunsInWebApp) + template;
-
-            using (var logger = GetLogger(testId))
-            {
-                var site = await _fixture.Deploy("Templates\\BasicAppServices.json", baseName: testId);
-                var testDirectory = GetTestDirectory(testId);
-                var dotnet = DotNet(logger, testDirectory, "2.0");
-
-                await dotnet.ExecuteAndAssertAsync("new " + template);
-
-                InjectMiddlware(testDirectory, RuntimeInformationMiddlewareType, RuntimeInformationMiddlewareFile);
-
-                await site.BuildPublishProfileAsync(testDirectory.FullName);
-
-                await dotnet.ExecuteAndAssertAsync("publish /p:PublishProfile=Profile");
-
-                using (var httpClient = site.CreateClient())
-                {
-                    var getResult = await httpClient.GetAsync("/");
-                    getResult.EnsureSuccessStatusCode();
-                    Assert.Contains(expected, await getResult.Content.ReadAsStringAsync());
-
-                    getResult = await httpClient.GetAsync("/runtimeInfo");
-                    getResult.EnsureSuccessStatusCode();
-
-                    var runtimeInfo = JsonConvert.DeserializeObject<RuntimeInfo>(await getResult.Content.ReadAsStringAsync());
-                    ValidateRuntimeInfo(runtimeInfo, dotnet.Command);
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData("web", "Hello World!")]
-        [InlineData("razor", "Learn how to build ASP.NET apps that can run anywhere.")]
-        [InlineData("mvc", "Learn how to build ASP.NET apps that can run anywhere.")]
-        public async Task DotnetNewWebRunsWebAppOnLatestRuntime(string template, string expected)
-        {
-            var testId = nameof(DotnetNewWebRunsWebAppOnLatestRuntime) + template;
+            var testId = nameof(DotnetNewWebRunsWebAppOnLatestRuntime) + template + dotnetVersion.Replace('.', '_');
 
             using (var logger = GetLogger(testId))
             {
@@ -90,15 +56,13 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                     });
 
                 var testDirectory = GetTestDirectory(testId);
-                var dotnet = DotNet(logger, testDirectory, "latest");
+                var dotnet = DotNet(logger, testDirectory, dotnetVersion);
 
                 await dotnet.ExecuteAndAssertAsync("new " + template);
 
                 InjectMiddlware(testDirectory, RuntimeInformationMiddlewareType, RuntimeInformationMiddlewareFile);
 
                 FixAspNetCoreVersion(testDirectory, dotnet.Command);
-
-                await dotnet.ExecuteAndAssertAsync("restore");
 
                 await site.BuildPublishProfileAsync(testDirectory.FullName);
 
@@ -198,21 +162,21 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             return new TestLogger(factory, factory.CreateLogger(callerName));
         }
 
-        private TestCommand DotNet(TestLogger logger, DirectoryInfo workingDirectory, string sufix)
+        private TestCommand DotNet(TestLogger logger, DirectoryInfo workingDirectory, string suffix)
         {
-            return new TestCommand(GetDotNetPath(sufix))
+            return new TestCommand(GetDotNetPath(suffix))
             {
                 Logger = logger,
                 WorkingDirectory = workingDirectory.FullName
             };
         }
 
-        private static string GetDotNetPath(string sufix)
+        private static string GetDotNetPath(string suffix)
         {
             var current = new DirectoryInfo(Directory.GetCurrentDirectory());
             while (current != null)
             {
-                var dotnetSubdir = new DirectoryInfo(Path.Combine(current.FullName, ".test-dotnet", sufix));
+                var dotnetSubdir = new DirectoryInfo(Path.Combine(current.FullName, ".test-dotnet", suffix));
                 if (dotnetSubdir.Exists)
                 {
                     var dotnetName = Path.Combine(dotnetSubdir.FullName, "dotnet.exe");

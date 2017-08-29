@@ -10,12 +10,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <DotNetCoreSdk Include="coherent" Channel="master" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="x86" Condition="'$(AntaresSiteExtension)' != ''"/>
-    <DotNetCoreSdk Include="coherent" Channel="master" InstallDir="$(TestDotNetPath)latest\" Condition="'$(AntaresTests)' != ''"/>
     <DotNetCoreSdk Include="2.0.0" InstallDir="$(TestDotNetPath)2.0\" Condition="'$(AntaresTests)' != ''"/>
+    <DotNetCoreSdk Include="coherent" Channel="master" InstallDir="$(TestDotNetPath)latest\" Condition="'$(AntaresTests)' != ''"/>
   </ItemGroup>
 
-  <Target Name="BuildSiteExtension" DependsOnTargets="InstallDotNet">
+  <Target Name="_AddSiteExtensionRuntimes">
+    <ItemGroup>
+      <DotNetCoreSdk Include="coherent" Channel="master" InstallDir="$(SiteExtensionWorkingDirectory)" Arch="x86" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="BuildSiteExtension" DependsOnTargets="_AddSiteExtensionRuntimes;InstallDotNet">
 
     <PropertyGroup>
       <CliVersionRelativePath>build\dotnet.version</CliVersionRelativePath>
