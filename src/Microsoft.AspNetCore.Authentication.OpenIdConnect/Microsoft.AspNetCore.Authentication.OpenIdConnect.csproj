@@ -1,4 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <Description>ASP.NET Core middleware that enables an application to support the OpenID Connect authentication workflow.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
@@ -6,8 +7,13 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;authentication;security</PackageTags>
   </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Authentication.OAuth\Microsoft.AspNetCore.Authentication.OAuth.csproj" />
-    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="$(IdentityModelOpenIdVersion)" />
   </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" />
+  </ItemGroup>
+
 </Project>

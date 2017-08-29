@@ -10,9 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Owin.Security.Cookies" Version="$(OwinVersion)" />
-    <PackageReference Include="Microsoft.Owin.Testing" Version="$(OwinVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+    <PackageReference Include="Microsoft.Owin.Security.Cookies" />
+    <PackageReference Include="Microsoft.Owin.Testing" />
   </ItemGroup>
 
 </Project>

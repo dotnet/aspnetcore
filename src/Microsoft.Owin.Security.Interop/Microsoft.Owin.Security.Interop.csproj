@@ -9,8 +9,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Owin.Security" Version="$(OwinVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
+    <PackageReference Include="Microsoft.Owin.Security" />
   </ItemGroup>
 
 </Project>
