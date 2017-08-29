@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>A compatibility layer for sharing authentication tickets between Microsoft.Owin.Security and Microsoft.AspNetCore.Authentication.</Description>
     <TargetFramework>net461</TargetFramework>

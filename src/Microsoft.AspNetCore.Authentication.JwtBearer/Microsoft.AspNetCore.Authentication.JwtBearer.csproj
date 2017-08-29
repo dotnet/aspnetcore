@@ -1,5 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="..\..\build\common.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>ASP.NET Core middleware that enables an application to receive an OpenID Connect bearer token.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>

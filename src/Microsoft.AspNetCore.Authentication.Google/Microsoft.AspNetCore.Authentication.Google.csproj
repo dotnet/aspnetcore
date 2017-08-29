@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>ASP.NET Core contains middleware to support Google's OpenId and OAuth 2.0 authentication workflows.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>

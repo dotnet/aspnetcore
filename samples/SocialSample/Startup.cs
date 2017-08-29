@@ -415,7 +415,7 @@ namespace SocialSample
                 }
 
                 await response.WriteAsync("Tokens:<br>");
-                
+
                 await response.WriteAsync("Access Token: " + await context.GetTokenAsync("access_token") + "<br>");
                 await response.WriteAsync("Refresh Token: " + await context.GetTokenAsync("refresh_token") + "<br>");
                 await response.WriteAsync("Token Type: " + await context.GetTokenAsync("token_type") + "<br>");
@@ -426,19 +426,19 @@ namespace SocialSample
             });
         }
 
-        private async Task<OAuthOptions> GetOAuthOptionsAsync(HttpContext context, string currentAuthType)
+        private Task<OAuthOptions> GetOAuthOptionsAsync(HttpContext context, string currentAuthType)
         {
             if (string.Equals(GoogleDefaults.AuthenticationScheme, currentAuthType))
             {
-                return context.RequestServices.GetRequiredService<IOptionsMonitor<GoogleOptions>>().Get(currentAuthType);
+                return Task.FromResult<OAuthOptions>(context.RequestServices.GetRequiredService<IOptionsMonitor<GoogleOptions>>().Get(currentAuthType));
             }
             else if (string.Equals(MicrosoftAccountDefaults.AuthenticationScheme, currentAuthType))
             {
-                return context.RequestServices.GetRequiredService<IOptionsMonitor<MicrosoftAccountOptions>>().Get(currentAuthType);
+                return Task.FromResult<OAuthOptions>(context.RequestServices.GetRequiredService<IOptionsMonitor<MicrosoftAccountOptions>>().Get(currentAuthType));
             }
             else if (string.Equals(FacebookDefaults.AuthenticationScheme, currentAuthType))
             {
-                return context.RequestServices.GetRequiredService<IOptionsMonitor<FacebookOptions>>().Get(currentAuthType);
+                return Task.FromResult<OAuthOptions>(context.RequestServices.GetRequiredService<IOptionsMonitor<FacebookOptions>>().Get(currentAuthType));
             }
 
             throw new NotImplementedException(currentAuthType);
