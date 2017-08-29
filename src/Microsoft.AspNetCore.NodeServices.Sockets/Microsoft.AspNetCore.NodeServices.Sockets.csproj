@@ -12,7 +12,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.NodeServices\Microsoft.AspNetCore.NodeServices.csproj" />
-    <PackageReference Include="System.Threading.Tasks.Dataflow" Version="$(ThreadingDataflowVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="System.Threading.Tasks.Dataflow" />
   </ItemGroup>
 
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">
