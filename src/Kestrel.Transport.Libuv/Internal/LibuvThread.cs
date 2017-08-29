@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private Queue<CloseHandle> _closeHandleAdding = new Queue<CloseHandle>(256);
         private Queue<CloseHandle> _closeHandleRunning = new Queue<CloseHandle>(256);
         private readonly object _workSync = new object();
+        private readonly object _closeHandleSync = new object();
         private readonly object _startSync = new object();
         private bool _stopImmediate = false;
         private bool _initCompleted = false;
@@ -170,14 +171,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         public void Post<T>(Action<T> callback, T state)
         {
+            var work = new Work
+            {
+                CallbackAdapter = CallbackAdapter<T>.PostCallbackAdapter,
+                Callback = callback,
+                State = state
+            };
+
             lock (_workSync)
             {
-                _workAdding.Enqueue(new Work
-                {
-                    CallbackAdapter = CallbackAdapter<T>.PostCallbackAdapter,
-                    Callback = callback,
-                    State = state
-                });
+                _workAdding.Enqueue(work);
             }
             _post.Send();
         }
@@ -190,15 +193,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public Task PostAsync<T>(Action<T> callback, T state)
         {
             var tcs = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
+            var work = new Work
+            {
+                CallbackAdapter = CallbackAdapter<T>.PostAsyncCallbackAdapter,
+                Callback = callback,
+                State = state,
+                Completion = tcs
+            };
+
             lock (_workSync)
             {
-                _workAdding.Enqueue(new Work
-                {
-                    CallbackAdapter = CallbackAdapter<T>.PostAsyncCallbackAdapter,
-                    Callback = callback,
-                    State = state,
-                    Completion = tcs
-                });
+                _workAdding.Enqueue(work);
             }
             _post.Send();
             return tcs.Task;
@@ -226,9 +231,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
 
         private void EnqueueCloseHandle(Action<IntPtr> callback, IntPtr handle)
         {
-            lock (_workSync)
+            var closeHandle = new CloseHandle { Callback = callback, Handle = handle };
+            lock (_closeHandleSync)
             {
-                _closeHandleAdding.Enqueue(new CloseHandle { Callback = callback, Handle = handle });
+                _closeHandleAdding.Enqueue(closeHandle);
             }
         }
 
@@ -352,7 +358,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         private bool DoPostCloseHandle()
         {
             Queue<CloseHandle> queue;
-            lock (_workSync)
+            lock (_closeHandleSync)
             {
                 queue = _closeHandleAdding;
                 _closeHandleAdding = _closeHandleRunning;
