@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                         Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                         Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                        Factory.MetaCode(Environment.NewLine).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                        Factory.Span(SpanKindInternal.None, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                     Factory.EmptyHtml(),
                     new DirectiveBlock(new DirectiveChunkGenerator(descriptor),
                         Factory.CodeTransition(),
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                         Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                         Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                        Factory.MetaCode(Environment.NewLine).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                        Factory.Span(SpanKindInternal.None, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                     Factory.EmptyHtml(),
                     new DirectiveBlock(chunkGenerator,
                         Factory.CodeTransition(),
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                         Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                         Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(customDescriptor.Tokens[0]),
-                        Factory.MetaCode(Environment.NewLine).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                        Factory.Span(SpanKindInternal.None, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                     Factory.EmptyHtml(),
                     new DirectiveBlock(new DirectiveChunkGenerator(somethingDescriptor),
                         Factory.CodeTransition(),
@@ -178,14 +178,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                         Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                         Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(customDescriptor.Tokens[0]),
-                        Factory.MetaCode(Environment.NewLine).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                        Factory.Span(SpanKindInternal.None, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                     Factory.Markup(Environment.NewLine),
                     new DirectiveBlock(new DirectiveChunkGenerator(somethingDescriptor),
                         Factory.CodeTransition(),
                         Factory.MetaCode("something").Accepts(AcceptedCharactersInternal.None),
                         Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                         Factory.Span(SpanKindInternal.Code, "Else", markup: false).AsDirectiveToken(somethingDescriptor.Tokens[0]),
-                        Factory.MetaCode(Environment.NewLine).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                        Factory.Span(SpanKindInternal.None, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                     Factory.Markup(Environment.NewLine),
                     BlockFactory.MarkupTagBlock("<p>"),
                     Factory.Markup("This is extra"),
@@ -421,7 +421,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                         Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                         Factory.Span(SpanKindInternal.Code, "System.Text.Encoding.ASCIIEncoding", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                        Factory.MetaCode(Environment.NewLine).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                        Factory.Span(SpanKindInternal.None, Environment.NewLine, markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)),
                     Factory.EmptyCSharp().AsStatement(),
                     Factory.MetaCode("}").Accepts(AcceptedCharactersInternal.None)));
         }
@@ -748,7 +748,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Span(SpanKindInternal.Code, "       ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                     Factory.Span(SpanKindInternal.Code, "Some_Member", markup: false).AsDirectiveToken(descriptor.Tokens[1]),
 
-                    Factory.MetaCode("    ").Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                    Factory.Span(SpanKindInternal.None, "    ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -796,7 +796,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                     Factory.Span(SpanKindInternal.Code, "\"hello\"", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                    Factory.MetaCode(" ;  ").Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                    Factory.Span(SpanKindInternal.None, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.MetaCode(";").Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.None, "  ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Theory]
@@ -872,7 +874,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.MetaCode("custom").Accepts(AcceptedCharactersInternal.None),
                     Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                     Factory.Span(SpanKindInternal.Code, "(bool, int?)", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
-                    Factory.MetaCode("   ").Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                    Factory.Span(SpanKindInternal.None, "   ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]
@@ -901,7 +903,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.Span(SpanKindInternal.Markup, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
                     Factory.Span(SpanKindInternal.Code, "\"hello\"", markup: false).AsDirectiveToken(descriptor.Tokens[0]),
 
-                    Factory.MetaCode(" ").Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                    Factory.Span(SpanKindInternal.None, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
         }
 
         [Fact]

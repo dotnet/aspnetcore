@@ -9,6 +9,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         MetaCode,
         Comment,
         Code,
-        Markup
+        Markup,
+        None
     }
 }

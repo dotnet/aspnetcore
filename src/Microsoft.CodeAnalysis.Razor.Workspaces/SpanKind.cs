@@ -9,6 +9,7 @@ namespace Microsoft.CodeAnalysis.Razor
         MetaCode,
         Comment,
         Code,
-        Markup
+        Markup,
+        None
     }
 }

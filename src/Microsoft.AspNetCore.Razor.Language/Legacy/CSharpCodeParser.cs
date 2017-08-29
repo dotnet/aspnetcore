@@ -1753,7 +1753,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 switch (descriptor.Kind)
                 {
                     case DirectiveKind.SingleLine:
+                        Output(SpanKindInternal.None, AcceptedCharactersInternal.WhiteSpace);
+
                         Optional(CSharpSymbolType.Semicolon);
+                        Span.ChunkGenerator = SpanChunkGenerator.Null;
+                        Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.WhiteSpace);
+
                         AcceptWhile(IsSpacingToken(includeNewLines: false, includeComments: true));
 
                         if (At(CSharpSymbolType.NewLine))
@@ -1768,7 +1773,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                 CurrentSymbol.Content.Length);
                         }
 
-                        Output(SpanKindInternal.MetaCode, AcceptedCharactersInternal.WhiteSpace);
+                        Span.ChunkGenerator = SpanChunkGenerator.Null;
+                        Output(SpanKindInternal.None, AcceptedCharactersInternal.WhiteSpace);
                         break;
                     case DirectiveKind.RazorBlock:
                         AcceptWhile(IsSpacingToken(includeNewLines: true, includeComments: true));
