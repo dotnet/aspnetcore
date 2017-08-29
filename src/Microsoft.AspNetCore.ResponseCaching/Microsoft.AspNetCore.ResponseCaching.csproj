@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>ASP.NET Core middleware for caching HTTP responses on the server.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
