@@ -86,21 +86,37 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
         private void ValidateRuntimeInfo(RuntimeInfo runtimeInfo, string dotnetPath)
         {
             var storeModules = PathUtilities.GetStoreModules(dotnetPath);
-
-            var runtimeModules = PathUtilities.GetSharedRuntimeAssemblies(dotnetPath);
+            var runtimeModules = PathUtilities.GetSharedRuntimeAssemblies(dotnetPath, out var runtimeVersion);
 
             foreach (var runtimeInfoModule in runtimeInfo.Modules)
             {
-                if (storeModules.Any(f => runtimeInfoModule.ModuleName.StartsWith(f, StringComparison.InvariantCultureIgnoreCase)))
+                var moduleName = Path.GetFileNameWithoutExtension(runtimeInfoModule.ModuleName);
+
+                // Check if module should come from the store, verify that one of the expected versions is loaded
+                var storeModule = storeModules.SingleOrDefault(f => moduleName.Equals(f.Name, StringComparison.InvariantCultureIgnoreCase));
+                if (storeModule != null)
                 {
-                    Assert.Contains("store\\x86\\netcoreapp2.0\\", runtimeInfoModule.FileName);
+                    var expectedVersion = false;
+                    foreach (var version in storeModule.Versions)
+                    {
+                        var expectedModulePath = $"store\\x86\\netcoreapp2.0\\{storeModule.Name}\\{version}";
+
+                        if (runtimeInfoModule.FileName.IndexOf(expectedModulePath, StringComparison.InvariantCultureIgnoreCase) != -1)
+                        {
+                            expectedVersion = true;
+                            break;
+                        }
+                    }
+
+                    Assert.True(expectedVersion, $"{runtimeInfoModule.FileName} doesn't match expected versions: {string.Join(",", storeModule.Versions)}");
                 }
 
+                // Verify that modules that we expect to come from runtime actually come from there
                 // Native modules would prefer to be loaded from windows folder, skip them
-                if (runtimeModules.Any(f => runtimeInfoModule.ModuleName.StartsWith(f, StringComparison.InvariantCultureIgnoreCase)) &&
+                if (runtimeModules.Any(rutimeModule => runtimeInfoModule.ModuleName.Equals(rutimeModule, StringComparison.InvariantCultureIgnoreCase)) &&
                     runtimeInfoModule.FileName.IndexOf("windows\\system32", StringComparison.InvariantCultureIgnoreCase) == -1)
                 {
-                    Assert.Contains("shared\\Microsoft.NETCore.App\\", runtimeInfoModule.FileName);
+                    Assert.Contains($"shared\\Microsoft.NETCore.App\\{runtimeVersion}", runtimeInfoModule.FileName);
                 }
             }
         }
