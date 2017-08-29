@@ -29,7 +29,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     Factory.EmptyHtml(),
                     new DirectiveBlock(chunkGenerator,
                         Factory.CodeTransition(),
-                        Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None)),
+                        Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
+                        Factory.Span(SpanKindInternal.Code, string.Empty, CSharpSymbolType.Unknown)
+                            .AsDirectiveToken(DirectiveTokenDescriptor.CreateToken(DirectiveTokenKind.Type))),
                     Factory.EmptyHtml()));
         }
 
@@ -69,7 +71,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new DirectiveBlock(chunkGenerator,
                         Factory.CodeTransition(),
                         Factory.MetaCode("inherits").Accepts(AcceptedCharactersInternal.None),
-                        Factory.Span(SpanKindInternal.Code, "                ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace)),
+                        Factory.Span(SpanKindInternal.Code, "                ", CSharpSymbolType.WhiteSpace).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                        Factory.Span(SpanKindInternal.Code, string.Empty, CSharpSymbolType.Unknown)
+                            .AsDirectiveToken(DirectiveTokenDescriptor.CreateToken(DirectiveTokenKind.Type))),
                     Factory.Markup(Environment.NewLine + "foo")));
         }
 

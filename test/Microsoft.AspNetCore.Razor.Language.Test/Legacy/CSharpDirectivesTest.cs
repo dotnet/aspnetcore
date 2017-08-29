@@ -1747,7 +1747,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     new DirectiveChunkGenerator(descriptor),
                     Factory.CodeTransition(),
                     Factory.MetaCode("TestDirective").Accepts(AcceptedCharactersInternal.None),
-                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace)));
+                    Factory.Span(SpanKindInternal.Code, " ", markup: false).Accepts(AcceptedCharactersInternal.WhiteSpace),
+                    Factory.Span(SpanKindInternal.Code, string.Empty, CSharpSymbolType.Unknown)
+                        .AsDirectiveToken(descriptor.Tokens[0])));
         }
 
         [Fact]

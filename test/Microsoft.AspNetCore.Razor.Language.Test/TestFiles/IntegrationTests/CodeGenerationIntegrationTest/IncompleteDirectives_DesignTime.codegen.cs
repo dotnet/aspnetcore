@@ -43,6 +43,18 @@ global::System.Object __typeHelper = "";
 global::System.Object __typeHelper = ";
         }
         ))();
+        ((System.Action)(() => {
+ }
+        ))();
+        ((System.Action)(() => {
+ }
+        ))();
+        ((System.Action)(() => {
+ }
+        ))();
+        ((System.Action)(() => {
+ }
+        ))();
         }
         #pragma warning restore 219
         #pragma warning disable 0414

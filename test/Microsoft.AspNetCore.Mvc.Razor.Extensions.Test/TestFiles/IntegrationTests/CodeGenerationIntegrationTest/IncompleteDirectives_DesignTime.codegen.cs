@@ -16,8 +16,29 @@ namespace AspNetCore
         #pragma warning disable 219
         private void __RazorDirectiveTokenHelpers__() {
         ((System.Action)(() => {
+ }
+        ))();
+        ((System.Action)(() => {
+ }
+        ))();
+        ((System.Action)(() => {
+ }
+        ))();
+        ((System.Action)(() => {
+ }
+        ))();
+        ((System.Action)(() => {
 MyService<TModel> __typeHelper = default(MyService<TModel>);
         }
+        ))();
+        ((System.Action)(() => {
+ }
+        ))();
+        ((System.Action)(() => {
+ }
+        ))();
+        ((System.Action)(() => {
+ }
         ))();
         }
         #pragma warning restore 219

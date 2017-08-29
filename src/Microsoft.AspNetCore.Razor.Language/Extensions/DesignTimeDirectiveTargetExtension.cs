@@ -57,6 +57,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 {
                     case DirectiveTokenKind.Type:
 
+                        if (string.IsNullOrEmpty(node.Content))
+                        {
+                            // This is most likely a marker symbol.
+                            WriteMarkerSymbol(context, node);
+                            break;
+                        }
+
                         // {node.Content} __typeHelper = default({node.Content});
 
                         context.AddSourceMappingFor(node);
@@ -70,6 +77,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         break;
 
                     case DirectiveTokenKind.Member:
+
+                        if (string.IsNullOrEmpty(node.Content))
+                        {
+                            // This is most likely a marker symbol.
+                            WriteMarkerSymbol(context, node);
+                            break;
+                        }
 
                         // global::System.Object {node.content} = null;
 
@@ -85,6 +99,13 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                         break;
 
                     case DirectiveTokenKind.Namespace:
+
+                        if (string.IsNullOrEmpty(node.Content))
+                        {
+                            // This is most likely a marker symbol.
+                            WriteMarkerSymbol(context, node);
+                            break;
+                        }
 
                         // global::System.Object __typeHelper = nameof({node.Content});
 
@@ -132,6 +153,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                 context.CodeWriter.CurrentIndent = originalIndent;
             }
             context.CodeWriter.WriteLine("))();");
+        }
+
+        private void WriteMarkerSymbol(CodeRenderingContext context, DirectiveTokenIntermediateNode node)
+        {
+            // We want to map marker symbols to a location in the generated document
+            // that will provide CSharp intellisense.
+            context.AddSourceMappingFor(node);
+            context.CodeWriter.Write(" ");
         }
     }
 }

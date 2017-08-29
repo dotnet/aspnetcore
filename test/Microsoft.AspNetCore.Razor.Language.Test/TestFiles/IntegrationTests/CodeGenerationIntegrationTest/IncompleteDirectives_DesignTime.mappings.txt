@@ -43,3 +43,23 @@ Source Location: (250:12,17 [1] TestFiles/IntegrationTests/CodeGenerationIntegra
 Generated Location: (1240:42,37 [1] )
 |"|
 
+Source Location: (264:14,9 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
+||
+Generated Location: (1304:46,0 [0] )
+||
+
+Source Location: (276:15,10 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
+||
+Generated Location: (1357:49,0 [0] )
+||
+
+Source Location: (315:20,8 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
+||
+Generated Location: (1410:52,0 [0] )
+||
+
+Source Location: (326:21,9 [0] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/IncompleteDirectives.cshtml)
+||
+Generated Location: (1463:55,0 [0] )
+||
+

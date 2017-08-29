@@ -26,6 +26,7 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
                 MalformedDirective - (113:6,0 [6] IncompleteDirectives.cshtml) - model
+                    DirectiveToken - (119:6,6 [0] IncompleteDirectives.cshtml) - 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(119, 2, true);
                 HtmlContent - (119:6,6 [2] IncompleteDirectives.cshtml)
@@ -33,6 +34,7 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
                 MalformedDirective - (121:7,0 [7] IncompleteDirectives.cshtml) - model
+                    DirectiveToken - (128:7,7 [0] IncompleteDirectives.cshtml) - 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(128, 4, true);
                 HtmlContent - (128:7,7 [4] IncompleteDirectives.cshtml)
@@ -40,6 +42,7 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
                 MalformedDirective - (132:9,0 [7] IncompleteDirectives.cshtml) - inject
+                    DirectiveToken - (139:9,7 [0] IncompleteDirectives.cshtml) - 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(139, 2, true);
                 HtmlContent - (139:9,7 [2] IncompleteDirectives.cshtml)
@@ -47,6 +50,7 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
                 MalformedDirective - (141:10,0 [8] IncompleteDirectives.cshtml) - inject
+                    DirectiveToken - (149:10,8 [0] IncompleteDirectives.cshtml) - 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(149, 2, true);
                 HtmlContent - (149:10,8 [2] IncompleteDirectives.cshtml)
@@ -55,6 +59,7 @@ Document -
                     IntermediateToken -  - CSharp - EndContext();
                 MalformedDirective - (151:11,0 [25] IncompleteDirectives.cshtml) - inject
                     DirectiveToken - (159:11,8 [17] IncompleteDirectives.cshtml) - MyService<TModel>
+                    DirectiveToken - (176:11,25 [0] IncompleteDirectives.cshtml) - 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(176, 4, true);
                 HtmlContent - (176:11,25 [4] IncompleteDirectives.cshtml)
@@ -62,6 +67,7 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
                 MalformedDirective - (180:13,0 [10] IncompleteDirectives.cshtml) - namespace
+                    DirectiveToken - (190:13,10 [0] IncompleteDirectives.cshtml) - 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(190, 2, true);
                 HtmlContent - (190:13,10 [2] IncompleteDirectives.cshtml)
@@ -69,6 +75,7 @@ Document -
                 CSharpCode - 
                     IntermediateToken -  - CSharp - EndContext();
                 MalformedDirective - (192:14,0 [11] IncompleteDirectives.cshtml) - namespace
+                    DirectiveToken - (203:14,11 [0] IncompleteDirectives.cshtml) - 
                 CSharpCode - 
                     IntermediateToken -  - CSharp - BeginContext(203, 2, true);
                 HtmlContent - (203:14,11 [2] IncompleteDirectives.cshtml)

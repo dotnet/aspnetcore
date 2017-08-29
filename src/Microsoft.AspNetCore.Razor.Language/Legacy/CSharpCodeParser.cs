@@ -1665,6 +1665,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                     {
                         Span.ChunkGenerator = SpanChunkGenerator.Null;
                         Output(SpanKindInternal.Code, AcceptedCharactersInternal.WhiteSpace);
+
+                        if (EndOfFile || At(CSharpSymbolType.NewLine))
+                        {
+                            // Add a marker symbol to provide CSharp intellisense when we start typing the directive token.
+                            AddMarkerSymbolIfNecessary();
+                            Span.ChunkGenerator = new DirectiveTokenChunkGenerator(tokenDescriptor);
+                            Span.EditHandler = new DirectiveTokenEditHandler(Language.TokenizeString);
+                            Output(SpanKindInternal.Code, AcceptedCharactersInternal.NonWhiteSpace);
+                        }
                     }
                     else
                     {
