@@ -13,7 +13,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="WindowsAzure.Storage" Version="$(WindowsAzureStorageVersion)" />
+    <PackageReference Include="WindowsAzure.Storage" />
   </ItemGroup>
 
 </Project>
