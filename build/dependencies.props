@@ -1,6 +1,8 @@
 <Project>
   <PropertyGroup>
-    <XunitAnalyzersVersion>0.6.1</XunitAnalyzersVersion>
+    <InternalAspNetCoreSdkVersion>2.1.1-*</InternalAspNetCoreSdkVersion>
+    <TestSdkVersion>15.3.0</TestSdkVersion>
     <XunitVersion>2.3.0-beta4-build3742</XunitVersion>
+    <XunitAnalyzersVersion>0.6.1</XunitAnalyzersVersion>
   </PropertyGroup>
 </Project>
