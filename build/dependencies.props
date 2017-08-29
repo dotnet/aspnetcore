@@ -98,6 +98,7 @@
     <ExternalDependency Include="System.IO.Ports" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Json" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Net.Http" Version="4.3.2" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Numerics.Vectors" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Reactive.Linq" Version="3.1.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Reflection.DispatchProxy" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
