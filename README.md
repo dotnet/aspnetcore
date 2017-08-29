@@ -16,8 +16,8 @@ The JavaScript client is being published to our dev npm registry as @aspnet/sign
 - Create an .npmrc file with the following line:
   `@aspnet:registry=https://dotnet.myget.org/f/aspnetcore-ci-dev/npm/`
 - Run:
-  `npm install @apsnet/signalr-client`
-  
+  `npm install @aspnet/signalr-client`
+
 Alternatively, if you don't want to create the .npmrc file run the following commands:
 ```
 npm install msgpack5
