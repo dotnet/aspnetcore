@@ -1,6 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\..\build\common.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
@@ -18,13 +16,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Testing" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSdkVersion)" />
-    <PackageReference Include="xunit" Version="$(XunitVersion)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitVersion)" />
   </ItemGroup>
 
 </Project>

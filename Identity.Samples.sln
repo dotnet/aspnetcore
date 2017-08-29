@@ -1,10 +1,16 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26820.0
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0F647068-6602-4E24-B1DC-8ED91481A50A}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{52D59F18-62D2-4D17-8CF2-BE192445AF8E}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Identity", "src\Microsoft.AspNetCore.Identity\Microsoft.AspNetCore.Identity.csproj", "{1729302E-A58E-4652-B639-5B6B68DA2748}"
 EndProject
@@ -69,6 +75,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspnetCore.Identity.Service.FunctionalTests", "test\Microsoft.AspnetCore.Identity.Service.FunctionalTests\Microsoft.AspnetCore.Identity.Service.FunctionalTests.csproj", "{6E3E1BE7-CEAF-4565-AA0A-F5BE3FA7F39C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NativeWPFClient", "samples\NativeWPFClient\NativeWPFClient.csproj", "{39AA4E4D-5E62-4213-8641-BF8012D45DE4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{933911BB-C4A2-40FE-B5FB-F6222B0CD609}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

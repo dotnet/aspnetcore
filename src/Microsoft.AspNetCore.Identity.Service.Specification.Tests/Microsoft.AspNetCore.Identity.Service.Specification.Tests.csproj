@@ -1,6 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\..\build\common.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Shared test suite for Asp.Net Identity Core as a service store implementations.</Description>
