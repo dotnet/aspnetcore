@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Xunit;
@@ -57,6 +58,16 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
 
             // Assert
             Assert.Equal("antiforgery", cookieName);
+        }
+
+        [Fact]
+        public void AntiforgeryOptions_SetsCookieSecurePolicy_ToNone_ByDefault()
+        {
+            // Arrange & Act
+            var options = new AntiforgeryOptions();
+
+            // Assert
+            Assert.Equal(CookieSecurePolicy.None, options.Cookie.SecurePolicy);
         }
     }
 }

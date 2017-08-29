@@ -19,7 +19,14 @@ namespace Microsoft.AspNetCore.Antiforgery
         private CookieBuilder _cookieBuilder = new CookieBuilder
         {
             SameSite = SameSiteMode.Strict,
-            HttpOnly = true
+            HttpOnly = true,
+
+            // Some browsers do not allow non-secure endpoints to set cookies with a 'secure' flag or overwrite cookies
+            // whose 'secure' flag is set (http://httpwg.org/http-extensions/draft-ietf-httpbis-cookie-alone.html).
+            // Since mixing secure and non-secure endpoints is a common scenario in applications, we are relaxing the
+            // restriction on secure policy on some cookies by setting to 'None'. Cookies related to authentication or
+            // authorization use a stronger policy than 'None'.
+            SecurePolicy = CookieSecurePolicy.None,
         };
 
         /// <summary>

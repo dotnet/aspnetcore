@@ -236,9 +236,16 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
         }
 
         [Theory]
-        [InlineData(CookieSecurePolicy.Always, true)]
-        [InlineData(CookieSecurePolicy.None, null)]
-        public void SaveCookieToken(CookieSecurePolicy policy, bool? expectedCookieSecureFlag)
+        [InlineData(false, CookieSecurePolicy.SameAsRequest, null)]
+        [InlineData(true, CookieSecurePolicy.SameAsRequest, true)]
+        [InlineData(false, CookieSecurePolicy.Always, true)]
+        [InlineData(true, CookieSecurePolicy.Always, true)]
+        [InlineData(false, CookieSecurePolicy.None, null)]
+        [InlineData(true, CookieSecurePolicy.None, null)]
+        public void SaveCookieToken_HonorsCookieSecurePolicy_OnOptions(
+            bool isRequestSecure,
+            CookieSecurePolicy policy,
+            bool? expectedCookieSecureFlag)
         {
             // Arrange
             var token = "serialized-value";
@@ -246,6 +253,9 @@ namespace Microsoft.AspNetCore.Antiforgery.Internal
             var cookies = new MockResponseCookieCollection();
 
             var httpContext = new Mock<HttpContext>();
+            httpContext
+                .Setup(hc => hc.Request.IsHttps)
+                .Returns(isRequestSecure);
             httpContext
                 .Setup(o => o.Response.Cookies)
                 .Returns(cookies);
