@@ -12,6 +12,11 @@ namespace Templates.Test
         protected string ProjectName { get; set; }
         protected string TemplateOutputDir { get; private set; }
 
+        static TemplateTestBase()
+        {
+            TemplatePackageInstaller.ReinstallTemplatePackages();
+        }
+
         public TemplateTestBase()
         {
             ProjectName = Guid.NewGuid().ToString().Replace("-", "");
