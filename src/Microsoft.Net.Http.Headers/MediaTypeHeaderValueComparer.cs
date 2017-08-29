@@ -28,11 +28,15 @@ namespace Microsoft.Net.Http.Headers
         /// <remarks>
         /// Performs comparisons based on the arguments' quality values
         /// (aka their "q-value"). Values with identical q-values are considered equal (i.e. the result is 0)
-        /// with the exception that subtype wildcards are considered less than specific media types and full
-        /// wildcards are considered less than subtype wildcards. This allows callers to sort a sequence of
-        /// <see cref="MediaTypeHeaderValue"/> following their q-values in the order of specific
-        /// media types, subtype wildcards, and last any full wildcards.
+        /// with the exception that suffixed subtype wildcards are considered less than subtype wildcards, subtype wildcards
+        /// are considered less than specific media types and full wildcards are considered less than
+        /// subtype wildcards. This allows callers to sort a sequence of <see cref="MediaTypeHeaderValue"/> following
+        /// their q-values in the order of specific media types, subtype wildcards, and last any full wildcards.
         /// </remarks>
+        /// <example>
+        /// If we had a list of media types (comma separated): { text/*;q=0.8, text/*+json;q=0.8, */*;q=1, */*;q=0.8, text/plain;q=0.8 }
+        /// Sorting them using Compare would return: { */*;q=0.8, text/*;q=0.8, text/*+json;q=0.8, text/plain;q=0.8, */*;q=1 }
+        /// </example>
         public int Compare(MediaTypeHeaderValue mediaType1, MediaTypeHeaderValue mediaType2)
         {
             if (object.ReferenceEquals(mediaType1, mediaType2))
@@ -62,6 +66,14 @@ namespace Microsoft.Net.Http.Headers
                     {
                         return 1;
                     }
+                    else if (mediaType1.MatchesAllSubTypesWithoutSuffix && !mediaType2.MatchesAllSubTypesWithoutSuffix)
+                    {
+                        return -1;
+                    }
+                    else if (!mediaType1.MatchesAllSubTypesWithoutSuffix && mediaType2.MatchesAllSubTypesWithoutSuffix)
+                    {
+                        return 1;
+                    }
                 }
                 else if (!mediaType1.SubType.Equals(mediaType2.SubType, StringComparison.OrdinalIgnoreCase))
                 {
@@ -70,6 +82,25 @@ namespace Microsoft.Net.Http.Headers
                         return -1;
                     }
                     else if (mediaType2.MatchesAllSubTypes)
+                    {
+                        return 1;
+                    }
+                    else if (mediaType1.MatchesAllSubTypesWithoutSuffix && !mediaType2.MatchesAllSubTypesWithoutSuffix)
+                    {
+                        return -1;
+                    }
+                    else if (!mediaType1.MatchesAllSubTypesWithoutSuffix && mediaType2.MatchesAllSubTypesWithoutSuffix)
+                    {
+                        return 1;
+                    }
+                }
+                else if (!mediaType1.Suffix.Equals(mediaType2.Suffix, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (mediaType1.MatchesAllSubTypesWithoutSuffix)
+                    {
+                        return -1;
+                    }
+                    else if (mediaType2.MatchesAllSubTypesWithoutSuffix)
                     {
                         return 1;
                     }

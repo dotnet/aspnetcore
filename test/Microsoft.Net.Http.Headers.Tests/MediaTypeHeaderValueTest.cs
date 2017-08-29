@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Microsoft.Net.Http.Headers
@@ -37,6 +38,68 @@ namespace Microsoft.Net.Http.Headers
             AssertFormatException("text/plain; charset=utf-8; ");
             AssertFormatException("text/plain;");
             AssertFormatException("text/plain;charset=utf-8"); // ctor takes only media-type name, no parameters
+        }
+
+        public static TheoryData<string, string, string> MediaTypesWithSuffixes =>
+                 new TheoryData<string, string, string>
+                 {
+                     // See https://tools.ietf.org/html/rfc6838#section-4.2 for allowed names spec
+                     { "application/json", "json", null },
+                     { "application/json+", "json", "" },
+                     { "application/+json", "", "json" },
+                     { "application/entitytype+json", "entitytype", "json" },
+                     { "applica+tion/entitytype+json", "entitytype", "json" },
+                 };
+
+        [Theory]
+        [MemberData(nameof(MediaTypesWithSuffixes))]
+        public void Ctor_CanParseSuffixedMediaTypes(string mediaType, string expectedSubTypeWithoutSuffix, string expectedSubTypeSuffix)
+        {
+            var result = new MediaTypeHeaderValue(mediaType);
+
+            Assert.Equal(new StringSegment(expectedSubTypeWithoutSuffix), result.SubTypeWithoutSuffix); // TODO consider overloading to have SubTypeWithoutSuffix?
+            Assert.Equal(new StringSegment(expectedSubTypeSuffix), result.Suffix);
+        }
+
+        public static TheoryData<string, string, string> MediaTypesWithSuffixesAndSpaces =>
+                 new TheoryData<string, string, string>
+                 {
+                     // See https://tools.ietf.org/html/rfc6838#section-4.2 for allowed names spec
+                     { "    application   /  json+xml", "json", "xml" },
+                     { "  application /  vnd.com-pany.some+entity!.v2+js.#$&^_n  ; q=\"0.3+1\"", "vnd.com-pany.some+entity!.v2", "js.#$&^_n"},
+                     { "   application/    +json", "", "json" },
+                     { "  application/   entitytype+json    ", "entitytype", "json" },
+                     { "  applica+tion/   entitytype+json    ", "entitytype", "json" }
+                 };
+
+        [Theory]
+        [MemberData(nameof(MediaTypesWithSuffixesAndSpaces))]
+        public void Parse_CanParseSuffixedMediaTypes(string mediaType, string expectedSubTypeWithoutSuffix, string expectedSubTypeSuffix)
+        {
+            var result = MediaTypeHeaderValue.Parse(mediaType);
+
+            Assert.Equal(new StringSegment(expectedSubTypeWithoutSuffix), result.SubTypeWithoutSuffix); // TODO consider overloading to have SubTypeWithoutSuffix?
+            Assert.Equal(new StringSegment(expectedSubTypeSuffix), result.Suffix);
+        }
+
+        [Theory]
+        [InlineData("*/*", true)]
+        [InlineData("text/*", true)]
+        [InlineData("text/*+suffix", true)]
+        [InlineData("text/*+", true)]
+        [InlineData("text/*+*", true)]
+        [InlineData("text/json+suffix", false)]
+        [InlineData("*/json+*", false)]
+        public void MatchesAllSubTypesWithoutSuffix_ReturnsExpectedResult(string value, bool expectedReturnValue)
+        {
+            // Arrange
+            var mediaType = new MediaTypeHeaderValue(value);
+
+            // Act
+            var result = mediaType.MatchesAllSubTypesWithoutSuffix;
+
+            // Assert
+            Assert.Equal(expectedReturnValue, result);
         }
 
         [Fact]
@@ -644,6 +707,8 @@ namespace Microsoft.Net.Http.Headers
         [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "text/plain;foo=bar;q=0.0;charset=utf-8")] // different order of parameters
         [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "text/*;charset=utf-8;foo=bar;q=0.0")]
         [InlineData("text/plain;charset=utf-8;foo=bar;q=0.0", "*/*;charset=utf-8;foo=bar;q=0.0")]
+        [InlineData("application/json;v=2", "application/json;*")]
+        [InlineData("application/json;v=2;charset=utf-8", "application/json;v=2;*")]
         public void IsSubsetOf_PositiveCases(string mediaType1, string mediaType2)
         {
             // Arrange
@@ -679,6 +744,74 @@ namespace Microsoft.Net.Http.Headers
 
             // Assert
             Assert.False(isSubset);
+        }
+
+        [Theory]
+        [InlineData("application/entity+json", "application/entity+json")]
+        [InlineData("application/*+json", "application/entity+json")]
+        [InlineData("application/*+json", "application/*+json")]
+        [InlineData("application/*", "application/*+JSON")]
+        [InlineData("application/vnd.github+json", "application/vnd.github+json")]
+        [InlineData("application/*", "application/entity+JSON")]
+        [InlineData("*/*", "application/entity+json")]
+        public void IsSubsetOfWithSuffixes_PositiveCases(string set, string subset)
+        {
+            // Arrange
+            var setMediaType = MediaTypeHeaderValue.Parse(set);
+            var subSetMediaType = MediaTypeHeaderValue.Parse(subset);
+
+            // Act
+            var result = subSetMediaType.IsSubsetOf(setMediaType);
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Theory]
+        [InlineData("application/entity+json", "application/entity+txt")]
+        [InlineData("application/entity+json", "application/entity.v2+json")]
+        [InlineData("application/*+json", "application/entity+txt")]
+        [InlineData("application/*+*", "application/json")]
+        [InlineData("application/entity+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        [InlineData("application/*+*", "application/entity+json")] // We don't allow suffixes to be wildcards
+        public void IsSubSetOfWithSuffixes_NegativeCases(string set, string subset)
+        {
+            // Arrange
+            var setMediaType = MediaTypeHeaderValue.Parse(set);
+            var subSetMediaType = MediaTypeHeaderValue.Parse(subset);
+
+            // Act
+            var result = subSetMediaType.IsSubsetOf(setMediaType);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        public static TheoryData<string, List<StringSegment>> MediaTypesWithFacets =>
+                 new TheoryData<string, List<StringSegment>>
+                 {
+                     { "application/vdn.github",
+                         new List<StringSegment>(){ "vdn", "github" } },
+                     { "application/vdn.github+json",
+                         new List<StringSegment>(){ "vdn", "github" } },
+                     { "application/vdn.github.v3+json",
+                         new List<StringSegment>(){ "vdn", "github", "v3" } },
+                     { "application/vdn.github.+json",
+                         new List<StringSegment>(){ "vdn", "github", "" } },
+                 };
+
+        [Theory]
+        [MemberData(nameof(MediaTypesWithFacets))]
+        public void Facets_TestPositiveCases(string input, List<StringSegment> expected)
+        {
+            // Arrange
+            var mediaType = MediaTypeHeaderValue.Parse(input);
+
+            // Act
+            var result = mediaType.Facets;
+
+            // Assert
+            Assert.Equal(expected, result);
         }
 
         private void CheckValidParse(string input, MediaTypeHeaderValue expectedResult)

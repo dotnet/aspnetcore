@@ -11,10 +11,22 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.Net.Http.Headers
 {
+    /// <summary>
+    /// Representation of the media type header. See <see href="https://tools.ietf.org/html/rfc6838"/>.
+    /// </summary>
     public class MediaTypeHeaderValue
     {
-        private const string CharsetString = "charset";
         private const string BoundaryString = "boundary";
+        private const string CharsetString = "charset";
+        private const string MatchesAllString = "*/*";
+        private const string QualityString = "q";
+        private const string WildcardString = "*";
+
+        private const char ForwardSlashCharacter = '/';
+        private const char PeriodCharacter = '.';
+        private const char PlusCharacter = '+';
+
+        private static readonly char[] PeriodCharacterArray = new char[] { PeriodCharacter };
 
         private static readonly HttpHeaderParser<MediaTypeHeaderValue> SingleValueParser
             = new GenericHeaderParser<MediaTypeHeaderValue>(false, GetMediaTypeLength);
@@ -31,18 +43,33 @@ namespace Microsoft.Net.Http.Headers
             // Used by the parser to create a new instance of this type.
         }
 
+        /// <summary>
+        /// Initializes a <see cref="MediaTypeHeaderValue"/> instance.
+        /// </summary>
+        /// <param name="mediaType">A <see cref="StringSegment"/> representation of a media type.
+        /// The text provided must be a single media type without parameters. </param>
         public MediaTypeHeaderValue(StringSegment mediaType)
         {
-            CheckMediaTypeFormat(mediaType, "mediaType");
+            CheckMediaTypeFormat(mediaType, nameof(mediaType));
             _mediaType = mediaType;
         }
 
+        /// <summary>
+        /// Initializes a <see cref="MediaTypeHeaderValue"/> instance.
+        /// </summary>
+        /// <param name="mediaType">A <see cref="StringSegment"/> representation of a media type.
+        /// The text provided must be a single media type without parameters. </param>
+        /// <param name="quality">The <see cref="double"/> with the quality of the media type.</param>
         public MediaTypeHeaderValue(StringSegment mediaType, double quality)
             : this(mediaType)
         {
             Quality = quality;
         }
 
+        /// <summary>
+        /// Gets or sets the value of the charset parameter. Returns <see cref="StringSegment.Empty"/>
+        /// if there is no charset.
+        /// </summary>
         public StringSegment Charset
         {
             get
@@ -77,6 +104,10 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the value of the Encoding parameter. Setting the Encoding will set
+        /// the <see cref="Charset"/> to <see cref="Encoding.WebName"/>.
+        /// </summary>
         public Encoding Encoding
         {
             get
@@ -109,6 +140,10 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the value of the boundary parameter. Returns <see cref="StringSegment.Empty"/>
+        /// if there is no boundary.
+        /// </summary>
         public StringSegment Boundary
         {
             get
@@ -141,6 +176,10 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the media type's parameters. Returns an empty <see cref="IList{T}"/>
+        /// if there are no parameters.
+        /// </summary>
         public IList<NameValueHeaderValue> Parameters
         {
             get
@@ -160,6 +199,10 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the value of the quality parameter. Returns null
+        /// if there is no quality.
+        /// </summary>
         public double? Quality
         {
             get { return HeaderUtilities.GetQuality(_parameters); }
@@ -170,55 +213,155 @@ namespace Microsoft.Net.Http.Headers
             }
         }
 
+        /// <summary>
+        /// Gets or sets the value of the media type. Returns <see cref="StringSegment.Empty"/>
+        /// if there is no media type.
+        /// </summary>
+        /// <example>
+        /// For the media type <c>"application/json"</c>, the property gives the value
+        /// <c>"application/json"</c>.
+        /// </example>
         public StringSegment MediaType
         {
             get { return _mediaType; }
             set
             {
                 HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
-                CheckMediaTypeFormat(value, "value");
+                CheckMediaTypeFormat(value, nameof(value));
                 _mediaType = value;
             }
         }
 
+        /// <summary>
+        /// Gets the type of the <see cref="MediaTypeHeaderValue"/>.
+        /// </summary>
+        /// <example>
+        /// For the media type <c>"application/json"</c>, the property gives the value <c>"application"</c>.
+        /// </example>
+        /// <remarks>See <see href="https://tools.ietf.org/html/rfc6838#section-4.2"/> for more details on the type.</remarks>
         public StringSegment Type
         {
             get
             {
-                return _mediaType.Subsegment(0, _mediaType.IndexOf('/'));
+                return _mediaType.Subsegment(0, _mediaType.IndexOf(ForwardSlashCharacter));
             }
         }
 
+        /// <summary>
+        /// Gets the subtype of the <see cref="MediaTypeHeaderValue"/>.
+        /// </summary>
+        /// <example>
+        /// For the media type <c>"application/vnd.example+json"</c>, the property gives the value
+        /// <c>"vnd.example+json"</c>.
+        /// </example>
+        /// <remarks>See <see href="https://tools.ietf.org/html/rfc6838#section-4.2"/> for more details on the subtype.</remarks>
         public StringSegment SubType
         {
             get
             {
-                return _mediaType.Subsegment(_mediaType.IndexOf('/') + 1);
+                return _mediaType.Subsegment(_mediaType.IndexOf(ForwardSlashCharacter) + 1);
             }
         }
 
         /// <summary>
-        /// MediaType = "*/*"
+        /// Gets subtype of the <see cref="MediaTypeHeaderValue"/>, excluding any structured syntax suffix. Returns <see cref="StringSegment.Empty"/>
+        /// if there is no subtype without suffix.
         /// </summary>
-        public bool MatchesAllTypes
+        /// <example>
+        /// For the media type <c>"application/vnd.example+json"</c>, the property gives the value
+        /// <c>"vnd.example"</c>.
+        /// </example>
+        public StringSegment SubTypeWithoutSuffix
         {
             get
             {
-                return MediaType.Equals("*/*", StringComparison.Ordinal);
+                var subType = SubType;
+                var startOfSuffix = subType.LastIndexOf(PlusCharacter);
+                if (startOfSuffix == -1)
+                {
+                    return subType;
+                }
+                else
+                {
+                    return subType.Subsegment(0, startOfSuffix);
+                }
             }
         }
 
         /// <summary>
-        /// SubType = "*"
+        /// Gets the structured syntax suffix of the <see cref="MediaTypeHeaderValue"/> if it has one.
+        /// See <see href="https://tools.ietf.org/html/rfc6838#section-4.8">The RFC documentation on structured syntaxes.</see>
         /// </summary>
-        public bool MatchesAllSubTypes
+        /// <example>
+        /// For the media type <c>"application/vnd.example+json"</c>, the property gives the value
+        /// <c>"json"</c>.
+        /// </example>
+        public StringSegment Suffix
         {
             get
             {
-                return SubType.Equals("*", StringComparison.Ordinal);
+                var subType = SubType;
+                var startOfSuffix = subType.LastIndexOf(PlusCharacter);
+                if (startOfSuffix == -1)
+                {
+                    return default(StringSegment);
+                }
+                else
+                {
+                    return subType.Subsegment(startOfSuffix + 1);
+                }
             }
         }
 
+
+        /// <summary>
+        /// Get a <see cref="IList{T}"/> of facets of the <see cref="MediaTypeHeaderValue"/>. Facets are a
+        /// period separated list of StringSegments in the <see cref="SubTypeWithoutSuffix"/>.
+        /// See <see href="https://tools.ietf.org/html/rfc6838#section-3">The RFC documentation on facets.</see>
+        /// </summary>
+        /// <example>
+        /// For the media type <c>"application/vnd.example+json"</c>, the property gives the value:
+        /// <c>{"vnd", "example"}</c>
+        /// </example>
+        public IEnumerable<StringSegment> Facets
+        {
+            get
+            {
+                return SubTypeWithoutSuffix.Split(PeriodCharacterArray);
+            }
+        }
+
+        /// <summary>
+        /// Gets whether this <see cref="MediaTypeHeaderValue"/> matches all types.
+        /// </summary>
+        public bool MatchesAllTypes => MediaType.Equals(MatchesAllString, StringComparison.Ordinal);
+
+        /// <summary>
+        /// Gets whether this <see cref="MediaTypeHeaderValue"/> matches all subtypes.
+        /// </summary>
+        /// <example>
+        /// For the media type <c>"application/*"</c>, this property is <c>true</c>.
+        /// </example>
+        /// <example>
+        /// For the media type <c>"application/json"</c>, this property is <c>false</c>.
+        /// </example>
+        public bool MatchesAllSubTypes => SubType.Equals(WildcardString, StringComparison.Ordinal);
+
+        /// <summary>
+        /// Gets whether this <see cref="MediaTypeHeaderValue"/> matches all subtypes, ignoring any structured syntax suffix.
+        /// </summary>
+        /// <example>
+        /// For the media type <c>"application/*+json"</c>, this property is <c>true</c>.
+        /// </example>
+        /// <example>
+        /// For the media type <c>"application/vnd.example+json"</c>, this property is <c>false</c>.
+        /// </example>
+        public bool MatchesAllSubTypesWithoutSuffix =>
+            SubTypeWithoutSuffix.Equals(WildcardString, StringComparison.OrdinalIgnoreCase);
+
+        /// <summary>
+        /// Gets whether the <see cref="MediaTypeHeaderValue"/> is readonly.
+        /// </summary>
         public bool IsReadOnly
         {
             get { return _isReadOnly; }
@@ -247,56 +390,14 @@ namespace Microsoft.Net.Http.Headers
             }
 
             // "text/plain" is a subset of "text/plain", "text/*" and "*/*". "*/*" is a subset only of "*/*".
-            if (!Type.Equals(otherMediaType.Type, comparisonType: StringComparison.OrdinalIgnoreCase))
-            {
-                if (!otherMediaType.MatchesAllTypes)
-                {
-                    return false;
-                }
-            }
-            else if (!SubType.Equals(otherMediaType.SubType, comparisonType: StringComparison.OrdinalIgnoreCase))
-            {
-                if (!otherMediaType.MatchesAllSubTypes)
-                {
-                    return false;
-                }
-            }
-
-            // "text/plain; charset=utf-8; level=1" is a subset of "text/plain; charset=utf-8". In turn
-            // "text/plain; charset=utf-8" is a subset of "text/plain".
-            if (otherMediaType._parameters != null && otherMediaType._parameters.Count != 0)
-            {
-                // Make sure all parameters in the potential superset are included locally. Fine to have additional
-                // parameters locally; they make this one more specific.
-                foreach (var parameter in otherMediaType._parameters)
-                {
-                    if (parameter.Name.Equals("q", StringComparison.OrdinalIgnoreCase))
-                    {
-                        // "q" and later parameters are not involved in media type matching. Quoting the RFC: The first
-                        // "q" parameter (if any) separates the media-range parameter(s) from the accept-params.
-                        break;
-                    }
-
-                    var localParameter = NameValueHeaderValue.Find(_parameters, parameter.Name);
-                    if (localParameter == null)
-                    {
-                        // Not found.
-                        return false;
-                    }
-
-                    if (!StringSegment.Equals(parameter.Value, localParameter.Value, StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
+            return MatchesType(otherMediaType) &&
+                MatchesSubtype(otherMediaType) &&
+                MatchesParameters(otherMediaType);
         }
 
         /// <summary>
         /// Performs a deep copy of this object and all of it's NameValueHeaderValue sub components,
-        /// while avoiding the cost of revalidating the components.
+        /// while avoiding the cost of re-validating the components.
         /// </summary>
         /// <returns>A deep copy.</returns>
         public MediaTypeHeaderValue Copy()
@@ -314,7 +415,7 @@ namespace Microsoft.Net.Http.Headers
 
         /// <summary>
         /// Performs a deep copy of this object and all of it's NameValueHeaderValue sub components,
-        /// while avoiding the cost of revalidating the components. This copy is read-only.
+        /// while avoiding the cost of re-validating the components. This copy is read-only.
         /// </summary>
         /// <returns>A deep, read-only, copy.</returns>
         public MediaTypeHeaderValue CopyAsReadOnly()
@@ -362,33 +463,67 @@ namespace Microsoft.Net.Http.Headers
             return StringSegmentComparer.OrdinalIgnoreCase.GetHashCode(_mediaType) ^ NameValueHeaderValue.GetHashCode(_parameters);
         }
 
+        /// <summary>
+        /// Takes a media type and parses it into the <see cref="MediaTypeHeaderValue" /> and its associated parameters.
+        /// </summary>
+        /// <param name="input">The <see cref="StringSegment"/> with the media type.</param>
+        /// <returns>The parsed <see cref="MediaTypeHeaderValue"/>.</returns>
         public static MediaTypeHeaderValue Parse(StringSegment input)
         {
             var index = 0;
             return SingleValueParser.ParseValue(input, ref index);
         }
 
+        /// <summary>
+        /// Takes a media type, which can include parameters, and parses it into the <see cref="MediaTypeHeaderValue" /> and its associated parameters.
+        /// </summary>
+        /// <param name="input">The <see cref="StringSegment"/> with the media type. The media type constructed here must not have an y</param>
+        /// <param name="parsedValue">The parsed <see cref="MediaTypeHeaderValue"/></param>
+        /// <returns>True if the value was successfully parsed.</returns>
         public static bool TryParse(StringSegment input, out MediaTypeHeaderValue parsedValue)
         {
             var index = 0;
             return SingleValueParser.TryParseValue(input, ref index, out parsedValue);
         }
 
+        /// <summary>
+        /// Takes an <see cref="IList{T}"/> of <see cref="string"/> and parses it into the <see cref="MediaTypeHeaderValue"></see> and its associated parameters.
+        /// </summary>
+        /// <param name="inputs">A list of media types</param>
+        /// <returns>The parsed <see cref="MediaTypeHeaderValue"/>.</returns>
         public static IList<MediaTypeHeaderValue> ParseList(IList<string> inputs)
         {
             return MultipleValueParser.ParseValues(inputs);
         }
 
+        /// <summary>
+        /// Takes an <see cref="IList{T}"/> of <see cref="string"/> and parses it into the <see cref="MediaTypeHeaderValue"></see> and its associated parameters.
+        /// Throws if there is invalid data in a string.
+        /// </summary>
+        /// <param name="inputs">A list of media types</param>
+        /// <returns>The parsed <see cref="MediaTypeHeaderValue"/>.</returns>
         public static IList<MediaTypeHeaderValue> ParseStrictList(IList<string> inputs)
         {
             return MultipleValueParser.ParseStrictValues(inputs);
         }
 
+        /// <summary>
+        /// Takes an <see cref="IList{T}"/> of <see cref="string"/> and parses it into the <see cref="MediaTypeHeaderValue"></see> and its associated parameters.
+        /// </summary>
+        /// <param name="inputs">A list of media types</param>
+        /// <param name="parsedValues">The parsed <see cref="MediaTypeHeaderValue"/>.</param>
+        /// <returns>True if the value was successfully parsed.</returns>
         public static bool TryParseList(IList<string> inputs, out IList<MediaTypeHeaderValue> parsedValues)
         {
             return MultipleValueParser.TryParseValues(inputs, out parsedValues);
         }
 
+        /// <summary>
+        /// Takes an <see cref="IList{T}"/> of <see cref="string"/> and parses it into the <see cref="MediaTypeHeaderValue"></see> and its associated parameters.
+        /// </summary>
+        /// <param name="inputs">A list of media types</param>
+        /// <param name="parsedValues">The parsed <see cref="MediaTypeHeaderValue"/>.</param>
+        /// <returns>True if the value was successfully parsed.</returns>
         public static bool TryParseStrictList(IList<string> inputs, out IList<MediaTypeHeaderValue> parsedValues)
         {
             return MultipleValueParser.TryParseStrictValues(inputs, out parsedValues);
@@ -481,7 +616,7 @@ namespace Microsoft.Net.Http.Headers
             }
             else
             {
-                mediaType = input.Substring(startIndex, typeLength) + "/" + input.Substring(current, subtypeLength);
+                mediaType = input.Substring(startIndex, typeLength) + ForwardSlashCharacter + input.Substring(current, subtypeLength);
             }
 
             return mediaTypeLength;
@@ -501,6 +636,86 @@ namespace Microsoft.Net.Http.Headers
             {
                 throw new FormatException(string.Format(CultureInfo.InvariantCulture, "Invalid media type '{0}'.", mediaType));
             }
+        }
+
+        private bool MatchesType(MediaTypeHeaderValue set)
+        {
+            return set.MatchesAllTypes ||
+                set.Type.Equals(Type, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool MatchesSubtype(MediaTypeHeaderValue set)
+        {
+            if (set.MatchesAllSubTypes)
+            {
+                return true;
+            }
+            if (set.Suffix.HasValue)
+            {
+                if (Suffix.HasValue)
+                {
+                    return MatchesSubtypeWithoutSuffix(set) && MatchesSubtypeSuffix(set);
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return set.SubType.Equals(SubType, StringComparison.OrdinalIgnoreCase);
+            }
+        }
+
+        private bool MatchesSubtypeWithoutSuffix(MediaTypeHeaderValue set)
+        {
+            return set.MatchesAllSubTypesWithoutSuffix ||
+                set.SubTypeWithoutSuffix.Equals(SubTypeWithoutSuffix, StringComparison.OrdinalIgnoreCase);
+        }
+
+        private bool MatchesParameters(MediaTypeHeaderValue set)
+        {
+            if (set._parameters != null && set._parameters.Count != 0)
+            {
+                // Make sure all parameters in the potential superset are included locally. Fine to have additional
+                // parameters locally; they make this one more specific.
+                foreach (var parameter in set._parameters)
+                {
+                    if (parameter.Name.Equals(WildcardString, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // A parameter named "*" has no effect on media type matching, as it is only used as an indication
+                        // that the entire media type string should be treated as a wildcard.
+                        continue;
+                    }
+
+                    if (parameter.Name.Equals(QualityString, StringComparison.OrdinalIgnoreCase))
+                    {
+                        // "q" and later parameters are not involved in media type matching. Quoting the RFC: The first
+                        // "q" parameter (if any) separates the media-range parameter(s) from the accept-params.
+                        break;
+                    }
+
+                    var localParameter = NameValueHeaderValue.Find(_parameters, parameter.Name);
+                    if (localParameter == null)
+                    {
+                        // Not found.
+                        return false;
+                    }
+
+                    if (!StringSegment.Equals(parameter.Value, localParameter.Value, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+        private bool MatchesSubtypeSuffix(MediaTypeHeaderValue set)
+        {
+            // We don't have support for wildcards on suffixes alone (e.g., "application/entity+*")
+            // because there's no clear use case for it.
+            return set.Suffix.Equals(Suffix, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
