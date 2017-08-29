@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <XunitAnalyzersVersion>0.6.1</XunitAnalyzersVersion>
+    <XunitVersion>2.3.0-beta4-build3742</XunitVersion>
+  </PropertyGroup>
+</Project>
