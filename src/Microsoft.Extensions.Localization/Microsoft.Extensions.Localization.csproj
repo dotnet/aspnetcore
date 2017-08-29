@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Product>Microsoft .NET Extensions</Product>
     <Description>Application localization services and default implementation based on ResourceManager to load localized assembly resources.</Description>

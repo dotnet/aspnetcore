@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
     <Description>Provides a request culture provider which gets culture and ui-culture from request's route data.</Description>
