@@ -7,16 +7,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <TemplatePack Include="Microsoft.DotNet.Common.ItemTemplates" />
     <TemplatePack Include="Microsoft.DotNet.Web.ItemTemplates" />
-
-    <TemplatePack Include="Microsoft.DotNet.Common.ProjectTemplates.1.x" />
     <TemplatePack Include="Microsoft.DotNet.Web.ProjectTemplates.1.x" />
-    <TemplatePack Include="Microsoft.DotNet.Test.ProjectTemplates.1.x" />
-
-    <TemplatePack Include="Microsoft.DotNet.Common.ProjectTemplates.2.0" />
     <TemplatePack Include="Microsoft.DotNet.Web.ProjectTemplates.2.0" />
-    <TemplatePack Include="Microsoft.DotNet.Test.ProjectTemplates.2.0" />
   </ItemGroup>
 
   <Target Name="Update" Condition="'$(UpdatePackageSources)' != ''">
