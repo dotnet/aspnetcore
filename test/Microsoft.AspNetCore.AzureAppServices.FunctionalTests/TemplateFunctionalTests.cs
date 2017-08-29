@@ -40,9 +40,9 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
         [InlineData("latest", "web", "Hello World!")]
         [InlineData("latest", "razor", "Learn how to build ASP.NET apps that can run anywhere.")]
         [InlineData("latest", "mvc", "Learn how to build ASP.NET apps that can run anywhere.")]
-        public async Task DotnetNewWebRunsWebAppOnLatestRuntime(string dotnetVersion, string template, string expected)
+        public async Task TemplateRuns(string dotnetVersion, string template, string expected)
         {
-            var testId = nameof(DotnetNewWebRunsWebAppOnLatestRuntime) + template + dotnetVersion.Replace('.', '_');
+            var testId = nameof(TemplateRuns) + template + dotnetVersion.Replace(".", string.Empty);
 
             using (var logger = GetLogger(testId))
             {
