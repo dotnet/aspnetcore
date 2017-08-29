@@ -10,10 +10,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="System.Threading.Tasks.Channels" Version="$(CoreFxLabsVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="System.Threading.Tasks.Channels" />
   </ItemGroup>
 
 </Project>

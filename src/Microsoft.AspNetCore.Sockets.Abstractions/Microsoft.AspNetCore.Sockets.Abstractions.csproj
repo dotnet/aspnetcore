@@ -6,8 +6,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="System.Threading.Tasks.Channels" Version="$(CoreFxLabsVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Http.Features" />
+    <PackageReference Include="System.Threading.Tasks.Channels" />
   </ItemGroup>
 
 </Project>

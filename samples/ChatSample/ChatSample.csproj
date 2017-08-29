@@ -14,29 +14,32 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="BuildBundlerMinifier" Version="2.4.337" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(AspNetCoreVersion)">
+    <PackageReference Include="BuildBundlerMinifier" Version="2.4.337">
+      <!-- Build-only assets are exempt from lineups. -->
+      <NoWarn>KRB4002</NoWarn>
+    </PackageReference>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" />
+    <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(AspNetCoreVersion)">
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools">
       <PrivateAssets>All</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" />
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
   <Target Name="CopyTSClient" BeforeTargets="AfterBuild">
@@ -46,10 +49,5 @@
   <Target Name="BowerInstall" BeforeTargets="PrepareForPublish">
     <Exec Command="bower install" />
   </Target>
-
-  <ItemGroup>
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="$(AspNetCoreVersion)" />
-    <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="$(AspNetCoreVersion)" />
-  </ItemGroup>
 
 </Project>

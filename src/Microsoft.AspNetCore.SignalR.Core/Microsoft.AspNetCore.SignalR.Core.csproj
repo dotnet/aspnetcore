@@ -11,13 +11,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authorization" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <PackageReference Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <PackageReference Include="System.Reflection.Emit" Version="$(SystemReflectionEmitVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" PrivateAssets="All" />
+    <PackageReference Include="System.Reflection.Emit" />
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
 </Project>

@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.SignalR.Microbenchmarks
         [Params(64, 128)]
         public int MessageLength { get; set; }
 
-        [Setup]
+        [IterationSetup]
         public void Setup()
         {
             var buffer = new byte[MessageLength];

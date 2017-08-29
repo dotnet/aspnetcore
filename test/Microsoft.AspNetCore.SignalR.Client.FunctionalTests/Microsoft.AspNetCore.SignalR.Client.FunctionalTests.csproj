@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net461'">
-    <PackageReference Include="Microsoft.CSharp" Version="$(CoreFxVersion)" />
+    <PackageReference Include="Microsoft.CSharp" />
   </ItemGroup>
 
   <ItemGroup>
@@ -24,13 +24,13 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.TestHost" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.Logging.Testing" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="System.Reactive.Linq" Version="$(RxVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" />
+    <PackageReference Include="Microsoft.AspNetCore.TestHost" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Testing" />
+    <PackageReference Include="System.Reactive.Linq" />
   </ItemGroup>
 
 </Project>

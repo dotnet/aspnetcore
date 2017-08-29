@@ -11,14 +11,14 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authorization.Policy" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Routing" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.WebSockets" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All" />
-    <PackageReference Include="System.Threading.Tasks.Channels" Version="$(CoreFxLabsVersion)" />
-    <PackageReference Include="System.Memory" Version="$(CoreFxVersion)" />
-    <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authorization.Policy" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
+    <PackageReference Include="Microsoft.AspNetCore.Routing" />
+    <PackageReference Include="Microsoft.AspNetCore.WebSockets" />
+    <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources" PrivateAssets="All" />
+    <PackageReference Include="System.Threading.Tasks.Channels" />
+    <PackageReference Include="System.Memory" />
+    <PackageReference Include="Newtonsoft.Json" />
   </ItemGroup>
 
 </Project>

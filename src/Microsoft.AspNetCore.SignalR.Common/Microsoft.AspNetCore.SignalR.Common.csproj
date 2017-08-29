@@ -7,13 +7,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Newtonsoft.Json" Version="$(JsonNetVersion)" />
-    <PackageReference Include="MsgPack.Cli" Version="$(MsgPackVersion)" />
-    <PackageReference Include="System.Binary" Version="$(CoreFxLabsVersion)" />
-    <PackageReference Include="System.Buffers.Primitives" Version="$(CoreFxLabsVersion)" />
-    <PackageReference Include="System.Memory" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Numerics.Vectors" Version="$(CoreFxVersion)" />
-    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="$(CoreFxVersion)" />
+    <PackageReference Include="Newtonsoft.Json" />
+    <PackageReference Include="MsgPack.Cli" />
+    <PackageReference Include="System.Binary" />
+    <PackageReference Include="System.Buffers.Primitives" />
+    <PackageReference Include="System.Memory" />
+    <PackageReference Include="System.Numerics.Vectors" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
   </ItemGroup>
 
 </Project>
