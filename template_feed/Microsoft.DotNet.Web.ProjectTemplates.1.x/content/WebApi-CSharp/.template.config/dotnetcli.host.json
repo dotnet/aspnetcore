@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "TargetFrameworkOverride": {
+      "isHidden": "true",
+      "longName": "target-framework-override",
+      "shortName": ""
+    },
+    "IncludeApplicationInsights": {
+      "isHidden": "true"
+    },
+    "AADInstance": {
+      "longName": "aad-instance",
+      "shortName": "s"
+    },
+    "OrgReadAccess": {
+      "longName": "org-read-access",
+      "shortName": "r"
+    },
+    "ClientId": {
+      "longName": "client-id",
+      "shortName": ""
+    },
+    "Audience": {
+      "longName": "audience",
+      "shortName": ""
+    },
+    "Domain": {
+      "longName": "domain",
+      "shortName": ""
+    },
+    "TenantId": {
+      "longName": "tenant-id",
+      "shortName": ""
+    },
+    "Framework": {
+      "longName": "framework"
+    },
+    "skipRestore": {
+      "longName": "no-restore",
+      "shortName": ""
+    },
+    "HttpsPort": {
+      "isHidden": true
+    },
+    "KestrelPort": {
+      "isHidden": true
+    },
+    "IISExpressPort": {
+      "isHidden": true
+    },
+    "IncludeLaunchSettings": {
+      "isHidden": true
+    },
+    "UserSecretsId": {
+      "isHidden": true
+    }
+  },
+  "usageExamples": [
+    "--framework netcoreapp1.1"
+  ]
+}

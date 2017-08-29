@@ -1,0 +1,20 @@
+﻿{
+  "create": "classlib --language f# --no-restore",
+  "name": "ClassLibrary (F#, default framework)",
+  "tasks": [
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "restore",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "build -c Debug",
+      "noExit": false,
+      "exitCode": 0
+    }
+  ]
+}

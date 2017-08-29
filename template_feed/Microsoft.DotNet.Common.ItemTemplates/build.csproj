@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\..\Version.props" />
+  <PropertyGroup>
+    <TargetFramework>netstandard1.0</TargetFramework>
+    <NuspecFile>$(MSBuildThisFileDirectory)\Templates.nuspec</NuspecFile>
+    <NuspecProperties>version=$(PackageVersion)</NuspecProperties>
+    <IncludeBuildOutput>False</IncludeBuildOutput>
+    <IncludeBuildOutput>False</IncludeBuildOutput>
+    <IncludeSource>False</IncludeSource>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <OutputPath>$(TemplatesFolder)</OutputPath>
+    <EnableDefaultItems>False</EnableDefaultItems>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)..\..\artifacts\scratch</BaseIntermediateOutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Remove="Microsoft.NETCore.App" />
+    <Compile Remove="$(GitInfoFile)" />
+    <Compile Remove="$(MSBuildThisFileDirectory)../../src/GitInfo.cs" />
+    <None Remove="**/*.csproj" />
+  </ItemGroup>
+</Project>

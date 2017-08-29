@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": ["Config"],
+  "name": "Nuget Config",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A file for configuring the locations NuGet will search for packages",
+  "tags": {
+    "type": "item"
+  },
+  "groupIdentity": "ItemNugetConfig",
+  "precedence": "100",
+  "identity": "Microsoft.Standard.QuickStarts.Nuget.Config",
+  "shortName": "nugetconfig",
+  "sourceName": "Nuget",
+  "primaryOutputs": [ { "path": "nuget.config" } ],
+  "defaultName": "nuget.config",
+  "symbols": {
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    }
+  },
+  "postActions": [
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens nuget.config in the editor",
+      "manualInstructions": [ ],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+<Project ToolsVersion="15.0">
+  <Import Project="Templates.settings.targets" />
+  <PropertyGroup Condition=" '$(PackageVersion)' == '' ">
+    <PackageReleaseVersion>1.0.0</PackageReleaseVersion>
+    <PackageBuildQuality>$(BUILD_QUALITY)</PackageBuildQuality>
+    <PackageBuildQuality Condition=" '$(PackageBuildQuality)' == '' ">beta1</PackageBuildQuality>
+    <PackageVersion>$(PackageReleaseVersion)-$(PackageBuildQuality)</PackageVersion>
+    <BUILD_NUMBER Condition="'$(BUILD_NUMBER)' == ''">0</BUILD_NUMBER>
+    <AssemblyReleaseVersion>$(PackageReleaseVersion).$(BUILD_NUMBER)</AssemblyReleaseVersion>
+    <PackageVersion Condition="'$(NO_TIMESTAMP)' != 'true'">$(PackageVersion)-$([System.DateTime]::Now.ToString("yyyyMMdd"))-$(BUILD_NUMBER)</PackageVersion>
+  </PropertyGroup>
+  <PropertyGroup>
+    <Authors>Microsoft</Authors>
+    <ProjectUrl>https://github.com/aspnet/templates</ProjectUrl>
+    <LicenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</LicenseUrl>
+    <ImageUrl>http://go.microsoft.com/fwlink/?LinkID=288859</ImageUrl>
+    <Tags>template</Tags>
+    <Company>Microsoft</Company>
+    <Copyright>Copyright © Microsoft Corporation</Copyright>
+
+    <GenerateAssemblyInfo Condition="'$(BuildingInsideVisualStudio)' != ''">False</GenerateAssemblyInfo>
+    <GenerateAssemblyFileVersionAttribute>False</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyVersionAttribute>False</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>False</GenerateAssemblyInformationalVersionAttribute>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition=" '$(OS)' != 'Windows_NT' ">true</PublicSign>
+    <GitInfoFile>$(MSBuildThisFileDirectory)artifacts\GitInfo.cs</GitInfoFile>
+    <GitInfoProps>$(MSBuildThisFileDirectory)artifacts\GitInfo.props</GitInfoProps>
+  </PropertyGroup>
+  <Target Name="CollectGitInfo">
+    <PropertyGroup>
+      <GitInfoCommitCount Condition="'$(COMMIT_HASH)' != ''">$(COMMIT_COUNT)</GitInfoCommitCount>
+      <GitInfoCommitHash Condition="'$(COMMIT_HASH)' != ''">$(COMMIT_HASH)</GitInfoCommitHash>
+      <GitExitCode>0</GitExitCode>
+    </PropertyGroup>
+
+    <Exec Command="git rev-list --count HEAD" ConsoleToMSBuild="true" Condition="'$(COMMIT_HASH)' == ''" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitInfoCommitCount" />
+      <Output TaskParameter="ExitCode" PropertyName="GitExitCode" />
+    </Exec>
+
+    <Exec Command="git rev-parse HEAD" ConsoleToMSBuild="true" Condition="'$(COMMIT_HASH)' == ''" IgnoreExitCode="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="GitInfoCommitHash" />
+      <Output TaskParameter="ExitCode" PropertyName="GitExitCode" />
+    </Exec>
+
+    <PropertyGroup Condition="'$(GitExitCode)' != '0'">
+      <GitInfoCommitCount>0</GitInfoCommitCount>
+      <GitInfoCommitHash>UNKNOWN</GitInfoCommitHash>
+    </PropertyGroup>
+
+    <PropertyGroup>
+      <GitCommitInfoContent>
+<![CDATA[
+[assembly: System.Reflection.AssemblyVersion("$(AssemblyReleaseVersion)")]
+[assembly: System.Reflection.AssemblyFileVersion("$(AssemblyReleaseVersion)")]
+[assembly: System.Reflection.AssemblyInformationalVersion("$(PackageVersion)+$(GitInfoCommitCount).$(GitInfoCommitHash)")]
+
+namespace Microsoft.TemplateEngine
+{
+    internal static class GitInfo
+    {
+        public static string CommitCount { get%3B } = "$(GitInfoCommitCount)"%3B
+        public static string CommitHash { get%3B } = "$(GitInfoCommitHash)"%3B
+    }
+}
+]]>
+      </GitCommitInfoContent>
+      <GitInfoPropsContent>
+<![CDATA[
+<Project ToolsVersion="15.0">
+  <PropertyGroup>
+    <Version>$(PackageReleaseVersion)</Version>
+    <FileVersion>$(PackageReleaseVersion)</FileVersion>
+    <InformationalVersion>$(PackageVersion)+$(GitInfoCommitCount).$(GitInfoCommitHash)</InformationalVersion>
+    <PackageReleaseNotes>Commit Hash: $(GitInfoCommitHash)</PackageReleaseNotes>
+  </PropertyGroup>
+</Project>
+]]>
+      </GitInfoPropsContent>
+    </PropertyGroup>
+
+    <WriteLinesToFile File="$(GitInfoFile)"
+                      Lines="$(GitCommitInfoContent)"
+                      Overwrite="true" />
+
+    <WriteLinesToFile File="$(GitInfoProps)"
+                      Lines="$(GitInfoPropsContent)"
+                      Overwrite="true" />
+  </Target>
+  
+  <ItemGroup>
+    <Compile Include="$(GitInfoFile)" Condition="Exists('$(GitInfoFile)')" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="$(MSBuildThisFileDirectory)src/GitInfo.cs" Condition="!Exists('$(GitInfoFile)')" Link="%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <Import Project="$(GitInfoProps)" Condition="Exists('$(GitInfoProps)')" />
+</Project>

@@ -1,0 +1,50 @@
+﻿{
+  "create": "mvc --language F# --no-restore",
+  "name": "MVC (F#, default framework, default auth)",
+  "tasks": [
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "restore -s https://dotnet.myget.org/F/aspnetcore-dev/api/v3/index.json -s https://dotnet.myget.org/F/dotnet-core/api/v3/index.json -s https://dotnet.myget.org/F/msbuild/api/v3/index.json -s https://api.nuget.org/v3/index.json",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "build -c Debug",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "name": "RunApp",
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "exec bin/Debug/netcoreapp2.0/%targetPathName%.dll",
+      "noExit": true,
+      "exitTimeout": 5000
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000",
+      "statusCode": 200,
+      "verb": "GET"
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000/Home/About",
+      "statusCode": 200,
+      "verb": "GET"
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000/Home/Contact",
+      "statusCode": 200,
+      "verb": "GET"
+    },
+    {
+      "handler": "taskkill",
+      "name": "RunApp"
+    }
+  ]
+}

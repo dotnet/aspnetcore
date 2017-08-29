@@ -1,0 +1,20 @@
+﻿{
+  "create": "classlib --no-restore",
+  "name": "ClassLibrary (C#, default framework)",
+  "tasks": [
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "restore",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "build -c Debug",
+      "noExit": false,
+      "exitCode": 0
+    }
+  ]
+}

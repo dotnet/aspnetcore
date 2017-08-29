@@ -1,0 +1,31 @@
+﻿{
+  "create": "console --no-restore",
+  "name": "Console (C#, default framework)",
+  "tasks": [
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "restore",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "build -c Debug",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "exec bin/Debug/netcoreapp2.0/%targetPathName%.dll",
+      "expectations": [
+        {
+          "assertion": "output_contains",
+          "text": "hello world"
+        }
+      ]
+    }
+  ]
+}

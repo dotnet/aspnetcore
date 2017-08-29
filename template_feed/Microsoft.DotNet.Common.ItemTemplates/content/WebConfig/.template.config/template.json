@@ -1,0 +1,36 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": ["Config"],
+  "name": "Web Config",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A file used to configure Web Application settings",
+  "tags": {
+    "type": "item"
+  },
+  "groupIdentity": "ItemWebConfig",
+  "precedence": "100",
+  "identity": "Microsoft.Standard.QuickStarts.Web.Config",
+  "shortName": "webconfig",
+  "sourceName": "WebConfig",
+  "primaryOutputs": [ { "path": "web.config" } ],
+  "defaultName": "web.config",
+  "symbols": {
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    }
+  },
+  "postActions": [
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens web.config in the editor",
+      "manualInstructions": [ ],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ]
+}

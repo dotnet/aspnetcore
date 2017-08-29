@@ -1,0 +1,10 @@
+language: csharp
+sudo: false
+branches:
+  only:
+    - master
+    - release
+    - dev
+    - /^(.*\/)?ci-.*$/
+script:
+  - ./build.sh --quiet verify

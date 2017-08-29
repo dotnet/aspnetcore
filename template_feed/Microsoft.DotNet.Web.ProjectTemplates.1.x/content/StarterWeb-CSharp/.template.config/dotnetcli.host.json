@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json.schemastore.org/dotnetcli.host",
+  "symbolInfo": {
+    "TargetFrameworkOverride": {
+      "isHidden": "true",
+      "longName": "target-framework-override",
+      "shortName": ""
+    },
+    "IncludeApplicationInsights": {
+      "isHidden": "true"
+    },
+    "UseLocalDB": {
+      "longName": "use-local-db"
+    },
+    "AADInstance": {
+      "longName": "aad-instance",
+      "shortName": ""
+    },
+    "OrgReadAccess": {
+      "longName": "org-read-access",
+      "shortName": "r"
+    },
+    "ClientId": {
+      "longName": "client-id",
+      "shortName": ""
+    },
+    "Domain": {
+      "longName": "domain",
+      "shortName": ""
+    },
+    "TenantId": {
+      "longName": "tenant-id",
+      "shortName": ""
+    },
+    "Framework": {
+      "longName": "framework"
+    },
+    "NoTools": {
+      "isHidden": "true",
+      "longName": "no-tools"
+    },
+    "skipRestore": {
+      "longName": "no-restore",
+      "shortName": ""
+    },
+    "HttpsPort": {
+      "isHidden": true
+    },
+    "KestrelPort": {
+      "isHidden": true
+    },
+    "IISExpressPort": {
+      "isHidden": true
+    },
+    "IncludeLaunchSettings": {
+      "isHidden": true
+    },
+    "UserSecretsId": {
+      "isHidden": true
+    },
+    "UseBrowserLink": {
+      "longName": "use-browserlink",
+      "shortName": ""
+    }
+  },
+  "usageExamples": [
+    "--framework netcoreapp1.1 --auth Individual"
+  ]
+}

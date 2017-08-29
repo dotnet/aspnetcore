@@ -1,0 +1,54 @@
+{
+  "create": "web --no-restore",
+  "name": "Empty Web (C#, default framework, default auth)",
+  "variations": [
+    {
+      "id": "fullFramework",
+      "name": "Empty Web (C#, net461 framework, default auth)",
+      "create": "web --target-framework-override net461 --no-restore "
+    }
+  ],
+  "tasks": [
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "restore -s https://dotnet.myget.org/F/aspnetcore-release/api/v3/index.json -s https://dotnet.myget.org/F/dotnet-core/api/v3/index.json -s https://dotnet.myget.org/F/msbuild/api/v3/index.json -s https://api.nuget.org/v3/index.json",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "build -c Debug",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "name": "RunApp",
+      "variation": "",
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "exec bin/Debug/netcoreapp2.0/%targetPathName%.dll",
+      "noExit": true,
+      "exitTimeout": 5000
+    },
+    {
+      "name": "RunApp",
+      "variation": "fullFramework",
+      "handler": "execute",
+      "command": "bin/Debug/net461/%targetPathName%.exe",
+      "noExit": true,
+      "exitTimeout": 5000
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000",
+      "statusCode": 200,
+      "verb": "GET"
+    },
+    {
+      "handler": "taskkill",
+      "name": "RunApp"
+    }
+  ]
+}

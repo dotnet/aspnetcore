@@ -1,0 +1,317 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": ["Web", "MVC"],
+  "name": "ASP.NET Core Web App (Model-View-Controller)",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project template for creating an ASP.NET Core application with example ASP.NET Core MVC Views and Controllers. This template can also be used for RESTful HTTP services.",
+  "groupIdentity": "Microsoft.Web.Mvc",
+  "precedence": "100",
+  "identity": "Microsoft.Web.Mvc.CSharp",
+  "shortName": "mvc",
+  "thirdPartyNotices": "https://aka.ms/template-3pn",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
+  "sourceName": "Company.WebApplication1",
+  "preferNameDirectory": true,
+  "guids": [ "53bc9b9d-9d6a-45d4-8429-2a2761773502" ],
+  "sources": [
+    {
+      "modifiers": [
+        {
+          "condition": "(!IndividualAuth && !OrganizationalAuth)",
+          "exclude": [
+            "Controllers/AccountController.cs",
+            "Views/Account/**",
+            "Views/Manage/**",
+            "Views/Shared/_LoginPartial.cshtml"
+          ]
+        },
+        {
+          "condition": "(UseLocalDB || !IndividualAuth)",
+          "exclude": [
+            "*.db"
+          ]
+        },
+        {
+          "condition": "(!IndividualAuth)",
+          "exclude": [
+            "Controllers/ManageController.cs",
+            "Views/Account/ConfirmEmail.cshtml",
+            "Views/Account/ExternalLoginConfirmation.cshtml",
+            "Views/Account/ExternalLoginFailure.cshtml",
+            "Views/Account/ForgotPassword.cshtml",
+            "Views/Account/ForgotPasswordConfirmation.cshtml",
+            "Views/Account/Lockout.cshtml",
+            "Views/Account/Login.cshtml",
+            "Views/Account/Register.cshtml",
+            "Views/Account/ResetPassword.cshtml",
+            "Views/Account/ResetPasswordConfirmation.cshtml",
+            "Views/Account/SendCode.cshtml",
+            "Views/Account/VerifyCode.cshtml",
+            "Views/Manage/AddPhoneNumber.cshtml",
+            "Views/Manage/ChangePassword.cshtml",
+            "Views/Manage/Index.cshtml",
+            "Views/Manage/ManageLogins.cshtml",
+            "Views/Manage/SetPassword.cshtml",
+            "Views/Manage/VerifyPhoneNumber.cshtml",
+            "Services/**",
+            "Data/**",
+            "Models/**"
+          ]
+        },
+        {
+          "condition": "(!IncludeLaunchSettings && !WindowsAuth)",
+          "exclude": [
+            "Properties/launchSettings.json"
+          ]
+        },
+        {
+          "condition": "(IndividualAuth)",
+          "exclude": [
+            "Views/Account/SignedOut.cshtml"
+          ]
+        }
+      ]
+    }
+  ],
+  "symbols": {
+    "auth": {
+      "type": "parameter",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "None",
+          "description": "No authentication"
+        },
+        {
+          "choice": "Individual",
+          "description": "Individual authentication"
+        },
+        {
+          "choice": "SingleOrg",
+          "description": "Organizational authentication for a single tenant"
+        },
+        {
+          "choice": "MultiOrg",
+          "description": "Organizational authentication for multiple tenants"
+        },
+        {
+          "choice": "Windows",
+          "description": "Windows authentication"
+        }
+      ],
+      "defaultValue": "None",
+      "description": "The type of authentication to use"
+    },
+    "AADInstance": {
+      "type": "parameter",
+      "datatype": "string",
+      "defaultValue": "https://login.microsoftonline.com/",
+      "replaces": "https:////login.microsoftonline.com/",
+      "description": "The Azure Active Directory instance to connect to (use with SingleOrg or MultiOrg auth)."
+    },
+    "ClientId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "11111111-1111-1111-11111111111111111",
+      "description": "The Client ID for this project (use with SingleOrg or MultiOrg auth)."
+    },
+    "Domain": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "qualified.domain.name",
+      "description": "The domain owning the directory (use with SingleOrg auth)."
+    },
+    "TenantId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "22222222-2222-2222-2222-222222222222",
+      "description": "The TenantId ID of the directory to connect to (use with SingleOrg auth)."
+    },
+    "OrgReadAccess": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether or not to allow this application read access to the directory (only applies to SingleOrg or MultiOrg auth)."
+    },
+    "UserSecretsId": {
+      "type": "parameter",
+      "datatype": "string",
+      "replaces": "aspnet-Company.WebApplication1-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "defaultValue": "aspnet-Company.WebApplication1-53bc9b9d-9d6a-45d4-8429-2a2761773502",
+      "description": "The ID to use for secrets (use with OrgReadAccess or Individual auth)."
+    },
+    "IncludeLaunchSettings": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to include launchSettings.json in the generated template."
+    },
+    "HttpsPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use to configure SSL in launchSettings.json."
+    },
+    "HttpsPortGenerated": {
+      "type": "generated",
+      "generator": "port",
+      "parameters": {
+        "low": 44300,
+        "high": 44399
+      }
+    },
+    "HttpsPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "HttpsPort",
+        "fallbackVariableName": "HttpsPortGenerated"
+      },
+      "replaces": "43434"
+    },
+    "KestrelPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use to configure Kestrel in launchSettings.json."
+    },
+    "KestrelPortGenerated": {
+      "type": "generated",
+      "generator": "port"
+    },
+    "KestrelPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "KestrelPort",
+        "fallbackVariableName": "KestrelPortGenerated"
+      },
+      "replaces": "5001"
+    },
+    "IISExpressPort": {
+      "type": "parameter",
+      "datatype": "integer",
+      "description": "Port number to use to configure IIS Express in launchSettings.json."
+    },
+    "IISExpressPortGenerated": {
+      "type": "generated",
+      "generator": "port"
+    },
+    "IISExpressPortReplacer": {
+      "type": "generated",
+      "generator": "coalesce",
+      "parameters": {
+        "sourceVariableName": "IISExpressPort",
+        "fallbackVariableName": "IISExpressPortGenerated"
+      },
+      "replaces": "55556"
+    },
+    "OrganizationalAuth": {
+      "type": "computed",
+      "value": "(auth == \"SingleOrg\" || auth == \"MultiOrg\")"
+    },
+    "WindowsAuth": {
+      "type": "computed",
+      "value": "(auth == \"Windows\")"
+    },
+    "MultiOrgAuth": {
+      "type": "computed",
+      "value": "(auth == \"MultiOrg\")"
+    },
+    "SingleOrgAuth": {
+      "type": "computed",
+      "value": "(auth == \"SingleOrg\")"
+    },
+    "IndividualAuth": {
+      "type": "computed",
+      "value": "(auth == \"Individual\")"
+    },
+    "NoAuth": {
+      "type": "computed",
+      "value": "(!(IndividualAuth || MultiOrgAuth || SingleOrgAuth || WindowsAuth))"
+    },
+    "RequiresHttps": {
+      "type": "computed",
+      "value": "(OrganizationalAuth)"
+    },
+    "UseLocalDB": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether to use LocalDB instead of SQLite. This option only applies if --auth Individual or --auth IndividualB2C is specified."
+    },
+    "UseBrowserLink": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether or not to include BrowserLink in the project"
+    },
+    "IncludeApplicationInsights": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false",
+      "description": "Whether or not to include Application Insights in the project"
+    },
+    "TargetFrameworkOverride": {
+      "type": "parameter",
+      "description": "Overrides the target framework",
+      "replaces": "TargetFrameworkOverride",
+      "datatype": "string",
+      "defaultValue": ""
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "netcoreapp1.0",
+          "description": "Target netcoreapp1.0"
+        },
+        {
+          "choice": "netcoreapp1.1",
+          "description": "Target netcoreapp1.1"
+        }
+      ],
+      "defaultValue": "netcoreapp1.1"
+    },
+    "FrameworkIs1_1": {
+      "type": "computed",
+      "value": "Framework == \"netcoreapp1.1\""
+    },
+    "copyrightYear": {
+      "type": "generated",
+      "generator": "now",
+      "replaces": "1975",
+      "parameters": {
+        "format": "yyyy"
+      }
+    },
+    "NoTools": {
+      "type": "parameter",
+      "datatype": "bool",
+      "defaultValue": "false"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    }
+  },
+  "primaryOutputs": [ { "path": "Company.WebApplication1.csproj" } ],
+  "defaultName": "WebApplication1",
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        { "text": "Run 'dotnet restore'" }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="..\Version.props" />
+
+  <PropertyGroup>
+    <PackOutput Condition="'$(PackOutput)' == ''">$(TemplatesFolder)</PackOutput>
+    <UpdateToNoTimestamp Condition="'$(UpdateToNoTimestamp)' == ''">false</UpdateToNoTimestamp>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <TemplatePack Include="Microsoft.DotNet.Common.ItemTemplates" />
+    <TemplatePack Include="Microsoft.DotNet.Web.ItemTemplates" />
+
+    <TemplatePack Include="Microsoft.DotNet.Common.ProjectTemplates.1.x" />
+    <TemplatePack Include="Microsoft.DotNet.Web.ProjectTemplates.1.x" />
+    <TemplatePack Include="Microsoft.DotNet.Test.ProjectTemplates.1.x" />
+
+    <TemplatePack Include="Microsoft.DotNet.Common.ProjectTemplates.2.0" />
+    <TemplatePack Include="Microsoft.DotNet.Web.ProjectTemplates.2.0" />
+    <TemplatePack Include="Microsoft.DotNet.Test.ProjectTemplates.2.0" />
+  </ItemGroup>
+
+  <Target Name="Update" Condition="'$(UpdatePackageSources)' != ''">
+    <Message Text="Updating packages..." Importance="High" />
+    <Message Text="dotnet exec ..\tools\DependencyUpdater\bin\debug\netcoreapp1.1\DependencyUpdater.dll &quot;$(MSBuildThisFileDirectory)&quot; $(UpdateToNoTimestamp) $(UpdatePackageSources)" Importance="High" />
+    <MSBuild Targets="Restore;Build" Projects="..\tools\DependencyUpdater\DependencyUpdater.csproj" />
+    <Exec 
+         Command="dotnet run $(MSBuildThisFileDirectory) $(UpdateToNoTimestamp) $(UpdatePackageSources)" 
+         WorkingDirectory="..\tools\DependencyUpdater\" />
+  </Target>
+
+  <Target Name="Build" Outputs="%(TemplatePack.Identity)" DependsOnTargets="Update">
+    <MSBuild Targets="Restore;Pack" Projects="%(TemplatePack.FullPath)\build.csproj" Properties="NoWarn=2008" />
+    <RemoveDir Directories="..\artifacts\scratch;..\artifacts\templates\netstandard1.0" />
+  </Target>
+  
+  <Target Name="Test">
+    <PropertyGroup>
+      <CurrentDate>$([System.DateTime]::Now.ToString(yyyy-MM-dd_hh_mm_ss))</CurrentDate>
+    </PropertyGroup>
+    <MSBuild Targets="Restore" Projects="..\tools\ProjectTestRunner\ProjectTestRunner.csproj" />
+    <Exec 
+         Command="dotnet test --logger &quot;trx;LogFileName=$(TestFolder)$(USERNAME)_$(COMPUTERNAME)_$(CurrentDate).trx&quot;"
+         WorkingDirectory="..\tools\ProjectTestRunner" />
+  </Target>
+</Project>

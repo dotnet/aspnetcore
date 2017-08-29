@@ -1,0 +1,12 @@
+**/intermediate/**
+**/artifacts/**
+packages/**
+.nuget/**
+.build/**
+**/.vs/**
+*.user
+project.lock.json
+Templates.BranchSettings.targets
+**/.vscode
+test/**/bin/**
+test/**/obj/**

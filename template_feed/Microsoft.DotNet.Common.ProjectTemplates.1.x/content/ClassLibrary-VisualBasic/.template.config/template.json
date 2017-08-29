@@ -1,0 +1,125 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": ["Common", "Library"],
+  "name": "Class library",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A project for creating a class library that targets .NET Standard or .NET Core",
+  "groupIdentity": "Microsoft.Common.Library",
+  "precedence": "100",
+  "identity": "Microsoft.Common.Library.VisualBasic",
+  "shortName": "classlib",
+  "tags": {
+    "language": "VB",
+    "type": "project"
+  },
+  "sourceName": "Company.ClassLibrary1",
+  "preferNameDirectory": true,
+  "baselines": {
+    "app": {
+      "description": "Target netcoreapp",
+      "defaultOverrides": {
+        "Framework": "netcoreapp1.1"
+      }
+    },
+    "standard": {
+      "description": "Target netstandard",
+      "defaultOverrides": {
+        "Framework": "netstandard1.4"
+      }
+    }
+  },
+  "symbols": {
+    "TargetFrameworkOverride": {
+      "type": "parameter",
+      "description": "Overrides the target framework",
+      "replaces": "TargetFrameworkOverride",
+      "datatype": "string",
+      "defaultValue": ""
+    },
+    "Framework": {
+      "type": "parameter",
+      "description": "The target framework for the project.",
+      "replaces": "netstandard1.4",
+      "datatype": "choice",
+      "choices": [
+        {
+          "choice": "netcoreapp1.0",
+          "description": "Target netcoreapp1.0"
+        },
+        {
+          "choice": "netcoreapp1.1",
+          "description": "Target netcoreapp1.1"
+        },
+        {
+          "choice": "netstandard1.0",
+          "description": "Target netstandard1.0"
+        },
+        {
+          "choice": "netstandard1.1",
+          "description": "Target netstandard1.1"
+        },
+        {
+          "choice": "netstandard1.2",
+          "description": "Target netstandard1.2"
+        },
+        {
+          "choice": "netstandard1.3",
+          "description": "Target netstandard1.3"
+        },
+        {
+          "choice": "netstandard1.4",
+          "description": "Target netstandard1.4"
+        },
+        {
+          "choice": "netstandard1.5",
+          "description": "Target netstandard1.5"
+        },
+        {
+          "choice": "netstandard1.6",
+          "description": "Target netstandard1.6"
+        }
+      ],
+      "defaultValue": "netstandard1.4"
+    },
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    },
+    "skipRestore": {
+      "type": "parameter",
+      "datatype": "bool",
+      "description": "If specified, skips the automatic restore of the project on create.",
+      "defaultValue": "false"
+    }
+  },
+  "primaryOutputs": [
+    { "path": "Company.ClassLibrary1.vbproj" },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "path": "Class1.vb"
+    }
+  ],
+  "defaultName": "ClassLibrary1",
+  "postActions": [
+    {
+      "condition": "(!skipRestore)",
+      "description": "Restore NuGet packages required by this project.",
+      "manualInstructions": [
+        { "text": "Run 'dotnet restore'" }
+      ],
+      "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+      "continueOnError": true
+    },
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens Class1.vb in the editor",
+      "manualInstructions": [ ],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "1"
+      },
+      "continueOnError": true
+    }
+  ]
+}

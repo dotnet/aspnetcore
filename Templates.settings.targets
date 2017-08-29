@@ -1,0 +1,11 @@
+<Project ToolsVersion="15.0">  
+<PropertyGroup>  
+    <IntermediateFolder>$(MSBuildThisFileDirectory)obj\</IntermediateFolder>
+    <ArtifactsFolder>$(MSBuildThisFileDirectory)artifacts\</ArtifactsFolder>
+    <TemplatesFolder>$(ArtifactsFolder)templates\</TemplatesFolder>
+    <TemplatesNoTimestampFolder>$(ArtifactsFolder)templates-notimestamp\</TemplatesNoTimestampFolder>
+    <TestFolder>$(ArtifactsFolder)test\</TestFolder>
+    <BuildToolsFolder>$(MSBuildThisFileDirectory).tools\</BuildToolsFolder>
+    <NuGet>&quot;$(BuildToolsFolder)nuget.exe&quot;</NuGet>
+    </PropertyGroup>
+</Project>

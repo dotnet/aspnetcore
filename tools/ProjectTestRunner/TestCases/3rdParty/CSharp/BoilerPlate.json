@@ -1,0 +1,52 @@
+﻿{
+  "skip": true,
+  "install": "Boilerplate.Templates::*",
+  "create": "bapi",
+  "name": "HTML Boilerplate (defaults)",
+  "tasks": [
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "restore",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "build -c Debug",
+      "noExit": false,
+      "exitCode": 0
+    },
+    {
+      "name": "RunApp",
+      "handler": "execute",
+      "command": "dotnet",
+      "args": "exec bin/Debug/netcoreapp1.1/%targetPathName%.dll",
+      "noExit": true,
+      "exitTimeout": 5000
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000",
+      "statusCode": 200,
+      "verb": "GET"
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000/Home/About",
+      "statusCode": 200,
+      "verb": "GET"
+    },
+    {
+      "handler": "httpRequest",
+      "url": "http://localhost:5000/Home/Contact",
+      "statusCode": 200,
+      "verb": "GET"
+    },
+    {
+      "handler": "taskkill",
+      "name": "RunApp"
+    }
+  ]
+}
