@@ -10,6 +10,7 @@
     <ContentWithTargetPath Include="NuGet.config.template" CopyToOutputDirectory="PreserveNewest" TargetPath="NuGet.config" />
     <ContentWithTargetPath Include="global.json.template" CopyToOutputDirectory="PreserveNewest" TargetPath="global.json" />
     <ContentWithTargetPath Include="Directory.Build.props.template" CopyToOutputDirectory="PreserveNewest" TargetPath="Directory.Build.props" />
+    <ContentWithTargetPath Include="Directory.Build.targets.template" CopyToOutputDirectory="PreserveNewest" TargetPath="Directory.Build.targets" />
   </ItemGroup>
 
   <ItemGroup>

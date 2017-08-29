@@ -11,31 +11,31 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 {
     public class LoggingInterceptor : IServiceClientTracingInterceptor
     {
-        private readonly ILogger _logger;
+        private readonly ILogger _globalLogger;
 
-        public LoggingInterceptor(ILogger logger)
+        public LoggingInterceptor(ILogger globalLogger)
         {
-            _logger = logger;
+            _globalLogger = globalLogger;
         }
 
         public void Information(string message)
         {
-            _logger.LogInformation(message);
+            CurrentLogger.LogInformation(message);
         }
 
         public void TraceError(string invocationId, Exception exception)
         {
-            _logger.LogInformation(exception, "Exception in {invocationId}", invocationId);
+            CurrentLogger.LogInformation(exception, "Exception in {invocationId}", invocationId);
         }
 
         public void ReceiveResponse(string invocationId, HttpResponseMessage response)
         {
-            _logger.LogInformation(response.AsFormattedString());
+            CurrentLogger.LogInformation(response.AsFormattedString());
         }
 
         public void SendRequest(string invocationId, HttpRequestMessage request)
         {
-            _logger.LogInformation(request.AsFormattedString());
+            CurrentLogger.LogInformation(request.AsFormattedString());
         }
 
         public void Configuration(string source, string name, string value) { }
@@ -43,5 +43,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
         public void EnterMethod(string invocationId, object instance, string method, IDictionary<string, object> parameters) { }
 
         public void ExitMethod(string invocationId, object returnValue) { }
+
+        private ILogger CurrentLogger => TestLogger.Current ?? _globalLogger;
     }
 }

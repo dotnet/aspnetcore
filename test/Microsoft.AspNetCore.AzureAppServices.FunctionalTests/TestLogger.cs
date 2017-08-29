@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
@@ -12,8 +13,13 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
         private readonly ILogger _logger;
 
+        private static readonly AsyncLocal<TestLogger> _currentLogger = new AsyncLocal<TestLogger>();
+
+        public static TestLogger Current => _currentLogger.Value;
+
         public TestLogger(ILoggerFactory factory, ILogger logger)
         {
+            _currentLogger.Value = this;
             _factory = factory;
             _logger = logger;
         }
@@ -35,6 +41,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
         public void Dispose()
         {
+            _currentLogger.Value = null;
             _factory.Dispose();
         }
     }
