@@ -3,6 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 15.0.26228.9
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{40EE0889-960E-41B4-A3D3-9CE963EB0797}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{8B21A3A9-9CA6-4857-A6E0-1A3203404B60}"
 EndProject
@@ -11,6 +14,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "StaticFileSample", "samples\StaticFileSample\StaticFileSample.csproj", "{092141D9-305A-4FC5-AE74-CB23982CA8D4}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{EF02AFE8-7C15-4DDB-8B2C-58A676112A98}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.StaticFiles.Tests", "test\Microsoft.AspNetCore.StaticFiles.Tests\Microsoft.AspNetCore.StaticFiles.Tests.csproj", "{CC87FE7D-8F42-4BE9-A152-9625E837C1E5}"
 EndProject
