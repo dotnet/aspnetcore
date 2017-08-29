@@ -18,3 +18,21 @@ export class ConsoleLogger implements ILogger {
         }
     }
 }
+
+export namespace LoggerFactory {
+    export function createLogger(logging?: ILogger | LogLevel) {
+        if (logging === undefined) {
+            return new ConsoleLogger(LogLevel.Information);
+        }
+
+        if (logging === null) {
+            return new NullLogger();
+        }
+
+        if ((<ILogger>logging).log) {
+            return <ILogger>logging;
+        }
+
+        return new ConsoleLogger(<LogLevel>logging);
+    }
+}

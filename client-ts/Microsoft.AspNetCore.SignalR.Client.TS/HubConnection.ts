@@ -7,13 +7,14 @@ import { JsonHubProtocol } from "./JsonHubProtocol";
 import { TextMessageFormat } from "./Formatters"
 import { Base64EncodedHubProtocol } from "./Base64EncodedHubProtocol"
 import { ILogger, LogLevel } from "./ILogger"
-import { NullLogger } from "./Loggers"
+import { ConsoleLogger, NullLogger, LoggerFactory } from "./Loggers"
+import { IHubConnectionOptions } from "./IHubConnectionOptions"
 
 export { TransportType } from "./Transports"
 export { HttpConnection } from "./HttpConnection"
 export { JsonHubProtocol } from "./JsonHubProtocol"
-export { LogLevel } from "./ILogger"
-export { ConsoleLogger } from "./Loggers"
+export { LogLevel, ILogger } from "./ILogger"
+export { ConsoleLogger, NullLogger } from "./Loggers"
 
 export class HubConnection {
     private readonly connection: IConnection;
@@ -24,10 +25,12 @@ export class HubConnection {
     private id: number;
     private connectionClosedCallback: ConnectionClosed;
 
-    constructor(connection: IConnection, logger: ILogger = new NullLogger(), protocol: IHubProtocol = new JsonHubProtocol()) {
+    constructor(connection: IConnection, options: IHubConnectionOptions = {}) {
         this.connection = connection;
-        this.logger = logger || new NullLogger();
-        this.protocol = protocol || new JsonHubProtocol();
+        options = options || {};
+        this.logger = LoggerFactory.createLogger(options.logging);
+
+        this.protocol = options.protocol || new JsonHubProtocol();
         this.connection.onDataReceived = data => {
             this.onDataReceived(data);
         };

@@ -16,7 +16,8 @@ describe("Connection", () => {
                 get(url: string): Promise<string> {
                     return Promise.resolve("");
                 }
-            }
+            },
+            logging: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -51,7 +52,8 @@ describe("Connection", () => {
                 get(url: string): Promise<string> {
                     return Promise.resolve("");
                 }
-            }
+            },
+            logging: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -74,7 +76,8 @@ describe("Connection", () => {
                 get(url: string): Promise<string> {
                     return Promise.resolve("");
                 }
-            }
+            },
+            logging: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -109,7 +112,8 @@ describe("Connection", () => {
                     connection.stop();
                     return Promise.resolve("");
                 }
-            }
+            },
+            logging: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -154,7 +158,8 @@ describe("Connection", () => {
                     return Promise.resolve("");
                 }
             },
-            transport: fakeTransport
+            transport: fakeTransport,
+            logging: null
         } as IHttpConnectionOptions;
 
 
@@ -183,7 +188,8 @@ describe("Connection", () => {
                         return Promise.resolve("");
                     }
                 },
-                transport: requestedTransport
+                transport: requestedTransport,
+                logging: null
             } as IHttpConnectionOptions;
 
             let connection = new HttpConnection("http://tempuri.org", options);
@@ -208,7 +214,8 @@ describe("Connection", () => {
                 get(url: string): Promise<string> {
                     return Promise.resolve("");
                 }
-            }
+            },
+            logging: null
         } as IHttpConnectionOptions;
 
         let connection = new HttpConnection("http://tempuri.org", options);
@@ -249,7 +256,8 @@ describe("Connection", () => {
                         return Promise.resolve("");
                     }
                 },
-                transport: fakeTransport
+                transport: fakeTransport,
+                logging: null
             } as IHttpConnectionOptions;
 
             let connection = new HttpConnection("https://tempuri.org", options);

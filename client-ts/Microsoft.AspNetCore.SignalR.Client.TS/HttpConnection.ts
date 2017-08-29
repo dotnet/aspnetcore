@@ -4,7 +4,7 @@ import { ITransport, TransferMode, TransportType, WebSocketTransport, ServerSent
 import { IHttpClient, HttpClient } from "./HttpClient"
 import { IHttpConnectionOptions } from "./IHttpConnectionOptions"
 import { ILogger, LogLevel } from "./ILogger"
-import { NullLogger } from "./Loggers"
+import { LoggerFactory } from "./Loggers"
 
 const enum ConnectionState {
     Initial,
@@ -32,8 +32,9 @@ export class HttpConnection implements IConnection {
 
     constructor(url: string, options: IHttpConnectionOptions = {}) {
         this.url = url;
+        options = options || {};
         this.httpClient = options.httpClient || new HttpClient();
-        this.logger = options.logger || new NullLogger();
+        this.logger = LoggerFactory.createLogger(options.logging);
         this.connectionState = ConnectionState.Initial;
         this.options = options;
     }
