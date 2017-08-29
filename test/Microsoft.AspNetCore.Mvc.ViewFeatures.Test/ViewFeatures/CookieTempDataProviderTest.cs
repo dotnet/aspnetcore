@@ -162,9 +162,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
         }
 
         [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
-        public void SaveTempData_SetsSecureAttributeOnCookie_OnlyIfRequestIsSecure(bool isSecure)
+        [InlineData(true, CookieSecurePolicy.None, false)]
+        [InlineData(false, CookieSecurePolicy.None, false)]
+        [InlineData(true, CookieSecurePolicy.Always, true)]
+        [InlineData(false, CookieSecurePolicy.Always, true)]
+        [InlineData(true, CookieSecurePolicy.SameAsRequest, true)]
+        [InlineData(false, CookieSecurePolicy.SameAsRequest, false)]
+        public void SaveTempData_HonorsCookieSecurePolicy_OnOptions(
+            bool isRequestSecure,
+            CookieSecurePolicy cookieSecurePolicy,
+            bool expectedSecureFlag)
         {
             // Arrange
             var values = new Dictionary<string, object>();
@@ -173,7 +180,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             var expectedDataToProtect = tempDataProviderStore.Serialize(values);
             var expectedDataInCookie = WebEncoders.Base64UrlEncode(expectedDataToProtect);
             var dataProtector = new PassThroughDataProtector();
-            var tempDataProvider = GetProvider(dataProtector);
+            var options = new CookieTempDataProviderOptions();
+            options.Cookie.SecurePolicy = cookieSecurePolicy;
+            var tempDataProvider = GetProvider(dataProtector, options);
             var responseCookies = new MockResponseCookieCollection();
             var httpContext = new Mock<HttpContext>();
             httpContext
@@ -181,7 +190,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 .Returns("/");
             httpContext
                 .SetupGet(hc => hc.Request.IsHttps)
-                .Returns(isSecure);
+                .Returns(isRequestSecure);
             httpContext
                 .Setup(hc => hc.Response.Cookies)
                 .Returns(responseCookies);
@@ -196,7 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.Equal(expectedDataInCookie, cookieInfo.Value);
             Assert.Equal(expectedDataToProtect, dataProtector.PlainTextToProtect);
             Assert.Equal("/", cookieInfo.Options.Path);
-            Assert.Equal(isSecure, cookieInfo.Options.Secure);
+            Assert.Equal(expectedSecureFlag, cookieInfo.Options.Secure);
             Assert.True(cookieInfo.Options.HttpOnly);
             Assert.Null(cookieInfo.Options.Expires);
             Assert.Null(cookieInfo.Options.Domain);
