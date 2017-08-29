@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>ASP.NET Core Error Logging Middleware (ELM) to capture and display request logs.</Description>
     <VersionPrefix>0.4.0</VersionPrefix>
