@@ -1,10 +1,5 @@
 <Project>
   <ItemGroup>
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.SignalR.Test.Server\*.csproj" />
-    <ExcludeFromTest Include="$(RepositoryRoot)test\WebSocketsTestApp\*.csproj" />
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.SignalR.Microbenchmarks\*.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectsToPack Include="$(RepositoryRoot)client-ts\Microsoft.AspNetCore.SignalR.Client.TS\*.csproj" />
   </ItemGroup>
 </Project>

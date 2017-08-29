@@ -1,14 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>Common serialiation primitives for SignalR Clients Servers</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>aspnetcore;signalr</PackageTags>
-    <EnableApiCheck>false</EnableApiCheck>
     <RootNamespace>Microsoft.AspNetCore.SignalR</RootNamespace>
   </PropertyGroup>
 

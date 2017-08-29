@@ -1,18 +1,13 @@
-<Project Sdk="Microsoft.NET.Sdk">
-
-  <Import Project="..\..\build\common.props" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>Components for providing real-time bi-directional communication across the Web.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <PackageTags>aspnetcore;signalr</PackageTags>
-    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Http.Features" Version="$(AspNetCoreVersion)" />
     <PackageReference Include="System.Threading.Tasks.Channels" Version="$(CoreFxLabsVersion)" />
   </ItemGroup>
+
 </Project>
