@@ -1,0 +1,4 @@
+﻿<Project>
+  <!-- Skip the parent directory so test asset projects don't get xunit and other test package references. -->
+  <Import Project="..\..\Directory.Build.props" />
+</Project>

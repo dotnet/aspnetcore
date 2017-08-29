@@ -1,10 +1,16 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.0
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{E0497F39-AFFB-4819-A116-E39E361915AB}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{FEB39027-9158-4DE2-997F-7ADAEF8188D0}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.TestHost.Tests", "test\Microsoft.AspNetCore.TestHost.Tests\Microsoft.AspNetCore.TestHost.Tests.csproj", "{0ACB2719-9484-49B5-B8E3-117091192511}"
 EndProject
@@ -33,12 +39,21 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Certificates.Configuration.Tests", "test\Microsoft.AspNetCore.Certificates.Configuration.Tests\Microsoft.AspNetCore.Certificates.Configuration.Tests.csproj", "{AB0B7394-278D-4838-A59C-276ED88D00CC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TestAssets", "TestAssets", "{FA7D2012-C1B4-4AF7-9ADD-381B2004EA16}"
+	ProjectSection(SolutionItems) = preProject
+		test\TestAssets\Directory.Build.props = test\TestAssets\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Hosting.TestSites", "test\TestAssets\Microsoft.AspNetCore.Hosting.TestSites\Microsoft.AspNetCore.Hosting.TestSites.csproj", "{EDFF02F0-A8A4-4EB1-A179-94D7500FB266}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestStartupAssembly1", "test\TestAssets\TestStartupAssembly1\TestStartupAssembly1.csproj", "{58194285-5891-464A-A96B-0FE043029E8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IStartupInjectionAssemblyName", "test\TestAssets\IStartupInjectionAssemblyName\IStartupInjectionAssemblyName.csproj", "{F894D8C5-B760-4734-AD31-3CA6FC557CCF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "IStartupInjectionAssemblyName", "test\TestAssets\IStartupInjectionAssemblyName\IStartupInjectionAssemblyName.csproj", "{F894D8C5-B760-4734-AD31-3CA6FC557CCF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{A7270417-6BC6-4E3F-A96A-79193D16BB82}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
