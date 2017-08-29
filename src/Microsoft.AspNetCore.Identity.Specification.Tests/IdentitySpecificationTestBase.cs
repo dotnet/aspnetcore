@@ -465,7 +465,7 @@ namespace Microsoft.AspNetCore.Identity.Test
                 foreach (var r in roles)
                 {
                     var expectedRoleName = await roleManager.GetRoleNameAsync(r);
-                    Assert.True(rs.Any(role => role == expectedRoleName));
+                    Assert.Contains(rs, role => role == expectedRoleName);
                 }
             }
         }

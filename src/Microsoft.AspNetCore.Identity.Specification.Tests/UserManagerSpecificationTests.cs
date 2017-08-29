@@ -563,7 +563,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.False(await manager.CheckPasswordAsync(user, "whatever"));
             var logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
-            Assert.Equal(0, logins.Count());
+            Assert.Empty(logins);
         }
 
         /// <summary>
@@ -586,7 +586,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.AddLoginAsync(user, new UserLoginInfo(provider, providerKey, display)));
             var logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
-            Assert.Equal(1, logins.Count());
+            Assert.Single(logins);
             Assert.Equal(provider, logins.First().LoginProvider);
             Assert.Equal(providerKey, logins.First().ProviderKey);
             Assert.Equal(display, logins.First().ProviderDisplayName);
@@ -614,7 +614,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.True(await manager.HasPasswordAsync(user));
             var logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
-            Assert.Equal(1, logins.Count());
+            Assert.Single(logins);
             Assert.Equal(user, await manager.FindByLoginAsync(login.LoginProvider, login.ProviderKey));
             Assert.True(await manager.CheckPasswordAsync(user, "password"));
         }
@@ -661,7 +661,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Equal(user, await manager.FindByLoginAsync(login.LoginProvider, login.ProviderKey));
             var logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
-            Assert.Equal(1, logins.Count());
+            Assert.Single(logins);
             Assert.Equal(login.LoginProvider, logins.Last().LoginProvider);
             Assert.Equal(login.ProviderKey, logins.Last().ProviderKey);
             Assert.Equal(login.ProviderDisplayName, logins.Last().ProviderDisplayName);
@@ -670,7 +670,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             Assert.Null(await manager.FindByLoginAsync(login.LoginProvider, login.ProviderKey));
             logins = await manager.GetLoginsAsync(user);
             Assert.NotNull(logins);
-            Assert.Equal(0, logins.Count());
+            Assert.Empty(logins);
             Assert.NotEqual(stamp, await manager.GetSecurityStampAsync(user));
         }
 
@@ -1972,7 +1972,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             await manager.UpdateAsync(user);
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.Equal(1, factors.Count());
+            Assert.Single(factors);
             Assert.Equal("Phone", factors[0]);
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, "test@test.com"));
             token = await manager.GenerateEmailConfirmationTokenAsync(user);
@@ -1983,7 +1983,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             IdentityResultAssert.IsSuccess(await manager.SetEmailAsync(user, null));
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
             Assert.NotNull(factors);
-            Assert.Equal(1, factors.Count());
+            Assert.Single(factors);
             Assert.Equal("Phone", factors[0]);
             IdentityResultAssert.IsSuccess(await manager.ResetAuthenticatorKeyAsync(user));
             factors = await manager.GetValidTwoFactorProvidersAsync(user);
