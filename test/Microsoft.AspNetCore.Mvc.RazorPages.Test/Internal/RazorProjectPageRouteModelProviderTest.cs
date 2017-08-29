@@ -176,5 +176,40 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     Assert.Equal("/Pages/Index.cshtml", model.RelativePath);
                 });
         }
+
+        [Fact]
+        public void OnProvidersExecuting_DoesNotAddPageDirectivesIfItAlreadyExists()
+        {
+            // Arrange
+            var fileProvider = new TestFileProvider();
+            var file1 = fileProvider.AddFile("/Pages/Home.cshtml", "@page");
+            var file2 = fileProvider.AddFile("/Pages/Test.cshtml", "@page");
+
+            var dir1 = fileProvider.AddDirectoryContent("/Pages", new IFileInfo[] { file1, file2 });
+            fileProvider.AddDirectoryContent("/", new[] { dir1 });
+
+            var project = new TestRazorProject(fileProvider);
+
+            var optionsManager = new TestOptionsManager<RazorPagesOptions>();
+            optionsManager.Value.RootDirectory = "/";
+            var provider = new RazorProjectPageRouteModelProvider(project, optionsManager, NullLoggerFactory.Instance);
+            var context = new PageRouteModelProviderContext();
+            var pageModel = new PageRouteModel("/Pages/Test.cshtml", "/Pages/Test");
+            context.RouteModels.Add(pageModel);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.Collection(context.RouteModels,
+                model => Assert.Same(pageModel, model),
+                model =>
+                {
+                    Assert.Equal("/Pages/Home.cshtml", model.RelativePath);
+                    Assert.Equal("/Pages/Home", model.ViewEnginePath);
+                    Assert.Collection(model.Selectors,
+                        selector => Assert.Equal("Pages/Home", selector.AttributeRouteModel.Template));
+                });
+        }
     }
 }

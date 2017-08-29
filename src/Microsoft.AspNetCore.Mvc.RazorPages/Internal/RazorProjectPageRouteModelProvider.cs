@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.AspNetCore.Razor.Language;
@@ -24,8 +25,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             _pagesOptions = pagesOptionsAccessor.Value;
             _logger = loggerFactory.CreateLogger<RazorProjectPageRouteModelProvider>();
         }
-
-        public int Order => -1000;
+        
+        /// <remarks>
+        /// Ordered to execute after <see cref="CompiledPageRouteModelProvider"/>.
+        /// </remarks>
+        public int Order => -1000 + 10; 
 
         public void OnProvidersExecuted(PageRouteModelProviderContext context)
         {
@@ -47,6 +51,13 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     continue;
                 }
 
+                if (IsAlreadyRegistered(context, item))
+                {
+                    // The CompiledPageRouteModelProvider (or another provider) already registered a PageRoute for this path.
+                    // Don't register a duplicate entry for this route.
+                    continue;
+                }
+
                 var routeModel = new PageRouteModel(
                     relativePath: item.CombinedPath,
                     viewEnginePath: item.FilePathWithoutExtension);
@@ -54,6 +65,21 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
                 context.RouteModels.Add(routeModel);
             }
+        }
+
+        private bool IsAlreadyRegistered(PageRouteModelProviderContext context, RazorProjectItem projectItem)
+        {
+            for (var i = 0; i < context.RouteModels.Count; i++)
+            {
+                var routeModel = context.RouteModels[i];
+                if (string.Equals(routeModel.ViewEnginePath, projectItem.FilePathWithoutExtension, StringComparison.OrdinalIgnoreCase) &&
+                    string.Equals(routeModel.RelativePath, projectItem.CombinedPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

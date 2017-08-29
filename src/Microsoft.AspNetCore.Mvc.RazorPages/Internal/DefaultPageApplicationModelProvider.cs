@@ -9,7 +9,6 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
