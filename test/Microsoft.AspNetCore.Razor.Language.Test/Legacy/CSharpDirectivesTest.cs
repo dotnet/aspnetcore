@@ -347,8 +347,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.Code(Environment.NewLine + "  ").AsStatement(),
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                            .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"*, Foo\"")
                         .AsAddTagHelper(
                             "\"*, Foo\"",
@@ -370,8 +374,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AutoCompleteWith(autoCompleteString: null, atEndOfSpan: false),
                     new DirectiveBlock(
                         Factory.CodeTransition(),
-                        Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                               .Accepts(AcceptedCharactersInternal.None),
+                        Factory
+                            .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
+                            .Accepts(AcceptedCharactersInternal.None),
+                        Factory
+                            .Span(SpanKindInternal.Markup, " ", markup: false)
+                            .Accepts(AcceptedCharactersInternal.None),
                         Factory.Code("\"*, Foo\"")
                             .AsAddTagHelper(
                                 "\"*, Foo\"",
@@ -1013,7 +1021,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"\"")
                         .AsTagHelperPrefixDirective("\"\"", string.Empty)));
@@ -1026,7 +1037,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo")
                         .AsTagHelperPrefixDirective("Foo", "Foo")));
@@ -1039,7 +1053,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo\"")
                         .AsTagHelperPrefixDirective("\"Foo\"", "Foo")));
@@ -1058,7 +1075,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
                         .AsTagHelperPrefixDirective(string.Empty, string.Empty, expectedError)
@@ -1087,7 +1107,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
                         .AsTagHelperPrefixDirective("\"Foo", "\"Foo", expectedErrors)));
@@ -1115,7 +1138,10 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 new DirectiveBlock(
                     Factory.CodeTransition(),
                     Factory
-                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword + " ")
+                        .MetaCode(SyntaxConstants.CSharp.TagHelperPrefixKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
                         .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo   \"")
                         .AsTagHelperPrefixDirective("Foo   \"", "Foo   \"", expectedErrors)));
@@ -1135,8 +1161,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@removeTagHelper \"\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"\"")
                         .AsRemoveTagHelper(
                             "\"\"",
@@ -1158,8 +1188,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@removeTagHelper Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo")
                         .AsRemoveTagHelper(
                             "Foo",
@@ -1181,8 +1215,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@removeTagHelper \"Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo\"")
                         .AsRemoveTagHelper(
                             "\"Foo\"",
@@ -1196,7 +1234,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@removeTagHelper     Foo,   Bar    ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + "     ")
+                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
+                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, "     ", markup: false)
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo,   Bar    ")
                         .AsRemoveTagHelper(
@@ -1226,7 +1266,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@removeTagHelper ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
+                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
+                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false)
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
                         .AsRemoveTagHelper(string.Empty, string.Empty, legacyErrors: expectedErrors)
@@ -1255,8 +1297,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@removeTagHelper \"Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
                         .AsRemoveTagHelper("\"Foo", "\"Foo", legacyErrors: expectedErrors)));
         }
@@ -1283,8 +1329,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@removeTagHelper Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo\"")
                         .AsRemoveTagHelper("Foo\"", "Foo\"", legacyErrors: expectedErrors)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
@@ -1304,8 +1354,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@addTagHelper \"\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"\"")
                         .AsAddTagHelper(
                             "\"\"",
@@ -1327,7 +1381,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@addTagHelper Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
+                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
+                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false)
                            .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo")
                         .AsAddTagHelper(
@@ -1350,8 +1406,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@addTagHelper \"Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo\"")
                         .AsAddTagHelper(
                             "\"Foo\"",
@@ -1365,8 +1425,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@addTagHelper     Foo,   Bar    ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + "     ")
-                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, "     ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo,   Bar    ")
                         .AsAddTagHelper(
                             "Foo,   Bar",
@@ -1395,8 +1459,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@addTagHelper ",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.EmptyCSharp()
                         .AsAddTagHelper(string.Empty, string.Empty, legacyErrors: expectedErrors)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));
@@ -1424,8 +1492,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@addTagHelper \"Foo",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("\"Foo")
                         .AsAddTagHelper("\"Foo", "\"Foo", legacyErrors: expectedErrors)));
         }
@@ -1452,8 +1524,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             ParseBlockTest("@addTagHelper Foo\"",
                 new DirectiveBlock(
                     Factory.CodeTransition(),
-                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword + " ")
-                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
+                        .Accepts(AcceptedCharactersInternal.None),
+                    Factory
+                        .Span(SpanKindInternal.Markup, " ", markup: false)
+                        .Accepts(AcceptedCharactersInternal.None),
                     Factory.Code("Foo\"")
                         .AsAddTagHelper("Foo\"", "Foo\"", legacyErrors: expectedErrors)
                         .Accepts(AcceptedCharactersInternal.AnyExceptNewline)));

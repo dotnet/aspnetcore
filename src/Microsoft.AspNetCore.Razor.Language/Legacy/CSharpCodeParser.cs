@@ -2148,11 +2148,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var keywordLength = Span.End.AbsoluteIndex - Span.Start.AbsoluteIndex;
 
                 var foundWhitespace = At(CSharpSymbolType.WhiteSpace);
-                AcceptWhile(CSharpSymbolType.WhiteSpace);
 
                 // If we found whitespace then any content placed within the whitespace MAY cause a destructive change
                 // to the document.  We can't accept it.
-                Output(SpanKindInternal.MetaCode, foundWhitespace ? AcceptedCharactersInternal.None : AcceptedCharactersInternal.AnyExceptNewline);
+                var acceptedCharacters = foundWhitespace ? AcceptedCharactersInternal.None : AcceptedCharactersInternal.AnyExceptNewline;
+                Output(SpanKindInternal.MetaCode, acceptedCharacters);
+
+                AcceptWhile(CSharpSymbolType.WhiteSpace);
+                Span.ChunkGenerator = SpanChunkGenerator.Null;
+                Output(SpanKindInternal.Markup, acceptedCharacters);
 
                 if (EndOfFile || At(CSharpSymbolType.NewLine))
                 {
