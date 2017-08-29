@@ -1,5 +1,4 @@
 ﻿<Project>
-  <Import Project="build\dependencies.props" />
   <Import Project="version.xml" />
 
   <PropertyGroup>

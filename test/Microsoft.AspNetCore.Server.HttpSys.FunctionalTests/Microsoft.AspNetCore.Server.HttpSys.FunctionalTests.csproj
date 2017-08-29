@@ -10,7 +10,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Net.Http.WinHttpHandler" Version="$(CoreFxVersion)" />
+    <PackageReference Include="System.Net.Http.WinHttpHandler" />
   </ItemGroup>
 
 </Project>
