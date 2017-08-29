@@ -1,10 +1,16 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.9
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{A5A15F1C-885A-452A-A731-B0173DDBD913}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{F31FF137-390C-49BF-A3BD-7C6ED3597C21}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "samples", "samples", "{982F09D8-621E-4872-BA7B-BBDEA47D1EFD}"
 EndProject
@@ -45,6 +51,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		build.cmd = build.cmd
 		build.ps1 = build.ps1
 		build.sh = build.sh
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		NuGet.config = NuGet.config
 		README.md = README.md
 		version.xml = version.xml
@@ -52,7 +60,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{ED7BCAC5-2796-44BD-9954-7C248263BC8B}"
 	ProjectSection(SolutionItems) = preProject
-		build\common.props = build\common.props
 		build\dependencies.props = build\dependencies.props
 		build\Key.snk = build\Key.snk
 	EndProjectSection
@@ -289,5 +296,8 @@ Global
 		{3D8C9A87-5DFB-4EC0-9CB6-174AD3B33852} = {A5A15F1C-885A-452A-A731-B0173DDBD913}
 		{73CA3145-91BD-4DA5-BC74-40008DE7EA98} = {A5A15F1C-885A-452A-A731-B0173DDBD913}
 		{A85950C5-2794-47E2-8EAA-05A1DC7C6DA7} = {F31FF137-390C-49BF-A3BD-7C6ED3597C21}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D9A9994D-F09F-4209-861B-4A9036485D1F}
 	EndGlobalSection
 EndGlobal

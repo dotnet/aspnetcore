@@ -1,5 +1,4 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk" ToolsVersion="15.0">
-  <Import Project="..\..\build\common.props" />
   <PropertyGroup>
     <Description>ASP.NET Core common types used by the various authentication components.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>

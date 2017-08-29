@@ -1,7 +1,5 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>ASP.NET Core utilities, such as for working with forms, multipart messages, and query strings.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
