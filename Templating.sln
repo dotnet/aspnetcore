@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.0
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Test", "test\Templates.Test.csproj", "{D43A4D24-D514-44C2-9438-54F6EDF58680}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Templates.Test", "test\Templates.Test\Templates.Test.csproj", "{D43A4D24-D514-44C2-9438-54F6EDF58680}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.ItemTemplates", "src\Microsoft.DotNet.Web.ItemTemplates\Microsoft.DotNet.Web.ItemTemplates.csproj", "{ABC9D95C-7FBD-4F8D-827A-00942EA3D0C0}"
 EndProject
