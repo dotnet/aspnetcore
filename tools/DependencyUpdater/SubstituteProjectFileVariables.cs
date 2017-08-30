@@ -1,12 +1,13 @@
 ﻿using Microsoft.Build.Utilities;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
 
 namespace DependencyUpdater
 {
-    public class UpdateAspNetReference : Task
+    public class SubstituteProjectFileVariables : Task
     {
         private static string[] ProjectFileExtensions = new[]
         {
@@ -15,15 +16,12 @@ namespace DependencyUpdater
         };
 
         public string NupkgFile { get; set; }
-        public string AspNetVersion { get; set; }
+        public string Substitutions { get; set; }
         public string OutDir { get; set; }
 
         public override bool Execute()
         {
-            if (string.IsNullOrEmpty(AspNetVersion))
-            {
-                throw new ArgumentException($"No value specified for {nameof(AspNetVersion)}.");
-            }
+            var substitutionsDict = ParseSubstitutions(Substitutions);
 
             // We can't modify the .nupkg in place because the build system still
             // has a lock on the file. We can read it, but not write it. So copy
@@ -35,11 +33,21 @@ namespace DependencyUpdater
             {
                 foreach (var projectFile in zipFile.Entries.Where(IsProjectFile))
                 {
-                    PerformVariableSubstitution(projectFile);
+                    PerformVariableSubstitutions(projectFile, substitutionsDict);
                 }
             }
 
             return true;
+        }
+
+        private static IDictionary<string, string> ParseSubstitutions(string substitutions)
+        {
+            // Takes input of the form "key1=val1; key2=val2" (as is common in MSBuild)
+            return substitutions.Split(new[] { ';' })
+                .Select(pair => pair.Trim())
+                .Where(pair => !string.IsNullOrEmpty(pair) && pair.IndexOf('=') > 0)
+                .Select(pair => pair.Split('='))
+                .ToDictionary(splitPair => splitPair[0].Trim(), splitPair => splitPair[1].Trim());
         }
 
         private static bool IsProjectFile(ZipArchiveEntry entry)
@@ -48,7 +56,7 @@ namespace DependencyUpdater
                 extension => Path.GetExtension(entry.Name).Equals(extension, StringComparison.OrdinalIgnoreCase));
         }
 
-        private void PerformVariableSubstitution(ZipArchiveEntry entry)
+        private static void PerformVariableSubstitutions(ZipArchiveEntry entry, IDictionary<string, string> substitutions)
         {
             using (var fileStream = entry.Open())
             {
@@ -59,20 +67,19 @@ namespace DependencyUpdater
                     contents = reader.ReadToEnd();
                     fileStream.Seek(0, SeekOrigin.Begin);
                     fileStream.SetLength(0);
-                    writer.Write(SubstituteVariables(contents));
+                    writer.Write(SubstituteVariables(contents, substitutions));
                 }
             }
         }
 
-        private string SubstituteVariables(string projectFileContents)
+        private static string SubstituteVariables(string text, IDictionary<string, string> substitutions)
         {
-            // Currently we only need a way of updating ASP.NET package
-            // reference versions, so that's all this does. In the future,
-            // we could generalise this into a system for injecting
-            // versions for all packages based on the KoreBuild lineup.
-            return projectFileContents.Replace(
-                "$(TemplateAspNetCoreVersion)",
-                AspNetVersion);
+            foreach (var kvp in substitutions)
+            {
+                text = text.Replace($"$({kvp.Key})", kvp.Value);
+            }
+
+            return text;
         }
     }
 }

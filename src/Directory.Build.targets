@@ -8,13 +8,13 @@
   -->
 
   <UsingTask
-    TaskName="DependencyUpdater.UpdateAspNetReference"
+    TaskName="DependencyUpdater.SubstituteProjectFileVariables"
     AssemblyFile="$(MSBuildProjectDirectory)\$(OutputPath)DependencyUpdater.dll" />
 
   <Target Name="RunTask" AfterTargets="Pack">
-    <UpdateAspNetReference
+    <SubstituteProjectFileVariables
         NupkgFile="$(PackageOutputPath)$(MSBuildProjectName).$(PackageVersion).nupkg"
-        AspNetVersion="$(AspNetCoreVersionFromLineup)"
+        Substitutions="TemplateAspNetCoreVersion=$(AspNetCoreVersionFromLineup); TemplateEntityFrameworkVersion=$(EntityFrameworkVersionFromLineup)"
         OutDir="$(PackageOutputPath)..\" />
   </Target>
 

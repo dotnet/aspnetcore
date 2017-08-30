@@ -16,7 +16,7 @@
 
   <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
     <PackageReference Include="Microsoft.AspNetCore.All" Version="$(TemplateAspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.0" PrivateAssets="All" Condition="'$(IndividualAuth)' == 'True'" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(TemplateEntityFrameworkVersion)" PrivateAssets="All" Condition="'$(IndividualAuth)' == 'True'" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.0" PrivateAssets="All" Condition="'$(IndividualAuth)' == 'True'" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
@@ -28,16 +28,16 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(TemplateAspNetCoreVersion)" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="$(TemplateAspNetCoreVersion)" PrivateAssets="All" />
     <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(TemplateAspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="2.0.0" PrivateAssets="All" Condition="'$(IndividualLocalAuth)' == 'True'" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="2.0.0" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True'" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.0" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' == 'True'" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="2.0.0" PrivateAssets="All" Condition="'$(IndividualLocalAuth)' == 'True'" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="$(TemplateEntityFrameworkVersion)" PrivateAssets="All" Condition="'$(IndividualLocalAuth)' == 'True'" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="$(TemplateEntityFrameworkVersion)" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' != 'True'" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="$(TemplateEntityFrameworkVersion)" Condition=" '$(IndividualLocalAuth)' == 'True' AND '$(UseLocalDB)' == 'True'" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="$(TemplateEntityFrameworkVersion)" PrivateAssets="All" Condition="'$(IndividualLocalAuth)' == 'True'" />
     <PackageReference Include="Microsoft.VisualStudio.Web.BrowserLink" Version="2.0.0" Condition="'$(UseBrowserLink)' == 'True'" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.0" PrivateAssets="All" Condition="'$(IndividualAuth)' == 'True'" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(NoTools)' != 'True'">
-    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0" Condition="'$(IndividualLocalAuth)' == 'True'" />
+    <DotNetCliToolReference Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="$(TemplateEntityFrameworkVersion)" Condition="'$(IndividualLocalAuth)' == 'True'" />
     <DotNetCliToolReference Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" Condition="'$(IndividualAuth)' == 'True' OR '$(OrganizationalAuth)' == 'True'" />
     <DotNetCliToolReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" />
   </ItemGroup>
