@@ -21,15 +21,22 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     [Export(typeof(VisualStudioDocumentTrackerFactory))]
     internal class DefaultVisualStudioDocumentTrackerFactory : VisualStudioDocumentTrackerFactory, IWpfTextViewConnectionListener
     {
+        private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ProjectSnapshotManager _projectManager;
         private readonly TextBufferProjectService _projectService;
         private readonly Workspace _workspace;
 
         [ImportingConstructor]
         public DefaultVisualStudioDocumentTrackerFactory(
+            ForegroundDispatcher foregroundDispatcher,
             TextBufferProjectService projectService,
             [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
         {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
             if (projectService == null)
             {
                 throw new ArgumentNullException(nameof(projectService));
@@ -39,7 +46,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             {
                 throw new ArgumentNullException(nameof(workspace));
             }
-            
+
+            _foregroundDispatcher = foregroundDispatcher;
             _projectService = projectService;
             _workspace = workspace;
 
@@ -48,10 +56,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         // This is only for testing. We want to avoid using the actual Roslyn GetService methods in unit tests.
         internal DefaultVisualStudioDocumentTrackerFactory(
+            ForegroundDispatcher foregroundDispatcher,
             ProjectSnapshotManager projectManager,
             TextBufferProjectService projectService,
             [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
         {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
             if (projectManager == null)
             {
                 throw new ArgumentNullException(nameof(projectManager));
@@ -67,6 +81,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(workspace));
             }
 
+            _foregroundDispatcher = foregroundDispatcher;
             _projectManager = projectManager;
             _projectService = projectService;
             _workspace = workspace;
@@ -80,6 +95,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             {
                 throw new ArgumentNullException(nameof(textView));
             }
+
+            _foregroundDispatcher.AssertForegroundThread();
 
             // While it's definitely possible to have multiple Razor text buffers attached to the same text view, there's
             // no real scenario for it. This method always returns the tracker for the first Razor text buffer, but the
@@ -113,7 +130,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             {
                 throw new ArgumentNullException(nameof(subjectBuffers));
             }
-            
+
+            _foregroundDispatcher.AssertForegroundThread();
+
             for (var i = 0; i < subjectBuffers.Count; i++)
             {
                 var textBuffer = subjectBuffers[i];
@@ -147,6 +166,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             {
                 throw new ArgumentNullException(nameof(subjectBuffers));
             }
+
+            _foregroundDispatcher.AssertForegroundThread();
 
             // This means a Razor buffer has be detached from this ITextView or the ITextView is closing. Since we keep a 
             // list of all of the open text views for each text buffer, we need to update the tracker.

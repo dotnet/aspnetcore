@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 {
-    public class DefaultVisualStudioDocumentTrackerFactoryTest
+    public class DefaultVisualStudioDocumentTrackerFactoryTest : ForegroundDispatcherTestBase
     {
         private ProjectSnapshotManager ProjectManager { get; } = Mock.Of<ProjectSnapshotManager>(
             p => p.FindProject(It.IsAny<string>()) == Mock.Of<ProjectSnapshot>() &&
@@ -32,11 +32,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         private IContentType NonRazorContentType { get; } = Mock.Of<IContentType>(c => c.IsOfType(It.IsAny<string>()) == false);
 
-        [Fact]
+        [ForegroundFact]
         public void SubjectBuffersConnected_ForNonRazorTextBuffer_DoesNothing()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
@@ -52,11 +52,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             Assert.False(buffers[0].Properties.ContainsProperty(typeof(VisualStudioDocumentTracker)));
         }
 
-        [Fact]
+        [ForegroundFact]
         public void SubjectBuffersConnected_ForRazorTextBufferWithoutTracker_CreatesTrackerAndTracksTextView()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
@@ -74,11 +74,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             Assert.Equal(buffers[0], tracker.TextBuffer);
         }
 
-        [Fact]
+        [ForegroundFact]
         public void SubjectBuffersConnected_ForRazorTextBufferWithoutTracker_CreatesTrackerAndTracksTextView_ForMultipleBuffers()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
@@ -104,11 +104,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             Assert.Equal(buffers[2], tracker.TextBuffer);
         }
 
-        [Fact]
+        [ForegroundFact]
         public void SubjectBuffersConnected_ForRazorTextBufferWithTracker_DoesNotAddDuplicateTextViewEntry()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
@@ -130,11 +130,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             Assert.Collection(tracker.TextViews, v => Assert.Same(v, textView));
         }
 
-        [Fact]
+        [ForegroundFact]
         public void SubjectBuffersConnected_ForRazorTextBufferWithTracker_AddsEntryForADifferentTextView()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
 
             var textView1 = Mock.Of<IWpfTextView>();
             var textView2 = Mock.Of<IWpfTextView>();
@@ -157,11 +157,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             Assert.Collection(tracker.TextViews, v => Assert.Same(v, textView1), v => Assert.Same(v, textView2));
         }
 
-        [Fact]
+        [ForegroundFact]
         public void SubjectBuffersDisconnected_ForAnyTextBufferWithTracker_RemovesTextView()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
 
             var textView1 = Mock.Of<IWpfTextView>();
             var textView2 = Mock.Of<IWpfTextView>();
@@ -194,11 +194,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             Assert.Collection(tracker.TextViews, v => Assert.Same(v, textView1));
         }
 
-        [Fact]
+        [ForegroundFact]
         public void SubjectBuffersDisconnected_ForAnyTextBufferWithoutTracker_DoesNothing()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
@@ -214,11 +214,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             Assert.False(buffers[0].Properties.ContainsProperty(typeof(VisualStudioDocumentTracker)));
         }
 
-        [Fact]
+        [ForegroundFact]
         public void GetTracker_ForRazorTextBufferWithTracker_ReturnsTheFirstTracker()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
 
             var buffers = new Collection<ITextBuffer>()
             {
@@ -241,11 +241,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             Assert.Same(tracker, result);
         }
 
-        [Fact]
+        [ForegroundFact]
         public void GetTracker_WithoutRazorBuffer_ReturnsNull()
         {
             // Arrange
-            var factory = new DefaultVisualStudioDocumentTrackerFactory(ProjectManager, ProjectService, Workspace);
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
 
             var buffers = new Collection<ITextBuffer>();
 
