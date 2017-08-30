@@ -71,6 +71,7 @@
     <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="1.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Newtonsoft.Json" Version="10.0.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="NuGet.Frameworks" Version="4.3.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Remotion.Linq" Version="2.2.0-alpha-002" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Serilog.Extensions.Logging" Version="1.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Serilog.Sinks.File" Version="3.2.0" Source="$(DefaultNuGetFeed)"/>
