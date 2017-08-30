@@ -1,12 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <Description>Socket-based RPC for Microsoft.AspNetCore.NodeServices.</Description>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <PackageTags>aspnetcore;aspnetcoremvc;nodeservices</PackageTags>
-    <TypeScriptCompileBlocked>true</TypeScriptCompileBlocked>
   </PropertyGroup>
 
   <ItemGroup>

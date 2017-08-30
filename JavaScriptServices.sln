@@ -1,9 +1,12 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26430.4
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{27304DDE-AFB2-4F8B-B765-E3E2F11E886C}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.NodeServices", "src\Microsoft.AspNetCore.NodeServices\Microsoft.AspNetCore.NodeServices.csproj", "{66B77203-1469-41DF-92F2-2BE6900BD36F}"
 EndProject
@@ -30,10 +33,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NodeServicesExamples", "sam
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{1598B415-73F1-4B37-B3B4-0A10677ABB2D}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{E415FE14-13B0-469F-836D-95059E6BAA6E}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{645F7363-1240-4FB6-9422-B32A327C979F}"
 	ProjectSection(SolutionItems) = preProject
-		src\build\common.props = src\build\common.props
-		src\build\Key.snk = src\build\Key.snk
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 	EndProjectSection
 EndProject
 Global
@@ -78,5 +81,8 @@ Global
 		{1931B19A-EC42-4D56-B2D0-FB06D17244DA} = {E6A161EA-646C-4033-9090-95BE809AB8D9}
 		{DE479DC3-1461-4EAD-A188-4AF7AA4AE344} = {E6A161EA-646C-4033-9090-95BE809AB8D9}
 		{93EFCC5F-C6EE-4623-894F-A42B22C0B6FE} = {E6A161EA-646C-4033-9090-95BE809AB8D9}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {DDF59B0D-2DEC-45D6-8667-DCB767487101}
 	EndGlobalSection
 EndGlobal
