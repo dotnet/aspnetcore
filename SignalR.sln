@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.10
+VisualStudioVersion = 15.0.26823.1
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{DA69F624-5398-4884-87E4-B816698CDE65}"
 	ProjectSection(SolutionItems) = preProject
@@ -31,7 +31,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{6A35B453-5
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Sockets.Tests", "test\Microsoft.AspNetCore.Sockets.Tests\Microsoft.AspNetCore.Sockets.Tests.csproj", "{AAD719D5-5E31-4ED1-A60F-6EB92EFA66D9}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR", "src\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.csproj", "{42E76F87-92B6-45AB-BF07-6B811C0F2CAC}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Core", "src\Microsoft.AspNetCore.SignalR.Core\Microsoft.AspNetCore.SignalR.Core.csproj", "{42E76F87-92B6-45AB-BF07-6B811C0F2CAC}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SignalR.Redis", "src\Microsoft.AspNetCore.SignalR.Redis\Microsoft.AspNetCore.SignalR.Redis.csproj", "{59319B72-38BE-4041-8E5C-FF6938874CE8}"
 EndProject

@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Microsoft.AspNetCore.SignalR\Microsoft.AspNetCore.SignalR.csproj" />
+    <ProjectReference Include="..\Microsoft.AspNetCore.SignalR.Core\Microsoft.AspNetCore.SignalR.Core.csproj" />
     <ProjectReference Include="..\Microsoft.AspNetCore.Sockets.Http\Microsoft.AspNetCore.Sockets.Http.csproj" />
   </ItemGroup>
 
