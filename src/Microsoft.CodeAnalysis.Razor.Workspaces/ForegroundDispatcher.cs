@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.Host;
 
 namespace Microsoft.CodeAnalysis.Razor
@@ -10,6 +11,10 @@ namespace Microsoft.CodeAnalysis.Razor
     internal abstract class ForegroundDispatcher : IWorkspaceService
     {
         public abstract bool IsForegroundThread { get; }
+
+        public abstract TaskScheduler ForegroundScheduler { get; }
+
+        public abstract TaskScheduler BackgroundScheduler { get; }
 
         public virtual void AssertForegroundThread([CallerMemberName] string caller = null)
         {
