@@ -1,0 +1,33 @@
+<Project>
+  <Import Project="..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <EnableDefaultItems>False</EnableDefaultItems>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <IncludeBuildOutput>False</IncludeBuildOutput>
+    <IncludeSource>False</IncludeSource>
+    <NoWarn>2008;8021</NoWarn>
+    <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
+    <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
+    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)..\artifacts\</PackageOutputPath>
+    <NuspecProperties>version=$(PackageVersion)</NuspecProperties>
+
+    <!--
+        These are not regular projects. They are just wrappers for the .nuspec files in each
+        of the template directories. The project files just provide a convenient way to package
+        the template .nupkgs from MSBuild.
+
+        As such, the projects don't have any dependencies and don't even produce any
+        .NET assemblies on build. So it's not relevant to participate in KoreBuild's lineup
+        system. The following line bypasses lineup verification.
+    -->
+    <KoreBuildRestoreTargetsImported>true</KoreBuildRestoreTargetsImported>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Remove="Microsoft.NETCore.App" />
+    <None Include="Content/**" />
+  </ItemGroup>
+
+</Project>

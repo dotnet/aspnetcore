@@ -1,9 +1,0 @@
-<Project>
-  <Import Project="..\version.xml" />
-
-  <PropertyGroup>
-    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)..\artifacts\</PackageOutputPath>
-    <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
-    <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
-  </PropertyGroup>
-</Project>

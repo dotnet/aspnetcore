@@ -26,6 +26,12 @@ namespace Templates.Test
             var basePath = Path.GetDirectoryName(assemblyUri.LocalPath);
             TemplateOutputDir = Path.Combine(basePath, "TestTemplates", ProjectName);
             Directory.CreateDirectory(TemplateOutputDir);
+
+            // We don't want any of the host repo's build config interfering with
+            // how the test project is built, so disconnect it from the
+            // Directory.Build.props/targets context
+            File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.props"), "<Project />");
+            File.WriteAllText(Path.Combine(TemplateOutputDir, "Directory.Build.targets"), "<Project />");
         }
 
         protected void InstallTemplatePackages()
