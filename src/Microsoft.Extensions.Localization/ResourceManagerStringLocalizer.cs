@@ -60,7 +60,11 @@ namespace Microsoft.Extensions.Localization
             ILogger logger)
             : this(
                   resourceManager,
-                  new AssemblyResourceStringProvider(resourceNamesCache, resourceAssemblyWrapper, baseName),
+                  new ResourceManagerStringProvider(
+                      resourceNamesCache,
+                      resourceManager,
+                      resourceAssemblyWrapper.Assembly,
+                      baseName),
                   baseName,
                   resourceNamesCache,
                   logger)

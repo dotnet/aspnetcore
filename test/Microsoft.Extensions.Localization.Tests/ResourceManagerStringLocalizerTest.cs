@@ -1,6 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -23,8 +24,12 @@ namespace Microsoft.Extensions.Localization
             var resourceNamesCache = new ResourceNamesCache();
             var baseName = "test";
             var resourceAssembly = new TestAssemblyWrapper();
-            var resourceManager = new TestResourceManager(baseName, resourceAssembly.Assembly);
-            var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceAssembly, baseName);
+            var resourceManager = new TestResourceManager(baseName, resourceAssembly);
+            var resourceStreamManager = new TestResourceStringProvider(
+                resourceNamesCache,
+                resourceManager,
+                resourceAssembly.Assembly,
+                baseName);
             var logger = Logger;
             var localizer1 = new ResourceManagerStringLocalizer(resourceManager,
                 resourceStreamManager,
@@ -46,7 +51,7 @@ namespace Microsoft.Extensions.Localization
 
             // Assert
             var expectedCallCount = GetCultureInfoDepth(CultureInfo.CurrentUICulture);
-            Assert.Equal(expectedCallCount, resourceAssembly.GetManifestResourceStreamCallCount);
+            Assert.Equal(expectedCallCount, resourceAssembly.ManifestResourceStreamCallCount);
         }
 
         [Fact]
@@ -55,12 +60,12 @@ namespace Microsoft.Extensions.Localization
             // Arrange
             var resourceNamesCache = new ResourceNamesCache();
             var baseName = "test";
-            var resourceAssembly1 = new TestAssemblyWrapper("Assembly1");
-            var resourceAssembly2 = new TestAssemblyWrapper("Assembly2");
-            var resourceManager1 = new TestResourceManager(baseName, resourceAssembly1.Assembly);
-            var resourceManager2 = new TestResourceManager(baseName, resourceAssembly2.Assembly);
-            var resourceStreamManager1 = new TestResourceStringProvider(resourceNamesCache, resourceAssembly1, baseName);
-            var resourceStreamManager2 = new TestResourceStringProvider(resourceNamesCache, resourceAssembly2, baseName);
+            var resourceAssembly1 = new TestAssemblyWrapper(typeof(ResourceManagerStringLocalizerTest));
+            var resourceAssembly2 = new TestAssemblyWrapper(typeof(ResourceManagerStringLocalizer));
+            var resourceManager1 = new TestResourceManager(baseName, resourceAssembly1);
+            var resourceManager2 = new TestResourceManager(baseName, resourceAssembly2);
+            var resourceStreamManager1 = new TestResourceStringProvider(resourceNamesCache, resourceManager1, resourceAssembly1.Assembly, baseName);
+            var resourceStreamManager2 = new TestResourceStringProvider(resourceNamesCache, resourceManager2, resourceAssembly2.Assembly, baseName);
             var logger = Logger;
             var localizer1 = new ResourceManagerStringLocalizer(
                 resourceManager1,
@@ -81,8 +86,8 @@ namespace Microsoft.Extensions.Localization
 
             // Assert
             var expectedCallCount = GetCultureInfoDepth(CultureInfo.CurrentUICulture);
-            Assert.Equal(expectedCallCount, resourceAssembly1.GetManifestResourceStreamCallCount);
-            Assert.Equal(expectedCallCount, resourceAssembly2.GetManifestResourceStreamCallCount);
+            Assert.Equal(expectedCallCount, resourceAssembly1.ManifestResourceStreamCallCount);
+            Assert.Equal(expectedCallCount, resourceAssembly2.ManifestResourceStreamCallCount);
         }
 
         [Fact]
@@ -92,8 +97,8 @@ namespace Microsoft.Extensions.Localization
             var baseName = "Resources.TestResource";
             var resourceNamesCache = new ResourceNamesCache();
             var resourceAssembly = new TestAssemblyWrapper();
-            var resourceManager = new TestResourceManager(baseName, resourceAssembly.Assembly);
-            var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceAssembly, baseName);
+            var resourceManager = new TestResourceManager(baseName, resourceAssembly);
+            var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceManager, resourceAssembly.Assembly, baseName);
             var logger = Logger;
             var localizer = new ResourceManagerStringLocalizer(
                 resourceManager,
@@ -117,8 +122,8 @@ namespace Microsoft.Extensions.Localization
             var baseName = "Resources.TestResource";
             var resourceNamesCache = new ResourceNamesCache();
             var resourceAssembly = new TestAssemblyWrapper();
-            var resourceManager = new TestResourceManager(baseName, resourceAssembly.Assembly);
-            var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceAssembly, baseName);
+            var resourceManager = new TestResourceManager(baseName, resourceAssembly);
+            var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceManager, resourceAssembly.Assembly, baseName);
             var logger = Logger;
 
             var localizer = new ResourceManagerStringLocalizer(
@@ -145,8 +150,8 @@ namespace Microsoft.Extensions.Localization
             var baseName = "test";
             var resourceNamesCache = new ResourceNamesCache();
             var resourceAssembly = new TestAssemblyWrapper();
-            var resourceManager = new TestResourceManager(baseName, resourceAssembly.Assembly);
-            var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceAssembly, baseName);
+            var resourceManager = new TestResourceManager(baseName, resourceAssembly);
+            var resourceStreamManager = new TestResourceStringProvider(resourceNamesCache, resourceManager, resourceAssembly.Assembly, baseName);
             var logger = Logger;
             var localizer = new ResourceManagerStringLocalizer(
                 resourceManager,
@@ -172,8 +177,9 @@ namespace Microsoft.Extensions.Localization
             // Arrange
             var resourceNamesCache = new ResourceNamesCache();
             var baseName = "testington";
-            var resourceAssembly = new TestAssemblyWrapper("Assembly1");
-            var resourceManager = new TestResourceManager(baseName, resourceAssembly.Assembly);
+            var resourceAssembly = new TestAssemblyWrapper();
+            resourceAssembly.HasResources = false;
+            var resourceManager = new TestResourceManager(baseName, resourceAssembly);
             var logger = Logger;
 
             var localizer = new ResourceManagerWithCultureStringLocalizer(
@@ -190,10 +196,13 @@ namespace Microsoft.Extensions.Localization
                 // We have to access the result so it evaluates.
                 localizer.GetAllStrings(includeParentCultures).ToArray();
             });
+
+            var expectedTries = includeParentCultures ? 3 : 1;
             var expected = includeParentCultures
                 ? "No manifests exist for the current culture."
                 : $"The manifest 'testington.{CultureInfo.CurrentCulture}.resources' was not found.";
             Assert.Equal(expected, exception.Message);
+            Assert.Equal(expectedTries, resourceAssembly.ManifestResourceStreamCallCount);
         }
 
         private static Stream MakeResourceStream()
@@ -233,49 +242,57 @@ namespace Microsoft.Extensions.Localization
 
         public class TestResourceManager : ResourceManager
         {
-            public TestResourceManager(string baseName, Assembly assembly)
-                : base(baseName, assembly)
-            {
-            }
+            private AssemblyWrapper _assemblyWrapper;
 
-            public override string GetString(string name, CultureInfo culture) => null;
-        }
-
-        public class TestResourceStringProvider : AssemblyResourceStringProvider
-        {
-            private TestAssemblyWrapper _assemblyWrapper;
-
-            public TestResourceStringProvider(
-                    IResourceNamesCache resourceCache,
-                    TestAssemblyWrapper assemblyWrapper,
-                    string resourceBaseName)
-                : base(resourceCache, assemblyWrapper, resourceBaseName)
+            public TestResourceManager(string baseName, AssemblyWrapper assemblyWrapper)
+                : base(baseName, assemblyWrapper.Assembly)
             {
                 _assemblyWrapper = assemblyWrapper;
             }
 
-            protected override AssemblyWrapper GetAssembly(CultureInfo culture)
+            public override string GetString(string name, CultureInfo culture) => null;
+
+            public override ResourceSet GetResourceSet(CultureInfo culture, bool createIfNotExists, bool tryParents)
             {
-                return _assemblyWrapper;
+                var resourceStream = _assemblyWrapper.GetManifestResourceStream(BaseName);
+
+                return resourceStream != null ? new ResourceSet(resourceStream) : null;
+            }
+        }
+
+        public class TestResourceStringProvider : ResourceManagerStringProvider
+        {
+            public TestResourceStringProvider(
+                    IResourceNamesCache resourceCache,
+                    TestResourceManager resourceManager,
+                    Assembly assembly,
+                    string resourceBaseName)
+                : base(resourceCache, resourceManager, assembly, resourceBaseName)
+            {
             }
         }
 
         public class TestAssemblyWrapper : AssemblyWrapper
         {
-            public TestAssemblyWrapper(string name = nameof(TestAssemblyWrapper))
-                : base(typeof(TestAssemblyWrapper).GetTypeInfo().Assembly)
+            public TestAssemblyWrapper()
+                : this(typeof(TestAssemblyWrapper))
             {
-                FullName = name;
             }
 
-            public int GetManifestResourceStreamCallCount { get; private set; }
+            public TestAssemblyWrapper(Type type)
+                : base(type.GetTypeInfo().Assembly)
+            {
+            }
 
-            public override string FullName { get; }
+            public bool HasResources { get; set; } = true;
+
+            public int ManifestResourceStreamCallCount { get; private set; }
 
             public override Stream GetManifestResourceStream(string name)
             {
-                GetManifestResourceStreamCallCount++;
-                return MakeResourceStream();
+                ManifestResourceStreamCallCount++;
+                
+                return HasResources ? MakeResourceStream() : null;
             }
         }
     }

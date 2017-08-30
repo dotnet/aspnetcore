@@ -24,6 +24,15 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
         }
 
         [Fact]
+        public Task Localization_GetAllStrings()
+        {
+            return RunTest(
+                typeof(StartupGetAllStrings),
+                "fr-FR",
+                "1 Bonjour from Customer in resources folder");
+        }
+
+        [Fact]
         public Task Localization_ResourcesInClassLibrary_ReturnLocalizedValue()
         {
             return RunTest(
@@ -81,7 +90,7 @@ namespace Microsoft.AspNetCore.Localization.FunctionalTests
             var response = await client.SendAsync(request);
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.Contains(expected, await response.Content.ReadAsStringAsync());
+            Assert.Equal(expected, await response.Content.ReadAsStringAsync());
     }
     }
 }
