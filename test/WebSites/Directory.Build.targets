@@ -1,7 +1,0 @@
-<Project>
-  <PropertyGroup>
-    <IsTestProject>false</IsTestProject>
-  </PropertyGroup>
-
-  <Import Project="..\Directory.Build.targets" />
-</Project>

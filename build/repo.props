@@ -1,8 +1,9 @@
-<Project>
+﻿<Project>
   <ItemGroup>
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.TestCommon\*.csproj" />
     <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.TestDiagnosticListener\*.csproj" />
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.Mvc.Performance\*.csproj" />
     <ExcludeSolutions Include="$(RepositoryRoot)Mvc.*Fun.sln" />
+    <PackageLineup Include="Internal.AspNetCore.Universe.Lineup" Version="2.1.0-*" />
+    <PackageLineup Include="Internal.AspNetCore.Partners.Lineup" Version="2.1.0-*" />
   </ItemGroup>
 </Project>
