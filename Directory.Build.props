@@ -14,6 +14,8 @@
 
     <!-- Generate full pdbs for desktop targeting projects on platforms that support generating full pdbs. -->
     <DebugType Condition="'$(OS)'=='Windows_NT' AND '$(TargetFramework)'=='net46'">full</DebugType>
+    
+    <RoslynDevVersion>2.6.0-beta1-62023-02</RoslynDevVersion>
   </PropertyGroup>
 
   <ItemGroup>
