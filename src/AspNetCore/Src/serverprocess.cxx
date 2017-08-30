@@ -1204,15 +1204,15 @@ SERVER_PROCESS::SetupStdHandles(
         }
 
         GetSystemTime(&systemTime);
-        hr = struLogFileName.SafeSnwprintf(L"%s_%d_%d%d%d%d%d%d.log",
+        hr = struLogFileName.SafeSnwprintf(L"%s_%d%02d%02d%02d%02d%02d_%d.log",
                                            struAbsLogFilePath.QueryStr(),
-                                           GetCurrentProcessId(),
                                            systemTime.wYear,
                                            systemTime.wMonth,
                                            systemTime.wDay,
                                            systemTime.wHour,
                                            systemTime.wMinute,
-                                           systemTime.wSecond );
+                                           systemTime.wSecond,
+                                           GetCurrentProcessId() );
         if (FAILED(hr))
         {
             goto Finished;
