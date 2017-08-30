@@ -1,4 +1,6 @@
 ﻿<Project>
+  <Import Project="..\version.xml" />
+
   <PropertyGroup>
     <AspNetCoreIntegrationTestingVersion>0.5.0-*</AspNetCoreIntegrationTestingVersion>
     <AspNetCoreVersion>2.1.0-*</AspNetCoreVersion>

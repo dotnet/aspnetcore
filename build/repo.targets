@@ -1,11 +1,5 @@
 <Project>
-  <Import Project="..\version.xml" />
-  <Import Project="dependencies.props" />
-
   <PropertyGroup>
-    <OriginalVersionSuffix>$(VersionSuffix)</OriginalVersionSuffix>
-    <VersionSuffix Condition="'$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
-
     <!-- Project for building the Runtime Store -->
     <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.RuntimeStore\</MetaPackagePath>
     <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.RuntimeStore.csproj</MetaPackageFile>
