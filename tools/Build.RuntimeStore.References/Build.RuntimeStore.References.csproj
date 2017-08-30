@@ -2,8 +2,6 @@
 
   <UsingTask TaskName="Microsoft.NET.Build.Tasks.ResolvePackageDependencies" AssemblyFile="$(MicrosoftNETBuildTasksAssembly)" />
 
-  <Import Project="..\..\build\common.props" />
-
   <PropertyGroup>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -14,7 +12,7 @@
     <ProjectAssetsJson Include="$(MSBuildThisFileDirectory)**\project.assets.json" />
   </ItemGroup>
 
-  <Target Name="GetPackageDefinitions" Returns="@(_PackageDefinitions)" >
+  <Target Name="GetPackageDefinitions" Returns="@(_PackageDefinitions)">
     <ResolvePackageDependencies ProjectPath="$(MSBuildThisFileFullPath)" ProjectAssetsFile="@(ProjectAssetsJson)">
       <Output TaskParameter="PackageDefinitions" ItemName="_PackageDefinitions" />
     </ResolvePackageDependencies>

@@ -1,0 +1,16 @@
+﻿<Project>
+  <Import Project="version.xml" />
+  <Import Project="build\dependencies.props" />
+
+  <PropertyGroup>
+    <Product>Microsoft ASP.NET Core</Product>
+    <RepositoryUrl>https://github.com/aspnet/MetaPackages</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <GenerateUserSecretsAttribute>false</GenerateUserSecretsAttribute>
+    <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
+    <SignAssembly>true</SignAssembly>
+    <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
+    <VersionSuffix Condition="'$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

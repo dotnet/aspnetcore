@@ -1,8 +1,11 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26727.1
+VisualStudioVersion = 15.0.26730.10
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{ED834E68-51C3-4ADE-ACC8-6BA6D4207C09}"
+	ProjectSection(SolutionItems) = preProject
+		src\Directory.Build.props = src\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore", "src\Microsoft.AspNetCore\Microsoft.AspNetCore.csproj", "{6F3D43F7-9546-4B41-AF04-CF4708B62051}"
 EndProject
@@ -10,13 +13,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.All", 
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{97D53BEB-A511-4FBE-B784-AB407D9A219F}"
 	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
 		NuGet.config = NuGet.config
 		version.xml = version.xml
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{F92CB7A1-C38E-408C-A7EC-A5C040D041E1}"
 	ProjectSection(SolutionItems) = preProject
-		build\common.props = build\common.props
 		build\dependencies.props = build\dependencies.props
 		build\repo.targets = build\repo.targets
 	EndProjectSection
@@ -26,6 +30,9 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SampleApp", "samples\SampleApp\SampleApp.csproj", "{AF5BB04E-92F7-4737-8B98-F86F6244FAB2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test", "test", "{9E49B5B9-9E72-42FB-B684-90CA1B1BCF9C}"
+	ProjectSection(SolutionItems) = preProject
+		test\Directory.Build.props = test\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.FunctionalTests", "test\Microsoft.AspNetCore.FunctionalTests\Microsoft.AspNetCore.FunctionalTests.csproj", "{C72A756A-D29D-44C7-83D4-821DBE82DBCA}"
 EndProject

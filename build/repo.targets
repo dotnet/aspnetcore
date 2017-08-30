@@ -1,12 +1,11 @@
 <Project>
-  <Import Project="common.props" />
-
-  <ItemGroup>
-    <!-- remove package references that don't belong in KoreBuild -->
-    <PackageReference Remove="Internal.AspNetCore.Sdk" />
-  </ItemGroup>
+  <Import Project="..\version.xml" />
+  <Import Project="dependencies.props" />
 
   <PropertyGroup>
+    <OriginalVersionSuffix>$(VersionSuffix)</OriginalVersionSuffix>
+    <VersionSuffix Condition="'$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+
     <!-- Project for building the Runtime Store -->
     <MetaPackagePath>$(RepositoryRoot)src\Microsoft.AspNetCore.RuntimeStore\</MetaPackagePath>
     <MetaPackageFile>$(MetaPackagePath)Microsoft.AspNetCore.RuntimeStore.csproj</MetaPackageFile>
