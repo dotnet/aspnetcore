@@ -14,8 +14,6 @@ namespace Templates.Test.Helpers
         private const string DefaultFramework = "netcoreapp2.0";
         private const string ListeningMessagePrefix = "Now listening on: ";
 
-        private static int NextKestrelPort = 5000;
-
         private readonly ProcessEx _process;
         private readonly Uri _listeningUri;
         private readonly HttpClient _httpClient;
@@ -27,10 +25,9 @@ namespace Templates.Test.Helpers
             var buildProcess = ProcessEx.Run(workingDirectory, "dotnet", "build --no-restore -c Debug");
             buildProcess.WaitForExit(assertSuccess: true);
 
-            var port = Interlocked.Increment(ref NextKestrelPort);
             var envVars = new Dictionary<string, string>
             {
-                { "ASPNETCORE_URLS", "http://localhost:" + port }
+                { "ASPNETCORE_URLS", "http://127.0.0.1:0" }
             };
 
             var framework = string.IsNullOrEmpty(targetFrameworkOverride) ? DefaultFramework : targetFrameworkOverride;
