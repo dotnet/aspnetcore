@@ -1,3 +1,7 @@
 <Project>
   <Import Project="version.xml" />
+
+  <PropertyGroup>
+    <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
+  </PropertyGroup>
 </Project>
