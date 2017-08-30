@@ -146,14 +146,12 @@ namespace Microsoft.Extensions.Localization
             }
         }
 
-        [Theory]
-        [InlineData("??", "en-US", "CookieRequestCultureProvider returned the following unsupported cultures '??'.")]
-        [InlineData("en-US", "??", "CookieRequestCultureProvider returned the following unsupported cultures '??'.")]
-        public async Task UnsupportedCulturesShouldLogWarning(string culture, string uiCulture, string expectedMessage)
+        [Fact]
+        public async Task RequestLocalizationMiddleware_LogsWarningsForUnsupportedCultures()
         {
             var sink = new TestSink(
-                TestSink.EnableWithTypeName<CookieRequestCultureProvider>,
-                TestSink.EnableWithTypeName<CookieRequestCultureProvider>);
+                TestSink.EnableWithTypeName<RequestLocalizationMiddleware>,
+                TestSink.EnableWithTypeName<RequestLocalizationMiddleware>);
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
             var builder = new WebHostBuilder()
                 .Configure(app =>
@@ -176,14 +174,7 @@ namespace Microsoft.Extensions.Localization
                     };
                     options.RequestCultureProviders.Insert(0, provider);
                     app.UseRequestLocalization(options);
-                    app.Run(context =>
-                    {
-                        var requestCultureFeature = context.Features.Get<IRequestCultureFeature>();
-                        var requestCulture = requestCultureFeature.RequestCulture;
-                        Assert.Equal("en-US", requestCulture.Culture.Name);
-                        Assert.NotNull(context.RequestServices.GetService<ILogger<RequestLocalizationMiddleware>>());
-                        return Task.FromResult(0);
-                    });
+                    app.Run(context => Task.CompletedTask);
                 })
                 .ConfigureServices(services =>
                 {
@@ -193,12 +184,70 @@ namespace Microsoft.Extensions.Localization
             using (var server = new TestServer(builder))
             {
                 var client = server.CreateClient();
+                var culture = "??";
+                var uiCulture = "ar-YE";
                 client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue("Preferences", $"c={culture}|uic={uiCulture}").ToString());
 
                 var response = await client.GetAsync(string.Empty);
                 response.EnsureSuccessStatusCode();
             }
 
+            var expectedMessage = $"{nameof(CookieRequestCultureProvider)} returned the following unsupported cultures '??'.";
+            var logMessages = sink.Writes;
+            var count = logMessages.Count;
+
+            Assert.Equal(1, count);
+            Assert.Equal(LogLevel.Warning, logMessages[0].LogLevel);
+            Assert.Equal(expectedMessage, logMessages[0].State.ToString());
+        }
+
+        [Fact]
+        public async Task RequestLocalizationMiddleware_LogsWarningsForUnsupportedUICultures()
+        {
+            var sink = new TestSink(
+                TestSink.EnableWithTypeName<RequestLocalizationMiddleware>,
+                TestSink.EnableWithTypeName<RequestLocalizationMiddleware>);
+            var loggerFactory = new TestLoggerFactory(sink, enabled: true);
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    var options = new RequestLocalizationOptions
+                    {
+                        DefaultRequestCulture = new RequestCulture("en-US"),
+                        SupportedCultures = new List<CultureInfo>
+                        {
+                            new CultureInfo("ar-YE")
+                        },
+                        SupportedUICultures = new List<CultureInfo>
+                        {
+                            new CultureInfo("ar-YE")
+                        }
+                    };
+                    var provider = new CookieRequestCultureProvider
+                    {
+                        CookieName = "Preferences"
+                    };
+                    options.RequestCultureProviders.Insert(0, provider);
+                    app.UseRequestLocalization(options);
+                    app.Run(context => Task.CompletedTask);
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddSingleton(typeof(ILoggerFactory), loggerFactory);
+                });
+
+            using (var server = new TestServer(builder))
+            {
+                var client = server.CreateClient();
+                var culture = "ar-YE";
+                var uiCulture = "??";
+                client.DefaultRequestHeaders.Add("Cookie", new CookieHeaderValue("Preferences", $"c={culture}|uic={uiCulture}").ToString());
+
+                var response = await client.GetAsync(string.Empty);
+                response.EnsureSuccessStatusCode();
+            }
+
+            var expectedMessage = $"{nameof(CookieRequestCultureProvider)} returned the following unsupported UI Cultures '??'.";
             var logMessages = sink.Writes;
             var count = logMessages.Count;
 

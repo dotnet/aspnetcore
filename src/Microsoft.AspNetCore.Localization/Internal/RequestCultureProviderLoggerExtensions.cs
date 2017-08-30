@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Localization
+namespace Microsoft.AspNetCore.Localization.Internal
 {
     internal static class RequestCultureProviderLoggerExtensions
     {
@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Localization
             _unsupportedUICulture = LoggerMessage.Define<string, IList<StringSegment>>(
                 LogLevel.Warning,
                 2,
-                "{requestCultureProvider} returned the following unsupported cultures '{cultures}'.");
+                "{requestCultureProvider} returned the following unsupported UI Cultures '{uiCultures}'.");
         }
 
         public static void UnsupportedCultures(this ILogger logger, string requestCultureProvider, IList<StringSegment> cultures)
