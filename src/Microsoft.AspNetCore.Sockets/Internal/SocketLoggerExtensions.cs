@@ -18,6 +18,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         private static readonly Action<ILogger, DateTime, string, Exception> _failedDispose =
             LoggerMessage.Define<DateTime, string>(LogLevel.Error, 2, "{time}: ConnectionId {connectionId}: Failed disposing connection.");
 
+        private static readonly Action<ILogger, DateTime, string, Exception> _connectionReset =
+            LoggerMessage.Define<DateTime, string>(LogLevel.Trace, 3, "{time}: ConnectionId {connectionId}: Connection was reset.");
+
         public static void CreatedNewConnection(this ILogger logger, string connectionId)
         {
             if (logger.IsEnabled(LogLevel.Debug))
@@ -39,6 +42,14 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             if (logger.IsEnabled(LogLevel.Error))
             {
                 _failedDispose(logger, DateTime.Now, connectionId, exception);
+            }
+        }
+
+        public static void ConnectionReset(this ILogger logger, string connectionId, Exception exception)
+        {
+            if (logger.IsEnabled(LogLevel.Trace))
+            {
+                _connectionReset(logger, DateTime.Now, connectionId, exception);
             }
         }
     }

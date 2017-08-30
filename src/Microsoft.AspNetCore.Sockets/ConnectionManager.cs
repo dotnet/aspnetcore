@@ -5,6 +5,8 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Net.WebSockets;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
@@ -177,6 +179,14 @@ namespace Microsoft.AspNetCore.Sockets
             try
             {
                 await connection.DisposeAsync();
+            }
+            catch (IOException ex)
+            {
+                _logger.ConnectionReset(connection.ConnectionId, ex);
+            }
+            catch (WebSocketException ex) when (ex.InnerException is IOException)
+            {
+                _logger.ConnectionReset(connection.ConnectionId, ex);
             }
             catch (Exception ex)
             {
