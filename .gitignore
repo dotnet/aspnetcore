@@ -1,0 +1,6 @@
+.vs/
+bin/
+obj/
+*.sln
+*.csv
+Properties/
