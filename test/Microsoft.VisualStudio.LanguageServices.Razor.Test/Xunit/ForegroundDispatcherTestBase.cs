@@ -40,12 +40,12 @@ namespace Xunit
 
             protected override void QueueTask(Task task)
             {
-                throw new InvalidOperationException("Use [ForegroundFactAttribute]");
+                throw new InvalidOperationException($"Use [{nameof(ForegroundFactAttribute)}]");
             }
 
             protected override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
             {
-                throw new InvalidOperationException("Use [ForegroundFactAttribute]");
+                throw new InvalidOperationException($"Use [{nameof(ForegroundFactAttribute)}]");
             }
         }
     }
