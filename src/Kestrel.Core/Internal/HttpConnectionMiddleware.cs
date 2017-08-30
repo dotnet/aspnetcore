@@ -43,6 +43,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 ConnectionId = connectionContext.ConnectionId,
                 FrameConnectionId = frameConnectionId,
                 ServiceContext = _serviceContext,
+                ConnectionFeatures = connectionContext.Features,
                 PipeFactory = connectionContext.PipeFactory,
                 ConnectionAdapters = _connectionAdapters,
                 Transport = connectionContext.Transport,

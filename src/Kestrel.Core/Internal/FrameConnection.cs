@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                     adaptedPipelineTask = adaptedPipeline.RunAsync(stream);
                 }
 
-                if (_frame.ConnectionFeatures?.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol == "h2" &&
+                if (_frame.ConnectionFeatures.Get<ITlsApplicationProtocolFeature>()?.ApplicationProtocol == "h2" &&
                     Interlocked.CompareExchange(ref _http2ConnectionState, Http2ConnectionStarted, Http2ConnectionNotStarted) == Http2ConnectionNotStarted)
                 {
                     await _http2Connection.ProcessAsync(httpApplication);
@@ -167,10 +167,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     _context.ServiceContext.ConnectionManager.UpgradedConnectionCount.ReleaseOne();
                 }
-                else
-                {
-                    _context.ServiceContext.ConnectionManager.NormalConnectionCount.ReleaseOne();
-                }
 
                 KestrelEventSource.Log.ConnectionStop(this);
             }
@@ -181,6 +177,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _frame = new Frame<TContext>(httpApplication, new FrameContext
             {
                 ConnectionId = _context.ConnectionId,
+                ConnectionFeatures = _context.ConnectionFeatures,
                 PipeFactory = PipeFactory,
                 LocalEndPoint = LocalEndPoint,
                 RemoteEndPoint = RemoteEndPoint,
@@ -255,10 +252,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             Debug.Assert(_frame != null, $"{nameof(_frame)} is null");
 
-            var features = new FeatureCollection();
             var connectionAdapters = _context.ConnectionAdapters;
             var stream = new RawStream(_context.Transport.Input, _context.Transport.Output);
-            var adapterContext = new ConnectionAdapterContext(features, stream);
+            var adapterContext = new ConnectionAdapterContext(_frame.ConnectionFeatures, stream);
             _adaptedConnections = new List<IAdaptedConnection>(connectionAdapters.Count);
 
             try
@@ -267,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     var adaptedConnection = await connectionAdapters[i].OnConnectionAsync(adapterContext);
                     _adaptedConnections.Add(adaptedConnection);
-                    adapterContext = new ConnectionAdapterContext(features, adaptedConnection.ConnectionStream);
+                    adapterContext = new ConnectionAdapterContext(_frame.ConnectionFeatures, adaptedConnection.ConnectionStream);
                 }
             }
             catch (Exception ex)
@@ -275,10 +271,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 Log.LogError(0, ex, $"Uncaught exception from the {nameof(IConnectionAdapter.OnConnectionAsync)} method of an {nameof(IConnectionAdapter)}.");
 
                 return null;
-            }
-            finally
-            {
-                _frame.ConnectionFeatures = features;
             }
 
             return adapterContext.ConnectionStream;

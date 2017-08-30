@@ -85,6 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var frameContext = new FrameContext
             {
                 ServiceContext = serviceContext,
+                ConnectionFeatures = new FeatureCollection(),
                 PipeFactory = new PipeFactory()
             };
 

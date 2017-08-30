@@ -2,11 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
 using System.Collections.Generic;
-using System.Linq;
+using System.IO.Pipelines;
 using System.Threading;
-using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -31,6 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 ConnectionId = "0123456789",
                 ConnectionAdapters = new List<IConnectionAdapter>(),
+                ConnectionFeatures = new FeatureCollection(),
                 PipeFactory = _pipeFactory,
                 FrameConnectionId = long.MinValue,
                 Application = pair.Application,

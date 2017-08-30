@@ -107,7 +107,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         private IPEndPoint LocalEndPoint => _frameContext.LocalEndPoint;
         private IPEndPoint RemoteEndPoint => _frameContext.RemoteEndPoint;
 
-        public IFeatureCollection ConnectionFeatures { get; set; }
+        public IFeatureCollection ConnectionFeatures => _frameContext.ConnectionFeatures;
         public IPipeReader Input => _frameContext.Transport.Input;
         public OutputProducer Output { get; }
         public ITimeoutControl TimeoutControl => _frameContext.TimeoutControl;

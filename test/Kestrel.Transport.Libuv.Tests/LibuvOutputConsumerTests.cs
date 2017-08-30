@@ -6,6 +6,7 @@ using System.Collections.Concurrent;
 using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
@@ -699,6 +700,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
             var frame = new Frame<object>(null, new FrameContext
             {
                 ServiceContext = serviceContext,
+                ConnectionFeatures = new FeatureCollection(),
                 PipeFactory = _pipeFactory,
                 TimeoutControl = Mock.Of<ITimeoutControl>(),
                 Application = pair.Application,

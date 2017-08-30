@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         }
 
         /// <summary>
-        /// Gets or sets the maximum number of open HTTP/S connections. When set to null, the number of connections is unlimited.
+        /// Gets or sets the maximum number of open connections. When set to null, the number of connections is unlimited.
         /// </summary>
         /// <remarks>
         /// <para>

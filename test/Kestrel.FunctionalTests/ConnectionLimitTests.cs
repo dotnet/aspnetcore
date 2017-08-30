@@ -2,12 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
-using System.Net.Sockets;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Tests;
 using Microsoft.AspNetCore.Testing;
@@ -23,15 +24,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var requestTcs = new TaskCompletionSource<object>();
             var releasedTcs = new TaskCompletionSource<object>();
             var lockedTcs = new TaskCompletionSource<bool>();
-            var (serviceContext, counter) = SetupMaxConnections(max: 1);
+            var counter = new EventRaisingResourceCounter(ResourceCounter.Quota(1));
             counter.OnLock += (s, e) => lockedTcs.TrySetResult(e);
             counter.OnRelease += (s, e) => releasedTcs.TrySetResult(null);
 
-            using (var server = new TestServer(async context =>
+            using (var server = CreateServerWithMaxConnections(async context =>
             {
                 await context.Response.WriteAsync("Hello");
                 await requestTcs.Task;
-            }, serviceContext))
+            }, counter))
             using (var connection = server.CreateConnection())
             {
                 await connection.SendEmptyGetAsKeepAlive(); ;
@@ -46,8 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task UpgradedConnectionsCountsAgainstDifferentLimit()
         {
-            var (serviceContext, _) = SetupMaxConnections(max: 1);
-            using (var server = new TestServer(async context =>
+            using (var server = CreateServerWithMaxConnections(async context =>
             {
                 var feature = context.Features.Get<IHttpUpgradeFeature>();
                 if (feature.IsUpgradableRequest)
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         await Task.Delay(100);
                     }
                 }
-            }, serviceContext))
+            }, max: 1))
             using (var disposables = new DisposableStack<TestConnection>())
             {
                 var upgraded = server.CreateConnection();
@@ -81,7 +81,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     {
                         // this may throw IOException, depending on how fast Kestrel closes the socket
                         await rejected.SendEmptyGetAsKeepAlive();
-                    } catch { }
+                    }
+                    catch { }
 
                     // connection should close without sending any data
                     await rejected.WaitForConnectionClose().TimeoutAfter(TimeSpan.FromSeconds(15));
@@ -93,14 +94,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task RejectsConnectionsWhenLimitReached()
         {
             const int max = 10;
-            var (serviceContext, _) = SetupMaxConnections(max);
             var requestTcs = new TaskCompletionSource<object>();
 
-            using (var server = new TestServer(async context =>
+            using (var server = CreateServerWithMaxConnections(async context =>
             {
                 await context.Response.WriteAsync("Hello");
                 await requestTcs.Task;
-            }, serviceContext))
+            }, max))
             using (var disposables = new DisposableStack<TestConnection>())
             {
                 for (var i = 0; i < max; i++)
@@ -141,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var openedTcs = new TaskCompletionSource<object>();
             var closedTcs = new TaskCompletionSource<object>();
 
-            var (serviceContext, counter) = SetupMaxConnections(uint.MaxValue);
+            var counter = new EventRaisingResourceCounter(ResourceCounter.Quota(uint.MaxValue));
 
             counter.OnLock += (o, e) =>
             {
@@ -159,7 +159,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             };
 
-            using (var server = new TestServer(_ => Task.CompletedTask, serviceContext))
+            using (var server = CreateServerWithMaxConnections(_ => Task.CompletedTask, counter))
             {
                 // open a bunch of connections in parallel
                 Parallel.For(0, count, async i =>
@@ -187,12 +187,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        private (TestServiceContext serviceContext, EventRaisingResourceCounter counter) SetupMaxConnections(long max)
+        private TestServer CreateServerWithMaxConnections(RequestDelegate app, long max)
         {
-            var counter = new EventRaisingResourceCounter(ResourceCounter.Quota(max));
             var serviceContext = new TestServiceContext();
-            serviceContext.ConnectionManager = new FrameConnectionManager(serviceContext.Log, counter, ResourceCounter.Unlimited);
-            return (serviceContext, counter);
+            serviceContext.ServerOptions.Limits.MaxConcurrentConnections = max;
+            return new TestServer(app, serviceContext);
+        }
+
+        private TestServer CreateServerWithMaxConnections(RequestDelegate app, ResourceCounter concurrentConnectionCounter)
+        {
+            var serviceContext = new TestServiceContext();
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+            listenOptions.Use(next =>
+            {
+                var middleware = new ConnectionLimitMiddleware(next, concurrentConnectionCounter, serviceContext.Log);
+                return middleware.OnConnectionAsync;
+            });
+
+            return new TestServer(app, serviceContext, listenOptions);
         }
     }
 }

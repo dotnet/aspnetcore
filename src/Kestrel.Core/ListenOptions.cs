@@ -131,8 +131,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         public IServiceProvider ApplicationServices => KestrelServerOptions?.ApplicationServices;
 
-        internal Action<ListenOptions> Configure { get; set; } = _ => { };
-
         /// <summary>
         /// Gets the name of this endpoint to display on command-line when the web server starts.
         /// </summary>

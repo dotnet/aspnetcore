@@ -4,6 +4,7 @@
 using System;
 using System.IO.Pipelines;
 using System.Text;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
@@ -27,6 +28,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             FrameContext = new FrameContext
             {
                 ServiceContext = new TestServiceContext(),
+                ConnectionFeatures = new FeatureCollection(),
                 Application = Application,
                 Transport = Transport,
                 PipeFactory = _pipelineFactory,

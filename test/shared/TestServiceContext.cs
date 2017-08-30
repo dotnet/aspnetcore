@@ -38,7 +38,7 @@ namespace Microsoft.AspNetCore.Testing
             ThreadPool = new LoggingThreadPool(Log);
             SystemClock = new MockSystemClock();
             DateHeaderValueManager = new DateHeaderValueManager(SystemClock);
-            ConnectionManager = new FrameConnectionManager(Log, ResourceCounter.Unlimited, ResourceCounter.Unlimited);
+            ConnectionManager = new FrameConnectionManager(Log, ResourceCounter.Unlimited);
             HttpParserFactory = frameAdapter => new HttpParser<FrameAdapter>(frameAdapter.Frame.ServiceContext.Log.IsEnabled(LogLevel.Information));
             ServerOptions = new KestrelServerOptions
             {

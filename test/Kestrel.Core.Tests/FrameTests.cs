@@ -63,6 +63,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameContext = new FrameContext
             {
                 ServiceContext = _serviceContext,
+                ConnectionFeatures = new FeatureCollection(),
                 PipeFactory = _pipelineFactory,
                 TimeoutControl = _timeoutControl.Object,
                 Application = pair.Application,

@@ -3,6 +3,7 @@
 
 using System.IO.Pipelines;
 using System.Net;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
@@ -12,6 +13,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         public string ConnectionId { get; set; }
         public ServiceContext ServiceContext { get; set; }
+        public IFeatureCollection ConnectionFeatures { get; set; }
         public PipeFactory PipeFactory { get; set; }
         public IPEndPoint RemoteEndPoint { get; set; }
         public IPEndPoint LocalEndPoint { get; set; }

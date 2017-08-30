@@ -18,9 +18,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 d.NoDelay = false;
             });
 
-            // Execute the callback
-            o1.ListenOptions[1].Configure(o1.ListenOptions[1]);
-
             Assert.True(o1.ListenOptions[0].NoDelay);
             Assert.False(o1.ListenOptions[1].NoDelay);
         }

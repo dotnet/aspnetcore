@@ -3,6 +3,7 @@
 
 using System.IO.Pipelines;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -33,6 +34,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var frameContext = new FrameContext
             {
                 ServiceContext = serviceContext,
+                ConnectionFeatures = new FeatureCollection(),
                 PipeFactory = PipeFactory,
                 TimeoutControl = new MockTimeoutControl()
             };

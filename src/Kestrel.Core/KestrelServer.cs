@@ -70,7 +70,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var trace = new KestrelTrace(logger);
             var connectionManager = new FrameConnectionManager(
                 trace,
-                serverOptions.Limits.MaxConcurrentConnections,
                 serverOptions.Limits.MaxConcurrentUpgradedConnections);
 
             var systemClock = new SystemClock();
@@ -135,16 +134,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
                 async Task OnBind(ListenOptions endpoint)
                 {
-                    // Add the connection limit middleware
-                    endpoint.UseConnectionLimit(ServiceContext);
-
-                    // Configure the user delegate
-                    endpoint.Configure(endpoint);
-
                     // Add the HTTP middleware as the terminal connection middleware
                     endpoint.UseHttpServer(endpoint.ConnectionAdapters, ServiceContext, application);
 
-                    var connectionHandler = new ConnectionHandler(ServiceContext, endpoint.Build()); 
+                    var connectionDelegate = endpoint.Build();
+
+                    // Add the connection limit middleware
+                    if (Options.Limits.MaxConcurrentConnections.HasValue)
+                    {
+                        connectionDelegate = new ConnectionLimitMiddleware(connectionDelegate, Options.Limits.MaxConcurrentConnections.Value, Trace).OnConnectionAsync;
+                    }
+
+                    var connectionHandler = new ConnectionHandler(ServiceContext, connectionDelegate);
                     var transport = _transportFactory.Create(endpoint, connectionHandler);
                     _transports.Add(transport);
 

@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -107,6 +108,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var frame = new TestFrame<object>(application: null, context: new FrameContext
             {
                 ServiceContext = serviceContext,
+                ConnectionFeatures = new FeatureCollection(),
                 PipeFactory = pipeFactory,
                 Application = pair.Application,
                 Transport = pair.Transport

@@ -2,10 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO.Pipelines;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO.Pipelines;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Primitives;
@@ -23,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frameContext = new FrameContext
             {
                 ServiceContext = new TestServiceContext(),
+                ConnectionFeatures = new FeatureCollection(),
                 PipeFactory = factory,
                 Application = pair.Application,
                 Transport = pair.Transport,
