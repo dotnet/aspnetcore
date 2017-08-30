@@ -1,4 +1,5 @@
-﻿using Microsoft.Build.Utilities;
+﻿using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -28,13 +29,28 @@ namespace DependencyUpdater
             // to the output location and then modify the copy.
             var outFile = Path.Combine(OutDir, Path.GetFileName(NupkgFile));
             File.Copy(NupkgFile, outFile, true);
-            
+
+            var numProjectFiles = 0;
             using (var zipFile = ZipFile.Open(outFile, ZipArchiveMode.Update))
             {
                 foreach (var projectFile in zipFile.Entries.Where(IsProjectFile))
                 {
+                    numProjectFiles++;
                     PerformVariableSubstitutions(projectFile, substitutionsDict);
                 }
+            }
+
+            if (numProjectFiles == 0)
+            {
+                Log.LogMessage(
+                    MessageImportance.High,
+                    $"No project files found in {Path.GetFileName(outFile)}, so no variables substituted.");
+            }
+            else
+            {
+                Log.LogMessage(
+                    MessageImportance.High,
+                    $"Substituted variables in {numProjectFiles} project file(s) in {Path.GetFileName(outFile)}");
             }
 
             return true;

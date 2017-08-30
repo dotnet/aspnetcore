@@ -2,7 +2,6 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <EnableDefaultItems>False</EnableDefaultItems>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <IncludeBuildOutput>False</IncludeBuildOutput>
