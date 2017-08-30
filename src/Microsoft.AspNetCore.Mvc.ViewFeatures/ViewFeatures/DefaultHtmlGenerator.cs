@@ -419,11 +419,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 }
             }
 
-            if (string.IsNullOrEmpty(resolvedLabelText))
-            {
-                return null;
-            }
-
             var tagBuilder = new TagBuilder("label");
             var fullName = NameAndIdProvider.GetFullHtmlFieldName(viewContext, expression);
             var idString = NameAndIdProvider.CreateSanitizedId(viewContext, fullName, IdAttributeDotReplacement);

@@ -199,6 +199,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             Assert.Equal(expected, HtmlContentUtilities.HtmlContentToString(result));
         }
 
+        // Prior to aspnet/Mvc#6638 fix, helper did not generate Property1 <label> or containing <div> with this setup.
         // Expect almost the same HTML as in ObjectTemplateEditsSimplePropertiesOnObjectByDefault(). Only difference is
         // the <div class="editor-label">...</div> is not present for Property1.
         [Fact]
@@ -206,6 +207,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         {
             // Arrange
             var expected =
+                "<div class=\"HtmlEncode[[editor-label]]\"><label for=\"HtmlEncode[[Property1]]\"></label></div>" +
+                Environment.NewLine +
                 "<div class=\"HtmlEncode[[editor-field]]\">Model = p1, ModelType = System.String, PropertyName = Property1, SimpleDisplayText = p1 " +
                 "<span class=\"HtmlEncode[[field-validation-valid]]\" data-valmsg-for=\"HtmlEncode[[Property1]]\" data-valmsg-replace=\"HtmlEncode[[true]]\">" +
                 "</span></div>" +

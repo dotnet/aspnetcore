@@ -3,10 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
@@ -17,7 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     public class LabelTagHelperTest
     {
         // Model (List<Model> or Model instance), container type (Model or NestModel), model accessor,
-        // property path, TagHelperOutput.Content values.
+        // property path, TagHelperOutput values. All accessors should end at a Text property.
         public static TheoryData<object, Type, Func<object>, string, TagHelperOutputContent> TestDataSet
         {
             get
@@ -101,8 +99,6 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { modelWithText, typeof(NestedModel), () => modelWithText.NestedModel.Text, "NestedModel.Text",
                         new TagHelperOutputContent("Hello World1", "Hello World2", "Hello World2", "NestedModel_Text") },
 
-                    // Note: Tests cases below here will not work in practice due to current limitations on indexing
-                    // into ModelExpressions. Will be fixed in https://github.com/aspnet/Mvc/issues/1345.
                     { models, typeof(Model), () => models[0].Text, "[0].Text",
                         new TagHelperOutputContent(Environment.NewLine, string.Empty, "HtmlEncode[[Text]]", "z0__Text") },
                     { models, typeof(Model), () => models[0].Text, "[0].Text",
@@ -232,6 +228,109 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             Assert.Equal(expectedPostContent, output.PostContent.GetContent());
             Assert.Equal(TagMode.StartTagAndEndTag, output.TagMode);
             Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        // Display name, original child content, HTML field prefix, expected child content, and expected ID.
+        // Uses TagHelperOutputContent.OriginalContent to pass HtmlFieldPrefix values.
+        public static TheoryData<string, string, string, string, string> DisplayNameDataSet
+        {
+            get
+            {
+                return new TheoryData<string, string, string, string, string>
+                {
+                    {
+                        null, string.Empty, string.Empty, $"HtmlEncode[[{nameof(NestedModel.Text)}]]", nameof(NestedModel.Text)
+                    },
+                    {
+                        string.Empty, string.Empty, string.Empty, string.Empty, nameof(NestedModel.Text)
+                    },
+                    {
+                        "a label", string.Empty, string.Empty, "HtmlEncode[[a label]]", nameof(NestedModel.Text)
+                    },
+                    {
+                        null, "original label", string.Empty, "original label", nameof(NestedModel.Text)
+                    },
+                    {
+                        string.Empty, "original label", string.Empty, "original label", nameof(NestedModel.Text)
+                    },
+                    {
+                        "a label", "original label", string.Empty, "original label", nameof(NestedModel.Text)
+                    },
+                    {
+                        null, string.Empty, "prefix", $"HtmlEncode[[{nameof(NestedModel.Text)}]]", $"prefix_{nameof(NestedModel.Text)}"
+                    },
+                    {
+                        string.Empty, string.Empty, "prefix", string.Empty, $"prefix_{nameof(NestedModel.Text)}"
+                    },
+                    {
+                        "a label", string.Empty, "prefix", "HtmlEncode[[a label]]", $"prefix_{nameof(NestedModel.Text)}"
+                    },
+                };
+            }
+        }
+
+        // Prior to aspnet/Mvc#6638 fix, helpers generated nothing in this test when displayName was empty.
+        [Theory]
+        [MemberData(nameof(DisplayNameDataSet))]
+        public async Task ProcessAsync_GeneratesExpectedOutput_WithDisplayName(
+            string displayName,
+            string originalChildContent,
+            string htmlFieldPrefix,
+            string expectedContent,
+            string expectedId)
+        {
+            // Arrange
+            var expectedAttributes = new TagHelperAttributeList
+            {
+                { "for", expectedId }
+            };
+
+            var name = nameof(NestedModel.Text);
+            var metadataProvider = new TestModelMetadataProvider();
+            metadataProvider
+                .ForProperty<NestedModel>(name)
+                .DisplayDetails(metadata => metadata.DisplayName = () => displayName);
+
+            var htmlGenerator = new TestableHtmlGenerator(metadataProvider);
+            var viewContext = TestableHtmlGenerator.GetViewContext(
+                model: null,
+                htmlGenerator: htmlGenerator,
+                metadataProvider: metadataProvider);
+
+            var viewData = new ViewDataDictionary<NestedModel>(metadataProvider, viewContext.ModelState);
+            viewData.TemplateInfo.HtmlFieldPrefix = htmlFieldPrefix;
+            viewContext.ViewData = viewData;
+
+            var containerExplorer = metadataProvider.GetModelExplorerForType(typeof(NestedModel), model: null);
+            var modelExplorer = containerExplorer.GetExplorerForProperty(name);
+            var modelExpression = new ModelExpression(name, modelExplorer);
+            var tagHelper = new LabelTagHelper(htmlGenerator)
+            {
+                For = modelExpression,
+                ViewContext = viewContext,
+            };
+
+            var tagHelperContext = new TagHelperContext(
+                tagName: "label",
+                allAttributes: new TagHelperAttributeList(),
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                "label",
+                new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    var tagHelperContent = new DefaultTagHelperContent();
+                    tagHelperContent.AppendHtml(originalChildContent);
+                    return Task.FromResult<TagHelperContent>(tagHelperContent);
+                });
+
+            // Act
+            await tagHelper.ProcessAsync(tagHelperContext, output);
+
+            // Assert
+            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Equal(expectedContent, HtmlContentUtilities.HtmlContentToString(output.Content));
         }
 
         public class TagHelperOutputContent

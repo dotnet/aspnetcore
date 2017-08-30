@@ -977,6 +977,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
                 return HtmlString.Empty;
             }
 
+            // Do not generate an empty <label> element unless user passed string.Empty for the label text. This is
+            // primarily done for back-compatibility. (Note HtmlContentBuilder ignores (no-ops) an attempt to add
+            // string.Empty. So tagBuilder.HasInnerHtml isn't sufficient here.)
+            if (!tagBuilder.HasInnerHtml && labelText == null)
+            {
+                if (tagBuilder.Attributes.Count == 0)
+                {
+                    // Element has no content and no attributes.
+                    return HtmlString.Empty;
+                }
+                else if (tagBuilder.Attributes.Count == 1 &&
+                    tagBuilder.Attributes.TryGetValue("for", out var forAttribute) &&
+                    string.IsNullOrEmpty(forAttribute))
+                {
+                    // Element has no content and only an empty (therefore useless) "for" attribute.
+                    return HtmlString.Empty;
+                }
+            }
+
             return tagBuilder;
         }
 

@@ -35,6 +35,47 @@ namespace Microsoft.AspNetCore.Mvc.Core
         }
 
         [Fact]
+        public void LabelHelpers_ReturnExpectedElementForModel_WithLabelText()
+        {
+            // Arrange
+            var expectedLabel = "<label for=\"\">HtmlEncode[[a label]]</label>";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+
+            // Act
+            var labelResult = helper.Label(expression: string.Empty, labelText: "a label");
+            var labelNullResult = helper.Label(expression: null, labelText: "a label");
+            var labelForResult = helper.LabelFor(m => m, labelText: "a label");
+            var labelForModelResult = helper.LabelForModel(labelText: "a label");
+
+            // Assert
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelNullResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForModelResult));
+        }
+
+        // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
+        [Fact]
+        public void LabelHelpers_ReturnExpectedElementForModel_WithEmptyLabelText()
+        {
+            // Arrange
+            var expectedLabel = "<label for=\"\"></label>";
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+
+            // Act
+            var labelResult = helper.Label(expression: string.Empty, labelText: string.Empty);
+            var labelNullResult = helper.Label(expression: null, labelText: string.Empty);
+            var labelForResult = helper.LabelFor(m => m, labelText: string.Empty);
+            var labelForModelResult = helper.LabelForModel(labelText: string.Empty);
+
+            // Assert
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelNullResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForModelResult));
+        }
+
+        [Fact]
         public void LabelHelpers_DisplayPropertyName()
         {
             // Arrange
@@ -107,6 +148,8 @@ namespace Microsoft.AspNetCore.Mvc.Core
             Assert.Equal("<label for=\"HtmlEncode[[value]]\">HtmlEncode[[value]]</label>", HtmlContentUtilities.HtmlContentToString(labelResult));
         }
 
+        // Following test is identical to LabelHelpers_ReturnEmptyForModel() from the HTML helpers' perspective. But,
+        // test confirms the added metadata does not change the behavior.
         [Fact]
         public void LabelHelpers_ReturnEmptyForModel_IfDisplayNameEmpty()
         {
@@ -129,6 +172,86 @@ namespace Microsoft.AspNetCore.Mvc.Core
             Assert.Empty(HtmlContentUtilities.HtmlContentToString(labelNullResult));
             Assert.Empty(HtmlContentUtilities.HtmlContentToString(labelForResult));
             Assert.Empty(HtmlContentUtilities.HtmlContentToString(labelForModelResult));
+        }
+
+        // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
+        // Following test mimics use of an identity expression in an editor template if invoked for an element in a
+        // collection. See also LabelHelpers_ReturnExpectedElementForProperty_IfDisplayNameEmptyAndNotTopLevel().
+        [Fact]
+        public void LabelHelpers_ReturnExpectedElementForModel_IfDisplayNameEmptyAndNotTopLevel()
+        {
+            // Arrange
+            var expectedLabel = "<label for=\"HtmlEncode[[prefix]]\"></label>";
+            var provider = new TestModelMetadataProvider();
+            provider
+                .ForType<DefaultTemplatesUtilities.ObjectTemplateModel>()
+                .DisplayDetails(dd => dd.DisplayName = () => string.Empty);
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = "prefix";
+
+            // Act
+            var labelResult = helper.Label(expression: string.Empty);
+            var labelNullResult = helper.Label(expression: null);   // null is another alias for current model
+            var labelForResult = helper.LabelFor(m => m);
+            var labelForModelResult = helper.LabelForModel();
+
+            // Assert
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelNullResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForModelResult));
+        }
+
+        [Fact]
+        public void LabelHelpers_ReturnExpectedElementForModel_IfDisplayNameEmpty_WithLabelText()
+        {
+            // Arrange
+            var expectedLabel = "<label for=\"\">HtmlEncode[[a label]]</label>";
+            var provider = new TestModelMetadataProvider();
+            provider
+                .ForType<DefaultTemplatesUtilities.ObjectTemplateModel>()
+                .DisplayDetails(dd => dd.DisplayName = () => string.Empty);
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
+
+            // Act
+            var labelResult = helper.Label(expression: string.Empty, labelText: "a label");
+            var labelNullResult = helper.Label(expression: null, labelText: "a label");
+            var labelForResult = helper.LabelFor(m => m, labelText: "a label");
+            var labelForModelResult = helper.LabelForModel(labelText: "a label");
+
+            // Assert
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelNullResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForModelResult));
+        }
+
+        // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
+        [Fact]
+        public void LabelHelpers_ReturnExpectedElementForModel_IfDisplayNameEmpty_WithEmptyLabelText()
+        {
+            // Arrange
+            var expectedLabel = "<label for=\"\"></label>";
+            var provider = new TestModelMetadataProvider();
+            provider
+                .ForType<DefaultTemplatesUtilities.ObjectTemplateModel>()
+                .DisplayDetails(dd => dd.DisplayName = () => string.Empty);
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
+
+            // Act
+            var labelResult = helper.Label(expression: string.Empty, labelText: string.Empty);
+            var labelNullResult = helper.Label(expression: null, labelText: string.Empty);
+            var labelForResult = helper.LabelFor(m => m, labelText: string.Empty);
+            var labelForModelResult = helper.LabelForModel(labelText: string.Empty);
+
+            // Assert
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelNullResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForModelResult));
         }
 
         [Theory]
@@ -155,20 +278,24 @@ namespace Microsoft.AspNetCore.Mvc.Core
             Assert.Equal("<label for=\"\">HtmlEncode[[" + displayName + "]]</label>", HtmlContentUtilities.HtmlContentToString(labelForModelResult));
         }
 
+        // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
+        // Following test mimics use of an identity expression in an editor template if invoked for a property. See
+        // also LabelHelpers_ReturnExpectedElementForModel_IfDisplayNameEmptyAndNotTopLevel().
         [Fact]
-        public void LabelHelpers_ReturnEmptyForProperty_IfDisplayNameEmpty()
+        public void LabelHelpers_ReturnExpectedElementForProperty_IfDisplayNameEmptyAndNotTopLevel()
         {
             // Arrange
+            var expectedLabel = "<label for=\"HtmlEncode[[Property1]]\"></label>";
             var provider = new TestModelMetadataProvider();
             provider
                 .ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1")
                 .DisplayDetails(dd => dd.DisplayName = () => string.Empty);
 
-            var modelExplorer = provider
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper<string>(provider: provider);
+            helper.ViewData.ModelExplorer = provider
                 .GetModelExplorerForType(typeof(DefaultTemplatesUtilities.ObjectTemplateModel), model: null)
-                .GetExplorerForProperty("Property1");
-
-            var helper = DefaultTemplatesUtilities.GetHtmlHelper();
+                .GetExplorerForProperty(nameof(DefaultTemplatesUtilities.ObjectTemplateModel.Property1));
+            helper.ViewData.TemplateInfo.HtmlFieldPrefix = nameof(DefaultTemplatesUtilities.ObjectTemplateModel.Property1);
 
             // Act
             var labelResult = helper.Label(expression: string.Empty);
@@ -177,10 +304,79 @@ namespace Microsoft.AspNetCore.Mvc.Core
             var labelForModelResult = helper.LabelForModel();
 
             // Assert
-            Assert.Empty(HtmlContentUtilities.HtmlContentToString(labelResult));
-            Assert.Empty(HtmlContentUtilities.HtmlContentToString(labelNullResult));
-            Assert.Empty(HtmlContentUtilities.HtmlContentToString(labelForResult));
-            Assert.Empty(HtmlContentUtilities.HtmlContentToString(labelForModelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelNullResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForModelResult));
+        }
+
+        // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
+        [Fact]
+        public void LabelHelpers_ReturnExpectedElementForProperty_IfDisplayNameEmpty()
+        {
+            // Arrange
+            var expectedLabel = "<label for=\"HtmlEncode[[Property1]]\"></label>";
+            var provider = new TestModelMetadataProvider();
+            provider
+                .ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1")
+                .DisplayDetails(dd => dd.DisplayName = () => string.Empty);
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
+
+            // Act
+            var labelResult = helper.Label(expression: nameof(DefaultTemplatesUtilities.ObjectTemplateModel.Property1));
+            var labelForResult = helper.LabelFor(m => m.Property1);
+
+            // Assert
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
+        }
+
+        [Fact]
+        public void LabelHelpers_ReturnExpectedElementForProperty_IfDisplayNameEmpty_WithLabelText()
+        {
+            // Arrange
+            var expectedLabel = "<label for=\"HtmlEncode[[Property1]]\">HtmlEncode[[a label]]</label>";
+            var provider = new TestModelMetadataProvider();
+            provider
+                .ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1")
+                .DisplayDetails(dd => dd.DisplayName = () => string.Empty);
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
+
+            // Act
+            var labelResult = helper.Label(
+                expression: nameof(DefaultTemplatesUtilities.ObjectTemplateModel.Property1),
+                labelText: "a label");
+            var labelForResult = helper.LabelFor(m => m.Property1, labelText: "a label");
+
+            // Assert
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
+        }
+
+        // Prior to aspnet/Mvc#6638 fix, helpers generated nothing with this setup.
+        [Fact]
+        public void LabelHelpers_ReturnExpectedElementForProperty_IfDisplayNameEmpty_WithEmptyLabelText()
+        {
+            // Arrange
+            var expectedLabel = "<label for=\"HtmlEncode[[Property1]]\"></label>";
+            var provider = new TestModelMetadataProvider();
+            provider
+                .ForProperty<DefaultTemplatesUtilities.ObjectTemplateModel>("Property1")
+                .DisplayDetails(dd => dd.DisplayName = () => string.Empty);
+
+            var helper = DefaultTemplatesUtilities.GetHtmlHelper(provider: provider);
+
+            // Act
+            var labelResult = helper.Label(
+                expression: nameof(DefaultTemplatesUtilities.ObjectTemplateModel.Property1),
+                labelText: string.Empty);
+            var labelForResult = helper.LabelFor(m => m.Property1, labelText: string.Empty);
+
+            // Assert
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelResult));
+            Assert.Equal(expectedLabel, HtmlContentUtilities.HtmlContentToString(labelForResult));
         }
 
         [Theory]
