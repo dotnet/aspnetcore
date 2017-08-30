@@ -210,5 +210,76 @@ namespace Microsoft.Net.Http.Headers
             Assert.True(HeaderUtilities.TryParseNonNegativeInt32(valueString, out value));
             Assert.Equal(expected, value);
         }
+
+        [Theory]
+        [InlineData("\"hello\"", "hello")]
+        [InlineData("\"hello", "\"hello")]
+        [InlineData("hello\"", "hello\"")]
+        [InlineData("\"\"hello\"\"", "\"hello\"")]
+        public void RemoveQuotes_BehaviorCheck(string input, string expected)
+        {
+            var actual = HeaderUtilities.RemoveQuotes(input);
+
+            Assert.Equal(expected, actual);
+        }
+        [Theory]
+        [InlineData("\"hello\"", true)]
+        [InlineData("\"hello", false)]
+        [InlineData("hello\"", false)]
+        [InlineData("\"\"hello\"\"", true)]
+        public void IsQuoted_BehaviorCheck(string input, bool expected)
+        {
+            var actual = HeaderUtilities.IsQuoted(input);
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData("value", "value")]
+        [InlineData("\"value\"", "value")]
+        [InlineData("\"hello\\\\\"", "hello\\")]
+        [InlineData("\"hello\\\"\"", "hello\"")]
+        [InlineData("\"hello\\\"foo\\\\bar\\\\baz\\\\\"", "hello\"foo\\bar\\baz\\")]
+        [InlineData("\"quoted value\"", "quoted value")]
+        [InlineData("\"quoted\\\"valuewithquote\"", "quoted\"valuewithquote")]
+        [InlineData("\"hello\\\"", "hello\\")]
+        public void UnescapeAsQuotedString_BehaviorCheck(string input, string expected)
+        {
+            var actual = HeaderUtilities.UnescapeAsQuotedString(input);
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData("value", "\"value\"")]
+        [InlineData("23", "\"23\"")]
+        [InlineData(";;;", "\";;;\"")]
+        [InlineData("\"value\"", "\"\\\"value\\\"\"")]
+        [InlineData("unquoted \"value", "\"unquoted \\\"value\"")]
+        [InlineData("value\\morevalues\\evenmorevalues", "\"value\\\\morevalues\\\\evenmorevalues\"")]
+        // We have to assume that the input needs to be quoted here
+        [InlineData("\"\"double quoted string\"\"", "\"\\\"\\\"double quoted string\\\"\\\"\"")]
+        [InlineData("\t", "\"\t\"")]
+        public void SetAndEscapeValue_BehaviorCheck(string input, string expected)
+        {
+            var actual = HeaderUtilities.EscapeAsQuotedString(input);
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData("\n")]
+        [InlineData("\b")]
+        [InlineData("\r")]
+        public void SetAndEscapeValue_ControlCharactersThrowFormatException(string input)
+        {
+            Assert.Throws<FormatException>(() => { var actual = HeaderUtilities.EscapeAsQuotedString(input); });
+        }
+
+        [Fact]
+        public void SetAndEscapeValue_ThrowsFormatExceptionOnDelCharacter()
+        {
+            Assert.Throws<FormatException>(() => { var actual = HeaderUtilities.EscapeAsQuotedString($"{(char)0x7F}"); });
+        }
     }
 }

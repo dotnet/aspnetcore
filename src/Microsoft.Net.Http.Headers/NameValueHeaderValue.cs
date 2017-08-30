@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.Text;
 using Microsoft.Extensions.Primitives;
 
@@ -139,6 +140,28 @@ namespace Microsoft.Net.Http.Headers
             else
             {
                 return (_value.Equals(other._value, StringComparison.OrdinalIgnoreCase));
+            }
+        }
+
+        public StringSegment GetUnescapedValue()
+        {
+            if (!HeaderUtilities.IsQuoted(_value))
+            {
+                return _value;
+            }
+            return HeaderUtilities.UnescapeAsQuotedString(_value);
+        }
+
+        public void SetAndEscapeValue(StringSegment value)
+        {
+            HeaderUtilities.ThrowIfReadOnly(IsReadOnly);
+            if (StringSegment.IsNullOrEmpty(value) || (GetValueLength(value, 0) == value.Length))
+            {
+                _value = value;
+            }
+            else
+            {
+                Value = HeaderUtilities.EscapeAsQuotedString(value);
             }
         }
 
@@ -390,7 +413,7 @@ namespace Microsoft.Net.Http.Headers
             // Either value is null/empty or a valid token/quoted string
             if (!(StringSegment.IsNullOrEmpty(value) || (GetValueLength(value, 0) == value.Length)))
             {
-                throw new FormatException(string.Format(System.Globalization.CultureInfo.InvariantCulture, "The header value is invalid: '{0}'", value));
+                throw new FormatException(string.Format(CultureInfo.InvariantCulture, "The header value is invalid: '{0}'", value));
             }
         }
 

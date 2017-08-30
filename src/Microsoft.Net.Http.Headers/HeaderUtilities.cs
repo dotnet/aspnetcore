@@ -594,11 +594,131 @@ namespace Microsoft.Net.Http.Headers
 
         public static StringSegment RemoveQuotes(StringSegment input)
         {
-            if (!StringSegment.IsNullOrEmpty(input) && input.Length >= 2 && input[0] == '"' && input[input.Length - 1] == '"')
+            if (IsQuoted(input))
             {
                 input = input.Subsegment(1, input.Length - 2);
             }
             return input;
+        }
+
+        public static bool IsQuoted(StringSegment input)
+        {
+            return !StringSegment.IsNullOrEmpty(input) && input.Length >= 2 && input[0] == '"' && input[input.Length - 1] == '"';
+        }
+
+        /// <summary>
+        /// Given a quoted-string as defined by <see href="https://tools.ietf.org/html/rfc7230#section-3.2.6">the RFC specification</see>,
+        /// removes quotes and unescapes backslashes and quotes. This assumes that the input is a valid quoted-string.
+        /// </summary>
+        /// <param name="input">The quoted-string to be unescaped.</param>
+        /// <returns>An unescaped version of the quoted-string.</returns>
+        public static StringSegment UnescapeAsQuotedString(StringSegment input)
+        {
+            input = RemoveQuotes(input);
+
+            // First pass to calculate the size of the InplaceStringBuilder
+            var backSlashCount = CountBackslashesForDecodingQuotedString(input);
+
+            if (backSlashCount == 0)
+            {
+                return input;
+            }
+
+            var stringBuilder = new InplaceStringBuilder(input.Length - backSlashCount);
+
+            for (var i = 0; i < input.Length; i++)
+            {
+                if (i < input.Length - 1 && input[i] == '\\')
+                {
+                    // If there is an backslash character as the last character in the string,
+                    // we will assume that it should be included literally in the unescaped string
+                    // Ex: "hello\\" => "hello\\"
+                    // Also, if a sender adds a quoted pair like '\\''n',
+                    // we will assume it is over escaping and just add a n to the string.
+                    // Ex: "he\\llo" => "hello"
+                    stringBuilder.Append(input[i + 1]);
+                    i++;
+                    continue;
+                }
+                stringBuilder.Append(input[i]);
+            }
+
+            return stringBuilder.ToString();
+        }
+
+        private static int CountBackslashesForDecodingQuotedString(StringSegment input)
+        {
+            var numberBackSlashes = 0;
+            for (var i = 0; i < input.Length; i++)
+            {
+                if (i < input.Length - 1 && input[i] == '\\')
+                {
+                    // If there is an backslash character as the last character in the string,
+                    // we will assume that it should be included literally in the unescaped string
+                    // Ex: "hello\\" => "hello\\"
+                    // Also, if a sender adds a quoted pair like '\\''n',
+                    // we will assume it is over escaping and just add a n to the string.
+                    // Ex: "he\\llo" => "hello"
+                    if (input[i + 1] == '\\')
+                    {
+                        // Only count escaped backslashes once
+                        i++;
+                    }
+                    numberBackSlashes++;
+                }
+            }
+            return numberBackSlashes;
+        }
+
+        /// <summary>
+        /// Escapes a <see cref="StringSegment"/> as a quoted-string, which is defined by
+        /// <see href="https://tools.ietf.org/html/rfc7230#section-3.2.6">the RFC specification</see>.
+        /// </summary>
+        /// <remarks>
+        /// This will add a backslash before each backslash and quote and add quotes
+        /// around the input. Assumes that the input does not have quotes around it,
+        /// as this method will add them. Throws if the input contains any invalid escape characters,
+        /// as defined by rfc7230.
+        /// </remarks>
+        /// <param name="input">The input to be escaped.</param>
+        /// <returns>An escaped version of the quoted-string.</returns>
+        public static StringSegment EscapeAsQuotedString(StringSegment input)
+        {
+            // By calling this, we know that the string requires quotes around it to be a valid token.
+            var backSlashCount = CountAndCheckCharactersNeedingBackslashesWhenEncoding(input);
+
+            var stringBuilder = new InplaceStringBuilder(input.Length + backSlashCount + 2); // 2 for quotes
+            stringBuilder.Append('\"');
+
+            for (var i = 0; i < input.Length; i++)
+            {
+                if (input[i] == '\\' || input[i] == '\"')
+                {
+                    stringBuilder.Append('\\');
+                }
+                else if ((input[i] <= 0x1F || input[i] == 0x7F) && input[i] != 0x09)
+                {
+                    // Control characters are not allowed in a quoted-string, which include all characters
+                    // below 0x1F (except for 0x09 (TAB)) and 0x7F.
+                    throw new FormatException($"Invalid control character '{input[i]}' in input.");
+                }
+                stringBuilder.Append(input[i]);
+            }
+            stringBuilder.Append('\"');
+            return stringBuilder.ToString();
+        }
+
+        private static int CountAndCheckCharactersNeedingBackslashesWhenEncoding(StringSegment input)
+        {
+            var numberOfCharactersNeedingEscaping = 0;
+            for (var i = 0; i < input.Length; i++)
+            {
+                if (input[i] == '\\' || input[i] == '\"')
+                {
+                    numberOfCharactersNeedingEscaping++;
+                }
+            }
+            return numberOfCharactersNeedingEscaping;
         }
 
         internal static void ThrowIfReadOnly(bool isReadOnly)

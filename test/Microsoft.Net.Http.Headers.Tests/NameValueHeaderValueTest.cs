@@ -575,6 +575,87 @@ namespace Microsoft.Net.Http.Headers
             Assert.False(NameValueHeaderValue.TryParseStrictList(inputs, out results));
         }
 
+        [Theory]
+        [InlineData("value", "value")]
+        [InlineData("\"value\"", "value")]
+        [InlineData("\"hello\\\\\"", "hello\\")]
+        [InlineData("\"hello\\\"\"", "hello\"")]
+        [InlineData("\"hello\\\"foo\\\\bar\\\\baz\\\\\"", "hello\"foo\\bar\\baz\\")]
+        [InlineData("\"quoted value\"", "quoted value")]
+        [InlineData("\"quoted\\\"valuewithquote\"", "quoted\"valuewithquote")]
+        [InlineData("\"hello\\\"", "hello\\")]
+        public void GetUnescapedValue_ReturnsExpectedValue(string input, string expected)
+        {
+            var header = new NameValueHeaderValue("test", input);
+
+            var actual = header.GetUnescapedValue();
+
+            Assert.Equal(expected, actual);
+        }
+
+        [Theory]
+        [InlineData("value", "value")]
+        [InlineData("23", "23")]
+        [InlineData(";;;", "\";;;\"")]
+        [InlineData("\"value\"", "\"value\"")]
+        [InlineData("\"assumes already encoded \\\"\"", "\"assumes already encoded \\\"\"")]
+        [InlineData("unquoted \"value", "\"unquoted \\\"value\"")]
+        [InlineData("value\\morevalues\\evenmorevalues", "\"value\\\\morevalues\\\\evenmorevalues\"")]
+        // We have to assume that the input needs to be quoted here
+        [InlineData("\"\"double quoted string\"\"", "\"\\\"\\\"double quoted string\\\"\\\"\"")]
+        [InlineData("\t", "\"\t\"")]
+        public void SetAndEscapeValue_ReturnsExpectedValue(string input, string expected)
+        {
+            var header = new NameValueHeaderValue("test");
+            header.SetAndEscapeValue(input);
+
+            var actual = header.Value;
+
+            Assert.Equal(expected, actual);
+        }
+
+
+        [Theory]
+        [InlineData("\n")]
+        [InlineData("\b")]
+        [InlineData("\r")]
+        public void SetAndEscapeValue_ThrowsOnInvalidValues(string input)
+        {
+            var header = new NameValueHeaderValue("test");
+            Assert.Throws<FormatException>(() => header.SetAndEscapeValue(input));
+        }
+
+        [Theory]
+        [InlineData("value")]
+        [InlineData("\"value\\\\morevalues\\\\evenmorevalues\"")]
+        [InlineData("\"quoted \\\"value\"")]
+        public void GetAndSetEncodeValueRoundTrip_ReturnsExpectedValue(string input)
+        {
+            var header = new NameValueHeaderValue("test");
+            header.Value = input;
+            var valueHeader = header.GetUnescapedValue();
+            header.SetAndEscapeValue(valueHeader);
+
+            var actual = header.Value;
+
+            Assert.Equal(input, actual);
+        }
+
+        [Theory]
+        [InlineData("val\\nue")]
+        [InlineData("val\\bue")]
+        public void OverescapingValuesDoNotRoundTrip(string input)
+        {
+            var header = new NameValueHeaderValue("test");
+            header.SetAndEscapeValue(input);
+            var valueHeader = header.GetUnescapedValue();
+
+            var actual = header.Value;
+
+            Assert.NotEqual(input, actual);
+        }
+
+
         #region Helper methods
 
         private void CheckValidParse(string input, NameValueHeaderValue expectedResult)
