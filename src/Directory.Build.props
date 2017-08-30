@@ -10,8 +10,9 @@
     <NoWarn>2008;8021</NoWarn>
     <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
-    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)..\artifacts\</PackageOutputPath>
+    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)..\artifacts\tmp\</PackageOutputPath>    
     <NuspecProperties>version=$(PackageVersion)</NuspecProperties>
+    <AspNetCoreVersionFromLineup>@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore.All')->Metadata('Version'))</AspNetCoreVersionFromLineup>
 
     <!--
         These are not regular projects. They are just wrappers for the .nuspec files in each
@@ -26,8 +27,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Remove="Microsoft.NETCore.App" />
+    <ProjectReference Include="$(MSBuildThisFileDirectory)../tools/DependencyUpdater/DependencyUpdater.csproj" />
     <None Include="Content/**" />
+
+    <!--
+      Having this package reference causes KoreBuild to pick the applicable
+      ASP.NET Core version from the lineup, making it possible to declare
+      the AspNetCoreVersionFromLineup variable above.
+    -->
+    <PackageReference Include="Microsoft.AspNetCore.All" />
   </ItemGroup>
 
 </Project>

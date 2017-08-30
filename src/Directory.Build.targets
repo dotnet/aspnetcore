@@ -1,0 +1,21 @@
+<Project>
+  <Import Project="..\Directory.Build.targets" />
+
+  <!--
+    Once we've written each template .nupkg file, we modify the ASP.NET references
+    in its .csproj content files, injecting whatever version number exists in
+    the curent build context.
+  -->
+
+  <UsingTask
+    TaskName="DependencyUpdater.UpdateAspNetReference"
+    AssemblyFile="$(MSBuildProjectDirectory)\$(OutputPath)DependencyUpdater.dll" />
+
+  <Target Name="RunTask" AfterTargets="Pack">
+    <UpdateAspNetReference
+        NupkgFile="$(PackageOutputPath)$(MSBuildProjectName).$(PackageVersion).nupkg"
+        AspNetVersion="$(AspNetCoreVersionFromLineup)"
+        OutDir="$(PackageOutputPath)..\" />
+  </Target>
+
+</Project>
