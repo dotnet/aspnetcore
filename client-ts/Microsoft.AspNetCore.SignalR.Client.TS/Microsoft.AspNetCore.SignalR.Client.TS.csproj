@@ -14,7 +14,9 @@
     <Outputs Include="@(Inputs -> '$(SignalRClientDistFolder)src\%(FileName).d.ts')" />
     <Outputs Include="@(Inputs -> '$(SignalRClientDistFolder)src\%(FileName).js')" />
     <Outputs Include="$(SignalRClientDistFolder)browser\signalr-client.js" />
+    <Outputs Include="$(SignalRClientDistFolder)\third-party-notices.txt" />
   </ItemGroup>
+
   <ItemGroup>
     <None Include="tsconfig.json" />
   </ItemGroup>

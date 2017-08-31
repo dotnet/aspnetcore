@@ -9,6 +9,7 @@ const babel      = require('gulp-babel');
 
 const tsProject = ts.createProject('./tsconfig.json');
 const clientOutDir = tsProject.options.outDir;
+const browserOutDir = clientOutDir + '/../browser/';
 
 gulp.task('clean', () => {
     return del([clientOutDir + '/..'], { force: true });
@@ -21,7 +22,6 @@ gulp.task('compile-ts-client', () => {
 });
 
 function browserifyModule(sourceFileName, namespace, targetFileName) {
-    const browserOutDir = clientOutDir + '/../browser';
 
     return browserify(clientOutDir + '/' + sourceFileName, {standalone: namespace})
         .bundle()
@@ -34,7 +34,6 @@ function browserifyModule(sourceFileName, namespace, targetFileName) {
 }
 
 function browserifyModuleES5(sourceFileName, namespace, targetFileName, hasAsync) {
-    const browserOutDir = clientOutDir + '/../browser';
 
     let babelOptions = { presets: ['es2015'] };
     if (hasAsync) {
@@ -70,6 +69,9 @@ gulp.task('browserify-msgpackprotocolES5', ['compile-ts-client'], () => {
 
 gulp.task('browserify', [ 'browserify-client', 'browserify-msgpackprotocol', 'browserify-clientES5', 'browserify-msgpackprotocolES5']);
 
-gulp.task('build-ts-client', ['clean', 'compile-ts-client', 'browserify']);
+gulp.task('build-ts-client', ['clean', 'compile-ts-client', 'browserify'], () => {
+    return gulp.src('./third-party-notices.txt')
+        .pipe(gulp.dest(browserOutDir));
+});
 
 gulp.task('default', ['build-ts-client']);
