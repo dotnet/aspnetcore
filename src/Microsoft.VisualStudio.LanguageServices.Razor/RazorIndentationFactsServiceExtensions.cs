@@ -7,10 +7,10 @@ using Microsoft.VisualStudio.Text;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
-    public static class RazorSyntaxFactsServiceExtensions
+    public static class RazorIndentationFactsServiceExtensions
     {
         public static int? GetDesiredIndentation(
-            this RazorSyntaxFactsService service,
+            this RazorIndentationFactsService service,
             RazorSyntaxTree syntaxTree,
             ITextSnapshot syntaxTreeSnapshot,
             ITextSnapshotLine line,
