@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 import { IHttpClient } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpClient"
 import { HttpConnection } from "../Microsoft.AspNetCore.SignalR.Client.TS/HttpConnection"
 import { IHttpConnectionOptions } from "../Microsoft.AspNetCore.SignalR.Client.TS/IHttpConnectionOptions"

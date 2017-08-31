@@ -1,4 +1,7 @@
-﻿import { TextMessageFormat } from "./Formatters";
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+import { TextMessageFormat } from "./Formatters";
 import { IHubProtocol, ProtocolType, HubMessage } from "./IHubProtocol";
 
 export class JsonHubProtocol implements IHubProtocol {

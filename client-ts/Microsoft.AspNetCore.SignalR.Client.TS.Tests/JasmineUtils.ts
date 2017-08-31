@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 export function asyncit(expectation: string, assertion?: () => Promise<any>, timeout?: number): void {
     let testFunction: (done: DoneFn) => void;
     if (assertion) {

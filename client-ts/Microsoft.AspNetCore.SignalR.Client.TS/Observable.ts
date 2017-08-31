@@ -1,3 +1,6 @@
+// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
 // TODO: Seamless RxJs integration
 // From RxJs: https://github.com/ReactiveX/rxjs/blob/master/src/Observer.ts
 export interface Observer<T> {
