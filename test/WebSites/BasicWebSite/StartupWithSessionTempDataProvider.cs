@@ -19,6 +19,7 @@ namespace BasicWebSite
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseDeveloperExceptionPage();
             app.UseSession();
             app.UseMvcWithDefaultRoute();
         }

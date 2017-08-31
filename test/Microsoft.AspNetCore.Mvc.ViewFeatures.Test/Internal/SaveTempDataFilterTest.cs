@@ -102,7 +102,29 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             // Arrange
             var responseFeature = new TestResponseFeature();
             var httpContext = GetHttpContext(responseFeature);
-            httpContext.Items[SaveTempDataFilter.TempDataSavedKey] = true; // indicate that tempdata was already saved
+            httpContext.Items[SaveTempDataFilter.SaveTempDataFilterContextKey] = new SaveTempDataFilter.SaveTempDataContext() { TempDataSaved = true };
+            var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
+            tempDataFactory
+                .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))
+                .Verifiable();
+            var filter = new SaveTempDataFilter(tempDataFactory.Object);
+            var context = GetResourceExecutingContext(httpContext);
+            filter.OnResourceExecuting(context); // registers callback
+
+            // Act
+            await responseFeature.FireOnSendingHeadersAsync();
+
+            // Assert
+            tempDataFactory.Verify(tdf => tdf.GetTempData(It.IsAny<HttpContext>()), Times.Never());
+        }
+
+        [Fact]
+        public async Task OnResourceExecuting_DoesNotSaveTempData_WhenUnhandledExceptionOccurs()
+        {
+            // Arrange
+            var responseFeature = new TestResponseFeature();
+            var httpContext = GetHttpContext(responseFeature);
+            httpContext.Items[SaveTempDataFilter.SaveTempDataFilterContextKey] = new SaveTempDataFilter.SaveTempDataContext() { RequestHasUnhandledException = true };
             var tempDataFactory = new Mock<ITempDataDictionaryFactory>(MockBehavior.Strict);
             tempDataFactory
                 .Setup(f => f.GetTempData(It.IsAny<HttpContext>()))

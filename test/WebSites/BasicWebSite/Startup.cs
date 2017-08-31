@@ -28,6 +28,8 @@ namespace BasicWebSite
 
         public void Configure(IApplicationBuilder app)
         {
+            app.UseDeveloperExceptionPage();
+
             app.UseStaticFiles();
 
             // Initializes the RequestId service for each request

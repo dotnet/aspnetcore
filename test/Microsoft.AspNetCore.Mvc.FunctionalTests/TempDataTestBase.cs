@@ -207,6 +207,42 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         }
 
+        [Fact]
+        public async Task SaveTempDataFilter_DoesNotSaveTempData_OnUnhandledException()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("/TempData/UnhandledExceptionAndSettingTempData");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Assert.Contains("Exception from action UnhandledExceptionAndSettingTempData", responseBody);
+
+            // Arrange & Act
+            response = await Client.GetAsync("/TempData/UnhandledExceptionAndGetTempData");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task SaveTempDataFilter_DoesNotSaveTempData_OnHandledExceptions()
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("/TempData/UnhandledExceptionAndSettingTempData?handleException=true");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var responseBody = await response.Content.ReadAsStringAsync();
+            Assert.Contains("Exception was handled in TestExceptionFilter", responseBody);
+
+            // Arrange & Act
+            response = await Client.GetAsync("/TempData/UnhandledExceptionAndGetTempData");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        }
+
         public HttpRequestMessage GetRequest(string path, HttpResponseMessage response)
         {
             var request = new HttpRequestMessage(HttpMethod.Get, path);
