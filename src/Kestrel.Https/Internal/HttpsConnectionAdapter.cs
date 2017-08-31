@@ -9,6 +9,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
@@ -108,16 +109,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
                 certificateRequired = true;
             }
 
+            var timeoutFeature = context.Features.Get<IConnectionTimeoutFeature>();
+            timeoutFeature.SetTimeout(_options.HandshakeTimeout);
+
             try
             {
                 await sslStream.AuthenticateAsServerAsync(_serverCertificate, certificateRequired,
                         _options.SslProtocols, _options.CheckCertificateRevocation);
+            }
+            catch (OperationCanceledException)
+            {
+                _logger?.LogInformation(2, HttpsStrings.AuthenticationTimedOut);
+                sslStream.Dispose();
+                return _closedAdaptedConnection;
             }
             catch (IOException ex)
             {
                 _logger?.LogInformation(1, ex, HttpsStrings.AuthenticationFailed);
                 sslStream.Dispose();
                 return _closedAdaptedConnection;
+            }
+            finally
+            {
+                timeoutFeature.CancelTimeout();
             }
 
             // Always set the feature even though the cert might be null

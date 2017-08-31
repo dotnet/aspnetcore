@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 {
                     var result = await awaitable;
 
-                    if (_context.TimeoutControl.TimedOut)
+                    if (_context.RequestTimedOut)
                     {
                         _context.ThrowRequestRejected(RequestRejectionReason.RequestTimeout);
                     }

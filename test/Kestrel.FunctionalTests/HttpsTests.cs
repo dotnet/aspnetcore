@@ -3,15 +3,18 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Net.Security;
 using System.Net.Sockets;
 using System.Security.Authentication;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.DependencyInjection;
@@ -256,6 +259,42 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     socket.LingerState = new LingerOption(true, 0);
                 }
             }
+        }
+
+        [Fact]
+        public async Task HandshakeTimesOutAndIsLoggedAsInformation()
+        {
+            var loggerProvider = new HandshakeErrorLoggerProvider();
+            var hostBuilder = new WebHostBuilder()
+                .UseKestrel(options =>
+                {
+                    options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
+                    {
+                        listenOptions.UseHttps(new HttpsConnectionAdapterOptions
+                        {
+                            ServerCertificate = new X509Certificate2(TestResources.TestCertificatePath, "testPassword"),
+                            HandshakeTimeout = TimeSpan.FromSeconds(1)
+                        });
+                    });
+                })
+                .ConfigureLogging(builder => builder.AddProvider(loggerProvider))
+                .Configure(app => app.Run(httpContext => Task.CompletedTask));
+
+            using (var host = hostBuilder.Build())
+            {
+                host.Start();
+
+                using (var socket = await HttpClientSlim.GetSocket(new Uri($"https://127.0.0.1:{host.GetPort()}/")))
+                using (var stream = new NetworkStream(socket, ownsSocket: false))
+                {
+                    // No data should be sent and the connection should be closed in well under 30 seconds.
+                    Assert.Equal(0, await stream.ReadAsync(new byte[1], 0, 1).TimeoutAfter(TimeSpan.FromSeconds(30)));
+                }
+            }
+
+            await loggerProvider.FilterLogger.LogTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
+            Assert.Equal(2, loggerProvider.FilterLogger.LastEventId);
+            Assert.Equal(LogLevel.Information, loggerProvider.FilterLogger.LastLogLevel);
         }
 
         private class HandshakeErrorLoggerProvider : ILoggerProvider

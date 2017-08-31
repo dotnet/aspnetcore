@@ -314,11 +314,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             TimeSpan.MaxValue,
         };
 
-        public static TheoryData<TimeSpan> TimeoutInfiniteData => new TheoryData<TimeSpan>
-        {
-            Timeout.InfiniteTimeSpan,
-        };
-
         public static TheoryData<TimeSpan> TimeoutInvalidData => new TheoryData<TimeSpan>
         {
             TimeSpan.MinValue,

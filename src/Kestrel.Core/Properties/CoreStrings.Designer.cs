@@ -1074,6 +1074,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatPositiveNumberOrNullMinDataRateRequired()
             => GetString("PositiveNumberOrNullMinDataRateRequired");
 
+        /// <summary>
+        /// Concurrent timeouts are not supported.
+        /// </summary>
+        internal static string ConcurrentTimeoutsNotSupported
+        {
+            get => GetString("ConcurrentTimeoutsNotSupported");
+        }
+
+        /// <summary>
+        /// Concurrent timeouts are not supported.
+        /// </summary>
+        internal static string FormatConcurrentTimeoutsNotSupported()
+            => GetString("ConcurrentTimeoutsNotSupported");
+
+        /// <summary>
+        /// Timespan must be positive and finite.
+        /// </summary>
+        internal static string PositiveFiniteTimeSpanRequired
+        {
+            get => GetString("PositiveFiniteTimeSpanRequired");
+        }
+
+        /// <summary>
+        /// Timespan must be positive and finite.
+        /// </summary>
+        internal static string FormatPositiveFiniteTimeSpanRequired()
+            => GetString("PositiveFiniteTimeSpanRequired");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

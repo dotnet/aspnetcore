@@ -345,4 +345,10 @@
   <data name="PositiveNumberOrNullMinDataRateRequired" xml:space="preserve">
     <value>Value must be a positive number. To disable a minimum data rate, use null where a MinDataRate instance is expected.</value>
   </data>
+  <data name="ConcurrentTimeoutsNotSupported" xml:space="preserve">
+    <value>Concurrent timeouts are not supported.</value>
+  </data>
+  <data name="PositiveFiniteTimeSpanRequired" xml:space="preserve">
+    <value>Timespan must be positive and finite.</value>
+  </data>
 </root>

@@ -5,7 +5,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
     public enum TimeoutAction
     {
-        CloseConnection,
-        SendTimeoutResponse
+        StopProcessingNextRequest,
+        SendTimeoutResponse,
+        AbortConnection,
     }
 }

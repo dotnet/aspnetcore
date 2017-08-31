@@ -566,11 +566,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(1, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
                 // Time out on the next read
-                mockTimeoutControl
-                    .Setup(timeoutControl => timeoutControl.TimedOut)
-                    .Returns(true);
-
-                input.Cancel();
+                input.Frame.SendTimeoutResponse();
 
                 var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => body.ReadAsync(new ArraySegment<byte>(new byte[1])));
                 Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
@@ -595,11 +591,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(1, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
                 // Time out on the next read
-                mockTimeoutControl
-                    .Setup(timeoutControl => timeoutControl.TimedOut)
-                    .Returns(true);
-
-                input.Cancel();
+                input.Frame.SendTimeoutResponse();
 
                 var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => body.ConsumeAsync());
                 Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
@@ -624,11 +616,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 Assert.Equal(1, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
                 // Time out on the next read
-                mockTimeoutControl
-                    .Setup(timeoutControl => timeoutControl.TimedOut)
-                    .Returns(true);
-
-                input.Cancel();
+                input.Frame.SendTimeoutResponse();
 
                 using (var ms = new MemoryStream())
                 {

@@ -25,6 +25,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
             => GetString("AuthenticationFailed");
 
         /// <summary>
+        /// Authentication of the HTTPS connection timed out.
+        /// </summary>
+        internal static string AuthenticationTimedOut
+        {
+            get => GetString("AuthenticationTimedOut");
+        }
+
+        /// <summary>
+        /// Authentication of the HTTPS connection timed out.
+        /// </summary>
+        internal static string FormatAuthenticationTimedOut()
+            => GetString("AuthenticationTimedOut");
+
+        /// <summary>
         /// Certificate {thumbprint} cannot be used as an SSL server certificate. It has an Extended Key Usage extension but the usages do not include Server Authentication (OID 1.3.6.1.5.5.7.3.1).
         /// </summary>
         internal static string InvalidServerCertificateEku
@@ -37,6 +51,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https
         /// </summary>
         internal static string FormatInvalidServerCertificateEku(object thumbprint)
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidServerCertificateEku", "thumbprint"), thumbprint);
+
+        /// <summary>
+        /// Value must be a positive TimeSpan.
+        /// </summary>
+        internal static string PositiveTimeSpanRequired
+        {
+            get => GetString("PositiveTimeSpanRequired");
+        }
+
+        /// <summary>
+        /// Value must be a positive TimeSpan.
+        /// </summary>
+        internal static string FormatPositiveTimeSpanRequired()
+            => GetString("PositiveTimeSpanRequired");
 
         /// <summary>
         /// The server certificate parameter is required.

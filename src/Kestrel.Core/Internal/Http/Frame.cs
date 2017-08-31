@@ -15,7 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -52,13 +51,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onStarting;
         protected Stack<KeyValuePair<Func<object, Task>, object>> _onCompleted;
 
-        protected volatile bool _requestProcessingStopping; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
-        protected int _requestAborted;
+        protected volatile int _requestAborted;
+        private volatile bool _requestTimedOut;
         private CancellationTokenSource _abortedCts;
         private CancellationToken? _manuallySetRequestAbortToken;
 
         protected RequestProcessingStatus _requestProcessingStatus;
-        protected bool _keepAlive;
+        protected volatile bool _keepAlive = true; // volatile, see: https://msdn.microsoft.com/en-us/library/x13ttww7.aspx
         protected bool _upgradeAvailable;
         private volatile bool _wasUpgraded;
         private bool _canHaveBody;
@@ -111,6 +110,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         public IPipeReader Input => _frameContext.Transport.Input;
         public OutputProducer Output { get; }
         public ITimeoutControl TimeoutControl => _frameContext.TimeoutControl;
+        public bool RequestTimedOut => _requestTimedOut;
 
         protected IKestrelTrace Log => ServiceContext.Log;
         private DateHeaderValueManager DateHeaderValueManager => ServiceContext.DateHeaderValueManager;
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var cts = _abortedCts;
                 return
                     cts != null ? cts.Token :
-                    (Volatile.Read(ref _requestAborted) == 1) ? new CancellationToken(true) :
+                    (_requestAborted == 1) ? new CancellationToken(true) :
                     RequestAbortedSource.Token;
             }
             set
@@ -285,7 +285,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 var cts = LazyInitializer.EnsureInitialized(ref _abortedCts, () => new CancellationTokenSource())
                             ?? new CancellationTokenSource();
 
-                if (Volatile.Read(ref _requestAborted) == 1)
+                if (_requestAborted == 1)
                 {
                     cts.Cancel();
                 }
@@ -329,9 +329,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _onCompleted = null;
 
             _requestProcessingStatus = RequestProcessingStatus.RequestPending;
-            _keepAlive = false;
             _autoChunk = false;
             _applicationException = null;
+            _requestTimedOut = false;
+            _requestRejectedException = null;
 
             ResetFeatureCollection();
 
@@ -389,9 +390,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         /// Called on all active connections when the server wants to initiate a shutdown
         /// and after a keep-alive timeout.
         /// </summary>
-        public void Stop()
+        public void StopProcessingNextRequest()
         {
-            _requestProcessingStopping = true;
+            _keepAlive = false;
+            Input.CancelPendingRead();
+        }
+
+        public void SendTimeoutResponse()
+        {
+            _requestTimedOut = true;
             Input.CancelPendingRead();
         }
 
@@ -415,7 +422,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         {
             if (Interlocked.Exchange(ref _requestAborted, 1) == 0)
             {
-                _requestProcessingStopping = true;
+                _keepAlive = false;
 
                 _frameStreams?.Abort(error);
 
@@ -789,7 +796,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         protected Task TryProduceInvalidRequestResponse()
         {
-            if (_requestRejectedException != null)
+            // If _requestAborted is set, the connection has already been closed.
+            if (_requestRejectedException != null && _requestAborted == 0)
             {
                 return ProduceEnd();
             }
@@ -804,7 +812,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                 if (HasResponseStarted)
                 {
                     // We can no longer change the response, so we simply close the connection.
-                    _requestProcessingStopping = true;
+                    _keepAlive = false;
                     return Task.CompletedTask;
                 }
 
@@ -883,9 +891,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             var hasTransferEncoding = responseHeaders.HasTransferEncoding;
             var transferCoding = FrameHeaders.GetFinalTransferCoding(responseHeaders.HeaderTransferEncoding);
 
-            if (_keepAlive && hasConnection)
+            if (_keepAlive && hasConnection && (connectionOptions & ConnectionOptions.KeepAlive) != ConnectionOptions.KeepAlive)
             {
-                _keepAlive = (connectionOptions & ConnectionOptions.KeepAlive) == ConnectionOptions.KeepAlive;
+                _keepAlive = false;
             }
 
             // https://tools.ietf.org/html/rfc7230#section-3.3.1
@@ -1171,7 +1179,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
 
             _keepAlive = false;
-            _requestProcessingStopping = true;
             _requestRejectedException = ex;
         }
 

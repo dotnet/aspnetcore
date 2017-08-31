@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 
             connectionManager.Walk(connection =>
             {
-                closeTasks.Add(connection.StopAsync());
+                closeTasks.Add(connection.StopProcessingNextRequestAsync());
             });
 
             var allClosedTask = Task.WhenAll(closeTasks.ToArray());

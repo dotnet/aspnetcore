@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.SetTimeout(1, TimeoutAction.SendTimeoutResponse);
             _frameConnection.Tick(now.AddTicks(2).Add(Heartbeat.Interval));
 
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
         }
 
         [Fact]
@@ -77,7 +77,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             TickBodyWithMinimumDataRate(mockLogger.Object, bytesPerSecond);
 
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
         }
 
         [Fact]
@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             TickBodyWithMinimumDataRate(mockLogger.Object, bytesPerSecond);
 
             // Timed out
-            Assert.True(_frameConnection.TimedOut);
+            Assert.True(_frameConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
                 logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Once);
         }
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(now);
 
             // Not timed out
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
                 logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
 
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(now);
 
             // Timed out
-            Assert.True(_frameConnection.TimedOut);
+            Assert.True(_frameConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
                 logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Once);
         }
@@ -191,7 +191,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(now);
 
             // Not timed out
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
                 logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
 
@@ -201,7 +201,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(now);
 
             // Not timed out
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
                 logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
 
@@ -211,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(now);
 
             // Not timed out
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
                 logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
 
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(now);
 
             // Not timed out
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
                 logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Never);
 
@@ -231,7 +231,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(now);
 
             // Timed out
-            Assert.True(_frameConnection.TimedOut);
+            Assert.True(_frameConnection.RequestTimedOut);
             mockLogger.Verify(logger =>
                 logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), bytesPerSecond), Times.Once);
         }
@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(systemClock.UtcNow);
 
             // Not timed out
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
             mockLogger.Verify(
                 logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Never);
@@ -288,7 +288,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(systemClock.UtcNow);
 
             // Not timed out
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
             mockLogger.Verify(
                 logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Never);
@@ -298,7 +298,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(systemClock.UtcNow);
 
             // Timed out
-            Assert.True(_frameConnection.TimedOut);
+            Assert.True(_frameConnection.RequestTimedOut);
             mockLogger.Verify(
                 logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Once);
@@ -330,7 +330,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(systemClock.UtcNow);
 
             // Not timed out
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
             mockLogger.Verify(
                 logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Never);
@@ -349,7 +349,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(systemClock.UtcNow);
 
             // Not timed out
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
             mockLogger.Verify(
                 logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Never);
@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(systemClock.UtcNow);
 
             // Timed out
-            Assert.True(_frameConnection.TimedOut);
+            Assert.True(_frameConnection.RequestTimedOut);
             mockLogger.Verify(
                 logger => logger.RequestBodyMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<double>()),
                 Times.Once);
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             _frameConnection.StartTimingReads();
 
-            _frameConnection.SetTimeout(timeout.Ticks, TimeoutAction.CloseConnection);
+            _frameConnection.SetTimeout(timeout.Ticks, TimeoutAction.StopProcessingNextRequest);
 
             // Tick beyond grace period with low data rate
             systemClock.UtcNow += TimeSpan.FromSeconds(3);
@@ -396,14 +396,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(systemClock.UtcNow);
 
             // Not timed out
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
 
             // Tick just past timeout period, adjusted by Heartbeat.Interval
             systemClock.UtcNow = startTime + timeout + Heartbeat.Interval + TimeSpan.FromTicks(1);
             _frameConnection.Tick(systemClock.UtcNow);
 
             // Timed out
-            Assert.True(_frameConnection.TimedOut);
+            Assert.True(_frameConnection.RequestTimedOut);
         }
 
         [Fact]
@@ -436,7 +436,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             systemClock.UtcNow += TimeSpan.FromSeconds(4) + Heartbeat.Interval + TimeSpan.FromTicks(1);
             _frameConnection.Tick(systemClock.UtcNow);
 
-            Assert.True(_frameConnection.TimedOut);
+            Assert.True(_frameConnection.RequestTimedOut);
             Assert.True(aborted.Wait(TimeSpan.FromSeconds(10)));
         }
 
@@ -472,13 +472,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(systemClock.UtcNow);
 
             // Still within grace period, not timed out
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
 
             // Tick just past grace period (adjusted by Heartbeat.Interval)
             systemClock.UtcNow = startTime + minResponseDataRate.GracePeriod + Heartbeat.Interval + TimeSpan.FromTicks(1);
             _frameConnection.Tick(systemClock.UtcNow);
 
-            Assert.True(_frameConnection.TimedOut);
+            Assert.True(_frameConnection.RequestTimedOut);
             Assert.True(aborted.Wait(TimeSpan.FromSeconds(10)));
         }
 
@@ -516,7 +516,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _frameConnection.Tick(systemClock.UtcNow);
 
             // Not timed out because the timeout was pushed by the second write
-            Assert.False(_frameConnection.TimedOut);
+            Assert.False(_frameConnection.RequestTimedOut);
 
             // Complete the first write, this should have no effect on the timeout
             _frameConnection.StopTimingWrite();
@@ -525,7 +525,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             systemClock.UtcNow += TimeSpan.FromSeconds(3) + TimeSpan.FromTicks(1);
             _frameConnection.Tick(systemClock.UtcNow);
 
-            Assert.True(_frameConnection.TimedOut);
+            Assert.True(_frameConnection.RequestTimedOut);
             Assert.True(aborted.Wait(TimeSpan.FromSeconds(10)));
         }
     }

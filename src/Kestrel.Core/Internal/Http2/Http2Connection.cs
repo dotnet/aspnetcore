@@ -50,8 +50,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public IKestrelTrace Log => _context.ServiceContext.Log;
 
-        bool ITimeoutControl.TimedOut => throw new NotImplementedException();
-
         public void Abort(Exception ex)
         {
             _stopping = true;

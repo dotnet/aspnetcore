@@ -511,9 +511,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var requestProcessingTask = _frame.ProcessRequestsAsync();
 
             var expectedKeepAliveTimeout = _serviceContext.ServerOptions.Limits.KeepAliveTimeout.Ticks;
-            _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.CloseConnection));
+            _timeoutControl.Verify(cc => cc.SetTimeout(expectedKeepAliveTimeout, TimeoutAction.StopProcessingNextRequest));
 
-            _frame.Stop();
+            _frame.StopProcessingNextRequest();
             _application.Output.Complete();
 
             requestProcessingTask.Wait();
@@ -598,7 +598,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var data = Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost:\r\n\r\n");
             await _application.Output.WriteAsync(data);
 
-            _frame.Stop();
+            _frame.StopProcessingNextRequest();
             Assert.IsNotType<Task<Task>>(requestProcessingTask);
 
             await requestProcessingTask.TimeoutAfter(TimeSpan.FromSeconds(10));

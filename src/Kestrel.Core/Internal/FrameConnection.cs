@@ -10,7 +10,6 @@ using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
@@ -20,7 +19,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
-    public class FrameConnection : ITimeoutControl
+    public class FrameConnection : ITimeoutControl, IConnectionTimeoutFeature
     {
         private const int Http2ConnectionNotStarted = 0;
         private const int Http2ConnectionStarted = 1;
@@ -58,7 +57,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         internal Frame Frame => _frame;
         internal IDebugger Debugger { get; set; } = DebuggerWrapper.Singleton;
 
-        public bool TimedOut { get; private set; }
+        // For testing
+        internal bool RequestTimedOut { get; private set; }
 
         public string ConnectionId => _context.ConnectionId;
         public IPEndPoint LocalEndPoint => _context.LocalEndPoint;
@@ -106,8 +106,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     adaptedPipeline = new AdaptedPipeline(transport,
                                                           application,
-                                                           PipeFactory.Create(AdaptedInputPipeOptions),
-                                                           PipeFactory.Create(AdaptedOutputPipeOptions));
+                                                          PipeFactory.Create(AdaptedInputPipeOptions),
+                                                          PipeFactory.Create(AdaptedOutputPipeOptions));
 
                     transport = adaptedPipeline;
                 }
@@ -133,6 +133,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 // added the connection to the connection manager
                 _context.ServiceContext.ConnectionManager.AddConnection(_context.FrameConnectionId, this);
                 _lastTimestamp = _context.ServiceContext.SystemClock.UtcNow.Ticks;
+
+                _frame.ConnectionFeatures.Set<IConnectionTimeoutFeature>(this);
 
                 if (adaptedPipeline != null)
                 {
@@ -195,7 +197,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _socketClosedTcs.TrySetResult(null);
         }
 
-        public Task StopAsync()
+        public Task StopProcessingNextRequestAsync()
         {
             Debug.Assert(_frame != null, $"{nameof(_frame)} is null");
 
@@ -205,7 +207,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             }
             else
             {
-                _frame.Stop();
+                _frame.StopProcessingNextRequest();
             }
 
             return _lifetimeTask;
@@ -233,19 +235,19 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             return _lifetimeTask;
         }
 
-        public void SetTimeoutResponse()
+        public void SendTimeoutResponse()
         {
             Debug.Assert(_frame != null, $"{nameof(_frame)} is null");
 
-            _frame.SetBadRequestState(RequestRejectionReason.RequestTimeout);
+            RequestTimedOut = true;
+            _frame.SendTimeoutResponse();
         }
 
-        public void Timeout()
+        public void StopProcessingNextRequest()
         {
             Debug.Assert(_frame != null, $"{nameof(_frame)} is null");
 
-            TimedOut = true;
-            _frame.Stop();
+            _frame.StopProcessingNextRequest();
         }
 
         private async Task<Stream> ApplyConnectionAdaptersAsync()
@@ -303,11 +305,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private void CheckForTimeout(long timestamp)
         {
-            if (TimedOut)
-            {
-                return;
-            }
-
             // TODO: Use PlatformApis.VolatileRead equivalent again
             if (timestamp > Interlocked.Read(ref _timeoutTimestamp))
             {
@@ -315,12 +312,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     CancelTimeout();
 
-                    if (_timeoutAction == TimeoutAction.SendTimeoutResponse)
+                    switch (_timeoutAction)
                     {
-                        SetTimeoutResponse();
+                        case TimeoutAction.StopProcessingNextRequest:
+                            StopProcessingNextRequest();
+                            break;
+                        case TimeoutAction.SendTimeoutResponse:
+                            SendTimeoutResponse();
+                            break;
+                        case TimeoutAction.AbortConnection:
+                            Abort(new TimeoutException());
+                            break;
                     }
-
-                    Timeout();
                 }
             }
         }
@@ -330,7 +333,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // The only time when both a timeout is set and the read data rate could be enforced is
             // when draining the request body. Since there's already a (short) timeout set for draining,
             // it's safe to not check the data rate at this point.
-            if (TimedOut || Interlocked.Read(ref _timeoutTimestamp) != long.MaxValue)
+            if (Interlocked.Read(ref _timeoutTimestamp) != long.MaxValue)
             {
                 return;
             }
@@ -352,7 +355,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                         if (rate < minRequestBodyDataRate.BytesPerSecond && !Debugger.IsAttached)
                         {
                             Log.RequestBodyMininumDataRateNotSatisfied(_context.ConnectionId, _frame.TraceIdentifier, minRequestBodyDataRate.BytesPerSecond);
-                            Timeout();
+                            SendTimeoutResponse();
                         }
                     }
 
@@ -370,16 +373,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private void CheckForWriteDataRateTimeout(long timestamp)
         {
-            if (TimedOut)
-            {
-                return;
-            }
-
             lock (_writeTimingLock)
             {
                 if (_writeTimingWrites > 0 && timestamp > _writeTimingTimeoutTimestamp && !Debugger.IsAttached)
                 {
-                    TimedOut = true;
+                    RequestTimedOut = true;
                     Log.ResponseMininumDataRateNotSatisfied(_frame.ConnectionIdFeature, _frame.TraceIdentifier);
                     Abort(new TimeoutException());
                 }
@@ -483,6 +481,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 _writeTimingWrites--;
             }
+        }
+
+        void IConnectionTimeoutFeature.SetTimeout(TimeSpan timeSpan)
+        {
+            if (timeSpan < TimeSpan.Zero)
+            {
+                throw new ArgumentException(CoreStrings.PositiveFiniteTimeSpanRequired, nameof(timeSpan));
+            }
+            if (_timeoutTimestamp != long.MaxValue)
+            {
+                throw new InvalidOperationException(CoreStrings.ConcurrentTimeoutsNotSupported);
+            }
+
+            SetTimeout(timeSpan.Ticks, TimeoutAction.AbortConnection);
+        }
+
+        void IConnectionTimeoutFeature.ResetTimeout(TimeSpan timeSpan)
+        {
+            if (timeSpan < TimeSpan.Zero)
+            {
+                throw new ArgumentException(CoreStrings.PositiveFiniteTimeSpanRequired, nameof(timeSpan));
+            }
+
+            ResetTimeout(timeSpan.Ticks, TimeoutAction.AbortConnection);
         }
     }
 }
