@@ -23,7 +23,7 @@
 
   <!-- this target relies on npm packages being restored manually or when running full build -->
   <Target Name="BuildTSClient" Inputs="@(Inputs)" Outputs="@(Outputs)" BeforeTargets="Build">
-    <Exec Command="npm run gulp -- --gulpfile $(MSBuildThisFileDirectory)gulpfile.js build-ts-client" />
+    <Exec Command='npm run gulp -- --gulpfile "$(MSBuildThisFileDirectory)gulpfile.js" build-ts-client' />
   </Target>
 
   <Target Name="CleanTSClient" AfterTargets="Clean">
