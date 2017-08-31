@@ -11,7 +11,7 @@ You can watch an introductory presentation here - [Introducing ASP.NET Core Sock
 
 This project is part of ASP.NET Core. You can find samples, documentation and getting started instructions for ASP.NET Core at the [Home](https://github.com/aspnet/home) repo.
 
-The JavaScript client is being published to our dev npm registry as @aspnet/signlar-client. The module contains a browserfied version of the client. You can install the module as follows:
+The JavaScript client is being published to our dev npm registry as @aspnet/signalr-client. The module contains a browserfied version of the client. You can install the module as follows:
 
 - Create an .npmrc file with the following line:
   `@aspnet:registry=https://dotnet.myget.org/f/aspnetcore-ci-dev/npm/`
