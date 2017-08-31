@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <DotNetCoreSdk Include="2.0.0" InstallDir="$(TestDotNetPath)2.0\" Condition="'$(AntaresTests)' != ''"/>
+    <DotNetCoreSdk Include="1.0.4" InstallDir="$(TestDotNetPath)1.1\" Condition="'$(AntaresTests)' != ''"/>
     <DotNetCoreSdk Include="coherent" Channel="master" InstallDir="$(TestDotNetPath)latest\" Condition="'$(AntaresTests)' != ''"/>
   </ItemGroup>
 

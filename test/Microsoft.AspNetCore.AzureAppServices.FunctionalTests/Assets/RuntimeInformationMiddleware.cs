@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                                 Assembly assembly = null;
                                 try
                                 {
-                                    assembly = Assembly.Load(Path.GetFileNameWithoutExtension(m.ModuleName));
+                                    assembly = Assembly.Load(new AssemblyName(Path.GetFileNameWithoutExtension(m.ModuleName)));
                                 }
                                 catch { }
 

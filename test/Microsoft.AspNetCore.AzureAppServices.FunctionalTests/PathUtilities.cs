@@ -21,19 +21,17 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                 .ToArray();
         }
 
-        public static string[] GetSharedRuntimeAssemblies(string dotnetPath, out string runtimeVersion)
+        public static string[] GetLatestSharedRuntimeAssemblies(string dotnetPath, out string runtimeVersion)
         {
             var dotnetHome = Path.GetDirectoryName(dotnetPath);
             var runtimeDirectory = new DirectoryInfo(Path.Combine(dotnetHome, "shared", "Microsoft.NETCore.App"))
                 .GetDirectories()
-                .Single();
+                .OrderByDescending(d => d.Name)
+                .First();
 
             runtimeVersion = runtimeDirectory.Name;
 
-            return runtimeDirectory
-                .GetFiles("*.dll")
-                .Select(GetName)
-                .ToArray();
+            return GetAllModules(runtimeDirectory);
         }
 
         public static string GetBundledAspNetCoreVersion(string dotnetPath)
@@ -51,6 +49,14 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
         {
             public string Name { get; set; }
             public string[] Versions { get; set; }
+        }
+
+        public static string[] GetAllModules(DirectoryInfo publishPath)
+        {
+            return publishPath
+                .GetFiles("*.dll")
+                .Select(GetName)
+                .ToArray();
         }
     }
 }

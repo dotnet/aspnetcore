@@ -6,12 +6,12 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Azure.Management.AppService.Fluent;
 using Microsoft.Azure.Management.AppService.Fluent.Models;
 using Microsoft.Extensions.Logging;
+using Xunit;
 
 namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 {
@@ -26,21 +26,16 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
         public static async Task UploadFilesAsync(this IWebApp site, DirectoryInfo from, string to, IPublishingProfile publishingProfile, ILogger logger)
         {
-            foreach (var info in from.GetFileSystemInfos("*", SearchOption.AllDirectories))
+            foreach (var info in from.GetFileSystemInfos("*"))
             {
+                var address = new Uri(
+                    "ftp://" + publishingProfile.FtpUrl + to + info.FullName.Substring(from.FullName.Length + 1).Replace('\\', '/'));
+
                 if (info is FileInfo file)
                 {
-                    var address = new Uri(
-                        "ftp://" + publishingProfile.FtpUrl + to + file.FullName.Substring(from.FullName.Length).Replace('\\', '/'));
                     logger.LogInformation($"Uploading {file.FullName} to {address}");
 
-                    var request = (FtpWebRequest)WebRequest.Create(address);
-                    request.Method = WebRequestMethods.Ftp.UploadFile;
-                    request.KeepAlive = true;
-                    request.UseBinary = true;
-                    request.UsePassive = false;
-                    request.Credentials = new NetworkCredential(publishingProfile.FtpUsername, publishingProfile.FtpPassword);
-                    request.ConnectionGroupName = "group";
+                    var request = CreateRequest(publishingProfile, address, WebRequestMethods.Ftp.UploadFile);
                     using (var fileStream = File.OpenRead(file.FullName))
                     {
                         using (var requestStream = await request.GetRequestStreamAsync())
@@ -50,7 +45,67 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                     }
                     await request.GetResponseAsync();
                 }
+                if (info is DirectoryInfo directory)
+                {
+                    var request = CreateRequest(publishingProfile, address, WebRequestMethods.Ftp.MakeDirectory);
+                    await request.GetResponseAsync();
+                    await UploadFilesAsync(site, directory, to + directory.Name + '/', publishingProfile, logger);
+                }
             }
+        }
+
+        private static FtpWebRequest CreateRequest(IPublishingProfile publishingProfile, Uri address, string method)
+        {
+            var request = (FtpWebRequest) WebRequest.Create(address);
+            request.Method = method;
+            request.KeepAlive = true;
+            request.UseBinary = true;
+            request.UsePassive = false;
+            request.Credentials = new NetworkCredential(publishingProfile.FtpUsername, publishingProfile.FtpPassword);
+            request.ConnectionGroupName = "group";
+            return request;
+        }
+
+
+        public static async Task Deploy(this IWebApp site, WebAppDeploymentKind kind, DirectoryInfo from, TestCommand dotnet, ILogger logger)
+        {
+            switch (kind)
+            {
+                case WebAppDeploymentKind.Git:
+                    await site.GitDeploy(from, logger);
+                    break;
+                case WebAppDeploymentKind.WebDeploy:
+                    await site.BuildPublishProfileAsync(from.FullName);
+                    await dotnet.ExecuteAndAssertAsync("publish /p:PublishProfile=Profile");
+                    break;
+                case WebAppDeploymentKind.Ftp:
+                    var publishDirectory = from.CreateSubdirectory("publish");
+                    await dotnet.ExecuteAndAssertAsync("restore");
+                    await dotnet.ExecuteAndAssertAsync("publish -o " + publishDirectory.FullName);
+                    await site.UploadFilesAsync(publishDirectory, "/", await site.GetPublishingProfileAsync(), logger);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(kind), kind, null);
+            }
+        }
+
+        public static async Task GitDeploy(this IWebApp site, DirectoryInfo workingDirectory, ILogger logger)
+        {
+            var git = new TestCommand("git")
+            {
+                Logger = logger,
+                WorkingDirectory = workingDirectory.FullName
+            };
+
+            var publishingProfile = await site.GetPublishingProfileAsync();
+
+            await git.ExecuteAndAssertAsync("init");
+            await git.ExecuteAndAssertAsync($"remote add origin https://{publishingProfile.GitUsername}:{publishingProfile.GitPassword}@{publishingProfile.GitUrl}");
+            await git.ExecuteAndAssertAsync("add .");
+            await git.ExecuteAndAssertAsync("commit -am Initial");
+            var result = await git.ExecuteAndAssertAsync("push origin master");
+
+            Assert.DoesNotContain("An error has occurred during web site deployment", result.StdErr);
         }
 
         public static async Task BuildPublishProfileAsync(this IWebApp site, string projectDirectory)

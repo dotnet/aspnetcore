@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             Plan = Azure.AppServices.AppServicePlans.Define(servicePlanName)
                 .WithRegion(Region.USWest2)
                 .WithExistingResourceGroup(ResourceGroup)
-                .WithPricingTier(PricingTier.BasicB1)
+                .WithPricingTier(PricingTier.StandardS1)
                 .WithOperatingSystem(OperatingSystem.Windows)
                 .Create();
         }
@@ -98,7 +98,50 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             return name + Timestamp;
         }
 
+        private Dictionary<string, List<Task<IWebApp>>> _deploymentCache = new Dictionary<string, List<Task<IWebApp>>>();
+        private int _predeploymentId;
+
         public async Task<IWebApp> Deploy(string template, IDictionary<string, string> additionalArguments = null, [CallerMemberName] string baseName = null)
+        {
+            List<Task<IWebApp>> deployments;
+
+            void DeployBatch()
+            {
+                var maxId = _predeploymentId + 5;
+                for (; _predeploymentId < maxId; _predeploymentId++)
+                {
+                    deployments.Add(DeployImpl(template, additionalArguments, "PreDeploy" + _predeploymentId));
+                }
+            }
+
+            var deploymentKeyParts = new List<string>();
+            deploymentKeyParts.Add(template);
+            if (additionalArguments != null)
+            {
+                deploymentKeyParts.AddRange(additionalArguments.Select(a => a.Key + "=" + a.Value));
+            }
+            var deploymentKey = string.Join(Environment.NewLine, deploymentKeyParts);
+
+            Task<IWebApp> deployment;
+            if (!_deploymentCache.TryGetValue(deploymentKey, out deployments))
+            {
+                deployments = new List<Task<IWebApp>>();
+                DeployBatch();
+                _deploymentCache[deploymentKey] = deployments;
+            }
+
+            deployment = await Task.WhenAny(deployments);
+            deployments.Remove(deployment);
+
+            if (deployments.Count == 2)
+            {
+                DeployBatch();
+            }
+
+            return await deployment;
+        }
+
+        private async Task<IWebApp> DeployImpl(string template, IDictionary<string, string> additionalArguments = null, [CallerMemberName] string baseName = null)
         {
             var siteName = GetTimestampedName(baseName);
             var parameters = new Dictionary<string, string>

@@ -10,5 +10,7 @@ robocopy "%DOTNET%" "." /E /XC /XN /XO /NFL /NDL ^
     /XD "%RUNTIMES%\2.0.0-preview1-002111-00" ^
     /XD "%RUNTIMES%\2.0.0-preview2-25407-01"
 
+copy /y dotnet.cmd D:\home\site\deployments\tools
+
 if %errorlevel% geq 8 exit /b 1
 exit /b 0
