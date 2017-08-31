@@ -97,12 +97,9 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-// Suppress this warning to workaround https://github.com/xunit/xunit/issues/1424
-#pragma warning disable xUnit1026
         [Theory]
         [MemberData(nameof(TransportTypesAndTransferModes))]
         public async Task ConnectionCanSendAndReceiveMessages(TransportType transportType, TransferMode requestedTransferMode)
-#pragma warning restore xUnit1026
         {
             using (StartLog(out var loggerFactory, testName: $"ConnectionCanSendAndReceiveMessages_{transportType.ToString()}"))
             {
@@ -182,11 +179,12 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 }
             }
 
-            bool IsBase64Encoded(TransferMode transferMode, IConnection connection)
-            {
-                return requestedTransferMode == TransferMode.Binary &&
-                    connection.Features.Get<ITransferModeFeature>().TransferMode == TransferMode.Text;
-            }
+        }
+
+        private bool IsBase64Encoded(TransferMode transferMode, IConnection connection)
+        {
+            return transferMode == TransferMode.Binary &&
+                connection.Features.Get<ITransferModeFeature>().TransferMode == TransferMode.Text;
         }
 
         public static IEnumerable<object[]> MessageSizesData
