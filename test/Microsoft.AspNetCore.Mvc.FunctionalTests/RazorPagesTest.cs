@@ -1115,6 +1115,30 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             Assert.Equal(expected, (await response.Content.ReadAsStringAsync()).Trim());
         }
 
+        [Fact]
+        public async Task ViewLocalizer_WorksForPagesWithoutModel()
+        {
+            // Arrange
+            var expected = "Bon Jour from Page";
+
+            // Act
+            var response = await Client.GetStringAsync("/Pages/Localized/Page?culture=fr-FR");
+
+            Assert.Equal(expected, response.Trim());
+        }
+
+        [Fact]
+        public async Task ViewLocalizer_WorksForPagesWithModel()
+        {
+            // Arrange
+            var expected = "Bon Jour from PageWithModel";
+
+            // Act
+            var response = await Client.GetStringAsync("/Pages/Localized/PageWithModel?culture=fr-FR");
+
+            Assert.Equal(expected, response.Trim());
+        }
+
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
         {
             var getResponse = await Client.GetAsync(request.RequestUri);

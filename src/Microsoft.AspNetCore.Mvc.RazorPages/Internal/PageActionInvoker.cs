@@ -122,6 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     _tempDataFactory.GetTempData(_pageContext.HttpContext),
                     TextWriter.Null,
                     _htmlHelperOptions);
+                _viewContext.ExecutingFilePath = _pageContext.ActionDescriptor.RelativePath;
 
                 _page = (Page)CacheEntry.PageFactory(_pageContext, _viewContext);
 
@@ -265,6 +266,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                         _tempDataFactory.GetTempData(_pageContext.HttpContext),
                         TextWriter.Null,
                         _htmlHelperOptions);
+                    _viewContext.ExecutingFilePath = _pageContext.ActionDescriptor.RelativePath;
                 }
 
                 if (_page == null)
