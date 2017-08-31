@@ -51,9 +51,24 @@ namespace ClientSample
                 // Set up handler
                 connection.On<string>("Send", Console.WriteLine);
 
+                connection.Closed += e =>
+                {
+                    Console.WriteLine("Connection closed.");
+                    cts.Cancel();
+                    return Task.CompletedTask;
+                };
+
+                var ctsTask = Task.Delay(-1, cts.Token);
+
                 while (!cts.Token.IsCancellationRequested)
                 {
-                    var line = await Task.Run(() => Console.ReadLine(), cts.Token);
+                    var completedTask = await Task.WhenAny(Task.Run(() => Console.ReadLine(), cts.Token), ctsTask);
+                    if (completedTask == ctsTask)
+                    {
+                        break;
+                    }
+
+                    var line = await (Task<string>)completedTask;
 
                     if (line == null)
                     {
