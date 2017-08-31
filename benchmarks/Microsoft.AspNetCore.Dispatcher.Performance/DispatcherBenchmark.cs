@@ -7,6 +7,7 @@ using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
@@ -14,9 +15,9 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Routing.Performance
+namespace Microsoft.AspNetCore.Dispatcher.Performance
 {
-    public class RoutingBenchmark
+    public class DispatcherBenchmark
     {
         private const int NumberOfRequestTypes = 3;
         private const int Iterations = 100;
@@ -24,7 +25,7 @@ namespace Microsoft.AspNetCore.Routing.Performance
         private readonly IRouter _treeRouter;
         private readonly RequestEntry[] _requests;
 
-        public RoutingBenchmark()
+        public DispatcherBenchmark()
         {
             var handler = new RouteHandler((next) => Task.FromResult<object>(null));
 
