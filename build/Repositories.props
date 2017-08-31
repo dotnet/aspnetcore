@@ -1,7 +1,7 @@
 <Project>
   <ItemDefinitionGroup>
     <Repository>
-      <Branch>rel/2.0.0</Branch>
+      <Branch>patch/2.0.1</Branch>
     </Repository>
   </ItemDefinitionGroup>
 
@@ -32,7 +32,9 @@
     <Repository Include="KestrelHttpServer" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="Localization" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="Logging" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <Repository Include="MetaPackages" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="MetaPackages" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)">
+      <Branch>rel/2.0.1</Branch>
+    </Repository>
     <Repository Include="Microsoft.Data.Sqlite" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="MusicStore" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="Mvc" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
