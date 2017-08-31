@@ -50,7 +50,13 @@ namespace RepoTasks
             foreach (var repositoryTaskItem in Repositories)
             {
                 var repositoryName = repositoryTaskItem.ItemSpec;
-                var graphNodeRepository = graph.First(g => g.Repository.Name == repositoryName);
+                var graphNodeRepository = graph.FirstOrDefault(g => g.Repository.Name == repositoryName);
+                if (graphNodeRepository == null)
+                {
+                    // StartGraphAt was specified so the graph is incomplete.
+                    continue;
+                }
+
                 var order = TopologicalSort.GetOrder(graphNodeRepository);
                 repositoryTaskItem.SetMetadata("Order", order.ToString());
                 repositoriesWithOrder.Add((repositoryTaskItem, order));
