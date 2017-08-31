@@ -5,16 +5,5 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.SignalR
 {
-    public interface IHubClients
-    {
-        IClientProxy All { get; }
-
-        IClientProxy AllExcept(IReadOnlyList<string> excludedIds);
-
-        IClientProxy Client(string connectionId);
-
-        IClientProxy Group(string groupName);
-
-        IClientProxy User(string userId);
-    }
+    public interface IHubClients : IHubClients<IClientProxy> { }
 }

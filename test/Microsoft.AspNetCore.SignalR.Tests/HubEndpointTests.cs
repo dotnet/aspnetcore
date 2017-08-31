@@ -512,12 +512,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
-        [Fact]
-        public async Task SendToAllExcept()
+        [Theory]
+        [MemberData(nameof(HubTypes))]
+        public async Task SendToAllExcept(Type hubType)
         {
             var serviceProvider = CreateServiceProvider();
 
-            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+            dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
 
             using (var firstClient = new TestClient())
             using (var secondClient = new TestClient())
@@ -945,6 +946,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 return Clients.All.Broadcast(message);
             }
+
+            public Task SendToAllExcept(string message, IReadOnlyList<string> excludedIds)
+            {
+                return Clients.AllExcept(excludedIds).Send(message);
+            }
         }
 
         public interface Test
@@ -994,6 +1000,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public Task BroadcastMethod(string message)
             {
                 return Clients.All.Broadcast(message);
+            }
+
+            public Task SendToAllExcept(string message, IReadOnlyList<string> excludedIds)
+            {
+                return Clients.AllExcept(excludedIds).Send(message);
             }
         }
 
