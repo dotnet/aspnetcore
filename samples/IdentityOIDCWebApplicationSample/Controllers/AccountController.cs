@@ -23,7 +23,7 @@ namespace IdentityOIDCWebApplicationSample.Controllers
         [HttpGet]
         public IActionResult Manage()
         {
-            return RedirectToAction("Index", "Manage", new { area = "IdentityService" });
+            return RedirectToAction("Index", "Manage", new { area = "Identity" });
         }
         //
         // GET: /Account/SignOut

@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using IdentityOIDCWebApplicationSample.Identity.Models;
-using IdentityOIDCWebApplicationSample.Identity.Models.ManageViewModels;
-using IdentityOIDCWebApplicationSample.Identity.Services;
+using Identity.OpenIdConnect.WebSite.Identity.Models;
+using Identity.OpenIdConnect.WebSite.Identity.Models.ManageViewModels;
+using Identity.OpenIdConnect.WebSite.Identity.Services;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -10,11 +10,11 @@ using Microsoft.AspNetCore.Identity.Service;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 
-namespace IdentityOIDCWebApplicationSample.Identity.Controllers
+namespace Identity.OpenIdConnect.WebSite.Identity.Controllers
 {
     [Authorize(IdentityServiceOptions.LoginPolicyName)]
-    [Area("IdentityService")]
-    [Route("tfp/IdentityService/[controller]/[action]")]
+    [Area("Identity")]
+    [Route("tfp/Identity/[controller]/[action]")]
     public class ManageController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;

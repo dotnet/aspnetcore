@@ -10,7 +10,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 
 namespace Identity.OpenIdConnect.WebSite.Identity.Controllers
 {
-    [Area("IdentityService")]
+    [Area("Identity")]
     public class IdentityServiceController : Controller
     {
         private readonly IOptions<IdentityServiceOptions> _options;
@@ -33,7 +33,7 @@ namespace Identity.OpenIdConnect.WebSite.Identity.Controllers
             _tokenResponseFactory = tokenResponseFactory;
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/oauth2/v2.0/authorize/")]
+        [HttpGet("tfp/Identity/signinsignup/oauth2/v2.0/authorize/")]
         public async Task<IActionResult> Authorize(
             [EnableIntegratedWebClient, ModelBinder(typeof(AuthorizationRequestModelBinder))] AuthorizationRequest authorization)
         {
@@ -69,7 +69,7 @@ namespace Identity.OpenIdConnect.WebSite.Identity.Controllers
             return this.ValidAuthorization(response);
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/oauth2/v2.0/token")]
+        [HttpPost("tfp/Identity/signinsignup/oauth2/v2.0/token")]
         [Produces("application/json")]
         public async Task<IActionResult> Token(
             [ModelBinder(typeof(TokenRequestModelBinder))] TokenRequest request)
@@ -92,7 +92,7 @@ namespace Identity.OpenIdConnect.WebSite.Identity.Controllers
             return Ok(response.Parameters);
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/oauth2/v2.0/logout")]
+        [HttpGet("tfp/Identity/signinsignup/oauth2/v2.0/logout")]
         public async Task<IActionResult> Logout(
             [EnableIntegratedWebClient, ModelBinder(typeof(LogoutRequestModelBinder))] LogoutRequest request)
         {
@@ -119,7 +119,7 @@ namespace Identity.OpenIdConnect.WebSite.Identity.Controllers
 
             var parameters = new
             {
-                ReturnUrl = Url.Action("Authorize", "IdentityService", messageCopy.Parameters)
+                ReturnUrl = Url.Action("Authorize", "Identity", messageCopy.Parameters)
             };
 
             return RedirectToAction(action, controller, parameters);

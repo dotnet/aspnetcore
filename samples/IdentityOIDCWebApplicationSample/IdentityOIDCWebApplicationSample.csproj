@@ -39,8 +39,4 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Identity.Service.AzureKeyVault\Microsoft.AspNetCore.Identity.Service.AzureKeyVault.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Areas\IdentityService\Views\Shared\" />
-  </ItemGroup>
-
 </Project>

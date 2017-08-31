@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Identity.Service.IntegratedWebClient
             var baseUrl = $"{ctx.Request.Scheme}://{ctx.Request.Host.ToUriComponent()}{ctx.Request.PathBase}";
             if (!Uri.TryCreate(configurationContext.AuthorizationEndpoint, UriKind.RelativeOrAbsolute, out var authorizationUri))
             {
-                configurationContext.AuthorizationEndpoint = $"{baseUrl}/tfp/IdentityService/signinsignup/oauth2/v2.0/authorize";
+                configurationContext.AuthorizationEndpoint = $"{baseUrl}/tfp/Identity/signinsignup/oauth2/v2.0/authorize";
             }
             else
             {
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Identity.Service.IntegratedWebClient
 
             if (!Uri.TryCreate(configurationContext.TokenEndpoint, UriKind.RelativeOrAbsolute, out var tokenUri))
             {
-                configurationContext.TokenEndpoint = $"{baseUrl}/tfp/IdentityService/signinsignup/oauth2/v2.0/token";
+                configurationContext.TokenEndpoint = $"{baseUrl}/tfp/Identity/signinsignup/oauth2/v2.0/token";
             }
             else
             {
@@ -61,7 +61,7 @@ namespace Microsoft.AspNetCore.Identity.Service.IntegratedWebClient
 
             if (!Uri.TryCreate(configurationContext.EndSessionEndpoint, UriKind.RelativeOrAbsolute, out var logoutUri))
             {
-                configurationContext.EndSessionEndpoint = $"{baseUrl}/tfp/IdentityService/signinsignup/oauth2/v2.0/logout";
+                configurationContext.EndSessionEndpoint = $"{baseUrl}/tfp/Identity/signinsignup/oauth2/v2.0/logout";
             }
             else
             {

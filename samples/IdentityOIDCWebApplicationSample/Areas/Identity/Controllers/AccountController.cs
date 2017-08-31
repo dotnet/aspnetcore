@@ -17,8 +17,8 @@ using Microsoft.Net.Http.Headers;
 
 namespace IdentityOIDCWebApplicationSample.Identity.Controllers
 {
-    [Area("IdentityService")]
-    [Route("tfp/IdentityService/[controller]/[action]")]
+    [Area("Identity")]
+    [Route("tfp/Identity/[controller]/[action]")]
     [Authorize(IdentityServiceOptions.LoginPolicyName)]
     [AllowAnonymous]
     public class AccountController : Controller

@@ -14,8 +14,8 @@ using Microsoft.Extensions.Logging;
 
 namespace Identity.OpenIdConnect.WebSite.Identity.Controllers
 {
-    [Area("IdentityService")]
-    [Route("tfp/IdentityService/[controller]/[action]")]
+    [Area("Identity")]
+    [Route("tfp/Identity/[controller]/[action]")]
     [Authorize(IdentityServiceOptions.LoginPolicyName)]
     [AllowAnonymous]
     public class AccountController : Controller

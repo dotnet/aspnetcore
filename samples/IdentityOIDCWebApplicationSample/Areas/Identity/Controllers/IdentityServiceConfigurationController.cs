@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace IdentityOIDCWebApplicationSample.Identity.Controllers
 {
-    [Area("IdentityService")]
+    [Area("Identity")]
     public class IdentityServiceConfigurationController : Controller
     {
         private readonly IConfigurationManager _configurationProvider;
@@ -18,7 +18,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             _keySetProvider = keySetProvider;
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/v2.0/.well-known/openid-configuration")]
+        [HttpGet("tfp/Identity/signinsignup/v2.0/.well-known/openid-configuration")]
         [Produces("application/json")]
         public async Task<IActionResult> Metadata()
         {
@@ -35,7 +35,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return Ok(await _configurationProvider.GetConfigurationAsync(configurationContext));
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/discovery/v2.0/keys")]
+        [HttpGet("tfp/Identity/signinsignup/discovery/v2.0/keys")]
         [Produces("application/json")]
         public async Task<IActionResult> Keys()
         {

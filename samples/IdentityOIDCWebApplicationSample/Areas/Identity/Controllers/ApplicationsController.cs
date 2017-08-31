@@ -12,7 +12,7 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 namespace IdentityOIDCWebApplicationSample.Identity.Controllers
 {
     [Authorize(IdentityServiceOptions.ManagementPolicyName)]
-    [Area("IdentityService")]
+    [Area("Identity")]
     public class ApplicationsController : Controller
     {
         private readonly UserManager<ApplicationUser> _userManager;
@@ -26,7 +26,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             _applicationManager = applicationManager;
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications")]
+        [HttpGet("tfp/Identity/signinsignup/Applications")]
         public async Task<IActionResult> Index()
         {
             var id = _userManager.GetUserId(User);
@@ -34,13 +34,13 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(applications);
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/Create")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/Create")]
         public IActionResult Create()
         {
             return View();
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/Create")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/Create")]
         public async Task<IActionResult> Create(CreateApplicationViewModel model)
         {
             var application = new IdentityServiceApplication
@@ -56,7 +56,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(CreateScope), new { id = application.Id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/Scopes/Create")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/Scopes/Create")]
         public async Task<IActionResult> CreateScope([FromRoute] string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -66,7 +66,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new CreateScopeViewModel(applicationName, scopes));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/Scopes/Create")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/Scopes/Create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateScope(
             [FromRoute] string id,
@@ -90,7 +90,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(CreateScope), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/RedirectUris/Create")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/RedirectUris/Create")]
         public async Task<IActionResult> CreateRedirectUri([FromRoute] string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -100,7 +100,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new CreateRedirectUriViewModel(applicationName, redirectUris));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/RedirectUris/Create")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/RedirectUris/Create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateRedirectUri(
             [FromRoute] string id,
@@ -124,7 +124,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(CreateRedirectUri), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/LogoutUris/Create")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/LogoutUris/Create")]
         public async Task<IActionResult> CreateLogoutUri([FromRoute] string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -134,7 +134,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new CreateLogoutUriViewModel(id, applicationName, logoutUris));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/LogoutUris/Create")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/LogoutUris/Create")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> CreateLogoutUri(
             [FromRoute] string id,
@@ -158,7 +158,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(CreateLogoutUri), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/Remove")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/Remove")]
         public async Task<IActionResult> RemoveApplication([FromRoute] string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -167,7 +167,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new RemoveApplicationViewModel(applicationName));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/Remove")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/Remove")]
         [ValidateAntiForgeryToken]
         [ActionName(nameof(RemoveApplicationViewModel))]
         public async Task<IActionResult> RemoveApplicationConfirmed([FromRoute] string id)
@@ -189,7 +189,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}")]
         public async Task<IActionResult> Details([FromRoute]string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -211,7 +211,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/ChangeName")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/ChangeName")]
         public async Task<IActionResult> ChangeName([FromRoute]string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -220,7 +220,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new ChangeApplicationNameViewModel(applicationName));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/ChangeName")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/ChangeName")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> ChangeName([FromRoute]string id, [FromForm] ChangeApplicationNameViewModel model)
         {
@@ -242,7 +242,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
         }
 
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/GenerateClientSecret")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/GenerateClientSecret")]
         public async Task<IActionResult> GenerateClientSecret([FromRoute]string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -251,7 +251,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
         }
 
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/GenerateClientSecret")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/GenerateClientSecret")]
         [ValidateAntiForgeryToken]
         [ActionName(nameof(GenerateClientSecret))]
         public async Task<IActionResult> GenerateClientSecretConfirmed([FromRoute]string id)
@@ -270,7 +270,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View("GeneratedClientSecret", new GeneratedClientSecretViewModel(name, clientSecret));
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/RemoveClientSecret")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/RemoveClientSecret")]
         public async Task<IActionResult> RemoveClientSecret([FromRoute]string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -279,7 +279,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
         }
 
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/RemoveClientSecret")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/RemoveClientSecret")]
         [ValidateAntiForgeryToken]
         [ActionName(nameof(RemoveClientSecret))]
         public async Task<IActionResult> RemoveClientSecretConfirmed([FromRoute]string id)
@@ -297,7 +297,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/RegenerateClientSecret")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/RegenerateClientSecret")]
         public async Task<IActionResult> RegenerateClientSecret([FromRoute]string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -305,7 +305,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(model: name);
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/RegenerateClientSecret")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/RegenerateClientSecret")]
         [ValidateAntiForgeryToken]
         [ActionName(nameof(RegenerateClientSecret))]
         public async Task<IActionResult> RegenerateClientSecretConfirmed([FromRoute]string id)
@@ -323,7 +323,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View("GeneratedClientSecret", new GeneratedClientSecretViewModel(name, clientSecret));
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/Scopes/Add")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/Scopes/Add")]
         public async Task<IActionResult> AddScope([FromRoute] string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -333,7 +333,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new CreateScopeViewModel(applicationName, scopes));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/Scopes/Add")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/Scopes/Add")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddScope(
             [FromRoute] string id,
@@ -357,7 +357,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(AddScope), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/Scopes/Edit/{scope}")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/Scopes/Edit/{scope}")]
         public async Task<IActionResult> EditScope([FromRoute] string id, [FromRoute] string scope)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -366,7 +366,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new EditScopeViewModel(applicationName, scope));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/Scopes/Edit/{scope}")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/Scopes/Edit/{scope}")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditScope(
             [FromRoute] string id,
@@ -390,7 +390,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/RedirectUri/Edit")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/RedirectUri/Edit")]
         public async Task<IActionResult> EditRedirectUri([FromRoute] string id, [FromQuery] string redirectUri)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -399,7 +399,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new EditRedirectUriViewModel(applicationName, redirectUri));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/RedirectUri/Edit")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/RedirectUri/Edit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditRedirectUri(
             [FromRoute] string id,
@@ -423,7 +423,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/LogoutUri/Edit")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/LogoutUri/Edit")]
         public async Task<IActionResult> EditLogoutUri([FromRoute] string id, [FromQuery] string logoutUri)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -432,7 +432,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new EditLogoutUriViewModel(applicationName, logoutUri));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/LogoutUri/Edit")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/LogoutUri/Edit")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> EditLogoutUri(
             [FromRoute] string id,
@@ -456,7 +456,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/Scopes/Remove/{scope}")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/Scopes/Remove/{scope}")]
         public async Task<IActionResult> RemoveScope([FromRoute] string id, [FromRoute] string scope)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -465,7 +465,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new RemoveScopeViewModel(applicationName, scope));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/Scopes/Remove/{scope}")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/Scopes/Remove/{scope}")]
         [ValidateAntiForgeryToken]
         [ActionName(nameof(RemoveScope))]
         public async Task<IActionResult> RemoveScopeConfirmed([FromRoute] string id, [FromRoute] string scope)
@@ -487,7 +487,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/RedirectUri/Remove")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/RedirectUri/Remove")]
         public async Task<IActionResult> RemoveRedirectUri([FromRoute] string id, [FromQuery] string redirectUri)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -496,7 +496,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new RemoveRedirectUriViewModel(applicationName, redirectUri));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/RedirectUri/Remove")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/RedirectUri/Remove")]
         [ValidateAntiForgeryToken]
         [ActionName(nameof(RemoveRedirectUri))]
         public async Task<IActionResult> RemoveRedirectUriConfirmed([FromRoute] string id, [FromQuery] string redirectUri)
@@ -518,7 +518,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/LogoutUri/Remove")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/LogoutUri/Remove")]
         public async Task<IActionResult> RemoveLogoutUri([FromRoute] string id, [FromQuery] string logoutUri)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -527,7 +527,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new RemoveLogoutUriViewModel(applicationName, logoutUri));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/LogoutUri/Remove")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/LogoutUri/Remove")]
         [ValidateAntiForgeryToken]
         [ActionName(nameof(RemoveLogoutUri))]
         public async Task<IActionResult> RemoveLogoutUriConfirmed([FromRoute] string id, [FromQuery] string logoutUri)
@@ -549,7 +549,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/RedirectUris/Add")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/RedirectUris/Add")]
         public async Task<IActionResult> AddRedirectUri([FromRoute] string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -559,7 +559,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new CreateRedirectUriViewModel(applicationName, redirectUris));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/RedirectUris/Add")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/RedirectUris/Add")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddRedirectUri(
             [FromRoute] string id,
@@ -583,7 +583,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return RedirectToAction(nameof(AddRedirectUri), new { id });
         }
 
-        [HttpGet("tfp/IdentityService/signinsignup/Applications/{id}/LogoutUris/Add")]
+        [HttpGet("tfp/Identity/signinsignup/Applications/{id}/LogoutUris/Add")]
         public async Task<IActionResult> AddLogoutUri([FromRoute] string id)
         {
             var application = await _applicationManager.FindByIdAsync(id);
@@ -593,7 +593,7 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             return View(new CreateLogoutUriViewModel(id, applicationName, logoutUris));
         }
 
-        [HttpPost("tfp/IdentityService/signinsignup/Applications/{id}/LogoutUris/Add")]
+        [HttpPost("tfp/Identity/signinsignup/Applications/{id}/LogoutUris/Add")]
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> AddLogoutUri(
             [FromRoute] string id,

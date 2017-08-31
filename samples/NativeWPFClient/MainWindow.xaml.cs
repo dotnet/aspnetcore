@@ -33,7 +33,7 @@ namespace NativeWPFClient
             {
                 BaseAddress = "https://localhost:44324/",
                 RedirectUri = "urn:ietf:wg:oauth:2.0:oob",
-                Tenant = "IdentityService",
+                Tenant = "Identity",
                 Policy = "signinsignup",
                 ClientId = "06D7C2FB-A66A-41AD-9509-77BDDFAB111B",
                 Scopes = "https://localhost/DFC7191F-FF74-42B9-A292-08FEA80F5B20/v2.0/ProtectedApi/read"
