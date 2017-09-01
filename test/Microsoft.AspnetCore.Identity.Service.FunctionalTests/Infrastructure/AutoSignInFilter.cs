@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Threading.Tasks;
 using Identity.OpenIdConnect.WebSite.Identity.Models;
 using Microsoft.AspNetCore.Identity;
@@ -12,7 +15,7 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
     {
         private readonly string _loginPath;
 
-        public AutoSignInFilter(string loginPath = "/tfp/IdentityService/Account/Login")
+        public AutoSignInFilter(string loginPath = "/tfp/Identity/Account/Login")
         {
             _loginPath = loginPath;
         }

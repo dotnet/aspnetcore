@@ -1,4 +1,7 @@
-﻿using System.Security.Claims;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Identity.OpenIdConnect.WebSite.Identity.Models;
 using Microsoft.AspNetCore.Identity.Service;
@@ -119,7 +122,7 @@ namespace Identity.OpenIdConnect.WebSite.Identity.Controllers
 
             var parameters = new
             {
-                ReturnUrl = Url.Action("Authorize", "Identity", messageCopy.Parameters)
+                ReturnUrl = Url.Action("Authorize", "IdentityService", messageCopy.Parameters)
             };
 
             return RedirectToAction(action, controller, parameters);
