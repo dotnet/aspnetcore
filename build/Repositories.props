@@ -18,7 +18,7 @@
     <Repository Include="DependencyInjection" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="Diagnostics" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="DotNetTools" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <Repository Include="EntityFrameworkCore" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="EntityFramework" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="EventNotification" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="FileSystem" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="Hosting" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
