@@ -40,10 +40,10 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
         [InlineData(WebAppDeploymentKind.Git, "1.0.5", "mvc", "Learn how to build ASP.NET apps that can run anywhere")]
         [InlineData(WebAppDeploymentKind.Git, "1.1.2", "web", "Hello World!")]
         [InlineData(WebAppDeploymentKind.Git, "1.1.2", "mvc", "Learn how to build ASP.NET apps that can run anywhere")]
-        [InlineData(WebAppDeploymentKind.Ftp, "1.0.5", "web", "Hello World!")]
-        [InlineData(WebAppDeploymentKind.Ftp, "1.0.5", "mvc", "Learn how to build ASP.NET apps that can run anywhere")]
-        [InlineData(WebAppDeploymentKind.Ftp, "1.1.2", "web", "Hello World!")]
-        [InlineData(WebAppDeploymentKind.Ftp, "1.1.2", "mvc", "Learn how to build ASP.NET apps that can run anywhere")]
+        //[InlineData(WebAppDeploymentKind.Ftp, "1.0.5", "web", "Hello World!")]
+        //[InlineData(WebAppDeploymentKind.Ftp, "1.0.5", "mvc", "Learn how to build ASP.NET apps that can run anywhere")]
+        //[InlineData(WebAppDeploymentKind.Ftp, "1.1.2", "web", "Hello World!")]
+        //[InlineData(WebAppDeploymentKind.Ftp, "1.1.2", "mvc", "Learn how to build ASP.NET apps that can run anywhere")]
         public async Task LegacyTemplateRuns(WebAppDeploymentKind deploymentKind, string expectedRuntime, string template, string expected)
         {
             var testId =  ToFriendlyName(nameof(LegacyTemplateRuns), deploymentKind, template, expectedRuntime);
