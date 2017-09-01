@@ -14,12 +14,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Func<ControllerContext, object> controllerFactory,
             Action<ControllerContext, object> controllerReleaser,
             ControllerBinderDelegate controllerBinderDelegate,
-            ObjectMethodExecutor actionMethodExecutor)
+            ObjectMethodExecutor objectMethodExecutor,
+            ActionMethodExecutor actionMethodExecutor)
         {
             ControllerFactory = controllerFactory;
             ControllerReleaser = controllerReleaser;
             ControllerBinderDelegate = controllerBinderDelegate;
             CachedFilters = cachedFilters;
+            ObjectMethodExecutor = objectMethodExecutor;
             ActionMethodExecutor = actionMethodExecutor;
         }
 
@@ -31,6 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public ControllerBinderDelegate ControllerBinderDelegate { get; }
 
-        internal ObjectMethodExecutor ActionMethodExecutor { get; }
+        internal ObjectMethodExecutor ObjectMethodExecutor { get; }
+
+        internal ActionMethodExecutor ActionMethodExecutor { get; }
     }
 }

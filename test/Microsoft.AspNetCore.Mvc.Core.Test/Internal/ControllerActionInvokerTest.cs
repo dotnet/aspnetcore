@@ -1370,12 +1370,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 actionDescriptor.ControllerTypeInfo,
                 ParameterDefaultValues.GetParameterDefaultValues(actionDescriptor.MethodInfo));
 
+            var controllerMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
+
             var cacheEntry = new ControllerActionInvokerCacheEntry(
                 new FilterItem[0],
                 _ => new TestController(),
                 (_, __) => { },
                 (_, __, ___) => Task.CompletedTask,
-                actionMethodExecutor: objectMethodExecutor);
+                objectMethodExecutor,
+                controllerMethodExecutor);
 
             var invoker = new ControllerActionInvoker(
                 new NullLoggerFactory().CreateLogger<ControllerActionInvoker>(),
@@ -1632,6 +1635,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 actionDescriptor.ControllerTypeInfo,
                 ParameterDefaultValues.GetParameterDefaultValues(actionDescriptor.MethodInfo));
 
+            var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
+
             var cacheEntry = new ControllerActionInvokerCacheEntry(
                 new FilterItem[0],
                 (c) => controller,
@@ -1645,7 +1650,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
                     return Task.CompletedTask;
                 },
-                objectMethodExecutor);
+                objectMethodExecutor,
+                actionMethodExecutor);
 
             var actionContext = new ActionContext(httpContext, routeData, actionDescriptor);
             var controllerContext = new ControllerContext(actionContext)

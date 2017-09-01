@@ -37,6 +37,7 @@ Microsoft.AspNetCore.Mvc.RouteAttribute</Description>
     <PackageReference Include="Microsoft.Extensions.PropertyHelper.Sources" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources" PrivateAssets="All" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" />
+    <PackageReference Include="System.Threading.Tasks.Extensions" />
   </ItemGroup>
 
 </Project>

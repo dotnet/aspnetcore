@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     {
         private readonly ControllerActionInvokerCacheEntry _cacheEntry;
         private readonly ControllerContext _controllerContext;
-        
+
         private Dictionary<string, object> _arguments;
 
         private ActionExecutingContext _actionExecutingContext;
@@ -305,14 +305,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private async Task InvokeActionMethodAsync()
         {
             var controllerContext = _controllerContext;
-            var executor = _cacheEntry.ActionMethodExecutor;
+            var objectMethodExecutor = _cacheEntry.ObjectMethodExecutor;
             var controller = _instance;
             var arguments = _arguments;
-            var orderedArguments = PrepareArguments(arguments, executor);
+            var actionMethodExecutor = _cacheEntry.ActionMethodExecutor;
+            var orderedArguments = PrepareArguments(arguments, objectMethodExecutor);
 
             var diagnosticSource = _diagnosticSource;
             var logger = _logger;
-            var returnType = executor.MethodReturnType;
 
             IActionResult result = null;
             try
@@ -323,92 +323,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     controller);
                 logger.ActionMethodExecuting(controllerContext, orderedArguments);
 
-                if (returnType == typeof(void))
+                var actionResultValueTask = actionMethodExecutor.Execute(objectMethodExecutor, controller, orderedArguments);
+                if (actionResultValueTask.IsCompletedSuccessfully)
                 {
-                    // Sync method returning void
-                    executor.Execute(controller, orderedArguments);
-                    result = new EmptyResult();
-                }
-                else if (returnType == typeof(Task))
-                {
-                    // Async method returning Task
-                    // Avoid extra allocations by calling Execute rather than ExecuteAsync and casting to Task.
-                    await (Task)executor.Execute(controller, orderedArguments);
-                    result = new EmptyResult();
-                }
-                else if (returnType == typeof(Task<IActionResult>))
-                {
-                    // Async method returning Task<IActionResult>
-                    // Avoid extra allocations by calling Execute rather than ExecuteAsync and casting to Task<IActionResult>.
-                    result = await (Task<IActionResult>)executor.Execute(controller, orderedArguments);
-                    if (result == null)
-                    {
-                        throw new InvalidOperationException(
-                            Resources.FormatActionResult_ActionReturnValueCannotBeNull(typeof(IActionResult)));
-                    }
-                }
-                else if (IsConvertibleToActionResult(executor))
-                {
-                    IConvertToActionResult convertToActionResult;
-                    if (executor.IsMethodAsync)
-                    {
-                        // Async method returning awaitable-of-ActionResult<T> (e.g., Task<ActionResult<Person>>)
-                        // We have to use ExecuteAsync because we don't know the awaitable's type at compile time.
-                        convertToActionResult = (IConvertToActionResult)await executor.ExecuteAsync(controller, orderedArguments);
-                    }
-                    else
-                    {
-                        // Sync method returning ActionResult<T>
-                        convertToActionResult = (IConvertToActionResult)executor.Execute(controller, orderedArguments);
-                    }
-
-                    result = convertToActionResult.Convert();
-
-                    if (result == null)
-                    {
-                        throw new InvalidOperationException(
-                            Resources.FormatActionResult_ActionReturnValueCannotBeNull(typeof(IConvertToActionResult)));
-                    }
-
-                }
-                else if (IsResultIActionResult(executor))
-                {
-                    if (executor.IsMethodAsync)
-                    {
-                        // Async method returning awaitable-of-IActionResult (e.g., Task<ViewResult>)
-                        // We have to use ExecuteAsync because we don't know the awaitable's type at compile time.
-                        result = (IActionResult)await executor.ExecuteAsync(controller, orderedArguments);
-                    }
-                    else
-                    {
-                        // Sync method returning IActionResult (e.g., ViewResult)
-                        result = (IActionResult)executor.Execute(controller, orderedArguments);
-                    }
-
-                    if (result == null)
-                    {
-                        throw new InvalidOperationException(
-                            Resources.FormatActionResult_ActionReturnValueCannotBeNull(executor.AsyncResultType ?? returnType));
-                    }
-                }
-                else if (!executor.IsMethodAsync)
-                {
-                    // Sync method returning arbitrary object
-                    var resultAsObject = executor.Execute(controller, orderedArguments);
-                    ConvertToActionResult(resultAsObject);
-
-                }
-                else if (executor.AsyncResultType == typeof(void))
-                {
-                    // Async method returning awaitable-of-void
-                    await executor.ExecuteAsync(controller, orderedArguments);
-                    result = new EmptyResult();
+                    result = actionResultValueTask.Result;
                 }
                 else
                 {
-                    // Async method returning awaitable-of-nonvoid
-                    var resultAsObject = await executor.ExecuteAsync(controller, orderedArguments);
-                    ConvertToActionResult(resultAsObject);
+                    result = await actionResultValueTask;
                 }
 
                 _result = result;
@@ -421,25 +343,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     arguments,
                     controllerContext,
                     result);
-            }
-
-            void ConvertToActionResult(object resultAsObject)
-            {
-                if (resultAsObject is IActionResult actionResult)
-                {
-                    result = actionResult;
-                }
-                else if (resultAsObject is IConvertToActionResult convertToActionResult)
-                {
-                    result = convertToActionResult.Convert();
-                }
-                else
-                {
-                    result = new ObjectResult(resultAsObject)
-                    {
-                        DeclaredType = returnType,
-                    };
-                }
             }
         }
 

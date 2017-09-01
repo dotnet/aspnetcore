@@ -71,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 var parameterDefaultValues = ParameterDefaultValues
                     .GetParameterDefaultValues(actionDescriptor.MethodInfo);
 
-                var executor = ObjectMethodExecutor.Create(
+                var objectMethodExecutor = ObjectMethodExecutor.Create(
                     actionDescriptor.MethodInfo,
                     actionDescriptor.ControllerTypeInfo,
                     parameterDefaultValues);
@@ -84,12 +84,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     _modelMetadataProvider,
                     actionDescriptor);
 
+                var actionMethodExecutor = ActionMethodExecutor.GetExecutor(objectMethodExecutor);
+
                 cacheEntry = new ControllerActionInvokerCacheEntry(
                     filterFactoryResult.CacheableFilters, 
                     controllerFactory, 
                     controllerReleaser,
                     propertyBinderFactory,
-                    executor);
+                    objectMethodExecutor,
+                    actionMethodExecutor);
                 cacheEntry = cache.Entries.GetOrAdd(actionDescriptor, cacheEntry);
             }
             else
