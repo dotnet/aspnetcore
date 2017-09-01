@@ -1,0 +1,8 @@
+<Project>
+  <ItemGroup>
+    <Solutions Update="$(RepositoryRoot)Identity.sln">
+      <!-- the 'DebugNoWPF' and 'ReleaseNoWPF' configurations exclude the WPF project, which doesn't build with Microsoft.NET.Sdk yet. -->
+      <AdditionalProperties>Configuration=$(Configuration)NoWPF</AdditionalProperties>
+    </Solutions>
+  </ItemGroup>
+</Project>
