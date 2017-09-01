@@ -6,6 +6,51 @@
   </ItemDefinitionGroup>
 
   <ItemGroup>
+    <Repository Include="Antiforgery" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="AzureIntegration" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="BasicMiddleware" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="BrowserLink" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Caching" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Common" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Configuration" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="CORS" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="DataProtection" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="DependencyInjection" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Diagnostics" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="DotNetTools" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="EntityFrameworkCore" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="EventNotification" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="FileSystem" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Hosting" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="HtmlAbstractions" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="HttpAbstractions" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="HttpSysServer" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Identity" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="IISIntegration" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="JavaScriptServices" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="JsonPatch" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="KestrelHttpServer" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Localization" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Logging" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="MetaPackages" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)">
+      <Branch>rel/2.0.1</Branch>
+    </Repository>
+    <Repository Include="Microsoft.Data.Sqlite" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="MusicStore" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Mvc" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="MvcPrecompilation" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Options" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Proxy" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Razor" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="ResponseCaching" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Routing" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Scaffolding" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Security" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="ServerTests" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Session" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="SignalR" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="StaticFiles" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Testing" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="WebSockets" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
   </ItemGroup>
 </Project>
