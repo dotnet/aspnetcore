@@ -108,5 +108,17 @@ namespace BasicWebSite.Controllers
         {
             return ControllerContext.ActionDescriptor.Properties["description"].ToString();
         }
+
+        [HttpGet]
+        public IActionResult Product()
+        {
+            return Content("Get Product");
+        }
+
+        [HttpPost]
+        public IActionResult Product(Product product)
+        {
+            return RedirectToAction();
+        }
     }
 }
