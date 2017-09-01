@@ -12,5 +12,8 @@ robocopy "%DOTNET%" "." /E /XC /XN /XO /NFL /NDL ^
 
 copy /y dotnet.cmd D:\home\site\deployments\tools
 
+rem force first time experience
+dotnet msbuild /version
+
 if %errorlevel% geq 8 exit /b 1
 exit /b 0

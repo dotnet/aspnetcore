@@ -106,6 +106,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             var result = await git.ExecuteAndAssertAsync("push origin master");
 
             Assert.DoesNotContain("An error has occurred during web site deployment", result.StdErr);
+            Assert.DoesNotContain("deployment to website failed", result.StdErr);
         }
 
         public static async Task BuildPublishProfileAsync(this IWebApp site, string projectDirectory)

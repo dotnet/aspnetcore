@@ -143,17 +143,17 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
                 await dotnet.ExecuteAndAssertAsync("new " + template);
 
-                // We don't ship offline cache in site extension so we need to provider a feed to
-                // restore from when doing kudu git deploy for version not published to Nuget
-                if (deploymentKind == WebAppDeploymentKind.Git && dotnetVersion == "latest")
-                {
-                    CopyToProjectDirectory(testDirectory, Asset("Nuget.latest.config"), "NuGet.config");
-                }
-
                 InjectMiddlware(testDirectory, RuntimeInformationMiddlewareType, RuntimeInformationMiddlewareFile);
                 FixAspNetCoreVersion(testDirectory, dotnet.Command);
 
                 var site = await siteTask;
+
+                // There is no feed with packages included in lastes so we have to enable first run experience
+                if (deploymentKind == WebAppDeploymentKind.Git && dotnetVersion == "latest")
+                {
+                    await site.Update().WithAppSetting("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "false").ApplyAsync();
+                }
+
                 await site.Deploy(deploymentKind, testDirectory, dotnet, logger);
 
                 using (var httpClient = site.CreateClient())

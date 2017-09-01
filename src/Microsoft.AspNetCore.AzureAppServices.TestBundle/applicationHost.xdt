@@ -7,7 +7,7 @@
     <system.webServer xdt:Transform="InsertIfMissing">
       <runtime xdt:Transform="InsertIfMissing" >
         <environmentVariables xdt:Transform="InsertIfMissing">
-          <add name="PATH" value="%XDT_EXTENSIONPATH%" xdt:Locator="Match(name)" xdt:Transform="InsertOrAppendAttribute(Attribute='value')" />
+          <add name="PATH" value="%XDT_EXTENSIONPATH%;%PATH%" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
         </environmentVariables>
       </runtime>
     </system.webServer>
