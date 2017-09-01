@@ -1326,6 +1326,20 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatUrlHelper_RelativePagePathIsNotSupported(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("UrlHelper_RelativePagePathIsNotSupported"), p0);
 
+        /// <summary>
+        /// One or more validation errors occured.
+        /// </summary>
+        internal static string ValidationProblemDescription_Title
+        {
+            get => GetString("ValidationProblemDescription_Title");
+        }
+
+        /// <summary>
+        /// One or more validation errors occured.
+        /// </summary>
+        internal static string FormatValidationProblemDescription_Title()
+            => GetString("ValidationProblemDescription_Title");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

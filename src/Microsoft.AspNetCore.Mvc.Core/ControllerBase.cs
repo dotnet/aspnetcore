@@ -1469,6 +1469,49 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+        /// </summary>
+        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual BadRequestObjectResult ValidationProblem(ValidationProblemDescription descriptor)
+        {
+            if (descriptor == null)
+            {
+                throw new ArgumentNullException(nameof(descriptor));
+            }
+
+            return new BadRequestObjectResult(descriptor);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
+        /// </summary>
+        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual BadRequestObjectResult ValidationProblem(ModelStateDictionary modelStateDictionary)
+        {
+            if (modelStateDictionary == null)
+            {
+                throw new ArgumentNullException(nameof(modelStateDictionary));
+            }
+
+            var validationProblem = new ValidationProblemDescription(modelStateDictionary);
+            return new BadRequestObjectResult(validationProblem);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response
+        /// with validation errors from <see cref="ModelState"/>.
+        /// </summary>
+        /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual BadRequestObjectResult ValidationProblem()
+        {
+            var validationProblem = new ValidationProblemDescription(ModelState);
+            return new BadRequestObjectResult(validationProblem);
+        }
+
+        /// <summary>
         /// Creates a <see cref="CreatedResult"/> object that produces a <see cref="StatusCodes.Status201Created"/> response.
         /// </summary>
         /// <param name="uri">The URI at which the content has been created.</param>

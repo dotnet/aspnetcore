@@ -412,4 +412,7 @@
   <data name="UrlHelper_RelativePagePathIsNotSupported" xml:space="preserve">
     <value>The relative page path '{0}' can only be used while executing a Razor Page. Specify a root relative path with a leading '/' to generate a URL outside of a Razor Page.</value>
   </data>
+  <data name="ValidationProblemDescription_Title" xml:space="preserve">
+    <value>One or more validation errors occured.</value>
+  </data>
 </root>
