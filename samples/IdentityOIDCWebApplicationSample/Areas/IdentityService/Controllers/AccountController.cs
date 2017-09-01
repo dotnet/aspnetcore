@@ -64,7 +64,8 @@ namespace IdentityOIDCWebApplicationSample.Identity.Controllers
             public void OnResultExecuting(ResultExecutingContext context)
             {
                 if(context.HttpContext.Request.Headers.TryGetValue(HeaderNames.UserAgent, out var header) &&
-                    header.Contains("Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.2; WOW64; Trident/7.0)") &&
+                    header.Count() == 1 &&
+                    header[0].Contains("Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.2; WOW64; Trident/7.0") &&
                     context.Result is ViewResult view &&
                     view.ViewName == null)
                 {
