@@ -8,6 +8,8 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Dispatcher\Microsoft.AspNetCore.Dispatcher.csproj" />
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Dispatcher.Abstractions\Microsoft.AspNetCore.Dispatcher.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Routing.Abstractions\Microsoft.AspNetCore.Routing.Abstractions.csproj" />
+    <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Routing\Microsoft.AspNetCore.Routing.csproj" />
   </ItemGroup>
 
 
