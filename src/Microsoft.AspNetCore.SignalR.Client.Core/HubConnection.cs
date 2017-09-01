@@ -51,15 +51,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             remove { _connection.Closed -= value; }
         }
 
-        public HubConnection(IConnection connection)
-            : this(connection, new JsonHubProtocol(new JsonSerializer()), null)
-        { }
-
-        // These are only really needed for tests now...
-        public HubConnection(IConnection connection, ILoggerFactory loggerFactory)
-            : this(connection, new JsonHubProtocol(new JsonSerializer()), loggerFactory)
-        { }
-
         public HubConnection(IConnection connection, IHubProtocol protocol, ILoggerFactory loggerFactory)
         {
             if (connection == null)

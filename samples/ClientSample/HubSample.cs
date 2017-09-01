@@ -30,11 +30,13 @@ namespace ClientSample
         {
             baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/default" : baseUrl;
 
-            var loggerFactory = new LoggerFactory();
-
             Console.WriteLine("Connecting to {0}", baseUrl);
             var httpConnection = new HttpConnection(new Uri(baseUrl));
-            var connection = new HubConnection(httpConnection, loggerFactory);
+            var connection = new HubConnectionBuilder()
+                .WithUrl(baseUrl)
+                .WithConsoleLogger()
+                .Build();
+
             try
             {
                 await connection.StartAsync();

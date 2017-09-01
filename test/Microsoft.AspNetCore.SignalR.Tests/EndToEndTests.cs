@@ -284,7 +284,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var url = _serverFixture.BaseUrl + "/uncreatable";
 
-                var connection = new HubConnection(new HttpConnection(new Uri(url), transportType, loggerFactory), loggerFactory);
+                var connection = new HubConnectionBuilder()
+                        .WithUrl(new Uri(url))
+                        .WithTransportType(transportType)
+                        .WithLogger(loggerFactory)
+                        .Build();
                 try
                 {
                     var closeTcs = new TaskCompletionSource<object>();
