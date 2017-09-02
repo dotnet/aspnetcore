@@ -28,7 +28,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 <validationMessageElement class=""field-validation-error"">An error occurred.</validationMessageElement>
 <input id=""Prefix!Property1"" name=""Prefix.Property1"" type=""text"" value="""" />
 <div class=""editor-label""><label for=""MyDate"">MyDate</label></div>
-<div class=""editor-field""><input class=""text-box single-line"" id=""MyDate"" name=""MyDate"" type=""datetime-local"" value=""2000-01-02T03:04:05.060"" /> </div>
+<div class=""editor-field""><input class=""text-box single-line"" id=""MyDate"" name=""MyDate"" type=""text"" value=""2000-01-02T03:04:05.060&#x2B;00:00"" /> </div>
 
 <div class=""validation-summary-errors""><validationSummaryElement>MySummary</validationSummaryElement>
 <ul><li>A model error occurred.</li>
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 <validationMessageElement class=""field-validation-error"">An error occurred.</validationMessageElement>
 <input id=""Prefix!Property1"" name=""Prefix.Property1"" type=""text"" value="""" />
 <div class=""editor-label""><label for=""MyDate"">MyDate</label></div>
-<div class=""editor-field""><input class=""text-box single-line"" id=""MyDate"" name=""MyDate"" type=""datetime-local"" value=""2000-01-02T03:04:05.060"" /> </div>
+<div class=""editor-field""><input class=""text-box single-line"" id=""MyDate"" name=""MyDate"" type=""text"" value=""2000-01-02T03:04:05.060&#x2B;00:00"" /> </div>
 
 False";
 
@@ -59,7 +59,7 @@ False";
 <ValidationInView class=""field-validation-error"" data-valmsg-for=""Error"" data-valmsg-replace=""true"">An error occurred.</ValidationInView>
 <input id=""Prefix!Property1"" name=""Prefix.Property1"" type=""text"" value="""" />
 <div class=""editor-label""><label for=""MyDate"">MyDate</label></div>
-<div class=""editor-field""><input class=""text-box single-line"" data-val=""true"" data-val-required=""The MyDate field is required."" id=""MyDate"" name=""MyDate"" type=""datetime-local"" value=""02/01/2000 03:04:05 &#x2B;00:00"" /> <ValidationInView class=""field-validation-valid"" data-valmsg-for=""MyDate"" data-valmsg-replace=""true""></ValidationInView></div>
+<div class=""editor-field""><input class=""text-box single-line"" data-val=""true"" data-val-required=""The MyDate field is required."" id=""MyDate"" name=""MyDate"" type=""text"" value=""02/01/2000 03:04:05 &#x2B;00:00"" /> <ValidationInView class=""field-validation-valid"" data-valmsg-for=""MyDate"" data-valmsg-replace=""true""></ValidationInView></div>
 
 True
 <div class=""validation-summary-errors""><ValidationSummaryInPartialView>MySummary</ValidationSummaryInPartialView>
@@ -68,7 +68,7 @@ True
 <ValidationInPartialView class=""field-validation-error"" data-valmsg-for=""Error"" data-valmsg-replace=""true"">An error occurred.</ValidationInPartialView>
 <input id=""Prefix!Property1"" name=""Prefix.Property1"" type=""text"" value="""" />
 <div class=""editor-label""><label for=""MyDate"">MyDate</label></div>
-<div class=""editor-field""><input class=""text-box single-line"" id=""MyDate"" name=""MyDate"" type=""datetime-local"" value=""02/01/2000 03:04:05 &#x2B;00:00"" /> <ValidationInPartialView class=""field-validation-valid"" data-valmsg-for=""MyDate"" data-valmsg-replace=""true""></ValidationInPartialView></div>
+<div class=""editor-field""><input class=""text-box single-line"" id=""MyDate"" name=""MyDate"" type=""text"" value=""02/01/2000 03:04:05 &#x2B;00:00"" /> <ValidationInPartialView class=""field-validation-valid"" data-valmsg-for=""MyDate"" data-valmsg-replace=""true""></ValidationInPartialView></div>
 
 True";
 

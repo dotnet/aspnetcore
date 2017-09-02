@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
 
         [Theory]
         [InlineData("datetime", "datetime")]
-        [InlineData(null, "datetime-local")]
+        [InlineData(null, "text")]
         [InlineData("hidden", "hidden")]
         public void Process_GeneratesFormattedOutput(string specifiedType, string expectedType)
         {
@@ -442,6 +442,77 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 model: container.DateTimeOffset,
                 propertyName: nameof(Model.DateTimeOffset),
                 expressionName: nameof(Model.DateTimeOffset));
+            tagHelper.Format = "datetime: {0:o}";
+            tagHelper.InputTypeName = specifiedType;
+
+            // Act
+            tagHelper.Process(context, output);
+
+            // Assert
+            Assert.Equal(expectedAttributes, output.Attributes);
+            Assert.Empty(output.PreContent.GetContent());
+            Assert.Empty(output.Content.GetContent());
+            Assert.Empty(output.PostContent.GetContent());
+            Assert.Equal(TagMode.StartTagOnly, output.TagMode);
+            Assert.Equal(expectedTagName, output.TagName);
+        }
+
+        [Theory]
+        [InlineData("datetime", "datetime")]
+        [InlineData(null, "datetime-local")]
+        [InlineData("hidden", "hidden")]
+        public void Process_GeneratesFormattedOutput_ForDateTime(string specifiedType, string expectedType)
+        {
+            // Arrange
+            var expectedAttributes = new TagHelperAttributeList
+            {
+                { "type", expectedType },
+                { "id", nameof(Model.DateTime) },
+                { "name", nameof(Model.DateTime) },
+                { "valid", "from validation attributes" },
+                { "value", "datetime: 2011-08-31T05:30:45.0000000Z" },
+            };
+            var expectedTagName = "not-input";
+            var container = new Model
+            {
+                DateTime = new DateTime(2011, 8, 31, hour: 5, minute: 30, second: 45, kind: DateTimeKind.Utc),
+            };
+
+            var allAttributes = new TagHelperAttributeList
+            {
+                { "type", specifiedType },
+            };
+            var context = new TagHelperContext(
+                tagName: "input",
+                allAttributes: allAttributes,
+                items: new Dictionary<object, object>(),
+                uniqueId: "test");
+            var output = new TagHelperOutput(
+                expectedTagName,
+                new TagHelperAttributeList(),
+                getChildContentAsync: (useCachedResult, encoder) =>
+                {
+                    throw new Exception("getChildContentAsync should not be called.");
+                })
+            {
+                TagMode = TagMode.StartTagOnly,
+            };
+
+            var htmlGenerator = new TestableHtmlGenerator(new EmptyModelMetadataProvider())
+            {
+                ValidationAttributes =
+                {
+                    {  "valid", "from validation attributes" },
+                }
+            };
+
+            var tagHelper = GetTagHelper(
+                htmlGenerator,
+                container,
+                typeof(Model),
+                model: container.DateTime,
+                propertyName: nameof(Model.DateTime),
+                expressionName: nameof(Model.DateTime));
             tagHelper.Format = "datetime: {0:o}";
             tagHelper.InputTypeName = specifiedType;
 
@@ -966,6 +1037,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                     { "datetime", null, "datetime-local" },
                     { "datetime-local", null, "datetime-local" },
                     { "DATETIME-local", null, "datetime-local" },
+                    { "datetimeOffset", null, "text" },
                     { "Decimal", "{0:0.00}", "text" },
                     { "Double", null, "text" },
                     { "Int16", null, "number" },
@@ -1139,15 +1211,15 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         [InlineData("Date", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
         [InlineData("DateTime", Html5DateRenderingMode.CurrentCulture, null, "datetime-local")]
         [InlineData("DateTime", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
-        [InlineData("DateTimeOffset", Html5DateRenderingMode.CurrentCulture, null, "datetime-local")]
-        [InlineData("DateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
+        [InlineData("DateTimeOffset", Html5DateRenderingMode.CurrentCulture, null, "text")]
+        [InlineData("DateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "text")]
         [InlineData("DateTimeLocal", Html5DateRenderingMode.CurrentCulture, null, "datetime-local")]
         [InlineData("DateTimeLocal", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
         [InlineData("Time", Html5DateRenderingMode.CurrentCulture, "{0:t}", "time")]    // Format from [DataType].
         [InlineData("Time", Html5DateRenderingMode.Rfc3339, "{0:HH:mm:ss.fff}", "time")]
         [InlineData("NullableDate", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-dd}", "date")]
         [InlineData("NullableDateTime", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
-        [InlineData("NullableDateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fff}", "datetime-local")]
+        [InlineData("NullableDateTimeOffset", Html5DateRenderingMode.Rfc3339, "{0:yyyy-MM-ddTHH:mm:ss.fffK}", "text")]
         public async Task ProcessAsync_CallsGenerateTextBox_AddsExpectedAttributesForRfc3339(
             string propertyName,
             Html5DateRenderingMode dateRenderingMode,
