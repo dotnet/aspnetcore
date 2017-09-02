@@ -1,5 +1,5 @@
 ﻿<Project>
-  <Import Project="version.xml" />
+  <Import Project="version.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
@@ -8,7 +8,6 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-    <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
