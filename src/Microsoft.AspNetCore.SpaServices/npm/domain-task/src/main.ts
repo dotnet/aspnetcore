@@ -7,7 +7,7 @@ const domainTaskBaseUrlStateKey = '__DOMAIN_TASK_INTERNAL_FETCH_BASEURL__DO_NOT_
 
 let noDomainBaseUrl: string;
 
-export function addTask(task: PromiseLike<any>) {
+export function addTask<T>(task: PromiseLike<T>): PromiseLike<T> {
     if (task && domain.active) {
         const state = domainContext.get(domainTasksStateKey) as DomainTasksState;
         if (state) {
@@ -32,6 +32,8 @@ export function addTask(task: PromiseLike<any>) {
             });
         }
     }
+
+    return task;
 }
 
 export function run<T>(codeToRun: () => T, completionCallback: (error: any) => void): T {
