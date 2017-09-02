@@ -48,7 +48,6 @@
     <Repository Include="Security" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="ServerTests" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="Session" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <Repository Include="SignalR" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="StaticFiles" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="Testing" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="WebSockets" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
