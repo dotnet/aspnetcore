@@ -8,7 +8,7 @@ ASP.NET Core is a new open-source and cross-platform framework for building mode
 
 ASP.NET Core 1.1 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/1.1.0) for further details and check our [releases](https://github.com/aspnet/home/releases) for the latest patch release.
 
-ASP.NET Core 2.0 Preview 2 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/2.0.0-preview2) for further details.
+ASP.NET Core 2.0 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/2.0.0) for further details.
 
 ## Get Started
 
