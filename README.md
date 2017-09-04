@@ -8,7 +8,7 @@ ASP.NET Core is a new open-source and cross-platform framework for building mode
 
 ASP.NET Core 1.1 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/1.1.0) for further details and check our [releases](https://github.com/aspnet/home/releases) for the latest patch release.
 
-ASP.NET Core 2.0 Preview 1 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/2.0.0-preview1) for further details.
+ASP.NET Core 2.0 Preview 2 is now available! See the [release notes](https://github.com/aspnet/Home/releases/tag/2.0.0-preview2) for further details.
 
 ## Get Started
 
@@ -17,6 +17,8 @@ Follow the [Getting Started](https://docs.microsoft.com/en-us/aspnet/core/gettin
 Also checkout the [.NET Homepage](https://www.microsoft.com/net) for released versions of .NET, getting started guides, and learning resources.
 
 ## Builds
+
+[![MyGet tenant](https://img.shields.io/dotnet.myget/aspnetcore-dev/v/Microsoft.AspNetCore.All.svg)]()
 
 If you want to use the latest dev build then you need to:
 
@@ -40,6 +42,8 @@ If you want to use the latest dev build then you need to:
 
 Prerelease tooling builds for Visual Studio are available from the [Tooling](https://github.com/aspnet/tooling/#pre-release-builds) repo.
 
+
+
 ## Community and roadmap
 
 To follow along with the development of ASP.NET Core:
@@ -53,7 +57,7 @@ These are some of the most common repos:
 
 * [DependencyInjection](https://github.com/aspnet/DependencyInjection) - basic dependency injection infrastructure and default implementation
 * [Docs](https://github.com/aspnet/Docs) - documentation sources for https://docs.microsoft.com/en-us/aspnet/core/
-* [EntityFramework](https://github.com/aspnet/EntityFramework) - data access technology
+* [EntityFrameworkCore](https://github.com/aspnet/EntityFrameworkCore) - data access technology
 * [Identity](https://github.com/aspnet/Identity) - users and membership system
 * [MVC](https://github.com/aspnet/Mvc) - MVC framework for web apps and services
 * [Razor](https://github.com/aspnet/Razor) - template language and syntax for CSHTML files
@@ -64,12 +68,6 @@ These are some of the most common repos:
 ## NuGet feeds and branches
 
 See the [NuGet feeds](https://github.com/aspnet/Home/wiki/NuGet-feeds) wiki page.
-
-## Build tools
-
-This project produces builds using JetBrains TeamCity.
-
-<a href="https://www.jetbrains.com/teamcity/"><img src="https://github.com/aspnet/Home/wiki/images/logo_TeamCity.png"></a>
 
 # Feedback
 
