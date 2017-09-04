@@ -57,7 +57,7 @@ These are some of the most common repos:
 
 * [DependencyInjection](https://github.com/aspnet/DependencyInjection) - basic dependency injection infrastructure and default implementation
 * [Docs](https://github.com/aspnet/Docs) - documentation sources for https://docs.microsoft.com/en-us/aspnet/core/
-* [EntityFramework](https://github.com/aspnet/EntityFramework) - data access technology
+* [EntityFrameworkCore](https://github.com/aspnet/EntityFrameworkCore) - data access technology
 * [Identity](https://github.com/aspnet/Identity) - users and membership system
 * [MVC](https://github.com/aspnet/Mvc) - MVC framework for web apps and services
 * [Razor](https://github.com/aspnet/Razor) - template language and syntax for CSHTML files
