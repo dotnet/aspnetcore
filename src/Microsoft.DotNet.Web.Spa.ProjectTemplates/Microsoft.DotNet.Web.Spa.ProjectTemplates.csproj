@@ -1,0 +1,10 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="..\Directory.Build.props" />
+  <Import Project="..\Directory.Build.targets" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <NuspecFile>Microsoft.DotNet.Web.Spa.ProjectTemplates.nuspec</NuspecFile>
+  </PropertyGroup>
+
+</Project>

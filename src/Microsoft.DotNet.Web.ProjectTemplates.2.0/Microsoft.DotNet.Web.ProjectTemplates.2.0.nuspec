@@ -8,6 +8,8 @@
     <language>en-US</language>
     <projectUrl>https://github.com/dotnet/templating</projectUrl>
     <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
+    <copyright>Copyright © Microsoft Corporation</copyright>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
     <packageTypes>
       <packageType name="Template" />
     </packageTypes>

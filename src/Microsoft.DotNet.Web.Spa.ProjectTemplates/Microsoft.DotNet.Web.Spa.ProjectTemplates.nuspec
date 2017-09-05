@@ -1,23 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
-    <metadata>
-        <id>Microsoft.DotNet.Web.Spa.ProjectTemplates</id>
-        <version>0.0.0</version>
-        <description>Single Page Application templates for ASP.NET Core</description>
-        <authors>Microsoft</authors>
-        <language>en-US</language>
-        <projectUrl>https://github.com/aspnet/javascriptservices</projectUrl>
-        <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
-        <copyright>Copyright © Microsoft Corporation</copyright>
-        <requireLicenseAcceptance>true</requireLicenseAcceptance>
-        <packageTypes>
-            <packageType name="Template" />
-        </packageTypes>
-    </metadata>
-    <files>
-        <file 
-            src="**/*"
-            exclude="*/node_modules/**;*/bin/**;*/obj/**;*/.vs/**;*/.vscode/**;*/ClientApp/dist/**;*/wwwroot/dist/**"
-            target="Content" />
-    </files>
+  <metadata>
+    <id>Microsoft.DotNet.Web.Spa.ProjectTemplates</id>
+    <version>$version$</version>
+    <authors>Microsoft</authors>
+    <description>Single Page Application templates for ASP.NET Core</description>
+    <language>en-US</language>
+    <projectUrl>https://github.com/aspnet/javascriptservices</projectUrl>
+    <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
+    <copyright>Copyright © Microsoft Corporation</copyright>
+    <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <packageTypes>
+      <packageType name="Template" />
+    </packageTypes>
+  </metadata>
+  <files>
+    <file 
+      src="content/**/*"
+      exclude="**/node_modules/**;**/bin/**;**/obj/**;**/.vs/**;**/.vscode/**;**/ClientApp/dist/**;**/wwwroot/dist/**"
+      target="Content" />
+  </files>
 </package>
