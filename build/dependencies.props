@@ -92,6 +92,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.Identity.Service" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Hosting.Server.Abstractions" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Html.Abstractions" />
@@ -102,6 +103,13 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.HttpOverrides" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Core" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.AzureKeyVault" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.IntegratedWebClient" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Identity.Service.Mvc" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.JsonPatch" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Localization" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Localization.Routing" />
