@@ -150,6 +150,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
         private static readonly Action<ILogger, DateTime, string, Exception> _stoppingClient =
             LoggerMessage.Define<DateTime, string>(LogLevel.Information, 18, "{time}: Connection Id {connectionId}: Stopping client.");
 
+        private static readonly Action<ILogger, DateTime, string, string, Exception> _exceptionThrownFromHandler =
+            LoggerMessage.Define<DateTime, string, string>(LogLevel.Error, 19, "{time}: Connection Id {connectionId}: An exception was thrown from the '{eventHandlerName}' event handler.");
+
+
         public static void StartTransport(this ILogger logger, string connectionId, TransferMode transferMode)
         {
             if (logger.IsEnabled(LogLevel.Information))
@@ -507,6 +511,14 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             if (logger.IsEnabled(LogLevel.Information))
             {
                 _stoppingClient(logger, DateTime.Now, connectionId, null);
+            }
+        }
+
+        public static void ExceptionThrownFromEventHandler(this ILogger logger, string connectionId, string eventHandlerName, Exception exception)
+        {
+            if (logger.IsEnabled(LogLevel.Error))
+            {
+                _exceptionThrownFromHandler(logger, DateTime.Now, connectionId, eventHandlerName, exception);
             }
         }
     }

@@ -152,16 +152,25 @@ namespace Microsoft.AspNetCore.Sockets.Client
             if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Connected, ConnectionState.Connecting)
                 == ConnectionState.Connecting)
             {
-                var ignore = _eventQueue.Enqueue(() =>
+                _ = _eventQueue.Enqueue(async () =>
                 {
                     _logger.RaiseConnected(_connectionId);
 
-                    Connected?.Invoke();
-
-                    return Task.CompletedTask;
+                    var connectedEventHandler = Connected;
+                    if (connectedEventHandler != null)
+                    {
+                        try
+                        {
+                            await connectedEventHandler.Invoke();
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ExceptionThrownFromEventHandler(_connectionId, nameof(Connected), ex);
+                        }
+                    }
                 });
 
-                ignore = Input.Completion.ContinueWith(async t =>
+                _ = Input.Completion.ContinueWith(async t =>
                 {
                     Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);
 
@@ -183,9 +192,18 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
                     _logger.RaiseClosed(_connectionId);
 
-                    Closed?.Invoke(t.IsFaulted ? t.Exception.InnerException : null);
-
-                    return Task.CompletedTask;
+                    var closedEventHandler = Closed;
+                    if (closedEventHandler != null)
+                    {
+                        try
+                        {
+                            await closedEventHandler.Invoke(t.IsFaulted ? t.Exception.InnerException : null);
+                        }
+                        catch (Exception ex)
+                        {
+                            _logger.ExceptionThrownFromEventHandler(_connectionId, nameof(Closed), ex);
+                        }
+                    }
                 });
 
                 // start receive loop only after the Connected event was raised to
@@ -331,19 +349,22 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     if (Input.TryRead(out var buffer))
                     {
                         _logger.ScheduleReceiveEvent(_connectionId);
-                        _ = _eventQueue.Enqueue(() =>
+                        _ = _eventQueue.Enqueue(async () =>
                         {
                             _logger.RaiseReceiveEvent(_connectionId);
 
-                            // Making a copy of the Received handler to ensure that its not null
-                            // Can't use the ? operator because we specifically want to check if the handler is null
                             var receivedHandler = Received;
                             if (receivedHandler != null)
                             {
-                                return receivedHandler(buffer);
+                                try
+                                {
+                                    await receivedHandler(buffer);
+                                }
+                                catch (Exception ex)
+                                {
+                                    _logger.ExceptionThrownFromEventHandler(_connectionId, nameof(Received), ex);
+                                }
                             }
-
-                            return Task.CompletedTask;
                         });
                     }
                     else
