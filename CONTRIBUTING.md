@@ -40,7 +40,7 @@ Here are questions you can answer before you file a bug to make sure you're not 
 1. Did you read the [documentation](https://github.com/aspnet/home/wiki)?
 2. Did you include the snippet of broken code in the issue?
 3. What are the *EXACT* steps to reproduce this problem?
-4. What package versions are you using (you can see these in the `project.json` file)?
+4. What package versions are you using (you can see these in the `.csproj` file)?
 5. What operating system are you using?
 6. What version of IIS are you using?
 
