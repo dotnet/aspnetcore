@@ -2,6 +2,9 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+
+    <!-- Workaround for https://github.com/aspnet/BuildTools/issues/392 -->
+    <DisablePackageReferenceVersionRestrictions>true</DisablePackageReferenceVersionRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
