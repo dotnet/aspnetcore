@@ -10,6 +10,8 @@ namespace Templates.Test.Helpers
         {
             "Microsoft.DotNet.Web.ItemTemplates",
             "Microsoft.DotNet.Web.ProjectTemplates.2.0",
+            "Microsoft.DotNet.Web.Spa.ProjectTemplates",
+            "Microsoft.AspNetCore.SpaTemplates",
         };
 
         public static void ReinstallTemplatePackages()

@@ -61,6 +61,14 @@ namespace Templates.Test
             ProcessEx.Run(TemplateOutputDir, "dotnet", args).WaitForExit(assertSuccess: true);            
         }
 
+        protected void RunNpmInstall()
+        {
+            // The first time this runs on any given CI agent it may take several minutes.
+            // If the agent has NPM 5+ installed, it should be quite a lot quicker on
+            // subsequent runs because of package caching.
+            ProcessEx.Run(TemplateOutputDir, "cmd", "/c \"npm install\"").WaitForExit(assertSuccess: true);
+        }
+
         protected void AssertDirectoryExists(string path, bool shouldExist)
         {
             var fullPath = Path.Combine(TemplateOutputDir, path);
