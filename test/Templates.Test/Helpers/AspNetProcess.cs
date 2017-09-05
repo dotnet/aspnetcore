@@ -1,10 +1,12 @@
-﻿using System;
+﻿using OpenQA.Selenium;
+using OpenQA.Selenium.Edge;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Threading;
+using System.Reflection;
 using Xunit;
 
 namespace Templates.Test.Helpers
@@ -53,13 +55,13 @@ namespace Templates.Test.Helpers
             _listeningUri = new Uri(listeningUrlString, UriKind.Absolute);
         }
 
-        internal void AssertOk(string requestUrl)
+        public void AssertOk(string requestUrl)
             => AssertStatusCode(requestUrl, HttpStatusCode.OK);
 
-        internal void AssertNotFound(string requestUrl)
+        public void AssertNotFound(string requestUrl)
             => AssertStatusCode(requestUrl, HttpStatusCode.NotFound);
 
-        internal void AssertStatusCode(string requestUrl, HttpStatusCode statusCode)
+        public void AssertStatusCode(string requestUrl, HttpStatusCode statusCode)
         {
             var request = new HttpRequestMessage(
                 HttpMethod.Get,
@@ -67,6 +69,14 @@ namespace Templates.Test.Helpers
 
             var response = _httpClient.SendAsync(request).Result;
             Assert.Equal(statusCode, response.StatusCode);
+        }
+
+        public IWebDriver VisitInBrowser()
+        {
+            var driver = new EdgeDriver(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
+            driver.Navigate().GoToUrl(_listeningUri);
+            return driver;
         }
 
         public void Dispose()
