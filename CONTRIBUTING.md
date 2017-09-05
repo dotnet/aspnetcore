@@ -28,8 +28,7 @@ Security issues and bugs should be reported privately, via email, to the Microso
 Our team members also monitor several other discussion forums:
 
 * [ASP.NET Core forum](https://forums.asp.net/1255.aspx/1?ASP+NET+5)
-* [StackOverflow](https://stackoverflow.com/) with the [`asp.net-core`](https://stackoverflow.com/questions/tagged/asp.net-core), [`asp.net-core-mvc`](https://stackoverflow.com/questions/tagged/asp.net-core-mvc), or [`entity-framework-core`](https://stackoverflow.com/questions/tagged/entity-framework-core) tags.
-* [JabbR chat room](https://jabbr.net/#/rooms/AspNetCore) for real-time discussions with the community and the people who work on the project
+* [Stack Overflow](https://stackoverflow.com/) with the [`asp.net-core`](https://stackoverflow.com/questions/tagged/asp.net-core), [`asp.net-core-mvc`](https://stackoverflow.com/questions/tagged/asp.net-core-mvc), or [`entity-framework-core`](https://stackoverflow.com/questions/tagged/entity-framework-core) tags.
 
 
 ## Filing issues
