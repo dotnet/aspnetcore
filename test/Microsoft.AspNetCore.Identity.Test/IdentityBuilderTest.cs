@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +16,31 @@ namespace Microsoft.AspNetCore.Identity.Test
 {
     public class IdentityBuilderTest
     {
+        [Fact]
+        public void AddRolesServicesAdded()
+        {
+            var services = new ServiceCollection();
+            services.AddIdentityCore<TestUser>(o => { })
+                .AddRoles<TestRole>()
+                .AddRoleStore<NoopRoleStore>();
+            var sp = services.BuildServiceProvider();
+            Assert.NotNull(sp.GetRequiredService<IRoleValidator<TestRole>>());
+            Assert.IsType<NoopRoleStore>(sp.GetRequiredService<IRoleStore<TestRole>>());
+            Assert.NotNull(sp.GetRequiredService<RoleManager<TestRole>>());
+        }
+
+        [Fact]
+        public void AddRolesWithoutStoreWillError()
+        {
+            var services = new ServiceCollection();
+            services.AddIdentityCore<TestUser>(o => { })
+                .AddRoles<TestRole>();
+            var sp = services.BuildServiceProvider();
+            Assert.NotNull(sp.GetRequiredService<IRoleValidator<TestRole>>());
+            Assert.Null(sp.GetService<IRoleStore<TestRole>>());
+            Assert.Throws<InvalidOperationException>(() => sp.GetService<RoleManager<TestRole>>());
+        }
+
 
         [Fact]
         public void CanOverrideUserStore()

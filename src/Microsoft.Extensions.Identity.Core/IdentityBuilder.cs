@@ -103,10 +103,10 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Adds an <see cref="IUserStore{TUser}"/> for the <seealso cref="UserType"/>.
         /// </summary>
-        /// <typeparam name="TUser">The user type held in the store.</typeparam>
+        /// <typeparam name="TStore">The user store type.</typeparam>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-        public virtual IdentityBuilder AddUserStore<TUser>() where TUser : class
-            => AddScoped(typeof(IUserStore<>).MakeGenericType(UserType), typeof(TUser));
+        public virtual IdentityBuilder AddUserStore<TStore>() where TStore : class
+            => AddScoped(typeof(IUserStore<>).MakeGenericType(UserType), typeof(TStore));
 
         /// <summary>
         /// Adds a token provider.
@@ -165,7 +165,6 @@ namespace Microsoft.AspNetCore.Identity
         public virtual IdentityBuilder AddRoles<TRole>() where TRole : class
         {
             RoleType = typeof(TRole);
-            AddRoleStore<TRole>();
             AddRoleValidator<RoleValidator<TRole>>();
             Services.TryAddScoped<RoleManager<TRole>, RoleManager<TRole>>();
             return this;
@@ -189,15 +188,15 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Adds a <see cref="IRoleStore{TRole}"/> for the <seealso cref="RoleType"/>.
         /// </summary>
-        /// <typeparam name="TRole">The role type held in the store.</typeparam>
+        /// <typeparam name="TStore">The role store.</typeparam>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-        public virtual IdentityBuilder AddRoleStore<TRole>() where TRole : class
+        public virtual IdentityBuilder AddRoleStore<TStore>() where TStore : class
         {
             if (RoleType == null)
             {
                 throw new InvalidOperationException(Resources.NoRoleType);
             }
-            return AddScoped(typeof(IRoleStore<>).MakeGenericType(RoleType), typeof(TRole));
+            return AddScoped(typeof(IRoleStore<>).MakeGenericType(RoleType), typeof(TStore));
         }
 
         /// <summary>
