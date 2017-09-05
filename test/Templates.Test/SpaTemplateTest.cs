@@ -25,9 +25,12 @@ namespace Templates.Test
             {
                 aspNetProcess.AssertOk("/");
 
-                using (var browser = aspNetProcess.VisitInBrowser())
+                if (EnableBrowserAutomationTesting)
                 {
-                    TestBasicNavigation(browser);
+                    using (var browser = aspNetProcess.VisitInBrowser())
+                    {
+                        TestBasicNavigation(browser);
+                    }
                 }
             }
         }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
+using System.Text.RegularExpressions;
 using System.Threading;
 using Templates.Test.Helpers;
 using Xunit;
@@ -11,6 +13,12 @@ namespace Templates.Test
     {
         protected string ProjectName { get; set; }
         protected string TemplateOutputDir { get; private set; }
+
+        // The tests use EdgeDriver because InternetExplorerDriver is flaky and
+        // ChromeDriver is very slow (plus, Chrome might not be on CI machines).
+        // This limits us to running the browser automation tests on Windows 10+.
+        protected bool EnableBrowserAutomationTesting
+            => OSSupportsEdge();
 
         static TemplateTestBase()
         {
@@ -138,6 +146,20 @@ namespace Templates.Test
                     }
                 }
             }
+        }
+
+        private static int GetWindowsVersion()
+        {
+            var osDescription = RuntimeInformation.OSDescription;
+            var windowsVersion = Regex.Match(osDescription, "^Microsoft Windows (\\d+)\\..*");
+            return windowsVersion.Success ? int.Parse(windowsVersion.Groups[1].Value) : -1;
+        }
+
+        private static bool OSSupportsEdge()
+        {
+            var windowsVersion = GetWindowsVersion();
+            return (windowsVersion >= 10 && windowsVersion < 2000)
+                || (windowsVersion >= 2016);
         }
     }
 }
