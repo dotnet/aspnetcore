@@ -1,0 +1,9 @@
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<app-root params="history: history, basename: basename"></app-root>
+
+@section scripts {
+    <script src="~/dist/main.js" asp-append-version="true"></script>
+}
