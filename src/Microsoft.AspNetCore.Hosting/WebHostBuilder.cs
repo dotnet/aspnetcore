@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             var builder = new ConfigurationBuilder()
                 .SetBasePath(_hostingEnvironment.ContentRootPath)
-                .AddInMemoryCollection(_config.AsEnumerable());
+                .AddConfiguration(_config);
 
             foreach (var configureAppConfiguration in _configureAppConfigurationBuilderDelegates)
             {
