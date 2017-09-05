@@ -30,7 +30,7 @@ namespace Microsoft.Extensions.DependencyInjection
     public static class MvcCoreServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds the minimum essential MVC services to the specified <see cref="IServiceCollection" />. Addtional services
+        /// Adds the minimum essential MVC services to the specified <see cref="IServiceCollection" />. Additional services
         /// including MVC's support for authorization, formatters, and validation must be added separately using the 
         /// <see cref="IMvcCoreBuilder"/> returned from this method.
         /// </summary>
@@ -103,7 +103,7 @@ namespace Microsoft.Extensions.DependencyInjection
         }
 
         /// <summary>
-        /// Adds the minimum essential MVC services to the specified <see cref="IServiceCollection" />. Addtional services
+        /// Adds the minimum essential MVC services to the specified <see cref="IServiceCollection" />. Additional services
         /// including MVC's support for authorization, formatters, and validation must be added separately using the 
         /// <see cref="IMvcCoreBuilder"/> returned from this method.
         /// </summary>
