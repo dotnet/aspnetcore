@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using Newtonsoft.Json.Serialization;
@@ -87,7 +88,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.True(visitStatus);
             Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
             Assert.Same(expectedTargetObject, targetObject);
-            Assert.IsType<DictionaryAdapter>(adapter);
+            Assert.Equal(typeof(DictionaryAdapter<string, string>), adapter.GetType());
         }
 
         public static IEnumerable<object[]> ReturnsExpandoAdapterData
@@ -107,7 +108,8 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         public void Visit_ValidPathToExpandoObject_ReturnsExpandoAdapter(object targetObject, string path, object expectedTargetObject)
         {
             // Arrange
-            var visitor = new ObjectVisitor(new ParsedPath(path), new DefaultContractResolver());
+            var contractResolver = new DefaultContractResolver();
+            var visitor = new ObjectVisitor(new ParsedPath(path), contractResolver);
 
             // Act
             var visitStatus = visitor.TryVisit(ref targetObject, out var adapter, out var message);
@@ -116,7 +118,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.True(visitStatus);
             Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
             Assert.Same(expectedTargetObject, targetObject);
-            Assert.IsType<ExpandoObjectAdapter>(adapter);
+            Assert.Same(typeof(DictionaryAdapter<string, object>), adapter.GetType());
         }
 
         public static IEnumerable<object[]> ReturnsPocoAdapterData

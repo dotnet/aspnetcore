@@ -5,8 +5,6 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Dynamic;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
@@ -26,11 +24,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("GuidValue", newGuid);
 
-            // serialize & deserialize
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserizalized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-
-            deserizalized.ApplyTo(doc);
+            patchDoc.ApplyTo(doc);
 
             Assert.Equal(newGuid, doc.GuidValue);
         }
@@ -46,11 +40,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("GuidValue", newGuid);
 
-            // serialize & deserialize
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserizalized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-
-            deserizalized.ApplyTo(doc);
+            patchDoc.ApplyTo(doc);
 
             Assert.Equal(newGuid, doc.GuidValue);
         }
@@ -71,11 +61,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("nestedobject/GuidValue", newGuid);
 
-            // serialize & deserialize
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserizalized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-
-            deserizalized.ApplyTo(doc);
+            patchDoc.ApplyTo(doc);
 
             Assert.Equal(newGuid, doc.NestedObject.GuidValue);
         }
@@ -99,11 +85,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("SimpleDTO", newDTO);
 
-            // serialize & deserialize
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-
-            deserialized.ApplyTo(doc);
+            patchDoc.ApplyTo(doc);
 
             Assert.Equal(1, doc.SimpleDTO.DoubleValue);
             Assert.Equal(0, doc.SimpleDTO.IntegerValue);
@@ -120,10 +102,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("IntegerList/0", 5);
 
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-
-            deserialized.ApplyTo(doc);
+            patchDoc.ApplyTo(doc);
 
             Assert.Equal(new List<int>() { 5, 2, 3 }, doc.IntegerList);
         }
@@ -138,10 +117,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("IntegerList", new List<int>() { 4, 5, 6 });
 
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-
-            deserialized.ApplyTo(doc);
+            patchDoc.ApplyTo(doc);
 
             Assert.Equal(new List<int>() { 4, 5, 6 }, doc.IntegerList);
         }
@@ -159,10 +135,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("SimpleDTOList/0/IntegerList/0", 4);
 
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-
-            deserialized.ApplyTo(doc);
+            patchDoc.ApplyTo(doc);
 
             Assert.Equal(4, doc.SimpleDTOList[0].IntegerList[0]);
         }
@@ -180,10 +153,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("SimpleDTOList/0/IntegerList/-", 4);
 
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-
-            deserialized.ApplyTo(doc);
+            patchDoc.ApplyTo(doc);
 
             Assert.Equal(4, doc.SimpleDTOList[0].IntegerList[2]);
         }
@@ -198,10 +168,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("IntegerList", new List<int>() { 4, 5, 6 });
 
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-
-            deserialized.ApplyTo(doc);
+            patchDoc.ApplyTo(doc);
 
             Assert.Equal(new List<int>() { 4, 5, 6 }, doc.IntegerList);
         }
@@ -216,10 +183,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("IntegerList", new Collection<int>() { 4, 5, 6 });
 
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-
-            deserialized.ApplyTo(doc);
+            patchDoc.ApplyTo(doc);
 
             Assert.Equal(new List<int>() { 4, 5, 6 }, doc.IntegerList);
         }
@@ -234,9 +198,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             var patchDoc = new JsonPatchDocument();
             patchDoc.Replace("IntegerList/-", 5);
 
-            var serialized = JsonConvert.SerializeObject(patchDoc);
-            var deserialized = JsonConvert.DeserializeObject<JsonPatchDocument>(serialized);
-            deserialized.ApplyTo(doc);
+            patchDoc.ApplyTo(doc);
 
             Assert.Equal(new List<int>() { 1, 2, 5 }, doc.IntegerList);
         }

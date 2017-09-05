@@ -37,18 +37,8 @@ namespace Microsoft.AspNetCore.JsonPatch
         // Create from list of operations
         public JsonPatchDocument(List<Operation<TModel>> operations, IContractResolver contractResolver)
         {
-            if (operations == null)
-            {
-                throw new ArgumentNullException(nameof(operations));
-            }
-
-            if (contractResolver == null)
-            {
-                throw new ArgumentNullException(nameof(contractResolver));
-            }
-
-            Operations = operations;
-            ContractResolver = contractResolver;
+            Operations = operations ?? throw new ArgumentNullException(nameof(operations));
+            ContractResolver = contractResolver ?? throw new ArgumentNullException(nameof(contractResolver));
         }
 
         /// <summary>

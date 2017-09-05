@@ -207,6 +207,20 @@ namespace Microsoft.AspNetCore.JsonPatch
             => string.Format(CultureInfo.CurrentCulture, GetString("PatchNotSupportedForNonGenericLists"), p0);
 
         /// <summary>
+        /// The provided path segment '{0}' cannot be converted to the target type.
+        /// </summary>
+        internal static string InvalidPathSegment
+        {
+            get => GetString("InvalidPathSegment");
+        }
+
+        /// <summary>
+        /// The provided path segment '{0}' cannot be converted to the target type.
+        /// </summary>
+        internal static string FormatInvalidPathSegment(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidPathSegment"), p0);
+
+        /// <summary>
         /// The target location specified by path segment '{0}' was not found.
         /// </summary>
         internal static string TargetLocationAtPathSegmentNotFound

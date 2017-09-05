@@ -3,7 +3,9 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Dynamic;
+using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
@@ -49,21 +51,20 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
         private IAdapter SelectAdapater(object targetObject)
         {
-            if (targetObject is ExpandoObject)
-            {
-                return new ExpandoObjectAdapter();
-            }
-            else if (targetObject is IDynamicMetaObjectProvider)
-            {
-                return new DynamicObjectAdapter();
-            }
-            else if (targetObject is IDictionary)
-            {
-                return new DictionaryAdapter();
-            }
-            else if (targetObject is IList)
+            var jsonContract = _contractResolver.ResolveContract(targetObject.GetType());
+
+            if (targetObject is IList)
             {
                 return new ListAdapter();
+            }
+            else if (jsonContract is JsonDictionaryContract jsonDictionaryContract)
+            {
+                var type = typeof(DictionaryAdapter<,>).MakeGenericType(jsonDictionaryContract.DictionaryKeyType, jsonDictionaryContract.DictionaryValueType);
+                return (IAdapter)Activator.CreateInstance(type);
+            }
+            else if (jsonContract is JsonDynamicContract)
+            {
+                return new DynamicObjectAdapter();
             }
             else
             {
