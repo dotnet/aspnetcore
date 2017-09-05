@@ -17,11 +17,14 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 {
     internal static class WebAppExtensions
     {
+        private static readonly TimeSpan GitDeployDelay = TimeSpan.FromSeconds(15);
+        private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromMinutes(3);
+
         public static HttpClient CreateClient(this IWebApp site)
         {
             var domain = site.GetHostNameBindings().First().Key;
 
-            return new HttpClient { BaseAddress = new Uri("http://" + domain) };
+            return new HttpClient { BaseAddress = new Uri("http://" + domain), Timeout = HttpClientTimeout };
         }
 
         public static async Task UploadFilesAsync(this IWebApp site, DirectoryInfo from, string to, IPublishingProfile publishingProfile, ILogger logger)
@@ -91,6 +94,9 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
         public static async Task GitDeploy(this IWebApp site, DirectoryInfo workingDirectory, ILogger logger)
         {
+            // Allow site to restart after site extension installation
+            await Task.Delay(GitDeployDelay);
+
             var git = new TestCommand("git")
             {
                 Logger = logger,
