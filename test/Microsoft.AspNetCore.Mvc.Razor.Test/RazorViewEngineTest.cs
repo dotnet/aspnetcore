@@ -24,7 +24,7 @@ using Microsoft.Extensions.WebEncoders.Testing;
 using Moq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Mvc.Razor.Test
+namespace Microsoft.AspNetCore.Mvc.Razor
 {
     public class RazorViewEngineTest
     {
@@ -1862,6 +1862,82 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Test
 
             // Assert
             expander.Verify();
+        }
+
+        [Fact]
+        public void FindView_ResolvesDirectoryTraversalsPriorToInvokingPageFactory()
+        {
+            // Arrange
+            var pageFactory = new Mock<IRazorPageFactoryProvider>();
+            pageFactory.Setup(p => p.CreateFactory("/Views/Shared/_Partial.cshtml"))
+                .Returns(GetPageFactoryResult(() => Mock.Of<IRazorPage>()))
+                .Verifiable();
+            var viewEngine = CreateViewEngine(pageFactory.Object);
+            var context = GetActionContext(new Dictionary<string, object>());
+
+            // Act
+            var result = viewEngine.FindView(context, "../Shared/_Partial", isMainPage: false);
+
+            // Assert
+            pageFactory.Verify();
+        }
+
+        [Fact]
+        public void FindPage_ResolvesDirectoryTraversalsPriorToInvokingPageFactory()
+        {
+            // Arrange
+            var pageFactory = new Mock<IRazorPageFactoryProvider>();
+            pageFactory.Setup(p => p.CreateFactory("/Views/Shared/_Partial.cshtml"))
+                .Returns(GetPageFactoryResult(() => Mock.Of<IRazorPage>()))
+                .Verifiable();
+            var viewEngine = CreateViewEngine(pageFactory.Object);
+            var context = GetActionContext(new Dictionary<string, object>());
+
+            // Act
+            var result = viewEngine.FindPage(context, "../Shared/_Partial");
+
+            // Assert
+            pageFactory.Verify();
+        }
+
+        // Tests to verify fix for https://github.com/aspnet/Mvc/issues/6672
+        // Without normalizing the path, the view engine would have attempted to lookup "/Views//MyView.cshtml"
+        // which works for PhysicalFileProvider but fails for exact lookups performed during precompilation.
+        // We normalize it to "/Views/MyView.cshtml" to avoid this discrepancy.
+        [Fact]
+        public void FindView_ResolvesNormalizesSlashesPriorToInvokingPageFactory()
+        {
+            // Arrange
+            var pageFactory = new Mock<IRazorPageFactoryProvider>();
+            pageFactory.Setup(p => p.CreateFactory("/Views/MyView.cshtml"))
+                .Returns(GetPageFactoryResult(() => Mock.Of<IRazorPage>()))
+                .Verifiable();
+            var viewEngine = CreateViewEngine(pageFactory.Object);
+            var context = GetActionContext(new Dictionary<string, object>());
+
+            // Act
+            var result = viewEngine.FindView(context, "MyView", isMainPage: true);
+
+            // Assert
+            pageFactory.Verify();
+        }
+
+        [Fact]
+        public void FindPage_ResolvesNormalizesSlashesPriorToInvokingPageFactory()
+        {
+            // Arrange
+            var pageFactory = new Mock<IRazorPageFactoryProvider>();
+            pageFactory.Setup(p => p.CreateFactory("/Views/MyPage.cshtml"))
+                .Returns(GetPageFactoryResult(() => Mock.Of<IRazorPage>()))
+                .Verifiable();
+            var viewEngine = CreateViewEngine(pageFactory.Object);
+            var context = GetActionContext(new Dictionary<string, object>());
+
+            // Act
+            var result = viewEngine.FindPage(context, "MyPage");
+
+            // Assert
+            pageFactory.Verify();
         }
 
         // Return RazorViewEngine with a page factory provider that is always successful.

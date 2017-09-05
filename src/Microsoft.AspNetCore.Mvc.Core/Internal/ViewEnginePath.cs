@@ -11,9 +11,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public static class ViewEnginePath
     {
+        public static readonly char[] PathSeparators = new[] { '/', '\\' };
         private const string CurrentDirectoryToken = ".";
         private const string ParentDirectoryToken = "..";
-        private static readonly char[] _pathSeparators = new[] { '/', '\\' };
 
         public static string CombinePath(string first, string second)
         {
@@ -47,13 +47,36 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         public static string ResolvePath(string path)
         {
-            if (!RequiresPathResolution(path))
+            Debug.Assert(!string.IsNullOrEmpty(path));
+            var pathSegment = new StringSegment(path);
+            if (path[0] == PathSeparators[0] || path[0] == PathSeparators[1])
+            {
+                // Leading slashes (e.g. "/Views/Index.cshtml") always generate an empty first token. Ignore these
+                // for purposes of resolution.
+                pathSegment = pathSegment.Subsegment(1);
+            }
+
+            var tokenizer = new StringTokenizer(pathSegment, PathSeparators);
+            var requiresResolution = false;
+            foreach (var segment in tokenizer)
+            {
+                // Determine if we need to do any path resolution.
+                // We need to resovle paths with multiple path separators (e.g "//" or "\\") or, directory traversals e.g. ("../" or "./").
+                if (segment.Length == 0 ||
+                    segment.Equals(ParentDirectoryToken, StringComparison.Ordinal) ||
+                    segment.Equals(CurrentDirectoryToken, StringComparison.Ordinal))
+                {
+                    requiresResolution = true;
+                    break;
+                }
+            }
+
+            if (!requiresResolution)
             {
                 return path;
             }
 
             var pathSegments = new List<StringSegment>();
-            var tokenizer = new StringTokenizer(path, _pathSeparators);
             foreach (var segment in tokenizer)
             {
                 if (segment.Length == 0)
@@ -91,12 +114,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             return builder.ToString();
-        }
-
-        private static bool RequiresPathResolution(string path)
-        {
-            return path.IndexOf(ParentDirectoryToken, StringComparison.Ordinal) != -1 ||
-                path.IndexOf(CurrentDirectoryToken, StringComparison.Ordinal) != -1;
         }
     }
 }

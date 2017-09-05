@@ -205,8 +205,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         {
             var applicationRelativePath = GetAbsolutePath(executingFilePath, pagePath);
             var cacheKey = new ViewLocationCacheKey(applicationRelativePath, isMainPage);
-            ViewLocationCacheResult cacheResult;
-            if (!ViewLookupCache.TryGetValue(cacheKey, out cacheResult))
+            if (!ViewLookupCache.TryGetValue(cacheKey, out ViewLocationCacheResult cacheResult))
             {
                 var expirationTokens = new HashSet<IChangeToken>();
                 cacheResult = CreateCacheResult(expirationTokens, applicationRelativePath, isMainPage);
@@ -368,6 +367,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor
                     expanderContext.ViewName,
                     expanderContext.ControllerName,
                     expanderContext.AreaName);
+
+                path = ViewEnginePath.ResolvePath(path);
 
                 cacheResult = CreateCacheResult(expirationTokens, path, expanderContext.IsMainPage);
                 if (cacheResult != null)
