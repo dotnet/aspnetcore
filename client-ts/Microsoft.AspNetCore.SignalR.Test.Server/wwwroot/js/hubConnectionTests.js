@@ -11,7 +11,13 @@ describe('hubConnection', function () {
 
             it('can invoke server method and receive result', function (done) {
                 var message = "你好，世界！";
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, { transport: transportType }), { protocol: protocol});
+
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, options), options);
                 hubConnection.onClosed = function (error) {
                     expect(error).toBe(undefined);
                     done();
@@ -32,7 +38,13 @@ describe('hubConnection', function () {
             });
 
             it('can stream server method and receive result', function (done) {
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, { transport: transportType }), { protocol: protocol});
+
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, options), options);
 
                 hubConnection.onClosed = function (error) {
                     expect(error).toBe(undefined);
@@ -62,7 +74,12 @@ describe('hubConnection', function () {
 
             it('rethrows an exception from the server when invoking', function (done) {
                 var errorMessage = "An error occurred.";
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, { transport: transportType }), { protocol: protocol});
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, options), options);
 
                 hubConnection.start().then(function () {
                     hubConnection.invoke('ThrowException', errorMessage).then(function () {
@@ -83,8 +100,12 @@ describe('hubConnection', function () {
 
             it('rethrows an exception from the server when streaming', function (done) {
                 var errorMessage = "An error occurred.";
-
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, { transport: transportType }), { protocol: protocol});
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, options), options);
 
                 hubConnection.start().then(function () {
                     hubConnection.stream('ThrowException', errorMessage).subscribe({
@@ -106,7 +127,12 @@ describe('hubConnection', function () {
             });
 
             it('can receive server calls', function (done) {
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, { transport: transportType }), { protocol: protocol});
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, options), options);
 
                 var message = "你好 SignalR！";
 
@@ -134,7 +160,12 @@ describe('hubConnection', function () {
                     ServerSentEvents: "Error occurred"
                 };
 
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection('http://' + document.location.host + '/uncreatable', { transport: transportType }), { protocol: protocol});
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection('http://' + document.location.host + '/uncreatable', options), options);
 
                 hubConnection.onClosed = function (error) {
                     expect(error.message).toMatch(errorRegex[signalR.TransportType[transportType]]);

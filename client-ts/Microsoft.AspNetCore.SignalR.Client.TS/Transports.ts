@@ -54,7 +54,7 @@ export class WebSocketTransport implements ITransport {
             };
 
             webSocket.onmessage = (message: MessageEvent) => {
-                this.logger.log(LogLevel.Information, `(WebSockets transport) data received: ${message.data}`);
+                this.logger.log(LogLevel.Trace, `(WebSockets transport) data received: ${message.data}`);
                 if (this.onDataReceived) {
                     this.onDataReceived(message.data);
                 }
@@ -118,7 +118,7 @@ export class ServerSentEventsTransport implements ITransport {
                 eventSource.onmessage = (e: MessageEvent) => {
                     if (this.onDataReceived) {
                         try {
-                            this.logger.log(LogLevel.Information, `(SSE transport) data received: ${e.data}`);
+                            this.logger.log(LogLevel.Trace, `(SSE transport) data received: ${e.data}`);
                             this.onDataReceived(e.data);
                         } catch (error) {
                             if (this.onClosed) {
@@ -208,7 +208,7 @@ export class LongPollingTransport implements ITransport {
                             : pollXhr.response;
 
                         if (response) {
-                            this.logger.log(LogLevel.Information, `(LongPolling transport) data received: ${response}`);
+                            this.logger.log(LogLevel.Trace, `(LongPolling transport) data received: ${response}`);
                             this.onDataReceived(response);
                         }
                         else {
