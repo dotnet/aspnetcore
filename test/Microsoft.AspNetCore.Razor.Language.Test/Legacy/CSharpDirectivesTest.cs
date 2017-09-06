@@ -1204,6 +1204,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         }
 
         [Fact]
+        public void RemoveTagHelperDirective_SingleQuotes_AddsError()
+        {
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText("'*, Foo'"),
+                    new SourceLocation(17, 0, 17),
+                    length: 8)
+            };
+
+            ParseBlockTest("@removeTagHelper '*, Foo'",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory.MetaCode(SyntaxConstants.CSharp.RemoveTagHelperKeyword)
+                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false)
+                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory.Code("'*, Foo'")
+                        .AsRemoveTagHelper(
+                            "'*, Foo'",
+                            "'*, Foo'",
+                            legacyErrors: expectedErrors)));
+        }
+
+        [Fact]
         public void RemoveTagHelperDirective_WithQuotes_InvalidLookupText_AddsError()
         {
             var expectedErrors = new[]
@@ -1418,6 +1443,31 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                         .AsAddTagHelper(
                             "\"Foo\"",
                             "Foo",
+                            legacyErrors: expectedErrors)));
+        }
+
+        [Fact]
+        public void AddTagHelperDirective_SingleQuotes_AddsError()
+        {
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    Resources.FormatInvalidTagHelperLookupText("'*, Foo'"),
+                    new SourceLocation(14, 0, 14),
+                    length: 8)
+            };
+
+            ParseBlockTest("@addTagHelper '*, Foo'",
+                new DirectiveBlock(
+                    Factory.CodeTransition(),
+                    Factory.MetaCode(SyntaxConstants.CSharp.AddTagHelperKeyword)
+                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory.Span(SpanKindInternal.Markup, " ", markup: false)
+                           .Accepts(AcceptedCharactersInternal.None),
+                    Factory.Code("'*, Foo'")
+                        .AsAddTagHelper(
+                            "'*, Foo'",
+                            "'*, Foo'",
                             legacyErrors: expectedErrors)));
         }
 

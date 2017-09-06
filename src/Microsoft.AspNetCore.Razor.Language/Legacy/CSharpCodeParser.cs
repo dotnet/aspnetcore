@@ -2032,7 +2032,9 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             // Ensure that we have valid lookupStrings to work with. The valid format is "typeName, assemblyName"
             if (lookupStrings == null ||
                 lookupStrings.Any(string.IsNullOrWhiteSpace) ||
-                lookupStrings.Length != 2)
+                lookupStrings.Length != 2 ||
+                text.StartsWith("'") ||
+                text.EndsWith("'"))
             {
                 errors.Add(
                     RazorDiagnostic.Create(
