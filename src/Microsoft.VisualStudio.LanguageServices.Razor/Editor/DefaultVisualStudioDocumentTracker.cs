@@ -23,7 +23,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private bool _isSupportedProject;
         private ProjectSnapshot _project;
         private string _projectPath;
-        private ProjectSnapshotListener _subscription;
 
         public override event EventHandler ContextChanged;
 
@@ -59,13 +58,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             _workspace = workspace; // For now we assume that the workspace is the always default VS workspace.
 
             _textViews = new List<ITextView>();
-
-            Initialize();
         }
+
+        internal override ProjectExtensibilityConfiguration Configuration => _project.Configuration;
 
         public override bool IsSupportedProject => _isSupportedProject;
 
-        public override Project Project => _project?.UnderlyingProject;
+        public override Project Project => _workspace.CurrentSolution.GetProject(_project.UnderlyingProject.Id);
 
         public override ITextBuffer TextBuffer => _textBuffer;
 
@@ -75,7 +74,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         public override Workspace Workspace => _workspace;
 
-        private void Initialize()
+        public void Subscribe()
         {
             // Fundamentally we have a Razor half of the world as as soon as the document is open - and then later 
             // the C# half of the world will be initialized. This code is in general pretty tolerant of 
@@ -101,17 +100,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 return;
             }
 
-            var project = _projectManager.GetProjectWithFilePath(projectPath);
-
-            var subscription = _projectManager.Subscribe();
-            subscription.ProjectChanged += Subscription_ProjectStateChanged;
-
             _isSupportedProject = isSupportedProject;
             _projectPath = projectPath;
-            _project = project;
-            _subscription = subscription;
+            _project = _projectManager.GetProjectWithFilePath(projectPath);
+            _projectManager.Changed += ProjectManager_Changed;
+
+            OnContextChanged(_project);
         }
-        
+
+        public void Unsubscribe()
+        {
+            _projectManager.Changed -= ProjectManager_Changed;
+        }
+
         private void OnContextChanged(ProjectSnapshot project)
         {
             _project = project;
@@ -123,7 +124,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             }
         }
 
-        private void Subscription_ProjectStateChanged(object sender, ProjectChangeEventArgs e)
+        private void ProjectManager_Changed(object sender, ProjectChangeEventArgs e)
         {
             if (_projectPath != null &&
                 string.Equals(_projectPath, e.Project.UnderlyingProject.FilePath, StringComparison.OrdinalIgnoreCase))

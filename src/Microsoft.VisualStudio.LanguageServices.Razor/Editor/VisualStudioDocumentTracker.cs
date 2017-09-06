@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 
@@ -12,6 +13,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     public abstract class VisualStudioDocumentTracker
     {
         public abstract event EventHandler ContextChanged;
+
+        internal abstract ProjectExtensibilityConfiguration Configuration { get; }
 
         public abstract bool IsSupportedProject { get; }
 

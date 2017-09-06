@@ -21,9 +21,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     {
         private static IReadOnlyList<ProjectSnapshot> Projects = new List<ProjectSnapshot>();
 
-        private ProjectSnapshotManager ProjectManager { get; } = Mock.Of<ProjectSnapshotManager>(
-            p => p.Projects == Projects &&
-            p.Subscribe() == Mock.Of<ProjectSnapshotListener>());
+        private ProjectSnapshotManager ProjectManager { get; } = Mock.Of<ProjectSnapshotManager>(p => p.Projects == Projects);
 
         private TextBufferProjectService ProjectService { get; } = Mock.Of<TextBufferProjectService>(
             s => s.GetHierarchy(It.IsAny<ITextBuffer>()) == Mock.Of<IVsHierarchy>() &&

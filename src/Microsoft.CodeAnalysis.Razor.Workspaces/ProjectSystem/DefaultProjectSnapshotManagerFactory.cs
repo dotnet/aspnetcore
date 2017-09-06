@@ -16,7 +16,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private readonly IEnumerable<ProjectSnapshotChangeTrigger> _triggers;
 
         [ImportingConstructor]
-        public DefaultProjectSnapshotManagerFactory([ImportMany] IEnumerable<ProjectSnapshotChangeTrigger> triggers)
+        public DefaultProjectSnapshotManagerFactory(
+            [ImportMany] IEnumerable<ProjectSnapshotChangeTrigger> triggers)
         {
             _triggers = triggers;
         }
@@ -28,7 +29,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(languageServices));
             }
 
-            return new DefaultProjectSnapshotManager(_triggers, languageServices.WorkspaceServices.Workspace);
+            return new DefaultProjectSnapshotManager(
+                languageServices.WorkspaceServices.GetRequiredService<ForegroundDispatcher>(),
+                languageServices.WorkspaceServices.GetRequiredService<ErrorReporter>(),
+                languageServices.GetRequiredService<ProjectSnapshotWorker>(),
+                _triggers, 
+                languageServices.WorkspaceServices.Workspace);
         }
     }
 }

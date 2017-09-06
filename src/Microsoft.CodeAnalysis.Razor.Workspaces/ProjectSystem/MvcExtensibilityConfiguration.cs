@@ -34,6 +34,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override IReadOnlyList<ProjectExtensibilityAssembly> Assemblies { get; }
 
+        // MVC: '2.0.0' (fallback) or MVC: '2.1.3'
+        public override string DisplayName => $"MVC: {MvcAssembly.Identity.Version.ToString(3)}" + (Kind == ProjectExtensibilityConfigurationKind.Fallback? " (fallback)" : string.Empty);
+
         public override ProjectExtensibilityConfigurationKind Kind { get; }
 
         public override ProjectExtensibilityAssembly RazorAssembly { get; }
@@ -48,7 +51,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             // We're intentionally ignoring the 'Kind' here. That's mostly for diagnostics and doesn't influence any behavior.
-            return Enumerable.SequenceEqual(Assemblies.OrderBy(a => a.Identity.Name), other.Assemblies.OrderBy(a => a.Identity.Name));
+            return Enumerable.SequenceEqual(
+                Assemblies.OrderBy(a => a.Identity.Name).Select(a => a.Identity),
+                other.Assemblies.OrderBy(a => a.Identity.Name).Select(a => a.Identity),
+                AssemblyIdentityEqualityComparer.NameAndVersion);
         }
 
         public override int GetHashCode()
@@ -60,6 +66,11 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
 
             return hash;
+        }
+
+        public override string ToString()
+        {
+            return DisplayName;
         }
     }
 }

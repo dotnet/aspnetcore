@@ -47,7 +47,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             // Adding some computed state
             var configuration = Mock.Of<ProjectExtensibilityConfiguration>();
-            ProjectManager.ProjectChanged(new ProjectSnapshotUpdateContext(project) { Configuration = configuration });
+            ProjectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(project) { Configuration = configuration });
             ProjectManager.Reset();
 
             project = project.WithAssemblyName("Test1"); // Simulate a project change
@@ -75,7 +75,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var configuration = Mock.Of<ProjectExtensibilityConfiguration>();
             
             // Act
-            ProjectManager.ProjectChanged(new ProjectSnapshotUpdateContext(project) { Configuration = configuration });
+            ProjectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(project) { Configuration = configuration });
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(project.Id);
@@ -95,7 +95,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectManager.Reset();
 
             var configuration = Mock.Of<ProjectExtensibilityConfiguration>();
-            ProjectManager.ProjectChanged(new ProjectSnapshotUpdateContext(project) { Configuration = configuration });
+            ProjectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(project) { Configuration = configuration });
             ProjectManager.Reset();
 
             project = project.WithAssemblyName("Test1"); // Simulate a project change
@@ -103,7 +103,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectManager.Reset();
 
             // Act
-            ProjectManager.ProjectChanged(new ProjectSnapshotUpdateContext(project) { Configuration = configuration });
+            ProjectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(project) { Configuration = configuration });
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(project.Id);
@@ -132,7 +132,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectManager.Reset();
 
             // Act
-            ProjectManager.ProjectChanged(update);
+            ProjectManager.ProjectUpdated(update);
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(project.Id);
@@ -152,7 +152,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectManager.Reset();
 
             var configuration = Mock.Of<ProjectExtensibilityConfiguration>();
-            ProjectManager.ProjectChanged(new ProjectSnapshotUpdateContext(project) { Configuration = configuration });
+            ProjectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(project) { Configuration = configuration });
 
             project = project.WithAssemblyName("Test1"); // Simulate a project change
             ProjectManager.ProjectChanged(project);
@@ -166,7 +166,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             ProjectManager.Reset();
 
             // Act
-            ProjectManager.ProjectChanged(update); // Still dirty because the project changed while computing the update
+            ProjectManager.ProjectUpdated(update); // Still dirty because the project changed while computing the update
 
             // Assert
             var snapshot = ProjectManager.GetSnapshot(project.Id);
@@ -200,7 +200,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             var project = Workspace.CurrentSolution.AddProject("Test", "Test", LanguageNames.CSharp);
 
             // Act
-            ProjectManager.ProjectChanged(new ProjectSnapshotUpdateContext(project));
+            ProjectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(project));
 
             // Assert
             Assert.Empty(ProjectManager.Projects);
@@ -266,7 +266,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
             public TestProjectSnapshotManager(IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace) 
-                : base(triggers, workspace)
+                : base(Mock.Of<ForegroundDispatcher>(), Mock.Of<ErrorReporter>(), Mock.Of<ProjectSnapshotWorker>(), triggers, workspace)
             {
             }
 
@@ -290,7 +290,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 ListenersNotified = true;
             }
 
-            protected override void NotifyBackgroundWorker()
+            protected override void NotifyBackgroundWorker(Project project)
             {
                 WorkerStarted = true;
             }

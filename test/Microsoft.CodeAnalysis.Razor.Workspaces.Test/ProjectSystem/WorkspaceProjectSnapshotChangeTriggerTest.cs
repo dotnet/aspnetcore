@@ -1,7 +1,11 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using Moq;
 using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
@@ -45,7 +49,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var trigger = new WorkspaceProjectSnapshotChangeTrigger();
-            var projectManager = new DefaultProjectSnapshotManager(new[] { trigger }, Workspace);
+            var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
             
             var e = new WorkspaceChangeEventArgs(kind, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
 
@@ -69,7 +73,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var trigger = new WorkspaceProjectSnapshotChangeTrigger();
-            var projectManager = new DefaultProjectSnapshotManager(new[] { trigger }, Workspace);
+            var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
 
             // Initialize with a project. This will get removed.
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithOneProject);
@@ -94,7 +98,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var trigger = new WorkspaceProjectSnapshotChangeTrigger();
-            var projectManager = new DefaultProjectSnapshotManager(new[] { trigger }, Workspace);
+            var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
 
             // Initialize with some projects.
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
@@ -122,7 +126,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var trigger = new WorkspaceProjectSnapshotChangeTrigger();
-            var projectManager = new DefaultProjectSnapshotManager(new[] { trigger }, Workspace);
+            var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
 
             // Initialize with some projects project.
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
@@ -145,7 +149,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         {
             // Arrange
             var trigger = new WorkspaceProjectSnapshotChangeTrigger();
-            var projectManager = new DefaultProjectSnapshotManager(new[] { trigger }, Workspace);
+            var projectManager = new TestProjectSnapshotManager(new[] { trigger }, Workspace);
 
             var solution = SolutionWithOneProject;
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.ProjectAdded, oldSolution: EmptySolution, newSolution: solution, projectId: ProjectNumberThree.Id);
@@ -157,6 +161,26 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             Assert.Collection(
                 projectManager.Projects.OrderBy(p => p.UnderlyingProject.Name),
                 p => Assert.Equal(ProjectNumberThree.Id, p.UnderlyingProject.Id));
+        }
+
+        private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
+        {
+            public TestProjectSnapshotManager(IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace) 
+                : base(Mock.Of<ForegroundDispatcher>(), Mock.Of<ErrorReporter>(), new TestProjectSnapshotWorker(), triggers, workspace)
+            {
+            }
+
+            protected override void NotifyBackgroundWorker(Project project)
+            {
+            }
+        }
+
+        private class TestProjectSnapshotWorker : ProjectSnapshotWorker
+        {
+            public override Task ProcessUpdateAsync(ProjectSnapshotUpdateContext update, CancellationToken cancellationToken = default(CancellationToken))
+            {
+                return Task.CompletedTask;
+            }
         }
     }
 }

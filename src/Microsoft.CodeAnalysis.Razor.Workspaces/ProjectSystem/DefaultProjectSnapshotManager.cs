@@ -9,12 +9,38 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
     internal class DefaultProjectSnapshotManager : ProjectSnapshotManagerBase
     {
-        private readonly ProjectSnapshotChangeTrigger[] _triggers;
-        private readonly Dictionary<ProjectId, DefaultProjectSnapshot> _projects;
-        private readonly List<WeakReference<DefaultProjectSnapshotListener>> _listeners;
+        public override event EventHandler<ProjectChangeEventArgs> Changed;
 
-        public DefaultProjectSnapshotManager(IEnumerable<ProjectSnapshotChangeTrigger> triggers, Workspace workspace)
+        private readonly ErrorReporter _errorReporter;
+        private readonly ForegroundDispatcher _foregroundDispatcher;
+        private readonly ProjectSnapshotChangeTrigger[] _triggers;
+        private readonly ProjectSnapshotWorkerQueue _workerQueue;
+        private readonly ProjectSnapshotWorker _worker;
+
+        private readonly Dictionary<ProjectId, DefaultProjectSnapshot> _projects;
+        
+        public DefaultProjectSnapshotManager(
+            ForegroundDispatcher foregroundDispatcher,
+            ErrorReporter errorReporter,
+            ProjectSnapshotWorker worker,
+            IEnumerable<ProjectSnapshotChangeTrigger> triggers,
+            Workspace workspace)
         {
+            if (foregroundDispatcher == null)
+            {
+                throw new ArgumentNullException(nameof(foregroundDispatcher));
+            }
+
+            if (errorReporter == null)
+            {
+                throw new ArgumentNullException(nameof(errorReporter));
+            }
+
+            if (worker == null)
+            {
+                throw new ArgumentNullException(nameof(worker));
+            }
+
             if (triggers == null)
             {
                 throw new ArgumentNullException(nameof(triggers));
@@ -25,11 +51,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 throw new ArgumentNullException(nameof(workspace));
             }
 
+            _foregroundDispatcher = foregroundDispatcher;
+            _errorReporter = errorReporter;
+            _worker = worker;
             _triggers = triggers.ToArray();
             Workspace = workspace;
 
             _projects = new Dictionary<ProjectId, DefaultProjectSnapshot>();
-            _listeners = new List<WeakReference<DefaultProjectSnapshotListener>>();
+            _workerQueue = new ProjectSnapshotWorkerQueue(_foregroundDispatcher, this, worker);
 
             for (var i = 0; i < _triggers.Length; i++)
             {
@@ -37,17 +66,26 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        public override IReadOnlyList<ProjectSnapshot> Projects => _projects.Values.ToArray();
+        public override IReadOnlyList<ProjectSnapshot> Projects
+        {
+            get
+            {
+                return _projects.Values.ToArray();
+            }
+        }
+
+        public DefaultProjectSnapshot FindProject(ProjectId id)
+        {
+            if (id == null)
+            {
+                throw new ArgumentNullException(nameof(id));
+            }
+
+            _projects.TryGetValue(id, out var project);
+            return project;
+        }
 
         public override Workspace Workspace { get; }
-
-        public override ProjectSnapshotListener Subscribe()
-        {
-            var subscription = new DefaultProjectSnapshotListener();
-            _listeners.Add(new WeakReference<DefaultProjectSnapshotListener>(subscription));
-
-            return subscription;
-        }
 
         public override void ProjectAdded(Project underlyingProject)
         {
@@ -60,7 +98,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             _projects[underlyingProject.Id] = snapshot;
 
             // New projects always start dirty, need to compute state in the background.
-            NotifyBackgroundWorker();
+            NotifyBackgroundWorker(snapshot.UnderlyingProject);
 
             // We need to notify listeners about every project add.
             NotifyListeners(new ProjectChangeEventArgs(snapshot, ProjectChangeKind.Added));
@@ -84,12 +122,12 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 {
                     // We don't need to notify listeners yet because we don't have any **new** computed state. However we do 
                     // need to trigger the background work to asynchronously compute the effect of the updates.
-                    NotifyBackgroundWorker();
+                    NotifyBackgroundWorker(snapshot.UnderlyingProject);
                 }
             }
         }
 
-        public override void ProjectChanged(ProjectSnapshotUpdateContext update)
+        public override void ProjectUpdated(ProjectSnapshotUpdateContext update)
         {
             if (update == null)
             {
@@ -106,7 +144,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                 {
                     // It's possible that the snapshot can still be dirty if we got a project update while computing state in
                     // the background. We need to trigger the background work to asynchronously compute the effect of the updates.
-                    NotifyBackgroundWorker();
+                    NotifyBackgroundWorker(snapshot.UnderlyingProject);
                 }
 
                 // Now we need to know if the changes that we applied are significant. If that's the case then 
@@ -146,25 +184,29 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         // virtual so it can be overridden in tests
-        protected virtual void NotifyBackgroundWorker()
+        protected virtual void NotifyBackgroundWorker(Project project)
         {
-
+            _workerQueue.Enqueue(project);
         }
 
         // virtual so it can be overridden in tests
         protected virtual void NotifyListeners(ProjectChangeEventArgs e)
         {
-            for (var i = 0; i < _listeners.Count; i++)
+            var handler = Changed;
+            if (handler != null)
             {
-                if (_listeners[i].TryGetTarget(out var listener))
-                {
-                    listener.Notify(e);
-                }
-                else
-                {
-                    _listeners.RemoveAt(i--);
-                }
+                handler(this, e);
             }
+        }
+
+        public override void ReportError(Exception exception)
+        {
+            _errorReporter.ReportError(exception);
+        }
+
+        public override void ReportError(Exception exception, Project project)
+        {
+            _errorReporter.ReportError(exception, project);
         }
     }
 }

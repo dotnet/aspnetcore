@@ -24,8 +24,8 @@
             <Label Grid.Column="1" Grid.Row="0" Content="{Binding Project.Name}"/>
             <Label Grid.Column="0" Grid.Row="1" Content="Is Supported"/>
             <Label Grid.Column="1" Grid.Row="1" Content="{Binding IsSupportedDocument}"/>
-            <Label Grid.Column="0" Grid.Row="2" Content="Workspace"/>
-            <Label Grid.Column="1" Grid.Row="2" Content="{Binding Workspace}"/>
+            <Label Grid.Column="0" Grid.Row="2" Content="Configuration"/>
+            <Label Grid.Column="1" Grid.Row="2" Content="{Binding Configuration}"/>
         </Grid>
     </StackPanel>
 </UserControl>

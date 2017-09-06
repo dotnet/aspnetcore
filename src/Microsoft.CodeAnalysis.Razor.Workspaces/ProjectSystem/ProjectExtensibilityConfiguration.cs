@@ -10,6 +10,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public abstract IReadOnlyList<ProjectExtensibilityAssembly> Assemblies { get; }
 
+        public abstract string DisplayName { get; }
+
         public abstract ProjectExtensibilityConfigurationKind Kind { get; }
 
         public abstract ProjectExtensibilityAssembly RazorAssembly { get; }
@@ -20,7 +22,7 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public override bool Equals(object obj)
         {
-            return base.Equals(obj as ProjectExtensibilityConfiguration);
+            return Equals(obj as ProjectExtensibilityConfiguration);
         }
     }
 }

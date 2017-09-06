@@ -27,7 +27,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
             foreach (var project in solution.Projects)
             {
-                _projectManager.ProjectAdded(project);
+                if (project.Language == LanguageNames.CSharp)
+                {
+                    _projectManager.ProjectAdded(project);
+                }
             }
         }
 
@@ -42,7 +45,10 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
                         underlyingProject = e.NewSolution.GetProject(e.ProjectId);
                         Debug.Assert(underlyingProject != null);
 
-                        _projectManager.ProjectAdded(underlyingProject);
+                        if (underlyingProject.Language == LanguageNames.CSharp)
+                        {
+                            _projectManager.ProjectAdded(underlyingProject);
+                        }
                         break;
                     }
 

@@ -19,17 +19,22 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     internal class DefaultTagHelperResolver : TagHelperResolver
     {
+        private readonly ErrorReporter _errorReporter;
         private readonly Workspace _workspace;
-        private readonly IServiceProvider _services;
 
-        public DefaultTagHelperResolver(Workspace workspace, IServiceProvider services)
+        public DefaultTagHelperResolver(ErrorReporter errorReporter, Workspace workspace)
         {
+            _errorReporter = errorReporter;
             _workspace = workspace;
-            _services = services;
         }
 
         public async Task<TagHelperResolutionResult> GetTagHelpersAsync(Project project)
         {
+            if (project == null)
+            {
+                throw new ArgumentNullException(nameof(project));
+            }
+
             try
             {
                 TagHelperResolutionResult result;
@@ -67,15 +72,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             }
             catch (Exception exception)
             {
-                var log = GetActivityLog();
-                if (log != null)
-                {
-                    var hr = log.LogEntry(
-                        (uint)__ACTIVITYLOG_ENTRYTYPE.ALE_ERROR,
-                        "Razor Language Services",
-                        $"Error discovering TagHelpers:{Environment.NewLine}{exception}");
-                    ErrorHandler.ThrowOnFailure(hr);
-                }
+                _errorReporter.ReportError(exception, project);
 
                 throw new RazorLanguageServiceException(
                     typeof(DefaultTagHelperResolver).FullName,
@@ -120,11 +117,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             {
                 return serializer.Deserialize<TagHelperResolutionResult>(reader);
             }
-        }
-
-        private IVsActivityLog GetActivityLog()
-        {
-            return _services.GetService(typeof(SVsActivityLog)) as IVsActivityLog;
         }
     }
 }

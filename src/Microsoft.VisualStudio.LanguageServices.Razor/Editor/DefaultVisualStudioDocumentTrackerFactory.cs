@@ -28,15 +28,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         [ImportingConstructor]
         public DefaultVisualStudioDocumentTrackerFactory(
-            ForegroundDispatcher foregroundDispatcher,
             TextBufferProjectService projectService,
             [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
         {
-            if (foregroundDispatcher == null)
-            {
-                throw new ArgumentNullException(nameof(foregroundDispatcher));
-            }
-
             if (projectService == null)
             {
                 throw new ArgumentNullException(nameof(projectService));
@@ -46,11 +40,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             {
                 throw new ArgumentNullException(nameof(workspace));
             }
-
-            _foregroundDispatcher = foregroundDispatcher;
+            
             _projectService = projectService;
             _workspace = workspace;
 
+            _foregroundDispatcher = workspace.Services.GetRequiredService<ForegroundDispatcher>();
             _projectManager = workspace.Services.GetLanguageServices(RazorLanguage.Name).GetRequiredService<ProjectSnapshotManager>();
         }
 
@@ -151,6 +145,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 if (!tracker.TextViewsInternal.Contains(textView))
                 {
                     tracker.TextViewsInternal.Add(textView);
+                    if (tracker.TextViewsInternal.Count == 1)
+                    {
+                        tracker.Subscribe();
+                    }
                 }
             }
         }
@@ -182,6 +180,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 if (textBuffer.Properties.TryGetProperty(typeof(VisualStudioDocumentTracker), out tracker))
                 {
                     tracker.TextViewsInternal.Remove(textView);
+                    if (tracker.TextViewsInternal.Count == 0)
+                    {
+                        tracker.Unsubscribe();
+                    }
                 }
             }
         }
