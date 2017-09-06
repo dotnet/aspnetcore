@@ -1,12 +1,10 @@
 ﻿using OpenQA.Selenium;
-using OpenQA.Selenium.Edge;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
-using System.Reflection;
 using Xunit;
 
 namespace Templates.Test.Helpers
@@ -73,8 +71,7 @@ namespace Templates.Test.Helpers
 
         public IWebDriver VisitInBrowser()
         {
-            var driver = new EdgeDriver(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
-            driver.Manage().Timeouts().ImplicitWait = TimeSpan.FromSeconds(1);
+            var driver = WebDriverFactory.CreateWebDriver();
             driver.Navigate().GoToUrl(_listeningUri);
             return driver;
         }

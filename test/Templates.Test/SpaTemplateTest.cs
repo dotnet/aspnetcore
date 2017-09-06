@@ -26,7 +26,7 @@ namespace Templates.Test
             {
                 aspNetProcess.AssertOk("/");
 
-                if (EnableBrowserAutomationTesting)
+                if (WebDriverFactory.HostSupportsBrowserAutomation)
                 {
                     Console.WriteLine("Starting browser automation tests...");
 
