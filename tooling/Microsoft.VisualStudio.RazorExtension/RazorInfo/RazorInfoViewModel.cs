@@ -10,6 +10,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Input;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.LanguageServices.Razor;
 using Microsoft.VisualStudio.Shell;
@@ -22,7 +23,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 {
     internal class RazorInfoViewModel : NotifyPropertyChanged
     {
-        private readonly IRazorEngineAssemblyResolver _assemblyResolver;
+        private readonly ProjectExtensibilityConfigurationFactory _configurationFactory;
         private readonly IRazorEngineDirectiveResolver _directiveResolver;
         private readonly IRazorEngineDocumentGenerator _documentGenerator;
         private readonly TagHelperResolver _tagHelperResolver;
@@ -41,7 +42,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         public RazorInfoViewModel(
             IServiceProvider services,
             Workspace workspace,
-            IRazorEngineAssemblyResolver assemblyResolver,
+            ProjectExtensibilityConfigurationFactory configurationFactory,
             IRazorEngineDirectiveResolver directiveResolver,
             TagHelperResolver tagHelperResolver,
             IRazorEngineDocumentGenerator documentGenerator,
@@ -49,7 +50,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
         {
             _services = services;
             _workspace = workspace;
-            _assemblyResolver = assemblyResolver;
+            _configurationFactory = configurationFactory;
             _directiveResolver = directiveResolver;
             _tagHelperResolver = tagHelperResolver;
             _documentGenerator = documentGenerator;
@@ -169,7 +170,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 var project = solution.GetProject(projectViewModel.Id);
 
                 var documents = GetCshtmlDocuments(project);
-                var assemblies = await _assemblyResolver.GetRazorEngineAssembliesAsync(project);
+                var configuration = await _configurationFactory.GetConfigurationAsync(project);
 
                 var directives = await _directiveResolver.GetRazorEngineDirectivesAsync(_workspace, project);
                 var assemblyFilters = project.MetadataReferences
@@ -182,7 +183,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
                 CurrentProjectInfo = new ProjectInfoViewModel()
                 {
-                    Assemblies = new ObservableCollection<AssemblyViewModel>(assemblies.Select(a => new AssemblyViewModel(a))),
+                    Assemblies = new ObservableCollection<AssemblyViewModel>(configuration.Assemblies.Select(a => new AssemblyViewModel(a))),
                     Directives = new ObservableCollection<DirectiveViewModel>(directives.Select(d => new DirectiveViewModel(d))),
                     Documents = new ObservableCollection<DocumentViewModel>(documents.Select(d => new DocumentViewModel(d))),
                     TagHelpers = new ObservableCollection<TagHelperViewModel>(resolutionResult.Descriptors.Select(t => new TagHelperViewModel(t))),

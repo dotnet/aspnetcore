@@ -6,6 +6,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.LanguageServices;
 using Microsoft.VisualStudio.LanguageServices.Razor;
@@ -17,7 +18,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
     [Guid("079e9499-d150-40af-8876-3047f7942c2a")]
     public class RazorInfoToolWindow : ToolWindowPane
     {
-        private IRazorEngineAssemblyResolver _assemblyResolver;
+        private ProjectExtensibilityConfigurationFactory _configurationFactory;
         private IRazorEngineDocumentGenerator _documentGenerator;
         private IRazorEngineDirectiveResolver _directiveResolver;
         private TagHelperResolver _tagHelperResolver;
@@ -35,7 +36,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
 
             var componentModel = (IComponentModel)GetService(typeof(SComponentModel));
 
-            _assemblyResolver = componentModel.GetService<IRazorEngineAssemblyResolver>();
+            _configurationFactory = componentModel.GetService<ProjectExtensibilityConfigurationFactory>();
             _documentGenerator = componentModel.GetService<IRazorEngineDocumentGenerator>();
             _directiveResolver = componentModel.GetService<IRazorEngineDirectiveResolver>();
             _tagHelperResolver = componentModel.GetService<TagHelperResolver>();
@@ -64,7 +65,7 @@ namespace Microsoft.VisualStudio.RazorExtension.RazorInfo
                 return;
             }
 
-            var viewModel = new RazorInfoViewModel(this, _workspace, _assemblyResolver, _directiveResolver, _tagHelperResolver, _documentGenerator, OnException);
+            var viewModel = new RazorInfoViewModel(this, _workspace, _configurationFactory, _directiveResolver, _tagHelperResolver, _documentGenerator, OnException);
             foreach (var project in solution.Projects)
             {
                 if (project.Language == LanguageNames.CSharp)
