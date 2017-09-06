@@ -1,4 +1,5 @@
 ﻿using OpenQA.Selenium;
+using System;
 using Templates.Test.Helpers;
 using Xunit;
 
@@ -27,6 +28,8 @@ namespace Templates.Test
 
                 if (EnableBrowserAutomationTesting)
                 {
+                    Console.WriteLine("Starting browser automation tests...");
+
                     using (var browser = aspNetProcess.VisitInBrowser())
                     {
                         TestBasicNavigation(browser);
