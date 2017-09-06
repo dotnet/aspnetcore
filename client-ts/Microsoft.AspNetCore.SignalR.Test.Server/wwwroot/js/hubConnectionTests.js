@@ -136,7 +136,12 @@ describe('hubConnection', function () {
 
                 var message = "你好 SignalR！";
 
-                hubConnection.on("Message", function (msg) {
+                // client side method names are case insensitive
+                var methodName = 'message';
+                var idx = Math.floor(Math.random() * (methodName.length - 1));
+                methodName = methodName.substr(0, idx) + methodName[idx].toUpperCase() + methodName.substr(idx + 1);
+
+                hubConnection.on(methodName, function (msg) {
                     expect(msg).toBe(message);
                     done();
                 });
