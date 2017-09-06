@@ -21,11 +21,14 @@ namespace Templates.Test
             Assert.DoesNotContain("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
             Assert.DoesNotContain("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
 
-            using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride))
+            foreach (var publish in new[] { false, true })
             {
-                aspNetProcess.AssertOk("/");
-                aspNetProcess.AssertOk("/About");
-                aspNetProcess.AssertOk("/Contact");
+                using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
+                {
+                    aspNetProcess.AssertOk("/");
+                    aspNetProcess.AssertOk("/About");
+                    aspNetProcess.AssertOk("/Contact");
+                }
             }
         }
 
@@ -46,11 +49,14 @@ namespace Templates.Test
             Assert.Contains("Microsoft.EntityFrameworkCore.Tools.DotNet", projectFileContents);
             Assert.Contains("Microsoft.Extensions.SecretManager.Tools", projectFileContents);
 
-            using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride))
+            foreach (var publish in new[] { false, true })
             {
-                aspNetProcess.AssertOk("/");
-                aspNetProcess.AssertOk("/About");
-                aspNetProcess.AssertOk("/Contact");
+                using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
+                {
+                    aspNetProcess.AssertOk("/");
+                    aspNetProcess.AssertOk("/About");
+                    aspNetProcess.AssertOk("/Contact");
+                }
             }
         }
     }

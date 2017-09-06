@@ -11,10 +11,13 @@ namespace Templates.Test
         {
             RunDotNetNew("api", targetFrameworkOverride);
 
-            using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride))
+            foreach (var publish in new[] { false, true })
             {
-                aspNetProcess.AssertOk("/api/values");
-                aspNetProcess.AssertNotFound("/");
+                using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
+                {
+                    aspNetProcess.AssertOk("/api/values");
+                    aspNetProcess.AssertNotFound("/");
+                }
             }
         }
     }

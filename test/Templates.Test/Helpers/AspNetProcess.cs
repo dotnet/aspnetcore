@@ -18,26 +18,45 @@ namespace Templates.Test.Helpers
         private readonly Uri _listeningUri;
         private readonly HttpClient _httpClient;
 
-        public AspNetProcess(string workingDirectory, string projectName, string targetFrameworkOverride)
+        public AspNetProcess(string workingDirectory, string projectName, string targetFrameworkOverride, bool publish)
         {
             _httpClient = new HttpClient();
 
-            var buildProcess = ProcessEx.Run(workingDirectory, "dotnet", "build --no-restore -c Debug");
-            buildProcess.WaitForExit(assertSuccess: true);
+            var framework = string.IsNullOrEmpty(targetFrameworkOverride) ? DefaultFramework : targetFrameworkOverride;
+            if (publish)
+            {
+                ProcessEx
+                    .Run(workingDirectory, "dotnet", "publish -c Release")
+                    .WaitForExit(assertSuccess: true);
+                workingDirectory = Path.Combine(workingDirectory, "bin", "Release", framework, "publish");
+            }
+            else
+            {
+                ProcessEx
+                    .Run(workingDirectory, "dotnet", "build --no-restore -c Debug")
+                    .WaitForExit(assertSuccess: true);
+            }
 
             var envVars = new Dictionary<string, string>
             {
                 { "ASPNETCORE_URLS", "http://127.0.0.1:0" }
             };
 
-            var framework = string.IsNullOrEmpty(targetFrameworkOverride) ? DefaultFramework : targetFrameworkOverride;
+            if (!publish)
+            {
+                envVars["ASPNETCORE_ENVIRONMENT"] = "Development";
+            }
+
             if (framework.StartsWith("netcore"))
             {
-                _process = ProcessEx.Run(workingDirectory, "dotnet", $"exec bin/Debug/{framework}/{projectName}.dll", envVars: envVars);
+                var dllPath = publish ? $"{projectName}.dll" : $"bin/Debug/{framework}/{projectName}.dll";
+                _process = ProcessEx.Run(workingDirectory, "dotnet", $"exec {dllPath}", envVars: envVars);
             }
             else
             {
-                var exeFullPath = Path.Combine(workingDirectory, "bin", "Debug", framework, $"{projectName}.exe");
+                var exeFullPath = publish
+                    ? Path.Combine(workingDirectory, $"{projectName}.exe")
+                    : Path.Combine(workingDirectory, "bin", "Debug", framework, $"{projectName}.exe");
                 _process = ProcessEx.Run(workingDirectory, exeFullPath, envVars: envVars);
             }
             
@@ -71,6 +90,7 @@ namespace Templates.Test.Helpers
 
         public IWebDriver VisitInBrowser()
         {
+            Console.WriteLine($"Opening browser at {_listeningUri}...");
             var driver = WebDriverFactory.CreateWebDriver();
             driver.Navigate().GoToUrl(_listeningUri);
             return driver;

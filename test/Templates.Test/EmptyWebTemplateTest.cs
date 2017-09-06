@@ -11,9 +11,12 @@ namespace Templates.Test
         {
             RunDotNetNew("web", targetFrameworkOverride);
 
-            using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride))
+            foreach (var publish in new[] { false, true })
             {
-                aspNetProcess.AssertOk("/");
+                using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
+                {
+                    aspNetProcess.AssertOk("/");
+                }
             }
         }
     }

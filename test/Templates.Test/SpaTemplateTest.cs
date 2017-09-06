@@ -1,5 +1,4 @@
 ﻿using OpenQA.Selenium;
-using System;
 using Templates.Test.Helpers;
 using Xunit;
 
@@ -21,15 +20,18 @@ namespace Templates.Test
         {
             RunDotNetNew(template, targetFrameworkOverride);
             RunNpmInstall();
+            TestApplication(targetFrameworkOverride, publish: false);
+            TestApplication(targetFrameworkOverride, publish: true);
+        }
 
-            using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride))
+        private void TestApplication(string targetFrameworkOverride, bool publish)
+        {
+            using (var aspNetProcess = StartAspNetProcess(targetFrameworkOverride, publish))
             {
                 aspNetProcess.AssertOk("/");
 
                 if (WebDriverFactory.HostSupportsBrowserAutomation)
                 {
-                    Console.WriteLine("Starting browser automation tests...");
-
                     using (var browser = aspNetProcess.VisitInBrowser())
                     {
                         TestBasicNavigation(browser);
