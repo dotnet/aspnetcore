@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
@@ -33,10 +34,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             CSharpCodeParser.RemoveTagHelperDirectiveDescriptor,
             CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
         };
-        private readonly RazorCodeDocumentProvider _codeDocumentProvider;
+        private readonly Lazy<RazorCodeDocumentProvider> _codeDocumentProvider;
 
         [ImportingConstructor]
-        public RazorDirectiveCompletionProvider(RazorCodeDocumentProvider codeDocumentProvider)
+        public RazorDirectiveCompletionProvider([Import(typeof(RazorCodeDocumentProvider))] Lazy<RazorCodeDocumentProvider> codeDocumentProvider)
         {
             if (codeDocumentProvider == null)
             {
@@ -82,7 +83,17 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 return Task.CompletedTask;
             }
 
-            if (!_codeDocumentProvider.TryGetFromDocument(context.Document, out var codeDocument))
+            var result = AddCompletionItems(context);
+
+            return result;
+        }
+
+        // We do not want this inlined because the work done in this method requires Razor.Workspaces and Razor.Language assemblies.
+        // If those two assemblies were to load you'd have them load in every C# editor completion scenario.
+        [MethodImpl(MethodImplOptions.NoInlining)]
+        private Task AddCompletionItems(CompletionContext context)
+        {
+            if (!_codeDocumentProvider.Value.TryGetFromDocument(context.Document, out var codeDocument))
             {
                 // A Razor code document has not yet been associated with the document.
                 return Task.CompletedTask;
