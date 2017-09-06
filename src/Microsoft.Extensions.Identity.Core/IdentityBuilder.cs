@@ -68,18 +68,18 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Adds an <see cref="IUserValidator{TUser}"/> for the <seealso cref="UserType"/>.
         /// </summary>
-        /// <typeparam name="TUser">The user validator type.</typeparam>
+        /// <typeparam name="TValidator">The user validator type.</typeparam>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-        public virtual IdentityBuilder AddUserValidator<TUser>() where TUser : class
-            => AddScoped(typeof(IUserValidator<>).MakeGenericType(UserType), typeof(TUser));
+        public virtual IdentityBuilder AddUserValidator<TValidator>() where TValidator : class
+            => AddScoped(typeof(IUserValidator<>).MakeGenericType(UserType), typeof(TValidator));
 
         /// <summary>
         /// Adds an <see cref="IUserClaimsPrincipalFactory{TUser}"/> for the <seealso cref="UserType"/>.
         /// </summary>
-        /// <typeparam name="TUser">The type of the claims principal factory.</typeparam>
+        /// <typeparam name="TFactory">The type of the claims principal factory.</typeparam>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-        public virtual IdentityBuilder AddClaimsPrincipalFactory<TUser>() where TUser : class
-            => AddScoped(typeof(IUserClaimsPrincipalFactory<>).MakeGenericType(UserType), typeof(TUser));
+        public virtual IdentityBuilder AddClaimsPrincipalFactory<TFactory>() where TFactory : class
+            => AddScoped(typeof(IUserClaimsPrincipalFactory<>).MakeGenericType(UserType), typeof(TFactory));
 
         /// <summary>
         /// Adds an <see cref="IdentityErrorDescriber"/>.
@@ -95,10 +95,10 @@ namespace Microsoft.AspNetCore.Identity
         /// <summary>
         /// Adds an <see cref="IPasswordValidator{TUser}"/> for the <seealso cref="UserType"/>.
         /// </summary>
-        /// <typeparam name="TUser">The user type whose password will be validated.</typeparam>
+        /// <typeparam name="TValidator">The validator type used to validate passwords.</typeparam>
         /// <returns>The current <see cref="IdentityBuilder"/> instance.</returns>
-        public virtual IdentityBuilder AddPasswordValidator<TUser>() where TUser : class
-            => AddScoped(typeof(IPasswordValidator<>).MakeGenericType(UserType), typeof(TUser));
+        public virtual IdentityBuilder AddPasswordValidator<TValidator>() where TValidator : class
+            => AddScoped(typeof(IPasswordValidator<>).MakeGenericType(UserType), typeof(TValidator));
 
         /// <summary>
         /// Adds an <see cref="IUserStore{TUser}"/> for the <seealso cref="UserType"/>.
