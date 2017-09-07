@@ -22,6 +22,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
 {
     public class HttpConnection : IConnection
     {
+        private static readonly TimeSpan HttpClientTimeout = TimeSpan.FromSeconds(120);
+
         private readonly ILoggerFactory _loggerFactory;
         private readonly ILogger _logger;
 
@@ -77,6 +79,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
             _httpClient = httpMessageHandler == null ? new HttpClient() : new HttpClient(httpMessageHandler);
+            _httpClient.Timeout = HttpClientTimeout;
             _transportFactory = new DefaultTransportFactory(transportType, _loggerFactory, _httpClient);
         }
 
@@ -86,6 +89,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
             _httpClient = httpMessageHandler == null ? new HttpClient() : new HttpClient(httpMessageHandler);
+            _httpClient.Timeout = HttpClientTimeout;
             _transportFactory = transportFactory ?? throw new ArgumentNullException(nameof(transportFactory));
         }
 
