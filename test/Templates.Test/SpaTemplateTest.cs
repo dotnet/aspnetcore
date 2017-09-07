@@ -62,9 +62,9 @@ namespace Templates.Test
             browser.Click(By.PartialLinkText("Fetch data"));
             Assert.Equal("Weather forecast", browser.GetText("h1"));
 
-            // Loads and displays the table of weather forecasts
+            // Asynchronously loads and displays the table of weather forecasts
             var fetchDataComponent = browser.FindElement("h1").Parent();
-            var table = browser.FindElement(fetchDataComponent, "table", 5);
+            var table = browser.FindElement(fetchDataComponent, "table", timeoutSeconds: 5);
             Assert.Equal(5, table.FindElements(By.CssSelector("tbody tr")).Count);
         }
     }
