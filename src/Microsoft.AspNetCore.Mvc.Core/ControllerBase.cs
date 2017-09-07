@@ -1503,7 +1503,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual BadRequestObjectResult ValidationProblem(ValidationProblemDescription descriptor)
+        public virtual ActionResult ValidationProblem(ValidationProblemDetails descriptor)
         {
             if (descriptor == null)
             {
@@ -1518,14 +1518,14 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual BadRequestObjectResult ValidationProblem(ModelStateDictionary modelStateDictionary)
+        public virtual ActionResult ValidationProblem(ModelStateDictionary modelStateDictionary)
         {
             if (modelStateDictionary == null)
             {
                 throw new ArgumentNullException(nameof(modelStateDictionary));
             }
 
-            var validationProblem = new ValidationProblemDescription(modelStateDictionary);
+            var validationProblem = new ValidationProblemDetails(modelStateDictionary);
             return new BadRequestObjectResult(validationProblem);
         }
 
@@ -1535,9 +1535,9 @@ namespace Microsoft.AspNetCore.Mvc
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
-        public virtual BadRequestObjectResult ValidationProblem()
+        public virtual ActionResult ValidationProblem()
         {
-            var validationProblem = new ValidationProblemDescription(ModelState);
+            var validationProblem = new ValidationProblemDetails(ModelState);
             return new BadRequestObjectResult(validationProblem);
         }
 

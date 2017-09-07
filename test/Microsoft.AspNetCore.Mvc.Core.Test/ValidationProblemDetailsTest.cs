@@ -6,13 +6,13 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc
 {
-    public class ValidationProblemDescriptionTest
+    public class ValidationProblemDetailsTest
     {
         [Fact]
         public void Constructor_SetsTitle()
         {
             // Arrange & Act
-            var problemDescription = new ValidationProblemDescription();
+            var problemDescription = new ValidationProblemDetails();
 
             // Assert
             Assert.Equal("One or more validation errors occured.", problemDescription.Title);
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc
             modelStateDictionary.AddModelError("key3", "error3");
 
             // Act
-            var problemDescription = new ValidationProblemDescription(modelStateDictionary);
+            var problemDescription = new ValidationProblemDetails(modelStateDictionary);
 
             // Assert
             Assert.Equal("One or more validation errors occured.", problemDescription.Title);

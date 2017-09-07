@@ -9,19 +9,19 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// A <see cref="ProblemDescription"/> for validation errors.
+    /// A <see cref="ProblemDetails"/> for validation errors.
     /// </summary>
-    public class ValidationProblemDescription : ProblemDescription
+    public class ValidationProblemDetails : ProblemDetails
     {
         /// <summary>
-        /// Intializes a new instance of <see cref="ValidationProblemDescription"/>.
+        /// Intializes a new instance of <see cref="ValidationProblemDetails"/>.
         /// </summary>
-        public ValidationProblemDescription()
+        public ValidationProblemDetails()
         {
             Title = Resources.ValidationProblemDescription_Title;
         }
 
-        public ValidationProblemDescription(ModelStateDictionary modelState)
+        public ValidationProblemDetails(ModelStateDictionary modelState)
             : this()
         {
             if (modelState == null)
@@ -62,7 +62,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
-        /// Gets or sets the validation errors associated with this instance of <see cref="ValidationProblemDescription"/>.
+        /// Gets or sets the validation errors associated with this instance of <see cref="ValidationProblemDetails"/>.
         /// </summary>
         public IDictionary<string, string[]> Errors { get; } = new Dictionary<string, string[]>(StringComparer.Ordinal);
     }

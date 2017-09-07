@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
@@ -9,6 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
     /// <summary>
     /// Represents an API exposed by this application.
     /// </summary>
+    [DebuggerDisplay("{ActionDescriptor.DisplayName,nq}")]
     public class ApiDescription
     {
         /// <summary>

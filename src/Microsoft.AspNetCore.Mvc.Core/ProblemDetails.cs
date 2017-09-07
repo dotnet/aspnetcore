@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Mvc
     /// <summary>
     /// A machine-readable format for specifying errors in HTTP API responses based on https://tools.ietf.org/html/rfc7807.
     /// </summary>
-    public class ProblemDescription
+    public class ProblemDetails
     {
         /// <summary>
         /// A URI reference [RFC3986] that identifies the problem type. This specification encourages that, when

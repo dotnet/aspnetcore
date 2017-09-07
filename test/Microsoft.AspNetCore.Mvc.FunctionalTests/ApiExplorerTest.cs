@@ -1065,6 +1065,88 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             Assert.Equal("ApiExplorerInboundOutbound/SuppressedForLinkGeneration", description.RelativePath);
         }
 
+        [Fact]
+        public async Task ProblemDetails_AddsProblemAsDefaultErrorResult()
+        {
+            // Act
+            var body = await Client.GetStringAsync("ApiExplorerProblemDetails/ActionWithoutParameters");
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Collection(
+                description.SupportedResponseTypes,
+                response =>
+                {
+                    Assert.Equal(0, response.StatusCode);
+                    AssertProblemDetails(response);
+                });
+        }
+
+        [Fact]
+        public async Task ProblemDetails_AddsProblemAsErrorResultForBadResult_WhenActionHasParameters()
+        {
+            // Act
+            var body = await Client.GetStringAsync("ApiExplorerProblemDetails/ActionWithSomeParameters");
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Collection(
+                description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
+                response =>
+                {
+                    Assert.Equal(0, response.StatusCode);
+                    AssertProblemDetails(response);
+                },
+                response => Assert.Equal(200, response.StatusCode),
+                response =>
+                {
+                    Assert.Equal(400, response.StatusCode);
+                    AssertProblemDetails(response);
+                });
+        }
+
+        [Theory]
+        [InlineData("ApiExplorerProblemDetails/ActionWithIdParameter")]
+        [InlineData("ApiExplorerProblemDetails/ActionWithIdSuffixParameter")]
+        public async Task ProblemDetails_AddsProblemAsErrorResultForNotFoundResult_WhenActionHasAnIdParameters(string url)
+        {
+            // Act
+            var body = await Client.GetStringAsync(url);
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            Assert.Collection(
+                description.SupportedResponseTypes.OrderBy(r => r.StatusCode),
+                response =>
+                {
+                    Assert.Equal(0, response.StatusCode);
+                    AssertProblemDetails(response);
+                },
+                response => Assert.Equal(200, response.StatusCode),
+                response =>
+                {
+                    Assert.Equal(400, response.StatusCode);
+                    AssertProblemDetails(response);
+                },
+                response =>
+                {
+                    Assert.Equal(404, response.StatusCode);
+                    AssertProblemDetails(response);
+                });
+        }
+
+        private void AssertProblemDetails(ApiExplorerResponseType response)
+        {
+            Assert.Equal("Microsoft.AspNetCore.Mvc.ProblemDetails", response.ResponseType);
+                Assert.Collection(
+                    GetSortedMediaTypes(response),
+                    mediaType => Assert.Equal("application/problem+json", mediaType),
+                    mediaType => Assert.Equal("application/problem+xml", mediaType));
+        }
+
         private IEnumerable<string> GetSortedMediaTypes(ApiExplorerResponseType apiResponseType)
         {
             return apiResponseType.ResponseFormats
