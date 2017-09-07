@@ -8,13 +8,13 @@ using Xunit.Sdk;
 
 namespace Xunit
 {
-    internal class ForegroundFactDiscoverer : IXunitTestCaseDiscoverer
+    internal class ForegroundTheoryDiscoverer : IXunitTestCaseDiscoverer
     {
-        private readonly FactDiscoverer _inner;
+        private readonly TheoryDiscoverer _inner;
 
-        public ForegroundFactDiscoverer(IMessageSink diagnosticMessageSink)
+        public ForegroundTheoryDiscoverer(IMessageSink diagnosticMessageSink)
         {
-            _inner = new FactDiscoverer(diagnosticMessageSink);
+            _inner = new TheoryDiscoverer(diagnosticMessageSink);
         }
 
         public IEnumerable<IXunitTestCase> Discover(ITestFrameworkDiscoveryOptions discoveryOptions, ITestMethod testMethod, IAttributeInfo factAttribute)
