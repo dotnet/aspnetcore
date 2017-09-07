@@ -1,21 +1,22 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.Text;
-using Xunit;
+using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers
 {
     internal class ProcessEx : IDisposable
     {
+        private readonly ITestOutputHelper _output;
         private readonly Process _process;
         private readonly StringBuilder _stderrCapture;
         private readonly StringBuilder _stdoutCapture;
+        private readonly object _pipeCaptureLock = new object();
         private BlockingCollection<string> _stdoutLines;
 
-        public static ProcessEx Run(string workingDirectory, string command, string args = null, IDictionary<string, string> envVars = null)
+        public static ProcessEx Run(ITestOutputHelper output, string workingDirectory, string command, string args = null, IDictionary<string, string> envVars = null)
         {
             var startInfo = new ProcessStartInfo(command, args)
             {
@@ -36,11 +37,12 @@ namespace Templates.Test.Helpers
 
             var proc = Process.Start(startInfo);
 
-            return new ProcessEx(proc);
+            return new ProcessEx(output, proc);
         }
 
-        public ProcessEx(Process proc)
+        public ProcessEx(ITestOutputHelper output, Process proc)
         {
+            _output = output;
             _stdoutCapture = new StringBuilder();
             _stderrCapture = new StringBuilder();
             _stdoutLines = new BlockingCollection<string>();
@@ -62,14 +64,32 @@ namespace Templates.Test.Helpers
 
         private void OnErrorData(object sender, DataReceivedEventArgs e)
         {
-            _stderrCapture.AppendLine(e.Data);
-            Console.Error.WriteLine(e.Data);
+            if (e.Data == null)
+            {
+                return;
+            }
+
+            lock (_pipeCaptureLock)
+            {
+                _stderrCapture.AppendLine(e.Data);
+            }
+
+            _output.WriteLine("[ERROR] " + e.Data);
         }
 
         private void OnOutputData(object sender, DataReceivedEventArgs e)
         {
-            _stdoutCapture.AppendLine(e.Data);
-            Console.WriteLine(e.Data);
+            if (e.Data == null)
+            {
+                return;
+            }
+
+            lock (_pipeCaptureLock)
+            {
+                _stdoutCapture.AppendLine(e.Data);
+            }
+
+            _output.WriteLine(e.Data);
 
             if (_stdoutLines != null)
             {

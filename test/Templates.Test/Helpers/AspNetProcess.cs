@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers
 {
@@ -17,23 +18,27 @@ namespace Templates.Test.Helpers
         private readonly ProcessEx _process;
         private readonly Uri _listeningUri;
         private readonly HttpClient _httpClient;
+        private readonly ITestOutputHelper _output;
 
-        public AspNetProcess(string workingDirectory, string projectName, string targetFrameworkOverride, bool publish)
+        public AspNetProcess(ITestOutputHelper output, string workingDirectory, string projectName, string targetFrameworkOverride, bool publish)
         {
+            _output = output;
             _httpClient = new HttpClient();
 
             var framework = string.IsNullOrEmpty(targetFrameworkOverride) ? DefaultFramework : targetFrameworkOverride;
             if (publish)
             {
+                output.WriteLine("Publishing ASP.NET application...");
                 ProcessEx
-                    .Run(workingDirectory, "dotnet", "publish -c Release")
+                    .Run(output, workingDirectory, "dotnet", "publish -c Release")
                     .WaitForExit(assertSuccess: true);
                 workingDirectory = Path.Combine(workingDirectory, "bin", "Release", framework, "publish");
             }
             else
             {
+                output.WriteLine("Building ASP.NET application...");
                 ProcessEx
-                    .Run(workingDirectory, "dotnet", "build --no-restore -c Debug")
+                    .Run(output, workingDirectory, "dotnet", "build --no-restore -c Debug")
                     .WaitForExit(assertSuccess: true);
             }
 
@@ -47,20 +52,22 @@ namespace Templates.Test.Helpers
                 envVars["ASPNETCORE_ENVIRONMENT"] = "Development";
             }
 
+            output.WriteLine("Running ASP.NET application...");
             if (framework.StartsWith("netcore"))
             {
                 var dllPath = publish ? $"{projectName}.dll" : $"bin/Debug/{framework}/{projectName}.dll";
-                _process = ProcessEx.Run(workingDirectory, "dotnet", $"exec {dllPath}", envVars: envVars);
+                _process = ProcessEx.Run(output, workingDirectory, "dotnet", $"exec {dllPath}", envVars: envVars);
             }
             else
             {
                 var exeFullPath = publish
                     ? Path.Combine(workingDirectory, $"{projectName}.exe")
                     : Path.Combine(workingDirectory, "bin", "Debug", framework, $"{projectName}.exe");
-                _process = ProcessEx.Run(workingDirectory, exeFullPath, envVars: envVars);
+                _process = ProcessEx.Run(output, workingDirectory, exeFullPath, envVars: envVars);
             }
-            
+
             // Wait until the app is accepting HTTP requests
+            output.WriteLine("Waiting until ASP.NET application is accepting connections...");
             var listeningMessage = _process
                 .OutputLinesAsEnumerable
                 .Where(line => line != null)
@@ -70,6 +77,7 @@ namespace Templates.Test.Helpers
             // Verify we have a valid URL to make requests to            
             var listeningUrlString = listeningMessage.Substring(ListeningMessagePrefix.Length);
             _listeningUri = new Uri(listeningUrlString, UriKind.Absolute);
+            output.WriteLine($"Detected that ASP.NET application is accepting connections on {listeningUrlString}");
         }
 
         public void AssertOk(string requestUrl)
@@ -90,7 +98,7 @@ namespace Templates.Test.Helpers
 
         public IWebDriver VisitInBrowser()
         {
-            Console.WriteLine($"Opening browser at {_listeningUri}...");
+            _output.WriteLine($"Opening browser at {_listeningUri}...");
             var driver = WebDriverFactory.CreateWebDriver();
             driver.Navigate().GoToUrl(_listeningUri);
             return driver;

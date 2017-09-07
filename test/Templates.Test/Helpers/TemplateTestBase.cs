@@ -4,6 +4,7 @@ using System.Reflection;
 using System.Threading;
 using Templates.Test.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Templates.Test
 {
@@ -11,14 +12,13 @@ namespace Templates.Test
     {
         protected string ProjectName { get; set; }
         protected string TemplateOutputDir { get; private set; }
+        protected ITestOutputHelper Output { get; private set; }
 
-        static TemplateTestBase()
+        public TemplateTestBase(ITestOutputHelper output)
         {
-            TemplatePackageInstaller.ReinstallTemplatePackages();
-        }
+            TemplatePackageInstaller.EnsureTemplatePackagesWereReinstalled(output);
 
-        public TemplateTestBase()
-        {
+            Output = output;
             ProjectName = Guid.NewGuid().ToString().Replace("-", "");
 
             var assemblyPath = GetType().GetTypeInfo().Assembly.CodeBase;
@@ -58,7 +58,7 @@ namespace Templates.Test
                 args += $" -lang {language}";
             }
 
-            ProcessEx.Run(TemplateOutputDir, "dotnet", args).WaitForExit(assertSuccess: true);            
+            ProcessEx.Run(Output, TemplateOutputDir, "dotnet", args).WaitForExit(assertSuccess: true);            
         }
 
         protected void RunNpmInstall()
@@ -66,7 +66,7 @@ namespace Templates.Test
             // The first time this runs on any given CI agent it may take several minutes.
             // If the agent has NPM 5+ installed, it should be quite a lot quicker on
             // subsequent runs because of package caching.
-            ProcessEx.Run(TemplateOutputDir, "cmd", "/c \"npm install\"").WaitForExit(assertSuccess: true);
+            ProcessEx.Run(Output, TemplateOutputDir, "cmd", "/c \"npm install\"").WaitForExit(assertSuccess: true);
         }
 
         protected void AssertDirectoryExists(string path, bool shouldExist)
@@ -107,7 +107,7 @@ namespace Templates.Test
 
         protected AspNetProcess StartAspNetProcess(string targetFrameworkOverride, bool publish = false)
         {
-            return new AspNetProcess(TemplateOutputDir, ProjectName, targetFrameworkOverride, publish);
+            return new AspNetProcess(Output, TemplateOutputDir, ProjectName, targetFrameworkOverride, publish);
         }
 
         public void Dispose()
@@ -117,24 +117,25 @@ namespace Templates.Test
 
         private void DeleteOutputDirectory()
         {
-            var numAttempts = 5;
-            while (true)
+            const int NumAttempts = 10;
+
+            for (var numAttemptsRemaining = NumAttempts; numAttemptsRemaining > 0; numAttemptsRemaining--)
             {
                 try
                 {
                     Directory.Delete(TemplateOutputDir, true);
                     return;
                 }
-                catch (IOException)
+                catch (Exception ex)
                 {
-                    numAttempts--;
-                    if (numAttempts > 0)
+                    if (numAttemptsRemaining > 1)
                     {
-                        Thread.Sleep(2000);
+                        Output.WriteLine($"Failed to delete directory {TemplateOutputDir} because of error {ex.Message}. Will try again {numAttemptsRemaining - 1} more time(s).");
+                        Thread.Sleep(3000);
                     }
                     else
                     {
-                        throw;
+                        Output.WriteLine($"Giving up trying to delete directory {TemplateOutputDir} after {NumAttempts} attempts. Most recent error was: {ex.StackTrace}");
                     }
                 }
             }

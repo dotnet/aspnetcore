@@ -1,11 +1,15 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using Xunit.Abstractions;
 
 namespace Templates.Test.Helpers
 {
     internal static class TemplatePackageInstaller
     {
+        private static object _templatePackagesReinstallationLock = new object();
+        private static bool _haveReinstalledTemplatePackages;
+
         private static readonly string[] _templatePackages = new[]
         {
             "Microsoft.DotNet.Web.ItemTemplates",
@@ -14,19 +18,32 @@ namespace Templates.Test.Helpers
             "Microsoft.AspNetCore.SpaTemplates",
         };
 
-        public static void ReinstallTemplatePackages()
+        public static void EnsureTemplatePackagesWereReinstalled(ITestOutputHelper output)
+        {
+            lock (_templatePackagesReinstallationLock)
+            {
+                if (!_haveReinstalledTemplatePackages)
+                {
+                    ReinstallTemplatePackages(output);
+                    _haveReinstalledTemplatePackages = true;
+                }
+            }
+        }
+
+        private static void ReinstallTemplatePackages(ITestOutputHelper output)
         {
             // Remove any previous or prebundled version of the template packages
             foreach (var packageName in _templatePackages)
             {
                 var proc = ProcessEx.Run(
+                    output,
                     Directory.GetCurrentDirectory(),
                     "dotnet",
                     $"new --uninstall {packageName}");
                 proc.WaitForExit(assertSuccess: true);
             }
 
-            VerifyCannotFindTemplate("ASP.NET Core Empty");
+            VerifyCannotFindTemplate(output, "ASP.NET Core Empty");
 
             // Locate the artifacts directory containing the built template packages
             var solutionDir = FindAncestorDirectoryContaining("Templating.sln");
@@ -36,8 +53,9 @@ namespace Templates.Test.Helpers
             {
                 if (_templatePackages.Any(name => Path.GetFileName(packagePath).StartsWith(name, StringComparison.OrdinalIgnoreCase)))
                 {
-                    Console.WriteLine($"Installing templates package {packagePath}...");
+                    output.WriteLine($"Installing templates package {packagePath}...");
                     var proc = ProcessEx.Run(
+                        output,
                         Directory.GetCurrentDirectory(),
                         "dotnet",
                         $"new --install \"{packagePath}\"");
@@ -46,7 +64,7 @@ namespace Templates.Test.Helpers
             }
         }
 
-        private static void VerifyCannotFindTemplate(string templateName)
+        private static void VerifyCannotFindTemplate(ITestOutputHelper output, string templateName)
         {
             // Verify we really did remove the previous templates
             var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString("D"));
@@ -54,6 +72,7 @@ namespace Templates.Test.Helpers
             try
             {
                 var proc = ProcessEx.Run(
+                    output,
                     tempDir,
                     "dotnet",
                     $"new \"{templateName}\"");

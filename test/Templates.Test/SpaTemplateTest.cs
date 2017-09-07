@@ -1,11 +1,16 @@
 ﻿using OpenQA.Selenium;
 using Templates.Test.Helpers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Templates.Test
 {
     public class SpaTemplateTest : TemplateTestBase
     {
+        public SpaTemplateTest(ITestOutputHelper output) : base(output)
+        {
+        }
+
         [Theory]
         [InlineData(null, "angular")]
         [InlineData(null, "react")]

@@ -1,9 +1,14 @@
 ﻿using Xunit;
+using Xunit.Abstractions;
 
 namespace Templates.Test
 {
     public class RazorPagesTemplateTest : TemplateTestBase
     {
+        public RazorPagesTemplateTest(ITestOutputHelper output) : base(output)
+        {
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("net461")]
