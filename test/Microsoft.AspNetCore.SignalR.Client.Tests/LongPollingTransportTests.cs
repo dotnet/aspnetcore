@@ -437,5 +437,48 @@ namespace Microsoft.AspNetCore.Client.Tests
                 Assert.Equal("requestedTransferMode", exception.ParamName);
             }
         }
+
+        [Fact]
+        public async Task LongPollingTransportRePollsIfRequestCancelled()
+        {
+            var numPolls = 0;
+            var completionTcs = new TaskCompletionSource<object>();
+
+            var mockHttpHandler = new Mock<HttpMessageHandler>();
+            mockHttpHandler.Protected()
+                .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                .Returns<HttpRequestMessage, CancellationToken>(async (request, cancellationToken) =>
+                {
+                    await Task.Yield();
+
+                    if (Interlocked.Increment(ref numPolls) < 3)
+                    {
+                        throw new OperationCanceledException();
+                    }
+
+                    completionTcs.SetResult(null);
+                    return ResponseUtils.CreateResponse(HttpStatusCode.OK);
+                });
+
+            using (var httpClient = new HttpClient(mockHttpHandler.Object))
+            {
+                var longPollingTransport = new LongPollingTransport(httpClient);
+
+                try
+                {
+                    var connectionToTransport = Channel.CreateUnbounded<SendMessage>();
+                    var transportToConnection = Channel.CreateUnbounded<byte[]>();
+                    var channelConnection = new ChannelConnection<SendMessage, byte[]>(connectionToTransport, transportToConnection);
+                    await longPollingTransport.StartAsync(new Uri("http://fakeuri.org"), channelConnection, TransferMode.Binary, connectionId: string.Empty);
+
+                    var completedTask = await Task.WhenAny(completionTcs.Task, longPollingTransport.Running).OrTimeout();
+                    Assert.Equal(completionTcs.Task, completedTask);
+                }
+                finally
+                {
+                    await longPollingTransport.StopAsync();
+                }
+            }
+        }
     }
 }

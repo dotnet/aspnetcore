@@ -92,7 +92,20 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     var request = new HttpRequestMessage(HttpMethod.Get, pollUrl);
                     request.Headers.UserAgent.Add(Constants.UserAgentHeader);
 
-                    var response = await _httpClient.SendAsync(request, cancellationToken);
+                    HttpResponseMessage response;
+
+                    try
+                    {
+                        response = await _httpClient.SendAsync(request, cancellationToken);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // SendAsync will throw the OperationCanceledException if the passed cancellationToken is canceled
+                        // or if the http request times out due to HttpClient.Timeout expiring. In the latter case we
+                        // just want to start a new poll.
+                        continue;
+                    }
+
                     response.EnsureSuccessStatusCode();
 
                     if (response.StatusCode == HttpStatusCode.NoContent || cancellationToken.IsCancellationRequested)
