@@ -24,29 +24,37 @@ This repo contains:
    * Server-side and client-side routing integration ([docs](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#routing-helper-mapspafallbackroute))
    * Server-side and client-side validation integration
    * "Lazy loading" for Knockout apps
- * A Yeoman generator that creates preconfigured app starting points ([guide](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/))
  * Samples and docs
 
-It's cross-platform (Windows, Linux, or macOS) and works with .NET Core 1.0.1 or later.
+It's cross-platform (Windows, Linux, or macOS) and works with .NET Core 2.0 or later.
 
 ## Creating new applications
 
-If you want to build a brand-new ASP.NET Core app that uses Angular / React / Knockout on the client, consider starting with the `aspnetcore-spa` generator. This lets you choose your client-side framework. It generates a starting point that includes applicable features such as Webpack dev middleware, server-side prerendering, and efficient production builds. It's much easier than configuring everything to work together manually!
+Prerequisites:
 
-To do this, install Yeoman and these generator templates:
+* [.NET Core 2.0](https://www.microsoft.com/net/core) (or later) SDK
+* [Node.js](https://nodejs.org/) version 6 (or later)
 
-    npm install -g yo generator-aspnetcore-spa
+With these prerequisites, you can immediately create new ASP.NET Core applications that use Angular, React, or React+Redux without having to install anything extra.
 
-Generate your new application starting point:
+### Option 1: Creating Angular/React/Redux applications from the command line (cross-platform)
 
-    cd some-empty-directory
-    yo aspnetcore-spa
+In an empty directory, run (for example) `dotnet new angular`. Other supported SPA frameworks include React and React+Redux. You can see the list of available SPA templates by running `dotnet new spa`.
 
 Once the generator has run and restored all the dependencies, you can start up your new ASP.NET Core SPA:
 
+    npm install
     dotnet run 
 
-For a more detailed walkthrough, see [getting started with the `aspnetcore-spa` generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/).
+### Option 2: Creating Angular/React/Redux applications using Visual Studio 2017 Update 3 or later (Windows only)
+
+Using the `File`->`New Project` dialog, select *ASP.NET Core Web Application*. You will then be offered the option to create an application with Angular, React, or React+Redux. When the application is created, you can build and run it in the normal way.
+
+### More info and other SPA frameworks
+
+For a more detailed (albeit somewhat outdated) walkthrough, see [getting started with the `aspnetcore-spa` generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/).
+
+If you want to build an ASP.NET Core application with Aurelia, Knockout, or Vue, you can use the `Microsoft.AspNetCore.SpaTemplates` package. On the command line, run `dotnet new --install Microsoft.AspNetCore.SpaTemplates`. Then you will be able to run `dotnet new aurelia` (or `dotnet new vue`, etc.) to create your new application.
 
 ## Adding to existing applications
 
@@ -58,18 +66,13 @@ If you have an existing ASP.NET Core application, or if you just want to use the
    * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.NodeServices#microsoftaspnetcorenodeservices).
  * `Microsoft.AspNetCore.SpaServices`
    * This provides infrastructure that's generally useful when building Single Page Applications (SPAs) with technologies such as Angular or React (for example, server-side prerendering and webpack middleware). Internally, it uses the `NodeServices` package to implement its features.
-   * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#microsoftaspnetcorespaservices).
- * `Microsoft.AspNetCore.AngularServices`
-   * This builds on the `SpaServices` package and includes features specific to Angular. Currently, this includes validation helpers.
-   * The code is [here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.AngularServices). You'll find a usage example for [the validation helper here](https://github.com/aspnet/JavaScriptServices/blob/dev/samples/angular/MusicStore/wwwroot/ng-app/components/admin/album-edit/album-edit.ts).
+   * Find [documentation and usage examples here](https://github.com/aspnet/JavaScriptServices/tree/dev/src/Microsoft.AspNetCore.SpaServices#microsoftaspnetcorespaservices)
 
-There was previously a `Microsoft.AspNetCore.ReactServices` but this is not currently needed - all applicable functionality is in `Microsoft.AspNetCore.SpaServices`, because it's sufficiently general. We might add a new `Microsoft.AspNetCore.ReactServices` package in the future if new React-specific requirements emerge.
+There were previously other packages called  `Microsoft.AspNetCore.AngularServices` and `Microsoft.AspNetCore.ReactServices` but these are not currently needed - all applicable functionality is in `Microsoft.AspNetCore.SpaServices`, because it's sufficiently general.
 
 If you want to build a helper library for some other SPA framework, you can do so by taking a dependency on `Microsoft.AspNetCore.SpaServices` and wrapping its functionality in whatever way is most useful for your SPA framework.
 
-## Samples and templates
-
-Inside this repo, [the `templates` directory](https://github.com/aspnet/JavaScriptServices/tree/dev/templates) contains the application starting points that the `aspnetcore-spa` generator emits. You can clone this repo and run those applications directly. But it's easier to [use the Yeoman tool to run the generator](http://blog.stevensanderson.com/2016/05/02/angular2-react-knockout-apps-on-aspnet-core/).
+## Samples
 
 The [`samples` directory](https://github.com/aspnet/JavaScriptServices/tree/dev/samples) contains examples of:
 
@@ -88,13 +91,6 @@ The [`samples` directory](https://github.com/aspnet/JavaScriptServices/tree/dev/
 
 ## Contributing
 
-If you're interested in contributing to the various packages, samples, and project templates in this repo, that's great! You can run the code in this repo as follows:
+If you're interested in contributing to the various packages, samples, and project templates in this repo, that's great!
 
- * Clone the repo
- * Run `dotnet restore` at the repo root dir
- * Go to whatever sample or template you want to run (for example, `cd templates/AngularSpa`)
- * Restore NPM dependencies (run `npm install`)
- * If the sample/template you're trying to run has a file called `webpack.config.vendor.js` at its root, run `webpack --config webpack.config.vendor.js`. If it has a file called `webpack.config.js`, run `webpack` (no args). You might need to install webpack first, by running `npm install -g webpack`.
- * Launch it (`dotnet run`)
-
-If you're planning to submit a pull request, and if it's more than a trivial fix (for example, for a typo), it's usually a good idea first to file an issue describing what you're proposing to do and how it will work. Then you can find out if it's likely that such a pull request will be accepted, and how it fits into wider ongoing plans.
+Before working on a pull request, especially if it's more than a trivial fix (for example, for a typo), it's usually a good idea first to file an issue describing what you're proposing to do and how it will work. Then you can find out if it's likely that such a pull request will be accepted, and how it fits into wider ongoing plans.
