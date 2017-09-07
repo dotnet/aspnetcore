@@ -75,7 +75,7 @@ export class HubConnection {
     }
 
     private invokeClientMethod(invocationMessage: InvocationMessage) {
-        let method = this.methods.get(invocationMessage.target);
+        let method = this.methods.get(invocationMessage.target.toLowerCase());
         if (method) {
             method.apply(this, invocationMessage.arguments);
             if (!invocationMessage.nonblocking) {
@@ -202,7 +202,7 @@ export class HubConnection {
     }
 
     on(methodName: string, method: (...args: any[]) => void) {
-        this.methods.set(methodName, method);
+        this.methods.set(methodName.toLowerCase(), method);
     }
 
     set onClosed(callback: ConnectionClosed) {

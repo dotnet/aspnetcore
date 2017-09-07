@@ -34,7 +34,7 @@ describe('connection', function () {
             var message = "Hello World!";
             var connection = new signalR.HttpConnection(ECHOENDPOINT_URL, {
                 transport: transportType,
-                logger: signalR.LogLevel.Information
+                logging: signalR.LogLevel.Trace
             });
 
             var received = "";

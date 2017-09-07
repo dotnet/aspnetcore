@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.SignalR
 {
     public class HubOptions
     {
-        public JsonSerializerSettings JsonSerializerSettings { get; set; }
+        public JsonSerializerSettings JsonSerializerSettings { get; set; } = new JsonSerializerSettings();
     }
 }
