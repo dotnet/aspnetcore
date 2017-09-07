@@ -101,7 +101,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 return;
             }
 
-            var project = _projectManager.FindProject(projectPath);
+            var project = _projectManager.GetProjectWithFilePath(projectPath);
 
             var subscription = _projectManager.Subscribe();
             subscription.ProjectChanged += Subscription_ProjectStateChanged;

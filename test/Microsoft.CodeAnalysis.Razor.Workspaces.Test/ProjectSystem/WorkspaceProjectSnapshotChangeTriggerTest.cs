@@ -6,9 +6,9 @@ using Xunit;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    public class DefaultProjectStateManagerTest
+    public class WorkspaceProjectSnapshotChangeTriggerTest
     {
-        public DefaultProjectStateManagerTest()
+        public WorkspaceProjectSnapshotChangeTriggerTest()
         {
             Workspace = new AdhocWorkspace();
             EmptySolution = Workspace.CurrentSolution.GetIsolatedSolution();
@@ -44,12 +44,13 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void WorkspaceChanged_SolutionEvents_AddsProjectsInSolution(WorkspaceChangeKind kind)
         {
             // Arrange
-            var projectManager = new DefaultProjectSnapshotManager(Workspace);
+            var trigger = new WorkspaceProjectSnapshotChangeTrigger();
+            var projectManager = new DefaultProjectSnapshotManager(new[] { trigger }, Workspace);
             
             var e = new WorkspaceChangeEventArgs(kind, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
 
             // Act
-            projectManager.Workspace_WorkspaceChanged(Workspace, e);
+            trigger.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
             Assert.Collection(
@@ -67,16 +68,17 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void WorkspaceChanged_SolutionEvents_ClearsExistingProjects_AddsProjectsInSolution(WorkspaceChangeKind kind)
         {
             // Arrange
-            var projectManager = new DefaultProjectSnapshotManager(Workspace);
+            var trigger = new WorkspaceProjectSnapshotChangeTrigger();
+            var projectManager = new DefaultProjectSnapshotManager(new[] { trigger }, Workspace);
 
             // Initialize with a project. This will get removed.
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithOneProject);
-            projectManager.Workspace_WorkspaceChanged(Workspace, e);
+            trigger.Workspace_WorkspaceChanged(Workspace, e);
 
             e = new WorkspaceChangeEventArgs(kind, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
 
             // Act
-            projectManager.Workspace_WorkspaceChanged(Workspace, e);
+            trigger.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
             Assert.Collection(
@@ -91,17 +93,18 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void WorkspaceChanged_ProjectChangeEvents_UpdatesProject(WorkspaceChangeKind kind)
         {
             // Arrange
-            var projectManager = new DefaultProjectSnapshotManager(Workspace);
+            var trigger = new WorkspaceProjectSnapshotChangeTrigger();
+            var projectManager = new DefaultProjectSnapshotManager(new[] { trigger }, Workspace);
 
             // Initialize with some projects.
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
-            projectManager.Workspace_WorkspaceChanged(Workspace, e);
+            trigger.Workspace_WorkspaceChanged(Workspace, e);
 
             var solution = SolutionWithTwoProjects.WithProjectAssemblyName(ProjectNumberOne.Id, "Changed");
             e = new WorkspaceChangeEventArgs(kind, oldSolution: SolutionWithTwoProjects, newSolution: solution, projectId: ProjectNumberOne.Id);
 
             // Act
-            projectManager.Workspace_WorkspaceChanged(Workspace, e);
+            trigger.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
             Assert.Collection(
@@ -118,17 +121,18 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void WorkspaceChanged_ProjectRemovedEvent_RemovesProject()
         {
             // Arrange
-            var projectManager = new DefaultProjectSnapshotManager(Workspace);
+            var trigger = new WorkspaceProjectSnapshotChangeTrigger();
+            var projectManager = new DefaultProjectSnapshotManager(new[] { trigger }, Workspace);
 
             // Initialize with some projects project.
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.SolutionAdded, oldSolution: EmptySolution, newSolution: SolutionWithTwoProjects);
-            projectManager.Workspace_WorkspaceChanged(Workspace, e);
+            trigger.Workspace_WorkspaceChanged(Workspace, e);
 
             var solution = SolutionWithTwoProjects.RemoveProject(ProjectNumberOne.Id);
             e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.ProjectRemoved, oldSolution: SolutionWithTwoProjects, newSolution: solution, projectId: ProjectNumberOne.Id);
 
             // Act
-            projectManager.Workspace_WorkspaceChanged(Workspace, e);
+            trigger.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
             Assert.Collection(
@@ -140,13 +144,14 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public void WorkspaceChanged_ProjectAddedEvent_AddsProject()
         {
             // Arrange
-            var projectManager = new DefaultProjectSnapshotManager(Workspace);
+            var trigger = new WorkspaceProjectSnapshotChangeTrigger();
+            var projectManager = new DefaultProjectSnapshotManager(new[] { trigger }, Workspace);
 
             var solution = SolutionWithOneProject;
             var e = new WorkspaceChangeEventArgs(WorkspaceChangeKind.ProjectAdded, oldSolution: EmptySolution, newSolution: solution, projectId: ProjectNumberThree.Id);
 
             // Act
-            projectManager.Workspace_WorkspaceChanged(Workspace, e);
+            trigger.Workspace_WorkspaceChanged(Workspace, e);
 
             // Assert
             Assert.Collection(

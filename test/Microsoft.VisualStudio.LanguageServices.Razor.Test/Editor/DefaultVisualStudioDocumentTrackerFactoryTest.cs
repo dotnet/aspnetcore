@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
@@ -18,8 +19,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 {
     public class DefaultVisualStudioDocumentTrackerFactoryTest : ForegroundDispatcherTestBase
     {
+        private static IReadOnlyList<ProjectSnapshot> Projects = new List<ProjectSnapshot>();
+
         private ProjectSnapshotManager ProjectManager { get; } = Mock.Of<ProjectSnapshotManager>(
-            p => p.FindProject(It.IsAny<string>()) == Mock.Of<ProjectSnapshot>() &&
+            p => p.Projects == Projects &&
             p.Subscribe() == Mock.Of<ProjectSnapshotListener>());
 
         private TextBufferProjectService ProjectService { get; } = Mock.Of<TextBufferProjectService>(

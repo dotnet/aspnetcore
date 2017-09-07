@@ -10,8 +10,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
     {
         public abstract IReadOnlyList<ProjectSnapshot> Projects { get; }
 
-        public abstract ProjectSnapshot FindProject(string projectPath);
-
         public abstract ProjectSnapshotListener Subscribe();
     }
 }
