@@ -274,5 +274,18 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(expected, response.Trim());
         }
+
+        [Fact]
+        public async Task Pages_ReturnsFromPagesSharedDirectory()
+        {
+            // Arrange
+            var expected = "Hello from Pages/Shared";
+
+            // Act
+            var response = await Client.GetStringAsync("/SearchInPages");
+
+            // Assert
+            Assert.Equal(expected, response.Trim());
+        }
     }
 }

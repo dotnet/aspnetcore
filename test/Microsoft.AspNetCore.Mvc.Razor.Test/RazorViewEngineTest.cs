@@ -1990,6 +1990,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
             var options = new RazorViewEngineOptions();
             optionsSetup.Configure(options);
             options.PageViewLocationFormats.Add("/Views/Shared/{0}.cshtml");
+            options.PageViewLocationFormats.Add("/Pages/Shared/{0}.cshtml");
 
             if (expanders != null)
             {

@@ -513,5 +513,18 @@ Partial";
             // Assert
             Assert.Equal(expected, responseContent.Trim());
         }
+
+        [Fact]
+        public async Task ViewEngine_DiscoversViewsFromPagesSharedDirectory()
+        {
+            // Arrange
+            var expected = "Hello from Pages/Shared";
+
+            // Act
+            var responseContent = await Client.GetStringAsync("/ViewEngine/SearchInPages");
+
+            // Assert
+            Assert.Equal(expected, responseContent.Trim());
+        }
     }
 }

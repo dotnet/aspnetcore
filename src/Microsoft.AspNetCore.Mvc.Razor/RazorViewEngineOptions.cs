@@ -113,6 +113,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor
         ///  /Pages/Account/{0}.cshtml
         ///  /Pages/{0}.cshtml
         ///  /Views/Shared/{0}.cshtml
+        ///  /Pages/Shared/{0}.cshtml
         /// </para>
         /// </remarks>
         public IList<string> PageViewLocationFormats { get; } = new List<string>();

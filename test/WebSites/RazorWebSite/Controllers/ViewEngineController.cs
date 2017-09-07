@@ -77,5 +77,7 @@ namespace RazorWebSite.Controllers
         {
             return View();
         }
+
+        public IActionResult SearchInPages() => View();
     }
 }
