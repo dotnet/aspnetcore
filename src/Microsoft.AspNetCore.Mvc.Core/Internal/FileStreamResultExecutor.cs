@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     public class FileStreamResultExecutor : FileResultExecutorBase
     {
         public FileStreamResultExecutor(ILoggerFactory loggerFactory)
-            : base(CreateLogger<VirtualFileResultExecutor>(loggerFactory))
+            : base(CreateLogger<FileStreamResultExecutor>(loggerFactory))
         {
         }
 
