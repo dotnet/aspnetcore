@@ -11,32 +11,9 @@ install:
    - ps: (New-Object System.Net.WebClient).DownloadFile($urlCurrent, $tempFileCurrent)
    - ps: Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::ExtractToDirectory($tempFileCurrent, $env:DOTNET_INSTALL_DIR)
    - ps: $env:Path = "$env:DOTNET_INSTALL_DIR;$env:Path"
-build_script:
-  - ps: Push-Location
-  - cd templates/package-builder
-  - npm install
-  - npm run build
-  - ps: Pop-Location
-artifacts:
-  - path: templates\package-builder\artifacts\*.nupkg
-    name: Microsoft.AspNetCore.SpaTemplates
-    type: NuGetPackage
-#  - ps: .\build.ps1
 clone_depth: 1
 environment:
   global:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
-test_script:
-  - dotnet restore
-  - ps: Push-Location
-  - cd test
-  - npm install selenium-standalone
-  - ps: Start-Process node './start-selenium.js'
-  - npm install
-  - npm test
-on_finish :
-  - ps: Pop-Location
-  # After running tests, upload results to Appveyor
-  - ps: (new-object net.webclient).UploadFile("https://ci.appveyor.com/api/testresults/junit/$($env:APPVEYOR_JOB_ID)", (Resolve-Path .\test\tmp\junit\*.xml))
 deploy: off

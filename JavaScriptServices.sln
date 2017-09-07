@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.10
+VisualStudioVersion = 15.0.26730.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{27304DDE-AFB2-4F8B-B765-E3E2F11E886C}"
 	ProjectSection(SolutionItems) = preProject
@@ -30,8 +30,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Webpack", "samples\misc\Webpack\Webpack.csproj", "{DE479DC3-1461-4EAD-A188-4AF7AA4AE344}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NodeServicesExamples", "samples\misc\NodeServicesExamples\NodeServicesExamples.csproj", "{93EFCC5F-C6EE-4623-894F-A42B22C0B6FE}"
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "templates", "templates", "{1598B415-73F1-4B37-B3B4-0A10677ABB2D}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{645F7363-1240-4FB6-9422-B32A327C979F}"
 	ProjectSection(SolutionItems) = preProject
