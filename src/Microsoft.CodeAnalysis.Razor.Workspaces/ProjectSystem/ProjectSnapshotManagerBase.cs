@@ -11,6 +11,8 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         public abstract void ProjectChanged(Project underlyingProject);
 
+        public abstract void ProjectChanged(ProjectSnapshotUpdateContext update);
+
         public abstract void ProjectRemoved(Project underlyingProject);
 
         public abstract void ProjectsCleared();

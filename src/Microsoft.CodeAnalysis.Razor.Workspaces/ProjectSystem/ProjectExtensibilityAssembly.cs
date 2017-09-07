@@ -5,7 +5,7 @@ using System;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
-    internal sealed class ProjectExtensibilityAssembly
+    internal sealed class ProjectExtensibilityAssembly : IEquatable<ProjectExtensibilityAssembly>
     {
         public ProjectExtensibilityAssembly(AssemblyIdentity identity)
         {
@@ -18,5 +18,25 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         }
 
         public AssemblyIdentity Identity { get; }
+
+        public bool Equals(ProjectExtensibilityAssembly other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            return Identity.Equals(other.Identity);
+        }
+
+        public override int GetHashCode()
+        {
+            return Identity.GetHashCode();
+        }
+
+        public override bool Equals(object obj)
+        {
+            return base.Equals(obj as ProjectExtensibilityAssembly);
+        }
     }
 }

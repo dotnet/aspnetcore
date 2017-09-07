@@ -3,6 +3,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Internal;
 
 namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 {
@@ -37,5 +39,27 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         public override ProjectExtensibilityAssembly RazorAssembly { get; }
 
         public ProjectExtensibilityAssembly MvcAssembly { get; }
+
+        public override bool Equals(ProjectExtensibilityConfiguration other)
+        {
+            if (other == null)
+            {
+                return false;
+            }
+
+            // We're intentionally ignoring the 'Kind' here. That's mostly for diagnostics and doesn't influence any behavior.
+            return Enumerable.SequenceEqual(Assemblies.OrderBy(a => a.Identity.Name), other.Assemblies.OrderBy(a => a.Identity.Name));
+        }
+
+        public override int GetHashCode()
+        {
+            var hash = new HashCodeCombiner();
+            foreach (var assembly in Assemblies.OrderBy(a => a.Identity.Name))
+            {
+                hash.Add(assembly);
+            }
+
+            return hash;
+        }
     }
 }
