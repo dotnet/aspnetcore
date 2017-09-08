@@ -1,3 +1,10 @@
 <Project>
   <Import Project="FixPackageOutputDirs.targets" />
+
+  <Target Name="PushNuGetPackages">
+    <ItemGroup>
+      <PackagesToPublish Include="$(BuildDir)*.nupkg" />
+    </ItemGroup>
+    <PushNuGetPackages Packages="@(PackagesToPublish)" Feed="$(NuGetPublishFeed)" ApiKey="$(ApiKey)" />
+  </Target>
 </Project>

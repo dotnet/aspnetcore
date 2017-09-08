@@ -3,4 +3,8 @@
     <PackageLineup Include="Internal.AspNetCore.Universe.Lineup" Version="2.1.0-*" />
     <PackageLineup Include="Internal.AspNetCore.Partners.Lineup" Version="2.1.0-*" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <NuGetPublishFeed>https://dotnet.myget.org/f/aspnetcore-ci-dev</NuGetPublishFeed>
+  </PropertyGroup>
 </Project>
