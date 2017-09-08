@@ -72,23 +72,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                         value: value);
                 }
 
-                // When converting newModel a null value may indicate a failed conversion for an otherwise required
-                // model (can't set a ValueType to null). This detects if a null model value is acceptable given the
-                // current bindingContext. If not, an error is logged.
-                if (model == null && !bindingContext.ModelMetadata.IsReferenceOrNullableType)
-                {
-                    bindingContext.ModelState.TryAddModelError(
-                        bindingContext.ModelName,
-                        bindingContext.ModelMetadata.ModelBindingMessageProvider.ValueMustNotBeNullAccessor(
-                            valueProviderResult.ToString()));
+                CheckModel(bindingContext, valueProviderResult, model);
 
-                    return Task.CompletedTask;
-                }
-                else
-                {
-                    bindingContext.Result = ModelBindingResult.Success(model);
-                    return Task.CompletedTask;
-                }
+                return Task.CompletedTask;
             }
             catch (Exception exception)
             {
@@ -107,6 +93,27 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
 
                 // Were able to find a converter for the type but conversion failed.
                 return Task.CompletedTask;
+            }
+        }
+
+        protected virtual void CheckModel(
+            ModelBindingContext bindingContext,
+            ValueProviderResult valueProviderResult,
+            object model)
+        {
+            // When converting newModel a null value may indicate a failed conversion for an otherwise required
+            // model (can't set a ValueType to null). This detects if a null model value is acceptable given the
+            // current bindingContext. If not, an error is logged.
+            if (model == null && !bindingContext.ModelMetadata.IsReferenceOrNullableType)
+            {
+                bindingContext.ModelState.TryAddModelError(
+                    bindingContext.ModelName,
+                    bindingContext.ModelMetadata.ModelBindingMessageProvider.ValueMustNotBeNullAccessor(
+                        valueProviderResult.ToString()));
+            }
+            else
+            {
+                bindingContext.Result = ModelBindingResult.Success(model);
             }
         }
     }
