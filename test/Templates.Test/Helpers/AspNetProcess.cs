@@ -77,7 +77,7 @@ namespace Templates.Test.Helpers
             // Verify we have a valid URL to make requests to            
             var listeningUrlString = listeningMessage.Substring(ListeningMessagePrefix.Length);
             _listeningUri = new Uri(listeningUrlString, UriKind.Absolute);
-            output.WriteLine($"Detected that ASP.NET application is accepting connections on {listeningUrlString}");
+            output.WriteLine($"Detected that ASP.NET application is accepting connections on: {listeningUrlString}");
         }
 
         public void AssertOk(string requestUrl)
