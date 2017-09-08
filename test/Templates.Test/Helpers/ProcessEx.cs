@@ -56,9 +56,27 @@ namespace Templates.Test.Helpers
             proc.BeginErrorReadLine();
         }
 
-        public string Error => _stderrCapture.ToString();
+        public string Error
+        {
+            get
+            {
+                lock (_pipeCaptureLock)
+                {
+                    return _stderrCapture.ToString();
+                }
+            }
+        }
 
-        public string Output => _stdoutCapture.ToString();
+        public string Output
+        {
+            get
+            {
+                lock (_pipeCaptureLock)
+                {
+                    return _stdoutCapture.ToString();
+                }
+            }
+        }
 
         public int ExitCode => _process.ExitCode;
 
