@@ -478,6 +478,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
         [Theory]
         [InlineData("GetProduct", "ApiExplorerWebSite.Product")]
+        [InlineData("GetActionResultProduct", "ApiExplorerWebSite.Product")]
         [InlineData("GetInt", "System.Int32")]
         [InlineData("GetTaskOfProduct", "ApiExplorerWebSite.Product")]
         [InlineData("GetTaskOfInt", "System.Int32")]

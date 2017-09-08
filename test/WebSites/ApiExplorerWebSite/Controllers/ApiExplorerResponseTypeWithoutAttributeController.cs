@@ -39,6 +39,9 @@ namespace ApiExplorerWebSite
         }
 
         [HttpGet]
+        public ActionResult<Product> GetActionResultProduct() => null;
+
+        [HttpGet]
         public int GetInt()
         {
             return 0;

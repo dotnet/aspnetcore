@@ -193,8 +193,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
                     parameter.Source == BindingSource.ModelBinding ||
                     parameter.Source == BindingSource.Custom)
                 {
-                    ApiParameterRouteInfo routeInfo;
-                    if (routeParameters.TryGetValue(parameter.Name, out routeInfo))
+                    if (routeParameters.TryGetValue(parameter.Name, out var routeInfo))
                     {
                         parameter.RouteInfo = routeInfo;
                         routeParameters.Remove(parameter.Name);
@@ -322,8 +321,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 foreach (var formatter in _inputFormatters)
                 {
-                    var requestFormatMetadataProvider = formatter as IApiRequestFormatMetadataProvider;
-                    if (requestFormatMetadataProvider != null)
+                    if (formatter is IApiRequestFormatMetadataProvider requestFormatMetadataProvider)
                     {
                         var supportedTypes = requestFormatMetadataProvider.GetSupportedContentTypes(contentType, type);
 
@@ -445,7 +443,10 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             // Unwrap the type if it's a Task<T>. The Task (non-generic) case was already handled.
-            var unwrappedType = GetTaskInnerTypeOrNull(declaredReturnType) ?? declaredReturnType;
+            var unwrappedType = UnwrapGenericType(declaredReturnType, typeof(Task<>));
+
+            // Unwrap the type if it's ActionResult<T> or Task<ActionResult<T>>.
+            unwrappedType = UnwrapGenericType(unwrappedType, typeof(ActionResult<>));
 
             // If the method is declared to return IActionResult or a derived class, that information
             // isn't valuable to the formatter.
@@ -457,13 +458,12 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             {
                 return unwrappedType;
             }
-        }
 
-        private static Type GetTaskInnerTypeOrNull(Type type)
-        {
-            var genericType = ClosedGenericMatcher.ExtractGenericInterface(type, typeof(Task<>));
-
-            return genericType?.GenericTypeArguments[0];
+            Type UnwrapGenericType(Type type, Type queryType)
+            {
+                var genericType = ClosedGenericMatcher.ExtractGenericInterface(type, queryType);
+                return genericType?.GenericTypeArguments[0] ?? type;
+            }
         }
 
         private Type GetRuntimeReturnType(Type declaredReturnType)

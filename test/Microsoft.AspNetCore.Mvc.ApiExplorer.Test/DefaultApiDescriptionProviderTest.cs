@@ -394,6 +394,42 @@ namespace Microsoft.AspNetCore.Mvc.Description
             Assert.NotNull(responseType.ModelMetadata);
         }
 
+        [Theory]
+        [InlineData(nameof(ReturnsActionResultOfProduct))]
+        [InlineData(nameof(ReturnsTaskOfActionResultOfProduct))]
+        public void GetApiDescription_PopulatesResponseType_ForActionResultOfT(string methodName)
+        {
+            // Arrange
+            var action = CreateActionDescriptor(methodName);
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            var responseType = Assert.Single(description.SupportedResponseTypes);
+            Assert.Equal(typeof(Product), responseType.Type);
+            Assert.NotNull(responseType.ModelMetadata);
+        }
+
+        [Theory]
+        [InlineData(nameof(ReturnsActionResultOfSequenceOfProducts))]
+        [InlineData(nameof(ReturnsTaskOfActionResultOfSequenceOfProducts))]
+        public void GetApiDescription_PopulatesResponseType_ForActionResultOfSequenceOfT(string methodName)
+        {
+            // Arrange
+            var action = CreateActionDescriptor(methodName);
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+            var responseType = Assert.Single(description.SupportedResponseTypes);
+            Assert.Equal(typeof(IEnumerable<Product>), responseType.Type);
+            Assert.NotNull(responseType.ModelMetadata);
+        }
+
         [Fact]
         public void GetApiDescription_PopulatesResponseType_WithTaskOfProduct()
         {
@@ -1477,6 +1513,14 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
             return null;
         }
+
+        private ActionResult<Product> ReturnsActionResultOfProduct() => null;
+
+        private ActionResult<IEnumerable<Product>> ReturnsActionResultOfSequenceOfProducts() => null;
+
+        private Task<ActionResult<Product>> ReturnsTaskOfActionResultOfProduct() => null;
+
+        private Task<ActionResult<IEnumerable<Product>>> ReturnsTaskOfActionResultOfSequenceOfProducts() => null;
 
         private void AcceptsProduct(Product product)
         {
