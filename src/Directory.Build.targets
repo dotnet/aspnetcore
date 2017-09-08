@@ -11,7 +11,7 @@
     TaskName="DependencyUpdater.SubstituteProjectFileVariables"
     AssemblyFile="$(MSBuildProjectDirectory)\$(OutputPath)DependencyUpdater.dll" />
 
-  <Target Name="RunTask" AfterTargets="Pack">
+  <Target Name="InjectVersionsIntoProjectFilesInPackage" AfterTargets="Pack">
     <SubstituteProjectFileVariables
         NupkgFile="$(PackageOutputPath)$(MSBuildProjectName).$(PackageVersion).nupkg"
         Substitutions="TemplateAspNetCoreVersion=$(AspNetCoreVersionFromLineup); TemplateEntityFrameworkVersion=$(EntityFrameworkVersionFromLineup)"

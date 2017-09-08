@@ -9,7 +9,7 @@
     <NoWarn>2008;8021</NoWarn>
     <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
-    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)..\artifacts\tmp\</PackageOutputPath>    
+    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)..\artifacts\build\unversioned\</PackageOutputPath>
     <NuspecProperties>version=$(PackageVersion)</NuspecProperties>
     <AspNetCoreVersionFromLineup>@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore')->Metadata('Version'))</AspNetCoreVersionFromLineup>
     <EntityFrameworkVersionFromLineup>@(PackageReference->WithMetadataValue('Identity', 'Microsoft.EntityFrameworkCore')->Metadata('Version'))</EntityFrameworkVersionFromLineup>

@@ -30,7 +30,7 @@ namespace Templates.Test.Helpers
 
             // Locate the artifacts directory containing the built template packages
             var solutionDir = FindAncestorDirectoryContaining("Templating.sln");
-            var artifactsDir = Path.Combine(solutionDir, "artifacts");
+            var artifactsDir = Path.Combine(solutionDir, "artifacts", "build");
             var builtPackages = Directory.GetFiles(artifactsDir, "*.nupkg");
             foreach (var packagePath in builtPackages)
             {
