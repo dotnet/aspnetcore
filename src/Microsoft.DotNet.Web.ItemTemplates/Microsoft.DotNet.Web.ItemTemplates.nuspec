@@ -5,11 +5,13 @@
     <version>$version$</version>
     <authors>Microsoft</authors>
     <description>Web File Templates for Microsoft Template Engine</description>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
     <language>en-US</language>
     <projectUrl>https://github.com/dotnet/templating</projectUrl>
     <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
     <copyright>Copyright © Microsoft Corporation</copyright>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <tags>aspnet templates</tags>
     <packageTypes>
       <packageType name="Template" />
     </packageTypes>

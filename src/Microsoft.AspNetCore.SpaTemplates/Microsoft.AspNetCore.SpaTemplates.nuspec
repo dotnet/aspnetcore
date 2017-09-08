@@ -5,11 +5,13 @@
     <version>$version$</version>
     <authors>Microsoft</authors>
     <description>Single Page Application templates for ASP.NET Core</description>
+    <iconUrl>http://go.microsoft.com/fwlink/?LinkID=288859</iconUrl>
     <language>en-US</language>
     <projectUrl>https://github.com/aspnet/javascriptservices</projectUrl>
     <licenseUrl>https://www.microsoft.com/web/webpi/eula/net_library_eula_enu.htm</licenseUrl>
     <copyright>Copyright © Microsoft Corporation</copyright>
     <requireLicenseAcceptance>true</requireLicenseAcceptance>
+    <tags>aspnet templates spa</tags>
     <packageTypes>
       <packageType name="Template" />
     </packageTypes>
