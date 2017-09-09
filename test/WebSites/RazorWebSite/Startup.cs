@@ -43,7 +43,7 @@ namespace RazorWebSite
                     options.HtmlHelperOptions.ValidationMessageElement = "validationMessageElement";
                     options.HtmlHelperOptions.ValidationSummaryMessageElement = "validationSummaryElement";
                 })
-                .AddViewLocalization(LanguageViewLocationExpanderFormat.SubFolder);
+                .AddMvcLocalization(LanguageViewLocationExpanderFormat.SubFolder);
 
             services.AddTransient<InjectedHelper>();
             services.AddTransient<TaskReturningService>();

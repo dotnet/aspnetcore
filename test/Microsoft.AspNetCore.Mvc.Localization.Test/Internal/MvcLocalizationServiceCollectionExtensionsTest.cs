@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Internal
             var collection = new ServiceCollection();
 
             // Act
-            MvcLocalizationServices.AddMvcLocalizationServices(
+            MvcLocalizationServices.AddMvcViewLocalizationServices(
                 collection,
                 LanguageViewLocationExpanderFormat.Suffix,
                 setupAction: null);
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Internal
             collection.Add(ServiceDescriptor.Transient(typeof(IViewLocalizer), typeof(TestViewLocalizer)));
             collection.Add(ServiceDescriptor.Singleton(typeof(HtmlEncoder), testEncoder));
 
-            MvcLocalizationServices.AddMvcLocalizationServices(
+            MvcLocalizationServices.AddMvcViewLocalizationServices(
                 collection,
                 LanguageViewLocationExpanderFormat.Suffix,
                 setupAction: null);
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Internal
             });
 
             // Act
-            MvcLocalizationServices.AddMvcLocalizationServices(
+            MvcLocalizationServices.AddMvcViewLocalizationServices(
                 collection,
                 LanguageViewLocationExpanderFormat.Suffix,
                 setupAction: null);
@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Localization.Internal
             var collection = new ServiceCollection();
 
             // Act
-            MvcLocalizationServices.AddMvcLocalizationServices(
+            MvcLocalizationServices.AddMvcViewLocalizationServices(
                 collection,
                 LanguageViewLocationExpanderFormat.Suffix,
                 options => options.ResourcesPath = "Resources");
