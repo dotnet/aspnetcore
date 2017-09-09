@@ -14,32 +14,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
     /// A filter that sets the <see cref="IHttpMaxRequestBodySizeFeature.MaxRequestBodySize"/> 
     /// to the specified <see cref="Bytes"/>.
     /// </summary>
-    public class RequestSizeLimitResourceFilter : IResourceFilter, IRequestSizePolicy
+    public class RequestSizeLimitFilter : IAuthorizationFilter, IRequestSizePolicy
     {
         private readonly ILogger _logger;
 
         /// <summary>
-        /// Creates a new instance of <see cref="RequestSizeLimitResourceFilter"/>.
+        /// Creates a new instance of <see cref="RequestSizeLimitFilter"/>.
         /// </summary>
-        public RequestSizeLimitResourceFilter(ILoggerFactory loggerFactory)
+        public RequestSizeLimitFilter(ILoggerFactory loggerFactory)
         {
-            _logger = loggerFactory.CreateLogger<RequestSizeLimitResourceFilter>();
+            _logger = loggerFactory.CreateLogger<RequestSizeLimitFilter>();
         }
 
         public long Bytes { get; set; }
 
-        /// <inheritdoc />
-        public void OnResourceExecuted(ResourceExecutedContext context)
-        {
-        }
-
         /// <summary>
         /// Sets the <see cref="IHttpMaxRequestBodySizeFeature.MaxRequestBodySize"/> to <see cref="Bytes"/>.
         /// </summary>
-        /// <param name="context">The <see cref="ResourceExecutingContext"/>.</param>
+        /// <param name="context">The <see cref="AuthorizationFilterContext"/>.</param>
         /// <remarks>If <see cref="IHttpMaxRequestBodySizeFeature"/> is not enabled or is read-only, 
         /// the <see cref="RequestSizeLimitAttribute"/> is not applied.</remarks>
-        public void OnResourceExecuting(ResourceExecutingContext context)
+        public void OnAuthorization(AuthorizationFilterContext context)
         {
             if (context == null)
             {

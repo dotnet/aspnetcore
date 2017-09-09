@@ -1,12 +1,10 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Logging.Testing;
@@ -14,21 +12,21 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
-    public class RequestSizeLimitResourceFilterTest
+    public class RequestSizeLimitFilterTest
     {
         [Fact]
         public void SetsMaxRequestBodySize()
         {
             // Arrange
-            var requestSizeLimitResourceFilter = new RequestSizeLimitResourceFilter(NullLoggerFactory.Instance);
+            var requestSizeLimitResourceFilter = new RequestSizeLimitFilter(NullLoggerFactory.Instance);
             requestSizeLimitResourceFilter.Bytes = 12345;
-            var resourceExecutingContext = CreateResourceExecutingContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
-            resourceExecutingContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
+            authorizationFilterContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
 
             // Act
-            requestSizeLimitResourceFilter.OnResourceExecuting(resourceExecutingContext);
+            requestSizeLimitResourceFilter.OnAuthorization(authorizationFilterContext);
 
             // Assert
             Assert.Equal(12345, httpMaxRequestBodySize.MaxRequestBodySize);
@@ -38,18 +36,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public void SkipsWhenOverridden()
         {
             // Arrange
-            var requestSizeLimitResourceFilter = new RequestSizeLimitResourceFilter(NullLoggerFactory.Instance);
+            var requestSizeLimitResourceFilter = new RequestSizeLimitFilter(NullLoggerFactory.Instance);
             requestSizeLimitResourceFilter.Bytes = 12345;
-            var requestSizeLimitResourceFilterFinal = new RequestSizeLimitResourceFilter(NullLoggerFactory.Instance);
+            var requestSizeLimitResourceFilterFinal = new RequestSizeLimitFilter(NullLoggerFactory.Instance);
             requestSizeLimitResourceFilterFinal.Bytes = 0;
-            var resourceExecutingContext = CreateResourceExecutingContext(new IFilterMetadata[] { requestSizeLimitResourceFilter, requestSizeLimitResourceFilterFinal });
+            var authorizationFilterContext = CreateauthorizationFilterContext(
+                new IFilterMetadata[] { requestSizeLimitResourceFilter, requestSizeLimitResourceFilterFinal });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
-            resourceExecutingContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
+            authorizationFilterContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
 
             // Act
-            requestSizeLimitResourceFilter.OnResourceExecuting(resourceExecutingContext);
-            requestSizeLimitResourceFilterFinal.OnResourceExecuting(resourceExecutingContext);
+            requestSizeLimitResourceFilter.OnAuthorization(authorizationFilterContext);
+            requestSizeLimitResourceFilterFinal.OnAuthorization(authorizationFilterContext);
 
             // Assert
             Assert.Equal(0, httpMaxRequestBodySize.MaxRequestBodySize);
@@ -63,12 +62,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var requestSizeLimitResourceFilter = new RequestSizeLimitResourceFilter(loggerFactory);
+            var requestSizeLimitResourceFilter = new RequestSizeLimitFilter(loggerFactory);
             requestSizeLimitResourceFilter.Bytes = 12345;
-            var resourceExecutingContext = CreateResourceExecutingContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
 
             // Act
-            requestSizeLimitResourceFilter.OnResourceExecuting(resourceExecutingContext);
+            requestSizeLimitResourceFilter.OnAuthorization(authorizationFilterContext);
 
             // Assert
             var write = Assert.Single(sink.Writes);
@@ -83,16 +82,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var requestSizeLimitResourceFilter = new RequestSizeLimitResourceFilter(loggerFactory);
+            var requestSizeLimitResourceFilter = new RequestSizeLimitFilter(loggerFactory);
             requestSizeLimitResourceFilter.Bytes = 12345;
-            var resourceExecutingContext = CreateResourceExecutingContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
             httpMaxRequestBodySize.IsReadOnly = true;
-            resourceExecutingContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
+            authorizationFilterContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
 
             // Act
-            requestSizeLimitResourceFilter.OnResourceExecuting(resourceExecutingContext);
+            requestSizeLimitResourceFilter.OnAuthorization(authorizationFilterContext);
 
             // Assert
             var write = Assert.Single(sink.Writes);
@@ -106,27 +105,24 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var sink = new TestSink();
             var loggerFactory = new TestLoggerFactory(sink, enabled: true);
 
-            var requestSizeLimitResourceFilter = new RequestSizeLimitResourceFilter(loggerFactory);
+            var requestSizeLimitResourceFilter = new RequestSizeLimitFilter(loggerFactory);
             requestSizeLimitResourceFilter.Bytes = 12345;
-            var resourceExecutingContext = CreateResourceExecutingContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
+            var authorizationFilterContext = CreateauthorizationFilterContext(new IFilterMetadata[] { requestSizeLimitResourceFilter });
 
             var httpMaxRequestBodySize = new TestHttpMaxRequestBodySizeFeature();
-            resourceExecutingContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
+            authorizationFilterContext.HttpContext.Features.Set<IHttpMaxRequestBodySizeFeature>(httpMaxRequestBodySize);
 
             // Act
-            requestSizeLimitResourceFilter.OnResourceExecuting(resourceExecutingContext);
+            requestSizeLimitResourceFilter.OnAuthorization(authorizationFilterContext);
 
             // Assert
             var write = Assert.Single(sink.Writes);
             Assert.Equal($"The maximum request body size has been set to 12345.", write.State.ToString());
         }
 
-        private static ResourceExecutingContext CreateResourceExecutingContext(IFilterMetadata[] filters)
+        private static AuthorizationFilterContext CreateauthorizationFilterContext(IFilterMetadata[] filters)
         {
-            return new ResourceExecutingContext(
-                CreateActionContext(),
-                filters,
-                new List<IValueProviderFactory>());
+            return new AuthorizationFilterContext(CreateActionContext(), filters);
         }
 
         private static ActionContext CreateActionContext()

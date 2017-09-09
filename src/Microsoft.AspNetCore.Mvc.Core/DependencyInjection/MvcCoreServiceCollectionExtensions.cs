@@ -199,10 +199,10 @@ namespace Microsoft.Extensions.DependencyInjection
                 ServiceDescriptor.Singleton<IFilterProvider, DefaultFilterProvider>());
 
             //
-            // Resource Filters
+            // RequestSizeLimit filters
             //
-            services.TryAddTransient<RequestSizeLimitResourceFilter>();
-            services.TryAddTransient<DisableRequestSizeLimitResourceFilter>();
+            services.TryAddTransient<RequestSizeLimitFilter>();
+            services.TryAddTransient<DisableRequestSizeLimitFilter>();
 
             //
             // ModelBinding, Validation
