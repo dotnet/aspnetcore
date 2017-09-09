@@ -11,7 +11,16 @@ namespace Microsoft.AspNetCore.Cors
     public class EnableCorsAttribute : Attribute, IEnableCorsAttribute
     {
         /// <summary>
-        /// Creates a new instance of the <see cref="EnableCorsAttribute"/>.
+        /// Creates a new instance of the <see cref="EnableCorsAttribute"/> with the default policy
+        /// name defined by <see cref="CorsOptions.DefaultPolicyName"/>.
+        /// </summary>
+        public EnableCorsAttribute()
+            : this(policyName: null)
+        {
+        }
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="EnableCorsAttribute"/> with the supplied policy name.
         /// </summary>
         /// <param name="policyName">The name of the policy to be applied.</param>
         public EnableCorsAttribute(string policyName)

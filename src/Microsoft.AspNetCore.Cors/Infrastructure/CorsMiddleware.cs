@@ -25,6 +25,20 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         /// <param name="next">The next middleware in the pipeline.</param>
         /// <param name="corsService">An instance of <see cref="ICorsService"/>.</param>
         /// <param name="policyProvider">A policy provider which can get an <see cref="CorsPolicy"/>.</param>
+        public CorsMiddleware(
+            RequestDelegate next,
+            ICorsService corsService,
+            ICorsPolicyProvider policyProvider)
+            : this(next, corsService, policyProvider, policyName: null)
+        {
+        }
+
+        /// <summary>
+        /// Instantiates a new <see cref="CorsMiddleware"/>.
+        /// </summary>
+        /// <param name="next">The next middleware in the pipeline.</param>
+        /// <param name="corsService">An instance of <see cref="ICorsService"/>.</param>
+        /// <param name="policyProvider">A policy provider which can get an <see cref="CorsPolicy"/>.</param>
         /// <param name="policyName">An optional name of the policy to be fetched.</param>
         public CorsMiddleware(
             RequestDelegate next,

@@ -297,5 +297,57 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
                 o => o.GetPolicyAsync(It.IsAny<HttpContext>(), It.IsAny<string>()),
                 Times.Once);
         }
+
+        [Fact]
+        public async Task PreFlight_MatchesDefaultPolicy_SetsResponseHeaders()
+        {
+            // Arrange
+            var hostBuilder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    app.UseCors();
+                    app.Run(async context =>
+                    {
+                        await context.Response.WriteAsync("Cross origin response");
+                    });
+                })
+                .ConfigureServices(services =>
+                {
+                    services.AddCors(options =>
+                    {
+                        options.AddDefaultPolicy(policyBuilder =>
+                        {
+                            policyBuilder
+                            .WithOrigins("http://localhost:5001")
+                            .WithMethods("PUT")
+                            .WithHeaders("Header1")
+                            .WithExposedHeaders("AllowedHeader")
+                            .Build();
+                        });
+                        options.AddPolicy("policy2", policyBuilder =>
+                        {
+                            policyBuilder
+                            .WithOrigins("http://localhost:5002")
+                            .Build();
+                        });
+                    });
+                });
+
+            using (var server = new TestServer(hostBuilder))
+            {
+                // Act
+                // Preflight request.
+                var response = await server.CreateRequest("/")
+                    .AddHeader(CorsConstants.Origin, "http://localhost:5001")
+                    .AddHeader(CorsConstants.AccessControlRequestMethod, "PUT")
+                    .SendAsync(CorsConstants.PreflightHttpMethod);
+
+                // Assert
+                response.EnsureSuccessStatusCode();
+                Assert.Equal(2, response.Headers.Count());
+                Assert.Equal("http://localhost:5001", response.Headers.GetValues(CorsConstants.AccessControlAllowOrigin).FirstOrDefault());
+                Assert.Equal("PUT", response.Headers.GetValues(CorsConstants.AccessControlAllowMethods).FirstOrDefault());
+            }
+        }
     }
 }

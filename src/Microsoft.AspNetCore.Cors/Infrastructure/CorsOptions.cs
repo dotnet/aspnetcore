@@ -32,6 +32,34 @@ namespace Microsoft.AspNetCore.Cors.Infrastructure
         }
 
         /// <summary>
+        /// Adds a new policy and sets it as the default.
+        /// </summary>
+        /// <param name="policy">The <see cref="CorsPolicy"/> policy to be added.</param>
+        public void AddDefaultPolicy(CorsPolicy policy)
+        {
+            if (policy == null)
+            {
+                throw new ArgumentNullException(nameof(policy));
+            }
+
+            AddPolicy(DefaultPolicyName, policy);
+        }
+
+        /// <summary>
+        /// Adds a new policy and sets it as the default.
+        /// </summary>
+        /// <param name="configurePolicy">A delegate which can use a policy builder to build a policy.</param>
+        public void AddDefaultPolicy(Action<CorsPolicyBuilder> configurePolicy)
+        {
+            if (configurePolicy == null)
+            {
+                throw new ArgumentNullException(nameof(configurePolicy));
+            }
+
+            AddPolicy(DefaultPolicyName, configurePolicy);
+        }
+
+        /// <summary>
         /// Adds a new policy.
         /// </summary>
         /// <param name="name">The name of the policy.</param>

@@ -15,6 +15,21 @@ namespace Microsoft.AspNetCore.Builder
         /// Adds a CORS middleware to your web application pipeline to allow cross domain requests.
         /// </summary>
         /// <param name="app">The IApplicationBuilder passed to your Configure method</param>
+        /// <returns>The original app parameter</returns>
+        public static IApplicationBuilder UseCors(this IApplicationBuilder app)
+        {
+            if (app == null)
+            {
+                throw new ArgumentNullException(nameof(app));
+            }
+
+            return app.UseMiddleware<CorsMiddleware>();
+        }
+
+        /// <summary>
+        /// Adds a CORS middleware to your web application pipeline to allow cross domain requests.
+        /// </summary>
+        /// <param name="app">The IApplicationBuilder passed to your Configure method</param>
         /// <param name="policyName">The policy name of a configured policy.</param>
         /// <returns>The original app parameter</returns>
         public static IApplicationBuilder UseCors(this IApplicationBuilder app, string policyName)
