@@ -13,8 +13,7 @@ namespace IStartupInjectionAssemblyName
     {
         public static void Main(string[] args)
         {
-            var server = new TestServer(new WebHostBuilder()
-                .ConfigureServices(services => services.AddSingleton<IStartup, Startup>()));
+            var server = new TestServer(CreateWebHostBuilder(args));
 
             // Mimic application startup messages so application deployer knows that the application has started
             Console.WriteLine("Application started. Press Ctrl+C to shut down.");
@@ -22,5 +21,9 @@ namespace IStartupInjectionAssemblyName
 
             Task.Run(async () => Console.WriteLine(await server.CreateClient().GetStringAsync(""))).GetAwaiter().GetResult();
         }
+
+        // Do not change the signature of this method. It's used for tests.
+        private static IWebHostBuilder CreateWebHostBuilder(string [] args) =>
+            new WebHostBuilder().ConfigureServices(services => services.AddSingleton<IStartup, Startup>());
     }
 }

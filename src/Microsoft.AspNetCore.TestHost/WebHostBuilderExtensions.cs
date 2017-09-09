@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -45,6 +47,35 @@ namespace Microsoft.AspNetCore.TestHost
                     new ConfigureTestServicesStartupConfigureContainerFilter<TContainer>(servicesConfiguration)));
 
             return webHostBuilder;
+        }
+
+        public static IWebHostBuilder UseSolutionRelativeContentRoot(
+            this IWebHostBuilder builder,
+            string solutionRelativePath,
+            string solutionName = "*.sln")
+        {
+            if (solutionRelativePath == null)
+            {
+                throw new ArgumentNullException(nameof(solutionRelativePath));
+            }
+
+            var applicationBasePath = AppContext.BaseDirectory;
+
+            var directoryInfo = new DirectoryInfo(applicationBasePath);
+            do
+            {
+                var solutionPath = Directory.EnumerateFiles(directoryInfo.FullName, solutionName).FirstOrDefault();
+                if (solutionPath != null)
+                {
+                    builder.UseContentRoot(Path.GetFullPath(Path.Combine(directoryInfo.FullName, solutionRelativePath)));
+                    return builder;
+                }
+
+                directoryInfo = directoryInfo.Parent;
+            }
+            while (directoryInfo.Parent != null);
+
+            throw new InvalidOperationException($"Solution root could not be located using application root {applicationBasePath}.");
         }
 
         private class ConfigureTestServicesStartupConfigureServicesFilter : IStartupConfigureServicesFilter

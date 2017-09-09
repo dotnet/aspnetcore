@@ -5,6 +5,7 @@
     ],
     "packages": {
       "Microsoft.AspNetCore.Certificates.Configuration.Sources": {},
+      "Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Sources": {},
       "Microsoft.AspNetCore.Server.IntegrationTesting": {}
     }
   },
