@@ -17,8 +17,8 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Common
     {
         private ILoggerFactory _loggerFactory;
         private ILogger _logger;
-        private IWebHost host;
-        private IApplicationLifetime lifetime;
+        private IWebHost _host;
+        private IApplicationLifetime _lifetime;
         private readonly IDisposable _logToken;
 
         public string BaseUrl => "http://localhost:3000";
@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Common
 
         private void StartServer()
         {
-            host = new WebHostBuilder()
+            _host = new WebHostBuilder()
                 .ConfigureLogging(builder => builder.AddProvider(new ForwardingLoggerProvider(_loggerFactory)))
                 .UseStartup(typeof(TStartup))
                 .UseKestrel()
@@ -44,10 +44,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Common
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .Build();
 
-            var t = Task.Run(() => host.Start());
+            var t = Task.Run(() => _host.Start());
             _logger.LogInformation("Starting test server...");
-            lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
-            if (!lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)))
+            _lifetime = _host.Services.GetRequiredService<IApplicationLifetime>();
+            if (!_lifetime.ApplicationStarted.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)))
             {
                 // t probably faulted
                 if (t.IsFaulted)
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Common
             }
             _logger.LogInformation("Test Server started");
 
-            lifetime.ApplicationStopped.Register(() =>
+            _lifetime.ApplicationStopped.Register(() =>
             {
                 _logger.LogInformation("Test server shut down");
                 _logToken.Dispose();
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests.Common
         public void Dispose()
         {
             _logger.LogInformation("Shutting down test server");
-            host.Dispose();
+            _host.Dispose();
             _loggerFactory.Dispose();
         }
 
