@@ -1,7 +1,6 @@
 ﻿using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using System;
-using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -16,14 +15,12 @@ namespace DependencyUpdater
             ".fsproj"
         };
 
-        public string NupkgFile { get; set; }
-        public string Substitutions { get; set; }
-        public string OutDir { get; set; }
+        [Required] public string NupkgFile { get; set; }
+        [Required] public string OutDir { get; set; }
+        [Required] public ITaskItem[] Substitutions { get; set; }
 
         public override bool Execute()
         {
-            var substitutionsDict = ParseSubstitutions(Substitutions);
-
             // We can't modify the .nupkg in place because the build system still
             // has a lock on the file. We can read it, but not write it. So copy
             // to the output location and then modify the copy.
@@ -36,7 +33,7 @@ namespace DependencyUpdater
                 foreach (var projectFile in zipFile.Entries.Where(IsProjectFile))
                 {
                     numProjectFiles++;
-                    PerformVariableSubstitutions(projectFile, substitutionsDict);
+                    PerformVariableSubstitutions(projectFile);
                 }
             }
 
@@ -56,23 +53,13 @@ namespace DependencyUpdater
             return true;
         }
 
-        private static IDictionary<string, string> ParseSubstitutions(string substitutions)
-        {
-            // Takes input of the form "key1=val1; key2=val2" (as is common in MSBuild)
-            return substitutions.Split(new[] { ';' })
-                .Select(pair => pair.Trim())
-                .Where(pair => !string.IsNullOrEmpty(pair) && pair.IndexOf('=') > 0)
-                .Select(pair => pair.Split('='))
-                .ToDictionary(splitPair => splitPair[0].Trim(), splitPair => splitPair[1].Trim());
-        }
-
         private static bool IsProjectFile(ZipArchiveEntry entry)
         {
             return ProjectFileExtensions.Any(
                 extension => Path.GetExtension(entry.Name).Equals(extension, StringComparison.OrdinalIgnoreCase));
         }
 
-        private static void PerformVariableSubstitutions(ZipArchiveEntry entry, IDictionary<string, string> substitutions)
+        private void PerformVariableSubstitutions(ZipArchiveEntry entry)
         {
             using (var fileStream = entry.Open())
             {
@@ -83,16 +70,16 @@ namespace DependencyUpdater
                     contents = reader.ReadToEnd();
                     fileStream.Seek(0, SeekOrigin.Begin);
                     fileStream.SetLength(0);
-                    writer.Write(SubstituteVariables(contents, substitutions));
+                    writer.Write(SubstituteVariables(contents));
                 }
             }
         }
 
-        private static string SubstituteVariables(string text, IDictionary<string, string> substitutions)
+        private string SubstituteVariables(string text)
         {
-            foreach (var kvp in substitutions)
+            foreach (var item in Substitutions)
             {
-                text = text.Replace($"$({kvp.Key})", kvp.Value);
+                text = text.Replace($"$({item.ItemSpec})", item.GetMetadata("Value"));
             }
 
             return text;

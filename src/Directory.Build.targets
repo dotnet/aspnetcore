@@ -12,9 +12,13 @@
     AssemblyFile="$(MSBuildProjectDirectory)\$(OutputPath)DependencyUpdater.dll" />
 
   <Target Name="InjectVersionsIntoProjectFilesInPackage" AfterTargets="Pack">
+    <ItemGroup>
+      <Substitution Include="TemplateAspNetCoreVersion" Value="$(AspNetCoreVersionFromLineup)" />
+      <Substitution Include="TemplateEntityFrameworkVersion" Value="$(EntityFrameworkVersionFromLineup)" />
+    </ItemGroup>
     <SubstituteProjectFileVariables
         NupkgFile="$(PackageOutputPath)$(MSBuildProjectName).$(PackageVersion).nupkg"
-        Substitutions="TemplateAspNetCoreVersion=$(AspNetCoreVersionFromLineup); TemplateEntityFrameworkVersion=$(EntityFrameworkVersionFromLineup)"
+        Substitutions="@(Substitution)"
         OutDir="$(PackageOutputPath)..\" />
   </Target>
 
