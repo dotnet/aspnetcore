@@ -19,6 +19,11 @@ namespace Templates.Test.Helpers
             "Microsoft.AspNetCore.SpaTemplates",
         };
 
+        private static readonly string[] _extraTemplatePackagesToUninstall = new[]
+        {
+            "Microsoft.DotNet.Web.ProjectTemplates.2.1",
+        };
+
         public static void EnsureTemplatePackagesWereReinstalled(ITestOutputHelper output)
         {
             lock (_templatePackagesReinstallationLock)
@@ -34,7 +39,7 @@ namespace Templates.Test.Helpers
         private static void ReinstallTemplatePackages(ITestOutputHelper output)
         {
             // Remove any previous or prebundled version of the template packages
-            foreach (var packageName in _templatePackages)
+            foreach (var packageName in _templatePackages.Concat(_extraTemplatePackagesToUninstall))
             {
                 var proc = ProcessEx.Run(
                     output,
