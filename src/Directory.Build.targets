@@ -14,9 +14,9 @@
   <Target Name="InjectVersionsIntoProjectFilesInPackage" AfterTargets="Pack">
     <ItemGroup>
       <Substitution Include="TemplateDep_AspNetCore_2_0" Value="$(TemplateDep_AspNetCore_2_0)" />
-      <Substitution Include="TemplateDep_AspNetCore_2_1" Value="$(TemplateDep_AspNetCore_2_1)" />
       <Substitution Include="TemplateDep_EntityFramework_2_0" Value="$(TemplateDep_EntityFramework_2_0)" />
-      <Substitution Include="TemplateDep_EntityFramework_2_1" Value="$(TemplateDep_EntityFramework_2_1)" />
+      <Substitution Include="TemplateDep_Coherence_2_1" Value="$(TemplateDep_Coherence_2_1)" />
+      <Substitution Include="TemplateDep_RuntimeFramework_2_1" Value="$(TemplateDep_RuntimeFramework_2_1)" />
     </ItemGroup>
     <SubstituteProjectFileVariables
         NupkgFile="$(PackageOutputPath)$(MSBuildProjectName).$(PackageVersion).nupkg"
