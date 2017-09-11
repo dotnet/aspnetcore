@@ -14,7 +14,9 @@
       values can be replaced by hardcoded values (e.g., '2.1.0') when we
       branch for a release.
     -->
+    <TemplateDep_AspNetCore_2_0>2.0.0</TemplateDep_AspNetCore_2_0>
     <TemplateDep_AspNetCore_2_1>@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore')->Metadata('Version'))</TemplateDep_AspNetCore_2_1>
+    <TemplateDep_EntityFramework_2_0>2.0.0</TemplateDep_EntityFramework_2_0>
     <TemplateDep_EntityFramework_2_1>@(PackageReference->WithMetadataValue('Identity', 'Microsoft.EntityFrameworkCore')->Metadata('Version'))</TemplateDep_EntityFramework_2_1>
   </PropertyGroup>
 

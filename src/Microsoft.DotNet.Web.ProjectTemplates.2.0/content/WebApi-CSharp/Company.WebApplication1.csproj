@@ -13,12 +13,12 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(TemplateDep_AspNetCore_2_1)" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(TemplateDep_AspNetCore_2_0)" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
-    <PackageReference Include="Microsoft.AspNetCore" Version="$(TemplateDep_AspNetCore_2_1)" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(TemplateDep_AspNetCore_2_1)" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(TemplateDep_AspNetCore_2_1)" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="$(TemplateDep_AspNetCore_2_0)" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="$(TemplateDep_AspNetCore_2_0)" Condition="'$(OrganizationalAuth)' == 'True' OR '$(IndividualB2CAuth)' == 'True'" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(TemplateDep_AspNetCore_2_0)" />
   </ItemGroup>
 
   <ItemGroup>
