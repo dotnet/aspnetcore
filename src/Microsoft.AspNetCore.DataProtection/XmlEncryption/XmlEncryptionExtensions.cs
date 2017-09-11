@@ -46,7 +46,6 @@ namespace Microsoft.AspNetCore.DataProtection.XmlEncryption
                 // the original document or other data structures. The element we pass to
                 // the decryptor should be the child of the 'encryptedSecret' element.
                 var clonedElementWhichRequiresDecryption = new XElement(elementWhichRequiresDecryption);
-                var innerDoc = new XDocument(clonedElementWhichRequiresDecryption);
                 string decryptorTypeName = (string)clonedElementWhichRequiresDecryption.Attribute(XmlConstants.DecryptorTypeAttributeName);
                 var decryptorInstance = activator.CreateInstance<IXmlDecryptor>(decryptorTypeName);
                 var decryptedElement = decryptorInstance.Decrypt(clonedElementWhichRequiresDecryption.Elements().Single());
