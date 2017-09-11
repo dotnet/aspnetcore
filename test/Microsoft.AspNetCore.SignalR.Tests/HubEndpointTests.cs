@@ -8,8 +8,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
+using Microsoft.AspNetCore.Sockets;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Newtonsoft.Json;
@@ -852,6 +854,52 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task CanGetHttpContextFromHubConnectionContext()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var httpContext = new DefaultHttpContext();
+                client.Connection.SetHttpContext(httpContext);
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                var result = (await client.InvokeAsync(nameof(MethodHub.HasHttpContext)).OrTimeout()).Result;
+                Assert.True((bool)result);
+
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task GetHttpContextFromHubConnectionContextHandlesNull()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                var result = (await client.InvokeAsync(nameof(MethodHub.HasHttpContext)).OrTimeout()).Result;
+                Assert.False((bool)result);
+
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
+            }
+        }
+
         private static void AssertHubMessage(HubMessage expected, HubMessage actual)
         {
             // We aren't testing InvocationIds here
@@ -1165,6 +1213,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public Task SendToAllExcept(string message, IReadOnlyList<string> excludedIds)
             {
                 return Clients.AllExcept(excludedIds).InvokeAsync("Send", message);
+            }
+
+            public bool HasHttpContext()
+            {
+                return Context.Connection.GetHttpContext() != null;
             }
         }
 
