@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "add",
-                GetPath(path),
+                GetPath(path, null),
                 from: null,
                 value: value));
 
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "add",
-                GetPath(path) + "/" + position,
+                GetPath(path, position.ToString()),
                 from: null,
                 value: value));
 
@@ -93,7 +93,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
-        /// At value at end of list
+        /// Add value to the end of the list
         /// </summary>
         /// <typeparam name="TProp">value type</typeparam>
         /// <param name="path">target location</param>
@@ -108,7 +108,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "add",
-                GetPath(path) + "/-",
+                GetPath(path, "-"),
                 from: null,
                 value: value));
 
@@ -128,7 +128,7 @@ namespace Microsoft.AspNetCore.JsonPatch
                 throw new ArgumentNullException(nameof(path));
             }
 
-            Operations.Add(new Operation<TModel>("remove", GetPath(path), from: null));
+            Operations.Add(new Operation<TModel>("remove", GetPath(path, null), from: null));
 
             return this;
         }
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "remove",
-                GetPath(path) + "/" + position,
+                GetPath(path, position.ToString()),
                 from: null));
 
             return this;
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "remove",
-                GetPath(path) + "/-",
+                GetPath(path, "-"),
                 from: null));
 
             return this;
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "replace",
-                GetPath(path),
+                GetPath(path, null),
                 from: null,
                 value: value));
 
@@ -217,7 +217,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "replace",
-                GetPath(path) + "/" + position,
+                GetPath(path, position.ToString()),
                 from: null,
                 value: value));
 
@@ -240,7 +240,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "replace",
-                GetPath(path) + "/-",
+                GetPath(path, "-"),
                 from: null,
                 value: value));
 
@@ -270,8 +270,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "move",
-                GetPath(path),
-                GetPath(from)));
+                GetPath(path, null),
+                GetPath(from, null)));
 
             return this;
         }
@@ -301,8 +301,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "move",
-                GetPath(path),
-                GetPath(from) + "/" + positionFrom));
+                GetPath(path, null),
+                GetPath(from, positionFrom.ToString())));
 
             return this;
         }
@@ -332,8 +332,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "move",
-                GetPath(path) + "/" + positionTo,
-                GetPath(from)));
+                GetPath(path, positionTo.ToString()),
+                GetPath(from, null)));
 
             return this;
         }
@@ -365,8 +365,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "move",
-                GetPath(path) + "/" + positionTo,
-                GetPath(from) + "/" + positionFrom));
+                GetPath(path, positionTo.ToString()),
+                GetPath(from, positionFrom.ToString())));
 
             return this;
         }
@@ -396,8 +396,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "move",
-                GetPath(path) + "/-",
-                GetPath(from) + "/" + positionFrom));
+                GetPath(path, "-"),
+                GetPath(from, positionFrom.ToString())));
 
             return this;
         }
@@ -425,8 +425,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "move",
-                GetPath(path) + "/-",
-                GetPath(from)));
+                GetPath(path, "-"),
+                GetPath(from, null)));
 
             return this;
         }
@@ -454,8 +454,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "copy",
-                GetPath(path)
-              , GetPath(from)));
+                GetPath(path, null),
+                GetPath(from, null)));
 
             return this;
         }
@@ -485,8 +485,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "copy",
-                GetPath(path),
-                GetPath(from) + "/" + positionFrom));
+                GetPath(path, null),
+                GetPath(from, positionFrom.ToString())));
 
             return this;
         }
@@ -516,8 +516,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "copy",
-                GetPath(path) + "/" + positionTo,
-                GetPath(from)));
+                GetPath(path, positionTo.ToString()),
+                GetPath(from, null)));
 
             return this;
         }
@@ -549,8 +549,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "copy",
-                GetPath(path) + "/" + positionTo,
-                GetPath(from) + "/" + positionFrom));
+                GetPath(path, positionTo.ToString()),
+                GetPath(from, positionFrom.ToString())));
 
             return this;
         }
@@ -580,8 +580,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "copy",
-                GetPath(path) + "/-",
-                GetPath(from) + "/" + positionFrom));
+                GetPath(path, "-"),
+                GetPath(from, positionFrom.ToString())));
 
             return this;
         }
@@ -609,8 +609,8 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             Operations.Add(new Operation<TModel>(
                 "copy",
-                GetPath(path) + "/-",
-                GetPath(from)));
+                GetPath(path, "-"),
+                GetPath(from, null)));
 
             return this;
         }
@@ -705,61 +705,57 @@ namespace Microsoft.AspNetCore.JsonPatch
             return allOps;
         }
 
-        private string GetPath<TProp>(Expression<Func<TModel, TProp>> expr)
+        // Internal for testing
+        internal string GetPath<TProp>(Expression<Func<TModel, TProp>> expr, string position)
         {
-            return "/" + GetPath(expr.Body, true).ToLowerInvariant();
+            var segments = GetPathSegments(expr.Body);
+            var path = String.Join("/", segments);
+            if (position != null)
+            {
+                path += "/" + position;
+                if (segments.Count == 0)
+                {
+                    return path.ToLowerInvariant();
+                }
+            }
+
+            return "/" + path.ToLowerInvariant();
         }
 
-        private string GetPath(Expression expr, bool firstTime)
+        private List<string> GetPathSegments(Expression expr)
         {
+            var listOfSegments = new List<string>();
             switch (expr.NodeType)
             {
                 case ExpressionType.ArrayIndex:
                     var binaryExpression = (BinaryExpression)expr;
+                    listOfSegments.AddRange(GetPathSegments(binaryExpression.Left));
+                    listOfSegments.Add(binaryExpression.Right.ToString());
+                    return listOfSegments;
 
-                    if (ContinueWithSubPath(binaryExpression.Left.NodeType, false))
-                    {
-                        var leftFromBinaryExpression = GetPath(binaryExpression.Left, false);
-                        return leftFromBinaryExpression + "/" + binaryExpression.Right.ToString();
-                    }
-                    else
-                    {
-                        return binaryExpression.Right.ToString();
-                    }
                 case ExpressionType.Call:
                     var methodCallExpression = (MethodCallExpression)expr;
+                    listOfSegments.AddRange(GetPathSegments(methodCallExpression.Object));
+                    listOfSegments.Add(EvaluateExpression(methodCallExpression.Arguments[0]));
+                    return listOfSegments;
 
-                    if (ContinueWithSubPath(methodCallExpression.Object.NodeType, false))
-                    {
-                        var leftFromMemberCallExpression = GetPath(methodCallExpression.Object, false);
-                        return leftFromMemberCallExpression + "/" +
-                            GetIndexerInvocation(methodCallExpression.Arguments[0]);
-                    }
-                    else
-                    {
-                        return GetIndexerInvocation(methodCallExpression.Arguments[0]);
-                    }
                 case ExpressionType.Convert:
-                    return GetPath(((UnaryExpression)expr).Operand, false);
+                    listOfSegments.AddRange(GetPathSegments(((UnaryExpression)expr).Operand));
+                    return listOfSegments;
+
                 case ExpressionType.MemberAccess:
                     var memberExpression = expr as MemberExpression;
+                    listOfSegments.AddRange(GetPathSegments(memberExpression.Expression));
+                    // Get property name, respecting JsonProperty attribute
+                    listOfSegments.Add(GetPropertyNameFromMemberExpression(memberExpression));
+                    return listOfSegments;
 
-                    if (ContinueWithSubPath(memberExpression.Expression.NodeType, false))
-                    {
-                        var left = GetPath(memberExpression.Expression, false);
-                        // Get property name, respecting JsonProperty attribute
-                        return left + "/" + GetPropertyNameFromMemberExpression(memberExpression);
-                    }
-                    else
-                    {
-                        // Get property name, respecting JsonProperty attribute
-                        return GetPropertyNameFromMemberExpression(memberExpression);
-                    }
                 case ExpressionType.Parameter:
                     // Fits "x => x" (the whole document which is "" as JSON pointer)
-                    return firstTime ? string.Empty : null;
+                    return listOfSegments;
+
                 default:
-                    return string.Empty;
+                    throw new InvalidOperationException(Resources.FormatExpressionTypeNotSupported(expr));
             }
         }
 
@@ -776,33 +772,24 @@ namespace Microsoft.AspNetCore.JsonPatch
             return null;
         }
 
-        private static bool ContinueWithSubPath(ExpressionType expressionType, bool firstTime)
+        private static bool ContinueWithSubPath(ExpressionType expressionType)
         {
-            if (firstTime)
-            {
-                return (expressionType == ExpressionType.ArrayIndex
-                       || expressionType == ExpressionType.Call
-                       || expressionType == ExpressionType.Convert
-                       || expressionType == ExpressionType.MemberAccess
-                       || expressionType == ExpressionType.Parameter);
-            }
-            else
-            {
-                return (expressionType == ExpressionType.ArrayIndex
-                    || expressionType == ExpressionType.Call
-                    || expressionType == ExpressionType.Convert
-                    || expressionType == ExpressionType.MemberAccess);
-            }
+            return (expressionType == ExpressionType.ArrayIndex
+                || expressionType == ExpressionType.Call
+                || expressionType == ExpressionType.Convert
+                || expressionType == ExpressionType.MemberAccess);
+
         }
 
-        private static string GetIndexerInvocation(Expression expression)
+        // Evaluates the value of the key or index which may be an int or a string, 
+        // or some other expression type.
+        // The expression is converted to a delegate and the result of executing the delegate is returned as a string.
+        private static string EvaluateExpression(Expression expression)
         {
             var converted = Expression.Convert(expression, typeof(object));
             var fakeParameter = Expression.Parameter(typeof(object), null);
             var lambda = Expression.Lambda<Func<object, object>>(converted, fakeParameter);
-            Func<object, object> func;
-
-            func = lambda.Compile();
+            var func = lambda.Compile();
 
             return Convert.ToString(func(null), CultureInfo.InvariantCulture);
         }

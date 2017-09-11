@@ -132,6 +132,9 @@
   <data name="CannotUpdateProperty" xml:space="preserve">
     <value>The property at path '{0}' could not be updated.</value>
   </data>
+  <data name="ExpressionTypeNotSupported" xml:space="preserve">
+    <value>The expression '{0}' is not supported. Supported expressions include member access and indexer expressions.</value>
+  </data>
   <data name="IndexOutOfBounds" xml:space="preserve">
     <value>The index value provided by path segment '{0}' is out of bounds of the array size.</value>
   </data>

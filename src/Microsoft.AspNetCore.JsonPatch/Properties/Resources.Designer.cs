@@ -81,6 +81,20 @@ namespace Microsoft.AspNetCore.JsonPatch
             => string.Format(CultureInfo.CurrentCulture, GetString("CannotUpdateProperty"), p0);
 
         /// <summary>
+        /// The expression '{0}' is not supported.
+        /// </summary>
+        internal static string ExpressionTypeNotSupported
+        {
+            get => GetString("ExpressionTypeNotSupported");
+        }
+
+        /// <summary>
+        /// The expression '{0}' is not supported.
+        /// </summary>
+        internal static string FormatExpressionTypeNotSupported(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ExpressionTypeNotSupported"), p0);
+
+        /// <summary>
         /// The index value provided by path segment '{0}' is out of bounds of the array size.
         /// </summary>
         internal static string IndexOutOfBounds
@@ -135,6 +149,20 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         internal static string FormatInvalidJsonPatchOperation(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidJsonPatchOperation"), p0);
+
+        /// <summary>
+        /// The provided path segment '{0}' cannot be converted to the target type.
+        /// </summary>
+        internal static string InvalidPathSegment
+        {
+            get => GetString("InvalidPathSegment");
+        }
+
+        /// <summary>
+        /// The provided path segment '{0}' cannot be converted to the target type.
+        /// </summary>
+        internal static string FormatInvalidPathSegment(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidPathSegment"), p0);
 
         /// <summary>
         /// The provided string '{0}' is an invalid path.
@@ -205,20 +233,6 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         internal static string FormatPatchNotSupportedForNonGenericLists(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("PatchNotSupportedForNonGenericLists"), p0);
-
-        /// <summary>
-        /// The provided path segment '{0}' cannot be converted to the target type.
-        /// </summary>
-        internal static string InvalidPathSegment
-        {
-            get => GetString("InvalidPathSegment");
-        }
-
-        /// <summary>
-        /// The provided path segment '{0}' cannot be converted to the target type.
-        /// </summary>
-        internal static string FormatInvalidPathSegment(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidPathSegment"), p0);
 
         /// <summary>
         /// The target location specified by path segment '{0}' was not found.

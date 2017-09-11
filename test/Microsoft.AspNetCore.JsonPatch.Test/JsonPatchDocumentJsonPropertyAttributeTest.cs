@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Newtonsoft.Json;
@@ -11,6 +12,36 @@ namespace Microsoft.AspNetCore.JsonPatch
 {
     public class JsonPatchDocumentJsonPropertyAttributeTest
     {
+        [Fact]
+        public void Add_ToRoot_OfListOfObjects_AtEndOfList()
+        {
+            var patchDoc = new JsonPatchDocument<List<JsonPropertyObject>>();
+            patchDoc.Add(p => p, new JsonPropertyObject());
+
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized =
+                JsonConvert.DeserializeObject<JsonPatchDocument<JsonPropertyWithAnotherNameObject>>(serialized);
+
+            // get path
+            var pathToCheck = deserialized.Operations.First().path;
+            Assert.Equal("/-", pathToCheck);
+        }
+
+        [Fact]
+        public void Add_ToRoot_OfListOfObjects_AtGivenPosition()
+        {
+            var patchDoc = new JsonPatchDocument<List<JsonPropertyObject>>();
+            patchDoc.Add(p => p[3], new JsonPropertyObject());
+
+            var serialized = JsonConvert.SerializeObject(patchDoc);
+            var deserialized =
+                JsonConvert.DeserializeObject<JsonPatchDocument<JsonPropertyWithAnotherNameObject>>(serialized);
+
+            // get path
+            var pathToCheck = deserialized.Operations.First().path;
+            Assert.Equal("/3", pathToCheck);
+        }
+
         [Fact]
         public void Add_WithExpression_RespectsJsonPropertyName_ForModelProperty()
         {
