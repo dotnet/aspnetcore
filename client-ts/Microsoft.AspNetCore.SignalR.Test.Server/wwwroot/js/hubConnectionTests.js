@@ -3,7 +3,7 @@
 
 'use strict';
 
-var TESTHUBENDPOINT_URL = 'http://' + document.location.host + '/testhub';
+var TESTHUBENDPOINT_URL = '/testhub';
 
 describe('hubConnection', function () {
     eachTransportAndProtocol(function (transportType, protocol) {

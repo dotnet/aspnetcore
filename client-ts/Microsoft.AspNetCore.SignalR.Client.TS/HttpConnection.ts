@@ -34,10 +34,10 @@ export class HttpConnection implements IConnection {
     readonly features: any = {};
 
     constructor(url: string, options: IHttpConnectionOptions = {}) {
-        this.url = url;
+        this.logger = LoggerFactory.createLogger(options.logging);
+        this.url = this.resolveUrl(url);
         options = options || {};
         this.httpClient = options.httpClient || new HttpClient();
-        this.logger = LoggerFactory.createLogger(options.logging);
         this.connectionState = ConnectionState.Initial;
         this.options = options;
     }
@@ -154,6 +154,28 @@ export class HttpConnection implements IConnection {
         if (raiseClosed && this.onClosed) {
             this.onClosed(error);
         }
+    }
+
+    private resolveUrl(url: string) : string {
+        // startsWith is not supported in IE
+        if (url.lastIndexOf("https://", 0) === 0 || url.lastIndexOf("http://", 0) === 0) {
+            return url;
+        }
+
+        if (typeof window === 'undefined') {
+            throw new Error(`Cannot resolve '${url}'.`);
+        }
+
+        let parser = window.document.createElement("a");
+        parser.href = url;
+
+        let baseUrl = (!parser.protocol || parser.protocol === ":")
+            ? `${window.document.location.protocol}//${(parser.host || window.document.location.host)}`
+            : `${parser.protocol}//${parser.host}`;
+
+        let normalizedUrl = baseUrl + url;
+        this.logger.log(LogLevel.Information, `Normalizing '${url}' to '${normalizedUrl}'`);
+        return normalizedUrl;
     }
 
     onDataReceived: DataReceived;
