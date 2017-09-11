@@ -220,10 +220,15 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 throw new ArgumentNullException(nameof(property));
             }
 
-            var attributes = property.GetCustomAttributes(inherit: true);
-            var bindingInfo = BindingInfo.GetBindingInfo(attributes);
+            var propertyAttributes = property.GetCustomAttributes(inherit: true);
+            var handlerAttributes = property.DeclaringType.GetCustomAttributes(inherit: true);
 
-            var model = new PagePropertyModel(property, property.GetCustomAttributes(inherit: true))
+            // Look for binding info on the handler if nothing is specified on the property.
+            // This allows BindProperty attributes on handlers to apply to properties.
+            var bindingInfo = BindingInfo.GetBindingInfo(propertyAttributes) ??
+                BindingInfo.GetBindingInfo(handlerAttributes);
+
+            var model = new PagePropertyModel(property, propertyAttributes)
             {
                 PropertyName = property.Name,
                 BindingInfo = bindingInfo,

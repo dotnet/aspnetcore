@@ -1136,7 +1136,57 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             // Act
             var response = await Client.GetStringAsync("/Pages/Localized/PageWithModel?culture=fr-FR");
 
+            // Assert
             Assert.Equal(expected, response.Trim());
+        }
+
+        [Fact]
+        public async Task BindPropertyAttribute_CanBeAppliedToModelType()
+        {
+            // Arrange
+            var expected = "Property1 = 123, Property2 = 25,";
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Pages/PropertyBinding/BindPropertyOnModel?Property1=123")
+            {
+                Content = new FormUrlEncodedContent(new[]
+                {
+                    new KeyValuePair<string, string>("Property2", "25"),
+                }),
+            };
+            await AddAntiforgeryHeaders(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith(expected, responseContent.Trim());
+        }
+
+        [Fact]
+        public async Task BindingInfoOnPropertiesIsPreferredToBindingInfoOnType()
+        {
+            // Arrange
+            var expected = "Property1 = 123, Property2 = 25,";
+            var request = new HttpRequestMessage(HttpMethod.Post, "/Pages/PropertyBinding/BindPropertyOnModel?Property1=123")
+            {
+                Content = new FormUrlEncodedContent(new[]
+                {
+                    // FormValueProvider appears before QueryStringValueProvider. However, the FromQuery explicitly listed
+                    // on the property should cause it to use the latter.
+                    new KeyValuePair<string, string>("Property1", "345"),
+                    new KeyValuePair<string, string>("Property2", "25"),
+                }),
+            };
+            await AddAntiforgeryHeaders(request);
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            response.EnsureSuccessStatusCode();
+            var responseContent = await response.Content.ReadAsStringAsync();
+            Assert.StartsWith(expected, responseContent.Trim());
         }
 
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)

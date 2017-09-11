@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
-using Microsoft.Extensions.Options;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -230,6 +229,60 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
         }
 
         [Fact]
+        public void OnProvidersExecuting_DiscoversProperties_FromAllSubTypesThatDeclaresBindProperty()
+        {
+            // Arrange
+            var provider = new DefaultPageApplicationModelProvider();
+            var typeInfo = typeof(BindPropertyAttributeOnBaseModelPage).GetTypeInfo();
+            var descriptor = new PageActionDescriptor();
+            var context = new PageApplicationModelProviderContext(descriptor, typeInfo);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.NotNull(context.PageApplicationModel);
+            Assert.Collection(
+                context.PageApplicationModel.HandlerProperties.OrderBy(p => p.PropertyName).Where(p => p.BindingInfo != null),
+                property =>
+                {
+                    var name = nameof(ModelLevel3.Property2);
+                    Assert.Equal(typeof(ModelLevel3).GetProperty(name), property.PropertyInfo);
+                    Assert.Equal(name, property.PropertyName);
+                    Assert.NotNull(property.BindingInfo);
+                },
+                property =>
+                {
+                    var name = nameof(ModelLevel3.Property3);
+                    Assert.Equal(typeof(ModelLevel3).GetProperty(name), property.PropertyInfo);
+                    Assert.Equal(name, property.PropertyName);
+                    Assert.NotNull(property.BindingInfo);
+                });
+        }
+
+        private class BindPropertyAttributeOnBaseModelPage : Page
+        {
+            public ModelLevel3 Model => null;
+            public override Task ExecuteAsync() => throw new NotImplementedException();
+        }
+
+        private class ModelLevel1 : PageModel
+        {
+            public string Property1 { get; set; }
+        }
+
+        [BindProperty]
+        private class ModelLevel2 : ModelLevel1
+        {
+            public string Property2 { get; set; }
+        }
+
+        private class ModelLevel3 : ModelLevel2
+        {
+            public string Property3 { get; set; }
+        }
+
+        [Fact]
         public void OnProvidersExecuting_DiscoversHandlersFromPage()
         {
             // Arrange
@@ -303,6 +356,53 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     Assert.NotNull(property.BindingInfo);
                     Assert.Equal(BindingSource.Query, property.BindingInfo.BindingSource);
                 });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_DiscoversBindingInfoFromHandler()
+        {
+            // Arrange
+            var provider = new DefaultPageApplicationModelProvider();
+            var typeInfo = typeof(PageWithBindPropertyModel).GetTypeInfo();
+            var modelType = typeof(ModelWithBindProperty);
+            var descriptor = new PageActionDescriptor();
+            var context = new PageApplicationModelProviderContext(descriptor, typeInfo);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            Assert.NotNull(context.PageApplicationModel);
+            Assert.Collection(
+                context.PageApplicationModel.HandlerProperties.OrderBy(p => p.PropertyName),
+                property =>
+                {
+                    Assert.Equal(nameof(ModelWithBindProperty.Property1), property.PropertyName);
+                    Assert.NotNull(property.BindingInfo);
+                },
+                property =>
+                {
+                    Assert.Equal(nameof(ModelWithBindProperty.Property2), property.PropertyName);
+                    Assert.NotNull(property.BindingInfo);
+                    Assert.Equal(BindingSource.Path, property.BindingInfo.BindingSource);
+                });
+        }
+
+        private class PageWithBindPropertyModel : PageBase
+        {
+            public ModelWithBindProperty Model => null;
+
+            public override Task ExecuteAsync() => null;
+        }
+
+        [BindProperty]
+        [PageModel]
+        private class ModelWithBindProperty
+        {
+            public string Property1 { get; set; }
+
+            [FromRoute]
+            public string Property2 { get; set; }
         }
 
         [Fact]

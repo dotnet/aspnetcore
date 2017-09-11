@@ -224,7 +224,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return propertyModel;
         }
 
-
         /// <summary>
         /// Creates the <see cref="ActionModel"/> instance for the given action <see cref="MethodInfo"/>.
         /// </summary>
