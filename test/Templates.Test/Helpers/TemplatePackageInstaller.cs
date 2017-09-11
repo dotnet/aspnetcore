@@ -41,7 +41,11 @@ namespace Templates.Test.Helpers
                     Directory.GetCurrentDirectory(),
                     "dotnet",
                     $"new --uninstall {packageName}");
-                proc.WaitForExit(assertSuccess: true);
+
+                // We don't need this command to succeed, because we'll verify next that
+                // uninstallation had the desired effect. This command is expected to fail
+                // in the case where the package wasn't previously installed.
+                proc.WaitForExit(assertSuccess: false);
             }
 
             VerifyCannotFindTemplate(output, "ASP.NET Core Empty");
