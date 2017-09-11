@@ -21,6 +21,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Spa.Pr
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Client.ItemTemplates", "src\Microsoft.DotNet.Web.Client.ItemTemplates\Microsoft.DotNet.Web.Client.ItemTemplates.csproj", "{1731F6D9-1DFC-49D6-8F28-471194B1962C}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.ProjectTemplates.2.1", "src\Microsoft.DotNet.Web.ProjectTemplates.2.1\Microsoft.DotNet.Web.ProjectTemplates.2.1.csproj", "{260EBA09-DEF5-429C-99BF-90CA1456A576}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -59,6 +61,10 @@ Global
 		{1731F6D9-1DFC-49D6-8F28-471194B1962C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1731F6D9-1DFC-49D6-8F28-471194B1962C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1731F6D9-1DFC-49D6-8F28-471194B1962C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{260EBA09-DEF5-429C-99BF-90CA1456A576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{260EBA09-DEF5-429C-99BF-90CA1456A576}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{260EBA09-DEF5-429C-99BF-90CA1456A576}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{260EBA09-DEF5-429C-99BF-90CA1456A576}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -70,6 +76,7 @@ Global
 		{01E12D5E-8540-4BC8-9A54-41EDD55E762E} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
 		{402E62D1-7FD0-4E07-812C-0E385D98D6D9} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
 		{1731F6D9-1DFC-49D6-8F28-471194B1962C} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
+		{260EBA09-DEF5-429C-99BF-90CA1456A576} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {E9B27B0D-4F85-431B-9C26-80CFE4393D36}

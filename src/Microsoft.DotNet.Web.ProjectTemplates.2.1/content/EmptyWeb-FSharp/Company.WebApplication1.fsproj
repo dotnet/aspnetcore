@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' == ''">netcoreapp2.1</TargetFramework>
+    <TargetFramework Condition="'$(TargetFrameworkOverride)' != ''">TargetFrameworkOverride</TargetFramework>
+    <RuntimeFrameworkVersion Condition="'$(Framework)' == 'netcoreapp2.1'">2.1.0-preview2-25624-02</RuntimeFrameworkVersion>
+    <NETStandardImplicitPackageVersion Condition="'$(Framework)' == 'netcoreapp2.1'">2.1.0-preview2-25624-02</NETStandardImplicitPackageVersion>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Startup.fs" />
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="2.1.0-preview1-26751" />
+  </ItemGroup>
+
+</Project>
