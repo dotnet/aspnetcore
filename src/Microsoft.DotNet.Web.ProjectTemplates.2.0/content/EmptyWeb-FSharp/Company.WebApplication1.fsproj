@@ -11,7 +11,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(TemplateAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(TemplateDep_AspNetCore_2_1)" />
   </ItemGroup>
 
 </Project>

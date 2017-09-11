@@ -1,5 +1,6 @@
 <Project>
   <Import Project="version.xml" />
+  <Import Project="TemplateDependencies.props" />
 
   <PropertyGroup>
     <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>

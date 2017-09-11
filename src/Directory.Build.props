@@ -11,8 +11,6 @@
     <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
     <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)..\artifacts\build\unversioned\</PackageOutputPath>
     <NuspecProperties>version=$(PackageVersion)</NuspecProperties>
-    <AspNetCoreVersionFromLineup>@(PackageReference->WithMetadataValue('Identity', 'Microsoft.AspNetCore')->Metadata('Version'))</AspNetCoreVersionFromLineup>
-    <EntityFrameworkVersionFromLineup>@(PackageReference->WithMetadataValue('Identity', 'Microsoft.EntityFrameworkCore')->Metadata('Version'))</EntityFrameworkVersionFromLineup>
 
     <!--
         These are not regular projects. They are just wrappers for the .nuspec files in each
@@ -29,14 +27,6 @@
   <ItemGroup>
     <ProjectReference Include="$(MSBuildThisFileDirectory)../tools/DependencyUpdater/DependencyUpdater.csproj" />
     <None Include="Content/**" />
-
-    <!--
-      These references are here only so that KoreBuild will locate the applicable
-      version in the current lineup and we can then substitute it into the emitted
-      template .nupkg files.
-    -->
-    <PackageReference Include="Microsoft.AspNetCore" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore" />
   </ItemGroup>
 
 </Project>

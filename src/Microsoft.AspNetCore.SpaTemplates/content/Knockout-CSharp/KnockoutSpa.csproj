@@ -9,13 +9,13 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkOverride)' == ''">
-    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(TemplateAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.All" Version="$(TemplateDep_AspNetCore_2_1)" />
   </ItemGroup>
   <ItemGroup Condition="'$(TargetFrameworkOverride)' != ''">
-    <PackageReference Include="Microsoft.AspNetCore" Version="$(TemplateAspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(TemplateAspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="$(TemplateAspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(TemplateAspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="$(TemplateDep_AspNetCore_2_1)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="$(TemplateDep_AspNetCore_2_1)" />
+    <PackageReference Include="Microsoft.AspNetCore.SpaServices" Version="$(TemplateDep_AspNetCore_2_1)" />
+    <PackageReference Include="Microsoft.AspNetCore.StaticFiles" Version="$(TemplateDep_AspNetCore_2_1)" />
   </ItemGroup>
 
   <ItemGroup>
