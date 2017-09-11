@@ -1,0 +1,40 @@
+{
+  "$schema": "http://json.schemastore.org/template",
+  "author": "Microsoft",
+  "classifications": [ "Web", "Script" ],
+  "name": "TypeScript file",
+  "generatorVersions": "[1.0.0.0-*)",
+  "description": "A blank TypeScript source file",
+  "groupIdentity": "Microsoft.DotNet.Web.ClientItems.TypeScript",
+  "precedence": "100",
+  "identity": "Microsoft.DotNet.Web.ClientItems.TypeScript",
+  "shortName": "tsfile",
+  "sourceName": "file1",
+  "tags": {
+    "type": "item"
+  },
+  "primaryOutputs": [
+    {
+      "path": "file1.ts"
+    }
+  ],
+  "defaultName": "file1",
+  "symbols": {
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
+    }
+  },
+  "postActions": [
+    {
+      "condition": "(HostIdentifier != \"dotnetcli\" && HostIdentifier != \"dotnetcli-preview\")",
+      "description": "Opens file1.ts in the editor",
+      "manualInstructions": [ ],
+      "actionId": "84C0DA21-51C8-4541-9940-6CA19AF04EE6",
+      "args": {
+        "files": "0"
+      },
+      "continueOnError": true
+    }
+  ]
+}
