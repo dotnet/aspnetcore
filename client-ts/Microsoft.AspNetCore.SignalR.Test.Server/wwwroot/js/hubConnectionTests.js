@@ -17,7 +17,7 @@ describe('hubConnection', function () {
                     protocol: protocol,
                     logging: signalR.LogLevel.Trace
                 };
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, options), options);
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
                 hubConnection.onClosed = function (error) {
                     expect(error).toBe(undefined);
                     done();
@@ -44,7 +44,7 @@ describe('hubConnection', function () {
                     protocol: protocol,
                     logging: signalR.LogLevel.Trace
                 };
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, options), options);
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
 
                 hubConnection.onClosed = function (error) {
                     expect(error).toBe(undefined);
@@ -79,7 +79,7 @@ describe('hubConnection', function () {
                     protocol: protocol,
                     logging: signalR.LogLevel.Trace
                 };
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, options), options);
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
 
                 hubConnection.start().then(function () {
                     hubConnection.invoke('ThrowException', errorMessage).then(function () {
@@ -105,7 +105,7 @@ describe('hubConnection', function () {
                     protocol: protocol,
                     logging: signalR.LogLevel.Trace
                 };
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, options), options);
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
 
                 hubConnection.start().then(function () {
                     hubConnection.stream('ThrowException', errorMessage).subscribe({
@@ -132,7 +132,7 @@ describe('hubConnection', function () {
                     protocol: protocol,
                     logging: signalR.LogLevel.Trace
                 };
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection(TESTHUBENDPOINT_URL, options), options);
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
 
                 var message = "你好 SignalR！";
 
@@ -170,7 +170,7 @@ describe('hubConnection', function () {
                     protocol: protocol,
                     logging: signalR.LogLevel.Trace
                 };
-                var hubConnection = new signalR.HubConnection(new signalR.HttpConnection('http://' + document.location.host + '/uncreatable', options), options);
+                var hubConnection = new signalR.HubConnection('http://' + document.location.host + '/uncreatable', options);
 
                 hubConnection.onClosed = function (error) {
                     expect(error.message).toMatch(errorRegex[signalR.TransportType[transportType]]);

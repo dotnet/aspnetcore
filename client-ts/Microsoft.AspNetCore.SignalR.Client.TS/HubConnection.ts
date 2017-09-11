@@ -3,6 +3,7 @@
 
 import { ConnectionClosed } from "./Common"
 import { IConnection } from "./IConnection"
+import { HttpConnection} from "./HttpConnection"
 import { TransportType, TransferMode } from "./Transports"
 import { Subject, Observable } from "./Observable"
 import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, NegotiationMessage } from "./IHubProtocol";
@@ -28,9 +29,15 @@ export class HubConnection {
     private id: number;
     private connectionClosedCallback: ConnectionClosed;
 
-    constructor(connection: IConnection, options: IHubConnectionOptions = {}) {
-        this.connection = connection;
+    constructor(urlOrConnection: string | IConnection, options: IHubConnectionOptions = {}) {
         options = options || {};
+        if (typeof urlOrConnection === "string") {
+            this.connection = new HttpConnection(urlOrConnection, options);
+        }
+        else {
+            this.connection = urlOrConnection;
+        }
+
         this.logger = LoggerFactory.createLogger(options.logging);
 
         this.protocol = options.protocol || new JsonHubProtocol();
