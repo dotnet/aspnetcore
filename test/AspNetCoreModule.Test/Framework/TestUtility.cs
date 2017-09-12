@@ -791,7 +791,47 @@ namespace AspNetCoreModule.Test.Framework
 
             return stringBuilder.ToString().Trim(new char[] { ' ', '\r', '\n' });
         }
-        
+
+        public static void RunPowershellScript(string scriptText, string expectedResult, int retryCount = 3)
+        {
+            bool isReady = false;
+            string result = string.Empty;
+
+            for (int i = 0; i < retryCount; i++)
+            {
+                try
+                {
+                    result = TestUtility.RunPowershellScript(scriptText);
+                }
+                catch
+                {
+                    result = "ExceptionError";
+                }
+
+                if (expectedResult != null)
+                {
+                    if (expectedResult == result)
+                    {
+                        isReady = true;
+                        break;
+                    }
+                    else
+                    {
+                        System.Threading.Thread.Sleep(1000);
+                    }
+                }
+                else
+                {
+                    isReady = true;
+                    break;
+                }
+            }
+            if (!isReady)
+            {
+                throw new ApplicationException("Failed to execute command: " + scriptText + ", expected result: " + expectedResult + ", actual result = " + result);
+            }
+        }
+
         public static int RunCommand(string fileName, string arguments = null, bool checkStandardError = true, bool waitForExit=true)
         {
             int pid = -1;
@@ -809,7 +849,7 @@ namespace AspNetCoreModule.Test.Framework
             }
             
             p.StartInfo.UseShellExecute = false;
-            p.StartInfo.CreateNoWindow = true;            
+            p.StartInfo.CreateNoWindow = true;
             p.Start(); 
             pid = p.Id;
             string standardOutput = string.Empty;

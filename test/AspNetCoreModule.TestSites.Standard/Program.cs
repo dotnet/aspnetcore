@@ -15,6 +15,7 @@ namespace AspnetCoreModule.TestSites.Standard
     public static class Program
     {
         public static IApplicationLifetime AappLifetime;
+        public static bool AappLifetimeStopping = false;
         public static int GracefulShutdownDelayTime = 0;
 
         private static X509Certificate2 _x509Certificate2;
@@ -153,16 +154,21 @@ namespace AspnetCoreModule.TestSites.Standard
             }
             
             AappLifetime.ApplicationStarted.Register(
-                () => Thread.Sleep(1000)
+                () => {
+                    Thread.Sleep(1000);
+                }
             );
             AappLifetime.ApplicationStopping.Register(
-                () => Thread.Sleep(Startup.SleeptimeWhileClosing / 2)
+                () => {
+                    AappLifetimeStopping = true;
+                    Thread.Sleep(Startup.SleeptimeWhileClosing / 2);
+                }
             );
             AappLifetime.ApplicationStopped.Register(
                 () => {
                     Thread.Sleep(Startup.SleeptimeWhileClosing / 2);
                     Startup.SleeptimeWhileClosing = 0;   // All of SleeptimeWhileClosing is used now
-                    }
+                }
             );
             try
             {

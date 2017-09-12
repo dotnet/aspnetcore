@@ -7,7 +7,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Collections;
 using System.Threading;
-using Xunit;
 
 namespace AspNetCoreModule.Test.WebSocketClient
 {
@@ -33,6 +32,34 @@ namespace AspNetCoreModule.Test.WebSocketClient
             }
         }
 
+        public bool WaitForWebSocketState(WebSocketState expectedState, int timeout = 3000)
+        {
+            bool result = false;
+            int RETRYMAX = 300;
+            int INTERVAL = 100; // ms
+            if (timeout > RETRYMAX * INTERVAL)
+            {
+                throw new Exception("timeout should be less than " + 100 * 300);
+            }
+            for (int i=0; i<RETRYMAX; i++)
+            {
+                if (i*100 > timeout)
+                {
+                    break;
+                }
+                if (this.WebSocketState == expectedState)
+                {
+                    result = true;
+                    break;
+                }
+                else
+                {
+                    Thread.Sleep(INTERVAL);
+                }
+            }
+            return result;
+        }
+
         public Frame Connect(Uri address, bool storeData, bool isAlwaysReading)
         {
             Address = address;
@@ -44,7 +71,11 @@ namespace AspNetCoreModule.Test.WebSocketClient
                 InitiateWithAlwaysReading();
             }
             SendWebSocketRequest(WebSocketClientUtility.WebSocketVersion);
-            Thread.Sleep(3000);
+
+            if (!WaitForWebSocketState(WebSocketState.ConnectionOpen))
+            {
+                throw new Exception("Failed to open a connection");
+            }
 
             Frame openingFrame = null;
 
@@ -53,23 +84,21 @@ namespace AspNetCoreModule.Test.WebSocketClient
             else
                 openingFrame = Connection.DataReceived[0];
                         
-            Thread.Sleep(1000);
-
             IsOpened = true;
             return openingFrame;
         }
-
+        
         public Frame Close()
         {
             CloseConnection();
-            Thread.Sleep(1000);
-
+            
             Frame closeFrame = null;
 
             if (!IsAlwaysReading)
                 closeFrame = ReadData();
             else
                 closeFrame = Connection.DataReceived[Connection.DataReceived.Count - 1];
+
             IsOpened = false;
             return closeFrame;
         }
@@ -137,7 +166,7 @@ namespace AspNetCoreModule.Test.WebSocketClient
                     Encoding.UTF8.GetString(outputData, 0, outputData.Length));
             }
         }
-        
+
         public void ReadDataCallback(IAsyncResult result)
         {
             WebSocketConnect client = (WebSocketConnect) result.AsyncState;
@@ -190,27 +219,16 @@ namespace AspNetCoreModule.Test.WebSocketClient
 
                 // Create frame with the tempBuffer
                 Frame frame = new Frame(tempBuffer);
-                int nextFrameIndex = 0;
+                ProcessReceivedData(frame);
+                int nextFrameIndex = frame.IndexOfNextFrame;
+
                 while (nextFrameIndex != -1)
                 {
-                    TestUtility.LogInformation("ReadDataCallback: Client {0:D3}: Read Type {1} : {2} ", Connection.Id, frame.FrameType, bytesReadIntotal);
+                    tempBuffer = tempBuffer.SubArray(frame.IndexOfNextFrame, tempBuffer.Length - frame.IndexOfNextFrame);
+                    frame = new Frame(tempBuffer);
                     ProcessReceivedData(frame);
-
-                    // Send Pong if the frame was Ping
-                    if (frame.FrameType == FrameType.Ping)
-                        SendPong(frame);
-
                     nextFrameIndex = frame.IndexOfNextFrame;
-                    if (nextFrameIndex != -1)
-                    {
-                        tempBuffer = tempBuffer.SubArray(frame.IndexOfNextFrame, tempBuffer.Length - frame.IndexOfNextFrame);
-                        frame = new Frame(tempBuffer);
-                    }
                 }
-
-                // Send Pong if the frame was Ping
-                if (frame.FrameType == FrameType.Ping)
-                    SendPong(frame);
 
                 if (client.IsDisposed)
                     return;
@@ -271,6 +289,10 @@ namespace AspNetCoreModule.Test.WebSocketClient
         {
             Send(Frames.PONG);
         }
+        public void SendClose()
+        {
+            Send(Frames.CLOSE_FRAME);
+        }
 
         public void SendPong(Frame receivedPing)
         {
@@ -291,8 +313,13 @@ namespace AspNetCoreModule.Test.WebSocketClient
 
         public void CloseConnection()
         {
-            Connection.Done = true;
+            this.WebSocketState = WebSocketState.ClosingFromClientStarted;
             Send(Frames.CLOSE_FRAME);
+
+            if (!WaitForWebSocketState(WebSocketState.ConnectionClosed))
+            {
+                throw new Exception("Failed to close a connection");
+            }
         }
 
         public static void WriteCallback(IAsyncResult result)
@@ -336,12 +363,45 @@ namespace AspNetCoreModule.Test.WebSocketClient
 
         private void ProcessReceivedData(Frame frame)
         {
-            if (frame.Content.Contains("Connection: Upgrade")
-                && frame.Content.Contains("Upgrade: Websocket")
-                && frame.Content.Contains("HTTP/1.1 101 Switching Protocols"))
-                WebSocketState = WebSocketState.ConnectionOpen;
-            if (frame.FrameType == FrameType.Close)
-                WebSocketState = WebSocketState.ConnectionClosed;
+            TestUtility.LogInformation("ReadDataCallback: Client {0:D3}: Read Type {1} : {2} ", Connection.Id, frame.FrameType, frame.DataLength);
+            if (frame.FrameType == FrameType.NonControlFrame)
+            {
+                string content = frame.Content.ToLower();
+                if (content.Contains("connection: upgrade")
+                    && content.Contains("upgrade: websocket")
+                    && content.Contains("http/1.1 101 switching protocols"))
+                {
+                    TestUtility.LogInformation("Connection opened...");
+                    TestUtility.LogInformation(frame.Content);
+                    WebSocketState = WebSocketState.ConnectionOpen;
+                }
+            }
+            else
+            {
+                // Send Pong if the frame was Ping
+                if (frame.FrameType == FrameType.Ping)
+                    SendPong(frame);
+                
+                // Send Close if the frame was Close
+                if (frame.FrameType == FrameType.Close)
+                {
+                    if (WebSocketState == WebSocketState.ConnectionClosed)
+                    {
+                        throw new Exception("Connection was already closed");
+                    }
+                    else
+                    {
+                        if (WebSocketState != WebSocketState.ClosingFromClientStarted)
+                        {
+                            TestUtility.LogInformation("Send back Close frame to responsd server closing...");
+                            SendClose();
+                        }
+                        TestUtility.LogInformation(frame.Content);
+                        WebSocketState = WebSocketState.ConnectionClosed;
+                        IsOpened = false;
+                    }
+                }
+            }
             ProcessData(frame, false);
         }
 

@@ -35,9 +35,7 @@ namespace AspNetCoreModule.Test.WebSocketClient
         
         public byte[] InputData { get; set; }
         public bool IsDisposed { get; set; }
-        public bool Done { get; set; }
-
-
+        
         public int Id { get; set; }
 
         public MyTcpClient TcpClient { get; set; }

@@ -99,12 +99,43 @@ namespace AspNetCoreModule.Test.Framework
             }
         }
 
+        private int _workerProcessID = 0;
+        public int WorkerProcessID
+        {
+            get
+            {
+                if (_workerProcessID == 0)
+                {
+                    try
+                    {
+                        if (IisServerType == ServerType.IISExpress)
+                        {
+                            _workerProcessID = Convert.ToInt32(TestUtility.GetProcessWMIAttributeValue("iisexpress.exe", "Handle", null));
+                        }
+                        else
+                        {
+                            _workerProcessID = Convert.ToInt32(TestUtility.GetProcessWMIAttributeValue("w3wp.exe", "Handle", null));
+                        }
+                    }
+                    catch
+                    {
+                        TestUtility.LogInformation("Failed to get process id of w3wp.exe");
+                    }
+                }
+                return _workerProcessID;
+            }
+            set
+            {
+                _workerProcessID = value;
+            }
+        }
+
         public ServerType IisServerType { get; set; }
         public string IisExpressConfigPath { get; set; }
         private int _siteId { get; set; }
         private IISConfigUtility.AppPoolBitness _appPoolBitness { get; set; }
         
-        public TestWebSite(IISConfigUtility.AppPoolBitness appPoolBitness, string loggerPrefix = "ANCMTest", bool startIISExpress = true, bool copyAllPublishedFiles = false)
+        public TestWebSite(IISConfigUtility.AppPoolBitness appPoolBitness, string loggerPrefix = "ANCMTest", bool startIISExpress = true, bool copyAllPublishedFiles = false, bool attachAppVerifier = false)
         {
             _appPoolBitness = appPoolBitness;
 
@@ -165,9 +196,9 @@ namespace AspNetCoreModule.Test.Framework
             }
 
             //
-            // Currently we use only DotnetCore v1.1 
+            // Currently we use DotnetCore v1.0
             //
-            string publishPath = Path.Combine(srcPath, "bin", "Debug", "netcoreapp1.1", "publish");
+            string publishPath = Path.Combine(srcPath, "bin", "Debug", "netcoreapp1.0", "publish");
             string publishPathOutput = Path.Combine(Environment.ExpandEnvironmentVariables("%SystemDrive%") + @"\", "inetpub", "ANCMTest", "publishPathOutput");
             
             //
@@ -177,7 +208,12 @@ namespace AspNetCoreModule.Test.Framework
             {
                 string argumentForDotNet = "publish " + srcPath;
                 TestUtility.LogInformation("TestWebSite::TestWebSite() StandardTestApp is not published, trying to publish on the fly: dotnet.exe " + argumentForDotNet);
+                TestUtility.DeleteDirectory(publishPath);
                 TestUtility.RunCommand("dotnet", argumentForDotNet);
+                if (!File.Exists(Path.Combine(publishPath, "AspNetCoreModule.TestSites.Standard.dll")))
+                {
+                    throw new Exception("Failed to publish");
+                }
                 TestUtility.DirectoryCopy(publishPath, publishPathOutput);
                 TestUtility.FileCopy(Path.Combine(publishPathOutput, "web.config"), Path.Combine(publishPathOutput, "web.config.bak"));
 
@@ -283,18 +319,26 @@ namespace AspNetCoreModule.Test.Framework
 
             if (startIISExpress)
             {
-                StartIISExpress();
-            }
+                // clean up IISExpress before starting a new instance
+                TestUtility.KillIISExpressProcess();
 
+                StartIISExpress();
+
+                // send a startup request to IISExpress instance to make sure that it is fully ready to use before starting actual test scenarios
+                TestUtility.RunPowershellScript("( invoke-webrequest http://localhost:" + TcpPort + " ).StatusCode", "200");
+            }
             TestUtility.LogInformation("TestWebSite::TestWebSite() End");
         }
 
-        public void StartIISExpress(string verificationCommand = null)
+        public void StartIISExpress()
         {
             if (IisServerType == ServerType.IIS)
             {
                 return;
             }
+
+            // reset workerProcessID
+            this.WorkerProcessID = 0;
 
             string cmdline;
             string argument = "/siteid:" + _siteId + " /config:" + IisExpressConfigPath;
@@ -309,41 +353,126 @@ namespace AspNetCoreModule.Test.Framework
             }
             TestUtility.LogInformation("TestWebSite::TestWebSite() Start IISExpress: " + cmdline + " " + argument);
             _iisExpressPidBackup = TestUtility.RunCommand(cmdline, argument, false, false);
-
-            bool isIISExpressReady = false;
-            int timeout = 3;
-            for (int i = 0; i < timeout * 5; i++)
+        }
+        
+        public void AttachAppverifier()
+        {
+            string cmdline;
+            string processName = "iisexpress.exe";
+            if (IisServerType == ServerType.IIS)
             {
-                string statusCode = string.Empty;
-                try
-                {
-                    if (verificationCommand == null)
-                    {
-                        verificationCommand = "( invoke-webrequest http://localhost:" + TcpPort + " ).StatusCode";
-                    }
-                    statusCode = TestUtility.RunPowershellScript(verificationCommand);
-                }
-                catch
-                {
-                    statusCode = "ExceptionError";
-                }
-                if ("200" == statusCode)
-                {
-                    isIISExpressReady = true;
-                    break;
-                }
-                else
-                {
-                    System.Threading.Thread.Sleep(200);
-                }
+                processName = "w3wp.exe";
             }
-            if (isIISExpressReady)
+            string argument = "-enable Heaps COM RPC Handles Locks Memory TLS Exceptions Threadpool Leak SRWLock -for " + processName;
+            if (Directory.Exists(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%")) && _appPoolBitness == IISConfigUtility.AppPoolBitness.enable32Bit)
             {
-                TestUtility.LogInformation("IISExpress is ready to use");
+                cmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "syswow64", "appverif.exe");
+                if (!File.Exists(cmdline))
+                {
+                    throw new System.ApplicationException("Not found :" + cmdline + "; this test requires appverif.exe.");
+                }
             }
             else
             {
-                throw new ApplicationException("IISExpress is not responding within " + timeout + " seconds");
+                cmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "appverif.exe");
+                if (!File.Exists(cmdline))
+                {
+                    throw new System.ApplicationException("Not found :" + cmdline + "; this test requires appverif.exe.");
+                }
+            }
+
+            try
+            {
+                TestUtility.LogInformation("Configure Appverifier: " + cmdline + " " + argument);
+                TestUtility.RunCommand(cmdline, argument, true, false);
+            }
+            catch
+            {
+                throw new System.ApplicationException("Failed to configure Appverifier");
+            }
+        }
+
+        public void AttachWinDbg(int processIdOfWorkerProcess)
+        {
+            string processName = "iisexpress.exe";
+            string debuggerCmdline;
+            if (IisServerType == ServerType.IIS)
+            {
+                processName = "w3wp.exe";
+            }
+            string argument = "-enable Heaps COM RPC Handles Locks Memory TLS Exceptions Threadpool Leak SRWLock -for " + processName;
+            if (Directory.Exists(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%")) && _appPoolBitness == IISConfigUtility.AppPoolBitness.enable32Bit)
+            {
+                debuggerCmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Debugging Tools for Windows (x64)", "wow64", "windbg.exe");
+                if (!File.Exists(debuggerCmdline))
+                {
+                    throw new System.ApplicationException("Not found :" + debuggerCmdline + "; this test requires windbg.exe.");
+                }
+            }
+            else
+            {
+                debuggerCmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Debugging Tools for Windows (x64)", "windbg.exe");
+                if (!File.Exists(debuggerCmdline))
+                {
+                    throw new System.ApplicationException("Not found :" + debuggerCmdline + "; this test requires windbg.exe.");
+                }
+            }
+            
+            try
+            {
+                TestUtility.RunCommand(debuggerCmdline, " -g -G -p " + processIdOfWorkerProcess.ToString(), true, false);                
+                System.Threading.Thread.Sleep(3000);
+            }
+            catch
+            {
+                throw new System.ApplicationException("Failed to attach debuger");
+            }
+        }
+
+        public void DetachAppverifier()
+        {
+            try
+            {
+                string cmdline;
+                string processName = "iisexpress.exe";
+                string debuggerCmdline;
+                if (IisServerType == ServerType.IIS)
+                {
+                    processName = "w3wp.exe";
+                }
+
+                string argument = "-disable * -for " + processName;
+                if (Directory.Exists(Environment.ExpandEnvironmentVariables("%ProgramFiles(x86)%")) && _appPoolBitness == IISConfigUtility.AppPoolBitness.enable32Bit)
+                {
+                    cmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "syswow64", "appverif.exe");
+                    if (!File.Exists(cmdline))
+                    {
+                        throw new System.ApplicationException("Not found :" + cmdline);
+                    }
+                    debuggerCmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Debugging Tools for Windows (x64)", "wow64", "windbg.exe");
+                    if (!File.Exists(debuggerCmdline))
+                    {
+                        throw new System.ApplicationException("Not found :" + debuggerCmdline);
+                    }
+                }
+                else
+                {
+                    cmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "appverif.exe");
+                    if (!File.Exists(cmdline))
+                    {
+                        throw new System.ApplicationException("Not found :" + cmdline);
+                    }
+                    debuggerCmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Debugging Tools for Windows (x64)", "windbg.exe");
+                    if (!File.Exists(debuggerCmdline))
+                    {
+                        throw new System.ApplicationException("Not found :" + debuggerCmdline);
+                    }
+                }
+                TestUtility.RunCommand(cmdline, argument, true, false);
+            }
+            catch
+            {
+                TestUtility.LogInformation("Failed to detach Appverifier");
             }
         }
     }

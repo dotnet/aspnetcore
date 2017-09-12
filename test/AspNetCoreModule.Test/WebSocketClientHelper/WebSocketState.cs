@@ -7,6 +7,7 @@ namespace AspNetCoreModule.Test.WebSocketClient
     {
         NonWebSocket,
         ConnectionOpen,
+        ClosingFromClientStarted,
         ConnectionClosed
     }
 }
