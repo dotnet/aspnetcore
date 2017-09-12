@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         public static IHubProtocol GetHubProtocol(this IHubConnectionBuilder hubConnectionBuilder)
         {
-            hubConnectionBuilder.TryGetSetting<IHubProtocol>(HubConnectionBuilderDefaults.LoggerFactoryKey, out var hubProtocol);
+            hubConnectionBuilder.TryGetSetting<IHubProtocol>(HubConnectionBuilderDefaults.HubProtocolKey, out var hubProtocol);
             return hubProtocol;
         }
     }
