@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Http.Internal
         /// <summary>
         /// Get or sets the associated value from the collection as a single string.
         /// </summary>
-        /// <param name="key">The header name.</param>
+        /// <param name="key">The key name.</param>
         /// <returns>the associated value from the collection as a StringValues or StringValues.Empty if the key is not present.</returns>
         public StringValues this[string key]
         {
@@ -66,9 +66,9 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         /// <summary>
-        /// Gets the number of elements contained in the <see cref="HeaderDictionary" />;.
+        /// Gets the number of elements contained in the <see cref="QueryCollection" />;.
         /// </summary>
-        /// <returns>The number of elements contained in the <see cref="HeaderDictionary" />.</returns>
+        /// <returns>The number of elements contained in the <see cref="QueryCollection" />.</returns>
         public int Count
         {
             get
@@ -94,10 +94,10 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         /// <summary>
-        /// Determines whether the <see cref="HeaderDictionary" /> contains a specific key.
+        /// Determines whether the <see cref="QueryCollection" /> contains a specific key.
         /// </summary>
         /// <param name="key">The key.</param>
-        /// <returns>true if the <see cref="HeaderDictionary" /> contains a specific key; otherwise, false.</returns>
+        /// <returns>true if the <see cref="QueryCollection" /> contains a specific key; otherwise, false.</returns>
         public bool ContainsKey(string key)
         {
             if (Store == null)
@@ -108,11 +108,11 @@ namespace Microsoft.AspNetCore.Http.Internal
         }
 
         /// <summary>
-        /// Retrieves a value from the dictionary.
+        /// Retrieves a value from the collection.
         /// </summary>
-        /// <param name="key">The header name.</param>
+        /// <param name="key">The key.</param>
         /// <param name="value">The value.</param>
-        /// <returns>true if the <see cref="HeaderDictionary" /> contains the key; otherwise, false.</returns>
+        /// <returns>true if the <see cref="QueryCollection" /> contains the key; otherwise, false.</returns>
         public bool TryGetValue(string key, out StringValues value)
         {
             if (Store == null)
