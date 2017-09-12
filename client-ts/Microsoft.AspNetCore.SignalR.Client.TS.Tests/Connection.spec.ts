@@ -9,6 +9,10 @@ import { ITransport, TransportType, TransferMode } from "../Microsoft.AspNetCore
 import { eachTransport } from "./Common";
 
 describe("Connection", () => {
+    it("cannot be created with relative url if document object is not present", () => {
+        expect(() => new HttpConnection("/test"))
+            .toThrow(new Error("Cannot resolve '/test'."));
+    });
 
     it("starting connection fails if getting id fails", async (done) => {
         let options: IHttpConnectionOptions = {

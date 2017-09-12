@@ -247,12 +247,12 @@ export class LongPollingTransport implements ITransport {
         }
 
         this.pollXhr = pollXhr;
-        this.pollXhr.open("GET", url, true);
+
+        this.pollXhr.open("GET", `${url}&_=${Date.now()}`, true);
         if (transferMode === TransferMode.Binary) {
             this.pollXhr.responseType = "arraybuffer";
         }
-        // IE caches xhr requests
-        this.pollXhr.setRequestHeader("Cache-Control", "no-cache");
+
         // TODO: consider making timeout configurable
         this.pollXhr.timeout = 120000;
         this.pollXhr.send();

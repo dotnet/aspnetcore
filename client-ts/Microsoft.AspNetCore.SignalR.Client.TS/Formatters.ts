@@ -22,7 +22,8 @@ export namespace TextMessageFormat {
 
 export namespace BinaryMessageFormat {
     export function write(output: Uint8Array): ArrayBuffer {
-        let size = output.byteLength;
+        // .byteLength does is undefined in IE10
+        let size = output.byteLength || output.length;
         let buffer = new Uint8Array(size + 8);
 
         // javascript bitwise operators only support 32-bit integers
