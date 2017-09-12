@@ -143,6 +143,8 @@ namespace Microsoft.AspNetCore.SignalR
 
                                 connection.ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
 
+                                _logger.LogInformation("Using HubProtocol '{protocol}'.", protocol.Name);
+
                                 return true;
                             }
                         }

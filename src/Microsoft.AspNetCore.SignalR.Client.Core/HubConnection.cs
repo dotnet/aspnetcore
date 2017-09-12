@@ -94,6 +94,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             _protocolReaderWriter = new HubProtocolReaderWriter(_protocol, GetDataEncoder(requestedTransferMode, actualTransferMode));
 
+            _logger.HubProtocol(_protocol.Name);
+
             using (var memoryStream = new MemoryStream())
             {
                 NegotiationProtocol.WriteMessage(new NegotiationMessage(_protocol.Name), memoryStream);
