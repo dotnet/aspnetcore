@@ -2280,13 +2280,18 @@ SERVER_PROCESS::SendShutDownSignalInternal(
                 TerminateBackendProcess();
             }
             FreeConsole();
-        }
 
-        if (fFreeConsole)
+            if (fFreeConsole)
+            {
+                // IISExpress and hostedwebcore w3wp run as background process
+                // have to attach console back to ensure post app_offline scenario still works
+                AttachConsole(ATTACH_PARENT_PROCESS);
+            }
+        }
+        else
         {
-            // IISExpress and hostedwebcore w3wp run as background process
-            // have to attach console back to ensure post app_offline scenario still works
-            AttachConsole(ATTACH_PARENT_PROCESS);
+            // terminate the backend process immediately instead of waiting for timeout
+            TerminateBackendProcess();
         }
     }
 

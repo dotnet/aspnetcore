@@ -136,6 +136,7 @@ public:
         PVOID                     pvData
     )
     {
+        // best effort copy, ignore the failure
         ENVIRONMENT_VAR_ENTRY *   pNewEntry = new ENVIRONMENT_VAR_ENTRY();
         if (pNewEntry != NULL) 
         {
@@ -143,6 +144,7 @@ public:
             ENVIRONMENT_VAR_HASH *pHash = static_cast<ENVIRONMENT_VAR_HASH *>(pvData);
             DBG_ASSERT(pHash);
             pHash->InsertRecord(pNewEntry);
+            // Need to dereference as InsertRecord references it now
             pNewEntry->Dereference();
         }
     }

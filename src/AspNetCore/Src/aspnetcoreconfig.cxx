@@ -376,6 +376,7 @@ ASPNETCORE_CONFIG::Populate(
         strExpandedEnvValue.Reset();
         pEnvVar->Release();
         pEnvVar = NULL;
+        pEntry->Dereference();
         pEntry = NULL;
     }
 

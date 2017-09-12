@@ -206,6 +206,9 @@ private:
     volatile
     BOOL                _fIndicateCompletionToIis;
 
+    volatile
+    BOOL                _fReceivedCloseMsg;
+
     static
     LIST_ENTRY          sm_RequestsListHead;
 

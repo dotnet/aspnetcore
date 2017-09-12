@@ -322,6 +322,7 @@ private:
     BOOL                                m_fWebSocketUpgrade;
     BOOL                                m_fFinishRequest;
     BOOL                                m_fClientDisconnected;
+    BOOL                                m_fHasError;
     DWORD                               m_msStartTime;
         
     DWORD                               m_BytesToReceive;

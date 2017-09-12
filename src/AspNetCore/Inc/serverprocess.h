@@ -316,10 +316,6 @@ private:
     //
     // m_hChildProcessHandle is the handle to process created by 
     // m_hProcessHandle process if it does.
-
-    //
-    // m_hChildProcessHandle is the handle to process created by 
-    // m_hProcessHandle process if it does.
     //
     HANDLE                  m_hChildProcessHandles[MAX_ACTIVE_CHILD_PROCESSES];
     HANDLE                  m_hChildProcessWaitHandles[MAX_ACTIVE_CHILD_PROCESSES];

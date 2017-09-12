@@ -35,13 +35,15 @@ LIST_ENTRY WEBSOCKET_HANDLER::sm_RequestsListHead;
 
 TRACE_LOG * WEBSOCKET_HANDLER::sm_pTraceLog;
 
-WEBSOCKET_HANDLER::WEBSOCKET_HANDLER():
-    _pHttpContext ( NULL ),
-    _pWebSocketContext ( NULL ),
-    _pHandler ( NULL ),
-    _dwOutstandingIo ( 0 ),
-    _fCleanupInProgress ( FALSE ),
-    _fIndicateCompletionToIis ( FALSE )
+WEBSOCKET_HANDLER::WEBSOCKET_HANDLER() :
+    _pHttpContext(NULL),
+    _pWebSocketContext(NULL),
+    _hWebSocketRequest(NULL),
+    _pHandler(NULL),
+    _dwOutstandingIo(0),
+    _fCleanupInProgress(FALSE),
+    _fIndicateCompletionToIis(FALSE),
+    _fReceivedCloseMsg(FALSE)
 {
     DebugPrintf (ASPNETCORE_DEBUG_FLAG_INFO, "WEBSOCKET_HANDLER::WEBSOCKET_HANDLER");
 
@@ -58,16 +60,20 @@ WEBSOCKET_HANDLER::Terminate(
     DebugPrintf (ASPNETCORE_DEBUG_FLAG_INFO, "WEBSOCKET_HANDLER::Terminate");
 
     RemoveRequest();
+    _fCleanupInProgress = TRUE;
 
-    _pWebSocketContext = NULL;
-    _pHttpContext = NULL;
-
+    if (_pHttpContext != NULL)
+    {
+        _pHttpContext->CancelIo();
+        _pHttpContext = NULL;
+    }
     if (_hWebSocketRequest)
     {
         WinHttpCloseHandle(_hWebSocketRequest);
         _hWebSocketRequest = NULL;
     }
 
+    _pWebSocketContext = NULL;
     DeleteCriticalSection(&_RequestLock);
 
     delete this;
@@ -216,6 +222,9 @@ WEBSOCKET_HANDLER::IndicateCompletionToIIS(
     // wait for handle close callback and then call IndicateCompletion
     // otherwise we may release W3Context too early and cause AV
     //_pHttpContext->IndicateCompletion(RQ_NOTIFICATION_PENDING);
+    // close Websocket handle. This will triger a WinHttp callback
+    // on handle close, then let IIS pipeline continue.
+    WinHttpCloseHandle(_hWebSocketRequest);
 }
 
 HRESULT
@@ -498,6 +507,12 @@ Routine Description:
         }
 
         IncrementOutstandingIo();
+        //
+        // Backend end may start close hand shake first
+        // Need to inidcate no more receive should be called on WinHttp conneciton
+        //
+        _fReceivedCloseMsg = TRUE;
+        _fIndicateCompletionToIis = TRUE;
 
         //
         // Send close to IIS.
@@ -947,14 +962,19 @@ Routine Description:
     }
 
     //
-    // Write Completed, initiate next read from backend server.
+    // Only call read if no close hand shake was received from backend
     //
-
-    hr = DoWinHttpWebSocketReceive();
-    if (FAILED (hr))
+    if (!_fReceivedCloseMsg)
     {
-        cleanupReason = ServerDisconnect;
-        goto Finished;
+        //
+        // Write Completed, initiate next read from backend server.
+        //
+        hr = DoWinHttpWebSocketReceive();
+        if (FAILED(hr))
+        {
+            cleanupReason = ServerDisconnect;
+            goto Finished;
+        }
     }
 
 Finished:
