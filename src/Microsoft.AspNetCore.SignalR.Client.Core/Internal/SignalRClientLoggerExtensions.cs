@@ -23,10 +23,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
             LoggerMessage.Define<string, string, string, string>(LogLevel.Trace, 3, "Issuing Invocation '{invocationId}': {returnType} {methodName}({args}).");
 
         private static readonly Action<ILogger, string, Exception> _sendInvocation =
-            LoggerMessage.Define<string>(LogLevel.Information, 4, "Sending Invocation '{invocationId}'.");
+            LoggerMessage.Define<string>(LogLevel.Debug, 4, "Sending Invocation '{invocationId}'.");
 
         private static readonly Action<ILogger, string, Exception> _sendInvocationCompleted =
-            LoggerMessage.Define<string>(LogLevel.Information, 5, "Sending Invocation '{invocationId}' completed.");
+            LoggerMessage.Define<string>(LogLevel.Debug, 5, "Sending Invocation '{invocationId}' completed.");
 
         private static readonly Action<ILogger, string, Exception> _sendInvocationFailed =
             LoggerMessage.Define<string>(LogLevel.Error, 6, "Sending Invocation '{invocationId}' failed.");
@@ -75,6 +75,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
 
         private static readonly Action<ILogger, string, Exception> _receivedUnexpectedResponse =
             LoggerMessage.Define<string>(LogLevel.Error, 21, "Unsolicited response received for invocation '{invocationId}'.");
+
+        private static readonly Action<ILogger, string, Exception> _hubProtocol =
+            LoggerMessage.Define<string>(LogLevel.Information, 22, "Using HubProtocol '{protocol}'.");
 
         // Category: Streaming and NonStreaming
         private static readonly Action<ILogger, string, Exception> _invocationCreated =
@@ -216,6 +219,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         public static void ReceivedUnexpectedResponse(this ILogger logger, string invocationId)
         {
             _receivedUnexpectedResponse(logger, invocationId, null);
+        }
+
+        public static void HubProtocol(this ILogger logger, string hubProtocol)
+        {
+            _hubProtocol(logger, hubProtocol, null);
         }
 
         public static void InvocationCreated(this ILogger logger, string invocationId)

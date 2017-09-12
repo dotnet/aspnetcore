@@ -17,10 +17,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             LoggerMessage.Define<DateTime, string>(LogLevel.Debug, 1, "{time}: Connection Id {connectionId}: Transport stopped.");
 
         private static readonly Action<ILogger, DateTime, string, Exception> _startReceive =
-            LoggerMessage.Define<DateTime, string>(LogLevel.Information, 2, "{time}: Connection Id {connectionId}: Starting receive loop.");
+            LoggerMessage.Define<DateTime, string>(LogLevel.Debug, 2, "{time}: Connection Id {connectionId}: Starting receive loop.");
 
         private static readonly Action<ILogger, DateTime, string, Exception> _receiveStopped =
-            LoggerMessage.Define<DateTime, string>(LogLevel.Information, 3, "{time}: Connection Id {connectionId}: Receive loop stopped.");
+            LoggerMessage.Define<DateTime, string>(LogLevel.Debug, 3, "{time}: Connection Id {connectionId}: Receive loop stopped.");
 
         private static readonly Action<ILogger, DateTime, string, Exception> _receiveCanceled =
             LoggerMessage.Define<DateTime, string>(LogLevel.Debug, 4, "{time}: Connection Id {connectionId}: Receive loop canceled.");
@@ -29,10 +29,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             LoggerMessage.Define<DateTime, string>(LogLevel.Information, 5, "{time}: Connection Id {connectionId}: Transport is stopping.");
 
         private static readonly Action<ILogger, DateTime, string, Exception> _sendStarted =
-            LoggerMessage.Define<DateTime, string>(LogLevel.Information, 6, "{time}: Connection Id {connectionId}: Starting the send loop.");
+            LoggerMessage.Define<DateTime, string>(LogLevel.Debug, 6, "{time}: Connection Id {connectionId}: Starting the send loop.");
 
         private static readonly Action<ILogger, DateTime, string, Exception> _sendStopped =
-            LoggerMessage.Define<DateTime, string>(LogLevel.Information, 7, "{time}: Connection Id {connectionId}: Send loop stopped.");
+            LoggerMessage.Define<DateTime, string>(LogLevel.Debug, 7, "{time}: Connection Id {connectionId}: Send loop stopped.");
 
         private static readonly Action<ILogger, DateTime, string, Exception> _sendCanceled =
             LoggerMessage.Define<DateTime, string>(LogLevel.Debug, 8, "{time}: Connection Id {connectionId}: Send loop canceled.");
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             LoggerMessage.Define<DateTime, string, WebSocketMessageType, int, bool>(LogLevel.Debug, 10, "{time}: Connection Id {connectionId}: Message received. Type: {messageType}, size: {count}, EndOfMessage: {endOfMessage}.");
 
         private static readonly Action<ILogger, DateTime, string, int, Exception> _messageToApp =
-            LoggerMessage.Define<DateTime, string, int>(LogLevel.Information, 11, "{time}: Connection Id {connectionId}: Passing message to application. Payload size: {count}.");
+            LoggerMessage.Define<DateTime, string, int>(LogLevel.Debug, 11, "{time}: Connection Id {connectionId}: Passing message to application. Payload size: {count}.");
 
         private static readonly Action<ILogger, DateTime, string, int, Exception> _receivedFromApp =
             LoggerMessage.Define<DateTime, string, int>(LogLevel.Debug, 12, "{time}: Connection Id {connectionId}: Received message from application. Payload size: {count}.");
@@ -172,7 +172,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
 
         public static void StartReceive(this ILogger logger, string connectionId)
         {
-            if (logger.IsEnabled(LogLevel.Information))
+            if (logger.IsEnabled(LogLevel.Debug))
             {
                 _startReceive(logger, DateTime.Now, connectionId, null);
             }
@@ -204,7 +204,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
 
         public static void MessageToApp(this ILogger logger, string connectionId, int count)
         {
-            if (logger.IsEnabled(LogLevel.Information))
+            if (logger.IsEnabled(LogLevel.Debug))
             {
                 _messageToApp(logger, DateTime.Now, connectionId, count, null);
             }
@@ -220,7 +220,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
 
         public static void ReceiveStopped(this ILogger logger, string connectionId)
         {
-            if (logger.IsEnabled(LogLevel.Information))
+            if (logger.IsEnabled(LogLevel.Debug))
             {
                 _receiveStopped(logger, DateTime.Now, connectionId, null);
             }
@@ -228,7 +228,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
 
         public static void SendStarted(this ILogger logger, string connectionId)
         {
-            if (logger.IsEnabled(LogLevel.Information))
+            if (logger.IsEnabled(LogLevel.Debug))
             {
                 _sendStarted(logger, DateTime.Now, connectionId, null);
             }
@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
 
         public static void SendStopped(this ILogger logger, string connectionId)
         {
-            if (logger.IsEnabled(LogLevel.Information))
+            if (logger.IsEnabled(LogLevel.Debug))
             {
                 _sendStopped(logger, DateTime.Now, connectionId, null);
             }

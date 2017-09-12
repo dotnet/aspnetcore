@@ -123,7 +123,9 @@ export class HubConnection {
 
         await this.connection.send(
             TextMessageFormat.write(
-                JSON.stringify(<NegotiationMessage>{ protocol: this.protocol.name})));
+                JSON.stringify(<NegotiationMessage>{ protocol: this.protocol.name })));
+
+        this.logger.log(LogLevel.Information, `Using HubProtocol '${this.protocol.name}'.`);
 
         if (requestedTransferMode === TransferMode.Binary && actualTransferMode === TransferMode.Text) {
             this.protocol = new Base64EncodedHubProtocol(this.protocol);
