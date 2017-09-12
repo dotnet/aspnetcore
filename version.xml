@@ -1,6 +1,0 @@
-<!-- This file may be overwritten by automation. -->
-<Project>
-  <PropertyGroup>
-    <KoreBuildChannel>dev</KoreBuildChannel>
-  </PropertyGroup>
-</Project>
