@@ -10,17 +10,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
     {
         public static IHubConnectionBuilder WithConsoleLogger(this IHubConnectionBuilder hubConnectionBuilder)
         {
-            return hubConnectionBuilder.WithConsoleLogger(new LoggerFactory());
+            return hubConnectionBuilder.WithLogger(loggerFactory =>
+            {
+                loggerFactory.AddConsole();
+            });
         }
 
-        public static IHubConnectionBuilder WithConsoleLogger(this IHubConnectionBuilder hubConnectionBuilder, ILoggerFactory loggerFactory)
+        public static IHubConnectionBuilder WithConsoleLogger(this IHubConnectionBuilder hubConnectionBuilder, LogLevel logLevel)
         {
-            if (loggerFactory == null)
+            return hubConnectionBuilder.WithLogger(loggerFactory =>
             {
-                throw new ArgumentNullException(nameof(loggerFactory));
-            }
-
-            return hubConnectionBuilder.WithLogger(loggerFactory.AddConsole());
+                loggerFactory.AddConsole(logLevel);
+            });
         }
     }
 }

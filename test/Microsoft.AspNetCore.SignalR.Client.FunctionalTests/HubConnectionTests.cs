@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 var connection = new HubConnectionBuilder()
                     .WithUrl(_serverFixture.BaseUrl + path)
                     .WithTransportType(transportType)
-                    .WithLogger(loggerFactory)
+                    .WithLoggerFactory(loggerFactory)
                     .WithHubProtocol(protocol)
                     .Build();
 

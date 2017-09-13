@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -25,10 +26,18 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder.WithHubProtocol(new MessagePackHubProtocol());
         }
 
-        public static IHubConnectionBuilder WithLogger(this IHubConnectionBuilder hubConnectionBuilder, ILoggerFactory loggerFactory)
+        public static IHubConnectionBuilder WithLoggerFactory(this IHubConnectionBuilder hubConnectionBuilder, ILoggerFactory loggerFactory)
         {
-            hubConnectionBuilder.AddSetting(HubConnectionBuilderDefaults.LoggerFactoryKey, loggerFactory);
+            hubConnectionBuilder.AddSetting(HubConnectionBuilderDefaults.LoggerFactoryKey,
+                loggerFactory ?? throw new ArgumentNullException(nameof(loggerFactory)));
             return hubConnectionBuilder;
+        }
+
+        public static IHubConnectionBuilder WithLogger(this IHubConnectionBuilder hubConnectionBuilder, Action<ILoggerFactory> configureLogging)
+        {
+            var loggerFactory = hubConnectionBuilder.GetLoggerFactory() ?? new LoggerFactory();
+            configureLogging(loggerFactory);
+            return hubConnectionBuilder.WithLoggerFactory(loggerFactory);
         }
 
         public static ILoggerFactory GetLoggerFactory(this IHubConnectionBuilder hubConnectionBuilder)

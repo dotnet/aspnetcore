@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
+using Microsoft.AspNetCore.Sockets.Client;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Client
@@ -12,9 +13,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
     public class HubConnectionBuilder : IHubConnectionBuilder
     {
         private readonly Dictionary<KeyValuePair<string, Type>, object> _settings = new Dictionary<KeyValuePair<string, Type>, object>();
-        private ConnectionFactoryDelegate _connectionFactoryDelegate;
+        private Func<IConnection> _connectionFactoryDelegate;
 
-        public void ConfigureConnectionFactory(ConnectionFactoryDelegate connectionFactoryDelegate) =>
+        public void ConfigureConnectionFactory(Func<IConnection> connectionFactoryDelegate) =>
             _connectionFactoryDelegate = connectionFactoryDelegate;
 
         public void AddSetting<T>(string name, T value)

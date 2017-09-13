@@ -31,16 +31,11 @@ namespace ClientSample
             baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/default" : baseUrl;
 
             Console.WriteLine("Connecting to {0}", baseUrl);
-            var httpConnection = new HttpConnection(new Uri(baseUrl));
-            var connection = new HubConnectionBuilder()
-                .WithUrl(baseUrl)
-                .WithConsoleLogger()
-                .Build();
+            HubConnection connection = await ConnectAsync(baseUrl);
+            Console.WriteLine("Connected to {0}", baseUrl);
 
             try
             {
-                await connection.StartAsync();
-                Console.WriteLine("Connected to {0}", baseUrl);
 
                 var cts = new CancellationTokenSource();
                 Console.CancelKeyPress += (sender, a) =>
@@ -91,6 +86,27 @@ namespace ClientSample
                 await connection.DisposeAsync();
             }
             return 0;
+        }
+
+        private static async Task<HubConnection> ConnectAsync(string baseUrl)
+        {
+            // Keep trying to until we can start
+            while (true)
+            {
+                var connection = new HubConnectionBuilder()
+                                .WithUrl(baseUrl)
+                                .WithConsoleLogger(LogLevel.Trace)
+                                .Build();
+                try
+                {
+                    await connection.StartAsync();
+                    return connection;
+                }
+                catch (Exception)
+                {
+                    await Task.Delay(1000);
+                }
+            }
         }
     }
 }
