@@ -60,7 +60,7 @@ namespace AspNetCoreModule.Test.WebSocketClient
             return result;
         }
 
-        public Frame Connect(Uri address, bool storeData, bool isAlwaysReading)
+        public Frame Connect(Uri address, bool storeData, bool isAlwaysReading, bool waitForConnectionOpen = true)
         {
             Address = address;
             StoreData = storeData;
@@ -72,9 +72,25 @@ namespace AspNetCoreModule.Test.WebSocketClient
             }
             SendWebSocketRequest(WebSocketClientUtility.WebSocketVersion);
 
-            if (!WaitForWebSocketState(WebSocketState.ConnectionOpen))
+            if (waitForConnectionOpen)
             {
-                throw new Exception("Failed to open a connection");
+                if (!WaitForWebSocketState(WebSocketState.ConnectionOpen))
+                {
+                    throw new Exception("Failed to open a connection");
+                }
+            }
+            else
+            {
+                Thread.Sleep(3000);
+            }
+
+            if (this.WebSocketState == WebSocketState.ConnectionOpen)
+            {
+                IsOpened = true;
+            }
+            else
+            {
+                IsOpened = false;
             }
 
             Frame openingFrame = null;
@@ -83,8 +99,7 @@ namespace AspNetCoreModule.Test.WebSocketClient
                 openingFrame = ReadData();
             else
                 openingFrame = Connection.DataReceived[0];
-                        
-            IsOpened = true;
+            
             return openingFrame;
         }
         

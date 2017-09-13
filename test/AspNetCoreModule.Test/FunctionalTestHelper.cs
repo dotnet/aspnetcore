@@ -1484,7 +1484,7 @@ namespace AspNetCoreModule.Test
                         int lastIndex = websocketClient.Connection.DataReceived.Count - 1;
 
                         // Verify text data is matched to the string sent by server
-                        Assert.Equal("ClosingFromServer", websocketClient.Connection.DataReceived[lastIndex].TextData);
+                        Assert.Contains("ClosingFromServer", websocketClient.Connection.DataReceived[lastIndex].TextData);
                     }
                 }
 
@@ -1527,7 +1527,7 @@ namespace AspNetCoreModule.Test
                         int lastIndex = websocketClient.Connection.DataReceived.Count - 1;
 
                         // Verify text data is matched to the string sent by server
-                        Assert.Equal("ClosingFromServer", websocketClient.Connection.DataReceived[lastIndex].TextData);
+                        Assert.Contains("ClosingFromServer", websocketClient.Connection.DataReceived[lastIndex].TextData);
 
                         // Verify the application file can be removed under app_offline mode
                         testSite.AspNetCoreApp.BackupFile(appDllFileName);
@@ -1576,7 +1576,7 @@ namespace AspNetCoreModule.Test
                         int lastIndex = websocketClient.Connection.DataReceived.Count - 1;
 
                         // Verify text data is matched to the string sent by server
-                        Assert.Equal("ClosingFromServer", websocketClient.Connection.DataReceived[lastIndex].TextData);
+                        Assert.Contains("ClosingFromServer", websocketClient.Connection.DataReceived[lastIndex].TextData);
                     }
                 }
                 */
@@ -1601,7 +1601,7 @@ namespace AspNetCoreModule.Test
 
                         using (WebSocketClientHelper websocketClient = new WebSocketClientHelper())
                         {
-                            var frameReturned = websocketClient.Connect(testSite.AspNetCoreApp.GetUri("websocket"), true, true);
+                            var frameReturned = websocketClient.Connect(testSite.AspNetCoreApp.GetUri("websocket"), true, true, waitForConnectionOpen:false);
                             Assert.DoesNotContain("Connection: Upgrade", frameReturned.Content);
 
                             //BugBug: Currently we returns 101 here.
@@ -1795,7 +1795,7 @@ namespace AspNetCoreModule.Test
                         int lastIndex = websocketClient.Connection.DataReceived.Count - 1;
 
                         // Verify text data is matched to the string sent by server
-                        Assert.Equal("ClosingFromServer", websocketClient.Connection.DataReceived[lastIndex].TextData);
+                        Assert.Contains("ClosingFromServer", websocketClient.Connection.DataReceived[lastIndex].TextData);
                     }
 
                     // send a simple request and verify the response body

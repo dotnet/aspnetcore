@@ -20,8 +20,9 @@ namespace AspNetCoreModule.Test.WebSocketClient
 
         public FrameType FrameType { get; set; }
         public byte[] Data { get; private set; }
-        
-        public string TextData {
+
+        public string TextData
+        {
             get
             {
                 if (DataLength == 0)
