@@ -150,4 +150,7 @@
   <data name="FormActionTagHelper_CannotOverrideFormAction" xml:space="preserve">
     <value>Cannot override the '{0}' attribute for &lt;{1}&gt;. &lt;{1}&gt; elements with a specified '{0}' must not have attributes starting with '{2}' or an '{3}', '{4}', '{5}', '{6}', '{7}', '{8}' or '{9}' attribute.</value>
   </data>
+  <data name="ArgumentCannotContainHtmlSpace" xml:space="preserve">
+    <value>Value cannot contain HTML space characters.</value>
+  </data>
 </root>

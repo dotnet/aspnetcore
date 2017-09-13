@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     /// </summary>
     public static class TagHelperOutputExtensions
     {
+        private static readonly char[] SpaceChars = { '\u0020', '\u0009', '\u000A', '\u000C', '\u000D' };
+
         /// <summary>
         /// Copies a user-provided attribute from <paramref name="context"/>'s
         /// <see cref="TagHelperContext.AllAttributes"/> to <paramref name="tagHelperOutput"/>'s
@@ -152,6 +154,167 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 tagHelperOutput.Attributes.Remove(attribute);
             }
+        }
+
+        /// <summary>
+        /// Adds the given <paramref name="classValue"/> to the <paramref name="tagHelperOutput"/>'s
+        /// <see cref="TagHelperOutput.Attributes"/>.
+        /// </summary>
+        /// <param name="tagHelperOutput">The <see cref="TagHelperOutput"/> this method extends.</param>
+        /// <param name="classValue">The class value to add.</param>
+        /// <param name="htmlEncoder">The current HTML encoder.</param>
+        public static void AddClass(
+            this TagHelperOutput tagHelperOutput,
+            string classValue,
+            HtmlEncoder htmlEncoder)
+        {
+            if (tagHelperOutput == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelperOutput));
+            }
+
+            if (string.IsNullOrEmpty(classValue))
+            {
+                return;
+            }
+
+            var encodedSpaceChars = SpaceChars.Where(x => !x.Equals('\u0020')).Select(x => htmlEncoder.Encode(x.ToString())).ToArray();
+
+            if (SpaceChars.Any(classValue.Contains) || encodedSpaceChars.Any(value => classValue.IndexOf(value, StringComparison.Ordinal) >= 0))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotContainHtmlSpace, nameof(classValue));
+            }
+
+            if (!tagHelperOutput.Attributes.TryGetAttribute("class", out TagHelperAttribute classAttribute))
+            {
+                tagHelperOutput.Attributes.Add("class", classValue);
+            }
+            else
+            {
+                var currentClassValue = ExtractClassValue(classAttribute, htmlEncoder);
+
+                var encodedClassValue = htmlEncoder.Encode(classValue);
+
+                if (string.Equals(currentClassValue, encodedClassValue, StringComparison.Ordinal))
+                {
+                    return;
+                }
+
+                var arrayOfClasses = currentClassValue.Split(SpaceChars, StringSplitOptions.RemoveEmptyEntries)
+                    .SelectMany(perhapsEncoded => perhapsEncoded.Split(encodedSpaceChars, StringSplitOptions.RemoveEmptyEntries))
+                    .ToArray();
+
+                if (arrayOfClasses.Contains(encodedClassValue, StringComparer.Ordinal))
+                {
+                    return;
+                }
+
+                var newClassAttribute = new TagHelperAttribute(
+                    classAttribute.Name,
+                    new HtmlString($"{currentClassValue} {encodedClassValue}"),
+                    classAttribute.ValueStyle);
+
+                tagHelperOutput.Attributes.SetAttribute(newClassAttribute);
+            }
+        }
+
+        /// <summary>
+        /// Removes the given <paramref name="classValue"/> from the <paramref name="tagHelperOutput"/>'s
+        /// <see cref="TagHelperOutput.Attributes"/>.
+        /// </summary>
+        /// <param name="tagHelperOutput">The <see cref="TagHelperOutput"/> this method extends.</param>
+        /// <param name="classValue">The class value to remove.</param>
+        /// <param name="htmlEncoder">The current HTML encoder.</param>
+        public static void RemoveClass(
+            this TagHelperOutput tagHelperOutput,
+            string classValue,
+            HtmlEncoder htmlEncoder)
+        {
+            if (tagHelperOutput == null)
+            {
+                throw new ArgumentNullException(nameof(tagHelperOutput));
+            }
+
+            var encodedSpaceChars = SpaceChars.Where(x => !x.Equals('\u0020')).Select(x => htmlEncoder.Encode(x.ToString())).ToArray();
+
+            if (SpaceChars.Any(classValue.Contains) || encodedSpaceChars.Any(value => classValue.IndexOf(value, StringComparison.Ordinal) >= 0))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotContainHtmlSpace, nameof(classValue));
+            }
+
+            if (!tagHelperOutput.Attributes.TryGetAttribute("class", out TagHelperAttribute classAttribute))
+            {
+                return;
+            }
+
+            var currentClassValue = ExtractClassValue(classAttribute, htmlEncoder);
+
+            if (string.IsNullOrEmpty(currentClassValue))
+            {
+                return;
+            }
+
+            var encodedClassValue = htmlEncoder.Encode(classValue);
+
+            if (string.Equals(currentClassValue, encodedClassValue, StringComparison.Ordinal))
+            {
+                tagHelperOutput.Attributes.Remove(tagHelperOutput.Attributes["class"]);
+                return;
+            }
+
+            if (!currentClassValue.Contains(encodedClassValue))
+            {
+                return;
+            }
+
+            var listOfClasses = currentClassValue.Split(SpaceChars, StringSplitOptions.RemoveEmptyEntries)
+                .SelectMany(perhapsEncoded => perhapsEncoded.Split(encodedSpaceChars, StringSplitOptions.RemoveEmptyEntries))
+                .ToList();
+
+            if (!listOfClasses.Contains(encodedClassValue))
+            {
+                return;
+            }
+
+            listOfClasses.RemoveAll(x => x.Equals(encodedClassValue));
+
+            if (listOfClasses.Any())
+            {
+                var joinedClasses = new HtmlString(string.Join(" ", listOfClasses));
+                tagHelperOutput.Attributes.SetAttribute(classAttribute.Name, joinedClasses);
+            }
+            else
+            {
+                tagHelperOutput.Attributes.Remove(tagHelperOutput.Attributes["class"]);
+            }
+        }
+
+        private static string ExtractClassValue(
+            TagHelperAttribute classAttribute,
+            HtmlEncoder htmlEncoder)
+        {
+            string extractedClassValue;
+            switch (classAttribute.Value)
+            {
+                case string valueAsString:
+                    extractedClassValue = htmlEncoder.Encode(valueAsString);
+                    break;
+                case HtmlString valueAsHtmlString:
+                    extractedClassValue = valueAsHtmlString.Value;
+                    break;
+                case IHtmlContent htmlContent:
+                    using (var stringWriter = new StringWriter())
+                    {
+                        htmlContent.WriteTo(stringWriter, htmlEncoder);
+                        extractedClassValue = stringWriter.ToString();
+                    }
+                    break;
+                default:
+                    extractedClassValue = htmlEncoder.Encode(classAttribute.Value?.ToString());
+                    break;
+            }
+            var currentClassValue = extractedClassValue ?? string.Empty;
+            return currentClassValue;
         }
 
         private static void CopyHtmlAttribute(

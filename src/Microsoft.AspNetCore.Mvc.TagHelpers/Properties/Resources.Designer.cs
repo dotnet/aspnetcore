@@ -164,6 +164,20 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         internal static string FormatFormActionTagHelper_CannotOverrideFormAction(object p0, object p1, object p2, object p3, object p4, object p5, object p6, object p7, object p8, object p9)
             => string.Format(CultureInfo.CurrentCulture, GetString("FormActionTagHelper_CannotOverrideFormAction"), p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
 
+        /// <summary>
+        /// Value cannot contain whitespace.
+        /// </summary>
+        internal static string ArgumentCannotContainHtmlSpace
+        {
+            get => GetString("ArgumentCannotContainHtmlSpace");
+        }
+
+        /// <summary>
+        /// Value cannot contain whitespace.
+        /// </summary>
+        internal static string FormatArgumentCannotContainHtmlSpace()
+            => GetString("ArgumentCannotContainHtmlSpace");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
