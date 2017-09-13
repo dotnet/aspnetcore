@@ -20,9 +20,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const int VoidResult = 2;
         private const int NonVoidResult = 3;
 
+        private static readonly SerializationContext _serializationContext;
+
         public string Name => "messagepack";
 
         public ProtocolType Type => ProtocolType.Binary;
+
+        static MessagePackHubProtocol()
+        {
+            // serializes objects (here: arguments and results) as maps so that property names are preserved
+            _serializationContext = new SerializationContext { SerializationMethod = SerializationMethod.Map };
+            // allows for serializing objects that cannot be deserialized due to the lack of the default ctor etc.
+            _serializationContext.CompatibilityOptions.AllowAsymmetricSerializer = true;
+        }
 
         public bool TryParseMessages(ReadOnlyBuffer<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
         {
@@ -153,7 +163,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             packer.PackString(invocationMessage.InvocationId);
             packer.Pack(invocationMessage.NonBlocking);
             packer.PackString(invocationMessage.Target);
-            packer.PackObject(invocationMessage.Arguments);
+            packer.PackObject(invocationMessage.Arguments, _serializationContext);
         }
 
         private void WriteStreamingItemMessage(StreamItemMessage streamItemMessage, Packer packer, Stream output)
@@ -161,7 +171,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             packer.PackArrayHeader(3);
             packer.Pack(StreamItemMessageType);
             packer.PackString(streamItemMessage.InvocationId);
-            packer.PackObject(streamItemMessage.Item);
+            packer.PackObject(streamItemMessage.Item, _serializationContext);
         }
 
         private void WriteCompletionMessage(CompletionMessage completionMessage, Packer packer, Stream output)
@@ -181,7 +191,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     packer.PackString(completionMessage.Error);
                     break;
                 case NonVoidResult:
-                    packer.PackObject(completionMessage.Result);
+                    packer.PackObject(completionMessage.Result, _serializationContext);
                     break;
             }
         }
