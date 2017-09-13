@@ -7,9 +7,12 @@
 //
 // System related headers
 //
-#define NTDDI_VERSION 0x06020000
-#define _WIN32_WINNT 0x0602
 #define _WINSOCKAPI_
+
+#define NTDDI_VERSION 0x06010000
+#define WINVER 0x0601
+#define _WIN32_WINNT 0x0601
+
 #include <windows.h>
 #include <atlbase.h>
 #include <pdh.h>
@@ -17,7 +20,25 @@
 //#include <ntassert.h>
 #include <Shlobj.h>
 #include <httpserv.h>
+
+// This should remove our issue of compiling for win7 without header files.
+// We  force the Windows 8 version check logic in iiswebsocket.h to succeed even though we're compiling for Windows 7.
+// Then, we set the version defines back to Windows 7 to for the remainder of the compilation.
+#undef NTDDI_VERSION
+#undef WINVER
+#undef _WIN32_WINNT
+#define NTDDI_VERSION 0x06020000
+#define WINVER 0x0602
+#define _WIN32_WINNT 0x0602
 #include <iiswebsocket.h>
+#undef NTDDI_VERSION
+#undef WINVER
+#undef _WIN32_WINNT
+
+#define NTDDI_VERSION 0x06010000
+#define WINVER 0x0601
+#define _WIN32_WINNT 0x0601
+
 #include <httptrace.h>
 #include <winhttp.h>
 
