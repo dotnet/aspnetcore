@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
         private Dictionary<string, object> _arguments;
         private HandlerMethodDescriptor _handler;
-        private Page _page;
+        private PageBase _page;
         private object _pageModel;
         private ViewContext _viewContext;
 
@@ -124,7 +124,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                     _htmlHelperOptions);
                 _viewContext.ExecutingFilePath = _pageContext.ActionDescriptor.RelativePath;
 
-                _page = (Page)CacheEntry.PageFactory(_pageContext, _viewContext);
+                _page = (PageBase)CacheEntry.PageFactory(_pageContext, _viewContext);
 
                 if (_actionDescriptor.ModelTypeInfo == _actionDescriptor.PageTypeInfo)
                 {
@@ -271,7 +271,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
                 if (_page == null)
                 {
-                    _page = (Page)CacheEntry.PageFactory(_pageContext, _viewContext);
+                    _page = (PageBase)CacheEntry.PageFactory(_pageContext, _viewContext);
                 }
 
                 pageResult.Page = _page;

@@ -1189,6 +1189,26 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             Assert.StartsWith(expected, responseContent.Trim());
         }
 
+        [Fact]
+        public Task InheritsOnViewImportsWorksForPagesWithoutModel()
+            => InheritsOnViewImportsWorks("Pages/CustomBaseType/Page");
+
+        [Fact]
+        public Task InheritsOnViewImportsWorksForPagesWithModel()
+            => InheritsOnViewImportsWorks("Pages/CustomBaseType/PageWithModel");
+
+        private async Task InheritsOnViewImportsWorks(string path)
+        {
+            // Arrange
+            var expected = "<custom-base-type-layout>RazorPagesWebSite.CustomPageBase</custom-base-type-layout>";
+
+            // Act
+            var response = await Client.GetStringAsync(path);
+
+            // Assert
+            Assert.Equal(expected, response.Trim());
+        }
+
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
         {
             var getResponse = await Client.GetAsync(request.RequestUri);

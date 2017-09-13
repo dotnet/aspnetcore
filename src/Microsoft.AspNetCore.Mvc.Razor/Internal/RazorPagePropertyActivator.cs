@@ -30,19 +30,21 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
         {
             _metadataProvider = metadataProvider;
 
+            // In the absence of a model on the current type, we'll attempt to use ViewDataDictionary<object> on the current type.
+            var viewDataDictionaryModelType = modelType ?? typeof(object);
 
-            if (modelType != null)
+            if (viewDataDictionaryModelType != null)
             {
-                _viewDataDictionaryType = typeof(ViewDataDictionary<>).MakeGenericType(modelType);
-                _rootFactory = ViewDataDictionaryFactory.CreateFactory(modelType.GetTypeInfo());
-                _nestedFactory = ViewDataDictionaryFactory.CreateNestedFactory(modelType.GetTypeInfo());
+                _viewDataDictionaryType = typeof(ViewDataDictionary<>).MakeGenericType(viewDataDictionaryModelType);
+                _rootFactory = ViewDataDictionaryFactory.CreateFactory(viewDataDictionaryModelType.GetTypeInfo());
+                _nestedFactory = ViewDataDictionaryFactory.CreateNestedFactory(viewDataDictionaryModelType.GetTypeInfo());
             }
 
             _propertyActivators = PropertyActivator<ViewContext>.GetPropertiesToActivate(
-                    pageType,
-                    typeof(RazorInjectAttribute),
-                    propertyInfo => CreateActivateInfo(propertyInfo, propertyValueAccessors),
-                    includeNonPublic: true);
+                pageType,
+                typeof(RazorInjectAttribute),
+                propertyInfo => CreateActivateInfo(propertyInfo, propertyValueAccessors),
+                includeNonPublic: true);
         }
 
         public void Activate(object page, ViewContext context)
@@ -64,7 +66,8 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Internal
             }
         }
 
-        private ViewDataDictionary CreateViewDataDictionary(ViewContext context)
+        // Internal for unit testing.
+        internal ViewDataDictionary CreateViewDataDictionary(ViewContext context)
         {
             // Create a ViewDataDictionary<TModel> if the ViewContext.ViewData is not set or the type of
             // ViewContext.ViewData is an incompatible type.

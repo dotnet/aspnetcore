@@ -42,11 +42,11 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
         public virtual Func<PageContext, ViewContext, object> CreatePageFactory(CompiledPageActionDescriptor actionDescriptor)
         {
-            if (!typeof(Page).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
+            if (!typeof(PageBase).GetTypeInfo().IsAssignableFrom(actionDescriptor.PageTypeInfo))
             {
                 throw new InvalidOperationException(Resources.FormatActivatedInstance_MustBeAnInstanceOf(
                     _pageActivator.GetType().FullName,
-                    typeof(Page).FullName));
+                    typeof(PageBase).FullName));
             }
 
             var activatorFactory = _pageActivator.CreateActivator(actionDescriptor);
@@ -59,7 +59,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure
 
             return (pageContext, viewContext) =>
             {
-                var page = (Page)activatorFactory(pageContext, viewContext);
+                var page = (PageBase)activatorFactory(pageContext, viewContext);
                 page.PageContext = pageContext;
                 page.Path = pageContext.ActionDescriptor.RelativePath;
                 page.ViewContext = viewContext;
