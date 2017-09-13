@@ -25,10 +25,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public void WithConsoleLoggerThrowsForNullLoggerFactory()
+        public void WithLoggerFactoryThrowsForNullLoggerFactory()
         {
             Assert.Equal("loggerFactory",
-                Assert.Throws<ArgumentNullException>(() => new HubConnectionBuilder().WithConsoleLogger(null)).ParamName);
+                Assert.Throws<ArgumentNullException>(() => new HubConnectionBuilder().WithLoggerFactory(null)).ParamName);
         }
     }
 }

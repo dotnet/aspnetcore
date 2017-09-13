@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var connectionBuilder = new HubConnectionBuilder();
             var loggerFactory = Mock.Of<ILoggerFactory>();
-            connectionBuilder.WithLogger(loggerFactory);
+            connectionBuilder.WithLoggerFactory(loggerFactory);
             Assert.Same(loggerFactory, connectionBuilder.GetLoggerFactory());
         }
 
@@ -52,7 +52,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var connectionBuilder = new HubConnectionBuilder();
             var mockLoggerFactory = new Mock<ILoggerFactory>();
-            connectionBuilder.WithConsoleLogger(mockLoggerFactory.Object);
+            connectionBuilder.WithLoggerFactory(mockLoggerFactory.Object);
+            connectionBuilder.WithConsoleLogger();
             mockLoggerFactory.Verify(f => f.AddProvider(It.IsAny<ConsoleLoggerProvider>()), Times.Once);
         }
 
