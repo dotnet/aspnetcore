@@ -169,6 +169,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             Assert.Equal(LogLevel.Information, maxLogLevel);
         }
 
+        [Fact]
+        public async Task TestRequestSplitting()
+        {
+            using (var server = new TestServer(context => Task.CompletedTask, new TestServiceContext { Log = Mock.Of<IKestrelTrace>() }))
+            {
+                using (var client = server.CreateConnection())
+                {
+                    await client.SendAll(
+                        "GET /\x0D\0x0ALocation:http://www.contoso.com/ HTTP/1.1",
+                        "Host:\r\n\r\n");
+
+                    await client.ReceiveStartsWith("HTTP/1.1 400");
+                }
+            }
+        }
+
         private async Task TestBadRequest(string request, string expectedResponseStatusCode, string expectedExceptionMessage, string expectedAllowHeader = null)
         {
             BadHttpRequestException loggedException = null;

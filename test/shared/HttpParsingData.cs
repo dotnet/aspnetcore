@@ -219,6 +219,7 @@ namespace Microsoft.AspNetCore.Testing
                     "}",
                     "get@",
                     "post=",
+                    "[0x00]"
                 }.Concat(MethodWithNullCharData);
             }
         }
@@ -435,6 +436,7 @@ namespace Microsoft.AspNetCore.Testing
                     { "OPTIONS *", "" },
                     { "GET /pub/WWW/", "" },
                     { "GET /pub/WWW/", "   " },
+                    { "GET /pub/WWW/", "." },
                     { "GET /pub/WWW/", "www.example.org" },
                     { "GET http://localhost/", "localhost" },
                     { "GET http://localhost:80/", "localhost:80" },
