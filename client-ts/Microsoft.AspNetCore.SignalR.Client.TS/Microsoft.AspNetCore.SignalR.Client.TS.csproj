@@ -13,7 +13,7 @@
     <Inputs Include="*.ts;" />
     <Outputs Include="@(Inputs -> '$(SignalRClientDistFolder)src\%(FileName).d.ts')" />
     <Outputs Include="@(Inputs -> '$(SignalRClientDistFolder)src\%(FileName).js')" />
-    <Outputs Include="$(SignalRClientDistFolder)browser\signalr-client.js" />
+    <Outputs Include="$(SignalRClientDistFolder)browser\signalr-client-1.0.0-alpha1.js" />
     <Outputs Include="$(SignalRClientDistFolder)\third-party-notices.txt" />
   </ItemGroup>
 

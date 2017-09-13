@@ -10,6 +10,7 @@ const babel      = require('gulp-babel');
 const tsProject = ts.createProject('./tsconfig.json');
 const clientOutDir = tsProject.options.outDir;
 const browserOutDir = clientOutDir + '/../browser/';
+const versionSuffix = '1.0.0-alpha1';
 
 gulp.task('clean', () => {
     return del([clientOutDir + '/..'], { force: true });
@@ -52,19 +53,19 @@ function browserifyModuleES5(sourceFileName, namespace, targetFileName, hasAsync
 }
 
 gulp.task('browserify-client', ['compile-ts-client'], () => {
-    return browserifyModule('HubConnection.js', 'signalR', 'signalr-client.js');
+    return browserifyModule('HubConnection.js', 'signalR', `signalr-client-${versionSuffix}.js`);
 });
 
 gulp.task('browserify-msgpackprotocol', ['compile-ts-client'], () => {
-    return browserifyModule('MessagePackHubProtocol.js', 'signalRMsgPack', 'signalr-msgpackprotocol.js');
+    return browserifyModule('MessagePackHubProtocol.js', 'signalRMsgPack', `signalr-msgpackprotocol-${versionSuffix}.js`);
 });
 
 gulp.task('browserify-clientES5', ['compile-ts-client'], () => {
-    return browserifyModuleES5('HubConnection.js', 'signalR', 'signalr-clientES5.js', /*hasAsync*/ true);
+    return browserifyModuleES5('HubConnection.js', 'signalR', `signalr-clientES5-${versionSuffix}.js`, /*hasAsync*/ true);
 });
 
 gulp.task('browserify-msgpackprotocolES5', ['compile-ts-client'], () => {
-    return browserifyModuleES5('MessagePackHubProtocol.js', 'signalRMsgPack', 'signalr-msgpackprotocolES5.js', /*hasAsync*/ false);
+    return browserifyModuleES5('MessagePackHubProtocol.js', 'signalRMsgPack', `signalr-msgpackprotocolES5-${versionSuffix}.js`, /*hasAsync*/ false);
 });
 
 gulp.task('browserify', [ 'browserify-client', 'browserify-msgpackprotocol', 'browserify-clientES5', 'browserify-msgpackprotocolES5']);
