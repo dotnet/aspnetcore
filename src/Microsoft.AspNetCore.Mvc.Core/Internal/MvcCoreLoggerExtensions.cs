@@ -77,6 +77,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private static readonly Action<ILogger, string, Exception> _maxRequestBodySizeSet;
         private static readonly Action<ILogger, Exception> _requestBodySizeLimitDisabled;
 
+        private static readonly Action<ILogger, Exception> _cannotApplyRequestFormLimits;
+        private static readonly Action<ILogger, Exception> _appliedRequestFormLimits;
+        
+
         static MvcCoreLoggerExtensions()
         {
             _actionExecuting = LoggerMessage.Define<string>(
@@ -268,6 +272,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Debug,
                 3,
                 "The request body size limit has been disabled.");
+
+            _cannotApplyRequestFormLimits = LoggerMessage.Define(
+                LogLevel.Warning,
+                1,
+                "Unable to apply configured form options since the request form has already been read.");
+
+            _appliedRequestFormLimits = LoggerMessage.Define(
+                LogLevel.Debug,
+                2,
+                "Applied the configured form options on the current request.");
         }
 
         public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
@@ -566,6 +580,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public static void RequestBodySizeLimitDisabled(this ILogger logger)
         {
             _requestBodySizeLimitDisabled(logger, null);
+        }
+
+        public static void CannotApplyRequestFormLimits(this ILogger logger)
+        {
+            _cannotApplyRequestFormLimits(logger, null);
+        }
+
+        public static void AppliedRequestFormLimits(this ILogger logger)
+        {
+            _appliedRequestFormLimits(logger, null);
         }
 
         private class ActionLogScope : IReadOnlyList<KeyValuePair<string, object>>
