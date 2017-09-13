@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Http.Authentication
         }
 
         /// <summary>
-        /// Gets or sets the full path or absolute URI to be used as an http redirect response value.
+        /// Gets or sets the full path or absolute URI to be used as an HTTP redirect response value.
         /// </summary>
         public string RedirectUri
         {
