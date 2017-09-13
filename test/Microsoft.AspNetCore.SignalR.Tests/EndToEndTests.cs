@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var connection = new HubConnectionBuilder()
                         .WithUrl(new Uri(url))
-                        .WithTransportType(transportType)
+                        .WithTransport(transportType)
                         .WithLoggerFactory(loggerFactory)
                         .Build();
                 try

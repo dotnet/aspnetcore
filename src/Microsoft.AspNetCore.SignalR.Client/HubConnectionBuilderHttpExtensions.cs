@@ -33,14 +33,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
             hubConnectionBuilder.ConfigureConnectionFactory(() =>
             {
                 return new HttpConnection(url,
-                    hubConnectionBuilder.GetTransportType(),
+                    hubConnectionBuilder.GetTransport(),
                     hubConnectionBuilder.GetLoggerFactory(),
                     hubConnectionBuilder.GetMessageHandler());
             });
             return hubConnectionBuilder;
         }
 
-        public static IHubConnectionBuilder WithTransportType(this IHubConnectionBuilder hubConnectionBuilder, TransportType transportType)
+        public static IHubConnectionBuilder WithTransport(this IHubConnectionBuilder hubConnectionBuilder, TransportType transportType)
         {
             hubConnectionBuilder.AddSetting(TransportTypeKey, transportType);
             return hubConnectionBuilder;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder;
         }
 
-        public static TransportType GetTransportType(this IHubConnectionBuilder hubConnectionBuilder)
+        public static TransportType GetTransport(this IHubConnectionBuilder hubConnectionBuilder)
         {
             if (hubConnectionBuilder.TryGetSetting<TransportType>(TransportTypeKey, out var transportType))
             {

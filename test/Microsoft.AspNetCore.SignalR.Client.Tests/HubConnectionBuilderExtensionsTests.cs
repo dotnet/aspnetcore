@@ -71,11 +71,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         [InlineData(TransportType.WebSockets)]
         [InlineData(TransportType.ServerSentEvents)]
         [InlineData(TransportType.LongPolling)]
-        public void WithTransportTypeRegistersGivenTransportType(TransportType transportType)
+        public void WithTransportRegistersGivenTransportType(TransportType transportType)
         {
             var connectionBuilder = new HubConnectionBuilder();
-            connectionBuilder.WithTransportType(transportType);
-            Assert.Equal(transportType, connectionBuilder.GetTransportType());
+            connectionBuilder.WithTransport(transportType);
+            Assert.Equal(transportType, connectionBuilder.GetTransport());
         }
     }
 }
