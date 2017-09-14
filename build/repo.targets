@@ -23,10 +23,6 @@
     <BuildDependsOn>$(BuildDependsOn);CloneRepositories;BuildRepositories</BuildDependsOn>
   </PropertyGroup>
 
-  <ItemGroup>
-    <PackageReference Include="PackagePublisher" Version="2.0.0-*" />
-  </ItemGroup>
-
   <Import Project="$(_RepositoryListToImport)" />
 
   <Target Name="CleanUniverseArtifacts">
@@ -57,7 +53,7 @@
 
   <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories">
     <ItemGroup>
-      <_CloneRepositories Include="@(Repository);@(VerifyRepositories)" />
+      <_CloneRepositories Include="@(Repository);@(VerifyRepository)" />
       <_CloneRepository Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
           CloneRepository=%(_CloneRepositories.Identity);
@@ -122,7 +118,7 @@
   </Target>
 
   <Target Name="BuildRepositories"
-     DependsOnTargets="_PrepareRepositories;_FindDotNetPath;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
+     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
 
   <Target Name="_PrepareRestoreGraphSpecs" DependsOnTargets="_PrepareRepositories">
     <ItemGroup>
@@ -213,9 +209,4 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_FindDotNetPath">
-    <GetDotNetHost>
-      <Output TaskParameter="ExecutablePath" PropertyName="DotNetPath" />
-    </GetDotNetHost>
-  </Target>
 </Project>

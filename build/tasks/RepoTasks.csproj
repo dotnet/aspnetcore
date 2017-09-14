@@ -6,7 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="NuGet.ProjectModel" Version="4.0.0" />
+    <PackageReference Include="NuGet.ProjectModel" Version="4.3.0" PrivateAssets="All" />
   </ItemGroup>
 
   <Import Project="$(RepoTasksSdkPath)\Sdk.targets" Condition="'$(RepoTasksSdkPath)' != '' "/>

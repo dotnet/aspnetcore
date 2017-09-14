@@ -1,0 +1,6 @@
+<Project>
+  <PropertyGroup>
+    <!-- This repo does not have solutions to build -->
+    <DisableDefaultTargets>true</DisableDefaultTargets>
+  </PropertyGroup>
+</Project>

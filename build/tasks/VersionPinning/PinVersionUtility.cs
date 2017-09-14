@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
@@ -6,6 +9,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Utilities;
 using NuGet.Common;
 using NuGet.Frameworks;
 using NuGet.LibraryModel;
@@ -13,19 +18,23 @@ using NuGet.ProjectModel;
 using NuGet.Protocol;
 using NuGet.Protocol.Core.Types;
 using NuGet.Versioning;
-using UniverseTools;
 
-namespace PinVersions
+namespace RepoTasks.VersionPinning
 {
-    class PinVersionUtility
+    internal class PinVersionUtility
     {
         private readonly string _repositoryRoot;
         private readonly FindPackageByIdResource[] _findPackageResources;
         private readonly ConcurrentDictionary<string, Task<NuGetVersion>> _exactMatches = new ConcurrentDictionary<string, Task<NuGetVersion>>(StringComparer.OrdinalIgnoreCase);
         private readonly DependencyGraphSpecProvider _provider;
         private readonly SourceCacheContext _sourceCacheContext;
+        private readonly TaskLoggingHelper _logger;
 
-        public PinVersionUtility(string repositoryRoot, List<string> pinSources, DependencyGraphSpecProvider provider)
+        public PinVersionUtility(
+            string repositoryRoot,
+            List<string> pinSources,
+            DependencyGraphSpecProvider provider,
+            TaskLoggingHelper logger)
         {
             _repositoryRoot = repositoryRoot;
             _findPackageResources = new FindPackageByIdResource[pinSources.Count];
@@ -36,19 +45,27 @@ namespace PinVersions
             }
             _provider = provider;
             _sourceCacheContext = new SourceCacheContext();
+            _logger = logger;
         }
 
         public void Execute()
         {
-            var solutionPinMetadata = GetPinVersionMetadata();
-            foreach (var item in solutionPinMetadata)
+            _logger.LogMessage(MessageImportance.High, $"Pinning package references for projects in {_repositoryRoot}");
+
+            var solutionPinMetadata = GetProjectPinVersionMetadata();
+            foreach (var cliToolReference in solutionPinMetadata.CLIToolReferences)
+            {
+                _logger.LogMessage(MessageImportance.Normal, $"Pinning CLI Tool {cliToolReference.Item1.Name}({cliToolReference.Item1.VersionRange} to {cliToolReference.Item2} for all projects in {_repositoryRoot}.");
+            }
+
+            foreach (var item in solutionPinMetadata.PinVersionLookup)
             {
                 var projectPinMetadata = item.Value;
                 var specProject = projectPinMetadata.PackageSpec;
 
-                if (!(projectPinMetadata.Packages.Any() || projectPinMetadata.CLIToolReferences.Any()))
+                if (!(projectPinMetadata.Packages.Any() || solutionPinMetadata.CLIToolReferences.Any()))
                 {
-                    Console.WriteLine($"No package or tool references to pin for {specProject.FilePath}.");
+                    _logger.LogMessage(MessageImportance.Normal, $"No package or tool references to pin for {specProject.FilePath}.");
                     continue;
                 }
 
@@ -59,12 +76,16 @@ namespace PinVersions
 
                 Directory.CreateDirectory(Path.GetDirectoryName(pinnedReferencesFile));
 
-                Console.WriteLine($"Pinning package versions for {specProject.FilePath}.");
-                var pinnedReferences = new XElement("ItemGroup");
+                if (projectPinMetadata.Packages.Any())
+                {
+                    _logger.LogMessage(MessageImportance.Normal, $"Pinning package versions for {specProject.FilePath}.");
+                }
+
+                var pinnedReferences = new XElement("ItemGroup", new XAttribute("Condition", "'$(PolicyDesignTimeBuild)' != 'true' AND !Exists('$(MSBuildThisFileDirectory)$(MSBuildProjectFile).nugetpolicy.g.targets')"));
                 foreach (var packageReference in projectPinMetadata.Packages)
                 {
                     (var tfm, var libraryRange, var exactVersion) = packageReference;
-                    Console.WriteLine($"Pinning reference {libraryRange.Name}({libraryRange.VersionRange} to {exactVersion}.");
+                    _logger.LogMessage(MessageImportance.Normal, $"Pinning reference {libraryRange.Name}({libraryRange.VersionRange} to {exactVersion}.");
                     var metadata = new List<XAttribute>
                     {
                         new XAttribute("Update", libraryRange.Name),
@@ -79,10 +100,10 @@ namespace PinVersions
                     pinnedReferences.Add(new XElement("PackageReference", metadata));
                 }
 
-                foreach (var toolReference in projectPinMetadata.CLIToolReferences)
+                // CLI Tool references are specified at solution level.
+                foreach (var toolReference in solutionPinMetadata.CLIToolReferences)
                 {
                     (var libraryRange, var exactVersion) = toolReference;
-                    Console.WriteLine($"Pinning CLI Tool {libraryRange.Name}({libraryRange.VersionRange} to {exactVersion}.");
                     var metadata = new List<XAttribute>
                     {
                         new XAttribute("Update", libraryRange.Name),
@@ -97,10 +118,11 @@ namespace PinVersions
             }
         }
 
-        private IDictionary<string, PinVersionMetadata> GetPinVersionMetadata()
+        private SolutionPinVersionMetadata GetProjectPinVersionMetadata()
         {
             var repositoryDirectoryInfo = new DirectoryInfo(_repositoryRoot);
-            var projects = new Dictionary<string, PinVersionMetadata>(StringComparer.OrdinalIgnoreCase);
+            var projects = new Dictionary<string, ProjectPinVersionMetadata>(StringComparer.OrdinalIgnoreCase);
+            var cliToolReferences = new List<(LibraryRange, NuGetVersion)>();
 
             foreach (var slnFile in repositoryDirectoryInfo.EnumerateFiles("*.sln"))
             {
@@ -109,7 +131,7 @@ namespace PinVersions
                 {
                     if (!projects.TryGetValue(specProject.FilePath, out var pinMetadata))
                     {
-                        pinMetadata = new PinVersionMetadata(specProject);
+                        pinMetadata = new ProjectPinVersionMetadata(specProject);
                         projects[specProject.FilePath] = pinMetadata;
                     }
 
@@ -139,7 +161,7 @@ namespace PinVersions
                         }
                         else if (projectStyle == ProjectStyle.DotnetCliTool)
                         {
-                            pinMetadata.CLIToolReferences.Add((reference.LibraryRange, exactVersion));
+                            cliToolReferences.Add((reference.LibraryRange, exactVersion));
                         }
                         else
                         {
@@ -149,7 +171,7 @@ namespace PinVersions
                 }
             }
 
-            return projects;
+            return new SolutionPinVersionMetadata(projects, cliToolReferences);
         }
 
         private NuGetVersion GetExactVersion(string name, VersionRange range)
@@ -188,20 +210,32 @@ namespace PinVersions
             return null;
         }
 
-        private struct PinVersionMetadata
+        private struct SolutionPinVersionMetadata
         {
-            public PinVersionMetadata(PackageSpec packageSpec)
+            public SolutionPinVersionMetadata(
+                IDictionary<string, ProjectPinVersionMetadata> pinVersionLookup,
+                List<(LibraryRange, NuGetVersion)> cliToolReferences)
+            {
+                PinVersionLookup = pinVersionLookup;
+                CLIToolReferences = cliToolReferences;
+            }
+
+            public IDictionary<string, ProjectPinVersionMetadata> PinVersionLookup { get; }
+
+            public List<(LibraryRange, NuGetVersion)> CLIToolReferences { get; }
+        }
+
+        private struct ProjectPinVersionMetadata
+        {
+            public ProjectPinVersionMetadata(PackageSpec packageSpec)
             {
                 PackageSpec = packageSpec;
                 Packages = new List<(NuGetFramework, LibraryRange, NuGetVersion)>();
-                CLIToolReferences = new List<(LibraryRange, NuGetVersion)>();
             }
 
             public PackageSpec PackageSpec { get; }
 
             public List<(NuGetFramework, LibraryRange, NuGetVersion)> Packages { get; }
-
-            public List<(LibraryRange, NuGetVersion)> CLIToolReferences { get; }
         }
     }
 }

@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -49,6 +52,7 @@ namespace RepoTools.BuildGraph
             var repository = new Repository(name);
 
             ReadSharedSourceProjects(Path.Combine(repositoryPath, "shared"), repository, repository.Projects);
+
             var srcDirectory = Path.GetFullPath(Path.Combine(repositoryPath, "src"))
                 .Replace(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar);
 
@@ -56,6 +60,11 @@ namespace RepoTools.BuildGraph
             foreach (var file in solutionFiles)
             {
                 var spec = provider.GetDependencyGraphSpec(name, file);
+                if (spec == null)
+                {
+                    continue;
+                }
+
                 var projects = spec.Projects.OrderBy(p => p.RestoreMetadata.ProjectStyle == ProjectStyle.PackageReference ? 0 : 1);
                 foreach (var specProject in projects)
                 {
@@ -73,6 +82,7 @@ namespace RepoTools.BuildGraph
                         {
                             Repository = repository,
                             Path = specProject.FilePath,
+                            Version = specProject.Version?.ToString(),
                         };
 
                         projectGroup.Add(project);

@@ -15,19 +15,19 @@ namespace RepoTasks
         [Required]
         public ITaskItem[] Repositories { get; set; }
 
-        [Output]
-        public ITaskItem[] RepositoriesToBuildInOrder { get; set; }
+        /// <summary>
+        /// Directory that contains the package spec files.
+        /// </summary>
+        [Required]
+        public string PackageSpecsDirectory { get; set; }
 
         /// <summary>
         /// The repository at which to root the graph at
         /// </summary>
         public string StartGraphAt { get; set; }
 
-        /// <summary>
-        /// Directory that contains the package spec files.
-        /// </summary>
-        [Required]
-        public string PackageSpecsDirectory { get; set; }
+        [Output]
+        public ITaskItem[] RepositoriesToBuildInOrder { get; set; }
 
         public override bool Execute()
         {
@@ -36,12 +36,18 @@ namespace RepoTasks
             var repositoryPaths = Repositories.Select(r => r.GetMetadata("RepositoryPath")).ToList();
             var repositories = Repository.ReadAllRepositories(repositoryPaths, graphSpecProvider);
 
-            var graph = GraphBuilder.Generate(repositories, StartGraphAt);
+            var graph = GraphBuilder.Generate(repositories, StartGraphAt, Log);
             var repositoriesWithOrder = new List<(ITaskItem repository, int order)>();
             foreach (var repositoryTaskItem in Repositories)
             {
                 var repositoryName = repositoryTaskItem.ItemSpec;
-                var graphNodeRepository = graph.First(g => g.Repository.Name == repositoryName);
+                var graphNodeRepository = graph.FirstOrDefault(g => g.Repository.Name == repositoryName);
+                if (graphNodeRepository == null)
+                {
+                    // StartGraphAt was specified so the graph is incomplete.
+                    continue;
+                }
+
                 var order = TopologicalSort.GetOrder(graphNodeRepository);
                 repositoryTaskItem.SetMetadata("Order", order.ToString());
                 repositoriesWithOrder.Add((repositoryTaskItem, order));

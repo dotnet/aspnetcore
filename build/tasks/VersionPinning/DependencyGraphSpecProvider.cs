@@ -1,17 +1,19 @@
-﻿using System;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using Microsoft.DotNet.Cli.Utils;
 using NuGet.ProjectModel;
 
-namespace UniverseTools
+namespace RepoTasks.VersionPinning
 {
     public class DependencyGraphSpecProvider : IDisposable
     {
         private readonly string _packageSpecDirectory;
         private readonly bool _deleteSpecDirectoryOnDispose;
-        private readonly string _muxerPath;
+        private readonly string _dotnetPath;
 
         public DependencyGraphSpecProvider(string packageSpecDirectory)
             : this(packageSpecDirectory, deleteSpecDirectoryOnDispose: false)
@@ -22,7 +24,7 @@ namespace UniverseTools
         {
             _packageSpecDirectory = packageSpecDirectory;
             _deleteSpecDirectoryOnDispose = deleteSpecDirectoryOnDispose;
-            _muxerPath = new Muxer().MuxerPath;
+            _dotnetPath = Process.GetCurrentProcess().MainModule.FileName;
         }
 
         public static DependencyGraphSpecProvider Default { get; } =
@@ -42,7 +44,7 @@ namespace UniverseTools
 
         private void RunMSBuild(string solutionPath, string outputFile)
         {
-            var psi = new ProcessStartInfo(_muxerPath);
+            var psi = new ProcessStartInfo(_dotnetPath);
 
             var arguments = new List<string>
             {
@@ -53,6 +55,7 @@ namespace UniverseTools
                 "/v:q",
                 "/p:BuildProjectReferences=false",
                 $"/p:RestoreGraphOutputPath=\"{outputFile}\"",
+                "/p:KoreBuildRestoreTargetsImported=true",
             };
 
             psi.Arguments = string.Join(" ", arguments);
