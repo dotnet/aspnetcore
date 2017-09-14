@@ -186,7 +186,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
         public async Task ExecuteAsync_NonNullResult_LogsResultType()
         {
             // Arrange
-            var expected = "Executing JsonResult, writing value type System.String.";
+            var expected = "Executing JsonResult, writing value of type 'System.String'.";
             var context = GetActionContext();
             var logger = new StubLogger();
             var executer = CreateExcutor(logger);
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Json.Internal
         public async Task ExecuteAsync_NullResult_LogsNull()
         {
             // Arrange
-            var expected = "Executing JsonResult, writing value type null.";
+            var expected = "Executing JsonResult, writing value of type 'null'.";
             var context = GetActionContext();
             var logger = new StubLogger();
             var executer = CreateExcutor(logger);

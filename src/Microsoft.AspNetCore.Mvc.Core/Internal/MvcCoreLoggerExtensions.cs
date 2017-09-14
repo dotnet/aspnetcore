@@ -182,7 +182,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _objectResultExecuting = LoggerMessage.Define<string>(
                 LogLevel.Information,
                 1,
-                "Executing ObjectResult, writing value {Value}.");
+                "Executing ObjectResult, writing value of type '{Type}'.");
 
             _formatterSelected = LoggerMessage.Define<IOutputFormatter, string>(
                 LogLevel.Debug,
@@ -447,7 +447,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             if (logger.IsEnabled(LogLevel.Information))
             {
-                _objectResultExecuting(logger, Convert.ToString(value), null);
+                var type = value == null ? "null" : value.GetType().FullName;
+                _objectResultExecuting(logger, type, null);
             }
         }
 
