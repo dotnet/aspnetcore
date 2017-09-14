@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.Mvc
         public string ContentType { get; set; }
 
         /// <inheritdoc />
-        public override async Task ExecuteResultAsync(ActionContext context)
+        public override Task ExecuteResultAsync(ActionContext context)
         {
             if (context == null)
             {
@@ -65,16 +66,8 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             var services = context.HttpContext.RequestServices;
-            var executor = services.GetRequiredService<PartialViewResultExecutor>();
-
-            var result = executor.FindView(context, this);
-            result.EnsureSuccessful(originalLocations: null);
-
-            var view = result.View;
-            using (view as IDisposable)
-            {
-                await executor.ExecuteAsync(context, view, this);
-            }
+            var executor = services.GetRequiredService<IActionResultExecutor<PartialViewResult>>();
+            return executor.ExecuteAsync(context, this);
         }
     }
 }

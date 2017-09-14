@@ -11,17 +11,18 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Formatters.Internal;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
     /// <summary>
     /// Executes an <see cref="ObjectResult"/> to write to the response.
     /// </summary>
-    public class ObjectResultExecutor
+    public class ObjectResultExecutor : IActionResultExecutor<ObjectResult>
     {
         /// <summary>
         /// Creates a new <see cref="ObjectResultExecutor"/>.

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
@@ -226,7 +227,7 @@ namespace Microsoft.AspNetCore.Mvc
                 new EmptyModelMetadataProvider());
 
             var services = new ServiceCollection();
-            services.AddSingleton(viewExecutor);
+            services.AddSingleton<IActionResultExecutor<PartialViewResult>>(viewExecutor);
 
             var httpContext = new DefaultHttpContext();
             httpContext.RequestServices = services.BuildServiceProvider();

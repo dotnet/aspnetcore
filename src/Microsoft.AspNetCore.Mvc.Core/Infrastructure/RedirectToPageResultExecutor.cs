@@ -2,20 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class LocalRedirectResultExecutor
+    public class RedirectToPageResultExecutor : IActionResultExecutor<RedirectToPageResult>
     {
         private readonly ILogger _logger;
         private readonly IUrlHelperFactory _urlHelperFactory;
 
-        public LocalRedirectResultExecutor(ILoggerFactory loggerFactory, IUrlHelperFactory urlHelperFactory)
+        public RedirectToPageResultExecutor(ILoggerFactory loggerFactory, IUrlHelperFactory urlHelperFactory)
         {
             if (loggerFactory == null)
             {
@@ -27,11 +29,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(urlHelperFactory));
             }
 
-            _logger = loggerFactory.CreateLogger<LocalRedirectResultExecutor>();
+            _logger = loggerFactory.CreateLogger<RedirectToRouteResult>();
             _urlHelperFactory = urlHelperFactory;
         }
 
-        public virtual void Execute(ActionContext context, LocalRedirectResult result)
+        /// <inheritdoc />
+        public virtual Task ExecuteAsync(ActionContext context, RedirectToPageResult result)
         {
             if (context == null)
             {
@@ -44,15 +47,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
 
             var urlHelper = result.UrlHelper ?? _urlHelperFactory.GetUrlHelper(context);
+            var destinationUrl = urlHelper.Page(
+                result.PageName,
+                result.PageHandler,
+                result.RouteValues,
+                result.Protocol,
+                result.Host,
+                fragment: result.Fragment);
 
-            // IsLocalUrl is called to handle  Urls starting with '~/'.
-            if (!urlHelper.IsLocalUrl(result.Url))
+            if (string.IsNullOrEmpty(destinationUrl))
             {
-                throw new InvalidOperationException(Resources.UrlNotLocal);
+                throw new InvalidOperationException(Resources.FormatNoRoutesMatchedForPage(result.PageName));
             }
 
-            var destinationUrl = urlHelper.Content(result.Url);
-            _logger.LocalRedirectResultExecuting(destinationUrl);
+            _logger.RedirectToPageResultExecuting(result.PageName);
 
             if (result.PreserveMethod)
             {
@@ -64,6 +72,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 context.HttpContext.Response.Redirect(destinationUrl, result.Permanent);
             }
+
+            return Task.CompletedTask;
         }
     }
 }

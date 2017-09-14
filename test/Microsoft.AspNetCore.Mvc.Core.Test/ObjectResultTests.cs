@@ -5,6 +5,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -63,7 +64,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static IServiceProvider CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddSingleton(new ObjectResultExecutor(
+            services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
                 new TestOptionsManager<MvcOptions>(),
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance));

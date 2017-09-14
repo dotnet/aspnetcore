@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
@@ -65,7 +67,7 @@ namespace Microsoft.AspNetCore.Mvc
         [Theory]
         [InlineData("", "/Home/About", "/Home/About")]
         [InlineData("/myapproot", "/test", "/test")]
-        public void Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde(
+        public async Task Execute_ReturnsContentPath_WhenItDoesNotStartWithTilde(
             string appRoot,
             string contentPath,
             string expectedPath)
@@ -80,7 +82,7 @@ namespace Microsoft.AspNetCore.Mvc
             var result = new RedirectResult(contentPath);
 
             // Act
-            result.ExecuteResult(actionContext);
+            await result.ExecuteResultAsync(actionContext);
 
             // Assert
             // Verifying if Redirect was called with the specific Url and parameter flag.
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("/", "~/", "/")]
         [InlineData("", "~/Home/About", "/Home/About")]
         [InlineData("/myapproot", "~/", "/myapproot/")]
-        public void Execute_ReturnsAppRelativePath_WhenItStartsWithTilde(
+        public async Task Execute_ReturnsAppRelativePath_WhenItStartsWithTilde(
             string appRoot,
             string contentPath,
             string expectedPath)
@@ -108,7 +110,7 @@ namespace Microsoft.AspNetCore.Mvc
             var result = new RedirectResult(contentPath);
 
             // Act
-            result.ExecuteResult(actionContext);
+            await result.ExecuteResultAsync(actionContext);
 
             // Assert
             // Verifying if Redirect was called with the specific Url and parameter flag.
@@ -128,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static IServiceProvider GetServiceProvider()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<RedirectResultExecutor>();
+            serviceCollection.AddSingleton<IActionResultExecutor<RedirectResult>, RedirectResultExecutor>();
             serviceCollection.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
             serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
             return serviceCollection.BuildServiceProvider();

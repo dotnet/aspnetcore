@@ -2,21 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
-    public class ViewComponentResultExecutor
+    public class ViewComponentResultExecutor : IActionResultExecutor<ViewComponentResult>
     {
         private readonly HtmlEncoder _htmlEncoder;
         private readonly HtmlHelperOptions _htmlHelperOptions;
@@ -63,34 +64,35 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             _tempDataDictionaryFactory = tempDataDictionaryFactory;
         }
 
-        public virtual async Task ExecuteAsync(ActionContext context, ViewComponentResult viewComponentResult)
+        /// <inheritdoc />
+        public virtual async Task ExecuteAsync(ActionContext context, ViewComponentResult result)
         {
             if (context == null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (viewComponentResult == null)
+            if (result == null)
             {
-                throw new ArgumentNullException(nameof(viewComponentResult));
+                throw new ArgumentNullException(nameof(result));
             }
 
             var response = context.HttpContext.Response;
 
-            var viewData = viewComponentResult.ViewData;
+            var viewData = result.ViewData;
             if (viewData == null)
             {
                 viewData = new ViewDataDictionary(_modelMetadataProvider, context.ModelState);
             }
 
-            var tempData = viewComponentResult.TempData;
+            var tempData = result.TempData;
             if (tempData == null)
             {
                 tempData = _tempDataDictionaryFactory.GetTempData(context.HttpContext);
             }
 
             ResponseContentTypeHelper.ResolveContentTypeAndEncoding(
-                viewComponentResult.ContentType,
+                result.ContentType,
                 response.ContentType,
                 ViewExecutor.DefaultContentType,
                 out var resolvedContentType,
@@ -98,9 +100,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             response.ContentType = resolvedContentType;
 
-            if (viewComponentResult.StatusCode != null)
+            if (result.StatusCode != null)
             {
-                response.StatusCode = viewComponentResult.StatusCode.Value;
+                response.StatusCode = result.StatusCode.Value;
             }
 
             using (var writer = new HttpResponseStreamWriter(response.Body, resolvedContentTypeEncoding))
@@ -117,9 +119,8 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 var viewComponentHelper = context.HttpContext.RequestServices.GetRequiredService<IViewComponentHelper>();
                 (viewComponentHelper as IViewContextAware)?.Contextualize(viewContext);
 
-                var result = await GetViewComponentResult(viewComponentHelper, _logger, viewComponentResult);
-
-                result.WriteTo(writer, _htmlEncoder);
+                var viewComponentResult = await GetViewComponentResult(viewComponentHelper, _logger, result);
+                viewComponentResult.WriteTo(writer, _htmlEncoder);
             }
         }
 

@@ -2,15 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class RedirectToActionResultExecutor
+    public class RedirectToActionResultExecutor : IActionResultExecutor<RedirectToActionResult>
     {
         private readonly ILogger _logger;
         private readonly IUrlHelperFactory _urlHelperFactory;
@@ -31,7 +33,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _urlHelperFactory = urlHelperFactory;
         }
 
-        public virtual void Execute(ActionContext context, RedirectToActionResult result)
+        /// <inheritdoc />
+        public virtual Task ExecuteAsync(ActionContext context, RedirectToActionResult result)
         {
             if (context == null)
             {
@@ -69,6 +72,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 context.HttpContext.Response.Redirect(destinationUrl, result.Permanent);
             }
+
+            return Task.CompletedTask;
         }
     }
 }

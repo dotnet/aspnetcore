@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
@@ -422,7 +423,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static IServiceCollection CreateServices()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<FileContentResultExecutor>();
+            services.AddSingleton<IActionResultExecutor<FileContentResult>, FileContentResultExecutor>();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
             return services;

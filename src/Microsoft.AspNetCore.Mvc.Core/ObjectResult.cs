@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,10 +34,8 @@ namespace Microsoft.AspNetCore.Mvc
 
         public override Task ExecuteResultAsync(ActionContext context)
         {
-            var executor = context.HttpContext.RequestServices.GetRequiredService<ObjectResultExecutor>();
-            var result = executor.ExecuteAsync(context, this);
-
-            return result;
+            var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<ObjectResult>>();
+            return executor.ExecuteAsync(context, this);
         }
 
         /// <summary>

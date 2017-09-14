@@ -6,23 +6,25 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
+using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
+namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 {
     /// <summary>
-    /// Finds and executes an <see cref="IView"/> for a <see cref="ViewResult"/>.
+    /// Finds and executes an <see cref="IView"/> for a <see cref="PartialViewResult"/>.
     /// </summary>
-    public class ViewResultExecutor : ViewExecutor
+    public class PartialViewResultExecutor : ViewExecutor, IActionResultExecutor<PartialViewResult>
     {
         private const string ActionNameKey = "action";
 
         /// <summary>
-        /// Creates a new <see cref="ViewResultExecutor"/>.
+        /// Creates a new <see cref="PartialViewResultExecutor"/>.
         /// </summary>
         /// <param name="viewOptions">The <see cref="IOptions{MvcViewOptions}"/>.</param>
         /// <param name="writerFactory">The <see cref="IHttpResponseStreamWriterFactory"/>.</param>
@@ -31,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// <param name="diagnosticSource">The <see cref="DiagnosticSource"/>.</param>
         /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
         /// <param name="modelMetadataProvider">The <see cref="IModelMetadataProvider"/>.</param>
-        public ViewResultExecutor(
+        public PartialViewResultExecutor(
             IOptions<MvcViewOptions> viewOptions,
             IHttpResponseStreamWriterFactory writerFactory,
             ICompositeViewEngine viewEngine,
@@ -46,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            Logger = loggerFactory.CreateLogger<ViewResultExecutor>();
+            Logger = loggerFactory.CreateLogger<PartialViewResultExecutor>();
         }
 
         /// <summary>
@@ -58,9 +60,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// Attempts to find the <see cref="IView"/> associated with <paramref name="viewResult"/>.
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/> associated with the current request.</param>
-        /// <param name="viewResult">The <see cref="ViewResult"/>.</param>
+        /// <param name="viewResult">The <see cref="PartialViewResult"/>.</param>
         /// <returns>A <see cref="ViewEngineResult"/>.</returns>
-        public virtual ViewEngineResult FindView(ActionContext actionContext, ViewResult viewResult)
+        public virtual ViewEngineResult FindView(ActionContext actionContext, PartialViewResult viewResult)
         {
             if (actionContext == null)
             {
@@ -73,14 +75,13 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             var viewEngine = viewResult.ViewEngine ?? ViewEngine;
-
             var viewName = viewResult.ViewName ?? GetActionName(actionContext);
 
-            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: true);
+            var result = viewEngine.GetView(executingFilePath: null, viewPath: viewName, isMainPage: false);
             var originalResult = result;
             if (!result.Success)
             {
-                result = viewEngine.FindView(actionContext, viewName, isMainPage: true);
+                result = viewEngine.FindView(actionContext, viewName, isMainPage: false);
             }
 
             if (!result.Success)
@@ -104,38 +105,25 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 
             if (result.Success)
             {
-                if (DiagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewFound"))
-                {
-                    DiagnosticSource.Write(
-                        "Microsoft.AspNetCore.Mvc.ViewFound",
-                        new
-                        {
-                            actionContext = actionContext,
-                            isMainPage = true,
-                            result = viewResult,
-                            viewName = viewName,
-                            view = result.View,
-                        });
-                }
+                DiagnosticSource.ViewFound(
+                    actionContext,
+                    isMainPage: false,
+                    viewResult: viewResult,
+                    viewName: viewName,
+                    view: result.View);
 
-                Logger.ViewFound(viewName);
+                Logger.PartialViewFound(viewName);
             }
             else
             {
-                if (DiagnosticSource.IsEnabled("Microsoft.AspNetCore.Mvc.ViewNotFound"))
-                {
-                    DiagnosticSource.Write(
-                        "Microsoft.AspNetCore.Mvc.ViewNotFound",
-                        new
-                        {
-                            actionContext = actionContext,
-                            isMainPage = true,
-                            result = viewResult,
-                            viewName = viewName,
-                            searchedLocations = result.SearchedLocations
-                        });
-                }
-                Logger.ViewNotFound(viewName, result.SearchedLocations);
+                DiagnosticSource.ViewNotFound(
+                    actionContext,
+                    isMainPage: false,
+                    viewResult: viewResult,
+                    viewName: viewName,
+                    searchedLocations: result.SearchedLocations);
+
+                Logger.PartialViewNotFound(viewName, result.SearchedLocations);
             }
 
             return result;
@@ -146,9 +134,9 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         /// </summary>
         /// <param name="actionContext">The <see cref="ActionContext"/> associated with the current request.</param>
         /// <param name="view">The <see cref="IView"/>.</param>
-        /// <param name="viewResult">The <see cref="ViewResult"/>.</param>
+        /// <param name="viewResult">The <see cref="PartialViewResult"/>.</param>
         /// <returns>A <see cref="Task"/> which will complete when view execution is completed.</returns>
-        public virtual Task ExecuteAsync(ActionContext actionContext, IView view, ViewResult viewResult)
+        public virtual Task ExecuteAsync(ActionContext actionContext, IView view, PartialViewResult viewResult)
         {
             if (actionContext == null)
             {
@@ -165,7 +153,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 throw new ArgumentNullException(nameof(viewResult));
             }
 
-            Logger.ViewResultExecuting(view);
+            Logger.PartialViewResultExecuting(view);
 
             return ExecuteAsync(
                 actionContext,
@@ -176,6 +164,29 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 viewResult.StatusCode);
         }
 
+        /// <inheritdoc />
+        public virtual async Task ExecuteAsync(ActionContext context, PartialViewResult result)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (result == null)
+            {
+                throw new ArgumentNullException(nameof(result));
+            }
+
+            var viewEngineResult = FindView(context, result);
+            viewEngineResult.EnsureSuccessful(originalLocations: null);
+
+            var view = viewEngineResult.View;
+            using (view as IDisposable)
+            {
+                await ExecuteAsync(context, view, result);
+            }
+        }
+
         private static string GetActionName(ActionContext context)
         {
             if (context == null)
@@ -183,14 +194,16 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (!context.RouteData.Values.TryGetValue(ActionNameKey, out var routeValue))
+            object routeValue;
+            if (!context.RouteData.Values.TryGetValue(ActionNameKey, out routeValue))
             {
                 return null;
             }
 
             var actionDescriptor = context.ActionDescriptor;
             string normalizedValue = null;
-            if (actionDescriptor.RouteValues.TryGetValue(ActionNameKey, out var value) &&
+            string value;
+            if (actionDescriptor.RouteValues.TryGetValue(ActionNameKey, out value) &&
                 !string.IsNullOrEmpty(value))
             {
                 normalizedValue = value;

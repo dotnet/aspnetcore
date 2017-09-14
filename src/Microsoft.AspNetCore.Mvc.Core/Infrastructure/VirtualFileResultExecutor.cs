@@ -12,9 +12,9 @@ using Microsoft.Extensions.FileProviders;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class VirtualFileResultExecutor : FileResultExecutorBase
+    public class VirtualFileResultExecutor : FileResultExecutorBase , IActionResultExecutor<VirtualFileResult>
     {
         private readonly IHostingEnvironment _hostingEnvironment;
 
@@ -29,6 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _hostingEnvironment = hostingEnvironment;
         }
 
+        /// <inheritdoc />
         public virtual Task ExecuteAsync(ActionContext context, VirtualFileResult result)
         {
             if (context == null)

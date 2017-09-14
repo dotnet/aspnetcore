@@ -2,9 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
@@ -63,7 +65,7 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
-        public void Execute_ReturnsExpectedValues()
+        public async Task Execute_ReturnsExpectedValues()
         {
             // Arrange
             var appRoot = "/";
@@ -78,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc
             var result = new LocalRedirectResult(contentPath);
 
             // Act
-            result.ExecuteResult(actionContext);
+            await result.ExecuteResultAsync(actionContext);
 
             // Assert
             httpResponse.Verify();
@@ -87,7 +89,7 @@ namespace Microsoft.AspNetCore.Mvc
         [Theory]
         [InlineData("", "Home/About", "/Home/About")]
         [InlineData("/myapproot", "http://www.example.com", "/test")]
-        public void Execute_Throws_ForNonLocalUrl(
+        public async Task Execute_Throws_ForNonLocalUrl(
             string appRoot,
             string contentPath,
             string expectedPath)
@@ -102,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc
             var result = new LocalRedirectResult(contentPath);
 
             // Act & Assert
-            var exception = Assert.Throws<InvalidOperationException>(() => result.ExecuteResult(actionContext));
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => result.ExecuteResultAsync(actionContext));
             Assert.Equal(
                 "The supplied URL is not local. A URL with an absolute path is considered local if it does not " +
                 "have a host/authority part. URLs using virtual paths ('~/') are also local.",
@@ -120,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static IServiceProvider GetServiceProvider()
         {
             var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<LocalRedirectResultExecutor>();
+            serviceCollection.AddSingleton<IActionResultExecutor<LocalRedirectResult>, LocalRedirectResultExecutor>();
             serviceCollection.AddSingleton<IUrlHelperFactory, UrlHelperFactory>();
             serviceCollection.AddTransient<ILoggerFactory, LoggerFactory>();
             return serviceCollection.BuildServiceProvider();

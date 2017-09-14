@@ -4,6 +4,7 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Controllers;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ViewEngines;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
@@ -64,17 +65,8 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var services = context.HttpContext.RequestServices;
-            var executor = services.GetRequiredService<ViewResultExecutor>();
-
-            var result = executor.FindView(context, this);
-            result.EnsureSuccessful(originalLocations: null);
-
-            var view = result.View;
-            using (view as IDisposable)
-            {
-                await executor.ExecuteAsync(context, view, this);
-            }
+            var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<ViewResult>>();
+            await executor.ExecuteAsync(context, this);
         }
     }
 }

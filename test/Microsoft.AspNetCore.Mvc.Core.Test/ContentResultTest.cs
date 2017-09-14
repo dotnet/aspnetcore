@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Mvc.ViewComponents;
@@ -269,7 +270,7 @@ namespace Microsoft.AspNetCore.Mvc
                 .Returns(new char[DefaultCharacterChunkSize]);
 
             var services = new ServiceCollection();
-            services.AddSingleton(new ContentResultExecutor(
+            services.AddSingleton<IActionResultExecutor<ContentResult>>(new ContentResultExecutor(
                 new Logger<ContentResultExecutor>(NullLoggerFactory.Instance),
                 new MemoryPoolHttpResponseStreamWriterFactory(ArrayPool<byte>.Shared, charArrayPool.Object)));
             return services;

@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
@@ -73,7 +74,7 @@ namespace Microsoft.AspNetCore.Mvc
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
-                .AddTransient<TestVirtualFileResultExecutor>()
+                .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
                 .AddTransient<ILoggerFactory, LoggerFactory>()
                 .BuildServiceProvider();
 
@@ -117,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
-                .AddTransient<TestVirtualFileResultExecutor>()
+                .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
                 .AddTransient<ILoggerFactory, LoggerFactory>()
                 .BuildServiceProvider();
 
@@ -162,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
-                .AddTransient<TestVirtualFileResultExecutor>()
+                .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
                 .AddTransient<ILoggerFactory, LoggerFactory>()
                 .BuildServiceProvider();
 
@@ -207,7 +208,7 @@ namespace Microsoft.AspNetCore.Mvc
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
                     .AddSingleton(appEnvironment.Object)
-                    .AddTransient<TestVirtualFileResultExecutor>()
+                    .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
                     .AddTransient<ILoggerFactory, LoggerFactory>()
                     .BuildServiceProvider();
 
@@ -250,7 +251,7 @@ namespace Microsoft.AspNetCore.Mvc
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
                     .AddSingleton(appEnvironment.Object)
-                    .AddTransient<TestVirtualFileResultExecutor>()
+                    .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
                     .AddTransient<ILoggerFactory, LoggerFactory>()
                     .BuildServiceProvider();
 
@@ -292,7 +293,7 @@ namespace Microsoft.AspNetCore.Mvc
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
-                .AddTransient<TestVirtualFileResultExecutor>()
+                .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
                 .AddTransient<ILoggerFactory, LoggerFactory>()
                 .BuildServiceProvider();
 
@@ -334,7 +335,7 @@ namespace Microsoft.AspNetCore.Mvc
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
-                .AddTransient<TestVirtualFileResultExecutor>()
+                .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
                 .AddTransient<ILoggerFactory, LoggerFactory>()
                 .BuildServiceProvider();
 
@@ -376,7 +377,7 @@ namespace Microsoft.AspNetCore.Mvc
             httpContext.Response.Body = new MemoryStream();
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
-                .AddTransient<TestVirtualFileResultExecutor>()
+                .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
                 .AddTransient<ILoggerFactory, LoggerFactory>()
                 .BuildServiceProvider();
             var context = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
@@ -464,7 +465,7 @@ namespace Microsoft.AspNetCore.Mvc
                 .Returns(GetFileProvider(path));
             httpContext.RequestServices = new ServiceCollection()
                 .AddSingleton(appEnvironment.Object)
-                .AddTransient<TestVirtualFileResultExecutor>()
+                .AddTransient<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>()
                 .AddTransient<ILoggerFactory, LoggerFactory>()
                 .BuildServiceProvider();
 
@@ -665,7 +666,12 @@ namespace Microsoft.AspNetCore.Mvc
 
             var hostingEnvironment = new Mock<IHostingEnvironment>();
 
-            services.AddSingleton(executorType ?? typeof(TestVirtualFileResultExecutor));
+            services.AddSingleton<IActionResultExecutor<VirtualFileResult>, TestVirtualFileResultExecutor>();
+            if (executorType != null)
+            {
+                services.AddSingleton(typeof(IActionResultExecutor<VirtualFileResult>), executorType);
+            }
+
             services.AddSingleton<IHostingEnvironment>(hostingEnvironment.Object);
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
 
@@ -708,7 +714,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             public override Task ExecuteResultAsync(ActionContext context)
             {
-                var executor = context.HttpContext.RequestServices.GetRequiredService<TestVirtualFileResultExecutor>();
+                var executor = (TestVirtualFileResultExecutor)context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<VirtualFileResult>>();
                 executor.IsAscii = IsAscii;
                 return executor.ExecuteAsync(context, this);
             }

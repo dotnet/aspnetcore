@@ -7,15 +7,16 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class FileContentResultExecutor : FileResultExecutorBase
+    public class FileContentResultExecutor : FileResultExecutorBase, IActionResultExecutor<FileContentResult>
     {
         public FileContentResultExecutor(ILoggerFactory loggerFactory)
             : base(CreateLogger<FileContentResultExecutor>(loggerFactory))
         {
         }
 
+        /// <inheritdoc />
         public virtual Task ExecuteAsync(ActionContext context, FileContentResult result)
         {
             if (context == null)

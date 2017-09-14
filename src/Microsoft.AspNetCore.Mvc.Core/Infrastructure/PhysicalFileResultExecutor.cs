@@ -10,15 +10,16 @@ using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class PhysicalFileResultExecutor : FileResultExecutorBase
+    public class PhysicalFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<PhysicalFileResult>
     {
         public PhysicalFileResultExecutor(ILoggerFactory loggerFactory)
             : base(CreateLogger<PhysicalFileResultExecutor>(loggerFactory))
         {
         }
 
+        /// <inheritdoc />
         public virtual Task ExecuteAsync(ActionContext context, PhysicalFileResult result)
         {
             if (context == null)

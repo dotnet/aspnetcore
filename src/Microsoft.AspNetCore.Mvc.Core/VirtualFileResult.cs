@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var executor = context.HttpContext.RequestServices.GetRequiredService<VirtualFileResultExecutor>();
+            var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<VirtualFileResult>>();
             return executor.ExecuteAsync(context, this);
         }
     }

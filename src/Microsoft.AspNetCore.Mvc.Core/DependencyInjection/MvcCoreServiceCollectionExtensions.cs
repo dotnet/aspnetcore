@@ -250,17 +250,17 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<IHttpResponseStreamWriterFactory, MemoryPoolHttpResponseStreamWriterFactory>();
             services.TryAddSingleton(ArrayPool<byte>.Shared);
             services.TryAddSingleton(ArrayPool<char>.Shared);
-            services.TryAddSingleton<ObjectResultExecutor>();
-            services.TryAddSingleton<PhysicalFileResultExecutor>();
-            services.TryAddSingleton<VirtualFileResultExecutor>();
-            services.TryAddSingleton<FileStreamResultExecutor>();
-            services.TryAddSingleton<FileContentResultExecutor>();
-            services.TryAddSingleton<RedirectResultExecutor>();
-            services.TryAddSingleton<LocalRedirectResultExecutor>();
-            services.TryAddSingleton<RedirectToActionResultExecutor>();
-            services.TryAddSingleton<RedirectToRouteResultExecutor>();
-            services.TryAddSingleton<RedirectToPageResultExecutor>();
-            services.TryAddSingleton<ContentResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<ObjectResult>, ObjectResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<PhysicalFileResult>, PhysicalFileResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<VirtualFileResult>, VirtualFileResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<FileStreamResult>, FileStreamResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<FileContentResult>, FileContentResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<RedirectResult>, RedirectResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<LocalRedirectResult>, LocalRedirectResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<RedirectToActionResult>, RedirectToActionResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<RedirectToRouteResult>, RedirectToRouteResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<RedirectToPageResult>, RedirectToPageResultExecutor>();
+            services.TryAddSingleton<IActionResultExecutor<ContentResult>, ContentResultExecutor>();
 
             //
             // Route Handlers

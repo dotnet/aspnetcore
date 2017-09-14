@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Routing;
@@ -297,7 +298,7 @@ namespace Microsoft.AspNetCore.Mvc
         private static IServiceProvider CreateServices(IUrlHelperFactory factory = null)
         {
             var services = new ServiceCollection();
-            services.AddSingleton<RedirectToPageResultExecutor>();
+            services.AddSingleton<IActionResultExecutor<RedirectToPageResult>, RedirectToPageResultExecutor>();
 
             if (factory != null)
             {

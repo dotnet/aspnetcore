@@ -1602,7 +1602,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var services = new ServiceCollection();
             services.AddSingleton<ILoggerFactory>(NullLoggerFactory.Instance);
             services.AddSingleton<IOptions<MvcOptions>>(mvcOptionsAccessor);
-            services.AddSingleton(new ObjectResultExecutor(
+            services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
                 mvcOptionsAccessor,
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance));

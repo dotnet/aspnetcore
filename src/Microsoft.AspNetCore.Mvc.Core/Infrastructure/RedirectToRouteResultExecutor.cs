@@ -2,19 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Net.Http.Headers;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class RedirectResultExecutor
+    public class RedirectToRouteResultExecutor : IActionResultExecutor<RedirectToRouteResult>
     {
         private readonly ILogger _logger;
         private readonly IUrlHelperFactory _urlHelperFactory;
 
-        public RedirectResultExecutor(ILoggerFactory loggerFactory, IUrlHelperFactory urlHelperFactory)
+        public RedirectToRouteResultExecutor(ILoggerFactory loggerFactory, IUrlHelperFactory urlHelperFactory)
         {
             if (loggerFactory == null)
             {
@@ -26,32 +29,27 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(urlHelperFactory));
             }
 
-            _logger = loggerFactory.CreateLogger<RedirectResultExecutor>();
+            _logger = loggerFactory.CreateLogger<RedirectToRouteResult>();
             _urlHelperFactory = urlHelperFactory;
         }
 
-        public virtual void Execute(ActionContext context, RedirectResult result)
+        /// <inheritdoc />
+        public virtual Task ExecuteAsync(ActionContext context, RedirectToRouteResult result)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (result == null)
-            {
-                throw new ArgumentNullException(nameof(result));
-            }
-
             var urlHelper = result.UrlHelper ?? _urlHelperFactory.GetUrlHelper(context);
 
-            // IsLocalUrl is called to handle URLs starting with '~/'.
-            var destinationUrl = result.Url;
-            if (urlHelper.IsLocalUrl(destinationUrl))
+            var destinationUrl = urlHelper.RouteUrl(
+                result.RouteName,
+                result.RouteValues,
+                protocol: null,
+                host: null,
+                fragment: result.Fragment);
+            if (string.IsNullOrEmpty(destinationUrl))
             {
-                destinationUrl = urlHelper.Content(result.Url);
+                throw new InvalidOperationException(Resources.NoRoutesMatched);
             }
 
-            _logger.RedirectResultExecuting(destinationUrl);
+            _logger.RedirectToRouteResultExecuting(destinationUrl, result.RouteName);
 
             if (result.PreserveMethod)
             {
@@ -63,6 +61,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 context.HttpContext.Response.Redirect(destinationUrl, result.Permanent);
             }
+
+            return Task.CompletedTask;
         }
     }
 }

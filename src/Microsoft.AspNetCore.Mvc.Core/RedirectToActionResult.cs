@@ -2,10 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Core;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
+using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc
 {
@@ -165,6 +172,19 @@ namespace Microsoft.AspNetCore.Mvc
         public string Fragment { get; set; }
 
         /// <inheritdoc />
+        public override Task ExecuteResultAsync(ActionContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            var executor = context.HttpContext.RequestServices.GetRequiredService<IActionResultExecutor<RedirectToActionResult>>();
+            return executor.ExecuteAsync(context, this);
+        }
+
+#pragma warning disable CS0809
+        [Obsolete("This implementation will be removed in a future release, use ExecuteResultAsync.")]
         public override void ExecuteResult(ActionContext context)
         {
             if (context == null)
@@ -172,8 +192,37 @@ namespace Microsoft.AspNetCore.Mvc
                 throw new ArgumentNullException(nameof(context));
             }
 
-            var executor = context.HttpContext.RequestServices.GetRequiredService<RedirectToActionResultExecutor>();
-            executor.Execute(context, this);
+            var services = context.HttpContext.RequestServices;
+            var urlHelperFactory = services.GetRequiredService<IUrlHelperFactory>();
+            var logger = services.GetRequiredService<ILogger<RedirectToActionResultExecutor>>();
+
+            var urlHelper = UrlHelper ?? urlHelperFactory.GetUrlHelper(context);
+
+            var destinationUrl = urlHelper.Action(
+                ActionName,
+                ControllerName,
+                RouteValues,
+                protocol: null,
+                host: null,
+                fragment: Fragment);
+            if (string.IsNullOrEmpty(destinationUrl))
+            {
+                throw new InvalidOperationException(Resources.NoRoutesMatched);
+            }
+
+            logger.RedirectToActionResultExecuting(destinationUrl);
+
+            if (PreserveMethod)
+            {
+                context.HttpContext.Response.StatusCode = Permanent ?
+                    StatusCodes.Status308PermanentRedirect : StatusCodes.Status307TemporaryRedirect;
+                context.HttpContext.Response.Headers[HeaderNames.Location] = destinationUrl;
+            }
+            else
+            {
+                context.HttpContext.Response.Redirect(destinationUrl, Permanent);
+            }
         }
+#pragma warning restore CS0809
     }
 }

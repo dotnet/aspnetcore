@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -138,7 +139,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var options = new TestOptionsManager<MvcOptions>();
             options.Value.OutputFormatters.Add(formatter.Object);
             var services = new ServiceCollection();
-            services.AddSingleton(new ObjectResultExecutor(
+            services.AddSingleton<IActionResultExecutor<ObjectResult>>(new ObjectResultExecutor(
                 options,
                 new TestHttpResponseStreamWriterFactory(),
                 NullLoggerFactory.Instance));

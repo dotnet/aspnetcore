@@ -4,11 +4,12 @@
 using System;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.Extensions.Logging;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class ContentResultExecutor
+    public class ContentResultExecutor : IActionResultExecutor<ContentResult>
     {
         private const string DefaultContentType = "text/plain; charset=utf-8";
         private readonly ILogger<ContentResultExecutor> _logger;
@@ -20,6 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             _httpResponseStreamWriterFactory = httpResponseStreamWriterFactory;
         }
 
+        /// <inheritdoc />
         public virtual async Task ExecuteAsync(ActionContext context, ContentResult result)
         {
             if (context == null)
