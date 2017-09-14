@@ -1,60 +1,98 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
+using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
     public class DispatcherMiddleware
     {
+        private readonly DispatcherOptions _options;
         private readonly RequestDelegate _next;
 
-        public DispatcherMiddleware(RequestDelegate next)
+        public DispatcherMiddleware(IOptions<DispatcherOptions> options, RequestDelegate next)
         {
+            _options = options.Value;
             _next = next;
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
-            var dictionary = new Dictionary<string, DispatcherFeature>
+            foreach (var entry in _options.DispatcherEntryList)
             {
-                {
-                    "/example",
-                    new DispatcherFeature
-                        {
-                            Endpoint = new DispatcherEndpoint("example"),
-                            RequestDelegate = async (context) =>
-                            {
-                                await context.Response.WriteAsync("Hello from the example!");
-                            }
-                        }
-                },
-                {
-                    "/example2",
-                    new DispatcherFeature
-                        {
-                            Endpoint = new DispatcherEndpoint("example2"),
-                            RequestDelegate = async (context) =>
-                            {
-                                await context.Response.WriteAsync("Hello from the second example!");
-                            }
-                        }
-                },
-            };
+                var parsedTemplate = entry.RouteTemplate;
+                var defaults = GetDefaults(parsedTemplate);
+                var templateMatcher = new TemplateMatcher(parsedTemplate, defaults);
+                var values = new RouteValueDictionary();
 
-            if (dictionary.TryGetValue(httpContext.Request.Path, out var value))
-            {
-                var dispatcherFeature = new DispatcherFeature
+                foreach (var endpoint in entry.Endpoints)
                 {
-                    Endpoint = value.Endpoint,
-                    RequestDelegate = value.RequestDelegate
-                };
+                    if (templateMatcher.TryMatch(httpContext.Request.Path, values))
+                    {
+                        if (!CompareRouteValues(values, endpoint.RequiredValues))
+                        {
+                            values.Clear();
+                        }
 
-                httpContext.Features.Set<IDispatcherFeature>(dispatcherFeature);
-                await _next(httpContext);
+                        else
+                        {
+                            var dispatcherFeature = new DispatcherFeature
+                            {
+                                Endpoint = endpoint,
+                                RequestDelegate = endpoint.RequestDelegate
+                            };
+
+                            httpContext.Features.Set<IDispatcherFeature>(dispatcherFeature);
+                            break;
+                        }
+                    }
+                }
             }
+
+            await _next(httpContext);
+        }
+
+        private RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate)
+        {
+            var result = new RouteValueDictionary();
+
+            foreach (var parameter in parsedTemplate.Parameters)
+            {
+                if (parameter.DefaultValue != null)
+                {
+                    result.Add(parameter.Name, parameter.DefaultValue);
+                }
+            }
+
+            return result;
+        }
+
+        private bool CompareRouteValues(RouteValueDictionary values, RouteValueDictionary requiredValues)
+        {
+            foreach (var kvp in requiredValues)
+            {
+                if (string.IsNullOrEmpty(kvp.Value.ToString()))
+                {
+                    if (values.TryGetValue(kvp.Key, out var routeValue) && !string.IsNullOrEmpty(routeValue.ToString()))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!values.TryGetValue(kvp.Key, out var routeValue) || !string.Equals(kvp.Value.ToString(), routeValue.ToString(), StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
         }
     }
 }

@@ -1,21 +1,22 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Dispatcher;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 
-namespace DispatcherSample
+namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class RouteValueAddress : Address
+    public class RouteValuesEndpoint : Endpoint
     {
-        public RouteValueAddress(string displayName, RouteValueDictionary dictionary)
+        public RouteValuesEndpoint(string displayName)
         {
             DisplayName = displayName;
-            RouteValueDictionary = dictionary;
         }
 
         public override string DisplayName { get; }
 
-        public RouteValueDictionary RouteValueDictionary { get; set; }
+        public RequestDelegate RequestDelegate { get; set; }
+
+        public RouteValueDictionary RequiredValues { get; set; }
     }
 }
