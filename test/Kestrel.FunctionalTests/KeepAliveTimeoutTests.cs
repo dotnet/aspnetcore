@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 using System.Threading;
@@ -11,15 +12,26 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.AspNetCore.Testing.xunit;
+using Microsoft.Extensions.Logging;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
     public class KeepAliveTimeoutTests
     {
-        private static readonly TimeSpan KeepAliveTimeout = TimeSpan.FromSeconds(10);
-        private static readonly TimeSpan LongDelay = TimeSpan.FromSeconds(30);
-        private static readonly TimeSpan ShortDelay = TimeSpan.FromSeconds(LongDelay.TotalSeconds / 10);
+        private static readonly TimeSpan _keepAliveTimeout = TimeSpan.FromSeconds(10);
+        private static readonly TimeSpan _longDelay = TimeSpan.FromSeconds(30);
+        private static readonly TimeSpan _shortDelay = TimeSpan.FromSeconds(_longDelay.TotalSeconds / 10);
+
+        private readonly ILoggerFactory _loggerFactory = new LoggerFactory();
+        private readonly ILogger _logger;
+
+        public KeepAliveTimeoutTests(ITestOutputHelper output)
+        {
+            _loggerFactory.AddXunit(output);
+            _logger = _loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.KeepAliveTimeoutTests");
+        }
 
         [Fact]
         public Task TestKeepAliveTimeout()
@@ -62,7 +74,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     "",
                     "");
                 await ReceiveResponse(connection);
-                await connection.WaitForConnectionClose().TimeoutAfter(LongDelay);
+                await connection.WaitForConnectionClose().TimeoutAfter(_longDelay);
             }
         }
 
@@ -77,7 +89,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "Host:",
                         "",
                         "");
-                    await Task.Delay(ShortDelay);
+
+                    var stopWatch = new Stopwatch();
+                    stopWatch.Start();
+                    await Task.Delay(_shortDelay);
+                    stopWatch.Stop();
+                    _logger.LogDebug($"Short delay lasted {TimeSpan.FromMilliseconds(stopWatch.ElapsedMilliseconds).TotalSeconds} seconds instead of {_shortDelay.TotalSeconds} seconds.");
                 }
 
                 for (var i = 0; i < 10; i++)
@@ -92,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             using (var connection = server.CreateConnection())
             {
                 var cts = new CancellationTokenSource();
-                cts.CancelAfter(LongDelay);
+                cts.CancelAfter(_longDelay);
 
                 await connection.Send(
                         "POST /consume HTTP/1.1",
@@ -107,7 +124,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "1",
                         "a",
                         "");
-                    await Task.Delay(ShortDelay);
+                    await Task.Delay(_shortDelay);
                 }
 
                 await connection.Send(
@@ -127,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     "Host:",
                     "",
                     "");
-                cts.CancelAfter(LongDelay);
+                cts.CancelAfter(_longDelay);
 
                 while (!cts.IsCancellationRequested)
                 {
@@ -149,8 +166,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             using (var connection = server.CreateConnection())
             {
-                await Task.Delay(LongDelay);
-                await connection.WaitForConnectionClose().TimeoutAfter(LongDelay);
+                await Task.Delay(_longDelay);
+                await connection.WaitForConnectionClose().TimeoutAfter(_longDelay);
             }
         }
 
@@ -172,7 +189,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 await connection.Receive(
                     "",
                     "");
-                cts.CancelAfter(LongDelay);
+                cts.CancelAfter(_longDelay);
 
                 while (!cts.IsCancellationRequested)
                 {
@@ -185,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private TestServer CreateServer(CancellationToken longRunningCt, CancellationToken upgradeCt)
         {
-            return new TestServer(httpContext => App(httpContext, longRunningCt, upgradeCt), new TestServiceContext
+            return new TestServer(httpContext => App(httpContext, longRunningCt, upgradeCt), new TestServiceContext(_loggerFactory)
             {
                 // Use real SystemClock so timeouts trigger.
                 SystemClock = new SystemClock(),
@@ -194,7 +211,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     AddServerHeader = false,
                     Limits =
                     {
-                        KeepAliveTimeout = KeepAliveTimeout,
+                        KeepAliveTimeout = _keepAliveTimeout,
                         MinRequestBodyDataRate = null
                     }
                 }
@@ -220,7 +237,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     while (!upgradeCt.IsCancellationRequested)
                     {
-                        await Task.Delay(LongDelay);
+                        await Task.Delay(_longDelay);
                     }
 
                     responseStream = stream;
