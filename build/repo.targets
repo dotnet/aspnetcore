@@ -57,12 +57,13 @@
 
   <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories">
     <ItemGroup>
+      <_CloneRepositories Include="@(Repository);@(VerifyRepositories)" />
       <_CloneRepository Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
-          CloneRepository=%(Repository.Identity);
-          CloneUrl=%(Repository.CloneUrl);
-          CloneBranch=%(Repository.Branch);
-          CloneRepositoryCommit=%(Repository.Commit);
+          CloneRepository=%(_CloneRepositories.Identity);
+          CloneUrl=%(_CloneRepositories.CloneUrl);
+          CloneBranch=%(_CloneRepositories.Branch);
+          CloneRepositoryCommit=%(_CloneRepositories.Commit);
           UseGateBranch=$(UseGateBranch)
         </AdditionalProperties>
       </_CloneRepository>
@@ -110,12 +111,22 @@
       Condition="'$(CloneRepositoryCommit)'!=''" />
   </Target>
 
+  <Target Name="PrepareBuildGraph" DependsOnTargets="_PrepareRepositories">
+    <RepoTasks.VerifyBuildGraph
+      BuildRepositories="@(Repositories)"
+      NoBuildRepositories="@(VerifyRepositories)">
+
+      <!-- TODO pass this into the PinVersion step -->
+      <Output TaskParameter="PackagesToBeProduced" ItemName="PackagesToBeProduced" />
+    </RepoTasks.VerifyBuildGraph>
+  </Target>
+
   <Target Name="BuildRepositories"
      DependsOnTargets="_PrepareRepositories;_FindDotNetPath;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
 
   <Target Name="_PrepareRestoreGraphSpecs" DependsOnTargets="_PrepareRepositories">
     <ItemGroup>
-      <Solution Include="$(_CloneRepositoryRoot)%(Repository.Identity)\*.sln">
+      <Solution Include="$(_CloneRepositoryRoot)%(_CloneRepositories.Identity)\*.sln">
         <Repository>%(Repository.Identity)</Repository>
       </Solution>
 
