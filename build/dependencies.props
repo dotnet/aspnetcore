@@ -177,6 +177,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Embedded" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileProviders.Physical" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.FileSystemGlobbing" />
+    <FullMetaPackagePackageReference Include="Microsoft.Extensions.Hosting" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Hosting.Abstractions" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Identity.Core" />
     <FullMetaPackagePackageReference Include="Microsoft.Extensions.Identity.Stores" />
