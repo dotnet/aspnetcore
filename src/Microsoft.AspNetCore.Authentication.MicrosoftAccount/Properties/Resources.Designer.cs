@@ -15,48 +15,42 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
         /// </summary>
         internal static string Exception_MissingId
         {
-            get { return GetString("Exception_MissingId"); }
+            get => GetString("Exception_MissingId");
         }
 
         /// <summary>
         /// The user does not have an id.
         /// </summary>
         internal static string FormatException_MissingId()
-        {
-            return GetString("Exception_MissingId");
-        }
+            => GetString("Exception_MissingId");
 
         /// <summary>
         /// The '{0}' option must be provided.
         /// </summary>
         internal static string Exception_OptionMustBeProvided
         {
-            get { return GetString("Exception_OptionMustBeProvided"); }
+            get => GetString("Exception_OptionMustBeProvided");
         }
 
         /// <summary>
         /// The '{0}' option must be provided.
         /// </summary>
         internal static string FormatException_OptionMustBeProvided(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_OptionMustBeProvided"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Exception_OptionMustBeProvided"), p0);
 
         /// <summary>
         /// An ICertificateValidator cannot be specified at the same time as an HttpMessageHandler unless it is a WebRequestHandler.
         /// </summary>
         internal static string Exception_ValidatorHandlerMismatch
         {
-            get { return GetString("Exception_ValidatorHandlerMismatch"); }
+            get => GetString("Exception_ValidatorHandlerMismatch");
         }
 
         /// <summary>
         /// An ICertificateValidator cannot be specified at the same time as an HttpMessageHandler unless it is a WebRequestHandler.
         /// </summary>
         internal static string FormatException_ValidatorHandlerMismatch()
-        {
-            return GetString("Exception_ValidatorHandlerMismatch");
-        }
+            => GetString("Exception_ValidatorHandlerMismatch");
 
         private static string GetString(string name, params string[] formatterNames)
         {

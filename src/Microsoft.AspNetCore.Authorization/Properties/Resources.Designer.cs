@@ -15,48 +15,42 @@ namespace Microsoft.AspNetCore.Authorization
         /// </summary>
         internal static string Exception_AuthorizationPolicyEmpty
         {
-            get { return GetString("Exception_AuthorizationPolicyEmpty"); }
+            get => GetString("Exception_AuthorizationPolicyEmpty");
         }
 
         /// <summary>
         /// AuthorizationPolicy must have at least one requirement.
         /// </summary>
         internal static string FormatException_AuthorizationPolicyEmpty()
-        {
-            return GetString("Exception_AuthorizationPolicyEmpty");
-        }
+            => GetString("Exception_AuthorizationPolicyEmpty");
 
         /// <summary>
         /// The AuthorizationPolicy named: '{0}' was not found.
         /// </summary>
         internal static string Exception_AuthorizationPolicyNotFound
         {
-            get { return GetString("Exception_AuthorizationPolicyNotFound"); }
+            get => GetString("Exception_AuthorizationPolicyNotFound");
         }
 
         /// <summary>
         /// The AuthorizationPolicy named: '{0}' was not found.
         /// </summary>
         internal static string FormatException_AuthorizationPolicyNotFound(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("Exception_AuthorizationPolicyNotFound"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("Exception_AuthorizationPolicyNotFound"), p0);
 
         /// <summary>
         /// At least one role must be specified.
         /// </summary>
         internal static string Exception_RoleRequirementEmpty
         {
-            get { return GetString("Exception_RoleRequirementEmpty"); }
+            get => GetString("Exception_RoleRequirementEmpty");
         }
 
         /// <summary>
         /// At least one role must be specified.
         /// </summary>
         internal static string FormatException_RoleRequirementEmpty()
-        {
-            return GetString("Exception_RoleRequirementEmpty");
-        }
+            => GetString("Exception_RoleRequirementEmpty");
 
         private static string GetString(string name, params string[] formatterNames)
         {

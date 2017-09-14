@@ -15,96 +15,84 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// </summary>
         internal static string MessageStateIsNullOrEmpty
         {
-            get { return GetString("MessageStateIsNullOrEmpty"); }
+            get => GetString("MessageStateIsNullOrEmpty");
         }
 
         /// <summary>
         /// OpenIdConnectAuthenticationHandler: message.State is null or empty.
         /// </summary>
         internal static string FormatMessageStateIsNullOrEmpty()
-        {
-            return GetString("MessageStateIsNullOrEmpty");
-        }
+            => GetString("MessageStateIsNullOrEmpty");
 
         /// <summary>
         /// Unable to unprotect the message.State.
         /// </summary>
         internal static string MessageStateIsInvalid
         {
-            get { return GetString("MessageStateIsInvalid"); }
+            get => GetString("MessageStateIsInvalid");
         }
 
         /// <summary>
         /// Unable to unprotect the message.State.
         /// </summary>
         internal static string FormatMessageStateIsInvalid()
-        {
-            return GetString("MessageStateIsInvalid");
-        }
+            => GetString("MessageStateIsInvalid");
 
         /// <summary>
         /// Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.
         /// </summary>
         internal static string MessageContainsError
         {
-            get { return GetString("MessageContainsError"); }
+            get => GetString("MessageContainsError");
         }
 
         /// <summary>
         /// Message contains error: '{0}', error_description: '{1}', error_uri: '{2}'.
         /// </summary>
         internal static string FormatMessageContainsError(object p0, object p1, object p2)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("MessageContainsError"), p0, p1, p2);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("MessageContainsError"), p0, p1, p2);
 
         /// <summary>
         /// The Validated Security Token must be of type JwtSecurityToken, but instead its type is: '{0}'.
         /// </summary>
         internal static string ValidatedSecurityTokenNotJwt
         {
-            get { return GetString("ValidatedSecurityTokenNotJwt"); }
+            get => GetString("ValidatedSecurityTokenNotJwt");
         }
 
         /// <summary>
         /// The Validated Security Token must be of type JwtSecurityToken, but instead its type is: '{0}'.
         /// </summary>
         internal static string FormatValidatedSecurityTokenNotJwt(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("ValidatedSecurityTokenNotJwt"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValidatedSecurityTokenNotJwt"), p0);
 
         /// <summary>
         /// Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'."
         /// </summary>
         internal static string UnableToValidateToken
         {
-            get { return GetString("UnableToValidateToken"); }
+            get => GetString("UnableToValidateToken");
         }
 
         /// <summary>
         /// Unable to validate the 'id_token', no suitable ISecurityTokenValidator was found for: '{0}'."
         /// </summary>
         internal static string FormatUnableToValidateToken(object p0)
-        {
-            return string.Format(CultureInfo.CurrentCulture, GetString("UnableToValidateToken"), p0);
-        }
+            => string.Format(CultureInfo.CurrentCulture, GetString("UnableToValidateToken"), p0);
 
         /// <summary>
         /// Cannot process the message. Both id_token and code are missing.
         /// </summary>
         internal static string IdTokenCodeMissing
         {
-            get { return GetString("IdTokenCodeMissing"); }
+            get => GetString("IdTokenCodeMissing");
         }
 
         /// <summary>
         /// Cannot process the message. Both id_token and code are missing.
         /// </summary>
         internal static string FormatIdTokenCodeMissing()
-        {
-            return GetString("IdTokenCodeMissing");
-        }
+            => GetString("IdTokenCodeMissing");
 
         private static string GetString(string name, params string[] formatterNames)
         {
