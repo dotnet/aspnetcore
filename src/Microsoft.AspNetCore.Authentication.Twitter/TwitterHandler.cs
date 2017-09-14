@@ -19,7 +19,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.Twitter
 {
-    internal class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
+    public class TwitterHandler : RemoteAuthenticationHandler<TwitterOptions>
     {
         private static readonly DateTime Epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         private const string RequestTokenEndpoint = "https://api.twitter.com/oauth/request_token";

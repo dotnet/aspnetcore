@@ -16,7 +16,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.Facebook
 {
-    internal class FacebookHandler : OAuthHandler<FacebookOptions>
+    public class FacebookHandler : OAuthHandler<FacebookOptions>
     {
         public FacebookHandler(IOptionsMonitor<FacebookOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)

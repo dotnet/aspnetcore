@@ -16,7 +16,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.Google
 {
-    internal class GoogleHandler : OAuthHandler<GoogleOptions>
+    public class GoogleHandler : OAuthHandler<GoogleOptions>
     {
         public GoogleHandler(IOptionsMonitor<GoogleOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)

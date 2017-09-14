@@ -13,7 +13,7 @@ using Newtonsoft.Json.Linq;
 
 namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
 {
-    internal class MicrosoftAccountHandler : OAuthHandler<MicrosoftAccountOptions>
+    public class MicrosoftAccountHandler : OAuthHandler<MicrosoftAccountOptions>
     {
         public MicrosoftAccountHandler(IOptionsMonitor<MicrosoftAccountOptions> options, ILoggerFactory logger, UrlEncoder encoder, ISystemClock clock)
             : base(options, logger, encoder, clock)

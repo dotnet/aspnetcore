@@ -18,7 +18,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Authentication.JwtBearer
 {
-    internal class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
+    public class JwtBearerHandler : AuthenticationHandler<JwtBearerOptions>
     {
         private OpenIdConnectConfiguration _configuration;
 
