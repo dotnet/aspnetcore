@@ -39,7 +39,7 @@ Example:
 }
 ```
 
-##Communication between the Caller and the Callee
+## Communication between the Caller and the Callee
 
 There a three kinds of interactions between the Caller and the Calle:
 
@@ -47,7 +47,7 @@ There a three kinds of interactions between the Caller and the Calle:
 * Non-Blocking Invocations - the Caller sends a message to the Callee and does not expect any further messages for this invocation
 * Streaming Invocations - the Caller sends a message to the Callee and expects one or more results returned by the Callee followed by a message indicating the end of invocation
 
-##Invocations
+## Invocations
 
 In order to perform a single invocation, the Caller follows the following basic flow:
 
