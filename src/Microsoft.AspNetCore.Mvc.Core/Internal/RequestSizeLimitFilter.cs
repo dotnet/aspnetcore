@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (IsClosestRequestSizePolicy(context.Filters))
+            if (context.IsEffectivePolicy<IRequestSizePolicy>(this))
             {
                 var maxRequestBodySizeFeature = context.HttpContext.Features.Get<IHttpMaxRequestBodySizeFeature>();
 
@@ -59,22 +59,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     _logger.MaxRequestBodySizeSet(Bytes.ToString());
                 }
             }
-        }
-
-        private bool IsClosestRequestSizePolicy(IList<IFilterMetadata> filters)
-        {
-            // Determine if this instance is the 'effective' request size policy.
-            for (var i = filters.Count - 1; i >= 0; i--)
-            {
-                var filter = filters[i];
-                if (filter is IRequestSizePolicy)
-                {
-                    return ReferenceEquals(this, filter);
-                }
-            }
-
-            Debug.Fail("The current instance should be in the list of filters.");
-            return false;
         }
     }
 }

@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.Cors
             }
 
             // If this filter is not closest to the action, it is not applicable.
-            if (!IsClosestToAction(context.Filters))
+            if (!context.IsEffectivePolicy<ICorsAuthorizationFilter>(this))
             {
                 return;
             }
@@ -86,15 +86,6 @@ namespace Microsoft.AspNetCore.Mvc.Cors
 
                 // Continue with other filters and action.
             }
-        }
-
-        private bool IsClosestToAction(IEnumerable<IFilterMetadata> filters)
-        {
-            // If there are multiple ICorsAuthorizationFilter that are defined at the class and
-            // at the action level, the one closest to the action overrides the others.
-            // Since filterdescriptor collection is ordered (the last filter is the one closest to the action),
-            // we apply this constraint only if there is no ICorsAuthorizationFilter after this.
-            return filters.Last(filter => filter is ICorsAuthorizationFilter) == this;
         }
     }
 }

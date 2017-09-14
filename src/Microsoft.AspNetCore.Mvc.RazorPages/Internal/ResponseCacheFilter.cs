@@ -88,7 +88,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (ResponseCacheFilterExecutor.IsOverridden(this, context))
+            if (!context.IsEffectivePolicy<IResponseCacheFilter>(this))
             {
                 return;
             }

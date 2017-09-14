@@ -86,7 +86,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // If there are more filters which can override the values written by this filter,
             // then skip execution of this filter.
-            if (ResponseCacheFilterExecutor.IsOverridden(this, context))
+            if (!context.IsEffectivePolicy<IResponseCacheFilter>(this))
             {
                 return;
             }

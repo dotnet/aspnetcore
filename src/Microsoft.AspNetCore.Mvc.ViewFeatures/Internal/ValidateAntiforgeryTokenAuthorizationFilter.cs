@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (IsClosestAntiforgeryPolicy(context.Filters) && ShouldValidate(context))
+            if (context.IsEffectivePolicy<IAntiforgeryPolicy>(this) && ShouldValidate(context))
             {
                 try
                 {
@@ -56,22 +56,6 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
             }
 
             return true;
-        }
-
-        private bool IsClosestAntiforgeryPolicy(IList<IFilterMetadata> filters)
-        {
-            // Determine if this instance is the 'effective' antiforgery policy.
-            for (var i = filters.Count - 1; i >= 0; i--)
-            {
-                var filter = filters[i];
-                if (filter is IAntiforgeryPolicy)
-                {
-                    return object.ReferenceEquals(this, filter);
-                }
-            }
-
-            Debug.Fail("The current instance should be in the list of filters.");
-            return false;
         }
     }
 }

@@ -448,44 +448,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
-        public void IsOverridden_ReturnsTrueForAllButLastFilter()
-        {
-            // Arrange
-            var filter1 = new ResponseCacheFilter(new CacheProfile());
-            var filter2 = new ResponseCacheFilter(new CacheProfile());
-            var filters = new List<IFilterMetadata>
-            {
-                filter1,
-                Mock.Of<IFilterMetadata>(),
-                filter2,
-                Mock.Of<IFilterMetadata>(),
-            };
-            var context = GetActionExecutingContext(filters);
-
-            // Act & Assert
-            Assert.True(ResponseCacheFilterExecutor.IsOverridden(filter1, context));
-            Assert.False(ResponseCacheFilterExecutor.IsOverridden(filter2, context));
-        }
-
-        [Fact]
-        public void IsOverridden_ReturnsTrueIfInstanceIsTheOnlyResponseCacheFilter()
-        {
-            // Arrange
-            var filter = new ResponseCacheFilter(new CacheProfile());
-            var filters = new List<IFilterMetadata>
-            {
-                Mock.Of<IFilterMetadata>(),
-                filter,
-                Mock.Of<IFilterMetadata>(),
-                Mock.Of<IFilterMetadata>(),
-            };
-            var context = GetActionExecutingContext(filters);
-
-            // Act & Assert
-            Assert.False(ResponseCacheFilterExecutor.IsOverridden(filter, context));
-        }
-
-        [Fact]
         public void FilterDurationProperty_OverridesCachePolicySetting()
         {
             // Arrange

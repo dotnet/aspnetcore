@@ -130,24 +130,5 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 headers[HeaderNames.CacheControl] = cacheControlValue;
             }
         }
-
-        public static bool IsOverridden(IResponseCacheFilter executingFilter, FilterContext context)
-        {
-            Debug.Assert(context != null);
-
-            // Return true if there are any filters which are after the current filter. In which case the current
-            // filter should be skipped.
-            for (var i = context.Filters.Count - 1; i >= 0; i--)
-            {
-                var filter = context.Filters[i];
-                if (filter is IResponseCacheFilter)
-                {
-                    return !object.ReferenceEquals(executingFilter, filter);
-                }
-            }
-
-            Debug.Fail("The executing filter must be part of the filter context.");
-            return false;
-        }
     }
 }
