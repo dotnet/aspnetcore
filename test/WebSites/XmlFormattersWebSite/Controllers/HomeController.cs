@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
@@ -34,26 +35,10 @@ namespace XmlFormattersWebSite
                 var errors = keyModelStatePair.Value.Errors;
                 if (errors != null && errors.Count > 0)
                 {
-                    string errorMessage = null;
-                    foreach (var modelError in errors)
-                    {
-                        if (string.IsNullOrEmpty(modelError.ErrorMessage))
-                        {
-                            if (modelError.Exception != null)
-                            {
-                                errorMessage = modelError.Exception.Message;
-                            }
-                        }
-                        else
-                        {
-                            errorMessage = modelError.ErrorMessage;
-                        }
-
-                        if (errorMessage != null)
-                        {
-                            allErrorMessages.Add(string.Format("{0}:{1}", key, errorMessage));
-                        }
-                    }
+                    allErrorMessages.Add(
+                        string.Join(
+                            ",",
+                            errors.Select(modelError => $"ErrorMessage:{modelError.ErrorMessage};Exception:{modelError.Exception}")));
                 }
             }
 

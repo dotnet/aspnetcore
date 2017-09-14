@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
             var data = await response.Content.ReadAsStringAsync();
-            Assert.Contains(":There is an error in XML document", data);
+            Assert.Contains("There is an error in XML document", data);
         }
     }
 }

@@ -5,23 +5,24 @@ using System;
 using System.Buffers;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Formatters.Json.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.AspNetCore.WebUtilities;
 using Newtonsoft.Json;
-using System.Threading;
 
 namespace Microsoft.AspNetCore.Mvc.Formatters
 {
     /// <summary>
     /// A <see cref="TextInputFormatter"/> for JSON content.
     /// </summary>
-    public class JsonInputFormatter : TextInputFormatter
+    public class JsonInputFormatter : TextInputFormatter, IInputFormatterExceptionPolicy
     {
         private readonly IArrayPool<char> _charPool;
         private readonly ILogger _logger;
@@ -104,6 +105,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
             SupportedMediaTypes.Add(MediaTypeHeaderValues.ApplicationAnyJsonSyntax);
         }
 
+        /// <inheritdoc />
+        public virtual InputFormatterExceptionModelStatePolicy ExceptionPolicy
+        {
+            get
+            {
+                if (GetType() == typeof(JsonInputFormatter))
+                {
+                    return InputFormatterExceptionModelStatePolicy.MalformedInputExceptions;
+                }
+                return InputFormatterExceptionModelStatePolicy.AllExceptions;
+            }
+        }
+
         /// <summary>
         /// Gets the <see cref="JsonSerializerSettings"/> used to configure the <see cref="JsonSerializer"/>.
         /// </summary>
@@ -149,7 +163,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                     jsonReader.CloseInput = false;
 
                     var successful = true;
-
+                    Exception exception = null;
                     void ErrorHandler(object sender, Newtonsoft.Json.Serialization.ErrorEventArgs eventArgs)
                     {
                         successful = false;
@@ -176,6 +190,8 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                         context.ModelState.TryAddModelError(key, eventArgs.ErrorContext.Error, metadata);
 
                         _logger.JsonInputException(eventArgs.ErrorContext.Error);
+
+                        exception = eventArgs.ErrorContext.Error;
 
                         // Error must always be marked as handled
                         // Failure to do so can cause the exception to be rethrown at every recursive level and
@@ -212,6 +228,12 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
                         {
                             return InputFormatterResult.Success(model);
                         }
+                    }
+
+                    if (!(exception is JsonException || exception is OverflowException))
+                    {
+                        var exceptionDispatchInfo = ExceptionDispatchInfo.Capture(exception);
+                        exceptionDispatchInfo.Throw();
                     }
 
                     return InputFormatterResult.Failure();

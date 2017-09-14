@@ -340,7 +340,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => formatter.ReadAsync(context));
+            await Assert.ThrowsAsync<InputFormatterException>(() => formatter.ReadAsync(context));
         }
 
         [ConditionalFact]
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act & Assert
-            await Assert.ThrowsAsync<InvalidOperationException>(() => formatter.ReadAsync(context));
+            await Assert.ThrowsAsync<InputFormatterException>(() => formatter.ReadAsync(context));
         }
 
         [Fact]

@@ -177,10 +177,23 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                     bindingContext.ModelState.AddModelError(modelBindingKey, message);
                 }
             }
-            catch (Exception ex)
+            catch (Exception exception) when (exception is InputFormatterException || ShouldHandleException(formatter))
             {
-                bindingContext.ModelState.AddModelError(modelBindingKey, ex, bindingContext.ModelMetadata);
+                bindingContext.ModelState.AddModelError(modelBindingKey, exception, bindingContext.ModelMetadata);
             }
+        }
+
+        private bool ShouldHandleException(IInputFormatter formatter)
+        {
+            var policy = _options.InputFormatterExceptionModelStatePolicy;
+            
+            // Any explicit policy on the formatters takes precedence over the global policy on MvcOptions
+            if (formatter is IInputFormatterExceptionPolicy exceptionPolicy)
+            {
+                policy = exceptionPolicy.ExceptionPolicy;
+            }
+
+            return policy == InputFormatterExceptionModelStatePolicy.AllExceptions;
         }
     }
 }

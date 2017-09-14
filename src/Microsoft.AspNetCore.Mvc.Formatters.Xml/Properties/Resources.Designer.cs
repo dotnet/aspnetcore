@@ -25,6 +25,20 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             => string.Format(CultureInfo.CurrentCulture, GetString("EnumerableWrapperProvider_InvalidSourceEnumerableOfT"), p0);
 
         /// <summary>
+        /// An error occured while deserializing input data.
+        /// </summary>
+        internal static string ErrorDeserializingInputData
+        {
+            get => GetString("ErrorDeserializingInputData");
+        }
+
+        /// <summary>
+        /// An error occured while deserializing input data.
+        /// </summary>
+        internal static string FormatErrorDeserializingInputData()
+            => GetString("ErrorDeserializingInputData");
+
+        /// <summary>
         /// {0} does not recognize '{1}', so instead use '{2}' with '{3}' set to '{4}' for value type property '{5}' on type '{6}'.
         /// </summary>
         internal static string RequiredProperty_MustHaveDataMemberRequired

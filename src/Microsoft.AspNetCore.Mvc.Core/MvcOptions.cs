@@ -168,5 +168,13 @@ namespace Microsoft.AspNetCore.Mvc
         /// <see langword="false"/> by default.
         /// </summary>
         public bool AllowBindingUndefinedValueToEnumType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the option to determine if model binding should convert all exceptions(including ones not related to bad input)
+        /// that occur during deserialization in <see cref="IInputFormatter"/>s into model state errors.
+        /// This option applies only to custom <see cref="IInputFormatter"/>s.
+        /// Default is <see cref="InputFormatterExceptionModelStatePolicy.AllExceptions"/>.
+        /// </summary>
+        public InputFormatterExceptionModelStatePolicy InputFormatterExceptionModelStatePolicy { get; set; }
     }
 }

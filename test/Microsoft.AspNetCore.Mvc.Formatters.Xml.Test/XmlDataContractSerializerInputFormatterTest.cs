@@ -307,7 +307,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act & Assert
-            await Assert.ThrowsAsync<SerializationException>(async () => await formatter.ReadAsync(context));
+            await Assert.ThrowsAsync<InputFormatterException>(async () => await formatter.ReadAsync(context));
         }
 
         [Fact]
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var context = GetInputFormatterContext(contentBytes, typeof(TestLevelTwo));
 
             // Act & Assert
-            await Assert.ThrowsAsync<SerializationException>(async () => await formatter.ReadAsync(context));
+            await Assert.ThrowsAsync<InputFormatterException>(async () => await formatter.ReadAsync(context));
         }
 
         [Fact]
@@ -496,7 +496,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
 
             // Act & Assert
-            await Assert.ThrowsAsync<SerializationException>(async () => await formatter.ReadAsync(context));
+            await Assert.ThrowsAsync<InputFormatterException>(async () => await formatter.ReadAsync(context));
         }
 
         [Fact]
@@ -553,7 +553,7 @@ namespace Microsoft.AspNetCore.Mvc.Formatters.Xml
             var context = GetInputFormatterContext(contentBytes, typeof(DummyClass));
 
             // Act & Assert
-            await Assert.ThrowsAsync<SerializationException>(async () => await formatter.ReadAsync(context));
+            await Assert.ThrowsAsync<InputFormatterException>(async () => await formatter.ReadAsync(context));
         }
 
         [Fact]

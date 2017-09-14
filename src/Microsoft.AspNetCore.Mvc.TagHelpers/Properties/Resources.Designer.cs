@@ -165,7 +165,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             => string.Format(CultureInfo.CurrentCulture, GetString("FormActionTagHelper_CannotOverrideFormAction"), p0, p1, p2, p3, p4, p5, p6, p7, p8, p9);
 
         /// <summary>
-        /// Value cannot contain whitespace.
+        /// Value cannot contain HTML space characters.
         /// </summary>
         internal static string ArgumentCannotContainHtmlSpace
         {
@@ -173,7 +173,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
         }
 
         /// <summary>
-        /// Value cannot contain whitespace.
+        /// Value cannot contain HTML space characters.
         /// </summary>
         internal static string FormatArgumentCannotContainHtmlSpace()
             => GetString("ArgumentCannotContainHtmlSpace");

@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var data = await response.Content.ReadAsStringAsync();
             Assert.Contains(
                 string.Format(
-                    ":There was an error deserializing the object of type {0}.",
+                    "There was an error deserializing the object of type {0}.",
                     typeof(DummyClass).FullName),
                 data);
         }

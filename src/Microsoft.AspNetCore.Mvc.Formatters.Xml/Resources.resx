@@ -120,6 +120,9 @@
   <data name="EnumerableWrapperProvider_InvalidSourceEnumerableOfT" xml:space="preserve">
     <value>The type must be an interface and must be or derive from '{0}'.</value>
   </data>
+  <data name="ErrorDeserializingInputData" xml:space="preserve">
+    <value>An error occured while deserializing input data.</value>
+  </data>
   <data name="RequiredProperty_MustHaveDataMemberRequired" xml:space="preserve">
     <value>{0} does not recognize '{1}', so instead use '{2}' with '{3}' set to '{4}' for value type property '{5}' on type '{6}'.</value>
   </data>

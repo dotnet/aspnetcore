@@ -64,6 +64,19 @@ namespace Microsoft.AspNetCore.Mvc.Formatters
         }
 
         /// <inheritdoc />
+        public override InputFormatterExceptionModelStatePolicy ExceptionPolicy
+        {
+            get
+            {
+                if (GetType() == typeof(JsonPatchInputFormatter))
+                {
+                    return InputFormatterExceptionModelStatePolicy.MalformedInputExceptions;
+                }
+                return InputFormatterExceptionModelStatePolicy.AllExceptions;
+            }
+        }
+
+        /// <inheritdoc />
         public async override Task<InputFormatterResult> ReadRequestBodyAsync(
             InputFormatterContext context,
             Encoding encoding)
