@@ -49,7 +49,9 @@ namespace RepoTasks
 
         public override bool Execute()
         {
-            var packageArtifacts = GetPackageInfo(Artifacts);
+            var packageArtifacts = Artifacts.Select(ArtifactInfo.Parse)
+                .OfType<ArtifactInfo.Package>()
+                .Where(p => !p.IsSymbolsArtifact);
 
             var factory = new SolutionInfoFactory(Log, BuildEngine5);
             var props = MSBuildListSplitter.GetNamedProperties(Properties);
@@ -64,7 +66,7 @@ namespace RepoTasks
                 return false;
             }
 
-            EnsureConsistentGraph(packageArtifacts.Select(p => p.Item1), solutions);
+            EnsureConsistentGraph(packageArtifacts, solutions);
             RepositoryBuildOrder = GetRepositoryBuildOrder(packageArtifacts, solutions.Where(s => s.ShouldBuild));
 
             return !Log.HasLoggedErrors;
@@ -79,10 +81,10 @@ namespace RepoTasks
             public NuGetVersion ExpectedVersion;
         }
 
-        private void EnsureConsistentGraph(IEnumerable<PackageInfo> packages, IEnumerable<SolutionInfo> solutions)
+        private void EnsureConsistentGraph(IEnumerable<ArtifactInfo.Package> packages, IEnumerable<SolutionInfo> solutions)
         {
             // ensure versions cascade
-            var lookup = packages.ToDictionary(p => p.Id, p => p, StringComparer.OrdinalIgnoreCase);
+            var lookup = packages.ToDictionary(p => p.PackageInfo.Id, p => p, StringComparer.OrdinalIgnoreCase);
 
             var inconsistentVersions = new List<VersionMismatch>();
 
@@ -95,9 +97,9 @@ namespace RepoTasks
                 if (!lookup.TryGetValue(dependency.Key, out var package)) continue;
 
                 var refVersion = VersionRange.Parse(dependency.Value.Version);
-                if (refVersion.IsFloating && refVersion.Float.Satisfies(package.Version))
+                if (refVersion.IsFloating && refVersion.Float.Satisfies(package.PackageInfo.Version))
                     continue;
-                else if (package.Version.Equals(refVersion))
+                else if (package.PackageInfo.Version.Equals(refVersion))
                     continue;
 
                 inconsistentVersions.Add(new VersionMismatch
@@ -106,7 +108,7 @@ namespace RepoTasks
                     Project = proj,
                     PackageId = dependency.Key,
                     ActualVersion = dependency.Value.Version,
-                    ExpectedVersion = package.Version,
+                    ExpectedVersion = package.PackageInfo.Version,
                 });
             }
 
@@ -133,37 +135,17 @@ namespace RepoTasks
             }
         }
 
-        private IEnumerable<(PackageInfo, string repoName)> GetPackageInfo(IEnumerable<ITaskItem> items)
-        {
-            return items
-                .Where(a => "NuGetPackage".Equals(a.GetMetadata("ArtifactType"), StringComparison.OrdinalIgnoreCase))
-                .Select(a =>
-                {
-                    var info = new PackageInfo(
-                        a.GetMetadata("PackageId"),
-                        a.GetMetadata("Version"),
-                        string.IsNullOrEmpty(a.GetMetadata("TargetFramework"))
-                            ? MSBuildListSplitter.SplitItemList(a.GetMetadata("TargetFramework")).Select(s => NuGetFramework.Parse(s)).ToArray()
-                            : new [] { NuGetFramework.Parse(a.GetMetadata("TargetFramework")) },
-                        Path.GetDirectoryName(a.ItemSpec),
-                        a.GetMetadata("PackageType"));
-
-                    var repoName = Path.GetFileName(a.GetMetadata("RepositoryRoot").TrimEnd(new [] { '\\', '/' }));
-                    return (info, repoName);
-                });
-        }
-
-        private ITaskItem[] GetRepositoryBuildOrder(IEnumerable<(PackageInfo pkg, string repoName)> artifacts, IEnumerable<SolutionInfo> solutions)
+        private ITaskItem[] GetRepositoryBuildOrder(IEnumerable<ArtifactInfo.Package> artifacts, IEnumerable<SolutionInfo> solutions)
         {
             var repositories = solutions.Select(s =>
                 {
                     var repoName = Path.GetFileName(Path.GetDirectoryName(s.FullPath));
                     var repo = new Repository(repoName);
-                    var packages = artifacts.Where(a => a.repoName.Equals(repoName, StringComparison.OrdinalIgnoreCase)).ToList();
+                    var packages = artifacts.Where(a => a.RepoName.Equals(repoName, StringComparison.OrdinalIgnoreCase)).ToList();
 
                     foreach (var proj in s.Projects)
                     {
-                        var projectGroup = packages.Any(p => p.pkg.Id == proj.PackageId)
+                        var projectGroup = packages.Any(p => p.PackageInfo.Id == proj.PackageId)
                             ? repo.Projects
                             : repo.SupportProjects;
 
