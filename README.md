@@ -13,7 +13,13 @@ This project is part of ASP.NET Core. You can find samples, documentation and ge
 
 ## Packages
 
-The JavaScript client is being published to our dev npm registry as @aspnet/signalr-client. The module contains a browserfied version of the client. You can install the module as follows:
+You can install the latest released JavaScript client from npm with the following command:
+
+```bash
+npm install @aspnet/signalr-client
+```
+
+The CI build publishes the latest dev version of the JavaScript client to our dev npm registry as @aspnet/signalr-client. You can install the module as follows:
 
 - Create an .npmrc file with the following line:
   `@aspnet:registry=https://dotnet.myget.org/f/aspnetcore-ci-dev/npm/`
