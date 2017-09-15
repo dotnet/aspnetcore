@@ -2,6 +2,7 @@
   <ItemGroup>
     <!-- Repos being patched -->
     <Repository Include="EntityFrameworkCore" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Identity" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
 
     <!-- TODO compute downstream repos that should be updated. -->
 
@@ -11,7 +12,6 @@
     by the patch update and do not need updating.
     -->
     <VerifyRepository Include="Mvc" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Identity" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <VerifyRepository Include="MetaPackages" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <VerifyRepository Include="Antiforgery" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <VerifyRepository Include="AzureIntegration" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
