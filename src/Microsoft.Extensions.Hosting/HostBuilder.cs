@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.Hosting
         /// <summary>
         /// A central location for sharing state between components during the host building process.
         /// </summary>
-        public IDictionary<object, object> Properties => new Dictionary<object, object>();
+        public IDictionary<object, object> Properties { get; } = new Dictionary<object, object>();
 
         /// <summary>
         /// Set up the configuration for the builder itself. This will be used to initialize the <see cref="IHostingEnvironment"/>

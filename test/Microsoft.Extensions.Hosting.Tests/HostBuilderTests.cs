@@ -444,6 +444,22 @@ namespace Microsoft.Extensions.Hosting
             Assert.Equal(Path.GetFullPath("."), env.ContentRootPath);
             Assert.IsAssignableFrom<PhysicalFileProvider>(env.ContentRootFileProvider);
         }
+
+        [Fact]
+        public void BuilderPropertiesAreAvailableInBuilderAndContext()
+        {
+            var hostBuilder = new HostBuilder()
+                .ConfigureServices((hostContext, services) =>
+                {
+                    Assert.Equal("value", hostContext.Properties["key"]);
+                });
+
+            hostBuilder.Properties.Add("key", "value");
+            
+            Assert.Equal("value", hostBuilder.Properties["key"]);
+
+            using (hostBuilder.Build()) { }
+        }
         
         private class ServiceC
         {
