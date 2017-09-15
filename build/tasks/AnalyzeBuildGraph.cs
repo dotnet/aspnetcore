@@ -5,9 +5,11 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.IO;
 using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using RepoTools.BuildGraph;
 using RepoTasks.ProjectModel;
 using RepoTasks.Utilities;
 
@@ -25,6 +27,8 @@ namespace RepoTasks
 
         [Required]
         public string Properties { get; set; }
+
+        public string StartGraphAt { get; set; }
 
         /// <summary>
         /// New packages we are compiling. Used in the pin tool.
@@ -58,7 +62,21 @@ namespace RepoTasks
                 return false;
             }
 
-            PackagesProduced = solutions
+            EnsureConsistentGraph(solutions);
+            PackagesProduced = GetPackagesProduced(solutions);
+            RepositoryBuildOrder = GetRepositoryBuildOrder(solutions.Where(s => s.ShouldBuild));
+
+            return !Log.HasLoggedErrors;
+        }
+
+        private void EnsureConsistentGraph(IEnumerable<SolutionInfo> solutions)
+        {
+            // TODO
+        }
+
+        private ITaskItem[] GetPackagesProduced(IEnumerable<SolutionInfo> solutions)
+        {
+            return solutions
                 .Where(s => s.ShouldBuild)
                 .SelectMany(p => p.Projects)
                 .Where(p => p.IsPackable)
@@ -67,8 +85,63 @@ namespace RepoTasks
                     ["Version"] = p.PackageVersion
                 }))
                 .ToArray();
+        }
 
-            return !Log.HasLoggedErrors;
+        private ITaskItem[] GetRepositoryBuildOrder(IEnumerable<SolutionInfo> solutions)
+        {
+            var repositories = solutions.Select(s =>
+                {
+                    var repoName = Path.GetFileName(Path.GetDirectoryName(s.FullPath));
+                    var repo = new Repository(repoName);
+                    repo.Projects = s.Projects
+                            .Where(p => p.IsPackable)
+                            .Select(p =>
+                                new Project(p.PackageId)
+                                {
+                                    Repository = repo,
+                                    PackageReferences = new HashSet<string>(p.Frameworks.SelectMany(f => f.Dependencies.Keys), StringComparer.OrdinalIgnoreCase),
+                                })
+                            .ToList();
+                    repo.SupportProjects = s.Projects
+                            .Where(p => !p.IsPackable)
+                            .Select(p =>
+                                new Project(p.PackageId)
+                                {
+                                    Repository = repo,
+                                    PackageReferences = new HashSet<string>(p.Frameworks.SelectMany(f => f.Dependencies.Keys), StringComparer.OrdinalIgnoreCase),
+                                })
+                            .ToList();
+                    return repo;
+                }).ToList();
+
+            var graph = GraphBuilder.Generate(repositories, StartGraphAt, Log);
+            var repositoriesWithOrder = new List<(ITaskItem repository, int order)>();
+            foreach (var repository in repositories)
+            {
+                var graphNodeRepository = graph.FirstOrDefault(g => g.Repository.Name == repository.Name);
+                if (graphNodeRepository == null)
+                {
+                    // StartGraphAt was specified so the graph is incomplete.
+                    continue;
+                }
+
+                var order = TopologicalSort.GetOrder(graphNodeRepository);
+                var repositoryTaskItem = new TaskItem(repository.Name);
+                repositoryTaskItem.SetMetadata("Order", order.ToString());
+                repositoriesWithOrder.Add((repositoryTaskItem, order));
+            }
+
+            Log.LogMessage(MessageImportance.High, "Repository build order:");
+            foreach (var buildGroup in repositoriesWithOrder.GroupBy(r => r.order).OrderBy(g => g.Key))
+            {
+                var buildGroupRepos = buildGroup.Select(b => b.repository.ItemSpec);
+                Log.LogMessage(MessageImportance.High, $"{buildGroup.Key.ToString().PadLeft(2, ' ')}: {string.Join(", ", buildGroupRepos)}");
+            }
+
+            return repositoriesWithOrder
+                .OrderBy(r => r.order)
+                .Select(r => r.repository)
+                .ToArray();
         }
     }
 }

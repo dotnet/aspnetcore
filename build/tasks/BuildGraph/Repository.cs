@@ -22,9 +22,9 @@ namespace RepoTools.BuildGraph
 
         public string Name { get; private set; }
 
-        public IList<Project> Projects { get; } = new List<Project>();
+        public IList<Project> Projects { get; set; } = new List<Project>();
 
-        public IList<Project> SupportProjects { get; } = new List<Project>();
+        public IList<Project> SupportProjects { get; set; } = new List<Project>();
 
         public IEnumerable<Project> AllProjects => Projects.Concat(SupportProjects);
 
