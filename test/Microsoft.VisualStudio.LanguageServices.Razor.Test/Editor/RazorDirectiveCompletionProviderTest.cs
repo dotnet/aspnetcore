@@ -84,6 +84,27 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             await completionProvider.ProvideCompletionsAsync(context);
         }
 
+
+        [Fact]
+        public async Task ProvideCompletionAsync_DoesNotProvideCompletionsForDocumentWithoutPath()
+        {
+            // Arrange
+            var project = ProjectInfo
+                .Create(ProjectId.CreateNewId(), VersionStamp.Default, "TestProject", "TestAssembly", LanguageNames.CSharp)
+                .WithFilePath("/TestProject.csproj");
+            var workspace = new AdhocWorkspace();
+            workspace.AddProject(project);
+            var documentInfo = DocumentInfo.Create(DocumentId.CreateNewId(project.Id), "Test.cshtml");
+            var document = workspace.AddDocument(documentInfo);
+
+            var codeDocumentProvider = new Mock<RazorCodeDocumentProvider>(MockBehavior.Strict);
+            var completionProvider = new FailOnGetCompletionsProvider(new Lazy<RazorCodeDocumentProvider>(() => codeDocumentProvider.Object));
+            var context = CreateContext(1, completionProvider, document);
+
+            // Act & Assert
+            await completionProvider.ProvideCompletionsAsync(context);
+        }
+
         [Fact]
         public async Task ProvideCompletionAsync_DoesNotProvideCompletionsWhenDocumentProviderCanNotGetDocument()
         {
