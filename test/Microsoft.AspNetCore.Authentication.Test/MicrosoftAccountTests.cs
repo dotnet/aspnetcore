@@ -28,6 +28,19 @@ namespace Microsoft.AspNetCore.Authentication.Tests.MicrosoftAccount
     public class MicrosoftAccountTests
     {
         [Fact]
+        public async Task VerifySignInSchemeCannotBeSetToSelf()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ClientId = "Test Id";
+                o.ClientSecret = "Test Secret";
+                o.SignInScheme = MicrosoftAccountDefaults.AuthenticationScheme;
+            });
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("https://example.com/challenge"));
+            Assert.Contains("cannot be set to itself", error.Message);
+        }
+
+        [Fact]
         public async Task VerifySchemeDefaults()
         {
             var services = new ServiceCollection();

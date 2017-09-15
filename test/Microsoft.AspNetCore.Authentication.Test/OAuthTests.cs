@@ -17,6 +17,27 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
     public class OAuthTests
     {
         [Fact]
+        public async Task VerifySignInSchemeCannotBeSetToSelf()
+        {
+            var server = CreateServer(
+                app => { },
+                services => services.AddAuthentication().AddOAuth("weeblie", o =>
+                {
+                    o.SignInScheme = "weeblie";
+                    o.ClientId = "whatever";
+                    o.ClientSecret = "whatever";
+                }),
+                context =>
+                {
+                    // REVIEW: Gross.
+                    context.ChallengeAsync("weeblie").GetAwaiter().GetResult();
+                    return true;
+                });
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("https://example.com/challenge"));
+            Assert.Contains("cannot be set to itself", error.Message);
+        }
+
+        [Fact]
         public async Task VerifySchemeDefaults()
         {
             var services = new ServiceCollection();

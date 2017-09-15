@@ -129,4 +129,7 @@
   <data name="Exception_OptionMustBeProvided" xml:space="preserve">
     <value>The '{0}' option must be provided.</value>
   </data>
+  <data name="Exception_RemoteSignInSchemeCannotBeSelf" xml:space="preserve">
+    <value>The SignInScheme for a remote authentication handler cannot be set to itself.  If it was not explicitly set, the AuthenticationOptions.DefaultSignInScheme or DefaultScheme is used.</value>
+  </data>
 </root>

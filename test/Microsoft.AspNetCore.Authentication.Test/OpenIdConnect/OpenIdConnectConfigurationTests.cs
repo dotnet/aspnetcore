@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -44,6 +43,20 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var server = new TestServer(builder);
             var transaction = await server.SendAsync(@"https://example.com");
             Assert.Equal(HttpStatusCode.OK, transaction.Response.StatusCode);
+        }
+
+        [Fact]
+        public Task ThrowsWhenSignInSchemeIsSetToSelf()
+        {
+            return TestConfigurationException<InvalidOperationException>(
+                o =>
+                {
+                    o.SignInScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                    o.Authority = TestServerBuilder.DefaultAuthority;
+                    o.ClientId = "Test Id";
+                    o.ClientSecret = "Test Secret";
+                },
+                ex => Assert.Contains("cannot be set to itself", ex.Message));
         }
 
         [Fact]

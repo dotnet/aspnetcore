@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.Authentication
             return AddScheme<TOptions, THandler>(authenticationScheme, displayName, configureOptions: configureOptions);
         }
 
-        // Used to ensure that there's always a default data protection provider
+        // Used to ensure that there's always a default sign in scheme that's not itself
         private class EnsureSignInScheme<TOptions> : IPostConfigureOptions<TOptions> where TOptions : RemoteAuthenticationOptions
         {
             private readonly AuthenticationOptions _authOptions;
@@ -96,7 +96,11 @@ namespace Microsoft.AspNetCore.Authentication
 
             public void PostConfigure(string name, TOptions options)
             {
-                options.SignInScheme = options.SignInScheme ?? _authOptions.DefaultSignInScheme;
+                options.SignInScheme = options.SignInScheme ?? _authOptions.DefaultSignInScheme ?? _authOptions.DefaultScheme;
+                if (string.Equals(options.SignInScheme, name, StringComparison.Ordinal))
+                {
+                    throw new InvalidOperationException(Resources.Exception_RemoteSignInSchemeCannotBeSelf);
+                }
             }
         }
     }

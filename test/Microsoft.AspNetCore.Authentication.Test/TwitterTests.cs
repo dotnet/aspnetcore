@@ -18,6 +18,19 @@ namespace Microsoft.AspNetCore.Authentication.Twitter
     public class TwitterTests
     {
         [Fact]
+        public async Task VerifySignInSchemeCannotBeSetToSelf()
+        {
+            var server = CreateServer(o =>
+            {
+                o.ConsumerKey = "Test Consumer Key";
+                o.ConsumerSecret = "Test Consumer Secret";
+                o.SignInScheme = TwitterDefaults.AuthenticationScheme;
+            });
+            var error = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("https://example.com/challenge"));
+            Assert.Contains("cannot be set to itself", error.Message);
+        }
+
+        [Fact]
         public async Task VerifySchemeDefaults()
         {
             var services = new ServiceCollection();
