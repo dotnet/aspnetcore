@@ -77,7 +77,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(context));
             }
 
-            if (!context.Document.FilePath.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
+            // FilePath will be null when the editor is open for cases where we don't have a file on disk (C# interactive window and others).
+            if (context.Document?.FilePath == null ||
+                !context.Document.FilePath.EndsWith(".cshtml", StringComparison.OrdinalIgnoreCase))
             {
                 // Not a Razor file.
                 return Task.CompletedTask;
