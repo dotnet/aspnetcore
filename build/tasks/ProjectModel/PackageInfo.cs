@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Frameworks;
+using NuGet.Versioning;
 
 namespace RepoTasks.ProjectModel
 {
@@ -27,14 +28,14 @@ namespace RepoTasks.ProjectModel
             }
 
             Id = id;
-            Version = version;
+            Version = NuGetVersion.Parse(version);
             Frameworks = frameworks;
             PackageType = packageType;
             Source = source;
         }
 
         public string Id { get; }
-        public string Version { get; }
+        public NuGetVersion Version { get; }
         public string PackageType { get; }
         /// <summary>
         /// Can be a https feed or a file path. May be null.

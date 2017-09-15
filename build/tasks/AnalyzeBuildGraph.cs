@@ -6,10 +6,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.IO;
+using System.Text;
 using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
 using NuGet.Frameworks;
+using NuGet.Versioning;
 using RepoTools.BuildGraph;
 using RepoTasks.ProjectModel;
 using RepoTasks.Utilities;
@@ -62,15 +64,73 @@ namespace RepoTasks
                 return false;
             }
 
-            EnsureConsistentGraph(solutions);
+            EnsureConsistentGraph(packageArtifacts.Select(p => p.Item1), solutions);
             RepositoryBuildOrder = GetRepositoryBuildOrder(packageArtifacts, solutions.Where(s => s.ShouldBuild));
 
             return !Log.HasLoggedErrors;
         }
 
-        private void EnsureConsistentGraph(IEnumerable<SolutionInfo> solutions)
+        private struct VersionMismatch
         {
-            // TODO
+            public SolutionInfo Solution;
+            public ProjectInfo Project;
+            public string PackageId;
+            public string ActualVersion;
+            public NuGetVersion ExpectedVersion;
+        }
+
+        private void EnsureConsistentGraph(IEnumerable<PackageInfo> packages, IEnumerable<SolutionInfo> solutions)
+        {
+            // ensure versions cascade
+            var lookup = packages.ToDictionary(p => p.Id, p => p, StringComparer.OrdinalIgnoreCase);
+
+            var inconsistentVersions = new List<VersionMismatch>();
+
+            // holy crap, o^4
+            foreach (var sln in solutions)
+            foreach (var proj in sln.Projects)
+            foreach (var tfm in proj.Frameworks)
+            foreach (var dependency in tfm.Dependencies)
+            {
+                if (!lookup.TryGetValue(dependency.Key, out var package)) continue;
+
+                var refVersion = VersionRange.Parse(dependency.Value.Version);
+                if (refVersion.IsFloating && refVersion.Float.Satisfies(package.Version))
+                    continue;
+                else if (package.Version.Equals(refVersion))
+                    continue;
+
+                inconsistentVersions.Add(new VersionMismatch
+                {
+                    Solution = sln,
+                    Project = proj,
+                    PackageId = dependency.Key,
+                    ActualVersion = dependency.Value.Version,
+                    ExpectedVersion = package.Version,
+                });
+            }
+
+            if (inconsistentVersions.Count != 0)
+            {
+                var sb = new StringBuilder();
+                sb.AppendLine();
+                sb.AppendLine($"Repos are inconsistent. The following projects have PackageReferences that should be updated");
+                foreach (var sln in inconsistentVersions.GroupBy(p => p.Solution.FullPath))
+                {
+                    sb.AppendLine($"  - {Path.GetFileName(sln.Key)}");
+                    foreach (var proj in sln.GroupBy(p => p.Project.FullPath))
+                    {
+                        sb.AppendLine($"      - {Path.GetFileName(proj.Key)}");
+                        foreach (var m in proj)
+                        {
+                            sb.AppendLine($"        - {m.PackageId}/{{{m.ActualVersion} => {m.ExpectedVersion}}}");
+                        }
+                    }
+                }
+                sb.AppendLine();
+                Log.LogMessage(MessageImportance.High, sb.ToString());
+                Log.LogError("Package versions are inconsistent. See build log for details.");
+            }
         }
 
         private IEnumerable<(PackageInfo, string repoName)> GetPackageInfo(IEnumerable<ITaskItem> items)
