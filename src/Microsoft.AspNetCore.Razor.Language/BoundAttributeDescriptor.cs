@@ -21,9 +21,13 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public bool IsIndexerStringProperty { get; protected set; }
 
+        public bool IsIndexerBooleanProperty { get; protected set; }
+
         public bool IsEnum { get; protected set; }
 
         public bool IsStringProperty { get; protected set; }
+
+        public bool IsBooleanProperty { get; protected set; }
 
         public string Name { get; protected set; }
 

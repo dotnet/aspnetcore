@@ -118,11 +118,11 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new[]
             {
                 TagHelperDescriptorBuilder.Create("CatchAllTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("*")
                         .RequireAttributeDescriptor(attribute => attribute.Name("bound")))
-                    .BoundAttributeDescriptor(attribute => 
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                         .Name("[item]")
                         .PropertyName("ListItems")
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new TagHelperDescriptor[]
             {
                 TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("input")
                         .RequireTagStructure(TagStructure.WithoutEndTag))
@@ -320,7 +320,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new TagHelperDescriptor[]
             {
                 TagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("input")
                         .RequireTagStructure(structure1))
@@ -2251,7 +2251,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             {
                 TagHelperDescriptorBuilder.Create("mythTagHelper", "SomeAssembly")
                     .TagMatchingRuleDescriptor(rule => rule.RequireTagName("myth"))
-                    .BoundAttributeDescriptor(attribute => 
+                    .BoundAttributeDescriptor(attribute =>
                         attribute
                         .Name("bound")
                         .PropertyName("Bound")
@@ -3901,7 +3901,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var descriptors = new TagHelperDescriptor[]
             {
                 TagHelperDescriptorBuilder.Create("InputTagHelper1", "SomeAssembly")
-                    .TagMatchingRuleDescriptor(rule => 
+                    .TagMatchingRuleDescriptor(rule =>
                         rule
                         .RequireTagName("input")
                         .RequireAttributeDescriptor(attribute => attribute.Name("unbound-required")))
@@ -3958,6 +3958,108 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 
             // Act & Assert
             EvaluateData(descriptors, documentContent, (MarkupBlock)expectedOutput, (RazorError[])expectedErrors);
+        }
+
+        [Fact]
+        public void Rewrite_UnderstandsMinimizedBooleanBoundAttributes()
+        {
+            // Arrange
+            var documentContent = "<input boundbool boundbooldict-key />";
+            var descriptors = new TagHelperDescriptor[]
+            {
+                TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
+                    .TagMatchingRuleDescriptor(rule =>
+                        rule
+                        .RequireTagName("input"))
+                    .BoundAttributeDescriptor(attribute =>
+                        attribute
+                        .Name("boundbool")
+                        .PropertyName("BoundBoolProp")
+                        .TypeName(typeof(bool).FullName))
+                    .BoundAttributeDescriptor(attribute =>
+                        attribute
+                        .Name("boundbooldict")
+                        .PropertyName("BoundBoolDictProp")
+                        .TypeName("System.Collections.Generic.IDictionary<string, bool>")
+                        .AsDictionary("boundbooldict-", typeof(bool).FullName))
+                    .Build(),
+            };
+
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock(
+                    "input",
+                    TagMode.SelfClosing,
+                    attributes: new List<TagHelperAttributeNode>()
+                    {
+                        new TagHelperAttributeNode("boundbool", null, AttributeStructure.Minimized),
+                        new TagHelperAttributeNode("boundbooldict-key", null, AttributeStructure.Minimized),
+                    }));
+
+            // Act & Assert
+            EvaluateData(descriptors, documentContent, expectedOutput, new RazorError[] { });
+        }
+
+        [Fact]
+        public void Rewrite_FeatureDisabled_AddsErrorForMinimizedBooleanBoundAttributes()
+        {
+            // Arrange
+            var documentContent = "<input boundbool boundbooldict-key />";
+            var descriptors = new TagHelperDescriptor[]
+            {
+                TagHelperDescriptorBuilder.Create("InputTagHelper", "SomeAssembly")
+                    .TagMatchingRuleDescriptor(rule =>
+                        rule
+                        .RequireTagName("input"))
+                    .BoundAttributeDescriptor(attribute =>
+                        attribute
+                        .Name("boundbool")
+                        .PropertyName("BoundBoolProp")
+                        .TypeName(typeof(bool).FullName))
+                    .BoundAttributeDescriptor(attribute =>
+                        attribute
+                        .Name("boundbooldict")
+                        .PropertyName("BoundBoolDictProp")
+                        .TypeName("System.Collections.Generic.IDictionary<string, bool>")
+                        .AsDictionary("boundbooldict-", typeof(bool).FullName))
+                    .Build(),
+            };
+
+            var featureFlags = new TestRazorParserFeatureFlags(allowMinimizedBooleanTagHelperAttributes: false);
+
+            var expectedOutput = new MarkupBlock(
+                new MarkupTagHelperBlock(
+                    "input",
+                    TagMode.SelfClosing,
+                    attributes: new List<TagHelperAttributeNode>()
+                    {
+                        new TagHelperAttributeNode("boundbool", null, AttributeStructure.Minimized),
+                        new TagHelperAttributeNode("boundbooldict-key", null, AttributeStructure.Minimized),
+                    }));
+
+            var expectedErrors = new[]
+            {
+                new RazorError(
+                    "Attribute 'boundbool' on tag helper element 'input' requires a value. Tag helper bound attributes of type 'System.Boolean' cannot be empty or contain only whitespace.",
+                    new SourceLocation(7, 0, 7),
+                    length: 9),
+                new RazorError(
+                    "Attribute 'boundbooldict-key' on tag helper element 'input' requires a value. Tag helper bound attributes of type 'System.Boolean' cannot be empty or contain only whitespace.",
+                    new SourceLocation(17, 0, 17),
+                    length: 17),
+            };
+
+            // Act & Assert
+            EvaluateData(descriptors, documentContent, expectedOutput, expectedErrors, featureFlags: featureFlags);
+        }
+
+        private class TestRazorParserFeatureFlags : RazorParserFeatureFlags
+        {
+            public TestRazorParserFeatureFlags(bool allowMinimizedBooleanTagHelperAttributes)
+            {
+                AllowMinimizedBooleanTagHelperAttributes = allowMinimizedBooleanTagHelperAttributes;
+            }
+
+            public override bool AllowMinimizedBooleanTagHelperAttributes { get; }
         }
     }
 }

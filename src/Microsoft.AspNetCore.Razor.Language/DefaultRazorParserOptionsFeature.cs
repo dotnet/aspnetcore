@@ -8,11 +8,13 @@ namespace Microsoft.AspNetCore.Razor.Language
     internal class DefaultRazorParserOptionsFeature : RazorEngineFeatureBase, IRazorParserOptionsFeature
     {
         private readonly bool _designTime;
+        private readonly RazorLanguageVersion _version;
         private IConfigureRazorParserOptionsFeature[] _configureOptions;
 
-        public DefaultRazorParserOptionsFeature(bool designTime)
+        public DefaultRazorParserOptionsFeature(bool designTime, RazorLanguageVersion version)
         {
             _designTime = designTime;
+            _version = version;
         }
 
         protected override void OnInitialized()
@@ -22,7 +24,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public RazorParserOptions GetOptions()
         {
-            var builder = new DefaultRazorParserOptionsBuilder(_designTime);
+            var builder = new DefaultRazorParserOptionsBuilder(_designTime, _version);
             for (var i = 0; i < _configureOptions.Length; i++)
             {
                 _configureOptions[i].Configure(builder);

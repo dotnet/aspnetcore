@@ -16,13 +16,14 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         public static TagHelperBlockBuilder Rewrite(
             string tagName,
             bool validStructure,
+            RazorParserFeatureFlags featureFlags,
             Block tag,
             TagHelperBinding bindingResult,
             ErrorSink errorSink)
         {
             // There will always be at least one child for the '<'.
             var start = tag.Children.First().Start;
-            var attributes = GetTagAttributes(tagName, validStructure, tag, bindingResult, errorSink);
+            var attributes = GetTagAttributes(tagName, validStructure, tag, bindingResult, errorSink, featureFlags);
             var tagMode = GetTagMode(tagName, tag, bindingResult, errorSink);
 
             return new TagHelperBlockBuilder(tagName, tagMode, start, attributes, bindingResult);
@@ -33,7 +34,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             bool validStructure,
             Block tagBlock,
             TagHelperBinding bindingResult,
-            ErrorSink errorSink)
+            ErrorSink errorSink,
+            RazorParserFeatureFlags featureFlags)
         {
             var attributes = new List<TagHelperAttributeNode>();
 
@@ -61,10 +63,15 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 {
                     SourceLocation? errorLocation = null;
 
-                    // Check if it's a bound attribute that is minimized or if it's a bound non-string attribute that
-                    // is null or whitespace.
-                    if ((result.IsBoundAttribute && result.AttributeValueNode == null) ||
-                        (result.IsBoundNonStringAttribute &&
+                    // Check if it's a non-boolean bound attribute that is minimized or if it's a bound
+                    // non-string attribute that has null or whitespace content.
+                    var isMinimized = result.AttributeValueNode == null;
+                    var isValidMinimizedAttribute = featureFlags.AllowMinimizedBooleanTagHelperAttributes && result.IsBoundBooleanAttribute;
+                    if ((isMinimized &&
+                        result.IsBoundAttribute &&
+                        !isValidMinimizedAttribute) ||
+                        (!isMinimized &&
+                        result.IsBoundNonStringAttribute &&
                          IsNullOrWhitespaceAttributeValue(result.AttributeValueNode)))
                     {
                         errorLocation = GetAttributeNameStartLocation(child);
@@ -690,9 +697,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         {
             var firstBoundAttribute = FindFirstBoundAttribute(name, descriptors);
             var isBoundAttribute = firstBoundAttribute != null;
-            var isBoundNonStringAttribute = isBoundAttribute &&
-                !(firstBoundAttribute.IsStringProperty ||
-                    (TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(name, firstBoundAttribute) && firstBoundAttribute.IsIndexerStringProperty));
+            var isBoundNonStringAttribute = isBoundAttribute && !firstBoundAttribute.ExpectsStringValue(name);
+            var isBoundBooleanAttribute = isBoundAttribute && firstBoundAttribute.ExpectsBooleanValue(name);
             var isMissingDictionaryKey = isBoundAttribute &&
                 firstBoundAttribute.IndexerNamePrefix != null &&
                 name.Length == firstBoundAttribute.IndexerNamePrefix.Length;
@@ -709,6 +715,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 AttributeName = name,
                 IsBoundAttribute = isBoundAttribute,
                 IsBoundNonStringAttribute = isBoundNonStringAttribute,
+                IsBoundBooleanAttribute = isBoundBooleanAttribute,
                 IsMissingDictionaryKey = isMissingDictionaryKey,
                 IsDuplicateAttribute = isDuplicateAttribute
             };
@@ -765,6 +772,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             public bool IsBoundAttribute { get; set; }
 
             public bool IsBoundNonStringAttribute { get; set; }
+
+            public bool IsBoundBooleanAttribute { get; set; }
 
             public bool IsMissingDictionaryKey { get; set; }
 

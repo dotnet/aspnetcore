@@ -1,5 +1,5 @@
 Source Location: (14:0,14 [17] TestFiles/IntegrationTests/CodeGenerationIntegrationTest/MinimizedTagHelpers.cshtml)
 |"*, TestAssembly"|
-Generated Location: (603:12,37 [17] )
+Generated Location: (657:13,37 [17] )
 |"*, TestAssembly"|
 

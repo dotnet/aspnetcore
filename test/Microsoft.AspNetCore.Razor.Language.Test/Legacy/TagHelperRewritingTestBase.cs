@@ -51,11 +51,16 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             string documentContent,
             MarkupBlock expectedOutput,
             IEnumerable<RazorError> expectedErrors,
-            string tagHelperPrefix = null)
+            string tagHelperPrefix = null,
+            RazorParserFeatureFlags featureFlags = null)
         {
             var syntaxTree = ParseDocument(documentContent);
             var errorSink = new ErrorSink();
-            var parseTreeRewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, descriptors);
+            var parseTreeRewriter = new TagHelperParseTreeRewriter(
+                tagHelperPrefix,
+                descriptors,
+                featureFlags ?? syntaxTree.Options.FeatureFlags);
+
             var actualTree = parseTreeRewriter.Rewrite(syntaxTree.Root, errorSink);
 
             var allErrors = syntaxTree.Diagnostics.Concat(errorSink.Errors.Select(error => RazorDiagnostic.Create(error)));

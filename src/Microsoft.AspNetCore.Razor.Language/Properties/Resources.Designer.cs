@@ -682,6 +682,20 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatTagHelperPrefixDirective_Description()
             => GetString("TagHelperPrefixDirective_Description");
 
+        /// <summary>
+        /// Provided value for razor language version is unsupported or invalid: '{0}'.
+        /// </summary>
+        internal static string InvalidRazorLanguageVersion
+        {
+            get => GetString("InvalidRazorLanguageVersion");
+        }
+
+        /// <summary>
+        /// Provided value for razor language version is unsupported or invalid: '{0}'.
+        /// </summary>
+        internal static string FormatInvalidRazorLanguageVersion(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidRazorLanguageVersion"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

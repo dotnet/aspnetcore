@@ -4,6 +4,7 @@ Document -
             DefaultTagHelperRuntime - 
             FieldDeclaration -  - private - global::TestNamespace.CatchAllTagHelper - __TestNamespace_CatchAllTagHelper
             FieldDeclaration -  - private - global::TestNamespace.InputTagHelper - __TestNamespace_InputTagHelper
+            FieldDeclaration -  - private - global::DivTagHelper - __DivTagHelper
             DesignTimeDirective - 
                 DirectiveToken - (14:0,14 [17] MinimizedTagHelpers.cshtml) - "*, TestAssembly"
             CSharpCode - 
@@ -15,7 +16,7 @@ Document -
             MethodDeclaration -  - public async - System.Threading.Tasks.Task - ExecuteAsync
                 HtmlContent - (31:0,31 [4] MinimizedTagHelpers.cshtml)
                     IntermediateToken - (31:0,31 [4] MinimizedTagHelpers.cshtml) - Html - \n\n
-                TagHelper - (35:2,0 [647] MinimizedTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
+                TagHelper - (35:2,0 [762] MinimizedTagHelpers.cshtml) - p - TagMode.StartTagAndEndTag
                     DefaultTagHelperBody - 
                         HtmlContent - (64:2,29 [34] MinimizedTagHelpers.cshtml)
                             IntermediateToken - (64:2,29 [6] MinimizedTagHelpers.cshtml) - Html - \n    
@@ -84,8 +85,24 @@ Document -
                                 HtmlContent - (667:16,40 [5] MinimizedTagHelpers.cshtml)
                                     IntermediateToken - (667:16,40 [5] MinimizedTagHelpers.cshtml) - Html - world
                             DefaultTagHelperExecute - 
-                        HtmlContent - (676:16,49 [2] MinimizedTagHelpers.cshtml)
-                            IntermediateToken - (676:16,49 [2] MinimizedTagHelpers.cshtml) - Html - \n
+                        HtmlContent - (676:16,49 [6] MinimizedTagHelpers.cshtml)
+                            IntermediateToken - (676:16,49 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                        TagHelper - (682:17,4 [41] MinimizedTagHelpers.cshtml) - div - TagMode.StartTagAndEndTag
+                            DefaultTagHelperBody - 
+                            DefaultTagHelperCreate -  - DivTagHelper
+                            DefaultTagHelperProperty -  - boundbool - bool DivTagHelper.BoundBoolProp - HtmlAttributeValueStyle.Minimized
+                            DefaultTagHelperProperty -  - booldict-prefix-key - System.Collections.Generic.IDictionary<string, bool> DivTagHelper.BoolDictProp - HtmlAttributeValueStyle.Minimized
+                            DefaultTagHelperExecute - 
+                        HtmlContent - (723:17,45 [6] MinimizedTagHelpers.cshtml)
+                            IntermediateToken - (723:17,45 [6] MinimizedTagHelpers.cshtml) - Html - \n    
+                        TagHelper - (729:18,4 [62] MinimizedTagHelpers.cshtml) - div - TagMode.StartTagAndEndTag
+                            DefaultTagHelperBody - 
+                                HtmlContent - (734:18,9 [51] MinimizedTagHelpers.cshtml)
+                                    IntermediateToken - (734:18,9 [51] MinimizedTagHelpers.cshtml) - Html - Tag helper with unmatched bound boolean attributes.
+                            DefaultTagHelperCreate -  - DivTagHelper
+                            DefaultTagHelperExecute - 
+                        HtmlContent - (791:18,66 [2] MinimizedTagHelpers.cshtml)
+                            IntermediateToken - (791:18,66 [2] MinimizedTagHelpers.cshtml) - Html - \n
                     DefaultTagHelperCreate -  - TestNamespace.CatchAllTagHelper
                     DefaultTagHelperHtmlAttribute -  - catchall-unbound-required - HtmlAttributeValueStyle.Minimized
                     DefaultTagHelperExecute - 

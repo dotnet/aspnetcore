@@ -261,4 +261,7 @@
   <data name="TagHelperPrefixDirective_Description" xml:space="preserve">
     <value>Specify a prefix that is required in an element name for it to be included in Tag Helper processing.</value>
   </data>
+  <data name="InvalidRazorLanguageVersion" xml:space="preserve">
+    <value>Provided value for razor language version is unsupported or invalid: '{0}'.</value>
+  </data>
 </root>

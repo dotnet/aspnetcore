@@ -46,6 +46,43 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
             }
         }
 
+        public static IEnumerable<TagHelperDescriptor> MinimizedBooleanTagHelperDescriptors
+        {
+            get
+            {
+                return new[]
+                {
+                    CreateTagHelperDescriptor(
+                        tagName: "span",
+                        typeName: "SpanTagHelper",
+                        assemblyName: "TestAssembly"),
+                    CreateTagHelperDescriptor(
+                        tagName: "div",
+                        typeName: "DivTagHelper",
+                        assemblyName: "TestAssembly"),
+                    CreateTagHelperDescriptor(
+                        tagName: "input",
+                        typeName: "InputTagHelper",
+                        assemblyName: "TestAssembly",
+                        attributes: new Action<BoundAttributeDescriptorBuilder>[]
+                        {
+                            builder => builder
+                                .Name("value")
+                                .PropertyName("FooProp")
+                                .TypeName("System.String"),
+                            builder => builder
+                                .Name("bound")
+                                .PropertyName("BoundProp")
+                                .TypeName("System.Boolean"),
+                            builder => builder
+                                .Name("age")
+                                .PropertyName("AgeProp")
+                                .TypeName("System.Int32"),
+                        })
+                };
+            }
+        }
+
         public static IEnumerable<TagHelperDescriptor> CssSelectorTagHelperDescriptors
         {
             get
@@ -266,6 +303,22 @@ namespace Microsoft.AspNetCore.Razor.Language.IntegrationTests
                             builder => builder
                                 .RequireAttributeDescriptor(attribute => attribute.Name("input-bound-required-string"))
                                 .RequireAttributeDescriptor(attribute => attribute.Name("input-unbound-required")),
+                        }),
+                    CreateTagHelperDescriptor(
+                        tagName: "div",
+                        typeName: "DivTagHelper",
+                        assemblyName: "TestAssembly",
+                        attributes: new Action<BoundAttributeDescriptorBuilder>[]
+                        {
+                            builder => builder
+                                .Name("boundbool")
+                                .PropertyName("BoundBoolProp")
+                                .TypeName(typeof(bool).FullName),
+                            builder => builder
+                                .Name("booldict")
+                                .PropertyName("BoolDictProp")
+                                .TypeName("System.Collections.Generic.IDictionary<string, bool>")
+                                .AsDictionaryAttribute("booldict-prefix-", typeof(bool).FullName),
                         }),
                 };
             }

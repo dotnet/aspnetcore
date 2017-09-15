@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             var imports = codeDocument.GetImportSyntaxTrees();
             if (imports != null)
             {
-                var importsVisitor = new ImportsVisitor(document, builder, namespaces);
+                var importsVisitor = new ImportsVisitor(document, builder, namespaces, syntaxTree.Options.FeatureFlags);
 
                 for (var j = 0; j < imports.Count; j++)
                 {
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var tagHelperPrefix = tagHelperContext?.Prefix;
-            var visitor = new MainSourceVisitor(document, builder, namespaces, tagHelperPrefix)
+            var visitor = new MainSourceVisitor(document, builder, namespaces, tagHelperPrefix, syntaxTree.Options.FeatureFlags)
             {
                 FilePath = syntaxTree.Source.FilePath,
             };
@@ -151,12 +151,14 @@ namespace Microsoft.AspNetCore.Razor.Language
             protected readonly IntermediateNodeBuilder _builder;
             protected readonly DocumentIntermediateNode _document;
             protected readonly Dictionary<string, SourceSpan?> _namespaces;
+            protected readonly RazorParserFeatureFlags _featureFlags;
 
-            public LoweringVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces)
+            public LoweringVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces, RazorParserFeatureFlags featureFlags)
             {
                 _document = document;
                 _builder = builder;
                 _namespaces = namespaces;
+                _featureFlags = featureFlags;
             }
 
             public string FilePath { get; set; }
@@ -331,8 +333,7 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             protected SourceSpan? BuildSourceSpanFromNode(SyntaxTreeNode node)
             {
-                var location = node.Start;
-                if (location == SourceLocation.Undefined)
+                if (node == null || node.Start == SourceLocation.Undefined)
                 {
                     return null;
                 }
@@ -351,8 +352,8 @@ namespace Microsoft.AspNetCore.Razor.Language
         {
             private readonly string _tagHelperPrefix;
 
-            public MainSourceVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces, string tagHelperPrefix)
-                : base(document, builder, namespaces)
+            public MainSourceVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces, string tagHelperPrefix, RazorParserFeatureFlags featureFlags)
+                : base(document, builder, namespaces, featureFlags)
             {
                 _tagHelperPrefix = tagHelperPrefix;
             }
@@ -670,10 +671,11 @@ namespace Microsoft.AspNetCore.Razor.Language
 
                     if (associatedDescriptors.Any() && renderedBoundAttributeNames.Add(attribute.Name))
                     {
-                        if (attributeValueNode == null)
+                        var isMinimizedAttribute = attributeValueNode == null;
+                        if (isMinimizedAttribute && !_featureFlags.AllowMinimizedBooleanTagHelperAttributes)
                         {
-                            // Minimized attributes are not valid for bound attributes. TagHelperBlockRewriter has already
-                            // logged an error if it was a bound attribute; so we can skip.
+                            // Minimized attributes are not valid for non-boolean bound attributes. TagHelperBlockRewriter
+                            // has already logged an error if it was a non-boolean bound attribute; so we can skip.
                             continue;
                         }
 
@@ -683,6 +685,14 @@ namespace Microsoft.AspNetCore.Razor.Language
                             {
                                 return TagHelperMatchingConventions.CanSatisfyBoundAttribute(attribute.Name, a);
                             });
+
+                            var expectsBooleanValue = associatedAttributeDescriptor.ExpectsBooleanValue(attribute.Name);
+
+                            if (isMinimizedAttribute && !expectsBooleanValue)
+                            {
+                                // We do not allow minimized non-boolean bound attributes.
+                                continue;
+                            }
 
                             var setTagHelperProperty = new TagHelperPropertyIntermediateNode()
                             {
@@ -695,7 +705,7 @@ namespace Microsoft.AspNetCore.Razor.Language
                             };
 
                             _builder.Push(setTagHelperProperty);
-                            attributeValueNode.Accept(this);
+                            attributeValueNode?.Accept(this);
                             _builder.Pop();
                         }
                     }
@@ -720,8 +730,8 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         private class ImportsVisitor : LoweringVisitor
         {
-            public ImportsVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces)
-                : base(document, new ImportBuilder(builder), namespaces)
+            public ImportsVisitor(DocumentIntermediateNode document, IntermediateNodeBuilder builder, Dictionary<string, SourceSpan?> namespaces, RazorParserFeatureFlags featureFlags)
+                : base(document, new ImportBuilder(builder), namespaces, featureFlags)
             {
             }
 

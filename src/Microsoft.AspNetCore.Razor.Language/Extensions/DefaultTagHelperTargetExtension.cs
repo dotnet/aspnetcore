@@ -336,7 +336,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             }
 
             // If we get there, this is the first time seeing this property so we need to evaluate the expression.
-            if (node.BoundAttribute.IsStringProperty || (node.IsIndexerNameMatch && node.BoundAttribute.IsIndexerStringProperty))
+            if (node.BoundAttribute.ExpectsStringValue(node.AttributeName))
             {
                 if (DesignTime)
                 {
@@ -407,7 +407,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                             context.CodeWriter.WriteStartAssignment(GetPropertyAccessor(node));
                         }
 
-                        RenderTagHelperAttributeInline(context, node, node.Source);
+                        if (node.Children.Count == 0 &&
+                            node.AttributeStructure == AttributeStructure.Minimized &&
+                            node.BoundAttribute.ExpectsBooleanValue(node.AttributeName))
+                        {
+                            // If this is a minimized boolean attribute, set the value to true.
+                            context.CodeWriter.Write("true");
+                        }
+                        else
+                        {
+                            RenderTagHelperAttributeInline(context, node, node.Source);
+                        }
 
                         context.CodeWriter.WriteLine(";");
                     }
@@ -429,7 +439,17 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
                                 .Write(".");
                         }
 
-                        RenderTagHelperAttributeInline(context, node, node.Source);
+                        if (node.Children.Count == 0 &&
+                            node.AttributeStructure == AttributeStructure.Minimized &&
+                            node.BoundAttribute.ExpectsBooleanValue(node.AttributeName))
+                        {
+                            // If this is a minimized boolean attribute, set the value to true.
+                            context.CodeWriter.Write("true");
+                        }
+                        else
+                        {
+                            RenderTagHelperAttributeInline(context, node, node.Source);
+                        }
 
                         context.CodeWriter.WriteLine(";");
                     }

@@ -27,5 +27,27 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             return string.Equals(attribute.Kind, TagHelperConventions.DefaultKind, StringComparison.Ordinal);
         }
+
+        internal static bool ExpectsStringValue(this BoundAttributeDescriptor attribute, string name)
+        {
+            if (attribute.IsStringProperty)
+            {
+                return true;
+            }
+
+            var isIndexerNameMatch = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(name, attribute);
+            return isIndexerNameMatch && attribute.IsIndexerStringProperty;
+        }
+
+        internal static bool ExpectsBooleanValue(this BoundAttributeDescriptor attribute, string name)
+        {
+            if (attribute.IsBooleanProperty)
+            {
+                return true;
+            }
+
+            var isIndexerNameMatch = TagHelperMatchingConventions.SatisfiesBoundAttributeIndexer(name, attribute);
+            return isIndexerNameMatch && attribute.IsIndexerBooleanProperty;
+        }
     }
 }

@@ -95,5 +95,185 @@ namespace Microsoft.AspNetCore.Razor.Language
             // Assert
             Assert.False(isDefault);
         }
+
+        [Fact]
+        public void ExpectsStringValue_ReturnsTrue_ForStringProperty()
+        {
+            // Arrange
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            tagHelperBuilder.TypeName("TestTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            builder
+                .Name("test")
+                .PropertyName("BoundProp")
+                .TypeName(typeof(string).FullName);
+
+            var descriptor = builder.Build();
+
+            // Act
+            var result = descriptor.ExpectsStringValue("test");
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void ExpectsStringValue_ReturnsFalse_ForNonStringProperty()
+        {
+            // Arrange
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            tagHelperBuilder.TypeName("TestTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            builder
+                .Name("test")
+                .PropertyName("BoundProp")
+                .TypeName(typeof(bool).FullName);
+
+            var descriptor = builder.Build();
+
+            // Act
+            var result = descriptor.ExpectsStringValue("test");
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ExpectsStringValue_ReturnsTrue_StringIndexerAndNameMatch()
+        {
+            // Arrange
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            tagHelperBuilder.TypeName("TestTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            builder
+                .Name("test")
+                .PropertyName("BoundProp")
+                .TypeName("System.Collection.Generic.IDictionary<string, string>")
+                .AsDictionary("prefix-test-", typeof(string).FullName);
+
+            var descriptor = builder.Build();
+
+            // Act
+            var result = descriptor.ExpectsStringValue("prefix-test-key");
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void ExpectsStringValue_ReturnsFalse_StringIndexerAndNameMismatch()
+        {
+            // Arrange
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            tagHelperBuilder.TypeName("TestTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            builder
+                .Name("test")
+                .PropertyName("BoundProp")
+                .TypeName("System.Collection.Generic.IDictionary<string, string>")
+                .AsDictionary("prefix-test-", typeof(string).FullName);
+
+            var descriptor = builder.Build();
+
+            // Act
+            var result = descriptor.ExpectsStringValue("test");
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ExpectsBooleanValue_ReturnsTrue_ForBooleanProperty()
+        {
+            // Arrange
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            tagHelperBuilder.TypeName("TestTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            builder
+                .Name("test")
+                .PropertyName("BoundProp")
+                .TypeName(typeof(bool).FullName);
+
+            var descriptor = builder.Build();
+
+            // Act
+            var result = descriptor.ExpectsBooleanValue("test");
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void ExpectsBooleanValue_ReturnsFalse_ForNonBooleanProperty()
+        {
+            // Arrange
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            tagHelperBuilder.TypeName("TestTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            builder
+                .Name("test")
+                .PropertyName("BoundProp")
+                .TypeName(typeof(int).FullName);
+
+            var descriptor = builder.Build();
+
+            // Act
+            var result = descriptor.ExpectsBooleanValue("test");
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void ExpectsBooleanValue_ReturnsTrue_BooleanIndexerAndNameMatch()
+        {
+            // Arrange
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            tagHelperBuilder.TypeName("TestTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            builder
+                .Name("test")
+                .PropertyName("BoundProp")
+                .TypeName("System.Collection.Generic.IDictionary<string, bool>")
+                .AsDictionary("prefix-test-", typeof(bool).FullName);
+
+            var descriptor = builder.Build();
+
+            // Act
+            var result = descriptor.ExpectsBooleanValue("prefix-test-key");
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void ExpectsBooleanValue_ReturnsFalse_BooleanIndexerAndNameMismatch()
+        {
+            // Arrange
+            var tagHelperBuilder = new DefaultTagHelperDescriptorBuilder(TagHelperConventions.DefaultKind, "TestTagHelper", "Test");
+            tagHelperBuilder.TypeName("TestTagHelper");
+
+            var builder = new DefaultBoundAttributeDescriptorBuilder(tagHelperBuilder, TagHelperConventions.DefaultKind);
+            builder
+                .Name("test")
+                .PropertyName("BoundProp")
+                .TypeName("System.Collection.Generic.IDictionary<string, bool>")
+                .AsDictionary("prefix-test-", typeof(bool).FullName);
+
+            var descriptor = builder.Build();
+
+            // Act
+            var result = descriptor.ExpectsBooleanValue("test");
+
+            // Assert
+            Assert.False(result);
+        }
     }
 }

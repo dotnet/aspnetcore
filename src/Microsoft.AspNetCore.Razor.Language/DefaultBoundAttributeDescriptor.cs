@@ -35,6 +35,9 @@ namespace Microsoft.AspNetCore.Razor.Language
 
             IsIndexerStringProperty = indexerTypeName == typeof(string).FullName || indexerTypeName == "string";
             IsStringProperty = typeName == typeof(string).FullName || typeName == "string";
+
+            IsIndexerBooleanProperty = indexerTypeName == typeof(bool).FullName || indexerTypeName == "bool";
+            IsBooleanProperty = typeName == typeof(bool).FullName || typeName == "bool";
         }
     }
 }

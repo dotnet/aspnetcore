@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var errorSink = new ErrorSink();
             var parseResult = ParseDocument(documentContent);
             var document = parseResult.Root;
-            var parseTreeRewriter = new TagHelperParseTreeRewriter(null, Enumerable.Empty<TagHelperDescriptor>());
+            var parseTreeRewriter = new TagHelperParseTreeRewriter(null, Enumerable.Empty<TagHelperDescriptor>(), parseResult.Options.FeatureFlags);
 
             // Assert - Guard
             var rootBlock = Assert.IsType<Block>(document);

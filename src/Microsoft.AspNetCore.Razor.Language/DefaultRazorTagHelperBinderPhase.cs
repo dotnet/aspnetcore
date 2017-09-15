@@ -53,7 +53,8 @@ namespace Microsoft.AspNetCore.Razor.Language
             }
 
             var errorSink = new ErrorSink();
-            var rewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, descriptors);
+            var rewriter = new TagHelperParseTreeRewriter(tagHelperPrefix, descriptors, syntaxTree.Options.FeatureFlags);
+
             var root = syntaxTree.Root;
             root = rewriter.Rewrite(root, errorSink);
 

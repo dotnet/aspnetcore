@@ -44,8 +44,12 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         private readonly Stack<BlockBuilder> _blockStack;
         private TagHelperBlockTracker _currentTagHelperTracker;
         private BlockBuilder _currentBlock;
+        private RazorParserFeatureFlags _featureFlags;
 
-        public TagHelperParseTreeRewriter(string tagHelperPrefix, IEnumerable<TagHelperDescriptor> descriptors)
+        public TagHelperParseTreeRewriter(
+            string tagHelperPrefix,
+            IEnumerable<TagHelperDescriptor> descriptors,
+            RazorParserFeatureFlags featureFlags)
         {
             _tagHelperPrefix = tagHelperPrefix;
             _tagHelperBinder = new TagHelperBinder(tagHelperPrefix, descriptors);
@@ -53,6 +57,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             _blockStack = new Stack<BlockBuilder>();
             _attributeValueBuilder = new StringBuilder();
             _htmlAttributeTracker = new List<KeyValuePair<string, string>>();
+            _featureFlags = featureFlags;
         }
 
         private TagBlockTracker CurrentTracker => _trackerStack.Count > 0 ? _trackerStack.Peek() : null;
@@ -225,6 +230,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                 var builder = TagHelperBlockRewriter.Rewrite(
                     tagName,
                     validTagStructure,
+                    _featureFlags,
                     tagBlock,
                     tagHelperBinding,
                     errorSink);
