@@ -88,6 +88,7 @@
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Cryptography.KeyDerivation" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.Abstractions" />
+    <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.AzureKeyVault" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.AzureStorage" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <FullMetaPackagePackageReference Include="Microsoft.AspNetCore.Diagnostics.Abstractions" />
