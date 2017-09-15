@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace CodeGenerator
 {
@@ -265,14 +266,14 @@ namespace CodeGenerator
                 {
                     Headers = requestHeaders,
                     HeadersByLength = requestHeaders.GroupBy(x => x.Name.Length),
-                    ClassName = "FrameRequestHeaders",
+                    ClassName = nameof(HttpRequestHeaders),
                     Bytes = default(byte[])
                 },
                 new
                 {
                     Headers = responseHeaders,
                     HeadersByLength = responseHeaders.GroupBy(x => x.Name.Length),
-                    ClassName = "FrameResponseHeaders",
+                    ClassName = nameof(HttpResponseHeaders),
                     Bytes = responseHeaders.SelectMany(header => header.Bytes).ToArray()
                 }
             };
@@ -383,7 +384,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }}
 
         protected override void SetValueFast(string key, StringValues value)
-        {{{(loop.ClassName == "FrameResponseHeaders" ? @"
+        {{{(loop.ClassName == nameof(HttpResponseHeaders) ? @"
             ValidateHeaderCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
@@ -405,7 +406,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         }}
 
         protected override bool AddValueFast(string key, StringValues value)
-        {{{(loop.ClassName == "FrameResponseHeaders" ? @"
+        {{{(loop.ClassName == nameof(HttpResponseHeaders) ? @"
             ValidateHeaderCharacters(value);" : "")}
             switch (key.Length)
             {{{Each(loop.HeadersByLength, byLength => $@"
@@ -431,7 +432,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     }}
                     break;")}
             }}
-{(loop.ClassName == "FrameResponseHeaders" ? @"
+{(loop.ClassName == nameof(HttpResponseHeaders) ? @"
             ValidateHeaderCharacters(key);" : "")}
             Unknown.Add(key, value);
             // Return true, above will throw and exit for false
@@ -474,7 +475,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             _contentLength = null;
             var tempBits = _bits;
             _bits = 0;
-            if(FrameHeaders.BitCount(tempBits) > 12)
+            if(HttpHeaders.BitCount(tempBits) > 12)
             {{
                 _headers = default(HeaderReferences);
                 return;
@@ -521,7 +522,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
             return true;
         }}
-        {(loop.ClassName == "FrameResponseHeaders" ? $@"
+        {(loop.ClassName == nameof(HttpResponseHeaders) ? $@"
         protected void CopyToFast(ref WritableBufferWriter output)
         {{
             var tempBits = _bits | (_contentLength.HasValue ? {1L << 63}L : 0);
@@ -564,7 +565,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                     tempBits &= ~{1L << 63}L;
                 }}" : "")}")}
         }}" : "")}
-        {(loop.ClassName == "FrameRequestHeaders" ? $@"
+        {(loop.ClassName == nameof(HttpRequestHeaders) ? $@"
         public unsafe void Append(byte* pKeyBytes, int keyLength, string value)
         {{
             var pUB = pKeyBytes;

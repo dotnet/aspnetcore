@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
     {
         public IPipe Pipe { get; set; }
 
-        public Frame<object> Frame { get; set; }
+        public Http1Connection<object> Http1Connection { get; set; }
 
         public PipeFactory PipeFactory { get; set; }
 
@@ -28,10 +28,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
             var serviceContext = new ServiceContext
             {
-                HttpParserFactory = f => new HttpParser<FrameAdapter>(),
+                HttpParserFactory = f => new HttpParser<Http1ParsingHandler>(),
                 ServerOptions = new KestrelServerOptions(),
             };
-            var frameContext = new FrameContext
+            var http1ConnectionContext = new Http1ConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 TimeoutControl = new MockTimeoutControl()
             };
 
-            Frame = new Frame<object>(application: null, frameContext: frameContext);
+            Http1Connection = new Http1Connection<object>(application: null, context: http1ConnectionContext);
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]
@@ -142,16 +142,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
             var readableBuffer = awaitable.GetResult().Buffer;
             do
             {
-                Frame.Reset();
+                Http1Connection.Reset();
 
-                if (!Frame.TakeStartLine(readableBuffer, out var consumed, out var examined))
+                if (!Http1Connection.TakeStartLine(readableBuffer, out var consumed, out var examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestLine();
                 }
 
                 readableBuffer = readableBuffer.Slice(consumed);
 
-                if (!Frame.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (!Http1Connection.TakeMessageHeaders(readableBuffer, out consumed, out examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }
@@ -177,9 +177,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 var result = awaitable.GetAwaiter().GetResult();
                 var readableBuffer = result.Buffer;
 
-                Frame.Reset();
+                Http1Connection.Reset();
 
-                if (!Frame.TakeStartLine(readableBuffer, out var consumed, out var examined))
+                if (!Http1Connection.TakeStartLine(readableBuffer, out var consumed, out var examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestLine();
                 }
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
                 result = Pipe.Reader.ReadAsync().GetAwaiter().GetResult();
                 readableBuffer = result.Buffer;
 
-                if (!Frame.TakeMessageHeaders(readableBuffer, out consumed, out examined))
+                if (!Http1Connection.TakeMessageHeaders(readableBuffer, out consumed, out examined))
                 {
                     ErrorUtilities.ThrowInvalidRequestHeaders();
                 }

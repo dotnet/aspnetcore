@@ -1011,7 +1011,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
-            var responseHeaders = new FrameResponseHeaders();
+            var responseHeaders = new HttpResponseHeaders();
             _hpackDecoder.Decode(headersFrame.HeadersPayload, responseHeaders);
             _hpackDecoder.Decode(continuationFrame1.HeadersPayload, responseHeaders);
             _hpackDecoder.Decode(continuationFrame2.HeadersPayload, responseHeaders);

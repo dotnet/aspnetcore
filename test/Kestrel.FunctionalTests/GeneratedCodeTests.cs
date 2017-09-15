@@ -12,41 +12,35 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public void GeneratedCodeIsUpToDate()
         {
-            const string frameHeadersGeneratedPath = "../../../../../src/Kestrel.Core/Internal/Http/FrameHeaders.Generated.cs";
-            const string frameGeneratedPath = "../../../../../src/Kestrel.Core/Internal/Http/Frame.Generated.cs";
-            const string http2StreamGeneratedPath = "../../../../../src/Kestrel.Core/Internal/Http2/Http2Stream.Generated.cs";
+            const string httpHeadersGeneratedPath = "../../../../../src/Kestrel.Core/Internal/Http/HttpHeaders.Generated.cs";
+            const string httpProtocolGeneratedPath = "../../../../../src/Kestrel.Core/Internal/Http/HttpProtocol.Generated.cs";
             const string httpUtilitiesGeneratedPath = "../../../../../src/Kestrel.Core/Internal/Infrastructure/HttpUtilities.Generated.cs";
 
-            var testFrameHeadersGeneratedPath = Path.GetTempFileName();
-            var testFrameGeneratedPath = Path.GetTempFileName();
-            var testHttp2StreamGeneratedPath = Path.GetTempFileName();
+            var testHttpHeadersGeneratedPath = Path.GetTempFileName();
+            var testHttpProtocolGeneratedPath = Path.GetTempFileName();
             var testHttpUtilitiesGeneratedPath = Path.GetTempFileName();
 
             try
             {
-                var currentFrameHeadersGenerated = File.ReadAllText(frameHeadersGeneratedPath);
-                var currentFrameGenerated = File.ReadAllText(frameGeneratedPath);
-                var currentHttp2StreamGenerated = File.ReadAllText(http2StreamGeneratedPath);
+                var currentHttpHeadersGenerated = File.ReadAllText(httpHeadersGeneratedPath);
+                var currentHttpProtocolGenerated = File.ReadAllText(httpProtocolGeneratedPath);
                 var currentHttpUtilitiesGenerated = File.ReadAllText(httpUtilitiesGeneratedPath);
 
-                CodeGenerator.Program.Run(testFrameHeadersGeneratedPath, testFrameGeneratedPath, testHttp2StreamGeneratedPath, testHttpUtilitiesGeneratedPath);
+                CodeGenerator.Program.Run(testHttpHeadersGeneratedPath, testHttpProtocolGeneratedPath, testHttpUtilitiesGeneratedPath);
 
-                var testFrameHeadersGenerated = File.ReadAllText(testFrameHeadersGeneratedPath);
-                var testFrameGenerated = File.ReadAllText(testFrameGeneratedPath);
-                var testHttp2StreamGenerated = File.ReadAllText(testHttp2StreamGeneratedPath);
+                var testHttpHeadersGenerated = File.ReadAllText(testHttpHeadersGeneratedPath);
+                var testHttpProtocolGenerated = File.ReadAllText(testHttpProtocolGeneratedPath);
                 var testHttpUtilitiesGenerated = File.ReadAllText(testHttpUtilitiesGeneratedPath);
 
-                Assert.Equal(currentFrameHeadersGenerated, testFrameHeadersGenerated, ignoreLineEndingDifferences: true);
-                Assert.Equal(currentFrameGenerated, testFrameGenerated, ignoreLineEndingDifferences: true);
-                Assert.Equal(currentHttp2StreamGenerated, testHttp2StreamGenerated, ignoreLineEndingDifferences: true);
+                Assert.Equal(currentHttpHeadersGenerated, testHttpHeadersGenerated, ignoreLineEndingDifferences: true);
+                Assert.Equal(currentHttpProtocolGenerated, testHttpProtocolGenerated, ignoreLineEndingDifferences: true);
                 Assert.Equal(currentHttpUtilitiesGenerated, testHttpUtilitiesGenerated, ignoreLineEndingDifferences: true);
 
             }
             finally
             {
-                File.Delete(testFrameHeadersGeneratedPath);
-                File.Delete(testFrameGeneratedPath);
-                File.Delete(testHttp2StreamGeneratedPath);
+                File.Delete(testHttpHeadersGeneratedPath);
+                File.Delete(testHttpProtocolGeneratedPath);
                 File.Delete(testHttpUtilitiesGeneratedPath);
             }
         }

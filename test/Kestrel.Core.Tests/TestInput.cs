@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             Transport = pair.Transport;
             Application = pair.Application;
 
-            FrameContext = new FrameContext
+            Http1ConnectionContext = new Http1ConnectionContext
             {
                 ServiceContext = new TestServiceContext(),
                 ConnectionFeatures = new FeatureCollection(),
@@ -35,8 +35,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 TimeoutControl = Mock.Of<ITimeoutControl>()
             };
 
-            Frame = new Frame<object>(null, FrameContext);
-            Frame.FrameControl = Mock.Of<IFrameControl>();
+            Http1Connection = new Http1Connection<object>(null, Http1ConnectionContext);
+            Http1Connection.HttpResponseControl = Mock.Of<IHttpResponseControl>();
         }
 
         public IPipeConnection Transport { get; }
@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         public PipeFactory PipeFactory => _pipelineFactory;
 
-        public FrameContext FrameContext { get; }
+        public Http1ConnectionContext Http1ConnectionContext { get; }
 
-        public Frame Frame { get; set; }
+        public Http1Connection Http1Connection { get; set; }
 
         public void Add(string text)
         {

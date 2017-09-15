@@ -38,8 +38,8 @@ namespace Microsoft.AspNetCore.Testing
             ThreadPool = new LoggingThreadPool(Log);
             SystemClock = new MockSystemClock();
             DateHeaderValueManager = new DateHeaderValueManager(SystemClock);
-            ConnectionManager = new FrameConnectionManager(Log, ResourceCounter.Unlimited);
-            HttpParserFactory = frameAdapter => new HttpParser<FrameAdapter>(frameAdapter.Frame.ServiceContext.Log.IsEnabled(LogLevel.Information));
+            ConnectionManager = new HttpConnectionManager(Log, ResourceCounter.Unlimited);
+            HttpParserFactory = handler => new HttpParser<Http1ParsingHandler>(handler.Connection.ServiceContext.Log.IsEnabled(LogLevel.Information));
             ServerOptions = new KestrelServerOptions
             {
                 AddServerHeader = false

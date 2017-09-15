@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         private readonly byte[] _connectionHeaderName = Encoding.ASCII.GetBytes("Connection");
         private readonly byte[] _connectionHeaderValue = Encoding.ASCII.GetBytes("keep-alive");
 
-        public static readonly NullParser<FrameAdapter> Instance = new NullParser<FrameAdapter>();
+        public static readonly NullParser<Http1ParsingHandler> Instance = new NullParser<Http1ParsingHandler>();
 
         public bool ParseHeaders(TRequestHandler handler, ReadableBuffer buffer, out ReadCursor consumed, out ReadCursor examined, out int consumedBytes)
         {

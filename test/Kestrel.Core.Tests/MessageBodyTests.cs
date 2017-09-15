@@ -28,10 +28,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(httpVersion, new FrameRequestHeaders { HeaderContentLength = "5" }, input.Frame);
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new FrameRequestStream(mockBodyControl.Object);
+                var stream = new HttpRequestStream(mockBodyControl.Object);
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(httpVersion, new FrameRequestHeaders { HeaderContentLength = "5" }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -80,10 +80,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Frame);
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new FrameRequestStream(mockBodyControl.Object);
+                var stream = new HttpRequestStream(mockBodyControl.Object);
                 stream.StartAcceptingReads(body);
 
                 input.Add("5\r\nHello\r\n");
@@ -108,8 +108,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 input.Add("5\r\nHello\r\n");
@@ -134,8 +134,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 input.Add("5;\r\0");
@@ -159,8 +159,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 input.Add("80000000\r\n");
@@ -180,8 +180,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 input.Add("012345678\r");
@@ -203,10 +203,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(httpVersion, new FrameRequestHeaders { HeaderConnection = "upgrade" }, input.Frame);
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new FrameRequestStream(mockBodyControl.Object);
+                var stream = new HttpRequestStream(mockBodyControl.Object);
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -230,8 +230,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(httpVersion, new FrameRequestHeaders { HeaderConnection = "upgrade" }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -255,10 +255,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(httpVersion, new FrameRequestHeaders(), input.Frame);
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders(), input.Http1Connection);
                 var mockBodyControl = new Mock<IHttpBodyControlFeature>();
                 mockBodyControl.Setup(m => m.AllowSynchronousIO).Returns(true);
-                var stream = new FrameRequestStream(mockBodyControl.Object);
+                var stream = new HttpRequestStream(mockBodyControl.Object);
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -277,8 +277,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(httpVersion, new FrameRequestHeaders(), input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(httpVersion, new HttpRequestHeaders(), input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -295,8 +295,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders { HeaderContentLength = "8197" }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "8197" }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 // Input needs to be greater than 4032 bytes to allocate a block not backed by a slab.
@@ -324,7 +324,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var ex = Assert.Throws<BadHttpRequestException>(() =>
-                    MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderTransferEncoding = "chunked, not-chunked" }, input.Frame));
+                    Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderTransferEncoding = "chunked, not-chunked" }, input.Http1Connection));
 
                 Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
                 Assert.Equal(CoreStrings.FormatBadRequest_FinalTransferCodingNotChunked("chunked, not-chunked"), ex.Message);
@@ -338,9 +338,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                input.Frame.Method = method;
+                input.Http1Connection.Method = method;
                 var ex = Assert.Throws<BadHttpRequestException>(() =>
-                    MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders(), input.Frame));
+                    Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders(), input.Http1Connection));
 
                 Assert.Equal(StatusCodes.Status411LengthRequired, ex.StatusCode);
                 Assert.Equal(CoreStrings.FormatBadRequest_LengthRequired(method), ex.Message);
@@ -354,9 +354,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                input.Frame.Method = method;
+                input.Http1Connection.Method = method;
                 var ex = Assert.Throws<BadHttpRequestException>(() =>
-                    MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders(), input.Frame));
+                    Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders(), input.Http1Connection));
 
                 Assert.Equal(StatusCodes.Status400BadRequest, ex.StatusCode);
                 Assert.Equal(CoreStrings.FormatBadRequest_LengthRequiredHttp10(method), ex.Message);
@@ -368,7 +368,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders { HeaderContentLength = "5" }, input.Frame);
+                var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
                 input.Add("Hello");
 
@@ -388,7 +388,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http10, new FrameRequestHeaders { HeaderContentLength = "5" }, input.Frame);
+                var body = Http1MessageBody.For(HttpVersion.Http10, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
                 input.Add("Hello");
 
@@ -409,9 +409,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         public static IEnumerable<object[]> RequestData => new[]
         {
             // Content-Length
-            new object[] { new FrameRequestHeaders { HeaderContentLength = "12" }, new[] { "Hello ", "World!" } },
+            new object[] { new HttpRequestHeaders { HeaderContentLength = "12" }, new[] { "Hello ", "World!" } },
             // Chunked
-            new object[] { new FrameRequestHeaders { HeaderTransferEncoding = "chunked" }, new[] { "6\r\nHello \r\n", "6\r\nWorld!\r\n0\r\n\r\n" } },
+            new object[] { new HttpRequestHeaders { HeaderTransferEncoding = "chunked" }, new[] { "6\r\nHello \r\n", "6\r\nWorld!\r\n0\r\n\r\n" } },
         };
 
         public static IEnumerable<object[]> CombinedData =>
@@ -421,7 +421,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
         [Theory]
         [MemberData(nameof(RequestData))]
-        public async Task CopyToAsyncDoesNotCopyBlocks(FrameRequestHeaders headers, string[] data)
+        public async Task CopyToAsyncDoesNotCopyBlocks(HttpRequestHeaders headers, string[] data)
         {
             var writeCount = 0;
             var writeTcs = new TaskCompletionSource<byte[]>();
@@ -438,7 +438,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, headers, input.Frame);
+                var body = Http1MessageBody.For(HttpVersion.Http11, headers, input.Http1Connection);
 
                 var copyToAsyncTask = body.CopyToAsync(mockDestination.Object);
 
@@ -487,8 +487,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderConnection = headerConnection }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = headerConnection }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 input.Add("Hello");
@@ -508,8 +508,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderContentLength = "2" }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 // Add some input and consume it to ensure PumpAsync is running
@@ -531,8 +531,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             using (var input = new TestInput())
             {
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderContentLength = "2" }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 // Add some input and consume it to ensure PumpAsync is running
@@ -557,16 +557,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var mockTimeoutControl = new Mock<ITimeoutControl>();
 
-                input.FrameContext.TimeoutControl = mockTimeoutControl.Object;
+                input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
 
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderContentLength = "5" }, input.Frame);
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
                 // Add some input and read it to start PumpAsync
                 input.Add("a");
                 Assert.Equal(1, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
                 // Time out on the next read
-                input.Frame.SendTimeoutResponse();
+                input.Http1Connection.SendTimeoutResponse();
 
                 var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => body.ReadAsync(new ArraySegment<byte>(new byte[1])));
                 Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
@@ -582,16 +582,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var mockTimeoutControl = new Mock<ITimeoutControl>();
 
-                input.FrameContext.TimeoutControl = mockTimeoutControl.Object;
+                input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
 
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderContentLength = "5" }, input.Frame);
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
                 // Add some input and read it to start PumpAsync
                 input.Add("a");
                 Assert.Equal(1, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
                 // Time out on the next read
-                input.Frame.SendTimeoutResponse();
+                input.Http1Connection.SendTimeoutResponse();
 
                 var exception = await Assert.ThrowsAsync<BadHttpRequestException>(() => body.ConsumeAsync());
                 Assert.Equal(StatusCodes.Status408RequestTimeout, exception.StatusCode);
@@ -607,16 +607,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             {
                 var mockTimeoutControl = new Mock<ITimeoutControl>();
 
-                input.FrameContext.TimeoutControl = mockTimeoutControl.Object;
+                input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
 
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderContentLength = "5" }, input.Frame);
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
                 // Add some input and read it to start PumpAsync
                 input.Add("a");
                 Assert.Equal(1, await body.ReadAsync(new ArraySegment<byte>(new byte[1])));
 
                 // Time out on the next read
-                input.Frame.SendTimeoutResponse();
+                input.Http1Connection.SendTimeoutResponse();
 
                 using (var ms = new MemoryStream())
                 {
@@ -634,12 +634,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var mockLogger = new Mock<IKestrelTrace>();
-                input.Frame.ServiceContext.Log = mockLogger.Object;
-                input.Frame.ConnectionIdFeature = "ConnectionId";
-                input.Frame.TraceIdentifier = "RequestId";
+                input.Http1Connection.ServiceContext.Log = mockLogger.Object;
+                input.Http1Connection.ConnectionIdFeature = "ConnectionId";
+                input.Http1Connection.TraceIdentifier = "RequestId";
 
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderContentLength = "2" }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 // Add some input and consume it to ensure PumpAsync is running
@@ -664,12 +664,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 mockLogger
                     .Setup(logger => logger.RequestBodyDone("ConnectionId", "RequestId"))
                     .Callback(() => logEvent.Set());
-                input.Frame.ServiceContext.Log = mockLogger.Object;
-                input.Frame.ConnectionIdFeature = "ConnectionId";
-                input.Frame.TraceIdentifier = "RequestId";
+                input.Http1Connection.ServiceContext.Log = mockLogger.Object;
+                input.Http1Connection.ConnectionIdFeature = "ConnectionId";
+                input.Http1Connection.TraceIdentifier = "RequestId";
 
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderContentLength = "2" }, input.Frame);
-                var stream = new FrameRequestStream(Mock.Of<IHttpBodyControlFeature>());
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "2" }, input.Http1Connection);
+                var stream = new HttpRequestStream(Mock.Of<IHttpBodyControlFeature>());
                 stream.StartAcceptingReads(body);
 
                 // Add some input and consume it to ensure PumpAsync is running
@@ -690,9 +690,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var mockTimeoutControl = new Mock<ITimeoutControl>();
-                input.FrameContext.TimeoutControl = mockTimeoutControl.Object;
+                input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
 
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderContentLength = "12" }, input.Frame);
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "12" }, input.Http1Connection);
 
                 // Add some input and read it to start PumpAsync
                 input.Add("hello,");
@@ -701,7 +701,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 input.Add(" world");
                 Assert.Equal(6, await body.ReadAsync(new ArraySegment<byte>(new byte[6])));
 
-                // Due to the limits set on Frame.RequestBodyPipe, backpressure should be triggered on every write to that pipe.
+                // Due to the limits set on HttpProtocol.RequestBodyPipe, backpressure should be triggered on every write to that pipe.
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.PauseTimingReads(), Times.Exactly(2));
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.ResumeTimingReads(), Times.Exactly(2));
             }
@@ -715,20 +715,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 var produceContinueCalled = false;
                 var startTimingReadsCalledAfterProduceContinue = false;
 
-                var mockFrameControl = new Mock<IFrameControl>();
-                mockFrameControl
-                    .Setup(frameControl => frameControl.ProduceContinue())
+                var mockHttpResponseControl = new Mock<IHttpResponseControl>();
+                mockHttpResponseControl
+                    .Setup(httpResponseControl => httpResponseControl.ProduceContinue())
                     .Callback(() => produceContinueCalled = true);
-                input.Frame.FrameControl = mockFrameControl.Object;
+                input.Http1Connection.HttpResponseControl = mockHttpResponseControl.Object;
 
                 var mockTimeoutControl = new Mock<ITimeoutControl>();
                 mockTimeoutControl
                     .Setup(timeoutControl => timeoutControl.StartTimingReads())
                     .Callback(() => startTimingReadsCalledAfterProduceContinue = produceContinueCalled);
 
-                input.FrameContext.TimeoutControl = mockTimeoutControl.Object;
+                input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
 
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderContentLength = "5" }, input.Frame);
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderContentLength = "5" }, input.Http1Connection);
 
                 // Add some input and read it to start PumpAsync
                 var readTask = body.ReadAsync(new ArraySegment<byte>(new byte[1]));
@@ -748,9 +748,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             using (var input = new TestInput())
             {
                 var mockTimeoutControl = new Mock<ITimeoutControl>();
-                input.FrameContext.TimeoutControl = mockTimeoutControl.Object;
+                input.Http1ConnectionContext.TimeoutControl = mockTimeoutControl.Object;
 
-                var body = MessageBody.For(HttpVersion.Http11, new FrameRequestHeaders { HeaderConnection = "upgrade" }, input.Frame);
+                var body = Http1MessageBody.For(HttpVersion.Http11, new HttpRequestHeaders { HeaderConnection = "upgrade" }, input.Http1Connection);
 
                 // Add some input and read it to start PumpAsync
                 input.Add("a");
@@ -763,7 +763,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StartTimingReads(), Times.Never);
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.StopTimingReads(), Times.Never);
 
-                // Due to the limits set on Frame.RequestBodyPipe, backpressure should be triggered on every
+                // Due to the limits set on HttpProtocol.RequestBodyPipe, backpressure should be triggered on every
                 // write to that pipe. Verify that read timing pause and resume are not called on upgrade
                 // requests.
                 mockTimeoutControl.Verify(timeoutControl => timeoutControl.PauseTimingReads(), Times.Never);

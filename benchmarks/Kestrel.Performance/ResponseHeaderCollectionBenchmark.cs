@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         private static readonly byte[] _bytesServer = Encoding.ASCII.GetBytes("\r\nServer: Kestrel");
         private static readonly DateHeaderValueManager _dateHeaderValueManager = new DateHeaderValueManager();
-        private FrameResponseHeaders _responseHeadersDirect;
+        private HttpResponseHeaders _responseHeadersDirect;
         private HttpResponse _response;
 
         public enum BenchmarkTypes
@@ -172,21 +172,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         {
             var serviceContext = new ServiceContext
             {
-                HttpParserFactory = f => new HttpParser<FrameAdapter>(),
+                HttpParserFactory = f => new HttpParser<Http1ParsingHandler>(),
                 ServerOptions = new KestrelServerOptions()
             };
-            var frameContext = new FrameContext
+            var http1ConnectionContext = new Http1ConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
                 PipeFactory = new PipeFactory()
             };
 
-            var frame = new Frame<object>(application: null, frameContext: frameContext);
+            var http1Connection = new Http1Connection<object>(application: null, context: http1ConnectionContext);
 
-            frame.Reset();
-            _responseHeadersDirect = (FrameResponseHeaders)frame.ResponseHeaders;
-            var context = new DefaultHttpContext(frame);
+            http1Connection.Reset();
+            _responseHeadersDirect = (HttpResponseHeaders)http1Connection.ResponseHeaders;
+            var context = new DefaultHttpContext(http1Connection);
             _response = new DefaultHttpResponse(context);
 
             switch (Type)

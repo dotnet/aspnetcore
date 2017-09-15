@@ -15,7 +15,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     {
         private static Action<Exception, object> _completeTcs = CompleteTcs;
 
-        private static long _lastFrameConnectionId = long.MinValue;
+        private static long _lastHttpConnectionId = long.MinValue;
 
         private readonly IList<IConnectionAdapter> _connectionAdapters;
         private readonly ServiceContext _serviceContext;
@@ -36,12 +36,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             // This is a bit of a hack but it preserves the existing semantics
             var transportFeature = connectionContext.Features.Get<IConnectionTransportFeature>();
 
-            var frameConnectionId = Interlocked.Increment(ref _lastFrameConnectionId);
+            var httpConnectionId = Interlocked.Increment(ref _lastHttpConnectionId);
 
-            var frameConnectionContext = new FrameConnectionContext
+            var httpConnectionContext = new HttpConnectionContext
             {
                 ConnectionId = connectionContext.ConnectionId,
-                FrameConnectionId = frameConnectionId,
+                HttpConnectionId = httpConnectionId,
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
                 PipeFactory = connectionContext.PipeFactory,
@@ -56,16 +56,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 if (connectionFeature.LocalIpAddress != null)
                 {
-                    frameConnectionContext.LocalEndPoint = new IPEndPoint(connectionFeature.LocalIpAddress, connectionFeature.LocalPort);
+                    httpConnectionContext.LocalEndPoint = new IPEndPoint(connectionFeature.LocalIpAddress, connectionFeature.LocalPort);
                 }
 
                 if (connectionFeature.RemoteIpAddress != null)
                 {
-                    frameConnectionContext.RemoteEndPoint = new IPEndPoint(connectionFeature.RemoteIpAddress, connectionFeature.RemotePort);
+                    httpConnectionContext.RemoteEndPoint = new IPEndPoint(connectionFeature.RemoteIpAddress, connectionFeature.RemotePort);
                 }
             }
 
-            var connection = new FrameConnection(frameConnectionContext);
+            var connection = new HttpConnection(httpConnectionContext);
 
             var processingTask = connection.StartRequestProcessing(_application);
 
@@ -79,13 +79,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             inputTcs.Task.ContinueWith((task, state) =>
             {
-                ((FrameConnection)state).Abort(task.Exception?.InnerException);
+                ((HttpConnection)state).Abort(task.Exception?.InnerException);
             },
             connection, TaskContinuationOptions.ExecuteSynchronously);
 
             outputTcs.Task.ContinueWith((task, state) =>
             {
-                ((FrameConnection)state).OnConnectionClosed(task.Exception?.InnerException);
+                ((HttpConnection)state).OnConnectionClosed(task.Exception?.InnerException);
             },
             connection, TaskContinuationOptions.ExecuteSynchronously);
 

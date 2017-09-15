@@ -147,11 +147,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Https.Internal
         {
             /* If the Extended Key Usage extension is included, then we check that the serverAuth usage is included. (http://oid-info.com/get/1.3.6.1.5.5.7.3.1)
              * If the Extended Key Usage extension is not included, then we assume the certificate is allowed for all usages.
-             * 
+             *
              * See also https://blogs.msdn.microsoft.com/kaushal/2012/02/17/client-certificates-vs-server-certificates/
-             * 
+             *
              * From https://tools.ietf.org/html/rfc3280#section-4.2.1.13 "Certificate Extensions: Extended Key Usage"
-             * 
+             *
              * If the (Extended Key Usage) extension is present, then the certificate MUST only be used
              * for one of the purposes indicated.  If multiple purposes are
              * indicated the application need not recognize all purposes indicated,

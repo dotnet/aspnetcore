@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowAfterAbort()
         {
-            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IFrameControl>());
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
             var (request, response) = streams.Start(new MockMessageBody());
 
             var ex = new Exception("My error");
@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowOnAbortAfterUpgrade()
         {
-            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IFrameControl>());
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
             var (request, response) = streams.Start(new MockMessageBody(upgradeable: true));
 
             var upgrade = streams.Upgrade();
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         [Fact]
         public async Task StreamsThrowOnUpgradeAfterAbort()
         {
-            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IFrameControl>());
+            var streams = new Streams(Mock.Of<IHttpBodyControlFeature>(), Mock.Of<IHttpResponseControl>());
 
             var (request, response) = streams.Start(new MockMessageBody(upgradeable: true));
             var ex = new Exception("My error");
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await upgrade.WriteAsync(new byte[1], 0, 1);
         }
 
-        private class MockMessageBody : MessageBody
+        private class MockMessageBody : Http1MessageBody
         {
             public MockMessageBody(bool upgradeable = false)
                 : base(null)

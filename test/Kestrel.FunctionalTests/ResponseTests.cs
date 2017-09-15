@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         context.Response.OnStarting(() => Task.Run(() => onStartingCalled = true));
                         context.Response.OnCompleted(() => Task.Run(() => onCompletedCalled = true));
 
-                        // Prevent OnStarting call (see Frame<T>.ProcessRequestsAsync()).
+                        // Prevent OnStarting call (see HttpProtocol.ProcessRequestsAsync()).
                         throw new Exception();
                     });
                 });
@@ -501,7 +501,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "");
 
                     // Wait for message to be logged before disposing the socket.
-                    // Disposing the socket will abort the connection and Frame._requestAborted
+                    // Disposing the socket will abort the connection and HttpProtocol._requestAborted
                     // might be 1 by the time ProduceEnd() gets called and the message is logged.
                     await logTcs.Task.TimeoutAfter(TimeSpan.FromSeconds(10));
                 }
@@ -736,7 +736,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 httpContext.Response.ContentLength = 12;
                 await httpContext.Response.WriteAsync("hello,");
 
-                // Wait until the request is aborted so we know Frame will skip the response content length check.
+                // Wait until the request is aborted so we know HttpProtocol will skip the response content length check.
                 Assert.True(await requestAborted.WaitAsync(TimeSpan.FromSeconds(10)));
             }, new TestServiceContext { Log = mockTrace.Object }))
             {
@@ -1526,12 +1526,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "a",
                         "");
 
-                    // This will be consumed by Frame when it attempts to
+                    // This will be consumed by Http1Connection when it attempts to
                     // consume the request body and will cause an error.
                     await connection.Send(
                         "gg");
 
-                    // If 100 Continue sets Frame.HasResponseStarted to true,
+                    // If 100 Continue sets HttpProtocol.HasResponseStarted to true,
                     // a success response will be produced before the server sees the
                     // bad chunk header above, making this test fail.
                     await connection.ReceiveForcedEnd(
@@ -2215,7 +2215,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 if (firstRequest)
                 {
                     originalResponseHeaders = responseFeature.Headers;
-                    responseFeature.Headers = new FrameResponseHeaders();
+                    responseFeature.Headers = new HttpResponseHeaders();
                     firstRequest = false;
                 }
                 else

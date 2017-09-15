@@ -18,7 +18,7 @@
 
   <PropertyGroup>
     <StartWorkingDirectory>$(MSBuildThisFileDirectory)..\..\src\Kestrel.Core</StartWorkingDirectory>
-    <StartArguments>Internal/Http/FrameHeaders.Generated.cs Internal/Http/Frame.Generated.cs Internal/Http2/Http2Stream.Generated.cs Internal/Infrastructure/HttpUtilities.Generated.cs</StartArguments>
+    <StartArguments>Internal/Http/HttpHeaders.Generated.cs Internal/Http/HttpProtocol.Generated.cs Internal/Infrastructure/HttpUtilities.Generated.cs</StartArguments>
   </PropertyGroup>
 
 </Project>

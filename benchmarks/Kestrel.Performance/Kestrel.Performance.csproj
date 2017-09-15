@@ -14,7 +14,7 @@
 
   <ItemGroup>
     <Compile Include="..\..\test\shared\TestApplicationErrorLogger.cs" />
-    <Compile Include="..\..\test\shared\TestFrame.cs" />
+    <Compile Include="..\..\test\shared\TestHttp1Connection.cs" />
     <Compile Include="..\..\test\shared\TestKestrelTrace.cs" />
   </ItemGroup>
 

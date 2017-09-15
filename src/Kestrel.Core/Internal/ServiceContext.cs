@@ -13,13 +13,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         public IThreadPool ThreadPool { get; set; }
 
-        public Func<FrameAdapter, IHttpParser<FrameAdapter>> HttpParserFactory { get; set; }
+        public Func<Http1ParsingHandler, IHttpParser<Http1ParsingHandler>> HttpParserFactory { get; set; }
 
         public ISystemClock SystemClock { get; set; }
 
         public DateHeaderValueManager DateHeaderValueManager { get; set; }
 
-        public FrameConnectionManager ConnectionManager { get; set; }
+        public HttpConnectionManager ConnectionManager { get; set; }
 
         public KestrelServerOptions ServerOptions { get; set; }
     }

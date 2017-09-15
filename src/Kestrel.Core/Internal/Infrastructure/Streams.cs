@@ -8,23 +8,23 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure
 {
-    internal class Streams
+    public class Streams
     {
         private static readonly ThrowingWriteOnlyStream _throwingResponseStream
             = new ThrowingWriteOnlyStream(new InvalidOperationException(CoreStrings.ResponseStreamWasUpgraded));
-        private readonly FrameResponseStream _response;
-        private readonly FrameRequestStream _request;
+        private readonly HttpResponseStream _response;
+        private readonly HttpRequestStream _request;
         private readonly WrappingStream _upgradeableResponse;
-        private readonly FrameRequestStream _emptyRequest;
+        private readonly HttpRequestStream _emptyRequest;
         private readonly Stream _upgradeStream;
 
-        public Streams(IHttpBodyControlFeature bodyControl, IFrameControl frameControl)
+        public Streams(IHttpBodyControlFeature bodyControl, IHttpResponseControl httpResponseControl)
         {
-            _request = new FrameRequestStream(bodyControl);
-            _emptyRequest = new FrameRequestStream(bodyControl);
-            _response = new FrameResponseStream(bodyControl, frameControl);
+            _request = new HttpRequestStream(bodyControl);
+            _emptyRequest = new HttpRequestStream(bodyControl);
+            _response = new HttpResponseStream(bodyControl, httpResponseControl);
             _upgradeableResponse = new WrappingStream(_response);
-            _upgradeStream = new FrameDuplexStream(_request, _response);
+            _upgradeStream = new HttpUpgradeStream(_request, _response);
         }
 
         public Stream Upgrade()

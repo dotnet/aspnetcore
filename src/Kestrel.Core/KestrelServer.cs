@@ -44,9 +44,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             _transportFactory = transportFactory;
             ServiceContext = serviceContext;
 
-            var frameHeartbeatManager = new FrameHeartbeatManager(serviceContext.ConnectionManager);
+            var httpHeartbeatManager = new HttpHeartbeatManager(serviceContext.ConnectionManager);
             _heartbeat = new Heartbeat(
-                new IHeartbeatHandler[] { serviceContext.DateHeaderValueManager, frameHeartbeatManager },
+                new IHeartbeatHandler[] { serviceContext.DateHeaderValueManager, httpHeartbeatManager },
                 serviceContext.SystemClock, Trace);
 
             Features = new FeatureCollection();
@@ -68,7 +68,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             var serverOptions = options.Value ?? new KestrelServerOptions();
             var logger = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel");
             var trace = new KestrelTrace(logger);
-            var connectionManager = new FrameConnectionManager(
+            var connectionManager = new HttpConnectionManager(
                 trace,
                 serverOptions.Limits.MaxConcurrentUpgradedConnections);
 
@@ -94,7 +94,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
             return new ServiceContext
             {
                 Log = trace,
-                HttpParserFactory = frameParser => new HttpParser<FrameAdapter>(frameParser.Frame.ServiceContext.Log.IsEnabled(LogLevel.Information)),
+                HttpParserFactory = handler => new HttpParser<Http1ParsingHandler>(handler.Connection.ServiceContext.Log.IsEnabled(LogLevel.Information)),
                 ThreadPool = threadPool,
                 SystemClock = systemClock,
                 DateHeaderValueManager = dateHeaderValueManager,
@@ -111,7 +111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
 
         private IKestrelTrace Trace => ServiceContext.Log;
 
-        private FrameConnectionManager ConnectionManager => ServiceContext.ConnectionManager;
+        private HttpConnectionManager ConnectionManager => ServiceContext.ConnectionManager;
 
         public async Task StartAsync<TContext>(IHttpApplication<TContext> application, CancellationToken cancellationToken)
         {

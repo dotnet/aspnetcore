@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             string expectedRawTarget,
             string expectedRawPath,
 // This warns that theory methods should use all of their parameters,
-// but this method is using a shared data collection with FrameTests.TakeStartLineSetsFrameProperties and others.
+// but this method is using a shared data collection with Http1ConnectionTests.TakeStartLineSetsHttpProtocolProperties and others.
 #pragma warning disable xUnit1026
             string expectedDecodedPath,
             string expectedQueryString,

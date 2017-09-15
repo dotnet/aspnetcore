@@ -7,6 +7,7 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.Extensions.Logging;
 
@@ -50,10 +51,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             return Task.CompletedTask;
         }
 
-        public Task WriteHeadersAsync(int streamId, int statusCode, IHeaderDictionary headers)
+        public void WriteResponseHeaders(int streamId, int statusCode, IHeaderDictionary headers)
         {
-            var tasks = new List<Task>();
-
             lock (_writeLock)
             {
                 _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.NONE, streamId);
@@ -66,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     _outgoingFrame.HeadersFlags = Http2HeadersFrameFlags.END_HEADERS;
                 }
 
-                tasks.Add(WriteAsync(_outgoingFrame.Raw));
+                Append(_outgoingFrame.Raw);
 
                 while (!done)
                 {
@@ -80,10 +79,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         _outgoingFrame.ContinuationFlags = Http2ContinuationFrameFlags.END_HEADERS;
                     }
 
-                    tasks.Add(WriteAsync(_outgoingFrame.Raw));
+                    Append(_outgoingFrame.Raw);
                 }
-
-                return Task.WhenAll(tasks);
             }
         }
 
@@ -168,6 +165,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
         }
 
+        // Must be called with _writeLock
+        private void Append(ArraySegment<byte> data)
+        {
+            if (_completed)
+            {
+                return;
+            }
+
+            var writeableBuffer = _outputWriter.Alloc(1);
+            writeableBuffer.Write(data);
+            writeableBuffer.Commit();
+        }
+
+        // Must be called with _writeLock
         private async Task WriteAsync(ArraySegment<byte> data, CancellationToken cancellationToken = default(CancellationToken))
         {
             if (_completed)

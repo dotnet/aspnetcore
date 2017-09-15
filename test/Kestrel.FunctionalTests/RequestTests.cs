@@ -1111,7 +1111,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 if (firstRequest)
                 {
                     originalRequestHeaders = requestFeature.Headers;
-                    requestFeature.Headers = new FrameRequestHeaders();
+                    requestFeature.Headers = new HttpRequestHeaders();
                     firstRequest = false;
                 }
                 else
