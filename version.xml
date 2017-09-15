@@ -3,6 +3,6 @@
   <PropertyGroup>
     <KoreBuildChannel>dev</KoreBuildChannel>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>alpha1</VersionSuffix>
+    <VersionSuffix>alpha2</VersionSuffix>
   </PropertyGroup>
 </Project>
