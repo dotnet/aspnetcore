@@ -10,7 +10,7 @@ const babel      = require('gulp-babel');
 const tsProject = ts.createProject('./tsconfig.json');
 const clientOutDir = tsProject.options.outDir;
 const browserOutDir = clientOutDir + '/../browser/';
-const versionSuffix = '1.0.0-alpha1-final';
+const versionSuffix = '1.0.0-alpha2';
 
 gulp.task('clean', () => {
     return del([clientOutDir + '/..'], { force: true });

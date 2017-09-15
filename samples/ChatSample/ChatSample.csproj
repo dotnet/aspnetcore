@@ -40,7 +40,7 @@
   </ItemGroup>
 
   <Target Name="CopyTSClient" BeforeTargets="AfterBuild">
-    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\..\client-ts\dist\browser\signalr-client-1.0.0-alpha1-final.js" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-client" />
+    <Copy SourceFiles="$(MSBuildThisFileDirectory)..\..\client-ts\dist\browser\signalr-client-1.0.0-alpha2.js" DestinationFolder="$(MSBuildThisFileDirectory)wwwroot\lib\signalr-client" />
   </Target>
 
   <Target Name="BowerInstall" BeforeTargets="PrepareForPublish">
