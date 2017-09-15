@@ -5,6 +5,7 @@ using System;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -66,7 +67,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
             if (context.Request.Path.Equals(_options.Path))
             {
-                _logger.LogDebug(Strings.FormatMigrationsEndPointMiddleware_RequestPathMatched(context.Request.Path));
+                _logger.RequestPathMatched(context.Request.Path);
 
                 var db = await GetDbContext(context, _logger);
 
@@ -74,7 +75,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 {
                     try
                     {
-                        _logger.LogDebug(Strings.FormatMigrationsEndPointMiddleware_ApplyingMigrations(db.GetType().FullName));
+                        _logger.ApplyingMigrations(db.GetType().FullName);
 
                         db.Database.Migrate();
 
@@ -82,13 +83,13 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                         context.Response.Headers.Add("Pragma", new[] { "no-cache" });
                         context.Response.Headers.Add("Cache-Control", new[] { "no-cache" });
 
-                        _logger.LogDebug(Strings.FormatMigrationsEndPointMiddleware_Applied(db.GetType().FullName));
+                        _logger.MigrationsApplied(db.GetType().FullName);
                     }
                     catch (Exception ex)
                     {
                         var message = Strings.FormatMigrationsEndPointMiddleware_Exception(db.GetType().FullName) + ex;
 
-                        _logger.LogError(message);
+                        _logger.MigrationsEndPointMiddlewareException(db.GetType().FullName, ex);
 
                         throw new InvalidOperationException(message, ex);
                     }
@@ -107,7 +108,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
             if (string.IsNullOrWhiteSpace(contextTypeName))
             {
-                logger.LogError(Strings.MigrationsEndPointMiddleware_NoContextType);
+                logger.NoContextType();
 
                 await WriteErrorToResponse(context.Response, Strings.MigrationsEndPointMiddleware_NoContextType);
 
@@ -120,7 +121,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             {
                 var message = Strings.FormatMigrationsEndPointMiddleware_InvalidContextType(contextTypeName);
 
-                logger.LogError(message);
+                logger.InvalidContextType(contextTypeName);
 
                 await WriteErrorToResponse(context.Response, message);
 
@@ -133,7 +134,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             {
                 var message = Strings.FormatMigrationsEndPointMiddleware_ContextNotRegistered(contextType.FullName);
 
-                logger.LogError(message);
+                logger.ContextNotRegistered(contextType.FullName);
 
                 await WriteErrorToResponse(context.Response, message);
 

@@ -15,656 +15,574 @@ namespace Microsoft.AspNetCore.Diagnostics
         /// </summary>
         internal static string DiagnosticsPageHtml_Information
         {
-            get { return GetString("DiagnosticsPageHtml_Information"); }
+            get => GetString("DiagnosticsPageHtml_Information");
         }
 
         /// <summary>
         /// You are seeing this page because DiagnosticsPageMiddleware was added to your web application.
         /// </summary>
         internal static string FormatDiagnosticsPageHtml_Information()
-        {
-            return GetString("DiagnosticsPageHtml_Information");
-        }
+            => GetString("DiagnosticsPageHtml_Information");
 
         /// <summary>
         /// Test Error Message
         /// </summary>
         internal static string DiagnosticsPageHtml_TestErrorMessage
         {
-            get { return GetString("DiagnosticsPageHtml_TestErrorMessage"); }
+            get => GetString("DiagnosticsPageHtml_TestErrorMessage");
         }
 
         /// <summary>
         /// Test Error Message
         /// </summary>
         internal static string FormatDiagnosticsPageHtml_TestErrorMessage()
-        {
-            return GetString("DiagnosticsPageHtml_TestErrorMessage");
-        }
+            => GetString("DiagnosticsPageHtml_TestErrorMessage");
 
         /// <summary>
         /// Test Error Page
         /// </summary>
         internal static string DiagnosticsPageHtml_TestErrorSection
         {
-            get { return GetString("DiagnosticsPageHtml_TestErrorSection"); }
+            get => GetString("DiagnosticsPageHtml_TestErrorSection");
         }
 
         /// <summary>
         /// Test Error Page
         /// </summary>
         internal static string FormatDiagnosticsPageHtml_TestErrorSection()
-        {
-            return GetString("DiagnosticsPageHtml_TestErrorSection");
-        }
+            => GetString("DiagnosticsPageHtml_TestErrorSection");
 
         /// <summary>
         /// Diagnostics Page
         /// </summary>
         internal static string DiagnosticsPageHtml_Title
         {
-            get { return GetString("DiagnosticsPageHtml_Title"); }
+            get => GetString("DiagnosticsPageHtml_Title");
         }
 
         /// <summary>
         /// Diagnostics Page
         /// </summary>
         internal static string FormatDiagnosticsPageHtml_Title()
-        {
-            return GetString("DiagnosticsPageHtml_Title");
-        }
+            => GetString("DiagnosticsPageHtml_Title");
 
         /// <summary>
         /// Cookies
         /// </summary>
         internal static string ErrorPageHtml_CookiesButton
         {
-            get { return GetString("ErrorPageHtml_CookiesButton"); }
+            get => GetString("ErrorPageHtml_CookiesButton");
         }
 
         /// <summary>
         /// Cookies
         /// </summary>
         internal static string FormatErrorPageHtml_CookiesButton()
-        {
-            return GetString("ErrorPageHtml_CookiesButton");
-        }
+            => GetString("ErrorPageHtml_CookiesButton");
 
         /// <summary>
         /// Headers
         /// </summary>
         internal static string ErrorPageHtml_HeadersButton
         {
-            get { return GetString("ErrorPageHtml_HeadersButton"); }
+            get => GetString("ErrorPageHtml_HeadersButton");
         }
 
         /// <summary>
         /// Headers
         /// </summary>
         internal static string FormatErrorPageHtml_HeadersButton()
-        {
-            return GetString("ErrorPageHtml_HeadersButton");
-        }
+            => GetString("ErrorPageHtml_HeadersButton");
 
         /// <summary>
         /// No cookie data.
         /// </summary>
         internal static string ErrorPageHtml_NoCookieData
         {
-            get { return GetString("ErrorPageHtml_NoCookieData"); }
+            get => GetString("ErrorPageHtml_NoCookieData");
         }
 
         /// <summary>
         /// No cookie data.
         /// </summary>
         internal static string FormatErrorPageHtml_NoCookieData()
-        {
-            return GetString("ErrorPageHtml_NoCookieData");
-        }
+            => GetString("ErrorPageHtml_NoCookieData");
 
         /// <summary>
         /// No header data.
         /// </summary>
         internal static string ErrorPageHtml_NoHeaderData
         {
-            get { return GetString("ErrorPageHtml_NoHeaderData"); }
+            get => GetString("ErrorPageHtml_NoHeaderData");
         }
 
         /// <summary>
         /// No header data.
         /// </summary>
         internal static string FormatErrorPageHtml_NoHeaderData()
-        {
-            return GetString("ErrorPageHtml_NoHeaderData");
-        }
+            => GetString("ErrorPageHtml_NoHeaderData");
 
         /// <summary>
         /// No QueryString data.
         /// </summary>
         internal static string ErrorPageHtml_NoQueryStringData
         {
-            get { return GetString("ErrorPageHtml_NoQueryStringData"); }
+            get => GetString("ErrorPageHtml_NoQueryStringData");
         }
 
         /// <summary>
         /// No QueryString data.
         /// </summary>
         internal static string FormatErrorPageHtml_NoQueryStringData()
-        {
-            return GetString("ErrorPageHtml_NoQueryStringData");
-        }
+            => GetString("ErrorPageHtml_NoQueryStringData");
 
         /// <summary>
         /// Query
         /// </summary>
         internal static string ErrorPageHtml_QueryButton
         {
-            get { return GetString("ErrorPageHtml_QueryButton"); }
+            get => GetString("ErrorPageHtml_QueryButton");
         }
 
         /// <summary>
         /// Query
         /// </summary>
         internal static string FormatErrorPageHtml_QueryButton()
-        {
-            return GetString("ErrorPageHtml_QueryButton");
-        }
+            => GetString("ErrorPageHtml_QueryButton");
 
         /// <summary>
         /// Stack
         /// </summary>
         internal static string ErrorPageHtml_StackButton
         {
-            get { return GetString("ErrorPageHtml_StackButton"); }
+            get => GetString("ErrorPageHtml_StackButton");
         }
 
         /// <summary>
         /// Stack
         /// </summary>
         internal static string FormatErrorPageHtml_StackButton()
-        {
-            return GetString("ErrorPageHtml_StackButton");
-        }
+            => GetString("ErrorPageHtml_StackButton");
 
         /// <summary>
         /// Internal Server Error
         /// </summary>
         internal static string ErrorPageHtml_Title
         {
-            get { return GetString("ErrorPageHtml_Title"); }
+            get => GetString("ErrorPageHtml_Title");
         }
 
         /// <summary>
         /// Internal Server Error
         /// </summary>
         internal static string FormatErrorPageHtml_Title()
-        {
-            return GetString("ErrorPageHtml_Title");
-        }
+            => GetString("ErrorPageHtml_Title");
 
         /// <summary>
         /// An unhandled exception occurred while processing the request.
         /// </summary>
         internal static string ErrorPageHtml_UnhandledException
         {
-            get { return GetString("ErrorPageHtml_UnhandledException"); }
+            get => GetString("ErrorPageHtml_UnhandledException");
         }
 
         /// <summary>
         /// An unhandled exception occurred while processing the request.
         /// </summary>
         internal static string FormatErrorPageHtml_UnhandledException()
-        {
-            return GetString("ErrorPageHtml_UnhandledException");
-        }
+            => GetString("ErrorPageHtml_UnhandledException");
 
         /// <summary>
         /// Unknown location
         /// </summary>
         internal static string ErrorPageHtml_UnknownLocation
         {
-            get { return GetString("ErrorPageHtml_UnknownLocation"); }
+            get => GetString("ErrorPageHtml_UnknownLocation");
         }
 
         /// <summary>
         /// Unknown location
         /// </summary>
         internal static string FormatErrorPageHtml_UnknownLocation()
-        {
-            return GetString("ErrorPageHtml_UnknownLocation");
-        }
+            => GetString("ErrorPageHtml_UnknownLocation");
 
         /// <summary>
         /// Value
         /// </summary>
         internal static string ErrorPageHtml_ValueColumn
         {
-            get { return GetString("ErrorPageHtml_ValueColumn"); }
+            get => GetString("ErrorPageHtml_ValueColumn");
         }
 
         /// <summary>
         /// Value
         /// </summary>
         internal static string FormatErrorPageHtml_ValueColumn()
-        {
-            return GetString("ErrorPageHtml_ValueColumn");
-        }
+            => GetString("ErrorPageHtml_ValueColumn");
 
         /// <summary>
         /// Variable
         /// </summary>
         internal static string ErrorPageHtml_VariableColumn
         {
-            get { return GetString("ErrorPageHtml_VariableColumn"); }
+            get => GetString("ErrorPageHtml_VariableColumn");
         }
 
         /// <summary>
         /// Variable
         /// </summary>
         internal static string FormatErrorPageHtml_VariableColumn()
-        {
-            return GetString("ErrorPageHtml_VariableColumn");
-        }
+            => GetString("ErrorPageHtml_VariableColumn");
 
         /// <summary>
         /// The path must start with a '/'.
         /// </summary>
         internal static string Exception_PathMustStartWithSlash
         {
-            get { return GetString("Exception_PathMustStartWithSlash"); }
+            get => GetString("Exception_PathMustStartWithSlash");
         }
 
         /// <summary>
         /// The path must start with a '/'.
         /// </summary>
         internal static string FormatException_PathMustStartWithSlash()
-        {
-            return GetString("Exception_PathMustStartWithSlash");
-        }
+            => GetString("Exception_PathMustStartWithSlash");
 
         /// <summary>
         /// Name
         /// </summary>
         internal static string RuntimeInfoPage_PackageNameColumnName
         {
-            get { return GetString("RuntimeInfoPage_PackageNameColumnName"); }
+            get => GetString("RuntimeInfoPage_PackageNameColumnName");
         }
 
         /// <summary>
         /// Name
         /// </summary>
         internal static string FormatRuntimeInfoPage_PackageNameColumnName()
-        {
-            return GetString("RuntimeInfoPage_PackageNameColumnName");
-        }
+            => GetString("RuntimeInfoPage_PackageNameColumnName");
 
         /// <summary>
         /// Path
         /// </summary>
         internal static string RuntimeInfoPage_PackagePathColumnName
         {
-            get { return GetString("RuntimeInfoPage_PackagePathColumnName"); }
+            get => GetString("RuntimeInfoPage_PackagePathColumnName");
         }
 
         /// <summary>
         /// Path
         /// </summary>
         internal static string FormatRuntimeInfoPage_PackagePathColumnName()
-        {
-            return GetString("RuntimeInfoPage_PackagePathColumnName");
-        }
+            => GetString("RuntimeInfoPage_PackagePathColumnName");
 
         /// <summary>
         /// Packages:
         /// </summary>
         internal static string RuntimeInfoPage_Packages
         {
-            get { return GetString("RuntimeInfoPage_Packages"); }
+            get => GetString("RuntimeInfoPage_Packages");
         }
 
         /// <summary>
         /// Packages:
         /// </summary>
         internal static string FormatRuntimeInfoPage_Packages()
-        {
-            return GetString("RuntimeInfoPage_Packages");
-        }
+            => GetString("RuntimeInfoPage_Packages");
 
         /// <summary>
         /// Could not retrieve the list of loaded packages.
         /// </summary>
         internal static string RuntimeInfoPage_PackagesFail
         {
-            get { return GetString("RuntimeInfoPage_PackagesFail"); }
+            get => GetString("RuntimeInfoPage_PackagesFail");
         }
 
         /// <summary>
         /// Could not retrieve the list of loaded packages.
         /// </summary>
         internal static string FormatRuntimeInfoPage_PackagesFail()
-        {
-            return GetString("RuntimeInfoPage_PackagesFail");
-        }
+            => GetString("RuntimeInfoPage_PackagesFail");
 
         /// <summary>
         /// Version
         /// </summary>
         internal static string RuntimeInfoPage_PackageVersionColumnName
         {
-            get { return GetString("RuntimeInfoPage_PackageVersionColumnName"); }
+            get => GetString("RuntimeInfoPage_PackageVersionColumnName");
         }
 
         /// <summary>
         /// Version
         /// </summary>
         internal static string FormatRuntimeInfoPage_PackageVersionColumnName()
-        {
-            return GetString("RuntimeInfoPage_PackageVersionColumnName");
-        }
+            => GetString("RuntimeInfoPage_PackageVersionColumnName");
 
         /// <summary>
         /// Runtime Version:
         /// </summary>
         internal static string RuntimeInfoPage_RuntimeVersion
         {
-            get { return GetString("RuntimeInfoPage_RuntimeVersion"); }
+            get => GetString("RuntimeInfoPage_RuntimeVersion");
         }
 
         /// <summary>
         /// Runtime Version:
         /// </summary>
         internal static string FormatRuntimeInfoPage_RuntimeVersion()
-        {
-            return GetString("RuntimeInfoPage_RuntimeVersion");
-        }
+            => GetString("RuntimeInfoPage_RuntimeVersion");
 
         /// <summary>
         /// Could not determine the runtime version.
         /// </summary>
         internal static string RuntimeInfoPage_RuntimeVersionFail
         {
-            get { return GetString("RuntimeInfoPage_RuntimeVersionFail"); }
+            get => GetString("RuntimeInfoPage_RuntimeVersionFail");
         }
 
         /// <summary>
         /// Could not determine the runtime version.
         /// </summary>
         internal static string FormatRuntimeInfoPage_RuntimeVersionFail()
-        {
-            return GetString("RuntimeInfoPage_RuntimeVersionFail");
-        }
+            => GetString("RuntimeInfoPage_RuntimeVersionFail");
 
         /// <summary>
         /// Runtime Information
         /// </summary>
         internal static string RuntimeInfoPage_Title
         {
-            get { return GetString("RuntimeInfoPage_Title"); }
+            get => GetString("RuntimeInfoPage_Title");
         }
 
         /// <summary>
         /// Runtime Information
         /// </summary>
         internal static string FormatRuntimeInfoPage_Title()
-        {
-            return GetString("RuntimeInfoPage_Title");
-        }
+            => GetString("RuntimeInfoPage_Title");
 
         /// <summary>
         /// Welcome
         /// </summary>
         internal static string WelcomeHeader
         {
-            get { return GetString("WelcomeHeader"); }
+            get => GetString("WelcomeHeader");
         }
 
         /// <summary>
         /// Welcome
         /// </summary>
         internal static string FormatWelcomeHeader()
-        {
-            return GetString("WelcomeHeader");
-        }
+            => GetString("WelcomeHeader");
 
         /// <summary>
         /// Learn more about the Microsoft ASP.NET Core components
         /// </summary>
         internal static string WelcomeLearnMicrosoftAspNet
         {
-            get { return GetString("WelcomeLearnMicrosoftAspNet"); }
+            get => GetString("WelcomeLearnMicrosoftAspNet");
         }
 
         /// <summary>
         /// Learn more about the Microsoft ASP.NET Core components
         /// </summary>
         internal static string FormatWelcomeLearnMicrosoftAspNet()
-        {
-            return GetString("WelcomeLearnMicrosoftAspNet");
-        }
+            => GetString("WelcomeLearnMicrosoftAspNet");
 
         /// <summary>
         /// Browser
         /// </summary>
         internal static string WelcomePageImageText_Browser
         {
-            get { return GetString("WelcomePageImageText_Browser"); }
+            get => GetString("WelcomePageImageText_Browser");
         }
 
         /// <summary>
         /// Browser
         /// </summary>
         internal static string FormatWelcomePageImageText_Browser()
-        {
-            return GetString("WelcomePageImageText_Browser");
-        }
+            => GetString("WelcomePageImageText_Browser");
 
         /// <summary>
         /// Learn More
         /// </summary>
         internal static string WelcomePageImageText_LearnMore
         {
-            get { return GetString("WelcomePageImageText_LearnMore"); }
+            get => GetString("WelcomePageImageText_LearnMore");
         }
 
         /// <summary>
         /// Learn More
         /// </summary>
         internal static string FormatWelcomePageImageText_LearnMore()
-        {
-            return GetString("WelcomePageImageText_LearnMore");
-        }
+            => GetString("WelcomePageImageText_LearnMore");
 
         /// <summary>
         /// Light Bulb
         /// </summary>
         internal static string WelcomePageImageText_LightBulb
         {
-            get { return GetString("WelcomePageImageText_LightBulb"); }
+            get => GetString("WelcomePageImageText_LightBulb");
         }
 
         /// <summary>
         /// Light Bulb
         /// </summary>
         internal static string FormatWelcomePageImageText_LightBulb()
-        {
-            return GetString("WelcomePageImageText_LightBulb");
-        }
+            => GetString("WelcomePageImageText_LightBulb");
 
         /// <summary>
         /// Skyline
         /// </summary>
         internal static string WelcomePageImageText_Skyline
         {
-            get { return GetString("WelcomePageImageText_Skyline"); }
+            get => GetString("WelcomePageImageText_Skyline");
         }
 
         /// <summary>
         /// Skyline
         /// </summary>
         internal static string FormatWelcomePageImageText_Skyline()
-        {
-            return GetString("WelcomePageImageText_Skyline");
-        }
+            => GetString("WelcomePageImageText_Skyline");
 
         /// <summary>
         /// Your ASP.NET Core application has been successfully started
         /// </summary>
         internal static string WelcomeStarted
         {
-            get { return GetString("WelcomeStarted"); }
+            get => GetString("WelcomeStarted");
         }
 
         /// <summary>
         /// Your ASP.NET Core application has been successfully started
         /// </summary>
         internal static string FormatWelcomeStarted()
-        {
-            return GetString("WelcomeStarted");
-        }
+            => GetString("WelcomeStarted");
 
         /// <summary>
         /// Your ASP.NET Core application has been successfully started.
         /// </summary>
         internal static string WelcomeTitle
         {
-            get { return GetString("WelcomeTitle"); }
+            get => GetString("WelcomeTitle");
         }
 
         /// <summary>
         /// Your ASP.NET Core application has been successfully started.
         /// </summary>
         internal static string FormatWelcomeTitle()
-        {
-            return GetString("WelcomeTitle");
-        }
+            => GetString("WelcomeTitle");
 
         /// <summary>
         /// An error occurred during the compilation of a resource required to process this request. Please review the following specific error details and modify your source code appropriately.
         /// </summary>
         internal static string ErrorPageHtml_CompilationException
         {
-            get { return GetString("ErrorPageHtml_CompilationException"); }
+            get => GetString("ErrorPageHtml_CompilationException");
         }
 
         /// <summary>
         /// An error occurred during the compilation of a resource required to process this request. Please review the following specific error details and modify your source code appropriately.
         /// </summary>
         internal static string FormatErrorPageHtml_CompilationException()
-        {
-            return GetString("ErrorPageHtml_CompilationException");
-        }
+            => GetString("ErrorPageHtml_CompilationException");
 
         /// <summary>
         /// Operating System:
         /// </summary>
         internal static string RuntimeInfoPage_OperatingSystem
         {
-            get { return GetString("RuntimeInfoPage_OperatingSystem"); }
+            get => GetString("RuntimeInfoPage_OperatingSystem");
         }
 
         /// <summary>
         /// Operating System:
         /// </summary>
         internal static string FormatRuntimeInfoPage_OperatingSystem()
-        {
-            return GetString("RuntimeInfoPage_OperatingSystem");
-        }
+            => GetString("RuntimeInfoPage_OperatingSystem");
 
         /// <summary>
         /// Runtime Architecture:
         /// </summary>
         internal static string RuntimeInfoPage_RuntimeArchitecture
         {
-            get { return GetString("RuntimeInfoPage_RuntimeArchitecture"); }
+            get => GetString("RuntimeInfoPage_RuntimeArchitecture");
         }
 
         /// <summary>
         /// Runtime Architecture:
         /// </summary>
         internal static string FormatRuntimeInfoPage_RuntimeArchitecture()
-        {
-            return GetString("RuntimeInfoPage_RuntimeArchitecture");
-        }
+            => GetString("RuntimeInfoPage_RuntimeArchitecture");
 
         /// <summary>
         /// Runtime Type:
         /// </summary>
         internal static string RuntimeInfoPage_RuntimeType
         {
-            get { return GetString("RuntimeInfoPage_RuntimeType"); }
+            get => GetString("RuntimeInfoPage_RuntimeType");
         }
 
         /// <summary>
         /// Runtime Type:
         /// </summary>
         internal static string FormatRuntimeInfoPage_RuntimeType()
-        {
-            return GetString("RuntimeInfoPage_RuntimeType");
-        }
+            => GetString("RuntimeInfoPage_RuntimeType");
 
         /// <summary>
         /// Could not determine the operating system.
         /// </summary>
         internal static string RuntimeInfoPage_OperatingSystemFail
         {
-            get { return GetString("RuntimeInfoPage_OperatingSystemFail"); }
+            get => GetString("RuntimeInfoPage_OperatingSystemFail");
         }
 
         /// <summary>
         /// Could not determine the operating system.
         /// </summary>
         internal static string FormatRuntimeInfoPage_OperatingSystemFail()
-        {
-            return GetString("RuntimeInfoPage_OperatingSystemFail");
-        }
+            => GetString("RuntimeInfoPage_OperatingSystemFail");
 
         /// <summary>
         /// Could not determine the runtime architecture.
         /// </summary>
         internal static string RuntimeInfoPage_RuntimeArchitectureFail
         {
-            get { return GetString("RuntimeInfoPage_RuntimeArchitectureFail"); }
+            get => GetString("RuntimeInfoPage_RuntimeArchitectureFail");
         }
 
         /// <summary>
         /// Could not determine the runtime architecture.
         /// </summary>
         internal static string FormatRuntimeInfoPage_RuntimeArchitectureFail()
-        {
-            return GetString("RuntimeInfoPage_RuntimeArchitectureFail");
-        }
+            => GetString("RuntimeInfoPage_RuntimeArchitectureFail");
 
         /// <summary>
         /// Could not determine the runtime type.
         /// </summary>
         internal static string RuntimeInfoPage_RuntimeTypeFail
         {
-            get { return GetString("RuntimeInfoPage_RuntimeTypeFail"); }
+            get => GetString("RuntimeInfoPage_RuntimeTypeFail");
         }
 
         /// <summary>
         /// Could not determine the runtime type.
         /// </summary>
         internal static string FormatRuntimeInfoPage_RuntimeTypeFail()
-        {
-            return GetString("RuntimeInfoPage_RuntimeTypeFail");
-        }
+            => GetString("RuntimeInfoPage_RuntimeTypeFail");
 
         /// <summary>
         /// Environment:
         /// </summary>
         internal static string RuntimeInfoPage_Environment
         {
-            get { return GetString("RuntimeInfoPage_Environment"); }
+            get => GetString("RuntimeInfoPage_Environment");
         }
 
         /// <summary>
         /// Environment:
         /// </summary>
         internal static string FormatRuntimeInfoPage_Environment()
-        {
-            return GetString("RuntimeInfoPage_Environment");
-        }
+            => GetString("RuntimeInfoPage_Environment");
 
         private static string GetString(string name, params string[] formatterNames)
         {

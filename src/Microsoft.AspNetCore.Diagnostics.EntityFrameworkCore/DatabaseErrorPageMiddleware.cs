@@ -8,6 +8,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Internal;
 using Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore.Views;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -115,7 +116,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
                         if (context == null)
                         {
-                            _logger.LogError(Strings.FormatDatabaseErrorPageMiddleware_ContextNotRegistered(contextType.FullName));
+                            _logger.ContextNotRegisteredDatabaseErrorPageMiddleware(contextType.FullName);
                         }
                         else
                         {
@@ -123,7 +124,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
                             if (relationalDatabaseCreator == null)
                             {
-                                _logger.LogDebug(Strings.DatabaseErrorPage_NotRelationalDatabase);
+                                _logger.NotRelationalDatabase();
                             }
                             else
                             {
@@ -164,10 +165,7 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(
-                        eventId: 0,
-                        exception: e,
-                        message: Strings.DatabaseErrorPageMiddleware_Exception);
+                    _logger.DatabaseErrorPageMiddlewareException(e);
                 }
 
                 throw;
@@ -176,13 +174,13 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
         private bool ShouldDisplayErrorPage(Exception exception)
         {
-            _logger.LogDebug(Strings.FormatDatabaseErrorPage_AttemptingToMatchException(exception.GetType()));
+            _logger.AttemptingToMatchException(exception.GetType());
 
             var lastRecordedException = _localDiagnostic.Value.Exception;
 
             if (lastRecordedException == null)
             {
-                _logger.LogDebug(Strings.DatabaseErrorPage_NoRecordedException);
+                _logger.NoRecordedException();
 
                 return false;
             }
@@ -196,12 +194,12 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
 
             if (!match)
             {
-                _logger.LogDebug(Strings.DatabaseErrorPage_NoMatch);
+                _logger.NoMatch();
 
                 return false;
             }
 
-            _logger.LogDebug(Strings.DatabaseErrorPage_Matched);
+            _logger.Matched();
 
             return true;
         }
@@ -219,17 +217,17 @@ namespace Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore
             switch (keyValuePair.Value)
             {
                 case DbContextErrorEventData contextErrorEventData:
-                {
-                    _localDiagnostic.Value.Hold(contextErrorEventData.Exception, contextErrorEventData.Context.GetType());
+                    {
+                        _localDiagnostic.Value.Hold(contextErrorEventData.Exception, contextErrorEventData.Context.GetType());
 
-                    break;
-                }
+                        break;
+                    }
                 case DbContextTypeErrorEventData contextTypeErrorEventData:
-                {
-                    _localDiagnostic.Value.Hold(contextTypeErrorEventData.Exception, contextTypeErrorEventData.ContextType);
+                    {
+                        _localDiagnostic.Value.Hold(contextTypeErrorEventData.Exception, contextTypeErrorEventData.ContextType);
 
-                    break;
-                }
+                        break;
+                    }
             }
         }
 

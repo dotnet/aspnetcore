@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.Internal;
 using Microsoft.AspNetCore.Diagnostics.RazorViews;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Diagnostics
             IOptions<DeveloperExceptionPageOptions> options,
             ILoggerFactory loggerFactory,
             IHostingEnvironment hostingEnvironment,
-            System.Diagnostics.DiagnosticSource diagnosticSource)
+            DiagnosticSource diagnosticSource)
         {
             if (next == null)
             {
@@ -75,11 +75,11 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
             catch (Exception ex)
             {
-                _logger.LogError(0, ex, "An unhandled exception has occurred while executing the request");
+                _logger.UnhandledException(ex);
 
                 if (context.Response.HasStarted)
                 {
-                    _logger.LogWarning("The response has already started, the error page middleware will not be executed.");
+                    _logger.ResponseStartedErrorPageMiddleware();
                     throw;
                 }
 
@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 catch (Exception ex2)
                 {
                     // If there's a Exception while generating the error page, re-throw the original exception.
-                    _logger.LogError(0, ex2, "An exception was thrown attempting to display the error page.");
+                    _logger.DisplayErrorPageException(ex2);
                 }
                 throw;
             }

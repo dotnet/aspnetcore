@@ -118,7 +118,7 @@
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
   <data name="DatabaseErrorPageMiddleware_ContextNotRegistered" xml:space="preserve">
-    <value>The context type '{0}' was not found in services. This usually means the context was not registered in services during startup. You probably want to call AddScoped&lt;{0}&gt;() inside the UseServices(...) call in your application startup code. Skipping display of the database error page.</value>
+    <value>The context type '{0}' was not found in services. This usually means the context was not registered in services during startup. You probably want to call AddScoped&lt;&gt;() inside the UseServices(...) call in your application startup code. Skipping display of the database error page.</value>
   </data>
   <data name="DatabaseErrorPageMiddleware_Exception" xml:space="preserve">
     <value>An exception occurred while calculating the database error page content. Skipping display of the database error page.</value>
@@ -165,12 +165,6 @@
   <data name="DatabaseErrorPage_ApplyMigrationsCommandCLI" xml:space="preserve">
     <value>&gt; dotnet ef database update</value>
   </data>
-  <data name="MigrationsEndPointMiddleware_Applied" xml:space="preserve">
-    <value>Migrations successfully applied for context '{0}'.</value>
-  </data>
-  <data name="MigrationsEndPointMiddleware_ApplyingMigrations" xml:space="preserve">
-    <value>Request is valid, applying migrations for context '{0}'.</value>
-  </data>
   <data name="MigrationsEndPointMiddleware_ContextNotRegistered" xml:space="preserve">
     <value>The context type '{0}' was not found in services. This usually means the context was not registered in services during startup. You probably want to call AddScoped&lt;{0}&gt;() inside the UseServices(...) call in your application startup code.</value>
   </data>
@@ -183,26 +177,11 @@
   <data name="MigrationsEndPointMiddleware_NoContextType" xml:space="preserve">
     <value>No context type was specified. Ensure the form data from the request includes a contextTypeName value, specifying the context to apply migrations for.</value>
   </data>
-  <data name="MigrationsEndPointMiddleware_RequestPathMatched" xml:space="preserve">
-    <value>Request path matched the path configured for this migrations endpoint ({0}). Attempting to process the migrations request.</value>
-  </data>
   <data name="DatabaseErrorPage_Title" xml:space="preserve">
     <value>A database operation failed while processing the request.</value>
   </data>
-  <data name="DatabaseErrorPage_AttemptingToMatchException" xml:space="preserve">
-    <value>{0} occurred, checking if Entity Framework recorded this exception as resulting from a failed database operation.</value>
-  </data>
-  <data name="DatabaseErrorPage_Matched" xml:space="preserve">
-    <value>Entity Framework recorded that the current exception was due to a failed database operation. Attempting to show database error page.</value>
-  </data>
   <data name="DatabaseErrorPage_NoRecordedException" xml:space="preserve">
     <value>Entity Framework did not record any exceptions due to failed database operations. This means the current exception is not a failed Entity Framework database operation, or the current exception occurred from a DbContext that was not obtained from request services.</value>
-  </data>
-  <data name="DatabaseErrorPage_NotRelationalDatabase" xml:space="preserve">
-    <value>The target data store is not a relational database. Skipping the database error page.</value>
-  </data>
-  <data name="DatabaseErrorPage_NoMatch" xml:space="preserve">
-    <value>The current exception (and its inner exceptions) do not match the last exception Entity Framework recorded due to a failed database operation. This means the database operation exception was handled and another exception occurred later in the request.</value>
   </data>
   <data name="DatabaseErrorPage_AddMigrationCommandPMC" xml:space="preserve">
     <value>PM&gt; Add-Migration [migration name]</value>

@@ -5,6 +5,7 @@ using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics.Internal;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -45,11 +46,11 @@ namespace Microsoft.AspNetCore.Diagnostics
             }
             catch (Exception ex)
             {
-                _logger.LogError(0, ex, "An unhandled exception has occurred: " + ex.Message);
+                _logger.UnhandledException(ex);
                 // We can't do anything if the response has already started, just abort.
                 if (context.Response.HasStarted)
                 {
-                    _logger.LogWarning("The response has already started, the error handler will not be executed.");
+                    _logger.ResponseStartedErrorHandler();
                     throw;
                 }
 
@@ -84,7 +85,7 @@ namespace Microsoft.AspNetCore.Diagnostics
                 catch (Exception ex2)
                 {
                     // Suppress secondary exceptions, re-throw the original.
-                    _logger.LogError(0, ex2, "An exception was thrown attempting to execute the error handler.");
+                    _logger.ErrorHandlerException(ex2);
                 }
                 finally
                 {
