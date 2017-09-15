@@ -34,7 +34,9 @@ describe('connection', function () {
     eachTransport(function (transportType) {
         it("over " + signalR.TransportType[transportType] + " can send and receive messages", function (done) {
             var message = "Hello World!";
-            var connection = new signalR.HttpConnection(ECHOENDPOINT_URL, {
+            // the url should be resolved relative to the document.location.host
+            // and the leading '/' should be automatically added to the url
+            var connection = new signalR.HttpConnection("echo", {
                 transport: transportType,
                 logging: signalR.LogLevel.Trace
             });
