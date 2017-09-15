@@ -18,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
     [HtmlTargetElement("input", Attributes = ForAttributeName, TagStructure = TagStructure.WithoutEndTag)]
     public class InputTagHelper : TagHelper
     {
+        internal const string UseDateTimeLocalTypeForDateTimeOffsetSwitch = "Switch.Microsoft.AspNetCore.Mvc.UseDateTimeLocalTypeForDateTimeOffset";
         private const string ForAttributeName = "asp-for";
         private const string FormatAttributeName = "asp-format";
 
@@ -62,6 +63,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
                 { "datetime-local", "{0:yyyy-MM-ddTHH:mm:ss.fff}" },
                 { "time", "{0:HH:mm:ss.fff}" },
             };
+
+        static InputTagHelper()
+        {
+            if (AppContext.TryGetSwitch(UseDateTimeLocalTypeForDateTimeOffsetSwitch, out var enabled) && enabled)
+            {
+                _defaultInputTypes.Remove(nameof(DateTimeOffset));
+            }
+        }
 
         /// <summary>
         /// Creates a new <see cref="InputTagHelper"/>.
@@ -393,8 +402,14 @@ namespace Microsoft.AspNetCore.Mvc.TagHelpers
             {
                 // Rfc3339 mode _may_ override EditFormatString in a limited number of cases. Happens only when
                 // EditFormatString has a default format i.e. came from a [DataType] attribute.
+                //
+                // First condition may occur when Switch.Microsoft.AspNetCore.Mvc.UseDateTimeLocalTypeForDateTimeOffset
+                // is true in extremely rare cases: The <input/> element for a DateTimeOffset expression must have
+                // type ="text". Checking the switch again to remove that case.
                 if (string.Equals("text", inputType) &&
-                    string.Equals(nameof(DateTimeOffset), inputTypeHint, StringComparison.OrdinalIgnoreCase))
+                    string.Equals(nameof(DateTimeOffset), inputTypeHint, StringComparison.OrdinalIgnoreCase) &&
+                    !(AppContext.TryGetSwitch(UseDateTimeLocalTypeForDateTimeOffsetSwitch, out var enabled) &&
+                      enabled))
                 {
                     // Auto-select a format that round-trips Offset and sub-Second values in a DateTimeOffset. Not
                     // done if user chose the "text" type in .cshtml file or with data annotations i.e. when

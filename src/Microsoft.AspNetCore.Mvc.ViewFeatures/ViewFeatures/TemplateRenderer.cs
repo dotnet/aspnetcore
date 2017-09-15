@@ -17,9 +17,10 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
 {
     public class TemplateRenderer
     {
+        public const string IEnumerableOfIFormFileName = "IEnumerable`" + nameof(IFormFile);
+        internal const string UseDateTimeLocalTypeForDateTimeOffsetSwitch = "Switch.Microsoft.AspNetCore.Mvc.UseDateTimeLocalTypeForDateTimeOffset";
         private const string DisplayTemplateViewPath = "DisplayTemplates";
         private const string EditorTemplateViewPath = "EditorTemplates";
-        public const string IEnumerableOfIFormFileName = "IEnumerable`" + nameof(IFormFile);
 
         private static readonly Dictionary<string, Func<IHtmlHelper, IHtmlContent>> _defaultDisplayActions =
             new Dictionary<string, Func<IHtmlHelper, IHtmlContent>>(StringComparer.OrdinalIgnoreCase)
@@ -74,6 +75,14 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures.Internal
         private readonly ViewDataDictionary _viewData;
         private readonly string _templateName;
         private readonly bool _readOnly;
+
+        static TemplateRenderer()
+        {
+            if (AppContext.TryGetSwitch(UseDateTimeLocalTypeForDateTimeOffsetSwitch, out var enabled) && enabled)
+            {
+                _defaultEditorActions.Remove(nameof(DateTimeOffset));
+            }
+        }
 
         public TemplateRenderer(
             IViewEngine viewEngine,
