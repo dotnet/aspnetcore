@@ -7,7 +7,6 @@
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
     <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)</_DependencyPackagesDirectory>
-    <_RestoreGraphSpecsDirectory>$(RepositoryRoot)obj\package-specs\</_RestoreGraphSpecsDirectory>
 
     <_RepositoryListFileName>Repositories.props</_RepositoryListFileName>
     <_DefaultRepositoryList>$(MSBuildThisFileDirectory)$(_RepositoryListFileName)</_DefaultRepositoryList>
@@ -20,14 +19,13 @@
 
     <PrepareDependsOn>$(PrepareDependsOn);CleanUniverseArtifacts</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanUniverseArtifacts</CleanDependsOn>
-    <BuildDependsOn>$(BuildDependsOn);CloneRepositories;BuildRepositories</BuildDependsOn>
+    <BuildDependsOn>$(BuildDependsOn);BuildRepositories</BuildDependsOn>
   </PropertyGroup>
 
   <Import Project="$(_RepositoryListToImport)" />
 
   <Target Name="CleanUniverseArtifacts">
     <RemoveDir Directories="$(RepositoryRoot)obj" Condition="Exists('$(RepositoryRoot)obj')" />
-    <RemoveDir Directories="$(_CloneRepositoryRoot)" Condition="Exists('$(_CloneRepositoryRoot)')" />
   </Target>
 
   <Target Name="_PrepareRepositories">
@@ -107,48 +105,43 @@
       Condition="'$(CloneRepositoryCommit)'!=''" />
   </Target>
 
-  <Target Name="PrepareBuildGraph" DependsOnTargets="_PrepareRepositories">
-    <RepoTasks.VerifyBuildGraph
-      BuildRepositories="@(Repositories)"
-      NoBuildRepositories="@(VerifyRepositories)">
-
-      <!-- TODO pass this into the PinVersion step -->
-      <Output TaskParameter="PackagesToBeProduced" ItemName="PackagesToBeProduced" />
-    </RepoTasks.VerifyBuildGraph>
-  </Target>
-
   <Target Name="BuildRepositories"
-     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
+     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;Graph;_BuildRepositories" />
 
-  <Target Name="_PrepareRestoreGraphSpecs" DependsOnTargets="_PrepareRepositories">
+  <Target Name="ResolveSolutions" DependsOnTargets="_PrepareRepositories">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="ResolveSolutions"
+             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(Repository.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="Solution" />
+    </MSBuild>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="ResolveSolutions"
+             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(VerifyRepository.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" />
+    </MSBuild>
+
     <ItemGroup>
-      <Solution Include="$(_CloneRepositoryRoot)%(_CloneRepositories.Identity)\*.sln">
-        <Repository>%(Repository.Identity)</Repository>
-      </Solution>
-
-      <Solution>
-        <AdditionalProperties>RestoreGraphOutputPath=$(_RestoreGraphSpecsDirectory)%(Solution.Repository)\%(Solution.FileName)%(Solution.Extension).json</AdditionalProperties>
-      </Solution>
-
-      <GraphSpecInputs Include="
-        @(Solution);
-        $(_CloneRepositoryRoot)**\*.csproj;
-        $(_CloneRepositoryRoot)**\dependencies.props" />
-      <GraphSpecOutputs Include="$(_RestoreGraphSpecsDirectory)%(Solution.Repository)\%(Solution.FileName)%(Solution.Extension).json" />
+      <Solution Update="@(Solution)" Build="true" />
+      <_NoBuildSolution Update="@(_NoBuildSolution)" Build="false" />
+      <Solution Include="@(_NoBuildSolution)" />
     </ItemGroup>
+
+    <Error Text="No solutions were found in '$(_CloneRepositoryRoot)'" Condition="@(Solution->Count()) == 0" />
   </Target>
 
-  <Target Name="_GenerateRestoreGraphSpecs" DependsOnTargets="_PrepareRestoreGraphSpecs" Inputs="@(GraphSpecInputs)" Outputs="@(GraphSpecOutputs)">
-    <MSBuild
-      Projects="@(Solution)"
-      Targets="GenerateRestoreGraphFile"
-      BuildInParallel="$(BuildInParallel)" />
-  </Target>
+  <Target Name="Graph" DependsOnTargets="ResolveSolutions">
+    <RepoTasks.AnalyzeBuildGraph
+      Solutions="@(Solution)"
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber)">
+      <Output TaskParameter="PackagesProduced" ItemName="PackagesProduced" />
+      <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
+    </RepoTasks.AnalyzeBuildGraph>
 
-  <Target Name="_GenerateBuildGraph" DependsOnTargets="_GenerateRestoreGraphSpecs">
-    <RepoTasks.CalculateBuildGraph Repositories="@(Repository)" StartGraphAt="$(BuildGraphOf)" PackageSpecsDirectory="$(_RestoreGraphSpecsDirectory)">
-      <Output TaskParameter="RepositoriesToBuildInOrder" ItemName="RepositoryToBuildInOrder" />
-    </RepoTasks.CalculateBuildGraph>
+    <Message Text="Packages that will be produced:" Importance="High" />
+    <Message Text="  - %(PackagesProduced.Identity)/%(Version)" Importance="High" />
   </Target>
 
   <Target Name="_UpdateNuGetConfig">

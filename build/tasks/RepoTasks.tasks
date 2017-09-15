@@ -4,6 +4,6 @@
   </PropertyGroup>
 
   <UsingTask TaskName="RepoTasks.CalculateBuildGraph" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.VerifyBuildGraph" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.AnalyzeBuildGraph" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.PinVersions" AssemblyFile="$(_RepoTaskAssembly)" />
 </Project>

@@ -2,12 +2,12 @@
   <Target Name="_BuildRepositories">
     <ItemGroup>
       <BatchedRepository Include="$(MSBuildProjectFullPath)">
-        <BuildGroup>%(RepositoryToBuildInOrder.Order)</BuildGroup>
-        <Repository>%(RepositoryToBuildInOrder.Identity)</Repository>
+        <BuildGroup>%(RepositoryBuildOrder.Order)</BuildGroup>
+        <Repository>%(RepositoryBuildOrder.Identity)</Repository>
         <AdditionalProperties>
-          RepositoryToBuild=%(RepositoryToBuildInOrder.Identity);
-          BuildRepositoryRoot=%(RepositoryToBuildInOrder.RepositoryPath)\;
-          CommitHash=%(RepositoryToBuildInOrder.Commit)
+          RepositoryToBuild=%(RepositoryBuildOrder.Identity);
+          BuildRepositoryRoot=%(RepositoryBuildOrder.RepositoryPath)\;
+          CommitHash=%(RepositoryBuildOrder.Commit)
         </AdditionalProperties>
       </BatchedRepository>
     </ItemGroup>
