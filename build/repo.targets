@@ -108,7 +108,14 @@
   <Target Name="BuildRepositories"
      DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;Graph;_BuildRepositories" />
 
-  <Target Name="ResolveSolutions" DependsOnTargets="_PrepareRepositories">
+  <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="GetArtifactInfo"
+             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(Repository.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
+    </MSBuild>
+
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
              Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(Repository.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
@@ -132,16 +139,16 @@
     <Error Text="No solutions were found in '$(_CloneRepositoryRoot)'" Condition="@(Solution->Count()) == 0" />
   </Target>
 
-  <Target Name="Graph" DependsOnTargets="ResolveSolutions">
+  <Target Name="Graph" DependsOnTargets="ResolveRepoInfo">
     <RepoTasks.AnalyzeBuildGraph
       Solutions="@(Solution)"
+      Artifacts="@(ArtifactInfo)"
       Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber)">
-      <Output TaskParameter="PackagesProduced" ItemName="PackagesProduced" />
       <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
     </RepoTasks.AnalyzeBuildGraph>
 
     <Message Text="Packages that will be produced:" Importance="High" />
-    <Message Text="  - %(PackagesProduced.Identity)/%(Version)" Importance="High" />
+    <Message Text="  - %(ArtifactInfo.PackageId)/%(Version)" Importance="High" Condition="'%(ArtifactType)' == 'NuGetPackage'" />
   </Target>
 
   <Target Name="_UpdateNuGetConfig">

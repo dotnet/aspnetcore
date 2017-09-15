@@ -98,7 +98,7 @@ namespace RepoTasks.ProjectModel
             });
 
             timer.Stop();
-            _logger.LogMessage(MessageImportance.Normal, $"Finished design-time build in {timer.ElapsedMilliseconds}ms");
+            _logger.LogMessage(MessageImportance.High, $"Finished design-time build in {timer.ElapsedMilliseconds}ms");
             return solutions.ToArray();
         }
 

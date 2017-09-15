@@ -9,6 +9,7 @@ using System.IO;
 using System.Threading;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using NuGet.Frameworks;
 using RepoTools.BuildGraph;
 using RepoTasks.ProjectModel;
 using RepoTasks.Utilities;
@@ -26,15 +27,12 @@ namespace RepoTasks
         public ITaskItem[] Solutions { get; set; }
 
         [Required]
+        public ITaskItem[] Artifacts { get; set; }
+
+        [Required]
         public string Properties { get; set; }
 
         public string StartGraphAt { get; set; }
-
-        /// <summary>
-        /// New packages we are compiling. Used in the pin tool.
-        /// </summary>
-        [Output]
-        public ITaskItem[] PackagesProduced { get; set; }
 
         /// <summary>
         /// The order in which to build repositories
@@ -49,6 +47,8 @@ namespace RepoTasks
 
         public override bool Execute()
         {
+            var packageArtifacts = GetPackageInfo(Artifacts);
+
             var factory = new SolutionInfoFactory(Log, BuildEngine5);
             var props = MSBuildListSplitter.GetNamedProperties(Properties);
 
@@ -63,8 +63,7 @@ namespace RepoTasks
             }
 
             EnsureConsistentGraph(solutions);
-            PackagesProduced = GetPackagesProduced(solutions);
-            RepositoryBuildOrder = GetRepositoryBuildOrder(solutions.Where(s => s.ShouldBuild));
+            RepositoryBuildOrder = GetRepositoryBuildOrder(packageArtifacts, solutions.Where(s => s.ShouldBuild));
 
             return !Log.HasLoggedErrors;
         }
@@ -74,43 +73,47 @@ namespace RepoTasks
             // TODO
         }
 
-        private ITaskItem[] GetPackagesProduced(IEnumerable<SolutionInfo> solutions)
+        private IEnumerable<(PackageInfo, string repoName)> GetPackageInfo(IEnumerable<ITaskItem> items)
         {
-            return solutions
-                .Where(s => s.ShouldBuild)
-                .SelectMany(p => p.Projects)
-                .Where(p => p.IsPackable)
-                .Select(p => new TaskItem(p.PackageId, new Hashtable
+            return items
+                .Where(a => "NuGetPackage".Equals(a.GetMetadata("ArtifactType"), StringComparison.OrdinalIgnoreCase))
+                .Select(a =>
                 {
-                    ["Version"] = p.PackageVersion
-                }))
-                .ToArray();
+                    var info = new PackageInfo(
+                        a.GetMetadata("PackageId"),
+                        a.GetMetadata("Version"),
+                        string.IsNullOrEmpty(a.GetMetadata("TargetFramework"))
+                            ? MSBuildListSplitter.SplitItemList(a.GetMetadata("TargetFramework")).Select(s => NuGetFramework.Parse(s)).ToArray()
+                            : new [] { NuGetFramework.Parse(a.GetMetadata("TargetFramework")) },
+                        Path.GetDirectoryName(a.ItemSpec),
+                        a.GetMetadata("PackageType"));
+
+                    var repoName = Path.GetFileName(a.GetMetadata("RepositoryRoot").TrimEnd(new [] { '\\', '/' }));
+                    return (info, repoName);
+                });
         }
 
-        private ITaskItem[] GetRepositoryBuildOrder(IEnumerable<SolutionInfo> solutions)
+        private ITaskItem[] GetRepositoryBuildOrder(IEnumerable<(PackageInfo pkg, string repoName)> artifacts, IEnumerable<SolutionInfo> solutions)
         {
             var repositories = solutions.Select(s =>
                 {
                     var repoName = Path.GetFileName(Path.GetDirectoryName(s.FullPath));
                     var repo = new Repository(repoName);
-                    repo.Projects = s.Projects
-                            .Where(p => p.IsPackable)
-                            .Select(p =>
-                                new Project(p.PackageId)
-                                {
-                                    Repository = repo,
-                                    PackageReferences = new HashSet<string>(p.Frameworks.SelectMany(f => f.Dependencies.Keys), StringComparer.OrdinalIgnoreCase),
-                                })
-                            .ToList();
-                    repo.SupportProjects = s.Projects
-                            .Where(p => !p.IsPackable)
-                            .Select(p =>
-                                new Project(p.PackageId)
-                                {
-                                    Repository = repo,
-                                    PackageReferences = new HashSet<string>(p.Frameworks.SelectMany(f => f.Dependencies.Keys), StringComparer.OrdinalIgnoreCase),
-                                })
-                            .ToList();
+                    var packages = artifacts.Where(a => a.repoName.Equals(repoName, StringComparison.OrdinalIgnoreCase)).ToList();
+
+                    foreach (var proj in s.Projects)
+                    {
+                        var projectGroup = packages.Any(p => p.pkg.Id == proj.PackageId)
+                            ? repo.Projects
+                            : repo.SupportProjects;
+
+                        projectGroup.Add(new Project(proj.PackageId)
+                            {
+                                Repository = repo,
+                                PackageReferences = new HashSet<string>(proj.Frameworks.SelectMany(f => f.Dependencies.Keys), StringComparer.OrdinalIgnoreCase),
+                            });
+                    }
+
                     return repo;
                 }).ToList();
 
