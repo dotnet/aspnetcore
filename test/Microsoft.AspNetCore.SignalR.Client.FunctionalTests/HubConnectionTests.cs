@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             }
         }
 
-        public static string[] HubPaths = new[] { "/default", "/dynamic" };
+        public static string[] HubPaths = new[] { "/default", "/dynamic", "/hubT" };
 
         public static IEnumerable<IHubProtocol> HubProtocols =>
             new IHubProtocol[]

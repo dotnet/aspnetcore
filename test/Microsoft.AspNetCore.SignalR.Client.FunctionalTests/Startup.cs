@@ -19,6 +19,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             {
                 routes.MapHub<TestHub>("default");
                 routes.MapHub<DynamicTestHub>("dynamic");
+                routes.MapHub<TestHubT>("hubT");
             });
         }
     }
