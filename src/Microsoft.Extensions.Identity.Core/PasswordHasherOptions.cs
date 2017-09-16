@@ -13,25 +13,22 @@ namespace Microsoft.AspNetCore.Identity
         private static readonly RandomNumberGenerator _defaultRng = RandomNumberGenerator.Create(); // secure PRNG
 
         /// <summary>
-        /// Gets or sets the compatibility mode used when hashing passwords.
+        /// Gets or sets the compatibility mode used when hashing passwords. Defaults to 'ASP.NET Identity version 3'.
         /// </summary>
         /// <value>
         /// The compatibility mode used when hashing passwords.
         /// </value>
-        /// <remarks>
-        /// The default compatibility mode is 'ASP.NET Identity version 3'.
-        /// </remarks>
         public PasswordHasherCompatibilityMode CompatibilityMode { get; set; } = PasswordHasherCompatibilityMode.IdentityV3;
 
         /// <summary>
-        /// Gets or sets the number of iterations used when hashing passwords using PBKDF2.
+        /// Gets or sets the number of iterations used when hashing passwords using PBKDF2. Default is 10,000.
         /// </summary>
         /// <value>
         /// The number of iterations used when hashing passwords using PBKDF2.
         /// </value>
         /// <remarks>
         /// This value is only used when the compatibility mode is set to 'V3'.
-        /// The value must be a positive integer. The default value is 10,000.
+        /// The value must be a positive integer. 
         /// </remarks>
         public int IterationCount { get; set; } = 10000;
 

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Identity
     public class UserOptions
     {
         /// <summary>
-        /// Gets or sets the list of allowed characters in the username used to validate user names.
+        /// Gets or sets the list of allowed characters in the username used to validate user names. Defaults to abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+
         /// </summary>
         /// <value>
         /// The list of allowed characters in the username used to validate user names.
@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Identity
         public string AllowedUserNameCharacters { get; set; } = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-._@+";
 
         /// <summary>
-        /// Gets or sets a flag indicating whether the application requires unique emails for its users.
+        /// Gets or sets a flag indicating whether the application requires unique emails for its users. Defaults to false.
         /// </summary>
         /// <value>
         /// True if the application requires each user to have their own, unique email, otherwise false.

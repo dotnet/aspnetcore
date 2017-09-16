@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Identity
     public class SecurityStampValidatorOptions
     {
         /// <summary>
-        /// Gets or sets the <see cref="TimeSpan"/> after which security stamps are re-validated.
+        /// Gets or sets the <see cref="TimeSpan"/> after which security stamps are re-validated. Defaults to 30 minutes.
         /// </summary>
         /// <value>
         /// The <see cref="TimeSpan"/> after which security stamps are re-validated.

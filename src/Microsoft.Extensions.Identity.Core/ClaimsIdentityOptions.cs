@@ -11,35 +11,23 @@ namespace Microsoft.AspNetCore.Identity
     public class ClaimsIdentityOptions
     {
         /// <summary>
-        /// Gets or sets the ClaimType used for a Role claim.
+        /// Gets or sets the ClaimType used for a Role claim. Defaults to <see cref="ClaimTypes.Role"/>.
         /// </summary>
-        /// <remarks>
-        /// This defaults to <see cref="ClaimTypes.Role"/>.
-        /// </remarks>
         public string RoleClaimType { get; set; } = ClaimTypes.Role;
 
         /// <summary>
-        /// Gets or sets the ClaimType used for the user name claim.
+        /// Gets or sets the ClaimType used for the user name claim. Defaults to <see cref="ClaimTypes.Name"/>.
         /// </summary>
-        /// <remarks>
-        /// This defaults to <see cref="ClaimTypes.Name"/>.
-        /// </remarks>
         public string UserNameClaimType { get; set; } = ClaimTypes.Name;
 
         /// <summary>
-        /// Gets or sets the ClaimType used for the user identifier claim.
+        /// Gets or sets the ClaimType used for the user identifier claim. Defaults to <see cref="ClaimTypes.NameIdentifier"/>.
         /// </summary>
-        /// <remarks>
-        /// This defaults to <see cref="ClaimTypes.NameIdentifier"/>.
-        /// </remarks>
         public string UserIdClaimType { get; set; } = ClaimTypes.NameIdentifier;
 
         /// <summary>
-        /// Gets or sets the ClaimType used for the security stamp claim.
+        /// Gets or sets the ClaimType used for the security stamp claim. Defaults to "AspNet.Identity.SecurityStamp".
         /// </summary>
-        /// <remarks>
-        /// This defaults to "AspNet.Identity.SecurityStamp".
-        /// </remarks>
         public string SecurityStampClaimType { get; set; } = "AspNet.Identity.SecurityStamp";
     }
 }
