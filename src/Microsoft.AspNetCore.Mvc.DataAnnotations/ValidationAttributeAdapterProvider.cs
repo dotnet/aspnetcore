@@ -74,6 +74,10 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations
             {
                 adapter = new DataTypeAttributeAdapter((DataTypeAttribute)attribute, "data-val-url", stringLocalizer);
             }
+            else if (type == typeof(FileExtensionsAttribute))
+            {
+                adapter = new FileExtensionsAttributeAdapter((FileExtensionsAttribute)attribute, stringLocalizer);
+            }
             else
             {
                 adapter = null;
