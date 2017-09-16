@@ -51,7 +51,7 @@
 
   <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories">
     <ItemGroup>
-      <_CloneRepositories Include="@(Repository);@(VerifyRepository)" />
+      <_CloneRepositories Include="@(Repository);@(ShippedRepository)" />
       <_CloneRepository Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
           CloneRepository=%(_CloneRepositories.Identity);
@@ -123,9 +123,19 @@
       <Output TaskParameter="TargetOutputs" ItemName="Solution" />
     </MSBuild>
 
+    <!--
+      Analyze what was shipped in these repos.
+      This is required so we can verify that cascading versions are consistent.
+    -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="GetArtifactInfo"
+             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(ShippedRepository.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber);IsFinalBuild=true"
+             ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="ShippedArtifactInfo" />
+    </MSBuild>
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
-             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(VerifyRepository.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(ShippedRepository.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
              ContinueOnError="WarnAndContinue">
       <Output TaskParameter="TargetOutputs" ItemName="_NoBuildSolution" />
     </MSBuild>
@@ -143,6 +153,7 @@
     <RepoTasks.AnalyzeBuildGraph
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo)"
+      ShippedArtifacts="@(ShippedArtifactInfo)"
       Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber)">
       <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
     </RepoTasks.AnalyzeBuildGraph>

@@ -31,6 +31,10 @@ namespace RepoTasks
         [Required]
         public ITaskItem[] Artifacts { get; set; }
 
+        // Artifacts that already shipped from repos
+        [Required]
+        public ITaskItem[] ShippedArtifacts { get; set; }
+
         [Required]
         public string Properties { get; set; }
 
@@ -83,10 +87,17 @@ namespace RepoTasks
 
         private void EnsureConsistentGraph(IEnumerable<ArtifactInfo.Package> packages, IEnumerable<SolutionInfo> solutions)
         {
+             var shippedPackageMap = ShippedArtifacts
+                .Select(ArtifactInfo.Parse)
+                .OfType<ArtifactInfo.Package>()
+                .Where(p => !p.IsSymbolsArtifact)
+                .ToDictionary(p => p.PackageInfo.Id, p => p, StringComparer.OrdinalIgnoreCase);
+
             // ensure versions cascade
-            var lookup = packages.ToDictionary(p => p.PackageInfo.Id, p => p, StringComparer.OrdinalIgnoreCase);
+            var buildPackageMap = packages.ToDictionary(p => p.PackageInfo.Id, p => p, StringComparer.OrdinalIgnoreCase);
 
             var inconsistentVersions = new List<VersionMismatch>();
+            var reposThatShouldPatch = new HashSet<string>();
 
             // holy crap, o^4
             foreach (var sln in solutions)
@@ -94,13 +105,26 @@ namespace RepoTasks
             foreach (var tfm in proj.Frameworks)
             foreach (var dependency in tfm.Dependencies)
             {
-                if (!lookup.TryGetValue(dependency.Key, out var package)) continue;
+                if (!buildPackageMap.TryGetValue(dependency.Key, out var package)) continue;
 
                 var refVersion = VersionRange.Parse(dependency.Value.Version);
                 if (refVersion.IsFloating && refVersion.Float.Satisfies(package.PackageInfo.Version))
                     continue;
                 else if (package.PackageInfo.Version.Equals(refVersion))
                     continue;
+
+                if (!sln.ShouldBuild)
+                {
+                    if (!shippedPackageMap.TryGetValue(proj.PackageId, out _))
+                    {
+                        Log.LogMessage(MessageImportance.Normal, $"Detected inconsistent in a sample or test project {proj.FullPath}");
+                        continue;
+                    }
+                    else
+                    {
+                        reposThatShouldPatch.Add(Path.GetFileName(Path.GetDirectoryName(sln.FullPath)));
+                    }
+                }
 
                 inconsistentVersions.Add(new VersionMismatch
                 {
@@ -119,19 +143,24 @@ namespace RepoTasks
                 sb.AppendLine($"Repos are inconsistent. The following projects have PackageReferences that should be updated");
                 foreach (var sln in inconsistentVersions.GroupBy(p => p.Solution.FullPath))
                 {
-                    sb.AppendLine($"  - {Path.GetFileName(sln.Key)}");
+                    sb.Append("  - ").AppendLine(Path.GetFileName(sln.Key));
                     foreach (var proj in sln.GroupBy(p => p.Project.FullPath))
                     {
-                        sb.AppendLine($"      - {Path.GetFileName(proj.Key)}");
+                        sb.Append("      - ").AppendLine(Path.GetFileName(proj.Key));
                         foreach (var m in proj)
                         {
-                            sb.AppendLine($"        - {m.PackageId}/{{{m.ActualVersion} => {m.ExpectedVersion}}}");
+                            sb.AppendLine($"         + {m.PackageId}/{{{m.ActualVersion} => {m.ExpectedVersion}}}");
                         }
                     }
                 }
                 sb.AppendLine();
                 Log.LogMessage(MessageImportance.High, sb.ToString());
                 Log.LogError("Package versions are inconsistent. See build log for details.");
+            }
+
+            foreach (var repo in reposThatShouldPatch)
+            {
+                Log.LogError($"{repo} should not be a 'ShippedRepository'. Version changes in other repositories mean it should be patched to perserve cascading version upgrades.");
             }
         }
 
