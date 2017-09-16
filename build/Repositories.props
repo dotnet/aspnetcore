@@ -1,8 +1,15 @@
 <Project>
   <ItemGroup>
     <!-- Repos being patched -->
+    <Repository Include="Diagnostics" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="EntityFrameworkCore" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="Identity" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="JavaScriptServices" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="MetaPackages" Branch="feature/2.0.2" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Mvc" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="MvcPrecompilation" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Scaffolding" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+
 
     <!-- TODO compute downstream repos that should be updated. -->
 
@@ -11,45 +18,39 @@
     Build tools will *verify* that these repos will be unaffected
     by the patch update and do not need updating.
     -->
-    <VerifyRepository Include="Mvc" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="MetaPackages" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Antiforgery" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="AzureIntegration" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="BasicMiddleware" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="BrowserLink" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Caching" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Common" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Configuration" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="CORS" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="DataProtection" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="DependencyInjection" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Diagnostics" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="DotNetTools" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="EventNotification" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="FileSystem" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Hosting" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="HtmlAbstractions" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="HttpAbstractions" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="HttpSysServer" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="IISIntegration" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="JavaScriptServices" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="JsonPatch" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="KestrelHttpServer" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Localization" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Logging" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Microsoft.Data.Sqlite" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="MvcPrecompilation" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Options" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Proxy" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Razor" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="ResponseCaching" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Routing" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Scaffolding" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Security" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="ServerTests" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Session" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="StaticFiles" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="Testing" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <VerifyRepository Include="WebSockets" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Antiforgery" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="AzureIntegration" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="BasicMiddleware" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="BrowserLink" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Caching" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Common" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Configuration" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="CORS" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="DataProtection" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="DependencyInjection" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="DotNetTools" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="EventNotification" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="FileSystem" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Hosting" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="HtmlAbstractions" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="HttpAbstractions" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="HttpSysServer" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="IISIntegration" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="JsonPatch" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="KestrelHttpServer" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Localization" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Logging" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Microsoft.Data.Sqlite" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Options" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Proxy" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Razor" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="ResponseCaching" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Routing" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Security" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="ServerTests" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Session" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="StaticFiles" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Testing" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="WebSockets" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
   </ItemGroup>
 </Project>
