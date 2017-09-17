@@ -4,8 +4,6 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Dispatcher
@@ -17,82 +15,35 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         public DispatcherMiddleware(IOptions<DispatcherOptions> options, RequestDelegate next)
         {
+            if (options == null)
+            {
+                throw new ArgumentNullException(nameof(options));
+            }
+
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
             _options = options.Value;
             _next = next;
         }
 
         public async Task Invoke(HttpContext httpContext)
         {
-            foreach (var entry in _options.DispatcherEntryList)
+            var feature = new DispatcherFeature();
+            httpContext.Features.Set<IDispatcherFeature>(feature);
+
+            foreach (var entry in _options.Dispatchers)
             {
-                var parsedTemplate = entry.RouteTemplate;
-                var defaults = GetDefaults(parsedTemplate);
-                var templateMatcher = new TemplateMatcher(parsedTemplate, defaults);
-                var values = new RouteValueDictionary();
-
-                foreach (var endpoint in entry.Endpoints)
+                await entry(httpContext);
+                if (feature.Endpoint != null || feature.RequestDelegate != null)
                 {
-                    if (templateMatcher.TryMatch(httpContext.Request.Path, values))
-                    {
-                        if (!CompareRouteValues(values, endpoint.RequiredValues))
-                        {
-                            values.Clear();
-                        }
-
-                        else
-                        {
-                            var dispatcherFeature = new DispatcherFeature
-                            {
-                                Endpoint = endpoint,
-                                RequestDelegate = endpoint.RequestDelegate
-                            };
-
-                            httpContext.Features.Set<IDispatcherFeature>(dispatcherFeature);
-                            break;
-                        }
-                    }
+                    break;
                 }
             }
 
             await _next(httpContext);
-        }
-
-        private RouteValueDictionary GetDefaults(RouteTemplate parsedTemplate)
-        {
-            var result = new RouteValueDictionary();
-
-            foreach (var parameter in parsedTemplate.Parameters)
-            {
-                if (parameter.DefaultValue != null)
-                {
-                    result.Add(parameter.Name, parameter.DefaultValue);
-                }
-            }
-
-            return result;
-        }
-
-        private bool CompareRouteValues(RouteValueDictionary values, RouteValueDictionary requiredValues)
-        {
-            foreach (var kvp in requiredValues)
-            {
-                if (string.IsNullOrEmpty(kvp.Value.ToString()))
-                {
-                    if (values.TryGetValue(kvp.Key, out var routeValue) && !string.IsNullOrEmpty(routeValue.ToString()))
-                    {
-                        return false;
-                    }
-                }
-                else
-                {
-                    if (!values.TryGetValue(kvp.Key, out var routeValue) || !string.Equals(kvp.Value.ToString(), routeValue.ToString(), StringComparison.OrdinalIgnoreCase))
-                    {
-                        return false;
-                    }
-                }
-            }
-
-            return true;
         }
     }
 }

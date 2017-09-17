@@ -9,12 +9,13 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Microsoft.AspNetCore.Dispatcher.Abstractions\Microsoft.AspNetCore.Dispatcher.Abstractions.csproj" />
-    <ProjectReference Include="..\Microsoft.AspNetCore.Routing\Microsoft.AspNetCore.Routing.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" />
+    <PackageReference Include="Microsoft.Extensions.Options" />
   </ItemGroup>
 
 </Project>

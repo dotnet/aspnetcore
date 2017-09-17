@@ -1,15 +1,13 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
+
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class DispatcherEndpoint : Endpoint
+    public abstract class DispatcherBase
     {
-        public DispatcherEndpoint(string displayName)
-        {
-            DisplayName = displayName;
-        }
-
-        public override string DisplayName { get; }
+        public abstract Task InvokeAsync(HttpContext httpContext);
     }
 }

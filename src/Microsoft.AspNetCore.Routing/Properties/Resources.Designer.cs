@@ -402,6 +402,20 @@ namespace Microsoft.AspNetCore.Routing
         internal static string FormatTemplateRoute_Exception(object p0, object p1)
             => string.Format(CultureInfo.CurrentCulture, GetString("TemplateRoute_Exception"), p0, p1);
 
+        /// <summary>
+        /// The '{0}' has no '{1}'. '{2}' requires a dispatcher.
+        /// </summary>
+        internal static string DispatcherFeatureIsRequired
+        {
+            get => GetString("DispatcherFeatureIsRequired");
+        }
+
+        /// <summary>
+        /// The '{0}' has no '{1}'. '{2}' requires a dispatcher.
+        /// </summary>
+        internal static string FormatDispatcherFeatureIsRequired(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("DispatcherFeatureIsRequired"), p0, p1, p2);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

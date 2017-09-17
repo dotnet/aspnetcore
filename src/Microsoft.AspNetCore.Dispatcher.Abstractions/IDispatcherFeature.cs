@@ -7,8 +7,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 {
     public interface IDispatcherFeature
     {
-        Endpoint Endpoint { get; }
+        Endpoint Endpoint { get; set; }
 
-        RequestDelegate RequestDelegate { get; }
+        RequestDelegate RequestDelegate { get; set; }
     }
 }

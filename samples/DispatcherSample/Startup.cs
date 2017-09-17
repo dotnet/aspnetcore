@@ -1,73 +1,70 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Collections.Generic;
+using System;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Template;
+using Microsoft.AspNetCore.Routing.Dispatcher;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace DispatcherSample
 {
     public class Startup
     {
+        private readonly static IInlineConstraintResolver ConstraintResolver = new DefaultInlineConstraintResolver(
+            new OptionsManager<RouteOptions>(
+                new OptionsFactory<RouteOptions>(
+                    Enumerable.Empty<IConfigureOptions<RouteOptions>>(),
+                    Enumerable.Empty<IPostConfigureOptions<RouteOptions>>())));
+
         public void ConfigureServices(IServiceCollection services)
         {
             services.Configure<DispatcherOptions>(options =>
             {
-                options.DispatcherEntryList = new List<DispatcherEntry>()
-                {
-                    new DispatcherEntry
-                    {
-                        RouteTemplate = TemplateParser.Parse("{Endpoint=example}"),
-                        Endpoints = new []
+                options.Dispatchers.Add(CreateDispatcher(
+                    "{Endpoint=example}",
+                    new RouteValuesEndpoint(
+                        new RouteValueDictionary(new { Endpoint = "First" }),
+                        async (context) =>
                         {
-                            new RouteValuesEndpoint("example")
-                            {
-                                RequiredValues = new RouteValueDictionary(new { Endpoint = "First" }),
-                                RequestDelegate = async (context) =>
-                                {
-                                    await context.Response.WriteAsync("Hello from the example!");
-                                }
-                            },
-                            new RouteValuesEndpoint("example2")
-                            {
-                                RequiredValues = new RouteValueDictionary(new { Endpoint = "Second" }),
-                                RequestDelegate = async (context) =>
-                                {
-                                    await context.Response.WriteAsync("Hello from the second example!");
-                                }
-                            },
-                        }
-                    },
+                            await context.Response.WriteAsync("Hello from the example!");
+                        },
+                        Array.Empty<object>(),
+                        "example"),
+                    new RouteValuesEndpoint(
+                        new RouteValueDictionary(new { Endpoint = "Second" }),
+                        async (context) =>
+                        {
+                            await context.Response.WriteAsync("Hello from the second example!");
+                        },
+                        Array.Empty<object>(),
+                        "example2")));
 
-                    new DispatcherEntry
-                    {
-                        RouteTemplate = TemplateParser.Parse("{Endpoint=example}/{Parameter=foo}"),
-                        Endpoints = new []
+                options.Dispatchers.Add(CreateDispatcher(
+                    "{Endpoint=example}/{Parameter=foo}",
+                    new RouteValuesEndpoint(
+                        new RouteValueDictionary(new { Endpoint = "First", Parameter = "param1" }),
+                        async (context) =>
                         {
-                            new RouteValuesEndpoint("example")
-                            {
-                                RequiredValues = new RouteValueDictionary(new { Endpoint = "First", Parameter = "param1"}),
-                                RequestDelegate = async (context) =>
-                                {
-                                    await context.Response.WriteAsync("Hello from the example for foo!");
-                                }
-                            },
-                            new RouteValuesEndpoint("example2")
-                            {
-                                RequiredValues = new RouteValueDictionary(new { Endpoint = "Second", Parameter = "param2"}),
-                                RequestDelegate = async (context) =>
-                                {
-                                    await context.Response.WriteAsync("Hello from the second example for foo!");
-                                }
-                            },
-                        }
-                    }
-                };
+                            await context.Response.WriteAsync("Hello from the example for foo!");
+                        },
+                        Array.Empty<object>(),
+                        "example"),
+                    new RouteValuesEndpoint(
+                        new RouteValueDictionary(new { Endpoint = "Second", Parameter = "param2" }),
+                        async (context) =>
+                        {
+                            await context.Response.WriteAsync("Hello from the second example for foo!");
+                        },
+                        Array.Empty<object>(),
+                        "example2")));
+
+                options.HandlerFactories.Add((endpoint) => (endpoint as RouteValuesEndpoint)?.HandlerFactory);
             });
 
             services.AddSingleton<UrlGenerator>();
@@ -98,6 +95,12 @@ namespace DispatcherSample
                 await context.Response.WriteAsync($"<p>Generated url: {url}</p>");
                 await next.Invoke();
             });
+        }
+
+        private static RequestDelegate CreateDispatcher(string routeTemplate, RouteValuesEndpoint endpoint, params RouteValuesEndpoint[] endpoints)
+        {
+            var dispatcher = new RouterDispatcher(new Route(new RouterEndpointSelector(new[] { endpoint }.Concat(endpoints)), routeTemplate, ConstraintResolver));
+            return dispatcher.InvokeAsync;
         }
     }
 }
