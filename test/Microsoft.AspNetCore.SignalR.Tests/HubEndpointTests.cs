@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,6 +40,167 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await endPointTask;
 
                 Assert.Equal(2, trackDispose.DisposeCount);
+            }
+        }
+
+        [Fact]
+        public async Task ConnectionAbortedTokenTriggers()
+        {
+            var state = new ConnectionLifetimeState();
+            var serviceProvider = CreateServiceProvider(s => s.AddSingleton(state));
+            var endPoint = serviceProvider.GetService<HubEndPoint<ConnectionLifetimeHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                // kill the connection
+                client.Dispose();
+
+                await endPointTask.OrTimeout();
+
+                Assert.True(state.TokenCallbackTriggered);
+                Assert.False(state.TokenStateInConnected);
+                Assert.True(state.TokenStateInDisconnected);
+            }
+        }
+
+        [Fact]
+        public async Task AbortFromHubMethodForcesClientDisconnect()
+        {
+            var serviceProvider = CreateServiceProvider();
+            var endPoint = serviceProvider.GetService<HubEndPoint<AbortHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.InvokeAsync(nameof(AbortHub.Kill));
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ObservableHubRemovesSubscriptionsWithInfiniteStreams()
+        {
+            var observable = new Observable<int>();
+            var serviceProvider = CreateServiceProvider(s => s.AddSingleton(observable));
+            var endPoint = serviceProvider.GetService<HubEndPoint<ObservableHub>>();
+
+            var waitForSubscribe = new TaskCompletionSource<object>();
+            observable.OnSubscribe = o =>
+            {
+                waitForSubscribe.TrySetResult(null);
+            };
+
+            var waitForDispose = new TaskCompletionSource<object>();
+            observable.OnDispose = o =>
+            {
+                waitForDispose.TrySetResult(null);
+            };
+
+            using (var client = new TestClient())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                async Task Produce()
+                {
+                    int i = 0;
+                    while (true)
+                    {
+                        observable.OnNext(i++);
+                        await Task.Delay(100);
+                    }
+                }
+
+                _ = Produce();
+
+                Assert.Empty(observable.Observers);
+
+                var subscribeTask = client.StreamAsync(nameof(ObservableHub.Subscribe));
+
+                await waitForSubscribe.Task.OrTimeout();
+
+                Assert.Single(observable.Observers);
+
+                client.Dispose();
+
+
+                // We don't care if this throws, we just expect it to complete
+                try
+                {
+                    await subscribeTask.OrTimeout();
+                }
+                catch
+                {
+
+                }
+
+                await waitForDispose.Task.OrTimeout();
+
+                Assert.Empty(observable.Observers);
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task ObservableHubRemovesSubscriptions()
+        {
+            var observable = new Observable<int>();
+            var serviceProvider = CreateServiceProvider(s => s.AddSingleton(observable));
+            var endPoint = serviceProvider.GetService<HubEndPoint<ObservableHub>>();
+
+            var waitForSubscribe = new TaskCompletionSource<object>();
+            observable.OnSubscribe = o =>
+            {
+                waitForSubscribe.TrySetResult(null);
+            };
+
+            var waitForDispose = new TaskCompletionSource<object>();
+            observable.OnDispose = o =>
+            {
+                waitForDispose.TrySetResult(null);
+            };
+
+            using (var client = new TestClient())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                async Task Subscribe()
+                {
+                    var results = await client.StreamAsync(nameof(ObservableHub.Subscribe));
+
+                    var items = results.OfType<StreamItemMessage>().ToList();
+
+                    Assert.Single(items);
+                    Assert.Equal(2, (long)items[0].Item);
+                }
+
+                observable.OnNext(1);
+
+                Assert.Empty(observable.Observers);
+
+                var subscribeTask = Subscribe();
+
+                await waitForSubscribe.Task.OrTimeout();
+
+                Assert.Single(observable.Observers);
+
+                observable.OnNext(2);
+
+                observable.Complete();
+
+                await subscribeTask.OrTimeout();
+
+                client.Dispose();
+
+                await waitForDispose.Task.OrTimeout();
+
+                Assert.Empty(observable.Observers);
+
+                await endPointTask.OrTimeout();
             }
         }
 
@@ -534,7 +696,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 var excludeSecondClientId = new HashSet<string>();
                 excludeSecondClientId.Add(secondClient.Connection.ConnectionId);
-                var excludeThirdClientId =  new HashSet<string>();
+                var excludeThirdClientId = new HashSet<string>();
                 excludeThirdClientId.Add(thirdClient.Connection.ConnectionId);
 
                 await firstClient.SendInvocationAsync("SendToAllExcept", "To second", excludeThirdClientId).OrTimeout();
@@ -1005,6 +1167,129 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             Task Send(string message);
             Task Broadcast(string message);
+        }
+
+        public class Observable<T> : IObservable<T>
+        {
+            public List<IObserver<T>> Observers = new List<IObserver<T>>();
+
+            public Action<IObserver<T>> OnSubscribe;
+
+            public Action<IObserver<T>> OnDispose;
+
+            public IDisposable Subscribe(IObserver<T> observer)
+            {
+                lock (Observers)
+                {
+                    Observers.Add(observer);
+                }
+
+                OnSubscribe?.Invoke(observer);
+
+                return new DisposableAction(() =>
+                {
+                    lock (Observers)
+                    {
+                        Observers.Remove(observer);
+                    }
+
+                    OnDispose?.Invoke(observer);
+                });
+            }
+
+            public void OnNext(T value)
+            {
+                lock (Observers)
+                {
+                    foreach (var observer in Observers)
+                    {
+                        observer.OnNext(value);
+                    }
+                }
+            }
+
+            public void Complete()
+            {
+                lock (Observers)
+                {
+                    foreach (var observer in Observers)
+                    {
+                        observer.OnCompleted();
+                    }
+                }
+            }
+
+            private class DisposableAction : IDisposable
+            {
+                private readonly Action _action;
+                public DisposableAction(Action action)
+                {
+                    _action = action;
+                }
+
+                public void Dispose()
+                {
+                    _action();
+                }
+            }
+        }
+
+        public class ObservableHub : Hub
+        {
+            private readonly Observable<int> _numbers;
+
+            public ObservableHub(Observable<int> numbers)
+            {
+                _numbers = numbers;
+            }
+
+            public IObservable<int> Subscribe() => _numbers;
+        }
+
+        public class AbortHub : Hub
+        {
+            public void Kill()
+            {
+                Context.Connection.Abort();
+            }
+        }
+
+        public class ConnectionLifetimeState
+        {
+            public bool TokenCallbackTriggered { get; set; }
+
+            public bool TokenStateInConnected { get; set; }
+
+            public bool TokenStateInDisconnected { get; set; }
+        }
+
+        public class ConnectionLifetimeHub : Hub
+        {
+            private ConnectionLifetimeState _state;
+
+            public ConnectionLifetimeHub(ConnectionLifetimeState state)
+            {
+                _state = state;
+            }
+
+            public override Task OnConnectedAsync()
+            {
+                _state.TokenStateInConnected = Context.Connection.ConnectionAbortedToken.IsCancellationRequested;
+
+                Context.Connection.ConnectionAbortedToken.Register(() =>
+                {
+                    _state.TokenCallbackTriggered = true;
+                });
+
+                return base.OnConnectedAsync();
+            }
+
+            public override Task OnDisconnectedAsync(Exception exception)
+            {
+                _state.TokenStateInDisconnected = Context.Connection.ConnectionAbortedToken.IsCancellationRequested;
+
+                return base.OnDisconnectedAsync(exception);
+            }
         }
 
         public class HubT : Hub<Test>

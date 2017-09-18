@@ -21,32 +21,33 @@ namespace Microsoft.AspNetCore.SignalR.Internal
             .GetRuntimeMethods()
             .Single(m => m.Name.Equals(nameof(FromObservable)) && m.IsGenericMethod);
 
-        private static readonly object[] _getAsyncEnumeratorArgs = new object[] { CancellationToken.None };
-
-        public static IAsyncEnumerator<object> FromObservable(object observable, Type observableInterface)
+        public static IAsyncEnumerator<object> FromObservable(object observable, Type observableInterface, CancellationToken cancellationToken)
         {
             // TODO: Cache expressions by observable.GetType()?
             return (IAsyncEnumerator<object>)_fromObservableMethod
                 .MakeGenericMethod(observableInterface.GetGenericArguments())
-                .Invoke(null, new[] { observable });
+                .Invoke(null, new[] { observable, cancellationToken });
         }
 
-        public static IAsyncEnumerator<object> FromObservable<T>(IObservable<T> observable)
+        public static IAsyncEnumerator<object> FromObservable<T>(IObservable<T> observable, CancellationToken cancellationToken)
         {
             // TODO: Allow bounding and optimizations?
             var channel = Channel.CreateUnbounded<object>();
 
-            var subscription = observable.Subscribe(new ChannelObserver<T>(channel.Out, CancellationToken.None));
+            var subscription = observable.Subscribe(new ChannelObserver<T>(channel.Out, cancellationToken));
 
-            return channel.In.GetAsyncEnumerator();
+            // Dispose the subscription when the token is cancelled
+            cancellationToken.Register(state => ((IDisposable)state).Dispose(), subscription);
+
+            return channel.In.GetAsyncEnumerator(cancellationToken);
         }
 
-        public static IAsyncEnumerator<object> FromChannel(object readableChannelOfT, Type payloadType)
+        public static IAsyncEnumerator<object> FromChannel(object readableChannelOfT, Type payloadType, CancellationToken cancellationToken)
         {
             var enumerator = readableChannelOfT
                 .GetType()
                 .GetRuntimeMethod("GetAsyncEnumerator", new[] { typeof(CancellationToken) })
-                .Invoke(readableChannelOfT, _getAsyncEnumeratorArgs);
+                .Invoke(readableChannelOfT, new object[] { cancellationToken });
 
             if (payloadType.IsValueType)
             {
