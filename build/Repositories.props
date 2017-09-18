@@ -10,9 +10,6 @@
     <Repository Include="MvcPrecompilation" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="Scaffolding" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
 
-
-    <!-- TODO compute downstream repos that should be updated. -->
-
     <!--
     Repos not building this patch.
     Build tools will *verify* that these repos will be unaffected

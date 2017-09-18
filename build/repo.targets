@@ -50,7 +50,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories" Condition="'$(ClearRepositoryCloneRoot)' != 'false'">
+  <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories">
     <ItemGroup>
       <_CloneRepositories Include="@(Repository);@(ShippedRepository)" />
       <_CloneRepository Include="$(MSBuildProjectFullPath)">
