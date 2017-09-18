@@ -4,6 +4,5 @@
   <ItemGroup>
     <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNetCore.RuntimeStore\Microsoft.AspNetCore.RuntimeStore.csproj" />
     <ExcludeFromPack Include="$(RepositoryRoot)src\Archive.AspNetCore.All\Archive.AspNetCore.All.csproj" />
-    <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNetCore.AzureAppServices.TestBundle\Microsoft.AspNetCore.AzureAppServices.TestBundle.csproj" />
   </ItemGroup>
 </Project>

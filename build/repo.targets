@@ -63,8 +63,6 @@
     <DockerRootDirectory>/opt/code/</DockerRootDirectory>
   </PropertyGroup>
 
-  <Import Project="SiteExtension.targets" />
-
   <Target Name="UpdateNuGetConfig">
     <UpdatePackageSource
       NuGetConfigPath="$(RepositoryRoot)NuGet.config"
@@ -235,7 +233,6 @@
     <PropertyGroup>
       <FallbackStagingDir>$(FallbackArchiveDir)obj/$(OutputPackageName)</FallbackStagingDir>
       <FallbackOutputArchive>$(RepositoryRoot)artifacts\$(OutputPackageName).lzma</FallbackOutputArchive>
-      <FallbackOutputArchiveZip>$(RepositoryRoot)artifacts\$(OutputPackageName).zip</FallbackOutputArchiveZip>
       <FallbackRestoreConfigFile>$(FallbackArchiveDir)\obj\$(OutputPackageName).NuGet.config</FallbackRestoreConfigFile>
     </PropertyGroup>
 
@@ -253,13 +250,7 @@
     <MSBuild Projects="$(FallbackArchiveProj)" Targets="Restore" Properties="RestorePackagesPath=$(FallbackStagingDir);AspNetPackageVersion=$(AspNetPackageVersion);RestoreConfigFile=$(FallbackRestoreConfigFile)" />
 
     <!-- Create the archive -->
-    <Message Text="Producing LZMA and ZIP Archives, this may take a while..." Importance="high" />
-
-    <ItemGroup>
-      <FallbackOutputFiles Include="$(FallbackStagingDir)\**\*.*" />
-    </ItemGroup>
-
-    <ZipArchive File="$(FallbackOutputArchiveZip)" SourceFiles="@(FallbackOutputFiles)" WorkingDirectory="$(FallbackStagingDir)" Overwrite="true"/>
+    <Message Text="Producing LZMA Archive, this may take a while..." Importance="high" />
     <Exec Command="$(ArchiverPath) -a $(FallbackOutputArchive) $(FallbackStagingDir)" />
   </Target>
 
@@ -287,15 +278,7 @@
     <PropertyGroup>
         <PublishDir Condition="'$(PublishShare)' != ''">$(PublishShare)\fallbackArchives</PublishDir>
     </PropertyGroup>
-
-    <Copy
-        SourceFiles="
-          $(RepositoryRoot)artifacts\$(TimestampOutputPackageName).lzma;
-          $(RepositoryRoot)artifacts\$(NoTimestampOutputPackageName).lzma;
-          $(RepositoryRoot)artifacts\$(TimestampOutputPackageName).zip;
-          $(RepositoryRoot)artifacts\$(NoTimestampOutputPackageName).zip"
-        DestinationFolder="$(PublishDir)"
-        Condition="'$(PublishDir)' != ''" />
+    <Copy SourceFiles="$(RepositoryRoot)artifacts\$(TimestampOutputPackageName).lzma;$(RepositoryRoot)artifacts\$(NoTimestampOutputPackageName).lzma" DestinationFolder="$(PublishDir)" Condition="'$(PublishDir)' != ''" />
   </Target>
 
   <Target Name="AddManifestsToNupkg">
