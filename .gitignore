@@ -8,6 +8,8 @@ _ReSharper.*
 *.pidb
 *.vspx
 *.psess
+*.binlog
+*.log
 packages
 target
 artifacts

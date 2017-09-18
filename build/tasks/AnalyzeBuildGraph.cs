@@ -136,8 +136,8 @@ namespace RepoTasks
 
                 inconsistentVersions.Add(new VersionMismatch
                 {
-                    Solution = sln,
-                    Project = proj,
+                    Solution = solution,
+                    Project = project,
                     PackageId = dependency.Key,
                     ActualVersion = dependency.Value.Version,
                     ExpectedVersion = package.PackageInfo.Version,

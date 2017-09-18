@@ -17,15 +17,29 @@
       <BatchBuilds Condition="'$(BatchBuilds)'==''">false</BatchBuilds>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PinPackageSources Include="$(BuildDir)" />
+      <PinPackageSources Include="$(_DependencyPackagesDirectory)" Condition="Exists('$(_DependencyPackagesDirectory)')" />
+    </ItemGroup>
+
+    <RepoTasks.GenerateLineup
+      Artifacts="@(ArtifactInfo)"
+      Repository="%(RepositoryBuildOrder.Identity)"
+      OutputPath="%(RepositoryBuildOrder.RepositoryPath)\build\dependencies.g.targets"
+      RestoreAdditionalSources="@(PinPackageSources)"
+      UseFloatingVersions="false"
+      Condition="'%(RepositoryBuildOrder.RepositoryPath)' != ''"
+      BuildNumber="$(BuildNumber)" />
+
     <MSBuild
       Projects="@(BatchedRepository)"
       BuildInParallel="$(BatchBuilds)"
       StopOnFirstFailure="true"
       Targets="_BuildRepository"
-      Properties="BuildGroup=%(BatchedRepository.BuildGroup)" />
+      Properties="BuildGroup=%(BatchedRepository.BuildGroup);BuildNumber=$(BuildNumber);IsFinalBuild=$(IsFinalBuild);Configuration=$(Configuration)" />
   </Target>
 
-  <Target Name="_BuildRepository" DependsOnTargets="_PinVersions">
+  <Target Name="_BuildRepository">
     <PropertyGroup>
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration) /p:CommitHash=$(CommitHash)</RepositoryBuildArguments>
@@ -66,18 +80,6 @@
        DestinationFolder="$(ArtifactsDir)msbuild\$(RepositoryToBuild)\%(RecursiveDir)" />
 
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
-  </Target>
-
-  <Target Name="_PinVersions">
-    <ItemGroup>
-      <PinPackageSources Include="$(BuildDir)" />
-      <PinPackageSources Include="$(_DependencyPackagesDirectory)" Condition="Exists('$(_DependencyPackagesDirectory)')" />
-    </ItemGroup>
-
-    <RepoTasks.PinVersions
-      GraphSpecsRoot="$(_RestoreGraphSpecsDirectory)"
-      BuildRepositoryRoot="$(BuildRepositoryRoot)"
-      PackageSources="@(PinPackageSources)" />
   </Target>
 
 </Project>

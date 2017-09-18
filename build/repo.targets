@@ -106,7 +106,7 @@
   </Target>
 
   <Target Name="BuildRepositories"
-     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;ComputeGraph;_BuildRepositories" />
+     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;ComputeGraph;_BuildRepositories" />
 
   <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
@@ -178,21 +178,6 @@
       OutputPath="$(ArtifactsDir)dependencies.targets"
       UseFloatingVersions="false"
       BuildNumber="$(BuildNumber)" />
-  </Target>
-
-  <Target Name="_UpdateNuGetConfig">
-    <UpdatePackageSource
-      NuGetConfigPath="$(_CloneRepositoryRoot)%(Repository.Identity)\NuGet.config"
-      SourceName="Dependencies"
-      SourceUri="$(_DependencyPackagesDirectory)"
-      Condition="Exists('$(_DependencyPackagesDirectory)')" />
-
-    <MakeDir Directories="$(BuildDir)" Condition="!Exists('$(BuildDir)')" />
-
-    <UpdatePackageSource
-      NuGetConfigPath="$(_CloneRepositoryRoot)%(Repository.Identity)\NuGet.config"
-      SourceName="Artifacts"
-      SourceUri="$(BuildDir)" />
   </Target>
 
   <Target Name="_CreateRepositoriesListWithCommits" DependsOnTargets="_GetRepositoryCommits">
