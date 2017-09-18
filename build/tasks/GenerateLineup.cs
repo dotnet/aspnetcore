@@ -61,7 +61,7 @@ namespace RepoTasks
                     version = version.Substring(0, version.Length - BuildNumber.Length) + "*";
                 }
 
-                var refType = "DotNetCliTool".Equals(pkg.Id, StringComparison.OrdinalIgnoreCase)
+                var refType = "DotNetCliTool".Equals(pkg.PackageType, StringComparison.OrdinalIgnoreCase)
                     ? "DotNetCliToolReference"
                     : "PackageReference";
 

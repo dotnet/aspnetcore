@@ -38,8 +38,6 @@ namespace RepoTasks
         [Required]
         public string Properties { get; set; }
 
-        public string StartGraphAt { get; set; }
-
         /// <summary>
         /// The order in which to build repositories
         /// </summary>
@@ -105,7 +103,11 @@ namespace RepoTasks
             foreach (var tfm in proj.Frameworks)
             foreach (var dependency in tfm.Dependencies)
             {
-                if (!buildPackageMap.TryGetValue(dependency.Key, out var package)) continue;
+                if (!buildPackageMap.TryGetValue(dependency.Key, out var package))
+                {
+                    // this dependency is not a PackageReference to something that we build in Universe
+                    continue;
+                }
 
                 var refVersion = VersionRange.Parse(dependency.Value.Version);
                 if (refVersion.IsFloating && refVersion.Float.Satisfies(package.PackageInfo.Version))

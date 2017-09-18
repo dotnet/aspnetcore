@@ -106,7 +106,7 @@
   </Target>
 
   <Target Name="BuildRepositories"
-     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;Graph;_BuildRepositories" />
+     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;ComputeGraph;_BuildRepositories" />
 
   <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
     <MSBuild Projects="$(MSBuildProjectFullPath)"
@@ -149,7 +149,7 @@
     <Error Text="No solutions were found in '$(_CloneRepositoryRoot)'" Condition="@(Solution->Count()) == 0" />
   </Target>
 
-  <Target Name="Graph" DependsOnTargets="ResolveRepoInfo">
+  <Target Name="ComputeGraph" DependsOnTargets="ResolveRepoInfo">
     <RepoTasks.AnalyzeBuildGraph
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo)"
