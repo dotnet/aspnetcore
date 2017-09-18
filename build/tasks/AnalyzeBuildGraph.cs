@@ -193,7 +193,10 @@ namespace RepoTasks
                         projectGroup.Add(new Project(proj.PackageId)
                             {
                                 Repository = repo,
-                                PackageReferences = new HashSet<string>(proj.Frameworks.SelectMany(f => f.Dependencies.Keys), StringComparer.OrdinalIgnoreCase),
+                                PackageReferences = new HashSet<string>(proj
+                                    .Frameworks
+                                    .SelectMany(f => f.Dependencies.Keys)
+                                    .Concat(proj.Tools.Select(t => t.Id)), StringComparer.OrdinalIgnoreCase),
                             });
                     }
 
