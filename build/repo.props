@@ -3,4 +3,6 @@
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
   </PropertyGroup>
+
+  <Import Project="artifacts.props" />
 </Project>

@@ -19,7 +19,9 @@
 
     <PrepareDependsOn>$(PrepareDependsOn);CleanArtifacts;CleanUniverseArtifacts</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanUniverseArtifacts</CleanDependsOn>
-    <BuildDependsOn>$(BuildDependsOn);CloneRepositories;BuildRepositories</BuildDependsOn>
+    <CompileDependsOn>$(CompileDependsOn);CloneRepositories;BuildRepositories</CompileDependsOn>
+    <PackageDependsOn>$(PackageDependsOn);SplitPackages</PackageDependsOn>
+    <VerifyDependsOn>$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
   </PropertyGroup>
 
   <Import Project="$(_RepositoryListToImport)" />
@@ -179,6 +181,26 @@
       OutputPath="$(ArtifactsDir)dependencies.targets"
       UseFloatingVersions="false"
       BuildNumber="$(BuildNumber)" />
+  </Target>
+
+  <Target Name="SplitPackages">
+    <ItemGroup>
+      <PackageArtifactFile Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />
+    </ItemGroup>
+
+    <RepoTasks.CopyPackagesToSplitFolders
+      Packages="@(PackageArtifact)"
+      Files="@(PackageArtifactFile)"
+      DestinationFolder="$(ArtifactsDir)" />
+  </Target>
+
+  <Target Name="VerifyCoherentVersions">
+    <ItemGroup>
+      <ShippingPackageFiles Include="$(ArtifactsDir)ship\*.nupkg" />
+    </ItemGroup>
+
+    <RepoTasks.VerifyCoherentVersions
+      PackageFiles="@(ShippingPackageFiles)" />
   </Target>
 
   <Target Name="_CreateRepositoriesListWithCommits" DependsOnTargets="_GetRepositoryCommits">

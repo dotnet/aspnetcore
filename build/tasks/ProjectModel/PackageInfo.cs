@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using NuGet.Frameworks;
+using NuGet.Packaging;
 using NuGet.Versioning;
 
 namespace RepoTasks.ProjectModel
@@ -12,8 +13,8 @@ namespace RepoTasks.ProjectModel
     internal class PackageInfo
     {
         public PackageInfo(string id,
-            string version,
-            IReadOnlyList<NuGetFramework> frameworks,
+            NuGetVersion version,
+            IReadOnlyList<PackageDependencyGroup> dependencyGroups,
             string source,
             string packageType = "Dependency")
         {
@@ -22,16 +23,11 @@ namespace RepoTasks.ProjectModel
                 throw new ArgumentException(nameof(id));
             }
 
-            if (string.IsNullOrEmpty(version))
-            {
-                throw new ArgumentException(nameof(version));
-            }
-
             Id = id;
-            Version = NuGetVersion.Parse(version);
-            Frameworks = frameworks;
+            Version = version ?? throw new ArgumentNullException(nameof(version));
             PackageType = packageType;
             Source = source;
+            DependencyGroups = dependencyGroups ?? Array.Empty<PackageDependencyGroup>();
         }
 
         public string Id { get; }
@@ -41,6 +37,6 @@ namespace RepoTasks.ProjectModel
         /// Can be a https feed or a file path. May be null.
         /// </summary>
         public string Source { get; }
-        public IReadOnlyList<NuGetFramework> Frameworks { get; }
+        public IReadOnlyList<PackageDependencyGroup> DependencyGroups { get; }
     }
 }

@@ -47,7 +47,7 @@ namespace RepoTasks
             var root = new XElement("Project", props, items);
             var doc = new XDocument(root);
 
-            if (RestoreAdditionalSources.Length > 0)
+            if (RestoreAdditionalSources?.Length > 0)
             {
                 var sources = RestoreAdditionalSources.Aggregate("$(RestoreAdditionalProjectSources)", (sum, piece) => sum + ";" + piece.ItemSpec);
                 props.Add(new XElement("RestoreAdditionalProjectSources", sources));

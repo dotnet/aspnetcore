@@ -5,6 +5,9 @@ using System;
 using System.IO;
 using System.Linq;
 using NuGet.Frameworks;
+using NuGet.Packaging;
+using NuGet.Packaging.Core;
+using NuGet.Versioning;
 using Microsoft.Build.Framework;
 using RepoTasks.ProjectModel;
 
@@ -50,10 +53,10 @@ namespace RepoTasks.Utilities
         {
             return new PackageInfo(
                 item.GetMetadata("PackageId"),
-                item.GetMetadata("Version"),
+                NuGetVersion.Parse(item.GetMetadata("Version")),
                 string.IsNullOrEmpty(item.GetMetadata("TargetFramework"))
-                    ? MSBuildListSplitter.SplitItemList(item.GetMetadata("TargetFramework")).Select(s => NuGetFramework.Parse(s)).ToArray()
-                    : new [] { NuGetFramework.Parse(item.GetMetadata("TargetFramework")) },
+                    ? MSBuildListSplitter.SplitItemList(item.GetMetadata("TargetFramework")).Select(s => new PackageDependencyGroup(NuGetFramework.Parse(s), Array.Empty<PackageDependency>())).ToArray()
+                    : new [] { new PackageDependencyGroup(NuGetFramework.Parse(item.GetMetadata("TargetFramework")), Array.Empty<PackageDependency>()) },
                 Path.GetDirectoryName(item.ItemSpec),
                 item.GetMetadata("PackageType"));
         }
