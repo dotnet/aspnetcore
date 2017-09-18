@@ -1,0 +1,4 @@
+<Project>
+  <Import Project="build\dependencies.targets" />
+  <Import Project="build\dependencies.g.targets" Condition="Exists('build\dependencies.g.targets') AND '$(DesignTimeBuild)' != 'true'" />
+</Project>

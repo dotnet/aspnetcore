@@ -40,3 +40,6 @@ node_modules
 BuildInfo.generated.cs
 msbuild.log
 global.json
+*.g.targets
+korebuild-lock.txt
+
