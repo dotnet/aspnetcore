@@ -19,7 +19,7 @@
 
     <PrepareDependsOn>$(PrepareDependsOn);CleanArtifacts;CleanUniverseArtifacts</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanUniverseArtifacts</CleanDependsOn>
-    <BuildDependsOn>$(BuildDependsOn);BuildRepositories</BuildDependsOn>
+    <BuildDependsOn>$(BuildDependsOn);CloneRepositories;BuildRepositories</BuildDependsOn>
   </PropertyGroup>
 
   <Import Project="$(_RepositoryListToImport)" />
