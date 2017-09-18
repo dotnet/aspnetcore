@@ -67,7 +67,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (OSVersionUtil.IsWindows())
             {
-                services.TryAddSingleton<RegistryPolicyResolver>();
+                services.TryAddSingleton<IRegistryPolicyResolver, RegistryPolicyResolver>();
             }
 
             services.TryAddEnumerable(

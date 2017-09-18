@@ -13,7 +13,7 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
 {
     internal class KeyManagementOptionsSetup : IConfigureOptions<KeyManagementOptions>
     {
-        private readonly RegistryPolicyResolver _registryPolicyResolver;
+        private readonly IRegistryPolicyResolver _registryPolicyResolver;
         private readonly ILoggerFactory _loggerFactory;
 
         public KeyManagementOptionsSetup()
@@ -26,12 +26,12 @@ namespace Microsoft.AspNetCore.DataProtection.Internal
         {
         }
 
-        public KeyManagementOptionsSetup(RegistryPolicyResolver registryPolicyResolver)
+        public KeyManagementOptionsSetup(IRegistryPolicyResolver registryPolicyResolver)
             : this(NullLoggerFactory.Instance, registryPolicyResolver)
         {
         }
 
-        public KeyManagementOptionsSetup(ILoggerFactory loggerFactory, RegistryPolicyResolver registryPolicyResolver)
+        public KeyManagementOptionsSetup(ILoggerFactory loggerFactory, IRegistryPolicyResolver registryPolicyResolver)
         {
             _loggerFactory = loggerFactory;
             _registryPolicyResolver = registryPolicyResolver;
