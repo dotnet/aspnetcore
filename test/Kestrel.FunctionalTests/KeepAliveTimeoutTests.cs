@@ -3,7 +3,6 @@
 
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -11,10 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
-using Microsoft.Extensions.Logging;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
@@ -23,15 +19,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         private static readonly TimeSpan _keepAliveTimeout = TimeSpan.FromSeconds(10);
         private static readonly TimeSpan _longDelay = TimeSpan.FromSeconds(30);
         private static readonly TimeSpan _shortDelay = TimeSpan.FromSeconds(_longDelay.TotalSeconds / 10);
-
-        private readonly ILoggerFactory _loggerFactory = new LoggerFactory();
-        private readonly ILogger _logger;
-
-        public KeepAliveTimeoutTests(ITestOutputHelper output)
-        {
-            _loggerFactory.AddXunit(output);
-            _logger = _loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.FunctionalTests.KeepAliveTimeoutTests");
-        }
 
         [Fact]
         public Task TestKeepAliveTimeout()
@@ -90,11 +77,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "",
                         "");
 
-                    var stopWatch = new Stopwatch();
-                    stopWatch.Start();
-                    await Task.Delay(_shortDelay);
-                    stopWatch.Stop();
-                    _logger.LogDebug($"Short delay lasted {TimeSpan.FromMilliseconds(stopWatch.ElapsedMilliseconds).TotalSeconds} seconds instead of {_shortDelay.TotalSeconds} seconds.");
+                    // Don't change this to Task.Delay. See https://github.com/aspnet/KestrelHttpServer/issues/1684#issuecomment-330285740.
+                    Thread.Sleep(_shortDelay);
                 }
 
                 for (var i = 0; i < 10; i++)
@@ -202,7 +186,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private TestServer CreateServer(CancellationToken longRunningCt, CancellationToken upgradeCt)
         {
-            return new TestServer(httpContext => App(httpContext, longRunningCt, upgradeCt), new TestServiceContext(_loggerFactory)
+            return new TestServer(httpContext => App(httpContext, longRunningCt, upgradeCt), new TestServiceContext
             {
                 // Use real SystemClock so timeouts trigger.
                 SystemClock = new SystemClock(),
