@@ -177,7 +177,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 
                     var tcs = new TaskCompletionSource<string>();
 
-                    var results = await connection.Stream<string>("Stream").ReadAllAsync().OrTimeout();
+                    var channel = await connection.StreamAsync<string>("Stream");
+                    var results = await channel.ReadAllAsync().OrTimeout();
 
                     Assert.Equal(new[] { "a", "b", "c" }, results.ToArray());
                 }
