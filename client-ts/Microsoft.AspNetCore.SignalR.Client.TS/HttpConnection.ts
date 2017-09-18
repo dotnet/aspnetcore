@@ -173,6 +173,10 @@ export class HttpConnection implements IConnection {
             ? `${window.document.location.protocol}//${(parser.host || window.document.location.host)}`
             : `${parser.protocol}//${parser.host}`;
 
+        if (!url || url[0] != '/') {
+            url = '/' + url;
+        }
+
         let normalizedUrl = baseUrl + url;
         this.logger.log(LogLevel.Information, `Normalizing '${url}' to '${normalizedUrl}'`);
         return normalizedUrl;
