@@ -64,7 +64,7 @@ namespace Microsoft.Extensions.Hosting
         public void CanConfigureAppConfigurationAndRetrieveFromDI()
         {
             var hostBuilder = new HostBuilder()
-                .ConfigureAppConfiguration((_, configBuilder) =>
+                .ConfigureAppConfiguration((configBuilder) =>
                 {
                     configBuilder.AddInMemoryCollection(
                             new KeyValuePair<string, string>[]
@@ -72,7 +72,7 @@ namespace Microsoft.Extensions.Hosting
                                 new KeyValuePair<string, string>("key1", "value1")
                             });
                 })
-                .ConfigureAppConfiguration((_, configBuilder) =>
+                .ConfigureAppConfiguration((configBuilder) =>
                 {
                     configBuilder.AddInMemoryCollection(
                             new KeyValuePair<string, string>[]
@@ -80,7 +80,7 @@ namespace Microsoft.Extensions.Hosting
                                 new KeyValuePair<string, string>("key2", "value2")
                             });
                 })
-                .ConfigureAppConfiguration((_, configBuilder) =>
+                .ConfigureAppConfiguration((configBuilder) =>
                 {
                     configBuilder.AddInMemoryCollection(
                             new KeyValuePair<string, string>[]
@@ -300,7 +300,7 @@ namespace Microsoft.Extensions.Hosting
         public void HostingContextContainsAppConfigurationDuringConfigureServices()
         {
             var hostBuilder = new HostBuilder()
-                 .ConfigureAppConfiguration((context, configBuilder) =>
+                 .ConfigureAppConfiguration((configBuilder) =>
                     configBuilder.AddInMemoryCollection(
                         new KeyValuePair<string, string>[]
                         {
@@ -318,7 +318,7 @@ namespace Microsoft.Extensions.Hosting
         public void ConfigureDefaultServiceProvider()
         {
             var hostBuilder = new HostBuilder()
-                .ConfigureServices((hostContext, s) =>
+                .ConfigureServices((s) =>
                 {
                     s.AddTransient<ServiceD>();
                     s.AddScoped<ServiceC>();
@@ -342,12 +342,12 @@ namespace Microsoft.Extensions.Hosting
                     s.AddScoped<ServiceC>();
                 })
                 .UseServiceProviderFactory(new FakeServiceProviderFactory())
-                .ConfigureContainer<FakeServiceCollection>((hostContext, container) =>
+                .ConfigureContainer<FakeServiceCollection>((container) =>
                 {
                     Assert.Null(container.State);
                     container.State = "1";
                 })
-                .ConfigureContainer<FakeServiceCollection>((hostContext, container) =>
+                .ConfigureContainer<FakeServiceCollection>((container) =>
                  {
                      Assert.Equal("1", container.State);
                      container.State = "2";
@@ -361,13 +361,13 @@ namespace Microsoft.Extensions.Hosting
         public void CustomContainerTypeMismatchThrows()
         {
             var hostBuilder = new HostBuilder()
-                .ConfigureServices((hostContext, s) =>
+                .ConfigureServices((s) =>
                 {
                     s.AddTransient<ServiceD>();
                     s.AddScoped<ServiceC>();
                 })
                 .UseServiceProviderFactory(new FakeServiceProviderFactory())
-                .ConfigureContainer<IServiceCollection>((hostContext, container) =>
+                .ConfigureContainer<IServiceCollection>((container) =>
                 {
                 });
             Assert.Throws<InvalidCastException>(() => hostBuilder.Build());
@@ -377,7 +377,7 @@ namespace Microsoft.Extensions.Hosting
         public void HostingContextContainsAppConfigurationDuringConfigureLogging()
         {
             var hostBuilder = new HostBuilder()
-                 .ConfigureAppConfiguration((context, configBuilder) =>
+                 .ConfigureAppConfiguration((configBuilder) =>
                     configBuilder.AddInMemoryCollection(
                         new KeyValuePair<string, string>[]
                         {
@@ -390,18 +390,18 @@ namespace Microsoft.Extensions.Hosting
 
             using (hostBuilder.Build()) { }
         }
-        
+
         [Fact]
         public void ConfigureServices_CanBeCalledMultipleTimes()
         {
             var callCount = 0; // Verify ordering
             var hostBuilder = new HostBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     Assert.Equal(0, callCount++);
                     services.AddTransient<ServiceA>();
                 })
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     Assert.Equal(1, callCount++);
                     services.AddTransient<ServiceB>();
@@ -455,12 +455,12 @@ namespace Microsoft.Extensions.Hosting
                 });
 
             hostBuilder.Properties.Add("key", "value");
-            
+
             Assert.Equal("value", hostBuilder.Properties["key"]);
 
             using (hostBuilder.Build()) { }
         }
-        
+
         private class ServiceC
         {
             public ServiceC(ServiceD serviceD) { }

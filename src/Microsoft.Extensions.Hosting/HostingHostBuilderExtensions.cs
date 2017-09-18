@@ -62,6 +62,53 @@ namespace Microsoft.Extensions.Hosting
         }
 
         /// <summary>
+        /// Adds a delegate for configuring the provided <see cref="ILoggingBuilder"/>. This may be called multiple times.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IHostBuilder" /> to configure.</param>
+        /// <param name="configureLogging">The delegate that configures the <see cref="ILoggingBuilder"/>.</param>
+        /// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
+        public static IHostBuilder ConfigureLogging(this IHostBuilder hostBuilder, Action<ILoggingBuilder> configureLogging)
+        {
+            return hostBuilder.ConfigureServices((context, collection) => collection.AddLogging(builder => configureLogging(builder)));
+        }
+        /// <summary>
+        /// Sets up the configuration for the remainder of the build process and application. This can be called multiple times and
+        /// the results will be additive. The results will be available at <see cref="HostBuilderContext.Configuration"/> for
+        /// subsequent operations, as well as in <see cref="IHost.Services"/>.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IHostBuilder" /> to configure.</param>
+        /// <param name="configureDelegate"></param>
+        /// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
+        public static IHostBuilder ConfigureAppConfiguration(this IHostBuilder hostBuilder, Action<IConfigurationBuilder> configureDelegate)
+        {
+            return hostBuilder.ConfigureAppConfiguration((context, builder) => configureDelegate(builder));
+        }
+
+        /// <summary>
+        /// Adds services to the container. This can be called multiple times and the results will be additive.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IHostBuilder" /> to configure.</param>
+        /// <param name="configureDelegate"></param>
+        /// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
+        public static IHostBuilder ConfigureServices(this IHostBuilder hostBuilder, Action<IServiceCollection> configureDelegate)
+        {
+            return hostBuilder.ConfigureServices((context, collection) => configureDelegate(collection));
+        }
+
+        /// <summary>
+        /// Enables configuring the instantiated dependency container. This can be called multiple times and
+        /// the results will be additive.
+        /// </summary>
+        /// <typeparam name="TContainerBuilder"></typeparam>
+        /// <param name="hostBuilder">The <see cref="IHostBuilder" /> to configure.</param>
+        /// <param name="configureDelegate"></param>
+        /// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
+        public static IHostBuilder ConfigureContainer<TContainerBuilder>(this IHostBuilder hostBuilder, Action<TContainerBuilder> configureDelegate)
+        {
+            return hostBuilder.ConfigureContainer<TContainerBuilder>((context, builder) => configureDelegate(builder));
+        }
+
+        /// <summary>
         /// Listens for Ctrl+C or SIGTERM and calls <see cref="IApplicationLifetime.StopApplication"/> to start the shutdown process.
         /// This will unblock extensions like RunAsync and WaitForShutdownAsync.
         /// </summary>

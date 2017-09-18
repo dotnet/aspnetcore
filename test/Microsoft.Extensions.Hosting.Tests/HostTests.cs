@@ -98,7 +98,7 @@ namespace Microsoft.Extensions.Hosting
                 Assert.Equal(0, service.StopCount);
                 Assert.Equal(0, service.DisposeCount);
             }
-            
+
             Assert.Equal(1, service.StartCount);
             Assert.Equal(0, service.StopCount);
             Assert.Equal(1, service.DisposeCount);
@@ -154,7 +154,7 @@ namespace Microsoft.Extensions.Hosting
             bool[] events2 = null;
 
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     events1 = RegisterCallbacksThatThrow(services);
                     events2 = RegisterCallbacksThatThrow(services);
@@ -178,7 +178,7 @@ namespace Microsoft.Extensions.Hosting
             var startCancelled = new ManualResetEvent(false);
             FakeHostedService service;
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     services.AddSingleton<IHostedService>(_ => new FakeHostedService()
                     {
@@ -222,7 +222,7 @@ namespace Microsoft.Extensions.Hosting
             FakeHostedService service;
             FakeHostLifetime lifetime;
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     services.AddSingleton<IHostedService>(_ => new FakeHostedService()
                     {
@@ -281,7 +281,7 @@ namespace Microsoft.Extensions.Hosting
             FakeHostedService service;
             FakeHostLifetime lifetime;
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     services.AddSingleton<IHostedService>(_ => new FakeHostedService()
                     {
@@ -344,7 +344,7 @@ namespace Microsoft.Extensions.Hosting
             FakeHostedService service;
             FakeHostLifetime lifetime;
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     services.AddSingleton<IHostedService, FakeHostedService>();
                     services.AddSingleton<IHostLifetime>(_ => new FakeHostLifetime()
@@ -362,7 +362,7 @@ namespace Microsoft.Extensions.Hosting
             {
                 await host.StartAsync();
                 Assert.True(lifetimeRegistered.WaitOne(0));
-                
+
                 var appLifetime = host.Services.GetRequiredService<IApplicationLifetime>();
 
                 stoppingAction(stoppingState);
@@ -395,7 +395,7 @@ namespace Microsoft.Extensions.Hosting
             FakeHostedService service;
             FakeHostLifetime lifetime;
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     services.AddSingleton<IHostedService, FakeHostedService>();
                     services.AddSingleton<IHostLifetime>(_ => new FakeHostLifetime()
@@ -406,7 +406,7 @@ namespace Microsoft.Extensions.Hosting
                 .Build())
             {
                 await host.StartAsync();
-                
+
                 service = (FakeHostedService)host.Services.GetRequiredService<IHostedService>();
                 Assert.Equal(1, service.StartCount);
                 Assert.Equal(0, service.StopCount);
@@ -442,7 +442,7 @@ namespace Microsoft.Extensions.Hosting
         {
             FakeHostedService service;
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) => services.AddSingleton<IHostedService, FakeHostedService>())
+                .ConfigureServices((services) => services.AddSingleton<IHostedService, FakeHostedService>())
                 .Build())
             {
                 var lifetime = host.Services.GetRequiredService<IApplicationLifetime>();
@@ -487,7 +487,7 @@ namespace Microsoft.Extensions.Hosting
                 });
 
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     services.AddSingleton(service.Object);
                 })
@@ -568,7 +568,7 @@ namespace Microsoft.Extensions.Hosting
         public async Task HostDisposesServiceProvider()
         {
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, s) =>
+                .ConfigureServices((s) =>
                 {
                     s.AddTransient<IFakeService, FakeService>();
                     s.AddSingleton<IFakeSingletonService, FakeService>();
@@ -639,7 +639,7 @@ namespace Microsoft.Extensions.Hosting
             var disposingCalls = 0;
 
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     Action started = () =>
                     {
@@ -675,7 +675,7 @@ namespace Microsoft.Extensions.Hosting
         public async Task HostedServiceCanInjectApplicationLifetime()
         {
             using (var host = CreateBuilder()
-                   .ConfigureServices((hostContext, services) =>
+                   .ConfigureServices((services) =>
                    {
                        services.AddSingleton<IHostedService, TestHostedService>();
                    })
@@ -701,7 +701,7 @@ namespace Microsoft.Extensions.Hosting
             var disposingCalls = 0;
 
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     Action started = () =>
                     {
@@ -753,7 +753,7 @@ namespace Microsoft.Extensions.Hosting
             var disposingCalls = 0;
 
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     Action started = () =>
                     {
@@ -795,7 +795,7 @@ namespace Microsoft.Extensions.Hosting
             bool[] events2 = null;
 
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) =>
+                .ConfigureServices((services) =>
                 {
                     events1 = RegisterCallbacksThatThrow(services);
                     events2 = RegisterCallbacksThatThrow(services);
@@ -823,7 +823,7 @@ namespace Microsoft.Extensions.Hosting
         {
             int configureServicesCount = 0;
             using (var host = CreateBuilder()
-                .ConfigureServices((hostContext, services) => configureServicesCount++)
+                .ConfigureServices((services) => configureServicesCount++)
                 .Build())
             {
                 Assert.Equal(1, configureServicesCount);
