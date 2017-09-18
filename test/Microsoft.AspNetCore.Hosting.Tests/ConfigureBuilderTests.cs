@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Hosting.Internal;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Hosting.Tests 
+namespace Microsoft.AspNetCore.Hosting.Tests
 {
     public class ConfigureBuilderTests
     {

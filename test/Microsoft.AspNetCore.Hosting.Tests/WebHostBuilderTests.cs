@@ -235,6 +235,36 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public async Task MultipleStartupAssembliesSpecifiedOnlyAddAssemblyOnce()
+        {
+            var provider = new TestLoggerProvider();
+            var assemblyName = "RandomName";
+            var data = new Dictionary<string, string>
+            {
+                { WebHostDefaults.ApplicationKey,  assemblyName },
+                { WebHostDefaults.HostingStartupAssembliesKey, assemblyName }
+            };
+            var config = new ConfigurationBuilder().AddInMemoryCollection(data).Build();
+
+            var builder = CreateWebHostBuilder()
+                 .UseConfiguration(config)
+                 .ConfigureLogging((_, factory) =>
+                 {
+                     factory.AddProvider(provider);
+                 })
+                .UseServer(new TestServer());
+
+            // Verify that there was only one exception throw rather than two.
+            using (var host = (WebHost)builder.Build())
+            {
+                await host.StartAsync();
+                var context = provider.Sink.Writes.Where(s => s.EventId.Id == LoggerEventIds.HostingStartupAssemblyException);
+                Assert.NotNull(context);
+                Assert.Single(context);
+            }
+        }
+
+        [Fact]
         public void HostingContextContainsAppConfigurationDuringConfigureLogging()
         {
             var hostBuilder = new WebHostBuilder()

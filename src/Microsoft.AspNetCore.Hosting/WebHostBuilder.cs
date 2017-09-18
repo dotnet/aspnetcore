@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.Hosting.Builder;
@@ -195,7 +196,7 @@ namespace Microsoft.AspNetCore.Hosting
                 var exceptions = new List<Exception>();
 
                 // Execute the hosting startup assemblies
-                foreach (var assemblyName in _options.HostingStartupAssemblies)
+                foreach (var assemblyName in _options.HostingStartupAssemblies.Distinct(StringComparer.OrdinalIgnoreCase))
                 {
                     try
                     {
