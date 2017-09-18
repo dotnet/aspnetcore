@@ -20,10 +20,19 @@
     <ItemGroup>
       <PinPackageSources Include="$(BuildDir)" />
       <PinPackageSources Include="$(_DependencyPackagesDirectory)" Condition="Exists('$(_DependencyPackagesDirectory)')" />
+      <PinnedArtifactInfo Include="@(ArtifactInfo)" Condition="'$(BuildGraphOf)' == ''" />
     </ItemGroup>
 
+    <!-- If we are building a sub-graph, we need to re-examine the list of artifacts that will actual build. -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="GetArtifactInfo"
+             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(RepositoryBuildOrder.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Condition="'$(BuildGraphOf)' != ''">
+      <Output TaskParameter="TargetOutputs" ItemName="PinnedArtifactInfo" />
+    </MSBuild>
+
     <RepoTasks.GenerateLineup
-      Artifacts="@(ArtifactInfo)"
+      Artifacts="@(PinnedArtifactInfo)"
       Repository="%(RepositoryBuildOrder.Identity)"
       OutputPath="%(RepositoryBuildOrder.RepositoryPath)\build\dependencies.g.targets"
       RestoreAdditionalSources="@(PinPackageSources)"
