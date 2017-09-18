@@ -202,6 +202,16 @@
 
   <!-- Based on the solution here: http://stackoverflow.com/a/11331566 -->
   <Target Name="_GetRepositoryCommits" Outputs="%(Repository.Identity)">
+    <PropertyGroup>
+      <!--
+        Attempt to read environment variables set up by the CI's VCS Root if available.
+        * BUILD_VCS_URL_<RepositoryName> gives us the clone URL for a repository
+        * BUILD_VCS_NUMBER_<RepositoryName> gives us the commit hash for a repository.
+      -->
+      <_RepositoryName>$([System.String]::new('%(Repository.Identity)').Replace('.', '_'))</_RepositoryName>
+      <_CloneUrl>$([System.Environment]::GetEnvironmentVariable("BUILD_VCS_URL_$(_RepositoryName)"))</_CloneUrl>
+      <_CommitHash>$([System.Environment]::GetEnvironmentVariable("BUILD_VCS_NUMBER_$(_RepositoryName)"))</_CommitHash>
+    </PropertyGroup>
 
     <Warning Text="%(Repository.Identity) has not been cloned."
       Condition="!Exists('%(Repository.RepositoryPath)')" />
