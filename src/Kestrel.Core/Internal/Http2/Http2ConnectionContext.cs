@@ -3,6 +3,7 @@
 
 using System.IO.Pipelines;
 using System.Net;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
@@ -10,6 +11,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
     {
         public string ConnectionId { get; set; }
         public ServiceContext ServiceContext { get; set; }
+        public IFeatureCollection ConnectionFeatures { get; set; }
         public PipeFactory PipeFactory { get; set; }
         public IPEndPoint LocalEndPoint { get; set; }
         public IPEndPoint RemoteEndPoint { get; set; }

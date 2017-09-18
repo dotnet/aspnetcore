@@ -8,6 +8,7 @@ using System.IO.Pipelines;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
@@ -49,6 +50,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         public IPipeReader Input => _context.Transport.Input;
 
         public IKestrelTrace Log => _context.ServiceContext.Log;
+
+        public IFeatureCollection ConnectionFeatures => _context.ConnectionFeatures;
 
         public void Abort(Exception ex)
         {
@@ -266,6 +269,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 ConnectionId = ConnectionId,
                 StreamId =  _incomingFrame.StreamId,
                 ServiceContext = _context.ServiceContext,
+                ConnectionFeatures = _context.ConnectionFeatures,
                 PipeFactory = _context.PipeFactory,
                 LocalEndPoint = _context.LocalEndPoint,
                 RemoteEndPoint = _context.RemoteEndPoint,

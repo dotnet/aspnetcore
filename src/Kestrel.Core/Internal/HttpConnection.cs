@@ -115,19 +115,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 // _http1Connection must be initialized before adding the connection to the connection manager
                 CreateHttp1Connection(httpApplication, transport, application);
 
-                // _http2Connection must be initialized before yield control to the transport thread,
+                // _http2Connection must be initialized before yielding control to the transport thread,
                 // to prevent a race condition where _http2Connection.Abort() is called just as
                 // _http2Connection is about to be initialized.
-                _http2Connection = new Http2Connection(new Http2ConnectionContext
-                {
-                    ConnectionId = _context.ConnectionId,
-                    ServiceContext = _context.ServiceContext,
-                    PipeFactory = PipeFactory,
-                    LocalEndPoint = LocalEndPoint,
-                    RemoteEndPoint = RemoteEndPoint,
-                    Application = application,
-                    Transport = transport
-                });
+                CreateHttp2Connection(httpApplication, transport, application);
 
                 // Do this before the first await so we don't yield control to the transport until we've
                 // added the connection to the connection manager
@@ -135,6 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 _lastTimestamp = _context.ServiceContext.SystemClock.UtcNow.Ticks;
 
                 _http1Connection.ConnectionFeatures.Set<IConnectionTimeoutFeature>(this);
+                _http2Connection.ConnectionFeatures.Set<IConnectionTimeoutFeature>(this);
 
                 if (adaptedPipeline != null)
                 {
@@ -187,6 +179,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 TimeoutControl = this,
                 Transport = transport,
                 Application = application
+            });
+        }
+
+        internal void CreateHttp2Connection<TContext>(IHttpApplication<TContext> httpApplication, IPipeConnection transport, IPipeConnection application)
+        {
+            _http2Connection = new Http2Connection(new Http2ConnectionContext
+            {
+                ConnectionId = _context.ConnectionId,
+                ServiceContext = _context.ServiceContext,
+                ConnectionFeatures = _context.ConnectionFeatures,
+                PipeFactory = PipeFactory,
+                LocalEndPoint = LocalEndPoint,
+                RemoteEndPoint = RemoteEndPoint,
+                Application = application,
+                Transport = transport
             });
         }
 
