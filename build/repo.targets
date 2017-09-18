@@ -17,7 +17,7 @@
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">/t:Verify</_RepositoryBuildTargets>
 
-    <PrepareDependsOn>$(PrepareDependsOn);CleanUniverseArtifacts</PrepareDependsOn>
+    <PrepareDependsOn>$(PrepareDependsOn);CleanArtifacts;CleanUniverseArtifacts</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanUniverseArtifacts</CleanDependsOn>
     <BuildDependsOn>$(BuildDependsOn);BuildRepositories</BuildDependsOn>
   </PropertyGroup>
@@ -25,6 +25,7 @@
   <Import Project="$(_RepositoryListToImport)" />
 
   <Target Name="CleanUniverseArtifacts">
+    <RemoveDir Directories="$(_CloneRepositoryRoot)" Condition="Exists('$(_CloneRepositoryRoot)') AND '$(ClearRepositoryCloneRoot)' != 'false'" />
     <RemoveDir Directories="$(RepositoryRoot)obj" Condition="Exists('$(RepositoryRoot)obj')" />
   </Target>
 
@@ -49,7 +50,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories">
+  <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories" Condition="'$(ClearRepositoryCloneRoot)' != 'false'">
     <ItemGroup>
       <_CloneRepositories Include="@(Repository);@(ShippedRepository)" />
       <_CloneRepository Include="$(MSBuildProjectFullPath)">
