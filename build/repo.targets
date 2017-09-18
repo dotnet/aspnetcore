@@ -154,9 +154,19 @@
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo)"
       ShippedArtifacts="@(ShippedArtifactInfo)"
+      StartGraphAt="$(BuildGraphOf)"
       Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber)">
       <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
     </RepoTasks.AnalyzeBuildGraph>
+  </Target>
+
+  <Target Name="UpdateRepoLineups" DependsOnTargets="ResolveRepoInfo">
+    <RepoTasks.GenerateLineup
+      Artifacts="@(ArtifactInfo)"
+      Repository="%(Repository.Identity)"
+      OutputPath="$(_CloneRepositoryRoot)%(Repository.Identity)\build\dependencies.targets"
+      UseFloatingVersions="true"
+      BuildNumber="$(BuildNumber)" />
   </Target>
 
   <Target Name="GenerateLineup" DependsOnTargets="ResolveRepoInfo">
@@ -166,7 +176,7 @@
     <RepoTasks.GenerateLineup
       Artifacts="@(ArtifactInfo)"
       OutputPath="$(ArtifactsDir)dependencies.targets"
-      UseFloatingVersions="true"
+      UseFloatingVersions="false"
       BuildNumber="$(BuildNumber)" />
   </Target>
 

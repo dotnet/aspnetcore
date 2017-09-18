@@ -38,6 +38,8 @@ namespace RepoTasks
         [Required]
         public string Properties { get; set; }
 
+        public string StartGraphAt { get; set; }
+
         /// <summary>
         /// The order in which to build repositories
         /// </summary>

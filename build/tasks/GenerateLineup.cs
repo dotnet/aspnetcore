@@ -22,6 +22,9 @@ namespace RepoTasks
         [Required]
         public string OutputPath { get; set; }
 
+        // Can be set to filter the lists of packages when produce a list for a specific repository
+        public string Repository { get; set; }
+
         public bool UseFloatingVersions { get; set; }
 
         public string BuildNumber { get; set; }
@@ -48,7 +51,12 @@ namespace RepoTasks
                 switch (info)
                 {
                     case ArtifactInfo.Package pkg when (!pkg.IsSymbolsArtifact):
-                        packages.Add(pkg.PackageInfo);
+                        // TODO filter this list based on topological sort info
+                        if (string.IsNullOrEmpty(Repository)
+                            || !Repository.Equals(pkg.RepoName, StringComparison.OrdinalIgnoreCase))
+                        {
+                            packages.Add(pkg.PackageInfo);
+                        }
                         break;
                 }
             }
@@ -77,6 +85,7 @@ namespace RepoTasks
             };
             using (var writer = XmlWriter.Create(OutputPath, settings))
             {
+                Log.LogMessage(MessageImportance.High, $"Generate {OutputPath}");
                 doc.Save(writer);
             }
             return true;
