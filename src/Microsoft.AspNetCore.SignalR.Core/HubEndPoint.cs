@@ -207,6 +207,19 @@ namespace Microsoft.AspNetCore.SignalR
         {
             try
             {
+                // We wait on abort to complete, this is so that we can guarantee that all callbacks have fired
+                // before OnDisconnectedAsync
+
+                try
+                {
+                    // Ensure the connection is aborted before firing disconnect
+                    await connection.AbortAsync();
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogTrace(0, ex, "Abort callback failed");
+                }
+
                 using (var scope = _serviceScopeFactory.CreateScope())
                 {
                     var hubActivator = scope.ServiceProvider.GetRequiredService<IHubActivator<THub>>();
@@ -231,16 +244,12 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task DispatchMessagesAsync(HubConnectionContext connection)
         {
-            // We use these for error handling. Since we dispatch multiple hub invocations
-            // in parallel, we need a way to communicate failure back to the main processing loop. The
-            // cancellation token is used to stop reading from the channel, the tcs
-            // is used to get the exception so we can bubble it up the stack
-            var cts = new CancellationTokenSource();
-            var completion = new TaskCompletionSource<object>();
+            // Since we dispatch multiple hub invocations in parallel, we need a way to communicate failure back to the main processing loop. 
+            // This is done by aborting the connection.
 
             try
             {
-                while (await connection.Input.WaitToReadAsync(cts.Token))
+                while (await connection.Input.WaitToReadAsync(connection.ConnectionAbortedToken))
                 {
                     while (connection.Input.TryRead(out var buffer))
                     {
@@ -258,7 +267,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                                         // Don't wait on the result of execution, continue processing other
                                         // incoming messages on this connection.
-                                        var ignore = ProcessInvocation(connection, invocationMessage, cts, completion);
+                                        _ = ProcessInvocation(connection, invocationMessage);
                                         break;
 
                                     // Other kind of message we weren't expecting
@@ -273,15 +282,12 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (OperationCanceledException)
             {
-                // Await the task so the exception bubbles up to the caller
-                await completion.Task;
+                // If there's an exception, bubble it to the caller
+                connection.AbortException?.Throw();
             }
         }
 
-        private async Task ProcessInvocation(HubConnectionContext connection,
-                                             InvocationMessage invocationMessage,
-                                             CancellationTokenSource dispatcherCancellation,
-                                             TaskCompletionSource<object> dispatcherCompletion)
+        private async Task ProcessInvocation(HubConnectionContext connection, InvocationMessage invocationMessage)
         {
             try
             {
@@ -291,11 +297,8 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (Exception ex)
             {
-                // Set the exception on the task completion source
-                dispatcherCompletion.TrySetException(ex);
-
-                // Cancel reading operation
-                dispatcherCancellation.Cancel();
+                // Abort the entire connection if the invocation fails in an unexpected way
+                connection.Abort(ex);
             }
         }
 
@@ -370,7 +373,7 @@ namespace Microsoft.AspNetCore.SignalR
                         result = methodExecutor.Execute(hub, invocationMessage.Arguments);
                     }
 
-                    if (IsStreamed(methodExecutor, result, methodExecutor.MethodReturnType, out var enumerator))
+                    if (IsStreamed(connection, methodExecutor, result, methodExecutor.MethodReturnType, out var enumerator))
                     {
                         _logger.LogTrace("[{connectionId}/{invocationId}] Streaming result of type {resultType}", connection.ConnectionId, invocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
                         await StreamResultsAsync(invocationMessage.InvocationId, connection, enumerator);
@@ -426,9 +429,8 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection,IAsyncEnumerator<object> enumerator)
+        private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerator<object> enumerator)
         {
-            // TODO: Cancellation? See https://github.com/aspnet/SignalR/issues/481
             try
             {
                 while (await enumerator.MoveNextAsync())
@@ -445,7 +447,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private bool IsStreamed(ObjectMethodExecutor methodExecutor, object result, Type resultType, out IAsyncEnumerator<object> enumerator)
+        private bool IsStreamed(HubConnectionContext connection, ObjectMethodExecutor methodExecutor, object result, Type resultType, out IAsyncEnumerator<object> enumerator)
         {
             if (result == null)
             {
@@ -453,17 +455,20 @@ namespace Microsoft.AspNetCore.SignalR
                 return false;
             }
 
+
+            // TODO: We need to support cancelling the stream without a client disconnect as well.
+
             var observableInterface = IsIObservable(resultType) ?
                 resultType :
                 resultType.GetInterfaces().FirstOrDefault(IsIObservable);
             if (observableInterface != null)
             {
-                enumerator = AsyncEnumeratorAdapters.FromObservable(result, observableInterface);
+                enumerator = AsyncEnumeratorAdapters.FromObservable(result, observableInterface, connection.ConnectionAbortedToken);
                 return true;
             }
             else if (IsChannel(resultType, out var payloadType))
             {
-                enumerator = AsyncEnumeratorAdapters.FromChannel(result, payloadType);
+                enumerator = AsyncEnumeratorAdapters.FromChannel(result, payloadType, connection.ConnectionAbortedToken);
                 return true;
             }
             else
