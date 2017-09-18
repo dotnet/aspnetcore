@@ -22,6 +22,8 @@ namespace RepoTools.BuildGraph
 
         public string Name { get; private set; }
 
+        public string RootDir { get; set; }
+
         public IList<Project> Projects { get; } = new List<Project>();
 
         public IList<Project> SupportProjects { get; } = new List<Project>();

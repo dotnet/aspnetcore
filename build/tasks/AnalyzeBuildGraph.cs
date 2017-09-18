@@ -99,10 +99,10 @@ namespace RepoTasks
             var inconsistentVersions = new List<VersionMismatch>();
             var reposThatShouldPatch = new HashSet<string>();
 
-            // holy crap, o^4
-            foreach (var sln in solutions)
-            foreach (var proj in sln.Projects)
-            foreach (var tfm in proj.Frameworks)
+            // TODO cleanup the 4-deep nested loops
+            foreach (var solution in solutions)
+            foreach (var project in solution.Projects)
+            foreach (var tfm in project.Frameworks)
             foreach (var dependency in tfm.Dependencies)
             {
                 if (!buildPackageMap.TryGetValue(dependency.Key, out var package))
@@ -113,20 +113,24 @@ namespace RepoTasks
 
                 var refVersion = VersionRange.Parse(dependency.Value.Version);
                 if (refVersion.IsFloating && refVersion.Float.Satisfies(package.PackageInfo.Version))
-                    continue;
-                else if (package.PackageInfo.Version.Equals(refVersion))
-                    continue;
-
-                if (!sln.ShouldBuild)
                 {
-                    if (!shippedPackageMap.TryGetValue(proj.PackageId, out _))
+                    continue;
+                }
+                else if (package.PackageInfo.Version.Equals(refVersion))
+                {
+                    continue;
+                }
+
+                if (!solution.ShouldBuild)
+                {
+                    if (!shippedPackageMap.TryGetValue(project.PackageId, out _))
                     {
-                        Log.LogMessage(MessageImportance.Normal, $"Detected inconsistent in a sample or test project {proj.FullPath}");
+                        Log.LogMessage(MessageImportance.Normal, $"Detected inconsistent in a sample or test project {project.FullPath}");
                         continue;
                     }
                     else
                     {
-                        reposThatShouldPatch.Add(Path.GetFileName(Path.GetDirectoryName(sln.FullPath)));
+                        reposThatShouldPatch.Add(Path.GetFileName(Path.GetDirectoryName(solution.FullPath)));
                     }
                 }
 
@@ -145,15 +149,15 @@ namespace RepoTasks
                 var sb = new StringBuilder();
                 sb.AppendLine();
                 sb.AppendLine($"Repos are inconsistent. The following projects have PackageReferences that should be updated");
-                foreach (var sln in inconsistentVersions.GroupBy(p => p.Solution.FullPath))
+                foreach (var solution in inconsistentVersions.GroupBy(p => p.Solution.FullPath))
                 {
-                    sb.Append("  - ").AppendLine(Path.GetFileName(sln.Key));
-                    foreach (var proj in sln.GroupBy(p => p.Project.FullPath))
+                    sb.Append("  - ").AppendLine(Path.GetFileName(solution.Key));
+                    foreach (var project in solution.GroupBy(p => p.Project.FullPath))
                     {
-                        sb.Append("      - ").AppendLine(Path.GetFileName(proj.Key));
-                        foreach (var m in proj)
+                        sb.Append("      - ").AppendLine(Path.GetFileName(project.Key));
+                        foreach (var mismatchedReference in project)
                         {
-                            sb.AppendLine($"         + {m.PackageId}/{{{m.ActualVersion} => {m.ExpectedVersion}}}");
+                            sb.AppendLine($"         + {mismatchedReference.PackageId}/{{{mismatchedReference.ActualVersion} => {mismatchedReference.ExpectedVersion}}}");
                         }
                     }
                 }
@@ -173,7 +177,11 @@ namespace RepoTasks
             var repositories = solutions.Select(s =>
                 {
                     var repoName = Path.GetFileName(Path.GetDirectoryName(s.FullPath));
-                    var repo = new Repository(repoName);
+                    var repo = new Repository(repoName)
+                    {
+                        RootDir = Path.GetDirectoryName(s.FullPath)
+                    };
+
                     var packages = artifacts.Where(a => a.RepoName.Equals(repoName, StringComparison.OrdinalIgnoreCase)).ToList();
 
                     foreach (var proj in s.Projects)
@@ -206,6 +214,7 @@ namespace RepoTasks
                 var order = TopologicalSort.GetOrder(graphNodeRepository);
                 var repositoryTaskItem = new TaskItem(repository.Name);
                 repositoryTaskItem.SetMetadata("Order", order.ToString());
+                repositoryTaskItem.SetMetadata("RepositoryPath", repository.RootDir);
                 repositoriesWithOrder.Add((repositoryTaskItem, order));
             }
 
