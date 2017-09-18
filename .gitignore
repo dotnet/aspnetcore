@@ -39,3 +39,5 @@ node_modules
 .vscode/
 global.json
 BenchmarkDotNet.Artifacts/
+*.g.targets
+korebuild-lock.txt

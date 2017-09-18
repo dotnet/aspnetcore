@@ -1,0 +1,51 @@
+﻿<Project>
+  <ItemGroup>
+    <PackageReference Update="Microsoft.AspNet.Identity.AspNetCoreCompat" Version="0.3.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.All" Version="2.0.2-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Diagnostics" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Diagnostics.Elm" Version="0.3.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Diagnostics.Identity.Service" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.Service" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.Service.Abstractions" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.Service.AzureKeyVault" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.Service.Core" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.Service.EntityFrameworkCore" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.Service.IntegratedWebClient" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.Service.Mvc" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.Service.Specification.Tests" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Identity.Specification.Tests" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.MiddlewareAnalysis" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Mvc.Razor.ViewCompilation" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.NodeServices" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.NodeServices.Sockets" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.SpaServices" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Design" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.InMemory" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Relational" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Relational.Design.Specification.Tests" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Relational.Specification.Tests" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Specification.Tests" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Sqlite" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1-rtm-*" />
+    <DotNetCliToolReference Update="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.Extensions.Identity.Core" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.Extensions.Identity.Stores" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.VisualStudio.Web.CodeGeneration" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.VisualStudio.Web.CodeGeneration.Core" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.VisualStudio.Web.CodeGeneration.EntityFrameworkCore" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.VisualStudio.Web.CodeGeneration.Templating" Version="2.0.1-rtm-*" />
+    <DotNetCliToolReference Update="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.VisualStudio.Web.CodeGeneration.Utils" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.VisualStudio.Web.CodeGenerators.Mvc" Version="2.0.1-rtm-*" />
+  </ItemGroup>
+</Project>
