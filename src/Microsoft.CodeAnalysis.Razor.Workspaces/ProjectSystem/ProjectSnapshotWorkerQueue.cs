@@ -57,7 +57,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
         // Used in unit tests to control the timer delay.
         public TimeSpan Delay { get; set; } = TimeSpan.FromSeconds(2);
 
-#if DEBUG
         public bool IsScheduledOrRunning => _timer != null;
 
         // Used in unit tests to ensure we can control when background work starts.
@@ -68,12 +67,9 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
 
         // Used in unit tests to ensure we can be notified when all completes.
         public ManualResetEventSlim NotifyForegroundWorkFinish { get; set; }
-#endif
 
-        [Conditional("DEBUG")]
         private void OnStartingBackgroundWork()
         {
-
             if (BlockBackgroundWorkStart != null)
             {
                 BlockBackgroundWorkStart.Wait();
@@ -81,7 +77,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        [Conditional("DEBUG")]
         private void OnFinishingBackgroundWork()
         {
             if (NotifyBackgroundWorkFinish != null)
@@ -90,7 +85,6 @@ namespace Microsoft.CodeAnalysis.Razor.ProjectSystem
             }
         }
 
-        [Conditional("DEBUG")]
         private void OnFinishingForegroundWork()
         {
             if (NotifyForegroundWorkFinish != null)
