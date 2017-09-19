@@ -15,7 +15,6 @@ Please log a new issue in the appropriate GitHub repo. Here are some of the most
 * [Identity](https://github.com/aspnet/Identity)
 * [KRuntime](https://github.com/aspnet/KRuntime)
 * [MVC](https://github.com/aspnet/Mvc)
-* [SignalR-Server](https://github.com/aspnet/SignalR-Server)
 
 A description of all the repos is [here](https://github.com/aspnet/Home/wiki/Repo-List).
 
