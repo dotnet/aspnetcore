@@ -35,6 +35,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             lock (_writeLock)
             {
+                if (_completed)
+                {
+                    return;
+                }
+
                 _completed = true;
                 _outputReader.CancelPendingRead();
                 _outputWriter.Complete(ex);
