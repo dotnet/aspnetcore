@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     internal class AuthenticationHandler : IAuthenticationHandler
     {
         private const string MSAspNetCoreWinAuthToken = "MS-ASPNETCORE-WINAUTHTOKEN";
+        private static readonly Func<object, Task> ClearUserDelegate = ClearUser;
         private WindowsPrincipal _user;
         private HttpContext _context;
 
@@ -51,11 +52,24 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                     NativeMethods.CloseHandle(handle);
 
                     _context.Response.RegisterForDispose(winIdentity);
+                    // We don't want loggers accessing a disposed identity.
+                    // https://github.com/aspnet/Logging/issues/543#issuecomment-321907828
+                    _context.Response.OnCompleted(ClearUserDelegate, _context);
                     _user = new WindowsPrincipal(winIdentity);
                 }
             }
 
             return _user;
+        }
+
+        private static Task ClearUser(object arg)
+        {
+            var context = (HttpContext)arg;
+            if (context.User is WindowsPrincipal)
+            {
+                context.User = null;
+            }
+            return Task.CompletedTask;
         }
 
         public Task ChallengeAsync(AuthenticationProperties properties)
