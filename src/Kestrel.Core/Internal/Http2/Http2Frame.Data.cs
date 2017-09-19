@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             var padded = padLength != null;
 
-            Length = MinAllowedMaxFrameSize - HeaderLength;
+            Length = MinAllowedMaxFrameSize;
             Type = Http2FrameType.DATA;
             DataFlags = padded ? Http2DataFrameFlags.PADDED : Http2DataFrameFlags.NONE;
             StreamId = streamId;

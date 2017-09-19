@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private const int StreamIdOffset = 5;
         private const int PayloadOffset = 9;
 
-        private readonly byte[] _data = new byte[MinAllowedMaxFrameSize];
+        private readonly byte[] _data = new byte[HeaderLength + MinAllowedMaxFrameSize];
 
         public ArraySegment<byte> Raw => new ArraySegment<byte>(_data, 0, HeaderLength + Length);
 

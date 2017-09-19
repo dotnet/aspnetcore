@@ -71,6 +71,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private static readonly byte[] _worldBytes = Encoding.ASCII.GetBytes("world");
         private static readonly byte[] _helloWorldBytes = Encoding.ASCII.GetBytes("hello, world");
         private static readonly byte[] _noData = new byte[0];
+        private static readonly byte[] _maxData = Encoding.ASCII.GetBytes(new string('a', Http2Frame.MinAllowedMaxFrameSize));
 
         private readonly PipeFactory _pipeFactory = new PipeFactory();
         private readonly (IPipeConnection Transport, IPipeConnection Application) _pair;
@@ -246,6 +247,32 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
 
             Assert.Equal(dataFrame.DataPayload, _helloWorldBytes);
+        }
+
+        [Fact]
+        public async Task DATA_Received_MaxSize_ReadByStream()
+        {
+            await InitializeConnectionAsync(_echoApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: false);
+            await SendDataAsync(1, _maxData, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 37,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            var dataFrame = await ExpectAsync(Http2FrameType.DATA,
+                withLength: _maxData.Length,
+                withFlags: (byte)Http2DataFrameFlags.NONE,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+
+            Assert.Equal(dataFrame.DataPayload, _maxData);
         }
 
         [Fact]
