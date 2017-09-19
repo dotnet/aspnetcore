@@ -18,6 +18,7 @@ For non-security related bugs please log a new issue in the appropriate GitHub r
 * [Razor](https://github.com/aspnet/Razor)
 * [Templates](https://github.com/aspnet/Templates)
 * [Tooling](https://github.com/aspnet/Tooling)
+* [SignalR](https://github.com/aspnet/SignalR)
 
 Or browse the full list of repos in the [aspnet](https://github.com/aspnet/) organization.
 
