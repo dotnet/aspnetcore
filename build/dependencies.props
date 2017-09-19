@@ -64,6 +64,8 @@
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.8.0" Version="8.0.50727" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop.9.0" Version="9.0.30729" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.Text.Data" Version="15.0.26606" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.VisualStudio.Text.UI" Version="15.0.26606" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="1.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Win32.Registry" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Moq" Version="4.7.49" Source="$(DefaultNuGetFeed)"/>
