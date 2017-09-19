@@ -6,7 +6,7 @@ using System.Text;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.Text;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class TextSnapshotSourceDocument : RazorSourceDocument
     {

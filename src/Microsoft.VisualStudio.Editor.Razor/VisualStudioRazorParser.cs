@@ -12,7 +12,7 @@ using Microsoft.VisualStudio.Text.Editor;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
 using Timer = System.Timers.Timer;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class VisualStudioRazorParser : IDisposable
     {

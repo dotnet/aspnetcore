@@ -5,7 +5,7 @@
 
 using System;
 using Microsoft.CodeAnalysis;
-using Microsoft.VisualStudio.LanguageServices.Razor.Editor;
+using Microsoft.VisualStudio.Editor.Razor;
 
 namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
 {

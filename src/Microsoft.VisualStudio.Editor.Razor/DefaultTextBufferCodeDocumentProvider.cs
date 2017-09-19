@@ -6,11 +6,11 @@ using System.ComponentModel.Composition;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.Text;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     [System.Composition.Shared]
-    [Export(typeof(VisualStudioCodeDocumentProvider))]
-    internal class DefaultVisualStudioCodeDocumentProvider : VisualStudioCodeDocumentProvider
+    [Export(typeof(TextBufferCodeDocumentProvider))]
+    internal class DefaultTextBufferCodeDocumentProvider : TextBufferCodeDocumentProvider
     {
         public override bool TryGetFromBuffer(ITextBuffer textBuffer, out RazorCodeDocument codeDocument)
         {
@@ -19,16 +19,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(textBuffer));
             }
 
+            // Hack until we own the lifetime of the parser.
             if (textBuffer.Properties.TryGetProperty(typeof(VisualStudioRazorParser), out VisualStudioRazorParser parser) && parser.CodeDocument != null)
             {
                 codeDocument = parser.CodeDocument;
-                return true;
-            }
-
-            // Support the legacy parser for code document extraction.
-            if (textBuffer.Properties.TryGetProperty(typeof(RazorEditorParser), out RazorEditorParser legacyParser) && legacyParser.CodeDocument != null)
-            {
-                codeDocument = legacyParser.CodeDocument;
                 return true;
             }
 

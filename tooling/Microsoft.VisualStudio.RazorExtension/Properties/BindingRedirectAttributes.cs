@@ -52,6 +52,14 @@ using Microsoft.VisualStudio.Shell;
     NewVersion = "2.1.0.0")]
 
 [assembly: ProvideBindingRedirection(
+    AssemblyName = "Microsoft.VisualStudio.Editor.Razor",
+    GenerateCodeBase = true,
+    PublicKeyToken = "adb9793829ddae60",
+    OldVersionLowerBound = "0.0.0.0",
+    OldVersionUpperBound = "2.1.0.0",
+    NewVersion = "2.1.0.0")]
+
+[assembly: ProvideBindingRedirection(
     AssemblyName = "Microsoft.VisualStudio.LanguageServices.Razor",
     GenerateCodeBase = true,
     PublicKeyToken = "adb9793829ddae60",

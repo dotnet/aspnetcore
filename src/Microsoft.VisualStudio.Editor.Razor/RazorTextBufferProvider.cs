@@ -4,7 +4,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.Text;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal abstract class RazorTextBufferProvider
     {

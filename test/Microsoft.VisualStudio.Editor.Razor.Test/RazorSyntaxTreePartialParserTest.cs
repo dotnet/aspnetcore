@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.VisualStudio.Text;
 using Xunit;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     public class RazorSyntaxTreePartialParserTest
     {

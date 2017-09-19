@@ -6,10 +6,9 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Windows;
-using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.ComponentModelHost;
 using Microsoft.VisualStudio.Editor;
-using Microsoft.VisualStudio.LanguageServices.Razor.Editor;
+using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text.Editor;

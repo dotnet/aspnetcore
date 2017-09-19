@@ -4,11 +4,13 @@
 using System;
 using System.IO;
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Mvc1_X = Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X;
 using MvcLatest = Microsoft.AspNetCore.Mvc.Razor.Extensions;
 
-namespace Microsoft.CodeAnalysis.Razor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class DefaultTemplateEngineFactoryService : RazorTemplateEngineFactoryService
     {

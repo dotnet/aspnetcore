@@ -6,9 +6,9 @@ using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
-    [ExportLanguageServiceFactory(typeof(CodeAnalysis.Razor.RazorTemplateEngineFactoryService), RazorLanguage.Name, ServiceLayer.Default)]
+    [ExportLanguageServiceFactory(typeof(RazorTemplateEngineFactoryService), RazorLanguage.Name, ServiceLayer.Default)]
     internal class DefaultTemplateEngineFactoryServiceFactory : ILanguageServiceFactory
     {
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)

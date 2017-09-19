@@ -4,10 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Utilities;
 
-namespace Microsoft.AspNetCore.Razor.Language.Legacy
+namespace Microsoft.VisualStudio.Text
 {
     public class StringTextSnapshot : ITextSnapshot
     {

@@ -5,7 +5,7 @@ using System;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.Text;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal sealed class DocumentStructureChangedEventArgs : EventArgs
     {

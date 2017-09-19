@@ -2,34 +2,37 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     [System.Composition.Shared]
     [Export(typeof(RazorCodeDocumentProvider))]
     internal class DefaultCodeDocumentProvider : RazorCodeDocumentProvider
     {
         private readonly RazorTextBufferProvider _bufferProvider;
-        private readonly VisualStudioCodeDocumentProvider _codeDocumentProvider;
+        private readonly IEnumerable<TextBufferCodeDocumentProvider> _codeDocumentProviders;
 
         [ImportingConstructor]
-        public DefaultCodeDocumentProvider(RazorTextBufferProvider bufferProvider, VisualStudioCodeDocumentProvider codeDocumentProvider)
+        public DefaultCodeDocumentProvider(
+            RazorTextBufferProvider bufferProvider, 
+            [ImportMany] IEnumerable<TextBufferCodeDocumentProvider> codeDocumentProviders)
         {
             if (bufferProvider == null)
             {
                 throw new ArgumentNullException(nameof(bufferProvider));
             }
 
-            if (codeDocumentProvider == null)
+            if (codeDocumentProviders == null)
             {
-                throw new ArgumentNullException(nameof(codeDocumentProvider));
+                throw new ArgumentNullException(nameof(codeDocumentProviders));
             }
 
             _bufferProvider = bufferProvider;
-            _codeDocumentProvider = codeDocumentProvider;
+            _codeDocumentProviders = codeDocumentProviders;
         }
 
         public override bool TryGetFromDocument(TextDocument document, out RazorCodeDocument codeDocument)
@@ -46,13 +49,17 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 return false;
             }
 
-            if (!_codeDocumentProvider.TryGetFromBuffer(textBuffer, out codeDocument))
+            foreach (var codeDocumentProvider in _codeDocumentProviders)
             {
-                // A Razor code document has not yet been associated with the buffer.
-                return false;
+                if (codeDocumentProvider.TryGetFromBuffer(textBuffer, out codeDocument))
+                {
+                    return true;
+                }
             }
 
-            return true;
+            // A Razor code document has not yet been associated with the buffer yet.
+            codeDocument = null;
+            return false;
         }
     }
 }

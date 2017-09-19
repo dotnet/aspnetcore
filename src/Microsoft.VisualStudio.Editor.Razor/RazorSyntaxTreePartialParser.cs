@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Span = Microsoft.AspNetCore.Razor.Language.Legacy.Span;
 
-namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
+namespace Microsoft.VisualStudio.Editor.Razor
 {
     internal class RazorSyntaxTreePartialParser
     {

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Razor.Language;
+using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Utilities;
 using Moq;
@@ -9,7 +10,7 @@ using Xunit;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 {
-    public class DefaultVisualStudioCodeDocumentProviderTest
+    public class LegacyTextBufferCodeDocumentProviderTest
     {
         [Fact]
         public void TryGetFromBuffer_UsesVisualStudioRazorParserIfAvailable()
@@ -22,7 +23,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             var textBuffer = new Mock<ITextBuffer>();
             textBuffer.Setup(buffer => buffer.Properties)
                 .Returns(properties);
-            var provider = new DefaultVisualStudioCodeDocumentProvider();
+            var provider = new LegacyTextBufferCodeDocumentProvider();
 
             // Act
             var result = provider.TryGetFromBuffer(textBuffer.Object, out var codeDocument);
@@ -43,7 +44,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             var textBuffer = new Mock<ITextBuffer>();
             textBuffer.Setup(buffer => buffer.Properties)
                 .Returns(properties);
-            var provider = new DefaultVisualStudioCodeDocumentProvider();
+            var provider = new LegacyTextBufferCodeDocumentProvider();
 
             // Act
             var result = provider.TryGetFromBuffer(textBuffer.Object, out var codeDocument);
@@ -67,7 +68,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             var textBuffer = new Mock<ITextBuffer>();
             textBuffer.Setup(buffer => buffer.Properties)
                 .Returns(properties);
-            var provider = new DefaultVisualStudioCodeDocumentProvider();
+            var provider = new LegacyTextBufferCodeDocumentProvider();
 
             // Act
             var result = provider.TryGetFromBuffer(textBuffer.Object, out var codeDocument);
@@ -85,7 +86,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             var textBuffer = new Mock<ITextBuffer>();
             textBuffer.Setup(buffer => buffer.Properties)
                 .Returns(properties);
-            var provider = new DefaultVisualStudioCodeDocumentProvider();
+            var provider = new LegacyTextBufferCodeDocumentProvider();
 
             // Act
             var result = provider.TryGetFromBuffer(textBuffer.Object, out var codeDocument);
