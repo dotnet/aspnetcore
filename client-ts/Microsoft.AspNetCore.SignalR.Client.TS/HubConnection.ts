@@ -25,7 +25,7 @@ export class HubConnection {
     private readonly logger: ILogger;
     private protocol: IHubProtocol;
     private callbacks: Map<string, (invocationUpdate: CompletionMessage | ResultMessage) => void>;
-    private methods: Map<string, (...args: any[]) => void>;
+    private methods: Map<string, ((...args: any[]) => void)[]>;
     private id: number;
     private connectionClosedCallback: ConnectionClosed;
 
@@ -49,7 +49,7 @@ export class HubConnection {
         }
 
         this.callbacks = new Map<string, (invocationEvent: CompletionMessage | ResultMessage) => void>();
-        this.methods = new Map<string, (...args: any[]) => void>();
+        this.methods = new Map<string, ((...args: any[]) => void)[]>();
         this.id = 0;
     }
 
@@ -82,9 +82,9 @@ export class HubConnection {
     }
 
     private invokeClientMethod(invocationMessage: InvocationMessage) {
-        let method = this.methods.get(invocationMessage.target.toLowerCase());
-        if (method) {
-            method.apply(this, invocationMessage.arguments);
+        let methods = this.methods.get(invocationMessage.target.toLowerCase());
+        if (methods) {
+            methods.forEach(m => m.apply(this, invocationMessage.arguments));
             if (!invocationMessage.nonblocking) {
                 // TODO: send result back to the server?
             }
@@ -211,7 +211,32 @@ export class HubConnection {
     }
 
     on(methodName: string, method: (...args: any[]) => void) {
-        this.methods.set(methodName.toLowerCase(), method);
+        if (!methodName || !method) {
+            return;
+        }
+
+        methodName = methodName.toLowerCase();
+        if (!this.methods.has(methodName)) {
+            this.methods.set(methodName, []);
+        }
+
+        this.methods.get(methodName).push(method);
+    }
+
+    off(methodName: string, method: (...args: any[]) => void) {
+        if (!methodName || !method) {
+            return;
+        }
+
+        methodName = methodName.toLowerCase();
+        let handlers = this.methods.get(methodName);
+        if (!handlers) {
+            return;
+        }
+        var removeIdx = handlers.indexOf(method);
+        if (removeIdx != -1) {
+            handlers.splice(removeIdx, 1);
+        }
     }
 
     set onClosed(callback: ConnectionClosed) {
