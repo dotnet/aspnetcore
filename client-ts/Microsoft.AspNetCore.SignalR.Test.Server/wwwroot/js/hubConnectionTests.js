@@ -18,10 +18,10 @@ describe('hubConnection', function () {
                     logging: signalR.LogLevel.Trace
                 };
                 var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
-                hubConnection.onClosed = function (error) {
+                hubConnection.onClosed(function (error) {
                     expect(error).toBe(undefined);
                     done();
-                };
+                });
 
                 hubConnection.start().then(function () {
                     hubConnection.invoke('Echo', message).then(function (result) {
@@ -46,10 +46,10 @@ describe('hubConnection', function () {
                 };
                 var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
 
-                hubConnection.onClosed = function (error) {
+                hubConnection.onClosed(function (error) {
                     expect(error).toBe(undefined);
                     done();
-                };
+                });
 
                 var received = [];
                 hubConnection.start().then(function () {
@@ -172,10 +172,10 @@ describe('hubConnection', function () {
                 };
                 var hubConnection = new signalR.HubConnection('http://' + document.location.host + '/uncreatable', options);
 
-                hubConnection.onClosed = function (error) {
+                hubConnection.onClosed(function (error) {
                     expect(error.message).toMatch(errorRegex[signalR.TransportType[transportType]]);
                     done();
-                };
+                });
                 hubConnection.start();
             });
         });

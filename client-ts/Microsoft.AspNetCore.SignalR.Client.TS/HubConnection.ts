@@ -27,7 +27,7 @@ export class HubConnection {
     private callbacks: Map<string, (invocationUpdate: CompletionMessage | ResultMessage) => void>;
     private methods: Map<string, ((...args: any[]) => void)[]>;
     private id: number;
-    private connectionClosedCallback: ConnectionClosed;
+    private closedCallbacks: ConnectionClosed[];
 
     constructor(urlOrConnection: string | IConnection, options: IHubConnectionOptions = {}) {
         options = options || {};
@@ -44,12 +44,13 @@ export class HubConnection {
         this.connection.onDataReceived = data => {
             this.onDataReceived(data);
         };
-        this.connection.onClosed = (error: Error) => {
+        this.connection.onClosed = (error?: Error) => {
             this.onConnectionClosed(error);
         }
 
         this.callbacks = new Map<string, (invocationEvent: CompletionMessage | ResultMessage) => void>();
         this.methods = new Map<string, ((...args: any[]) => void)[]>();
+        this.closedCallbacks = [];
         this.id = 0;
     }
 
@@ -94,7 +95,7 @@ export class HubConnection {
         }
     }
 
-    private onConnectionClosed(error: Error) {
+    private onConnectionClosed(error?: Error) {
         let errorCompletionMessage = <CompletionMessage>{
             type: MessageType.Completion,
             invocationId: "-1",
@@ -106,9 +107,7 @@ export class HubConnection {
         });
         this.callbacks.clear();
 
-        if (this.connectionClosedCallback) {
-            this.connectionClosedCallback(error);
-        }
+        this.closedCallbacks.forEach(c => c.apply(this, [error]));
     }
 
     async start(): Promise<void> {
@@ -239,8 +238,10 @@ export class HubConnection {
         }
     }
 
-    set onClosed(callback: ConnectionClosed) {
-        this.connectionClosedCallback = callback;
+    onClosed(callback: ConnectionClosed) {
+        if (callback) {
+            this.closedCallbacks.push(callback);
+        }
     }
 
     private createInvocation(methodName: string, args: any[], nonblocking: boolean): InvocationMessage {

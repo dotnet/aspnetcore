@@ -391,6 +391,40 @@ describe("HubConnection", () => {
             expect(await observer.completed).toEqual([1, 2, 3]);
         });
     });
+
+    describe("onClose", () => {
+        it("it can have multiple callbacks", async () => {
+            let connection = new TestConnection();
+            let hubConnection = new HubConnection(connection);
+            let invocations = 0;
+            hubConnection.onClosed(e => invocations++);
+            hubConnection.onClosed(e => invocations++);
+            // Typically this would be called by the transport
+            connection.onClosed();
+            expect(invocations).toBe(2);
+        });
+
+        it("callbacks receive error", async () => {
+            let connection = new TestConnection();
+            let hubConnection = new HubConnection(connection);
+            let error: Error;
+            hubConnection.onClosed(e => error = e);
+
+            // Typically this would be called by the transport
+            connection.onClosed(new Error("Test error."));
+            expect(error.message).toBe("Test error.");
+        });
+
+        it("ignores null callbacks", async () => {
+            let connection = new TestConnection();
+            let hubConnection = new HubConnection(connection);
+            hubConnection.onClosed(null);
+            hubConnection.onClosed(undefined);
+            // Typically this would be called by the transport
+            connection.onClosed();
+            // expect no errors
+        });
+    });
 });
 
 class TestConnection implements IConnection {
