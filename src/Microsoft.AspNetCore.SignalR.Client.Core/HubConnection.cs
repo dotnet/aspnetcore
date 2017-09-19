@@ -131,10 +131,15 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _handlers.AddOrUpdate(methodName, invocationHandler, (_, __) => invocationHandler);
         }
 
-        public ReadableChannel<object> Stream(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
+        public async Task<ReadableChannel<object>> StreamAsync(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
+        {
+            return await StreamAsyncCore(methodName, returnType, cancellationToken).ForceAsync();
+        }
+
+        private async Task<ReadableChannel<object>> StreamAsyncCore(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
         {
             var irq = InvocationRequest.Stream(cancellationToken, returnType, GetNextId(), _loggerFactory, out var channel);
-            _ = InvokeCore(methodName, irq, args, nonBlocking: false);
+            await InvokeCore(methodName, irq, args, nonBlocking: false);
             return channel;
         }
 

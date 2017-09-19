@@ -41,17 +41,17 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnection.SendAsync(methodName, CancellationToken.None, args);
         }
 
-        public static ReadableChannel<TResult> Stream<TResult>(this HubConnection hubConnection, string methodName, params object[] args) =>
-            Stream<TResult>(hubConnection, methodName, CancellationToken.None, args);
+        public static Task<ReadableChannel<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, params object[] args) =>
+            StreamAsync<TResult>(hubConnection, methodName, CancellationToken.None, args);
 
-        public static ReadableChannel<TResult> Stream<TResult>(this HubConnection hubConnection, string methodName, CancellationToken cancellationToken, params object[] args)
+        public static async Task<ReadableChannel<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, CancellationToken cancellationToken, params object[] args)
         {
             if (hubConnection == null)
             {
                 throw new ArgumentNullException(nameof(hubConnection));
             }
 
-            var inputChannel = hubConnection.Stream(methodName, typeof(TResult), cancellationToken, args);
+            var inputChannel = await hubConnection.StreamAsync(methodName, typeof(TResult), cancellationToken, args);
             var outputChannel = Channel.CreateUnbounded<TResult>();
 
             // Local function to provide a way to run async code as fire-and-forget

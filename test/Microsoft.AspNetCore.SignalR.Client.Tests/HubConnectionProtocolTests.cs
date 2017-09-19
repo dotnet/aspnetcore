@@ -98,7 +98,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var channel = hubConnection.Stream<object>("Foo");
+                var channel = await hubConnection.StreamAsync<object>("Foo");
 
                 // skip negotiation
                 await connection.ReadSentTextMessageAsync().OrTimeout();
@@ -148,7 +148,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var channel = hubConnection.Stream<int>("Foo");
+                var channel = await hubConnection.StreamAsync<int>("Foo");
 
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
 
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var channel = hubConnection.Stream<string>("Foo");
+                var channel = await hubConnection.StreamAsync<string>("Foo");
 
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, result = "Oops" }).OrTimeout();
 
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var channel = hubConnection.Stream<int>("Foo");
+                var channel = await hubConnection.StreamAsync<int>("Foo");
 
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, error = "An error occurred" }).OrTimeout();
 
@@ -284,7 +284,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             {
                 await hubConnection.StartAsync();
 
-                var channel = hubConnection.Stream<string>("Foo");
+                var channel = await hubConnection.StreamAsync<string>("Foo");
 
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "1" }).OrTimeout();
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "2" }).OrTimeout();
