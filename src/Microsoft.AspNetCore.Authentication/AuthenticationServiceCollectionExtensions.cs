@@ -46,7 +46,7 @@ namespace Microsoft.Extensions.DependencyInjection
             return builder;
         }
 
-        // REMOVE below once callers have been updated
+        [Obsolete("AddScheme is obsolete. Use AddAuthentication().AddScheme instead.")]
         public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, string displayName, Action<AuthenticationSchemeBuilder> configureScheme, Action<TOptions> configureOptions)
             where TOptions : AuthenticationSchemeOptions, new()
             where THandler : AuthenticationHandler<TOptions>
@@ -67,16 +67,19 @@ namespace Microsoft.Extensions.DependencyInjection
             return services;
         }
 
+        [Obsolete("AddScheme is obsolete. Use AddAuthentication().AddScheme instead.")]
         public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, Action<TOptions> configureOptions)
             where TOptions : AuthenticationSchemeOptions, new()
             where THandler : AuthenticationHandler<TOptions>
             => services.AddScheme<TOptions, THandler>(authenticationScheme, displayName: null, configureScheme: null, configureOptions: configureOptions);
 
+        [Obsolete("AddScheme is obsolete. Use AddAuthentication().AddScheme instead.")]
         public static IServiceCollection AddScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, string displayName, Action<TOptions> configureOptions)
             where TOptions : AuthenticationSchemeOptions, new()
             where THandler : AuthenticationHandler<TOptions>
             => services.AddScheme<TOptions, THandler>(authenticationScheme, displayName, configureScheme: null, configureOptions: configureOptions);
 
+        [Obsolete("AddScheme is obsolete. Use AddAuthentication().AddScheme instead.")]
         public static IServiceCollection AddRemoteScheme<TOptions, THandler>(this IServiceCollection services, string authenticationScheme, string displayName, Action<TOptions> configureOptions)
             where TOptions : RemoteAuthenticationOptions, new()
             where THandler : RemoteAuthenticationHandler<TOptions>
