@@ -70,7 +70,7 @@ namespace Microsoft.AspNetCore.Authentication
                                 new InvalidOperationException("Invalid return state, unable to redirect.");
                 }
 
-                ticket = authResult.Ticket;
+                ticket = authResult?.Ticket;
             }
             catch (Exception ex)
             {

@@ -132,7 +132,6 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             }
 
             var currentUtc = Clock.UtcNow;
-            var issuedUtc = ticket.Properties.IssuedUtc;
             var expiresUtc = ticket.Properties.ExpiresUtc;
 
             if (expiresUtc != null && expiresUtc.Value < currentUtc)
@@ -246,7 +245,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             _signInCalled = true;
 
             // Process the request cookie to initialize members like _sessionKey.
-            var result = await EnsureCookieTicket();
+            await EnsureCookieTicket();
             var cookieOptions = BuildCookieOptions();
 
             var signInContext = new CookieSigningInContext(
@@ -328,7 +327,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
             _signOutCalled = true;
 
             // Process the request cookie to initialize members like _sessionKey.
-            var ticket = await EnsureCookieTicket();
+            await EnsureCookieTicket();
             var cookieOptions = BuildCookieOptions();
             if (Options.SessionStore != null && _sessionKey != null)
             {
