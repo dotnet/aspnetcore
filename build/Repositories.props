@@ -1,14 +1,14 @@
 <Project>
   <ItemGroup>
     <!-- Repos being patched -->
-    <Repository Include="Diagnostics" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <Repository Include="EntityFrameworkCore" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <Repository Include="Identity" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <Repository Include="JavaScriptServices" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <Repository Include="MetaPackages" Branch="feature/2.0.2" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <Repository Include="Mvc" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <Repository Include="MvcPrecompilation" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <Repository Include="Scaffolding" Branch="feature/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Diagnostics" Branch="rel/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="EntityFrameworkCore" Branch="rel/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Identity" Branch="rel/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="JavaScriptServices" Branch="rel/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="MetaPackages" Branch="rel/2.0.2" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Mvc" Branch="rel/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="MvcPrecompilation" Branch="rel/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Scaffolding" Branch="rel/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
 
     <!--
     Repos not building this patch.
