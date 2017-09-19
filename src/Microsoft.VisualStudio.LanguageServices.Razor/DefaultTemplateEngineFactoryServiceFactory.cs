@@ -4,6 +4,7 @@
 using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Host.Mef;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 
 namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
@@ -12,7 +13,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
     {
         public ILanguageService CreateLanguageService(HostLanguageServices languageServices)
         {
-            return new DefaultTemplateEngineFactoryService(languageServices);
+            return new DefaultTemplateEngineFactoryService(languageServices.GetRequiredService<ProjectSnapshotManager>());
         }
     }
 }

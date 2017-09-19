@@ -3,10 +3,8 @@
 
 using System;
 using System.IO;
-using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Host;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Mvc1_X = Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X;
 using MvcLatest = Microsoft.AspNetCore.Mvc.Razor.Extensions;
 
@@ -14,14 +12,21 @@ namespace Microsoft.CodeAnalysis.Razor
 {
     internal class DefaultTemplateEngineFactoryService : RazorTemplateEngineFactoryService
     {
-        private const string MvcAssemblyName = "Microsoft.AspNetCore.Mvc.Razor";
-        private static readonly Version LatestSupportedMvc = new Version(2, 1, 0);
+        private readonly static MvcExtensibilityConfiguration DefaultConfiguration = new MvcExtensibilityConfiguration(
+            ProjectExtensibilityConfigurationKind.Fallback,
+            new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor.Language", new Version("2.0.0.0"))),
+            new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("2.0.0.0"))));
 
-        private readonly HostLanguageServices _services;
+        private readonly ProjectSnapshotManager _projectManager;
 
-        public DefaultTemplateEngineFactoryService(HostLanguageServices services)
+        public DefaultTemplateEngineFactoryService(ProjectSnapshotManager projectManager)
         {
-            _services = services;
+            if (projectManager == null)
+            {
+                throw new ArgumentNullException(nameof(projectManager));
+            }
+
+            _projectManager = projectManager;
         }
 
         public override RazorTemplateEngine Create(string projectPath, Action<IRazorEngineBuilder> configure)
@@ -31,9 +36,12 @@ namespace Microsoft.CodeAnalysis.Razor
                 throw new ArgumentNullException(nameof(projectPath));
             }
 
+            // In 15.5 we expect projectPath to be a directory, NOT the path to the csproj.
+            var project = FindProject(projectPath);
+            var configuration = (project?.Configuration as MvcExtensibilityConfiguration) ?? DefaultConfiguration;
+
             RazorEngine engine;
-            var mvcVersion = GetMvcVersion(projectPath);
-            if (mvcVersion?.Major == 1)
+            if (configuration.RazorAssembly.Identity.Version.Major == 1)
             {
                 engine = RazorEngine.CreateDesignTime(b =>
                 {
@@ -41,7 +49,7 @@ namespace Microsoft.CodeAnalysis.Razor
 
                     Mvc1_X.RazorExtensions.Register(b);
 
-                    if (mvcVersion?.Minor >= 1)
+                    if (configuration.MvcAssembly.Identity.Version.Minor >= 1)
                     {
                         Mvc1_X.RazorExtensions.RegisterViewComponentTagHelpers(b);
                     }
@@ -53,12 +61,6 @@ namespace Microsoft.CodeAnalysis.Razor
             }
             else
             {
-                if (mvcVersion?.Major != LatestSupportedMvc.Major)
-                {
-                    // TODO: Log unknown Mvc version. Something like
-                    // Could not construct Razor engine for Mvc version '{mvcVersion}'. Falling back to Razor engine for Mvc '{LatestSupportedMvc}'.
-                }
-
                 engine = RazorEngine.CreateDesignTime(b =>
                 {
                     configure?.Invoke(b);
@@ -72,28 +74,19 @@ namespace Microsoft.CodeAnalysis.Razor
             }
         }
 
-        private Version GetMvcVersion(string projectPath)
+        private ProjectSnapshot FindProject(string directory)
         {
-            var workspace = _services.WorkspaceServices.Workspace;
+            directory = NormalizeDirectoryPath(directory);
 
-            var project = workspace.CurrentSolution.Projects.FirstOrDefault(p =>
+            var projects = _projectManager.Projects;
+            for (var i = 0; i < projects.Count; i++)
             {
-                var directory = Path.GetDirectoryName(p.FilePath);
-                return string.Equals(
-                    NormalizeDirectoryPath(directory),
-                    NormalizeDirectoryPath(projectPath),
-                    StringComparison.OrdinalIgnoreCase);
-            });
-
-            if (project != null)
-            {
-                var compilation = CSharpCompilation.Create(project.AssemblyName).AddReferences(project.MetadataReferences);
-
-                foreach (var identity in compilation.ReferencedAssemblyNames)
+                var project = projects[i];
+                if (project.UnderlyingProject.FilePath != null)
                 {
-                    if (identity.Name == MvcAssemblyName)
+                    if (string.Equals(directory, NormalizeDirectoryPath(Path.GetDirectoryName(project.UnderlyingProject.FilePath)), StringComparison.OrdinalIgnoreCase))
                     {
-                        return identity.Version;
+                        return project;
                     }
                 }
             }

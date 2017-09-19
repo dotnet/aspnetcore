@@ -8,18 +8,43 @@ using Microsoft.CodeAnalysis.Host;
 using Mvc1_X = Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X;
 using MvcLatest = Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Xunit;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using System.Collections.Generic;
+using Moq;
+using System;
 
 namespace Microsoft.CodeAnalysis.Razor
 {
     public class DefaultTemplateEngineFactoryServiceTest
     {
+        public DefaultTemplateEngineFactoryServiceTest()
+        {
+            Workspace = new AdhocWorkspace();
+
+            var info = ProjectInfo.Create(ProjectId.CreateNewId("Test"), VersionStamp.Default, "Test", "Test", LanguageNames.CSharp, filePath: "/TestPath/SomePath/Test.csproj");
+            Project = Workspace.CurrentSolution.AddProject(info).GetProject(info.Id);
+        }
+
+        // We don't actually look at the project, we rely on the ProjectStateManager
+        public Project Project { get; }
+
+        public Workspace Workspace { get; }
+
         [Fact]
         public void Create_CreatesDesignTimeTemplateEngine_ForLatest()
         {
             // Arrange
-            var mvcReference = GetAssemblyMetadataReference("Microsoft.AspNetCore.Mvc.Razor", "2.0.0");
-            var services = GetServices(mvcReference);
-            var factoryService = new DefaultTemplateEngineFactoryService(services);
+            var projectManager = new TestProjectSnapshotManager(Workspace);
+            projectManager.ProjectAdded(Project);
+            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
+            {
+                Configuration = new MvcExtensibilityConfiguration(
+                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
+                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("2.0.0.0"))),
+                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("2.0.0.0")))),
+            });
+
+            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
@@ -38,9 +63,17 @@ namespace Microsoft.CodeAnalysis.Razor
         public void Create_CreatesDesignTimeTemplateEngine_ForVersion1_1()
         {
             // Arrange
-            var mvcReference = GetAssemblyMetadataReference("Microsoft.AspNetCore.Mvc.Razor", "1.1.3");
-            var services = GetServices(mvcReference);
-            var factoryService = new DefaultTemplateEngineFactoryService(services);
+            var projectManager = new TestProjectSnapshotManager(Workspace);
+            projectManager.ProjectAdded(Project);
+            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
+            {
+                Configuration = new MvcExtensibilityConfiguration(
+                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
+                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("1.1.3.0"))),
+                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("1.1.3.0")))),
+            });
+
+            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
@@ -59,9 +92,17 @@ namespace Microsoft.CodeAnalysis.Razor
         public void Create_DoesNotSupportViewComponentTagHelpers_ForVersion1_0()
         {
             // Arrange
-            var mvcReference = GetAssemblyMetadataReference("Microsoft.AspNetCore.Mvc.Razor", "1.0.0");
-            var services = GetServices(mvcReference);
-            var factoryService = new DefaultTemplateEngineFactoryService(services);
+            var projectManager = new TestProjectSnapshotManager(Workspace);
+            projectManager.ProjectAdded(Project);
+            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
+            {
+                Configuration = new MvcExtensibilityConfiguration(
+                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
+                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("1.0.0.0"))),
+                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("1.0.0.0")))),
+            });
+
+            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
@@ -76,12 +117,20 @@ namespace Microsoft.CodeAnalysis.Razor
         }
 
         [Fact]
-        public void Create_UnknownMvcVersion_UsesLatest()
+        public void Create_HigherMvcVersion_UsesLatest()
         {
             // Arrange
-            var mvcReference = GetAssemblyMetadataReference("Microsoft.AspNetCore.Mvc.Razor", "3.0.0");
-            var services = GetServices(mvcReference);
-            var factoryService = new DefaultTemplateEngineFactoryService(services);
+            var projectManager = new TestProjectSnapshotManager(Workspace);
+            projectManager.ProjectAdded(Project);
+            projectManager.ProjectUpdated(new ProjectSnapshotUpdateContext(Project)
+            {
+                Configuration = new MvcExtensibilityConfiguration(
+                    ProjectExtensibilityConfigurationKind.ApproximateMatch,
+                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Mvc.Razor", new Version("3.0.0.0"))),
+                    new ProjectExtensibilityAssembly(new AssemblyIdentity("Microsoft.AspNetCore.Razor", new Version("3.0.0.0")))),
+            });
+
+            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/SomePath/", b =>
@@ -100,9 +149,9 @@ namespace Microsoft.CodeAnalysis.Razor
         public void Create_UnknownProjectPath_UsesLatest()
         {
             // Arrange
-            var mvcReference = GetAssemblyMetadataReference("Microsoft.AspNetCore.Mvc.Razor", "1.1.0");
-            var services = GetServices(mvcReference);
-            var factoryService = new DefaultTemplateEngineFactoryService(services);
+            var projectManager = new TestProjectSnapshotManager(Workspace);
+
+            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/DifferentPath/", b =>
@@ -121,9 +170,10 @@ namespace Microsoft.CodeAnalysis.Razor
         public void Create_MvcReferenceNotFound_UsesLatest()
         {
             // Arrange
-            var mvcReference = GetAssemblyMetadataReference("Microsoft.Something.Else", "1.0.0");
-            var services = GetServices(mvcReference);
-            var factoryService = new DefaultTemplateEngineFactoryService(services);
+            var projectManager = new TestProjectSnapshotManager(Workspace);
+            projectManager.ProjectAdded(Project);
+
+            var factoryService = new DefaultTemplateEngineFactoryService(projectManager);
 
             // Act
             var engine = factoryService.Create("/TestPath/DifferentPath/", b =>
@@ -138,39 +188,22 @@ namespace Microsoft.CodeAnalysis.Razor
             Assert.Single(engine.Engine.Features.OfType<MvcLatest.ViewComponentTagHelperPass>());
         }
 
-        private HostLanguageServices GetServices(MetadataReference mvcReference)
-        {
-            var project = ProjectInfo
-                .Create(ProjectId.CreateNewId(), VersionStamp.Default, "TestProject", "TestAssembly", LanguageNames.CSharp)
-                .WithFilePath("/TestPath/SomePath/MyProject.csproj")
-                .WithMetadataReferences(new[] { mvcReference });
-
-            var workspace = new AdhocWorkspace();
-            workspace.AddProject(project);
-
-            return workspace.Services.GetLanguageServices(LanguageNames.CSharp);
-        }
-
-        private MetadataReference GetAssemblyMetadataReference(string assemblyName, string version)
-        {
-            var code = $@"
-using System.Reflection;
-[assembly: AssemblyVersion(""{version}"")]
-";
-
-            var syntaxTree = CSharpSyntaxTree.ParseText(code);
-
-            var compilation = CSharpCompilation.Create(
-                assemblyName,
-                syntaxTrees: new[] { syntaxTree },
-                references: new[] { MetadataReference.CreateFromFile(typeof(object).Assembly.Location) });
-
-            return compilation.ToMetadataReference();
-        }
-
         private class MyCoolNewFeature : IRazorEngineFeature
         {
             public RazorEngine Engine { get; set; }
+        }
+
+        private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
+        {
+            public TestProjectSnapshotManager(Workspace workspace) 
+                : base(
+                      Mock.Of<ForegroundDispatcher>(), 
+                      Mock.Of<ErrorReporter>(), 
+                      Mock.Of<ProjectSnapshotWorker>(), 
+                      Enumerable.Empty<ProjectSnapshotChangeTrigger>(), 
+                      workspace)
+            {
+            }
         }
     }
 }
