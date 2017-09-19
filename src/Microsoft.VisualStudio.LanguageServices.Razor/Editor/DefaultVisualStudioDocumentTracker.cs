@@ -3,6 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -116,6 +120,52 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private void OnContextChanged(ProjectSnapshot project)
         {
             _project = project;
+
+            // Hack: When the context changes we want to replace the template engine held by the parser.
+            // This code isn't super well factored now - it's intended to be limited to one spot until
+            // we have time to a proper redesign.
+
+            if (TextBuffer.Properties.TryGetProperty(typeof(RazorEditorParser), out RazorEditorParser legacyParser) &&
+                legacyParser.TemplateEngine != null &&
+                _projectPath != null)
+            {
+                var factory = _workspace.Services.GetLanguageServices(RazorLanguage.Name).GetRequiredService<CodeAnalysis.Razor.RazorTemplateEngineFactoryService>();
+
+                var existingEngine = legacyParser.TemplateEngine;
+                var projectDirectory = Path.GetDirectoryName(_projectPath);
+                var templateEngine = factory.Create(projectDirectory, builder =>
+                {
+                    var existingVSParserOptions = existingEngine.Engine.Features.FirstOrDefault(
+                        feature => string.Equals(
+                            feature.GetType().Name,
+                            "VisualStudioParserOptionsFeature",
+                            StringComparison.Ordinal));
+
+                    if (existingVSParserOptions == null)
+                    {
+                        Debug.Fail("The VS Parser options should have been set.");
+                    }
+                    else
+                    {
+                        builder.Features.Add(existingVSParserOptions);
+                    }
+
+                    var existingTagHelperFeature = existingEngine.Engine.Features
+                        .OfType<ITagHelperFeature>()
+                        .FirstOrDefault();
+
+                    if (existingTagHelperFeature == null)
+                    {
+                        Debug.Fail("The VS TagHelperFeature should have been set.");
+                    }
+                    else
+                    {
+                        builder.Features.Add(existingTagHelperFeature);
+                    }
+                });
+
+                legacyParser.TemplateEngine = templateEngine;
+            }
 
             var handler = ContextChanged;
             if (handler != null)

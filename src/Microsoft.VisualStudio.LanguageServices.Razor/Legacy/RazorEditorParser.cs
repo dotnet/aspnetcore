@@ -15,6 +15,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 {
     public class RazorEditorParser : IDisposable
     {
+        private RazorTemplateEngine _templateEngine;
+
         private AspNetCore.Razor.Language.Legacy.Span _lastChangeOwner;
         private AspNetCore.Razor.Language.Legacy.Span _lastAutoCompleteSpan;
         private BackgroundParser _parser;
@@ -41,7 +43,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
 
             TemplateEngine = templateEngine;
             FilePath = filePath;
-            _parser = new BackgroundParser(templateEngine, filePath);
+            _parser = new BackgroundParser(this, filePath);
             _parser.ResultsReady += (sender, args) => OnDocumentParseComplete(args);
             _parser.Start();
         }
@@ -51,7 +53,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
         /// </summary>
         public event EventHandler<DocumentParseCompleteEventArgs> DocumentParseComplete;
 
-        public RazorTemplateEngine TemplateEngine { get; }
+        public RazorTemplateEngine TemplateEngine
+        {
+            get => _templateEngine;
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _templateEngine = value;
+            }
+        }
 
         public string FilePath { get; }
 
@@ -205,10 +219,10 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
             private MainThreadState _main;
             private BackgroundThread _bg;
 
-            public BackgroundParser(RazorTemplateEngine templateEngine, string filePath)
+            public BackgroundParser(RazorEditorParser parser, string filePath)
             {
                 _main = new MainThreadState(filePath);
-                _bg = new BackgroundThread(_main, templateEngine, filePath);
+                _bg = new BackgroundThread(_main, parser, filePath);
 
                 _main.ResultsReady += (sender, args) => OnResultsReady(args);
             }
@@ -454,17 +468,17 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 private MainThreadState _main;
                 private Thread _backgroundThread;
                 private CancellationToken _shutdownToken;
-                private RazorTemplateEngine _templateEngine;
+                private RazorEditorParser _parser;
                 private string _filePath;
                 private RazorSyntaxTree _currentSyntaxTree;
                 private IList<Edit> _previouslyDiscarded = new List<Edit>();
 
-                public BackgroundThread(MainThreadState main, RazorTemplateEngine templateEngine, string fileName)
+                public BackgroundThread(MainThreadState main, RazorEditorParser parser, string fileName)
                 {
                     // Run on MAIN thread!
                     _main = main;
                     _shutdownToken = _main.CancelToken;
-                    _templateEngine = templateEngine;
+                    _parser = parser;
                     _filePath = fileName;
 
                     _backgroundThread = new Thread(WorkerLoop);
@@ -567,12 +581,13 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor
                 {
                     EnsureOnThread();
 
+                    var templateEngine = _parser.TemplateEngine;
                     var sourceDocument = new TextSnapshotSourceDocument(snapshot, _filePath);
-                    var imports = _templateEngine.GetImports(_filePath);
+                    var imports = templateEngine.GetImports(_filePath);
 
                     var codeDocument = RazorCodeDocument.Create(sourceDocument, imports);
 
-                    _templateEngine.GenerateCode(codeDocument);
+                    templateEngine.GenerateCode(codeDocument);
                     return codeDocument;
                 }
             }
