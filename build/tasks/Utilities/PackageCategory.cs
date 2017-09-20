@@ -9,6 +9,7 @@ namespace RepoTasks.Utilities
         Unknown = 0,
         Shipping,
         NoShip,
-        ShipOob
+        ShipOob,
+        Mirror,
     }
 }

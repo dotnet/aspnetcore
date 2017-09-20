@@ -10,6 +10,8 @@
       <NoWarn></NoWarn>
       <!-- This dependency is 'Private', aka. it should not end up as a public-facing external dependency. This is validated by checking the nuspec on generated packages. -->
       <Private>false</Private>
+      <!-- When true, this dependency should be mirrored to aspnetcore's nightly build feeds. -->
+      <Mirror>false</Mirror>
     </ExternalDependency>
   </ItemDefinitionGroup>
 
@@ -52,17 +54,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="Microsoft.AspNetCore.AspNetCoreModule" Version="1.0.0-pre-10057" Source="$(AspNetCoreModuleFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.AspNetCore.AspNetCoreModule" Version="1.0.0-pre-10057" Source="$(AspNetCoreModuleFeed)" Private="true" Mirror="true" />
   </ItemGroup>
 
   <!-- ASP.NET Core (non-Universe builds) -->
   <PropertyGroup>
-    <AspNetCoreFeed>https://dotnet.myget.org/F/aspnetcore-ci-dev/api/v3/index.json</AspNetCoreFeed>
+    <AspNetCoreFeed>https://dotnet.myget.org/F/aspnetcore-release/api/v3/index.json</AspNetCoreFeed>
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="Libuv" Version="1.10.0" Source="$(AspNetCoreFeed)"/>
-    <ExternalDependency Include="Microsoft.AspNetCore.Internal.CoreFxLab.Sources" Version="2.0.0-rtm-21470" Source="$(DefaultNuGetFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Internal.CoreFxLab.Sources" Version="2.0.0-rtm-21470" Source="$(AspNetCoreFeed)" Private="true" />
   </ItemGroup>
 
   <!-- nuget.org -->
@@ -71,6 +72,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ExternalDependency Include="Libuv" Version="1.10.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="BenchmarkDotNet" Version="0.10.3" Source="$(DefaultNuGetFeed)" Private="true"/>
     <ExternalDependency Include="EntityFramework" Version="6.1.3" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="FSharp.Core" Version="4.2.1" Source="$(DefaultNuGetFeed)" Private="true" />

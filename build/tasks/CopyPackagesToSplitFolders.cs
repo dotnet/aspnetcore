@@ -68,6 +68,9 @@ namespace RepoTasks
                     case PackageCategory.ShipOob:
                         destDir = Path.Combine(DestinationFolder, "shipoob");
                         break;
+                    case PackageCategory.Mirror:
+                        destDir = Path.Combine(DestinationFolder, "mirror");
+                        break;
                     default:
                         throw new NotImplementedException();
                 }
