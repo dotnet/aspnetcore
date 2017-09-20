@@ -95,8 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Testing
             ConfigureWebHost(builder);
             _server = CreateServer(builder);
 
-            Client = _server.CreateClient();
-            Client.BaseAddress = new Uri("http://localhost");
+            Client = CreateClient();
         }
 
         private void EnsureDepsFile()
