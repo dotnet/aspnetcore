@@ -3,7 +3,7 @@
 
 using System.Globalization;
 using System.IO;
-using System.Reflection;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 
@@ -22,14 +22,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         {
         }
 
-        protected override void ConfigureApplication(MvcWebApplicationBuilder<TStartup> builder)
-        {
-            builder.UseRequestCulture("en-GB", "en-US");            
-            builder.ApplicationAssemblies.Clear();
-            builder.ApplicationAssemblies.Add(typeof(TStartup).GetTypeInfo().Assembly);
-        }
+        protected override void ConfigureWebHost(IWebHostBuilder builder) =>
+            builder.UseRequestCulture<TStartup>("en-GB", "en-US");
 
-        protected override TestServer CreateServer(MvcWebApplicationBuilder<TStartup> builder)
+        protected override TestServer CreateServer(IWebHostBuilder builder)
         {
             var originalCulture = CultureInfo.CurrentCulture;
             var originalUICulture = CultureInfo.CurrentUICulture;

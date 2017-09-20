@@ -460,5 +460,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var result = JsonConvert.DeserializeObject<Product[]>(response);
             Assert.Equal(2, result.Length);
         }
+
+        [Fact]
+        public async Task TestingInfrastructure_InvokesCreateDefaultBuilder()
+        {
+            // Act
+            var response = await Client.GetStringAsync("Testing/Builder");
+
+            // Assert
+            Assert.Equal("true", response);
+        }
     }
 }

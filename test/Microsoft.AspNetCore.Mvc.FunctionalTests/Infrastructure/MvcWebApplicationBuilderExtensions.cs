@@ -19,8 +19,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         /// </summary>
         /// <param name="culture">The culture to use when processing <see cref="HttpRequest"/>.</param>
         /// <param name="uiCulture">The UI culture to use when processing <see cref="HttpRequest"/>.</param>
-        /// <returns>An instance of this <see cref="MvcWebApplicationBuilder{TStartup}"/></returns>
-        public static MvcWebApplicationBuilder<TStartup> UseRequestCulture<TStartup>(this MvcWebApplicationBuilder<TStartup> builder, string culture, string uiCulture)
+        /// <returns>An instance of this <see cref="IWebHostBuilder"/></returns>
+        public static IWebHostBuilder UseRequestCulture<TStartup>(this IWebHostBuilder builder, string culture, string uiCulture)
             where TStartup : class
         {
             if (culture == null)
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 throw new ArgumentNullException(nameof(uiCulture));
             }
 
-            builder.ConfigureBeforeStartup(services =>
+            builder.ConfigureServices(services =>
             {
                 services.TryAddSingleton(new TestCulture
                 {
