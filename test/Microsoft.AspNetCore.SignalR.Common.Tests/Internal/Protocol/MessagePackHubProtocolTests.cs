@@ -12,7 +12,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 {
     public class MessagePackHubProtocolTests
     {
-        private static readonly MessagePackHubProtocol _hubProtocol = new MessagePackHubProtocol();
+        private static readonly MessagePackHubProtocol _hubProtocol
+            = new MessagePackHubProtocol(MessagePackHubProtocol.CreateDefaultSerializationContext());
 
         public static IEnumerable<object[]> TestMessages => new[]
         {

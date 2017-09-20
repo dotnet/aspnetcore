@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests
             new[]
             {
                 new object[] { new JsonHubProtocol(new JsonSerializer()) },
-                new object[] { new MessagePackHubProtocol() },
+                new object[] { new MessagePackHubProtocol(MessagePackHubProtocol.CreateDefaultSerializationContext()) },
             };
     }
 }

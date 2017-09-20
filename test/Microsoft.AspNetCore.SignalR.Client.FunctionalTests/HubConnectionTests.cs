@@ -246,7 +246,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             new IHubProtocol[]
             {
                 new JsonHubProtocol(new JsonSerializer()),
-                new MessagePackHubProtocol(),
+                new MessagePackHubProtocol(MessagePackHubProtocol.CreateDefaultSerializationContext()),
             };
 
         public static IEnumerable<TransportType> TransportTypes()

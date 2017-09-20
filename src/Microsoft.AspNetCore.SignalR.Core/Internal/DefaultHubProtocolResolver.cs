@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal
                 case "json":
                     return new JsonHubProtocol(JsonSerializer.Create(_options.Value.JsonSerializerSettings));
                 case "messagepack":
-                    return new MessagePackHubProtocol();
+                    return new MessagePackHubProtocol(_options.Value.MessagePackSerializationContext);
                 default:
                     throw new NotSupportedException($"The protocol '{protocolName ?? "(null)"}' is not supported.");
             }

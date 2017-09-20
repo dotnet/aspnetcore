@@ -20,18 +20,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const int VoidResult = 2;
         private const int NonVoidResult = 3;
 
-        private static readonly SerializationContext _serializationContext;
+        private readonly SerializationContext _serializationContext;
 
         public string Name => "messagepack";
 
         public ProtocolType Type => ProtocolType.Binary;
 
-        static MessagePackHubProtocol()
+        public MessagePackHubProtocol(SerializationContext serializationContext)
         {
-            // serializes objects (here: arguments and results) as maps so that property names are preserved
-            _serializationContext = new SerializationContext { SerializationMethod = SerializationMethod.Map };
-            // allows for serializing objects that cannot be deserialized due to the lack of the default ctor etc.
-            _serializationContext.CompatibilityOptions.AllowAsymmetricSerializer = true;
+            _serializationContext = serializationContext;
         }
 
         public bool TryParseMessages(ReadOnlyBuffer<byte> input, IInvocationBinder binder, out IList<HubMessage> messages)
@@ -156,7 +153,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
-        private static void WriteInvocationMessage(InvocationMessage invocationMessage, Packer packer, Stream output)
+        private void WriteInvocationMessage(InvocationMessage invocationMessage, Packer packer, Stream output)
         {
             packer.PackArrayHeader(5);
             packer.Pack(InvocationMessageType);
@@ -290,6 +287,16 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
 
             throw new FormatException($"Deserializing object of the `{type.Name}` type for '{field}' failed.", msgPackException);
+        }
+
+        public static SerializationContext CreateDefaultSerializationContext()
+        {
+            // serializes objects (here: arguments and results) as maps so that property names are preserved
+            var serializationContext = new SerializationContext { SerializationMethod = SerializationMethod.Map };
+            // allows for serializing objects that cannot be deserialized due to the lack of the default ctor etc.
+            serializationContext.CompatibilityOptions.AllowAsymmetricSerializer = true;
+
+            return serializationContext;
         }
     }
 }

@@ -23,7 +23,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         public static IHubConnectionBuilder WithMessagePackProtocol(this IHubConnectionBuilder hubConnectionBuilder)
         {
-            return hubConnectionBuilder.WithHubProtocol(new MessagePackHubProtocol());
+            return hubConnectionBuilder.WithHubProtocol(
+                new MessagePackHubProtocol(MessagePackHubProtocol.CreateDefaultSerializationContext()));
         }
 
         public static IHubConnectionBuilder WithLoggerFactory(this IHubConnectionBuilder hubConnectionBuilder, ILoggerFactory loggerFactory)

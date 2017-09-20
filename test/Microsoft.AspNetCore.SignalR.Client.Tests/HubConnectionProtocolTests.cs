@@ -331,7 +331,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         {
             var connection = new TestConnection(TransferMode.Text);
 
-            var hubConnection = new HubConnection(connection, new MessagePackHubProtocol(), new LoggerFactory());
+            var hubConnection = new HubConnection(connection,
+                new MessagePackHubProtocol(MessagePackHubProtocol.CreateDefaultSerializationContext()), new LoggerFactory());
             try
             {
                 await hubConnection.StartAsync().OrTimeout();
@@ -361,7 +362,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task MessagesDecodedWhenUsingBinaryProtocolOverTextTransport()
         {
             var connection = new TestConnection(TransferMode.Text);
-            var hubConnection = new HubConnection(connection, new MessagePackHubProtocol(), new LoggerFactory());
+            var hubConnection = new HubConnection(connection,
+                new MessagePackHubProtocol(MessagePackHubProtocol.CreateDefaultSerializationContext()), new LoggerFactory());
 
             var invocationTcs = new TaskCompletionSource<int>();
             try
@@ -371,7 +373,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 using (var ms = new MemoryStream())
                 {
-                    new MessagePackHubProtocol().WriteMessage(new InvocationMessage("1", true, "MyMethod", 42), ms);
+                    new MessagePackHubProtocol(MessagePackHubProtocol.CreateDefaultSerializationContext())
+                        .WriteMessage(new InvocationMessage("1", true, "MyMethod", 42), ms);
 
                     var invokeMessage = Convert.ToBase64String(ms.ToArray());
                     var payloadSize = invokeMessage.Length.ToString(CultureInfo.InvariantCulture);
