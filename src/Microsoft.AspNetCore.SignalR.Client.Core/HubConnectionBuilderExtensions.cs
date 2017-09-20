@@ -4,6 +4,7 @@
 using System;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
+using MsgPack.Serialization;
 using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Client
@@ -21,10 +22,29 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol());
         }
 
+        public static IHubConnectionBuilder WithJsonProtocol(this IHubConnectionBuilder hubConnectionBuilder, JsonSerializerSettings serializerSettings)
+        {
+            return hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol(JsonSerializer.Create(serializerSettings)));
+        }
+
+        public static IHubConnectionBuilder WithJsonProtocol(this IHubConnectionBuilder hubConnectionBuilder, JsonSerializer jsonSerializer)
+        {
+            return hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol(jsonSerializer));
+        }
+
         public static IHubConnectionBuilder WithMessagePackProtocol(this IHubConnectionBuilder hubConnectionBuilder)
         {
-            return hubConnectionBuilder.WithHubProtocol(
-                new MessagePackHubProtocol());
+            return hubConnectionBuilder.WithHubProtocol(new MessagePackHubProtocol());
+        }
+
+        public static IHubConnectionBuilder WithMessagePackProtocol(this IHubConnectionBuilder hubConnectionBuilder, SerializationContext serializationContext)
+        {
+            if (serializationContext == null)
+            {
+                throw new ArgumentNullException(nameof(serializationContext));
+            }
+
+            return hubConnectionBuilder.WithHubProtocol(new MessagePackHubProtocol(serializationContext));
         }
 
         public static IHubConnectionBuilder WithLoggerFactory(this IHubConnectionBuilder hubConnectionBuilder, ILoggerFactory loggerFactory)
