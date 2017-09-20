@@ -3,6 +3,19 @@
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="noship" Metapackage="exclude" />
     <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" Metapackage="include" />
     <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" Metapackage="exclude" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Cookies" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Facebook" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Google" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.JwtBearer" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.OAuth" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authentication.Twitter" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authorization" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Authorization.Policy" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Category="noship" Metapackage="exclude" />
+    <PackageArtifact Include="Microsoft.AspNetCore.CookiePolicy" Category="ship" Metapackage="include" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics" Category="ship" Metapackage="include" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Abstractions" Category="ship" Metapackage="include" />
     <PackageArtifact Include="Microsoft.AspNetCore.Diagnostics.Elm" Category="noship" Metapackage="exclude" />
@@ -53,6 +66,7 @@
     <PackageArtifact Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Category="ship" Metapackage="exclude" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Core" Category="ship" Metapackage="include" />
     <PackageArtifact Include="Microsoft.Extensions.Identity.Stores" Category="ship" Metapackage="include" />
+    <PackageArtifact Include="Microsoft.Owin.Security.Interop" Category="ship" Metapackage="exclude" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration" Category="ship" Metapackage="exclude" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Category="ship" Metapackage="exclude" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Core" Category="ship" Metapackage="exclude" />

@@ -9,6 +9,7 @@
     <Repository Include="Mvc" Branch="rel/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="MvcPrecompilation" Branch="rel/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <Repository Include="Scaffolding" Branch="rel/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <Repository Include="Security" Branch="rel/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
 
     <!--
     Repos not building this patch.
@@ -43,7 +44,6 @@
     <ShippedRepository Include="Razor" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <ShippedRepository Include="ResponseCaching" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <ShippedRepository Include="Routing" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="Security" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <ShippedRepository Include="ServerTests" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <ShippedRepository Include="Session" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
     <ShippedRepository Include="StaticFiles" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
