@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.DataAnnotations.Internal;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
@@ -15,26 +14,24 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
     public class FileExtensionsAttributeAdapterTest
     {
         [Theory]
-        [InlineData("jpg,png")]
-        [InlineData("jpg, png")]
-        [InlineData("JPEG, Png")]
+        [InlineData("", ".png,.jpg,.jpeg,.gif")]
+        [InlineData(null, ".png,.jpg,.jpeg,.gif")]
         [ReplaceCulture]
-        public void AddValidation_WithoutLocalization(string extensions)
+        public void AddValidation_WithoutLocalizationAndDefaultFileExtensions(string extensions, string expectedExtensions)
         {
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
-            var metadata = provider.GetMetadataForProperty(typeof(Profile), "PhotoFileName");
+            var metadata = provider.GetMetadataForProperty(typeof(Profile), nameof(Profile.PhotoFileName));
 
             var attribute = new FileExtensionsAttribute() { Extensions = extensions };
             attribute.ErrorMessage = "{0} expects only the following extensions: {1}";
 
-            var expectedExtensions = string.Join(", ", extensions.Split(',').Select(s => $".{s.Trim().ToLowerInvariant()}")); 
-            var expectedMessage = $"PhotoFileName expects only the following extensions: {expectedExtensions}";
+            // FileExtensionsAttribute formats the extension list for the error message
+            var formattedExtensions = string.Join(", ", expectedExtensions.Split(','));
+            var expectedErrorMessage = string.Format(attribute.ErrorMessage, nameof(Profile.PhotoFileName), formattedExtensions);
 
             var adapter = new FileExtensionsAttributeAdapter(attribute, stringLocalizer: null);
-
-            var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
+            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new AttributeDictionary());
 
             // Act
             adapter.AddValidation(context);
@@ -43,33 +40,84 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             Assert.Collection(
                 context.Attributes,
                 kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
-                kvp => { Assert.Equal("data-val-fileextensions", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
-                kvp => { Assert.Equal("data-val-fileextensions-extensions", kvp.Key); Assert.Equal(extensions.ToLowerInvariant(), kvp.Value); });
+                kvp => { Assert.Equal("data-val-fileextensions", kvp.Key); Assert.Equal(expectedErrorMessage, kvp.Value); },
+                kvp => { Assert.Equal("data-val-fileextensions-extensions", kvp.Key); Assert.Equal(expectedExtensions, kvp.Value); });
         }
 
-        [Fact]
+        public static TheoryData<string, string> ExtensionsData
+        {
+            get
+            {
+                return new TheoryData<string, string>()
+                {
+                    { "jpg", ".jpg" },
+                    { " j p g ", ".jpg" },
+                    { ".jpg", ".jpg" },
+                    { ".x", ".x" },
+                    { "jpg,png", ".jpg,.png" },
+                    { "jpg, png", ".jpg,.png" },
+                    { "JPG, Png", ".jpg,.png" },
+                    { ".jpg,.png", ".jpg,.png" },
+                    { "..jpg,..png", ".jpg,.png" },
+                    { ".TXT, .png", ".txt,.png" },
+                    { ".pdf , .docx", ".pdf,.docx" },
+                };
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ExtensionsData))]
         [ReplaceCulture]
-        public void AddValidation_WithLocalization()
+        public void AddValidation_WithoutLocalizationAndCustomFileExtensions(string extensions, string expectedExtensions)
         {
             // Arrange
             var provider = TestModelMetadataProvider.CreateDefaultProvider();
-            var metadata = provider.GetMetadataForProperty(typeof(Profile), "PhotoFileName");
+            var metadata = provider.GetMetadataForProperty(typeof(Profile), nameof(Profile.PhotoFileName));
 
-            var attribute = new FileExtensionsAttribute() { Extensions = "jpg" };
+            var attribute = new FileExtensionsAttribute() { Extensions = extensions };
             attribute.ErrorMessage = "{0} expects only the following extensions: {1}";
 
-            var expectedProperties = new object[] { "PhotoFileName", "jpg" };
-            var expectedMessage = "PhotoFileName expects only the following extensions: jpg";
+            // FileExtensionsAttribute formats the extension list for the error message
+            var formattedExtensions = string.Join(", ", expectedExtensions.Split(','));
+            var expectedErrorMessage = string.Format(attribute.ErrorMessage, nameof(Profile.PhotoFileName), formattedExtensions);
+
+            var adapter = new FileExtensionsAttributeAdapter(attribute, stringLocalizer: null);
+            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new AttributeDictionary());
+
+            // Act
+            adapter.AddValidation(context);
+
+            // Assert
+            Assert.Collection(
+                context.Attributes,
+                kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
+                kvp => { Assert.Equal("data-val-fileextensions", kvp.Key); Assert.Equal(expectedErrorMessage, kvp.Value); },
+                kvp => { Assert.Equal("data-val-fileextensions-extensions", kvp.Key); Assert.Equal(expectedExtensions, kvp.Value); });
+        }
+
+        [Theory]
+        [MemberData(nameof(ExtensionsData))]
+        [ReplaceCulture]
+        public void AddValidation_WithLocalization(string extensions, string expectedExtensions)
+        {
+            // Arrange
+            var provider = TestModelMetadataProvider.CreateDefaultProvider();
+            var metadata = provider.GetMetadataForProperty(typeof(Profile), nameof(Profile.PhotoFileName));
+
+            var attribute = new FileExtensionsAttribute() { Extensions = extensions };
+            attribute.ErrorMessage = "{0} expects only the following extensions: {1}";
+
+            var formattedExtensions = string.Join(", ", expectedExtensions.Split(','));
+            var expectedProperties = new object[] { "PhotoFileName", formattedExtensions };
+            var expectedErrorMessage = $"{nameof(Profile.PhotoFileName)} expects only the following extensions: {formattedExtensions}";
 
             var stringLocalizer = new Mock<IStringLocalizer>();
             stringLocalizer
                 .Setup(s => s[attribute.ErrorMessage, expectedProperties])
-                .Returns(new LocalizedString(attribute.ErrorMessage, expectedMessage));
+                .Returns(new LocalizedString(attribute.ErrorMessage, expectedErrorMessage));
 
             var adapter = new FileExtensionsAttributeAdapter(attribute, stringLocalizer: stringLocalizer.Object);
-
-            var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
+            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new AttributeDictionary());
 
             // Act
             adapter.AddValidation(context);
@@ -78,8 +126,8 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
             Assert.Collection(
                 context.Attributes,
                 kvp => { Assert.Equal("data-val", kvp.Key); Assert.Equal("true", kvp.Value); },
-                kvp => { Assert.Equal("data-val-fileextensions", kvp.Key); Assert.Equal(expectedMessage, kvp.Value); },
-                kvp => { Assert.Equal("data-val-fileextensions-extensions", kvp.Key); Assert.Equal("jpg", kvp.Value); });
+                kvp => { Assert.Equal("data-val-fileextensions", kvp.Key); Assert.Equal(expectedErrorMessage, kvp.Value); },
+                kvp => { Assert.Equal("data-val-fileextensions-extensions", kvp.Key); Assert.Equal(expectedExtensions, kvp.Value); });
         }
 
         [Fact]
@@ -92,11 +140,9 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
 
             var attribute = new FileExtensionsAttribute() { Extensions = "jpg" };
             attribute.ErrorMessage = "{0} expects only the following extensions: {1}";
-            
-            var adapter = new FileExtensionsAttributeAdapter(attribute, stringLocalizer: null);
 
-            var actionContext = new ActionContext();
-            var context = new ClientModelValidationContext(actionContext, metadata, provider, new AttributeDictionary());
+            var adapter = new FileExtensionsAttributeAdapter(attribute, stringLocalizer: null);
+            var context = new ClientModelValidationContext(new ActionContext(), metadata, provider, new AttributeDictionary());
 
             context.Attributes.Add("data-val", "original");
             context.Attributes.Add("data-val-fileextensions", "original");
