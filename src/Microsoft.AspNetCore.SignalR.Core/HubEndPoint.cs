@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR.Core.Internal;
 using Microsoft.AspNetCore.SignalR.Features;
 using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Encoders;
@@ -143,7 +144,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                                 connection.ProtocolReaderWriter = new HubProtocolReaderWriter(protocol, dataEncoder);
 
-                                _logger.LogInformation("Using HubProtocol '{protocol}'.", protocol.Name);
+                                _logger.UsingHubProtocol(protocol.Name);
 
                                 return true;
                             }
@@ -153,7 +154,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (OperationCanceledException)
             {
-                _logger.LogDebug("Negotiate was canceled.");
+                _logger.NegotiateCanceled();
             }
 
             return false;
@@ -169,7 +170,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (Exception ex)
             {
-                _logger.LogError(0, ex, "Error when processing requests.");
+                _logger.ErrorProcessingRequest(ex);
                 await HubOnDisconnectedAsync(connection, ex);
                 throw;
             }
@@ -198,7 +199,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (Exception ex)
             {
-                _logger.LogError(0, ex, "Error when invoking OnConnectedAsync on hub.");
+                _logger.ErrorInvokingHubMethod("OnConnectedAsync", ex);
                 throw;
             }
         }
@@ -237,7 +238,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             catch (Exception ex)
             {
-                _logger.LogError(0, ex, "Error when invoking OnDisconnectedAsync on hub.");
+                _logger.ErrorInvokingHubMethod("OnDisconnectedAsync", ex);
                 throw;
             }
         }
@@ -260,10 +261,7 @@ namespace Microsoft.AspNetCore.SignalR
                                 switch (hubMessage)
                                 {
                                     case InvocationMessage invocationMessage:
-                                        if (_logger.IsEnabled(LogLevel.Debug))
-                                        {
-                                            _logger.LogDebug("Received hub invocation: {invocation}", invocationMessage);
-                                        }
+                                        _logger.ReceivedHubInvocation(invocationMessage);
 
                                         // Don't wait on the result of execution, continue processing other
                                         // incoming messages on this connection.
@@ -272,7 +270,7 @@ namespace Microsoft.AspNetCore.SignalR
 
                                     // Other kind of message we weren't expecting
                                     default:
-                                        _logger.LogError("Received unsupported message of type '{messageType}'", hubMessage.GetType().FullName);
+                                        _logger.UnsupportedMessageReceived(hubMessage.GetType().FullName);
                                         throw new NotSupportedException($"Received unsupported message: {hubMessage}");
                                 }
                             }
@@ -307,7 +305,7 @@ namespace Microsoft.AspNetCore.SignalR
             if (!_methods.TryGetValue(invocationMessage.Target, out var descriptor))
             {
                 // Send an error to the client. Then let the normal completion process occur
-                _logger.LogError("Unknown hub method '{method}'", invocationMessage.Target);
+                _logger.UnknownHubMethod(invocationMessage.Target);
                 await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, $"Unknown hub method '{invocationMessage.Target}'"));
             }
             else
@@ -327,7 +325,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
 
             // Output is closed. Cancel this invocation completely
-            _logger.LogWarning("Outbound channel was closed while trying to write hub message");
+            _logger.OutboundChannelClosed();
             throw new OperationCanceledException("Outbound channel was closed while trying to write hub message");
         }
 
@@ -339,7 +337,7 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection.User, descriptor.Policies))
                 {
-                    _logger.LogDebug("Failed to invoke {hubMethod} because user is unauthorized", invocationMessage.Target);
+                    _logger.HubMethodNotAuthorized(invocationMessage.Target);
                     if (!invocationMessage.NonBlocking)
                     {
                         await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, $"Failed to invoke '{invocationMessage.Target}' because user is unauthorized"));
@@ -375,18 +373,18 @@ namespace Microsoft.AspNetCore.SignalR
 
                     if (IsStreamed(connection, methodExecutor, result, methodExecutor.MethodReturnType, out var enumerator))
                     {
-                        _logger.LogTrace("[{connectionId}/{invocationId}] Streaming result of type {resultType}", connection.ConnectionId, invocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
+                        _logger.StreamingResult(invocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
                         await StreamResultsAsync(invocationMessage.InvocationId, connection, enumerator);
                     }
                     else if (!invocationMessage.NonBlocking)
                     {
-                        _logger.LogTrace("[{connectionId}/{invocationId}] Sending result of type {resultType}", connection.ConnectionId, invocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
+                        _logger.SendingResult(invocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
                         await SendMessageAsync(connection, CompletionMessage.WithResult(invocationMessage.InvocationId, result));
                     }
                 }
                 catch (TargetInvocationException ex)
                 {
-                    _logger.LogError(0, ex, "Failed to invoke hub method");
+                    _logger.FailedInvokingHubMethod(invocationMessage.Target, ex);
                     if (!invocationMessage.NonBlocking)
                     {
                         await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, ex.InnerException.Message));
@@ -394,7 +392,7 @@ namespace Microsoft.AspNetCore.SignalR
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError(0, ex, "Failed to invoke hub method");
+                    _logger.FailedInvokingHubMethod(invocationMessage.Target, ex);
                     if (!invocationMessage.NonBlocking)
                     {
                         await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, ex.Message));
@@ -502,10 +500,7 @@ namespace Microsoft.AspNetCore.SignalR
                 var authorizeAttributes = methodInfo.GetCustomAttributes<AuthorizeAttribute>(inherit: true);
                 _methods[methodName] = new HubMethodDescriptor(executor, authorizeAttributes);
 
-                if (_logger.IsEnabled(LogLevel.Debug))
-                {
-                    _logger.LogDebug("Hub method '{methodName}' is bound", methodName);
-                }
+                _logger.HubMethodBound(methodName);
             }
         }
 
