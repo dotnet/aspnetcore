@@ -1,7 +1,21 @@
 ﻿<Project>
+  <PropertyGroup />
   <ItemGroup>
     <PackageReference Update="Microsoft.AspNetCore" Version="2.0.1-rtm-*" />
     <PackageReference Update="Microsoft.AspNetCore.All" Version="2.0.2-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.Cookies" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.Facebook" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.Google" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.JwtBearer" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.MicrosoftAccount" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.OAuth" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Authentication.Twitter" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Authorization" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.Authorization.Policy" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.ChunkingCookieManager.Sources" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.AspNetCore.CookiePolicy" Version="2.0.1-rtm-*" />
     <PackageReference Update="Microsoft.AspNetCore.Diagnostics" Version="2.0.1-rtm-*" />
     <PackageReference Update="Microsoft.AspNetCore.Diagnostics.Abstractions" Version="2.0.1-rtm-*" />
     <PackageReference Update="Microsoft.AspNetCore.Diagnostics.Elm" Version="0.3.1-rtm-*" />
@@ -38,6 +52,7 @@
     <PackageReference Update="Microsoft.EntityFrameworkCore.SqlServer" Version="2.0.1-rtm-*" />
     <PackageReference Update="Microsoft.EntityFrameworkCore.Tools" Version="2.0.1-rtm-*" />
     <DotNetCliToolReference Update="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.1-rtm-*" />
+    <PackageReference Update="Microsoft.Owin.Security.Interop" Version="2.0.1-rtm-*" />
     <PackageReference Update="Microsoft.VisualStudio.Web.CodeGeneration" Version="2.0.1-rtm-*" />
     <PackageReference Update="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Version="2.0.1-rtm-*" />
     <PackageReference Update="Microsoft.VisualStudio.Web.CodeGeneration.Core" Version="2.0.1-rtm-*" />
