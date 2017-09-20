@@ -27,16 +27,20 @@ namespace RepoTasks
         public override bool Execute()
         {
             var packageLookup = new Dictionary<string, PackageInfo>(StringComparer.OrdinalIgnoreCase);
+            var dependencyMap = new Dictionary<string, List<ExternalDependency>>(StringComparer.OrdinalIgnoreCase);
 
-            var dependencyMap = new Dictionary<string, ExternalDependency>(StringComparer.OrdinalIgnoreCase);
             foreach (var dep in ExternalDependencies)
             {
-                if (!dependencyMap.TryGetValue(dep.ItemSpec, out var externalDep))
+                if (!dependencyMap.TryGetValue(dep.ItemSpec, out var list))
                 {
-                    dependencyMap[dep.ItemSpec] = externalDep = new ExternalDependency();
+                    dependencyMap[dep.ItemSpec] = list = new List<ExternalDependency>();
                 }
-                externalDep.IsPrivate = bool.TryParse(dep.GetMetadata("Private"), out var isPrivate) && isPrivate;
-                externalDep.AllowedVersions.Add(dep.GetMetadata("Version"));
+                var externalDep = new ExternalDependency
+                {
+                    Version = dep.GetMetadata("Version"),
+                    IsPrivate = bool.TryParse(dep.GetMetadata("Private"), out var isPrivate) && isPrivate,
+                };
+                list.Add(externalDep);
             }
 
             foreach (var file in PackageFiles)
@@ -74,13 +78,13 @@ namespace RepoTasks
 
         private class ExternalDependency
         {
-            public List<string> AllowedVersions { get; } = new List<string>();
+            public string Version { get; set; }
             public bool IsPrivate { get; set; }
         }
 
         private void Visit(
             IReadOnlyDictionary<string, PackageInfo> packageLookup,
-            IReadOnlyDictionary<string, ExternalDependency> dependencyMap,
+            IReadOnlyDictionary<string, List<ExternalDependency>> dependencyMap,
             PackageInfo packageInfo)
         {
             Log.LogMessage(MessageImportance.Low, $"Processing package {packageInfo.Id}");
@@ -92,16 +96,19 @@ namespace RepoTasks
                     {
                         PackageInfo dependencyPackageInfo;
                         var depVersion = dependency.VersionRange.MinVersion.ToString();
-                        if (dependencyMap.TryGetValue(dependency.Id, out var externalDepInfo))
+                        if (dependencyMap.TryGetValue(dependency.Id, out var externalDependencies))
                         {
-                            if (externalDepInfo.IsPrivate)
+                            var matchedVersion = externalDependencies.FirstOrDefault(d => depVersion.Equals(d.Version));
+
+                            if (matchedVersion == null)
+                            {
+                                var versions = string.Join(" or ", externalDependencies.Select(d => d.Version));
+                                Log.LogError($"Package {packageInfo.Id} has an external dependency on the wrong version of {dependency.Id}. "
+                                    + $"It uses {depVersion} but only {versions} is allowed.");
+                            }
+                            else if (matchedVersion.IsPrivate)
                             {
                                 Log.LogError($"Package {packageInfo.Id} has an external dependency on {dependency.Id}/{depVersion} which is marked as Private=true.");
-                            }
-                            else if (!externalDepInfo.AllowedVersions.Any(a => depVersion.Equals(a)))
-                            {
-                                Log.LogError($"Package {packageInfo.Id} has an external dependency on the wrong version of {dependency.Id}. "
-                                    + $"It uses {depVersion} but only {string.Join(" or ", externalDepInfo.AllowedVersions)} is allowed.");
                             }
                             continue;
                         }
