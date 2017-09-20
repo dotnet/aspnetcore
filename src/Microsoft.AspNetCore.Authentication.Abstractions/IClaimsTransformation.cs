@@ -12,7 +12,9 @@ namespace Microsoft.AspNetCore.Authentication
     public interface IClaimsTransformation
     {
         /// <summary>
-        /// Provides a central transformation point to change the specified principal.
+        /// Provides a central transformation point to change the specified principal. 
+        /// Note: this will be run on each AuthenticateAsync call, so its safer to
+        /// return a new ClaimsPrincipal if your transformation is not idempotent.
         /// </summary>
         /// <param name="principal">The <see cref="ClaimsPrincipal"/> to transform.</param>
         /// <returns>The transformed principal.</returns>
