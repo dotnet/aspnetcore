@@ -210,6 +210,7 @@ HRESULT
     // static object initialized.
     //
     pFactory = new CProxyModuleFactory;
+
     if (pFactory == NULL)
     {
         hr = E_OUTOFMEMORY;
@@ -225,7 +226,8 @@ HRESULT
         goto Finished;
     }
 
-    pFactory = NULL;	
+    pFactory = NULL;
+
     g_pResponseHeaderHash = new RESPONSE_HEADER_HASH;
     if (g_pResponseHeaderHash == NULL)
     {

@@ -9,7 +9,7 @@ class APPLICATION_MANAGER
 {
 public:
 
-    static 
+    static
     APPLICATION_MANAGER*
     GetInstance(
         VOID

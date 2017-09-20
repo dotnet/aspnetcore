@@ -42,6 +42,10 @@
 #include <httptrace.h>
 #include <winhttp.h>
 
+#include <cstdlib>
+#include <vector>
+#include <wchar.h>
+
 //
 // Option available starting Windows 8.
 // 111 is the value in SDK on May 15, 2012.
@@ -110,6 +114,7 @@ inline bool IsSpace(char ch)
 #include "environmentvariablehash.h"
 #include "..\aspnetcore_msg.h"
 #include "aspnetcoreconfig.h"
+#include "aspnetcoreapplication.h"
 #include "serverprocess.h"
 #include "processmanager.h"
 #include "filewatcher.h"

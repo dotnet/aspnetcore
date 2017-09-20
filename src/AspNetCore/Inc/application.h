@@ -147,8 +147,10 @@ class APPLICATION
 public:
 
     APPLICATION() : m_pProcessManager(NULL), m_pApplicationManager(NULL), m_cRefs(1), 
-        m_fAppOfflineFound(FALSE), m_pAppOfflineHtm(NULL), m_pFileWatcherEntry(NULL)
+        m_fAppOfflineFound(FALSE), m_pAppOfflineHtm(NULL), m_pFileWatcherEntry(NULL),
+        m_pAspNetCoreApplication(NULL)
     {
+        InitializeSRWLock(&m_srwLock);
     }
 
     APPLICATION_KEY *
@@ -179,6 +181,61 @@ public:
     )
     {
         return m_pProcessManager->GetProcess( context, pConfig, ppServerProcess );
+    }
+
+    HRESULT
+    GetAspNetCoreApplication(
+        _In_    ASPNETCORE_CONFIG       *pConfig,
+        _In_    IHttpContext            *context,
+        _Out_   ASPNETCORE_APPLICATION  **ppAspNetCoreApplication
+    )
+    {
+        HRESULT hr = S_OK;
+        BOOL fLockTaken = FALSE;
+        ASPNETCORE_APPLICATION *application;
+        IHttpApplication *pHttpApplication = context->GetApplication();
+
+        if (m_pAspNetCoreApplication == NULL)
+        {
+            AcquireSRWLockExclusive(&m_srwLock);
+            fLockTaken = TRUE;
+
+            if (m_pAspNetCoreApplication == NULL)
+            {
+                application = new ASPNETCORE_APPLICATION();
+                if (application == NULL) {
+                    hr = E_OUTOFMEMORY;
+                    goto Finished;
+                }
+
+                hr = application->Initialize(pConfig);
+                if (FAILED(hr))
+                {
+                    goto Finished;
+                }
+
+                // Assign after initialization
+                m_pAspNetCoreApplication = application;
+            }
+        }
+        else if (pHttpApplication->GetModuleContextContainer()->GetModuleContext(g_pModuleId) == NULL)
+        {
+            // This means that we are trying to load a second application
+            // TODO set a flag saying that the whole app pool is invalid '
+            // (including the running application) and return 500 every request.
+            hr = E_FAIL;
+            goto Finished;
+        }
+
+        *ppAspNetCoreApplication = m_pAspNetCoreApplication;
+
+    Finished:
+        if (fLockTaken)
+        {
+            ReleaseSRWLockExclusive(&m_srwLock);
+        }
+
+        return hr;
     }
 
     HRESULT
@@ -226,14 +283,16 @@ public:
 
 private:
 
-    STRU                 m_strAppPhysicalPath;
-    mutable LONG         m_cRefs;
-    APPLICATION_KEY      m_applicationKey;
-    PROCESS_MANAGER*     m_pProcessManager;
-    APPLICATION_MANAGER *m_pApplicationManager;
-    BOOL                 m_fAppOfflineFound;
-    APP_OFFLINE_HTM     *m_pAppOfflineHtm;
-    FILE_WATCHER_ENTRY  *m_pFileWatcherEntry;
+    STRU                    m_strAppPhysicalPath;
+    mutable LONG            m_cRefs;
+    APPLICATION_KEY         m_applicationKey;
+    PROCESS_MANAGER*        m_pProcessManager;
+    APPLICATION_MANAGER    *m_pApplicationManager;
+    BOOL                    m_fAppOfflineFound;
+    APP_OFFLINE_HTM        *m_pAppOfflineHtm;
+    FILE_WATCHER_ENTRY     *m_pFileWatcherEntry;
+    ASPNETCORE_APPLICATION *m_pAspNetCoreApplication;
+    SRWLOCK                 m_srwLock;
 };
 
 class APPLICATION_HASH :

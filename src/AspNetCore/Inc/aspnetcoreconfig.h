@@ -27,6 +27,7 @@
 #define CS_ASPNETCORE_RECYCLE_ON_FILE_CHANGE             L"recycleOnFileChange"
 #define CS_ASPNETCORE_RECYCLE_ON_FILE_CHANGE_FILE        L"file"
 #define CS_ASPNETCORE_RECYCLE_ON_FILE_CHANGE_FILE_PATH   L"path"
+#define CS_ASPNETCORE_HOSTING_MODEL                      L"hostingModel"
 
 #define MAX_RAPID_FAILS_PER_MINUTE 100
 #define MILLISECONDS_IN_ONE_SECOND 1000
@@ -57,7 +58,7 @@ public:
         _In_  IHttpContext           *pHttpContext,
         _Out_ ASPNETCORE_CONFIG  **ppAspNetCoreConfig
     );
-    
+
     ENVIRONMENT_VAR_HASH*
     QueryEnvironmentVariables(
         VOID
@@ -117,10 +118,18 @@ public:
     STRU*
     QueryApplicationPath(
         VOID
-        )
+    )
     {
         return &m_struApplication;
     }
+
+	STRU*
+	QueryApplicationFullPath(
+        VOID
+	)
+	{
+		return &m_struApplicationFullPath;
+	}
 
     STRU*
     QueryProcessPath(
@@ -166,6 +175,19 @@ public:
         return m_fDisableStartUpErrorPage;
     }
 
+    BOOL
+    QueryIsInProcess()
+    {
+        return m_fIsInProcess;
+    }
+
+    BOOL
+    QueryIsOutOfProcess()
+    {
+        return m_fIsOutOfProcess;
+    }
+
+
     STRU*
     QueryStdoutLogFile()
     {
@@ -197,11 +219,14 @@ private:
     STRU                   m_struArguments;
     STRU                   m_struProcessPath;
     STRU                   m_struStdoutLogFile;
+    STRU                   m_struApplicationFullPath;
     BOOL                   m_fStdoutLogEnabled;
     BOOL                   m_fForwardWindowsAuthToken;
     BOOL                   m_fDisableStartUpErrorPage;
     BOOL                   m_fWindowsAuthEnabled;
     BOOL                   m_fBasicAuthEnabled;
     BOOL                   m_fAnonymousAuthEnabled;
+    BOOL                   m_fIsInProcess;
+    BOOL                   m_fIsOutOfProcess;
     ENVIRONMENT_VAR_HASH*  m_pEnvironmentVariables;
 };

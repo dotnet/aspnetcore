@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="..\..\Build\Build.Settings" />
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -26,32 +26,33 @@
     <ProjectName>AspNetCore</ProjectName>
     <TargetName>aspnetcore</TargetName>
     <LinkIncremental>false</LinkIncremental>
+    <WindowsTargetPlatformVersion>10.0.15063.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v141</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -153,6 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\aspnetcoreapplication.h" />
     <ClInclude Include="Inc\resource.h" />
     <ClInclude Include="Inc\application.h" />
     <ClInclude Include="Inc\applicationmanager.h" />
@@ -171,9 +173,11 @@
     <ClInclude Include="Inc\sttimer.h" />
     <ClInclude Include="Inc\websockethandler.h" />
     <ClInclude Include="Inc\winhttphelper.h" />
+    <ClInclude Include="Inc\fx_ver.h" />
     <ClInclude Include="Src\precomp.hxx" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Src\aspnetcoreapplication.cxx" />
     <ClCompile Include="Src\application.cxx" />
     <ClCompile Include="Src\applicationmanager.cxx" />
     <ClCompile Include="Src\aspnetcoreconfig.cxx" />
@@ -181,6 +185,7 @@
     <ClCompile Include="Src\filewatcher.cxx" />
     <ClCompile Include="Src\forwarderconnection.cxx" />
     <ClCompile Include="Src\forwardinghandler.cxx" />
+    <ClCompile Include="Src\fx_ver.cxx" />
     <ClCompile Include="Src\path.cxx" />
     <ClCompile Include="Src\processmanager.cxx" />
     <ClCompile Include="Src\protocolconfig.cxx" />

@@ -27,6 +27,7 @@
         <attribute name="disableStartUpErrorPage" type="bool" defaultValue="false" />
         <attribute name="hostingModel" type="string" />
         <element name="recycleOnFileChange">
+
             <collection addElement="file" clearElement="clear">
                 <attribute name="path" type="string" required="true" validationType="nonEmptyString" expanded="true"/>
             </collection>

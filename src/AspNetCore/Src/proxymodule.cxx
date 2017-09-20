@@ -3,7 +3,6 @@
 
 #include "precomp.hxx"
 
-
 __override
 HRESULT
 CProxyModuleFactory::GetHttpModule(
@@ -79,32 +78,86 @@ CProxyModule::OnExecuteRequestHandler(
     IHttpEventProvider *
 )
 {
-    m_pHandler = new FORWARDING_HANDLER(pHttpContext);
-    if (m_pHandler == NULL)
-    {
-        pHttpContext->GetResponse()->SetStatus(500, "Internal Server Error", 0, E_OUTOFMEMORY);
-        return RQ_NOTIFICATION_FINISH_REQUEST;
-    }
+    HRESULT hr;
+    APPLICATION_MANAGER* pApplicationManager;
+    APPLICATION* pApplication;
+    ASPNETCORE_CONFIG* config;
+    ASPNETCORE_APPLICATION* pAspNetCoreApplication;
+    ASPNETCORE_CONFIG::GetConfig(pHttpContext, &config);
 
-    return m_pHandler->OnExecuteRequestHandler();
+    // TODO store whether we are inproc or outofproc so we don't need to check the config everytime?
+    if (config->QueryIsOutOfProcess())// case insensitive
+    {
+        m_pHandler = new FORWARDING_HANDLER(pHttpContext);
+        if (m_pHandler == NULL)
+        {
+            hr = E_OUTOFMEMORY;
+            goto Failed;
+        }
+
+        return m_pHandler->OnExecuteRequestHandler();
+    }
+    else if (config->QueryIsInProcess())
+    {
+        pApplicationManager = APPLICATION_MANAGER::GetInstance();
+        if (pApplicationManager == NULL)
+        {
+            hr = E_OUTOFMEMORY;
+            goto Failed;
+        }
+
+        hr = pApplicationManager->GetApplication(pHttpContext,
+            &pApplication);
+        if (FAILED(hr))
+        {
+            goto Failed;
+        }
+
+        hr = pApplication->GetAspNetCoreApplication(config, pHttpContext, &pAspNetCoreApplication);
+        if (FAILED(hr))
+        {
+            goto Failed;
+        }
+
+        // Allow reading and writing to simultaneously
+        ((IHttpContext3*)pHttpContext)->EnableFullDuplex();
+
+        // Disable response buffering by default, we'll do a write behind buffering in managed code
+        ((IHttpResponse2*)pHttpContext->GetResponse())->DisableBuffering();
+
+        // TODO: Optimize sync completions
+        return pAspNetCoreApplication->ExecuteRequest(pHttpContext);
+    }
+Failed:
+    pHttpContext->GetResponse()->SetStatus(500, "Internal Server Error", 0, hr);
+    return REQUEST_NOTIFICATION_STATUS::RQ_NOTIFICATION_FINISH_REQUEST;
 }
 
 __override
 REQUEST_NOTIFICATION_STATUS
 CProxyModule::OnAsyncCompletion(
-    IHttpContext *,
+    IHttpContext * pHttpContext,
     DWORD                   dwNotification,
     BOOL                    fPostNotification,
     IHttpEventProvider *,
     IHttpCompletionInfo *   pCompletionInfo
 )
 {
-    UNREFERENCED_PARAMETER(dwNotification);
-    UNREFERENCED_PARAMETER(fPostNotification);
-    DBG_ASSERT(dwNotification == RQ_EXECUTE_REQUEST_HANDLER);
-    DBG_ASSERT(fPostNotification == FALSE);
+    // TODO store whether we are inproc or outofproc so we don't need to check the config everytime?
+    ASPNETCORE_CONFIG* config;
+    ASPNETCORE_CONFIG::GetConfig(pHttpContext, &config);
 
-    return m_pHandler->OnAsyncCompletion(
+    if (config->QueryIsOutOfProcess())
+    {
+        return m_pHandler->OnAsyncCompletion(
             pCompletionInfo->GetCompletionBytes(),
             pCompletionInfo->GetCompletionStatus());
+    }
+    else if (config->QueryIsInProcess())
+    {
+        return REQUEST_NOTIFICATION_STATUS::RQ_NOTIFICATION_CONTINUE;
+    }
+
+    pHttpContext->GetResponse()->SetStatus(500, "Internal Server Error", 0, E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+    return REQUEST_NOTIFICATION_STATUS::RQ_NOTIFICATION_FINISH_REQUEST;
 }

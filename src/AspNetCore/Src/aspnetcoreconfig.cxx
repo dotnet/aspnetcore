@@ -8,11 +8,16 @@ ASPNETCORE_CONFIG::~ASPNETCORE_CONFIG()
     //
     // the destructor will be called once IIS decides to recycle the module context (i.e., application)
     //
+    // shutting down core application first
+    if (ASPNETCORE_APPLICATION::GetInstance() != NULL) {
+        ASPNETCORE_APPLICATION::GetInstance()->Shutdown();
+    }
+    m_struApplicationFullPath.Reset();
     if (!m_struApplication.IsEmpty())
     {
         APPLICATION_MANAGER::GetInstance()->RecycleApplication(m_struApplication.QueryStr());
     }
-    if(m_pEnvironmentVariables != NULL)
+    if (m_pEnvironmentVariables != NULL)
     {
         m_pEnvironmentVariables->Clear();
         delete m_pEnvironmentVariables;
@@ -86,7 +91,7 @@ ASPNETCORE_CONFIG::GetConfig(
     else
     {
         // set appliction info here instead of inside Populate()
-        // as the destructor will delete the backend process 
+        // as the destructor will delete the backend process
         hr = pAspNetCoreConfig->QueryApplicationPath()->Copy(pHttpApplication->GetApplicationId());
         if (FAILED(hr))
         {
@@ -118,6 +123,8 @@ ASPNETCORE_CONFIG::Populate(
     STRU                            strEnvName;
     STRU                            strEnvValue;
     STRU                            strExpandedEnvValue;
+    STRU                            strApplicationFullPath;
+    STRU                            strHostingModel;
     IAppHostAdminManager           *pAdminManager = NULL;
     IAppHostElement                *pAspNetCoreElement = NULL;
     IAppHostElement                *pWindowsAuthenticationElement = NULL;
@@ -144,8 +151,13 @@ ASPNETCORE_CONFIG::Populate(
     }
 
     pAdminManager = g_pHttpServer->GetAdminManager();
-
     hr = strSiteConfigPath.Copy(pHttpContext->GetApplication()->GetAppConfigPath());
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
+    hr = m_struApplicationFullPath.Copy(pHttpContext->GetApplication()->GetApplicationPhysicalPath());
     if (FAILED(hr))
     {
         goto Finished;
@@ -222,6 +234,23 @@ ASPNETCORE_CONFIG::Populate(
     if (FAILED(hr))
     {
         goto Finished;
+    }
+
+    hr = GetElementStringProperty(pAspNetCoreElement,
+        CS_ASPNETCORE_HOSTING_MODEL,
+        &strHostingModel);
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
+    if (strHostingModel.IsEmpty() || strHostingModel.Equals(L"outofprocess", TRUE))
+    {
+        m_fIsOutOfProcess = TRUE;
+    }
+    else if (strHostingModel.Equals(L"inprocess", TRUE))
+    {
+        m_fIsInProcess = TRUE;
     }
 
     hr = GetElementStringProperty(pAspNetCoreElement,
@@ -314,14 +343,13 @@ ASPNETCORE_CONFIG::Populate(
     {
         goto Finished;
     }
-
-    hr = GetElementStringProperty(pAspNetCoreElement,
-        CS_ASPNETCORE_STDOUT_LOG_FILE,
-        &m_struStdoutLogFile);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
+	hr = GetElementStringProperty(pAspNetCoreElement,
+		CS_ASPNETCORE_STDOUT_LOG_FILE,
+		&m_struStdoutLogFile);
+	if (FAILED(hr))
+	{
+		goto Finished;
+	}
 
     hr = GetElementChildByName(pAspNetCoreElement,
         CS_ASPNETCORE_ENVIRONMENT_VARIABLES,
