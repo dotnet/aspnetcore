@@ -54,7 +54,9 @@
 
   <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories">
     <ItemGroup>
-      <_CloneRepositories Include="@(Repository);@(ShippedRepository)" />
+      <_CloneRepositories Include="@(Repository)" />
+      <_CloneRepositories Remove="%(Repository.Identity)" Condition="$([System.Environment]::GetEnvironmentVariable('BUILD_VCS_URL_%(Repository.Identity)')) != ''" />
+      <_CloneRepositories Include="@(ShippedRepository)" />
       <_CloneRepository Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
           CloneRepository=%(_CloneRepositories.Identity);
@@ -70,9 +72,11 @@
 
     <MakeDir Directories="$(_CloneRepositoryRoot)" />
 
-    <MSBuild Projects="@(_CloneRepository)"
+    <Message Text="Clone %(_CloneRepositories.Identity)" Importance="High" />
+
+<!--     <MSBuild Projects="@(_CloneRepository)"
       Targets="_CloneRepository"
-      BuildInParallel="$(BuildInParallel)" />
+      BuildInParallel="$(BuildInParallel)" /> -->
 
   </Target>
 
