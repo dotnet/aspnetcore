@@ -1,4 +1,4 @@
-﻿init:
+init:
   - git config --global core.autocrlf true
 environment:
   AUTOBAHN_SUITES_LOG: 1
@@ -12,7 +12,7 @@ branches:
     - dev
     - /^(.*\/)?ci-.*$/
 build_script:
-  - ps: .\build.ps1
+  - ps: .\run.ps1 default-build
 clone_depth: 1
 test: off
 deploy: off
