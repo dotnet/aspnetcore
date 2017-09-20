@@ -15,12 +15,14 @@ namespace RepoTasks.Utilities
         public const int RepoVersionDoesNotMatchProjectVersion = 2001;
         public const int RepoPackageVersionDoesNotMatchProjectPackageVersion = 2002;
         public const int DuplicatePackageReference = 2003;
+        public const int MultipleExternalDependencyVersions = 2004;
 
         // NuGet errors
         public const int InvalidNuspecFile = 4001;
         public const int PackageReferenceHasVersion = 4002;
         public const int DotNetCliReferenceReferenceHasVersion = 4003;
         public const int PackageVersionNotFoundInLineup = 4004;
+        public const int UndefinedExternalDependency = 4005;
 
         // Other unknown errors
         public const int PolicyFailedToApply = 5000;

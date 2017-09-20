@@ -18,11 +18,27 @@ namespace RepoTasks
 {
     public class VerifyCoherentVersions : Microsoft.Build.Utilities.Task
     {
+        [Required]
         public ITaskItem[] PackageFiles { get; set; }
+
+        [Required]
+        public ITaskItem[] ExternalDependencies { get; set; }
 
         public override bool Execute()
         {
             var packageLookup = new Dictionary<string, PackageInfo>(StringComparer.OrdinalIgnoreCase);
+
+            var dependencyMap = new Dictionary<string, ExternalDependency>(StringComparer.OrdinalIgnoreCase);
+            foreach (var dep in ExternalDependencies)
+            {
+                if (!dependencyMap.TryGetValue(dep.ItemSpec, out var externalDep))
+                {
+                    dependencyMap[dep.ItemSpec] = externalDep = new ExternalDependency();
+                }
+                externalDep.IsPrivate = bool.TryParse(dep.GetMetadata("Private"), out var isPrivate) && isPrivate;
+                externalDep.AllowedVersions.Add(dep.GetMetadata("Version"));
+            }
+
             foreach (var file in PackageFiles)
             {
                 PackageInfo package;
@@ -47,51 +63,51 @@ namespace RepoTasks
                 packageLookup[package.Id] = package;
             }
 
-            var dependencyIssues = new List<DependencyWithIssue>();
             foreach (var packageInfo in packageLookup.Values)
             {
-                dependencyIssues.AddRange(Visit(packageLookup, packageInfo));
-            }
-
-            var success = true;
-            foreach (var mismatch in dependencyIssues)
-            {
-                var message = $"{mismatch.Info.Id} depends on {mismatch.Dependency.Id} " +
-                    $"v{mismatch.Dependency.VersionRange} ({mismatch.TargetFramework}) when the latest build is v{mismatch.Info.Version}.";
-                Log.LogError(message);
-                success = false;
+                Visit(packageLookup, dependencyMap, packageInfo);
             }
 
             Log.LogMessage(MessageImportance.High, $"Verified {PackageFiles.Length} package(s) have coherent versions");
-            return success;
+            return !Log.HasLoggedErrors;
         }
 
-        private class DependencyWithIssue
+        private class ExternalDependency
         {
-            public PackageDependency Dependency { get; set; }
-            public PackageInfo Info { get; set; }
-            public NuGetFramework TargetFramework { get; set; }
+            public List<string> AllowedVersions { get; } = new List<string>();
+            public bool IsPrivate { get; set; }
         }
 
-        private IEnumerable<DependencyWithIssue> Visit(IDictionary<string, PackageInfo> packageLookup, PackageInfo packageInfo)
+        private void Visit(
+            IReadOnlyDictionary<string, PackageInfo> packageLookup,
+            IReadOnlyDictionary<string, ExternalDependency> dependencyMap,
+            PackageInfo packageInfo)
         {
             Log.LogMessage(MessageImportance.Low, $"Processing package {packageInfo.Id}");
             try
             {
-                var issues = new List<DependencyWithIssue>();
                 foreach (var dependencySet in packageInfo.DependencyGroups)
                 {
-                    // If the package doens't target any frameworks, just accept it
-                    if (dependencySet.TargetFramework == null)
-                    {
-                        continue;
-                    }
-
                     foreach (var dependency in dependencySet.Packages)
                     {
-                        if (!packageLookup.TryGetValue(dependency.Id, out var dependencyPackageInfo))
+                        PackageInfo dependencyPackageInfo;
+                        var depVersion = dependency.VersionRange.MinVersion.ToString();
+                        if (dependencyMap.TryGetValue(dependency.Id, out var externalDepInfo))
                         {
-                            // External dependency
+                            if (externalDepInfo.IsPrivate)
+                            {
+                                Log.LogError($"Package {packageInfo.Id} has an external dependency on {dependency.Id}/{depVersion} which is marked as Private=true.");
+                            }
+                            else if (!externalDepInfo.AllowedVersions.Any(a => depVersion.Equals(a)))
+                            {
+                                Log.LogError($"Package {packageInfo.Id} has an external dependency on the wrong version of {dependency.Id}. "
+                                    + $"It uses {depVersion} but only {string.Join(" or ", externalDepInfo.AllowedVersions)} is allowed.");
+                            }
+                            continue;
+                        }
+                        else if (!packageLookup.TryGetValue(dependency.Id, out dependencyPackageInfo))
+                        {
+                            Log.LogError($"Package {packageInfo.Id} has an undefined external dependency on {dependency.Id}/{depVersion}");
                             continue;
                         }
 
@@ -100,21 +116,15 @@ namespace RepoTasks
                             // For any dependency in the universe
                             // Add a mismatch if the min version doesn't work out
                             // (we only really care about >= minVersion)
-                            issues.Add(new DependencyWithIssue
-                            {
-                                Dependency = dependency,
-                                TargetFramework = dependencySet.TargetFramework,
-                                Info = dependencyPackageInfo
-                            });
+                            Log.LogError($"{packageInfo.Id} depends on {dependency.Id} " +
+                                    $"{dependency.VersionRange} ({dependencySet.TargetFramework}) when the latest build is {depVersion}.");
                         }
                     }
                 }
-                return issues;
             }
-            catch
+            catch (Exception ex)
             {
-                Log.LogError($"Unable to verify package {packageInfo.Id}");
-                throw;
+                Log.LogError($"Unexpected error while attempting to verify package {packageInfo.Id}.\r\n{ex}");
             }
         }
     }

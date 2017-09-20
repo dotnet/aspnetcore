@@ -75,9 +75,9 @@
 
     <Message Text="Clone %(_CloneRepositories.Identity)" Importance="High" />
 
-<!--     <MSBuild Projects="@(_CloneRepository)"
+    <MSBuild Projects="@(_CloneRepository)"
       Targets="_CloneRepository"
-      BuildInParallel="$(BuildInParallel)" /> -->
+      BuildInParallel="$(BuildInParallel)" />
 
   </Target>
 
@@ -161,6 +161,7 @@
     <RepoTasks.AnalyzeBuildGraph
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo)"
+      Dependencies="@(ExternalDependency)"
       ShippedArtifacts="@(ShippedArtifactInfo)"
       StartGraphAt="$(BuildGraphOf)"
       Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber)">
@@ -199,13 +200,15 @@
       DestinationFolder="$(ArtifactsDir)" />
   </Target>
 
-  <Target Name="VerifyCoherentVersions">
+  <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
     <ItemGroup>
       <ShippingPackageFiles Include="$(ArtifactsDir)ship\*.nupkg" />
+      <ShippedExternalDependency Include="%(ShippedArtifactInfo.PackageId)" Version="%(Version)" />
     </ItemGroup>
 
     <RepoTasks.VerifyCoherentVersions
-      PackageFiles="@(ShippingPackageFiles)" />
+      PackageFiles="@(ShippingPackageFiles)"
+      ExternalDependencies="@(ExternalDependency);@(ShippedExternalDependency)" />
   </Target>
 
   <Target Name="_CreateRepositoriesListWithCommits" DependsOnTargets="_GetRepositoryCommits">

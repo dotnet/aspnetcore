@@ -31,6 +31,9 @@ namespace RepoTasks
         [Required]
         public ITaskItem[] Artifacts { get; set; }
 
+        [Required]
+        public ITaskItem[] Dependencies { get; set; }
+
         // Artifacts that already shipped from repos
         [Required]
         public ITaskItem[] ShippedArtifacts { get; set; }
@@ -95,6 +98,21 @@ namespace RepoTasks
 
             // ensure versions cascade
             var buildPackageMap = packages.ToDictionary(p => p.PackageInfo.Id, p => p, StringComparer.OrdinalIgnoreCase);
+            var dependencyMap = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
+            foreach (var dep in Dependencies)
+            {
+                if (!dependencyMap.TryGetValue(dep.ItemSpec, out var versions))
+                {
+                    dependencyMap[dep.ItemSpec] = versions = new List<string>();
+                }
+                else if (dep.GetMetadata("NoWarn") == null || dep.GetMetadata("NoWarn").IndexOf("KRB" + KoreBuildErrors.MultipleExternalDependencyVersions) < 0)
+                {
+                    Log.LogKoreBuildWarning(
+                        KoreBuildErrors.MultipleExternalDependencyVersions,
+                        message: $"Multiple versions of external dependency '{dep.ItemSpec}' are defined. In most cases, there should only be one version of external dependencies.");
+                }
+                versions.Add(dep.GetMetadata("Version"));
+            }
 
             var inconsistentVersions = new List<VersionMismatch>();
             var reposThatShouldPatch = new HashSet<string>();
@@ -107,7 +125,25 @@ namespace RepoTasks
             {
                 if (!buildPackageMap.TryGetValue(dependency.Key, out var package))
                 {
-                    // this dependency is not a PackageReference to something that we build in Universe
+                    // This dependency is not one of the packages that will be compiled by this run of Universe.
+
+                    var matchesExternalDependency = false;
+                    if (shippedPackageMap.TryGetValue(dependency.Key, out var shippedPackage))
+                    {
+                        matchesExternalDependency = shippedPackage.PackageInfo.Version.Equals(NuGetVersion.Parse(dependency.Value.Version));
+                    }
+                    else if (dependencyMap.TryGetValue(dependency.Key, out var externalVersions))
+                    {
+                        matchesExternalDependency = externalVersions.Contains(dependency.Value.Version);
+                    }
+
+                    if (!matchesExternalDependency)
+                    {
+                        Log.LogKoreBuildError(
+                            project.FullPath,
+                            KoreBuildErrors.UndefinedExternalDependency,
+                            message: $"Undefined external dependency on {dependency.Key}/{dependency.Value.Version}");
+                    }
                     continue;
                 }
 
