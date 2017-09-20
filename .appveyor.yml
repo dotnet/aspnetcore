@@ -11,7 +11,7 @@ environment:
     DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
     DOTNET_CLI_TELEMETRY_OPTOUT: 1
 build_script:
-  - ps: .\build.ps1
+  - ps: .\run.ps1 default-build
 clone_depth: 1
 test: off
 deploy: off
