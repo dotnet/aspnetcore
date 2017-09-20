@@ -18,6 +18,7 @@ using Moq;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -237,6 +238,22 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await endPoint.OnConnectedAsync(client.Connection).OrTimeout(TimeSpan.FromSeconds(10));
             }
+        }
+
+        [Fact]
+        public async Task CanLoadHubContext()
+        {
+            var serviceProvider = CreateServiceProvider();
+            var context = serviceProvider.GetRequiredService<IHubContext<SimpleHub>>();
+            await context.Clients.All.InvokeAsync("Send", "test");
+        }
+
+        [Fact]
+        public async Task CanLoadTypedHubContext()
+        {
+            var serviceProvider = CreateServiceProvider();
+            var context = serviceProvider.GetRequiredService<IHubContext<SimpleTypedHub, ITypedHubClient>>();
+            await context.Clients.All.Send("test");
         }
 
         [Fact]
@@ -1576,6 +1593,20 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public override async Task OnConnectedAsync()
             {
                 await Clients.All.InvokeAsync("Send", $"{Context.ConnectionId} joined");
+                await base.OnConnectedAsync();
+            }
+        }
+
+        public interface ITypedHubClient
+        {
+            Task Send(string message);
+        }
+
+        public class SimpleTypedHub : Hub<ITypedHubClient>
+        {
+            public override async Task OnConnectedAsync()
+            {
+                await Clients.All.Send($"{Context.ConnectionId} joined");
                 await base.OnConnectedAsync();
             }
         }
