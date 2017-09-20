@@ -16,6 +16,7 @@
 
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">/t:Verify</_RepositoryBuildTargets>
+    <TcVcsIdPrefix>Patch20_</TcVcsIdPrefix>
 
     <PrepareDependsOn>$(PrepareDependsOn);CleanArtifacts;CleanUniverseArtifacts</PrepareDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanUniverseArtifacts</CleanDependsOn>
@@ -55,7 +56,7 @@
   <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories">
     <ItemGroup>
       <_CloneRepositories Include="@(Repository)" />
-      <_CloneRepositories Remove="%(Repository.Identity)" Condition="$([System.Environment]::GetEnvironmentVariable('BUILD_VCS_URL_%(Repository.Identity)')) != ''" />
+      <_CloneRepositories Remove="%(Repository.Identity)" Condition="$([System.Environment]::GetEnvironmentVariable('BUILD_VCS_NUMBER_$(TcVcsIdPrefix)%(Repository.Identity)')) != ''" />
       <_CloneRepositories Include="@(ShippedRepository)" />
       <_CloneRepository Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
@@ -235,8 +236,8 @@
         * BUILD_VCS_NUMBER_<RepositoryName> gives us the commit hash for a repository.
       -->
       <_RepositoryName>$([System.String]::new('%(Repository.Identity)').Replace('.', '_'))</_RepositoryName>
-      <_CloneUrl>$([System.Environment]::GetEnvironmentVariable("BUILD_VCS_URL_$(_RepositoryName)"))</_CloneUrl>
-      <_CommitHash>$([System.Environment]::GetEnvironmentVariable("BUILD_VCS_NUMBER_$(_RepositoryName)"))</_CommitHash>
+      <_CloneUrl>$([System.Environment]::GetEnvironmentVariable("BUILD_VCS_URL_$(TcVcsIdPrefix)$(_RepositoryName)"))</_CloneUrl>
+      <_CommitHash>$([System.Environment]::GetEnvironmentVariable("BUILD_VCS_NUMBER_$(TcVcsIdPrefix)$(_RepositoryName)"))</_CommitHash>
     </PropertyGroup>
 
     <Warning Text="%(Repository.Identity) has not been cloned."
