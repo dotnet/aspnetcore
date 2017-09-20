@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             Connection.User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.Name, Interlocked.Increment(ref _id).ToString()) }));
             Connection.Metadata["ConnectedTask"] = new TaskCompletionSource<bool>();
 
-            protocol = protocol ?? new JsonHubProtocol(new JsonSerializer());
+            protocol = protocol ?? new JsonHubProtocol();
             _protocolReaderWriter = new HubProtocolReaderWriter(protocol, new PassThroughEncoder());
 
             _cts = new CancellationTokenSource();

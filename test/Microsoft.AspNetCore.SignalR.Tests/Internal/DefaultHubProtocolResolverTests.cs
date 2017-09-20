@@ -41,8 +41,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Protocol.Tests
         public static IEnumerable<object[]> HubProtocols =>
             new[]
             {
-                new object[] { new JsonHubProtocol(new JsonSerializer()) },
-                new object[] { new MessagePackHubProtocol(MessagePackHubProtocol.CreateDefaultSerializationContext()) },
+                new object[] { new JsonHubProtocol() },
+                new object[] { new MessagePackHubProtocol() },
             };
     }
 }

@@ -29,6 +29,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private JsonSerializer _payloadSerializer;
 
         /// <summary>
+        /// Creates an instance of the <see cref="JsonHubProtocol"/> using the default <see cref="JsonSerializer"/>
+        /// to serialize application payloads (arguments, results, etc.). The serialization of the outer protocol can
+        /// NOT be changed using this serializer.
+        /// </summary>
+        public JsonHubProtocol()
+            : this(new JsonSerializer())
+        { }
+
+        /// <summary>
         /// Creates an instance of the <see cref="JsonHubProtocol"/> using the specified <see cref="JsonSerializer"/>
         /// to serialize application payloads (arguments, results, etc.). The serialization of the outer protocol can
         /// NOT be changed using this serializer.

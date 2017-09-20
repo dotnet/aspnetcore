@@ -100,7 +100,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task CannotCallInvokeOnClosedHubConnection()
         {
             var connection = new TestConnection();
-            var hubConnection = new HubConnection(connection, new JsonHubProtocol(new JsonSerializer()), new LoggerFactory());
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
 
             await hubConnection.StartAsync();
             await hubConnection.DisposeAsync();
@@ -114,7 +114,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         public async Task PendingInvocationsAreCancelledWhenConnectionClosesCleanly()
         {
             var connection = new TestConnection();
-            var hubConnection = new HubConnection(connection, new JsonHubProtocol(new JsonSerializer()), new LoggerFactory());
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
 
             await hubConnection.StartAsync();
             var invokeTask = hubConnection.InvokeAsync<int>("testMethod");

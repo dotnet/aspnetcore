@@ -18,13 +18,13 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         public static IHubConnectionBuilder WithJsonProtocol(this IHubConnectionBuilder hubConnectionBuilder)
         {
-            return hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol(new JsonSerializer()));
+            return hubConnectionBuilder.WithHubProtocol(new JsonHubProtocol());
         }
 
         public static IHubConnectionBuilder WithMessagePackProtocol(this IHubConnectionBuilder hubConnectionBuilder)
         {
             return hubConnectionBuilder.WithHubProtocol(
-                new MessagePackHubProtocol(MessagePackHubProtocol.CreateDefaultSerializationContext()));
+                new MessagePackHubProtocol());
         }
 
         public static IHubConnectionBuilder WithLoggerFactory(this IHubConnectionBuilder hubConnectionBuilder, ILoggerFactory loggerFactory)

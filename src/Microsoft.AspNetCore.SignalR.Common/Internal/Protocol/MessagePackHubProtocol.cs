@@ -26,6 +26,10 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         public ProtocolType Type => ProtocolType.Binary;
 
+        public MessagePackHubProtocol()
+            : this(CreateDefaultSerializationContext())
+        { }
+
         public MessagePackHubProtocol(SerializationContext serializationContext)
         {
             _serializationContext = serializationContext;
