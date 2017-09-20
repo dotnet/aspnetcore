@@ -5,6 +5,7 @@ using System;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Testing.xunit;
@@ -162,6 +163,34 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             {
                 var response = await SendRequestAsync(address, useDefaultCredentials: true);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
+        // https://github.com/aspnet/Logging/issues/543#issuecomment-321907828
+        [ConditionalFact]
+        public async Task AuthTypes_AccessUserInOnCompleted_Success()
+        {
+            var completed = new ManualResetEvent(false);
+            string userName = null;
+            var authTypes = AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM;
+            using (var server = Utilities.CreateDynamicHost(authTypes, DenyAnoymous, out var address, httpContext =>
+            {
+                Assert.NotNull(httpContext.User);
+                Assert.NotNull(httpContext.User.Identity);
+                Assert.True(httpContext.User.Identity.IsAuthenticated);
+                httpContext.Response.OnCompleted(() =>
+                {
+                    userName = httpContext.User.Identity.Name;
+                    completed.Set();
+                    return Task.FromResult(0);
+                });
+                return Task.FromResult(0);
+            }))
+            {
+                var response = await SendRequestAsync(address, useDefaultCredentials: true);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.True(completed.WaitOne(TimeSpan.FromSeconds(5)));
+                Assert.False(string.IsNullOrEmpty(userName));
             }
         }
 

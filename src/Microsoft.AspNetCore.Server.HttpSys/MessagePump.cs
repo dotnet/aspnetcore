@@ -204,17 +204,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         await _application.ProcessRequestAsync(context).SupressContext();
                         await featureContext.OnResponseStart();
-                        requestContext.Dispose();
-                        _application.DisposeContext(context, null);
                     }
                     finally
                     {
                         await featureContext.OnCompleted();
                     }
+                    _application.DisposeContext(context, null);
+                    requestContext.Dispose();
                 }
                 catch (Exception ex)
                 {
                     LogHelper.LogException(_logger, "ProcessRequestAsync", ex);
+                    _application.DisposeContext(context, ex);
                     if (requestContext.Response.HasStarted)
                     {
                         requestContext.Abort();
@@ -225,7 +226,6 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         requestContext.Response.Headers.Clear();
                         SetFatalResponse(requestContext, 500);
                     }
-                    _application.DisposeContext(context, ex);
                 }
                 finally
                 {
