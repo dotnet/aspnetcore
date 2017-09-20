@@ -7,17 +7,22 @@ using Identity.OpenIdConnect.WebSite.Identity.Models;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
 {
     public class EntityFrameworkSeedReferenceData : IStartupFilter
     {
         public EntityFrameworkSeedReferenceData(
-            IdentityServiceDbContext dbContext,
-            UserManager<ApplicationUser> userManager,
+            IServiceScopeFactory factory,
             ReferenceData seedData)
         {
-            SeedContext(dbContext, userManager, seedData);
+            using (var scope = factory.CreateScope())
+            {
+                var dbContext = scope.ServiceProvider.GetRequiredService<IdentityServiceDbContext>();
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
+                SeedContext(dbContext, userManager, seedData);
+            }
         }
 
         public Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)

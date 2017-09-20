@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity.Service;
 using Microsoft.AspNetCore.Identity.Service.IntegratedWebClient;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -23,25 +24,24 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
     {
         private readonly DelegatingHandler _loopBackHandler = new LoopBackHandler();
 
-        public CredentialsServerBuilder()
+        public CredentialsServerBuilder(string[] args = null)
         {
-            Server = new MvcWebApplicationBuilder<Startup>()
-                .UseSolutionRelativeContentRoot(@"./test/WebSites/Identity.OpenIdConnect.WebSite")
-                .UseApplicationAssemblies();
+            Server = Program.CreateWebHostBuilder(args ?? Array.Empty<string>())
+                .UseSolutionRelativeContentRoot(@"./test/WebSites/Identity.OpenIdConnect.WebSite");
         }
 
         public CredentialsServerBuilder ConfigureReferenceData(Action<ReferenceData> action)
         {
             var referenceData = new ReferenceData();
             action(referenceData);
-            Server.ConfigureBeforeStartup(s => s.TryAddSingleton(referenceData));
+            Server.ConfigureServices(s => s.TryAddSingleton(referenceData));
 
             return this;
         }
 
         public CredentialsServerBuilder ConfigureInMemoryEntityFrameworkStorage(string dbName = "test")
         {
-            Server.ConfigureBeforeStartup(services =>
+            Server.ConfigureServices(services =>
             {
                 services.TryAddEnumerable(ServiceDescriptor.Transient<IStartupFilter, EntityFrameworkSeedReferenceData>());
                 services.AddDbContext<IdentityServiceDbContext>(options =>
@@ -53,13 +53,13 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
 
         public CredentialsServerBuilder ConfigureMvcAutomaticSignIn()
         {
-            Server.ConfigureBeforeStartup(s => s.Configure<MvcOptions>(o => o.Filters.Add(new AutoSignInFilter())));
+            Server.ConfigureServices(s => s.Configure<MvcOptions>(o => o.Filters.Add(new AutoSignInFilter())));
             return this;
         }
 
         public CredentialsServerBuilder ConfigureOpenIdConnectClient(Action<OpenIdConnectOptions> action)
         {
-            Server.ConfigureAfterStartup(services =>
+            Server.ConfigureServices(services =>
             {
                 services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
                 {
@@ -76,7 +76,7 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
 
         public CredentialsServerBuilder ConfigureIntegratedClient(string clientId)
         {
-            Server.ConfigureAfterStartup(services =>
+            Server.ConfigureTestServices(services =>
             {
                 services.Configure<IntegratedWebClientOptions>(options => options.ClientId = clientId);
             });
@@ -86,7 +86,7 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
 
         public CredentialsServerBuilder EnsureDeveloperCertificate()
         {
-            Server.ConfigureBeforeStartup(services => services.Configure<IdentityServiceOptions>(
+            Server.ConfigureServices(services => services.Configure<IdentityServiceOptions>(
                 o => o.SigningKeys.Add(
                     new SigningCredentials(
                         new X509SecurityKey(new X509Certificate2("./test-cert.pfx", "test")), "RS256"))));
@@ -94,13 +94,13 @@ namespace Microsoft.AspnetCore.Identity.Service.FunctionalTests
             return this;
         }
 
-        public MvcWebApplicationBuilder<Startup> Server { get; }
+        public IWebHostBuilder Server { get; }
 
         public HttpClient Build()
         {
             Environment.SetEnvironmentVariable("ASPNETCORE_ENVIRONMENT", "Development");
 
-            var host = Server.Build();
+            var host = new TestServer(Server);
             host.BaseAddress = new Uri("https://localhost");
 
             var clientHandler = host.CreateHandler();
