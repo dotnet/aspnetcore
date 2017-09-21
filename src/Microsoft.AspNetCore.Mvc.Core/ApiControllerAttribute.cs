@@ -11,8 +11,8 @@ namespace Microsoft.AspNetCore.Mvc
     /// this attribute can be used to target conventions, filters and other behaviors based on the purpose
     /// of the controller.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class)]
-    public class ApiControllerAttribute : ControllerAttribute , IApiBehaviorMetadata
+    [AttributeUsage(AttributeTargets.Class, AllowMultiple = false, Inherited = true)]
+    public class ApiControllerAttribute : ControllerAttribute, IApiBehaviorMetadata
     {
     }
 }

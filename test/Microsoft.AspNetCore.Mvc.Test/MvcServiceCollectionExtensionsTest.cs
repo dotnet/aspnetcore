@@ -349,6 +349,13 @@ namespace Microsoft.AspNetCore.Mvc
                         }
                     },
                     {
+                        typeof(IConfigureOptions<ApiBehaviorOptions>),
+                        new Type[]
+                        {
+                            typeof(ApiBehaviorOptionsSetup),
+                        }
+                    },
+                    {
                         typeof(IConfigureOptions<MvcViewOptions>),
                         new Type[]
                         {
@@ -410,6 +417,7 @@ namespace Microsoft.AspNetCore.Mvc
                             typeof(CorsApplicationModelProvider),
                             typeof(AuthorizationApplicationModelProvider),
                             typeof(TempDataApplicationModelProvider),
+                            typeof(ApiControllerApplicationModelProvider),
                         }
                     },
                     {

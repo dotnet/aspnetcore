@@ -249,6 +249,13 @@ namespace Microsoft.AspNetCore.Mvc
                         }
                     },
                     {
+                        typeof(IConfigureOptions<ApiBehaviorOptions>),
+                        new Type[]
+                        {
+                            typeof(ApiBehaviorOptionsSetup),
+                        }
+                    },
+                    {
                         typeof(IActionConstraintProvider),
                         new Type[]
                         {
@@ -288,6 +295,7 @@ namespace Microsoft.AspNetCore.Mvc
                         new Type[]
                         {
                             typeof(DefaultApplicationModelProvider),
+                            typeof(ApiControllerApplicationModelProvider),
                         }
                     },
                 };

@@ -79,7 +79,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static readonly Action<ILogger, Exception> _cannotApplyRequestFormLimits;
         private static readonly Action<ILogger, Exception> _appliedRequestFormLimits;
-        
+
+        private static readonly Action<ILogger, Exception> _modelStateInvalidFilterExecuting;
 
         static MvcCoreLoggerExtensions()
         {
@@ -282,6 +283,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 LogLevel.Debug,
                 2,
                 "Applied the configured form options on the current request.");
+
+            _modelStateInvalidFilterExecuting = LoggerMessage.Define(
+                LogLevel.Debug,
+                1,
+                "The request has model state errors, returning an error response.");
+
         }
 
         public static IDisposable ActionScope(this ILogger logger, ActionDescriptor action)
@@ -591,6 +598,8 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             _appliedRequestFormLimits(logger, null);
         }
+
+        public static void ModelStateInvalidFilterExecuting(this ILogger logger) => _modelStateInvalidFilterExecuting(logger, null);
 
         private class ActionLogScope : IReadOnlyList<KeyValuePair<string, object>>
         {

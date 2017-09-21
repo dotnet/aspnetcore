@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Mvc.Filters
 {
@@ -21,6 +22,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     /// For <see cref="IExceptionFilter"/> implementations, the filter runs only after an exception has occurred,
     /// and so the observed order of execution will be opposite that of other filters.
     /// </remarks>
+    [DebuggerDisplay("Filter = {Filter.ToString(),nq}, Order = {Order}")]
     public class FilterDescriptor
     {
         /// <summary>
@@ -43,9 +45,8 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             Filter = filter;
             Scope = filterScope;
 
-            var orderedFilter = Filter as IOrderedFilter;
 
-            if (orderedFilter != null)
+            if (Filter is IOrderedFilter orderedFilter)
             {
                 Order = orderedFilter.Order;
             }

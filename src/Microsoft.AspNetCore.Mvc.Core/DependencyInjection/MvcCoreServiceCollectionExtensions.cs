@@ -148,6 +148,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<MvcOptions>, MvcCoreMvcOptionsSetup>());
             services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IConfigureOptions<ApiBehaviorOptions>, ApiBehaviorOptionsSetup>());
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IConfigureOptions<RouteOptions>, MvcCoreRouteOptionsSetup>());
 
             //
@@ -158,7 +160,10 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApplicationModelProvider, DefaultApplicationModelProvider>());
             services.TryAddEnumerable(
+                ServiceDescriptor.Transient<IApplicationModelProvider, ApiControllerApplicationModelProvider>());
+            services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IActionDescriptorProvider, ControllerActionDescriptorProvider>());
+
             services.TryAddSingleton<IActionDescriptorCollectionProvider, ActionDescriptorCollectionProvider>();
 
             //

@@ -2,10 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace BasicWebSite
@@ -16,13 +19,30 @@ namespace BasicWebSite
         public void ConfigureServices(IServiceCollection services)
         {
             services
-                .AddMvc(
-                    options => { options.Conventions.Add(new ApplicationDescription("This is a basic website.")); })
+                .AddMvc(options =>  options.Conventions.Add(new ApplicationDescription("This is a basic website.")))
                 .AddXmlDataContractSerializerFormatters();
+
+            services.Configure<ApiBehaviorOptions>(options =>
+            {
+                var previous = options.InvalidModelStateResponseFactory;
+                options.InvalidModelStateResponseFactory = context =>
+                {
+                    var result = (BadRequestObjectResult) previous(context);
+                    if (context.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is VndErrorAttribute))
+                    {
+                        result.ContentTypes.Clear();
+                        result.ContentTypes.Add("application/vnd.error+json");
+                    }
+
+                    return result;
+                };
+            });
 
             services.AddLogging();
             services.AddSingleton<IActionDescriptorProvider, ActionDescriptorCreationCounter>();
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddSingleton<ContactsRepository>();
+            services.AddSingleton<IErrorDescriptorProvider, VndErrorDescriptionProvider>();
             services.AddScoped<RequestIdService>();
         }
 
