@@ -26,20 +26,17 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
                 throw new FormatException("Messages over 2GB in size are not supported");
             }
 
-            // Skip over the length
-            var remaining = buffer.Slice(sizeof(long));
-
             // We don't have enough data
-            while (remaining.Length < (int)length)
+            if (buffer.Length < (int)length + sizeof(long))
             {
                 return false;
             }
 
             // Get the payload
-            payload = remaining.Slice(0, (int)length);
+            payload = buffer.Slice(sizeof(long), (int)length);
 
             // Skip the payload
-            buffer = remaining.Slice((int)length);
+            buffer = buffer.Slice((int)length + sizeof(long));
             return true;
         }
     }
