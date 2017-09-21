@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\..\build\common.props" />
+
+  <PropertyGroup>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <PackageTags>aspnetcore</PackageTags>
+    <Description>Microsoft.AspNetCore.All</Description>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Content Include="build\**\*.xml" PackagePath="%(Identity)" />
+    <Content Include="build\**\*.targets" PackagePath="%(Identity)" />
+    <Content Include="lib\$(TargetFramework)\_._" PackagePath="%(Identity)" />
+  </ItemGroup>
+
+</Project>

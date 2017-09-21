@@ -1,5 +1,6 @@
 <Project>
   <Import Project="RepositoryBuild.targets" />
+  <Import Project="RuntimeStore.targets" />
 
   <PropertyGroup>
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
@@ -302,5 +303,4 @@
       <_CloneUrl></_CloneUrl>
     </PropertyGroup>
   </Target>
-
 </Project>

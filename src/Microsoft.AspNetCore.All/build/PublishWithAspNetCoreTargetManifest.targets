@@ -1,0 +1,29 @@
+<Project>
+  <PropertyGroup>
+    <PublishWithAspNetCoreTargetManifest Condition="'$(PublishWithAspNetCoreTargetManifest)'=='' and '$(SelfContained)'=='false' and '$(PublishableProject)'=='true'">true</PublishWithAspNetCoreTargetManifest>
+  </PropertyGroup>
+
+<!--
+******************************************************************************
+Target: PublishWithAspNetCoreTargetManifest
+Error if PublishWithAspNetCoreTargetManifest is set to true for standalone app
+******************************************************************************
+-->
+  <Target
+    Name="PublishWithAspNetCoreTargetManifest"
+    AfterTargets="PrepareForPublish"
+    Condition="'$(PublishWithAspNetCoreTargetManifest)'=='true'" >
+
+    <Error
+      Text="PublishWithAspNetCoreTargetManifest cannot be set to true for self contained apps."
+      Condition="'$(SelfContained)'=='true'" />
+
+    <ItemGroup>
+      <AspNetCoreTargetManifestFiles Include="$(MSBuildThisFileDirectory)aspnetcore-store-*.xml"/>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <TargetManifestFiles>$(TargetManifestFiles);@(AspNetCoreTargetManifestFiles)</TargetManifestFiles>
+    </PropertyGroup>
+  </Target>
+</Project>

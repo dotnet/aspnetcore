@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="..\build\common.props" />
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+   <PackageReference Include="Microsoft.AspNetCore.All" Version="$(VersionPrefix)-$(VersionSuffix)" />
+  </ItemGroup>
+
+  <Target Name="GetPackageDefinitions" Returns="@(_PackageDefinitions)">
+    <ItemGroup>
+      <ProjectAssetsJson Include="$(MSBuildThisFileDirectory)**\project.assets.json" />
+    </ItemGroup>
+
+    <ResolvePackageDependencies ProjectPath="$(MSBuildThisFileFullPath)" ProjectAssetsFile="@(ProjectAssetsJson)">
+      <Output TaskParameter="PackageDefinitions" ItemName="_PackageDefinitions" />
+    </ResolvePackageDependencies>
+  </Target>
+</Project>

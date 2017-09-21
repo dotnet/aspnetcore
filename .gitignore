@@ -19,6 +19,7 @@ node_modules
 .build
 .nuget
 .r
+.w
 .deps
 global.json
 korebuild-lock.txt

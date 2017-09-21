@@ -1,0 +1,191 @@
+<Project>
+  <Import Project="common.props" />
+
+  <PropertyGroup>
+    <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
+    <_BuildScriptsDirectory>$(MSBuildThisFileDirectory)tools\scripts\</_BuildScriptsDirectory>
+    <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
+    <_RuntimeStoreWorkDirectory>$(_WorkRoot).rw\</_RuntimeStoreWorkDirectory>
+    <_RuntimeStoreOutputDirectory>$(_WorkRoot).ro\</_RuntimeStoreOutputDirectory>
+    <_TemplatesDirectory>$(MSBuildThisFileDirectory)tools\templates\</_TemplatesDirectory>
+    <_SrcDirectory>$(RepositoryRoot)src\</_SrcDirectory>
+    <_AllMetapackageDirectory>$(_SrcDirectory)Microsoft.AspNetCore.All\</_AllMetapackageDirectory>
+    <_ExistingManifestsDirectory>$(_AllMetapackageDirectory)build\</_ExistingManifestsDirectory>
+    <_ArtifactsZipDirectory>$(ArtifactsDir)zip\</_ArtifactsZipDirectory>
+    <_StoreZipDirectory>$(_ArtifactsZipDirectory)rs\</_StoreZipDirectory>
+    <_SymbolsZipDirectory>$(_ArtifactsZipDirectory)symbols\</_SymbolsZipDirectory>
+    <_DepsOutputDirectory>$(ArtifactsDir)deps\</_DepsOutputDirectory>
+  </PropertyGroup>
+
+  <Target Name="BuildAllMetapackage" DependsOnTargets="ResolveRepoInfo">
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+
+    <!-- Move to working dir -->
+    <PropertyGroup>
+      <MetapackageWorkDirectory>$(_WorkRoot)Microsoft.AspNetCore.All\</MetapackageWorkDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <AllMetapackageFiles Include="$(_AllMetapackageDirectory)**\*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(AllMetapackageFiles)" DestinationFolder="$(MetapackageWorkDirectory)\%(RecursiveDir)" />
+
+    <!-- Generate RS.Reference project -->
+    <RepoTasks.AddMetapackageReferences
+      ReferencePackagePath="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj"
+      BuildArtifacts="@(ArtifactInfo)"
+      PackageArtifacts="@(PackageArtifact)" />
+
+    <!-- Restore and pack-->
+    <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj"
+      Targets="Restore;Pack"
+      Properties="Configuration=$(Configuration)" />
+
+    <!-- Copy to output directory -->
+    <ItemGroup>
+      <AllMetapackageNupkgFile Include="$(_AllMetapackageDirectory)**\*.nupkg" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(AllMetapackageNupkgFile)" DestinationFolder="$(BuildDir)" />
+
+  </Target>
+
+  <Target Name="_PrepareRuntimeStoreBuildAssets">
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+
+    <!-- Copy and update build assets -->
+    <Copy SourceFiles="$(RepositoryRoot)NuGet.config" DestinationFiles="$(_WorkRoot)NuGet.config" />
+    <Copy SourceFiles="$(_TemplatesDirectory)RS.Manifest\RS.Manifest.csproj" DestinationFiles="$(_WorkRoot)RS.Manifest.csproj" />
+
+    <!-- Update NuGet.config -->
+    <UpdatePackageSource
+      NuGetConfigPath="$(_WorkRoot)NuGet.config"
+      SourceName="Dependencies"
+      SourceUri="$(_DependencyBuildDirectory)"
+      Condition="Exists('$(_DependencyBuildDirectory)')" />
+  </Target>
+
+  <Target Name="_ResolveRuntimeStoreRID">
+    <Error Text="Please specify the platform for the runtime package store via RuntimeStoreArch: {x64|x86}." Condition="'$(RuntimeStoreArch)' == ''"/>
+
+    <PropertyGroup>
+      <RuntimeStoreRID Condition="$([MSBuild]::IsOSPlatform('Windows'))">win7-$(RuntimeStoreArch)</RuntimeStoreRID>
+      <RuntimeStoreRID Condition="$([MSBuild]::IsOSPlatform('Linux'))">linux-$(RuntimeStoreArch)</RuntimeStoreRID>
+      <RuntimeStoreRID Condition="$([MSBuild]::IsOSPlatform('OSX'))">osx-$(RuntimeStoreArch)</RuntimeStoreRID>
+    </PropertyGroup>
+  </Target>
+
+  <Target Name="BuildRuntimeStore" DependsOnTargets="_ResolveRuntimeStoreRID;_PrepareRuntimeStoreBuildAssets;_ResolveCurrentSharedFrameworkVersion">
+    <!-- Build runtime store -->
+    <Exec Command="dotnet store -m $(_WorkRoot)RS.Manifest.csproj -f netcoreapp2.0 -r $(RuntimeStoreRID) -o $(_RuntimeStoreOutputDirectory) --framework-version $(SharedFrameworkVersion) -w $(_RuntimeStoreWorkDirectory) $(RUNTIMESTORE_ADDITIONAL_ARGS)" />
+  </Target>
+
+  <Target Name="_ResolveCurrentSharedFrameworkVersion">
+    <!-- Parse framework version -->
+    <Exec Command="powershell.exe $(_BuildScriptsDirectory)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true" Condition="'$(OS)' == 'Windows_NT'">
+      <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
+    </Exec>
+    <Exec Command="bash $(_BuildScriptsDirectory)GetSharedFrameworkVersion.sh" ConsoleToMSBuild="true" Condition="'$(OS)' != 'Windows_NT'">
+      <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
+    </Exec>
+  </Target>
+
+  <Target Name="BuildHostingDeps" DependsOnTargets="ResolveRepoInfo;_ResolveCurrentSharedFrameworkVersion">
+    <!-- Generate RS.Reference project -->
+    <RepoTasks.ResolveHostingStartupPackages
+      BuildArtifacts="@(ArtifactInfo)"
+      PackageArtifacts="@(PackageArtifact)">
+      <Output TaskParameter="HostingStartupArtifacts" ItemName="HostingStartupArtifacts" />
+    </RepoTasks.ResolveHostingStartupPackages>
+
+    <!--- MSBuild caches things if you run inproc so have to use Exec -->
+    <Exec Command="dotnet msbuild /t:&quot;Restore;Rebuild;CollectDeps&quot; $(_TemplatesDirectory)HostingStartup/HostingStartup.csproj /p:&quot;DepsOutputPath=$(_DepsOutputDirectory);HostingStartupPackageName=%(HostingStartupArtifacts.PackageId);HostingStartupPackageVersion=%(HostingStartupArtifacts.Version);RuntimeFrameworkVersion=$(SharedFrameworkVersion)&quot;"/>
+
+    <ItemGroup>
+      <DepsFiles Include="$(_DepsOutputDirectory)**\*.deps.json" />
+    </ItemGroup>
+
+    <RepoTasks.TrimDeps DepsFiles="@(DepsFiles)" />
+  </Target>
+
+  <Target Name="PackRuntimeStore" DependsOnTargets="_ResolveRuntimeStoreRID">
+    <PropertyGroup>
+      <OutputZip>$(ArtifactsDir)aspnetcore-store-$(VersionPrefix)-$(VersionSuffix)-$(RuntimeStoreRID).zip</OutputZip>
+      <OutputSymbolZip>$(ArtifactsDir)aspnetcore-symbols-$(VersionPrefix)-$(VersionSuffix)-$(RuntimeStoreRID).zip</OutputSymbolZip>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <RuntimeStoreManifestFiles Include="$(_RuntimeStoreOutputDirectory)**\artifact.xml" />
+      <RuntimeStoreFiles Include="$(_RuntimeStoreOutputDirectory)**\*" Exclude="$(_RuntimeStoreOutputDirectory)**\artifact.xml;$(_RuntimeStoreOutputDirectory)symbols\**\*" />
+      <RuntimeStoreSymbolFiles Include="$(_RuntimeStoreOutputDirectory)symbols\**\*" />
+      <DepsFiles Include="$(_DepsOutputDirectory)**\*" />
+      <ExistingStoreManifests Include="$(_ExistingManifestsDirectory)*.xml" />
+    </ItemGroup>
+
+    <!-- Compose new store and symbols -->
+    <RepoTasks.ComposeNewStore
+      ExistingManifests="@(ExistingStoreManifests)"
+      NewManifests="@(RuntimeStoreManifestFiles)"
+      RuntimeStoreFiles="@(RuntimeStoreFiles)"
+      RuntimeStoreSymbolFiles="@(RuntimeStoreSymbolFiles)"
+      ManifestDestination="$(ArtifactsDir)aspnetcore-store-$(VersionPrefix)-$(VersionSuffix)-$(RuntimeStoreRID).xml"
+      StoreDestination="$(_StoreZipDirectory)store\"
+      SymbolsDestination="$(_SymbolsZipDirectory)"/>
+
+    <!-- Insert deps files -->
+    <Copy SourceFiles="@(DepsFiles)" DestinationFolder="$(_StoreZipDirectory)additionalDeps\%(RecursiveDir)" />
+
+    <ItemGroup>
+      <OutputZipFiles Include="$(_StoreZipDirectory)**\*" />
+      <OutputSymbolZipFiles Include="$(_SymbolsZipDirectory)**\*" />
+    </ItemGroup>
+
+    <!-- Create zips -->
+    <ZipArchive File="$(OutputZip)" SourceFiles="@(OutputZipFiles)" WorkingDirectory="$(_StoreZipDirectory)" Overwrite="true"/>
+    <ZipArchive File="$(OutputSymbolZip)" SourceFiles="@(OutputSymbolZipFiles)" WorkingDirectory="$(_SymbolsZipDirectory)" Overwrite="true" Condition="'@(OutputSymbolZipFiles)' != ''"/>
+  </Target>
+
+  <Target Name="CreateCommonManifest" DependsOnTargets="_PrepareRuntimeStoreBuildAssets">
+    <PropertyGroup>
+      <CommonManifestFileName>aspnetcore-store-$(VersionPrefix)-$(VersionSuffix)-common.xml</CommonManifestFileName>
+    </PropertyGroup>
+
+    <!-- Trim packages guaranteed to be in the runtime but isn't included in our runtime store -->
+    <ItemGroup>
+      <PackagesToTrim Include="runtime.win-arm64.runtime.native.system.data.sqlclient.sni" />
+    </ItemGroup>
+
+    <MSBuild Projects="$(_WorkRoot)RS.Manifest.csproj" Targets="Restore;GetPackageDefinitions" >
+      <Output TaskParameter="TargetOutputs" ItemName="_PackageDefinitions" />
+    </MSBuild>
+
+    <RepoTasks.CreateCommonManifest DestinationFilePath="$(ArtifactsDir)$(CommonManifestFileName)" PackageDefinitions="@(_PackageDefinitions)" Packages="@(PackagesToTrim)"/>
+  </Target>
+
+  <Target Name="AddManifestsToMetapackage">
+    <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{branch}\{build-number}"
+        Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
+
+    <ItemGroup>
+      <MetaPackageNupkg Include="$(COHERENCE_DROP_LOCATION)\ship\Microsoft.AspNetCore.All.*.nupkg" />
+      <ManifestFiles Include="$(ArtifactsDir)*.xml"/>
+    </ItemGroup>
+
+    <RemoveDir Directories="@(MetaPackageNupkg->'$(_WorkRoot)%(Filename)')" />
+    <Copy SourceFiles="@(MetaPackageNupkg)" DestinationFolder="$(ArtifactsDir)" />
+    <UnzipArchive File="$(ArtifactsDir)%(MetaPackageNupkg.FileName)%(MetaPackageNupkg.Extension)" Destination="@(MetaPackageNupkg->'$(_WorkRoot)%(Filename)')" />
+
+    <!-- Create a consolidated manifest and place in metapackage -->
+    <RepoTasks.ConsolidateManifests
+      Manifests="@(ManifestFiles)"
+      ManifestDestination="@(MetaPackageNupkg->'$(_WorkRoot)%(Filename)\build\aspnetcore-store-$(VersionPrefix)-$(VersionSuffix).xml')"/>
+
+    <ItemGroup>
+      <ArchiveFiles Include="$(TempDir)%(MetaPackageNupkg.Filename)\**\*" />
+    </ItemGroup>
+
+    <ZipArchive File="%(MetaPackageNupkg.FullPath)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="@(MetaPackageNupkg->'$(_WorkRoot)%(Filename)')" Overwrite="true" />
+  </Target>
+</Project>

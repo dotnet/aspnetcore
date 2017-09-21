@@ -5,5 +5,4 @@
   </PropertyGroup>
 
   <Import Project="artifacts.props" />
-  <Import Project="dependencies.props" />
 </Project>

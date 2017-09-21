@@ -231,4 +231,8 @@
       <NoWarn>KRB2004</NoWarn>
     </ExternalDependency>
   </ItemGroup>
+  
+  <PropertyGroup>
+    <InternalAspNetCoreSdkVersion>2.0.1-rtm-15400</InternalAspNetCoreSdkVersion>
+  </PropertyGroup>
 </Project>
