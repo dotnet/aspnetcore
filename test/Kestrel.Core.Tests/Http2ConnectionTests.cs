@@ -413,6 +413,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task DATA_Received_StreamIdEven_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendDataAsync(2, _noData, endStream: false);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public async Task DATA_Received_PaddingEqualToFramePayloadLength_ConnectionError()
         {
             await InitializeConnectionAsync(_echoApplication);
@@ -635,6 +645,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
         }
 
+        [Fact]
+        public async Task HEADERS_Received_StreamIdEven_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(2, _browserRequestHeaders, endStream: true);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
@@ -678,6 +698,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(_noopApplication);
 
             await SendPriorityAsync(0);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task PRIORITY_Received_StreamIdEven_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendPriorityAsync(2);
 
             await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
         }
@@ -751,6 +781,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
         }
 
+        [Fact]
+        public async Task RST_STREAM_Received_StreamIdEven_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendRstStreamAsync(2);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
         [Theory]
         [InlineData(3)]
         [InlineData(5)]
@@ -786,7 +826,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task SETTINGS_Received_StreamIdZero_ConnectionError()
+        public async Task SETTINGS_Received_StreamIdNonZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
 
@@ -958,6 +998,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await SendHeadersAsync(1, Http2HeadersFrameFlags.NONE, _browserRequestHeaders);
             await SendGoAwayAsync();
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task WINDOW_UPDATE_Received_StreamIdEven_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendWindowUpdateAsync(2, sizeIncrement: 42);
 
             await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
         }

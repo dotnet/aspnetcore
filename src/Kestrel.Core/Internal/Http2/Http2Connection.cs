@@ -196,6 +196,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private Task ProcessFrameAsync<TContext>(IHttpApplication<TContext> application)
         {
+            // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1
+            // Streams initiated by a client MUST use odd-numbered stream identifiers; ...
+            // An endpoint that receives an unexpected stream identifier MUST respond with
+            // a connection error (Section 5.4.1) of type PROTOCOL_ERROR.
+            if (_incomingFrame.StreamId != 0 && (_incomingFrame.StreamId & 1) == 0)
+            {
+                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+            }
+
             switch (_incomingFrame.Type)
             {
                 case Http2FrameType.DATA:
