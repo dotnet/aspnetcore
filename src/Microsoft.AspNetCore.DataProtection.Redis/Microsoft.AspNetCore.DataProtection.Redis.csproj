@@ -3,8 +3,8 @@
   <Import Project="..\..\build\common.props" />
 
   <PropertyGroup>
+    <VersionPrefix Condition="'$(ExperimentalProjectVersionPrefix)' != ''">$(ExperimentalProjectVersionPrefix)</VersionPrefix>
     <Description>Redis storage support as key store.</Description>
-    <VersionPrefix>0.3.0</VersionPrefix>
     <TargetFramework>netstandard2.0</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
