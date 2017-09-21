@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.DataProtection
                     new Version(Math.Max(0, current.Major - 1), 0, 0, 0),
                     new Version(current.Major + 1, 0, 0, 0),
                     new Version(current.Major, current.Minor + 1, 0, 0),
-                    new Version(current.Major, current.Minor, current.Revision + 1, 0),
+                    new Version(current.Major, current.Minor, current.Build + 1, 0),
                 };
             }
         }
