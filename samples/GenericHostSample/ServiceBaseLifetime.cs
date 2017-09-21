@@ -31,7 +31,7 @@ namespace GenericHostSample
         public void RegisterDelayStartCallback(Action<object> callback, object state)
         {
             _startCallback = callback ?? throw new ArgumentNullException(nameof(callback));
-            _startState = state ?? throw new ArgumentNullException(nameof(state));
+            _startState = state;
 
             Run(this);
         }
@@ -39,7 +39,7 @@ namespace GenericHostSample
         public void RegisterStopCallback(Action<object> callback, object state)
         {
             _stopCallback = callback ?? throw new ArgumentNullException(nameof(callback));
-            _stopState = state ?? throw new ArgumentNullException(nameof(state));
+            _stopState = state;
         }
 
         public Task StopAsync(CancellationToken cancellationToken)

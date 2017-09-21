@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.Extensions.Hosting.Internal
 {
-    public class HostProcessLifetime : IHostLifetime
+    public class ProcessLifetime : IHostLifetime
     {
         public void RegisterDelayStartCallback(Action<object> callback, object state)
         {

@@ -8,7 +8,7 @@ namespace Microsoft.Extensions.Hosting
     public static class HostingAbstractionsHostBuilderExtensions
     {
         /// <summary>
-        /// Start the web host and listen on the specified urls.
+        /// Start the host and listen on the specified urls.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IHostBuilder"/> to start.</param>
         /// <returns>The <see cref="IHostBuilder"/>.</returns>

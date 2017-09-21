@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             StartAsync().GetAwaiter().GetResult();
         }
 
-        public virtual async Task StartAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public virtual async Task StartAsync(CancellationToken cancellationToken = default)
         {
             HostingEventSource.Log.HostStart();
             _logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
@@ -282,7 +282,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             }
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task StopAsync(CancellationToken cancellationToken = default)
         {
             if (_stopped)
             {

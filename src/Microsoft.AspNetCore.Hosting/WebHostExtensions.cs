@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="host">The running <see cref="IWebHost"/>.</param>
         /// <param name="token">The token to trigger shutdown.</param>
-        public static async Task WaitForShutdownAsync(this IWebHost host, CancellationToken token = default(CancellationToken))
+        public static async Task WaitForShutdownAsync(this IWebHost host, CancellationToken token = default)
         {
             var done = new ManualResetEventSlim(false);
             using (var cts = CancellationTokenSource.CreateLinkedTokenSource(token))
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Hosting
         /// </summary>
         /// <param name="host">The <see cref="IWebHost"/> to run.</param>
         /// <param name="token">The token to trigger shutdown.</param>
-        public static async Task RunAsync(this IWebHost host, CancellationToken token = default(CancellationToken))
+        public static async Task RunAsync(this IWebHost host, CancellationToken token = default)
         {
             // Wait for token shutdown if it can be canceled
             if (token.CanBeCanceled)

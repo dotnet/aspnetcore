@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Hosting.Internal
 
         public IServiceProvider Services { get; }
 
-        public async Task StartAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task StartAsync(CancellationToken cancellationToken = default)
         {
             _logger.Starting();
 
@@ -53,7 +53,7 @@ namespace Microsoft.Extensions.Hosting.Internal
             _logger.Started();
         }
 
-        public async Task StopAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task StopAsync(CancellationToken cancellationToken = default)
         {
             _logger.Stopping();
             

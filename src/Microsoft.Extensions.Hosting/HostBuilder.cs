@@ -178,7 +178,7 @@ namespace Microsoft.Extensions.Hosting
             services.AddSingleton(_hostBuilderContext);
             services.AddSingleton(_appConfiguration);
             services.AddSingleton<IApplicationLifetime, ApplicationLifetime>();
-            services.AddSingleton<IHostLifetime, HostProcessLifetime>();
+            services.AddSingleton<IHostLifetime, ProcessLifetime>();
             services.AddOptions();
             services.AddLogging();
             

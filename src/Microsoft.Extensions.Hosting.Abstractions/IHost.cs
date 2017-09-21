@@ -22,13 +22,13 @@ namespace Microsoft.Extensions.Hosting
         /// </summary>
         /// <param name="cancellationToken">Used to abort program start.</param>
         /// <returns></returns>
-        Task StartAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task StartAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Attempts to gracefully stop the program.
         /// </summary>
         /// <param name="cancellationToken">Used to indicate when stop should no longer be graceful.</param>
         /// <returns></returns>
-        Task StopAsync(CancellationToken cancellationToken = default(CancellationToken));
+        Task StopAsync(CancellationToken cancellationToken = default);
     }
 }

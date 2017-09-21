@@ -15,7 +15,7 @@ namespace Microsoft.Extensions.Hosting
     public static class HostingHostBuilderExtensions
     {
         /// <summary>
-        /// Specify the environment to be used by the web host.
+        /// Specify the environment to be used by the host.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IHostBuilder"/> to configure.</param>
         /// <param name="environment">The environment to host the application in.</param>
@@ -33,7 +33,7 @@ namespace Microsoft.Extensions.Hosting
         }
 
         /// <summary>
-        /// Specify the content root directory to be used by the web host.
+        /// Specify the content root directory to be used by the host.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IHostBuilder"/> to configure.</param>
         /// <param name="contentRoot">Path to root directory of the application.</param>
@@ -125,7 +125,7 @@ namespace Microsoft.Extensions.Hosting
         /// <param name="hostBuilder">The <see cref="IHostBuilder" /> to configure.</param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static Task RunConsoleAsync(this IHostBuilder hostBuilder, CancellationToken cancellationToken = default(CancellationToken))
+        public static Task RunConsoleAsync(this IHostBuilder hostBuilder, CancellationToken cancellationToken = default)
         {
             return hostBuilder.UseConsoleLifetime().Build().RunAsync(cancellationToken);
         }

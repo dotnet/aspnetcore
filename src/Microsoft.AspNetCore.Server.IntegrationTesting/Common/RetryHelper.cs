@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
         public static async Task<HttpResponseMessage> RetryRequest(
             Func<Task<HttpResponseMessage>> retryBlock,
             ILogger logger,
-            CancellationToken cancellationToken = default(CancellationToken),
+            CancellationToken cancellationToken = default,
             int retryCount = 60)
         {
             for (var retry = 0; retry < retryCount; retry++)
