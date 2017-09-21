@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <LangVersion>latest</LangVersion>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <AssemblyName>dotnet-watch</AssemblyName>
     <OutputType>exe</OutputType>
