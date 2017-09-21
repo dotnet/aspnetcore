@@ -152,8 +152,8 @@ describe("Connection", () => {
                 return Promise.reject("");
             },
             stop(): void { },
-            onDataReceived: undefined,
-            onClosed: undefined,
+            onreceive: undefined,
+            onclose: undefined,
         }
 
         let options: IHttpConnectionOptions = {
@@ -249,8 +249,8 @@ describe("Connection", () => {
                 connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode> { return Promise.resolve(transportTransferMode); },
                 send(data: any): Promise<void> { return Promise.resolve(); },
                 stop(): void {},
-                onDataReceived: null,
-                onClosed: null,
+                onreceive: null,
+                onclose: null,
                 mode: transportTransferMode
             } as ITransport;
 

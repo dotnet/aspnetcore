@@ -10,14 +10,14 @@ describe('connection', function () {
             var connection = new signalR.HttpConnection(ECHOENDPOINT_URL);
 
             var received = "";
-            connection.onDataReceived = function (data) {
+            connection.onreceive = function (data) {
                 received += data;
                 if (data == message) {
                     connection.stop();
                 }
             };
 
-            connection.onClosed = function (error) {
+            connection.onclose = function (error) {
                 expect(error).toBeUndefined();
                 done();
             };
@@ -42,14 +42,14 @@ describe('connection', function () {
             });
 
             var received = "";
-            connection.onDataReceived = function (data) {
+            connection.onreceive = function (data) {
                 received += data;
                 if (data == message) {
                     connection.stop();
                 }
             };
 
-            connection.onClosed = function (error) {
+            connection.onclose = function (error) {
                 expect(error).toBeUndefined();
                 done();
             };

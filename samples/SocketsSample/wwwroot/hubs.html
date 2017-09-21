@@ -104,20 +104,19 @@ click('connect', function(event) {
     connectButton.disabled = true;
     disconnectButton.disabled = false;
     console.log('http://' + document.location.host + '/' + hubRoute);
-    let http = new signalR.HttpConnection('http://' + document.location.host + '/' + hubRoute, { transport: transportType, logger: logger });
-    connection = new signalR.HubConnection(http, logger);
+    connection = new signalR.HubConnection(hubRoute, logger, { transport: transportType, logger: logger });
     connection.on('Send', function(msg) {
         addLine('message-list', msg);
     });
 
-    connection.onClosed = function(e) {
+    connection.onclose(function(e) {
         if (e) {
             addLine('message-list', 'Connection closed with error: ' + e, 'red');
         }
         else {
             addLine('message-list', 'Disconnected', 'green');
         }
-    }
+    });
 
     connection.start()
         .then(function() {

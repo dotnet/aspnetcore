@@ -33,7 +33,7 @@
             let url = 'http://' + document.location.host + '/chat';
             let connection = new signalR.HttpConnection(url, { transport: transportType, logger: new signalR.ConsoleLogger(signalR.LogLevel.Information) });
 
-            connection.onDataReceived =  function(data) {
+            connection.onreceive =  function(data) {
                 let child = document.createElement('li');
                 child.innerText = data;
                 document.getElementById('messages').appendChild(child);

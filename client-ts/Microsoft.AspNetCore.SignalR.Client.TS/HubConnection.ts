@@ -41,12 +41,8 @@ export class HubConnection {
         this.logger = LoggerFactory.createLogger(options.logging);
 
         this.protocol = options.protocol || new JsonHubProtocol();
-        this.connection.onDataReceived = data => {
-            this.onDataReceived(data);
-        };
-        this.connection.onClosed = (error?: Error) => {
-            this.onConnectionClosed(error);
-        }
+        this.connection.onreceive = (data: any) => this.processIncomingData(data);
+        this.connection.onclose = (error?: Error) => this.connectionClosed(error);
 
         this.callbacks = new Map<string, (invocationEvent: CompletionMessage | ResultMessage) => void>();
         this.methods = new Map<string, ((...args: any[]) => void)[]>();
@@ -54,7 +50,7 @@ export class HubConnection {
         this.id = 0;
     }
 
-    private onDataReceived(data: any) {
+    private processIncomingData(data: any) {
         // Parse the messages
         let messages = this.protocol.parseMessages(data);
 
@@ -95,7 +91,7 @@ export class HubConnection {
         }
     }
 
-    private onConnectionClosed(error?: Error) {
+    private connectionClosed(error?: Error) {
         let errorCompletionMessage = <CompletionMessage>{
             type: MessageType.Completion,
             invocationId: "-1",
@@ -238,7 +234,7 @@ export class HubConnection {
         }
     }
 
-    onClosed(callback: ConnectionClosed) {
+    onclose(callback: ConnectionClosed) {
         if (callback) {
             this.closedCallbacks.push(callback);
         }

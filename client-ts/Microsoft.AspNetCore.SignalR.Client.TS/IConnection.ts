@@ -11,6 +11,6 @@ export interface IConnection {
     send(data: any): Promise<void>;
     stop(): void;
 
-    onDataReceived: DataReceived;
-    onClosed: ConnectionClosed;
+    onreceive: DataReceived;
+    onclose: ConnectionClosed;
 }

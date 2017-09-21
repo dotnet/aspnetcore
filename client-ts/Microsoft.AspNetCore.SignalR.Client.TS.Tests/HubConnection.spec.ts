@@ -117,7 +117,7 @@ describe("HubConnection", () => {
             let hubConnection = new HubConnection(connection);
             let invokePromise = hubConnection.invoke("testMethod");
             // Typically this would be called by the transport
-            connection.onClosed(new Error("Connection lost"));
+            connection.onclose(new Error("Connection lost"));
 
             let ex = await captureException(async () => await invokePromise);
             expect(ex.message).toBe("Connection lost");
@@ -130,7 +130,7 @@ describe("HubConnection", () => {
             let invokePromise = hubConnection.invoke("testMethod");
 
             connection.receive({ type: 2, invocationId: connection.lastInvocationId, item: null });
-            connection.onClosed();
+            connection.onclose();
 
             let ex = await captureException(async () => await invokePromise);
             expect(ex.message).toBe("Streaming methods must be invoked using HubConnection.stream");
@@ -350,7 +350,7 @@ describe("HubConnection", () => {
                 .subscribe(observer);
 
             // Typically this would be called by the transport
-            connection.onClosed(new Error("Connection lost"));
+            connection.onclose(new Error("Connection lost"));
 
             let ex = await captureException(async () => await observer.completed);
             expect(ex.message).toEqual("Error: Connection lost");
@@ -397,10 +397,10 @@ describe("HubConnection", () => {
             let connection = new TestConnection();
             let hubConnection = new HubConnection(connection);
             let invocations = 0;
-            hubConnection.onClosed(e => invocations++);
-            hubConnection.onClosed(e => invocations++);
+            hubConnection.onclose(e => invocations++);
+            hubConnection.onclose(e => invocations++);
             // Typically this would be called by the transport
-            connection.onClosed();
+            connection.onclose();
             expect(invocations).toBe(2);
         });
 
@@ -408,20 +408,20 @@ describe("HubConnection", () => {
             let connection = new TestConnection();
             let hubConnection = new HubConnection(connection);
             let error: Error;
-            hubConnection.onClosed(e => error = e);
+            hubConnection.onclose(e => error = e);
 
             // Typically this would be called by the transport
-            connection.onClosed(new Error("Test error."));
+            connection.onclose(new Error("Test error."));
             expect(error.message).toBe("Test error.");
         });
 
         it("ignores null callbacks", async () => {
             let connection = new TestConnection();
             let hubConnection = new HubConnection(connection);
-            hubConnection.onClosed(null);
-            hubConnection.onClosed(undefined);
+            hubConnection.onclose(null);
+            hubConnection.onclose(undefined);
             // Typically this would be called by the transport
-            connection.onClosed();
+            connection.onclose();
             // expect no errors
         });
     });
@@ -447,18 +447,18 @@ class TestConnection implements IConnection {
     };
 
     stop(): void {
-        if (this.onClosed) {
-            this.onClosed();
+        if (this.onclose) {
+            this.onclose();
         }
     };
 
     receive(data: any): void {
         let payload = JSON.stringify(data);
-        this.onDataReceived(TextMessageFormat.write(payload));
+        this.onreceive(TextMessageFormat.write(payload));
     }
 
-    onDataReceived: DataReceived;
-    onClosed: ConnectionClosed;
+    onreceive: DataReceived;
+    onclose: ConnectionClosed;
     sentData: [any];
     lastInvocationId: string;
 };
