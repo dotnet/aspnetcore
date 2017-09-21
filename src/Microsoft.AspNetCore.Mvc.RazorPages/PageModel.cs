@@ -9,6 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
@@ -21,8 +22,8 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages
 {
-    [PageModelAttribute]
-    public abstract class PageModel
+    [PageModel]
+    public abstract class PageModel : IAsyncPageFilter, IPageFilter
     {
         private IModelMetadataProvider _metadataProvider;
         private IModelBinderFactory _modelBinderFactory;
@@ -1601,5 +1602,74 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
                 model: model);
             return ModelState.IsValid;
         }
+
+#region IAsyncPageFilter \ IPageFilter
+        /// <summary>
+        /// Called after a handler method has been selected, but before model binding occurs.
+        /// </summary>
+        /// <param name="context">The <see cref="PageHandlerSelectedContext"/>.</param>
+        public virtual void OnPageHandlerSelected(PageHandlerSelectedContext context)
+        {
+        }
+
+        /// <summary>
+        /// Called before the handler method executes, after model binding is complete.
+        /// </summary>
+        /// <param name="context">The <see cref="PageHandlerExecutingContext"/>.</param>
+        public virtual void OnPageHandlerExecuting(PageHandlerExecutingContext context)
+        {
+        }
+
+        /// <summary>
+        /// Called after the handler method executes, before the action method is invoked.
+        /// </summary>
+        /// <param name="context">The <see cref="PageHandlerExecutedContext"/>.</param>
+        public virtual void OnPageHandlerExecuted(PageHandlerExecutedContext context)
+        {
+        }
+
+        /// <summary>
+        /// Called asynchronously after the handler method has been selected, but before model binding occurs.
+        /// </summary>
+        /// <param name="context">The <see cref="PageHandlerSelectedContext"/>.</param>
+        /// <returns>A <see cref="Task"/> that on completion indicates the filter has executed.</returns>
+        public virtual Task OnPageHandlerSelectionAsync(PageHandlerSelectedContext context)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            OnPageHandlerSelected(context);
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Called asynchronously before the handler method is invoked, after model binding is complete.
+        /// </summary>
+        /// <param name="context">The <see cref="PageHandlerExecutingContext"/>.</param>
+        /// <param name="next">
+        /// The <see cref="PageHandlerExecutionDelegate"/>. Invoked to execute the next page filter or the handler method itself.
+        /// </param>
+        /// <returns>A <see cref="Task"/> that on completion indicates the filter has executed.</returns>
+        public virtual async Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
+        {
+            if (context == null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (next == null)
+            {
+                throw new ArgumentNullException(nameof(next));
+            }
+
+            OnPageHandlerExecuting(context);
+            if (context.Result == null)
+            {
+                OnPageHandlerExecuted(await next());
+            }
+        }
+#endregion
     }
 }

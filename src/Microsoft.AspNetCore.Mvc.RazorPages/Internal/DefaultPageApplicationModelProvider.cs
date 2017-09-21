@@ -15,6 +15,8 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
     public class DefaultPageApplicationModelProvider : IPageApplicationModelProvider
     {
         private const string ModelPropertyName = "Model";
+        private readonly PageHandlerPageFilter _pageHandlerPageFilter = new PageHandlerPageFilter();
+        private readonly PageHandlerResultFilter _pageHandlerResultFilter = new PageHandlerResultFilter();
 
         /// <inheritdoc />
         public int Order => -1000;
@@ -141,6 +143,18 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
                 {
                     pageModel.Filters.Add(filter);
                 }
+            }
+
+            if (typeof(IAsyncPageFilter).IsAssignableFrom(pageModel.HandlerType) ||
+                typeof(IPageFilter).IsAssignableFrom(pageModel.HandlerType))
+            {
+                pageModel.Filters.Add(_pageHandlerPageFilter);
+            }
+
+            if (typeof(IAsyncResultFilter).IsAssignableFrom(pageModel.HandlerType) ||
+                typeof(IResultFilter).IsAssignableFrom(pageModel.HandlerType))
+            {
+                pageModel.Filters.Add(_pageHandlerResultFilter);
             }
         }
 

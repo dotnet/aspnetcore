@@ -18,7 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public int Order { get; set; } = int.MinValue;
 
         /// <inheritdoc />
-        public async Task OnActionExecutionAsync(
+        public Task OnActionExecutionAsync(
             ActionExecutingContext context,
             ActionExecutionDelegate next)
         {
@@ -40,23 +40,29 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     nameof(ActionExecutingContext)));
             }
 
-            IAsyncActionFilter asyncActionFilter;
-            IActionFilter actionFilter;
-            if ((asyncActionFilter = controller as IAsyncActionFilter) != null)
+            if (controller is IAsyncActionFilter asyncActionFilter)
             {
-                await asyncActionFilter.OnActionExecutionAsync(context, next);
+                return asyncActionFilter.OnActionExecutionAsync(context, next);
             }
-            else if ((actionFilter = controller as IActionFilter) != null)
+            else if (controller is IActionFilter actionFilter)
             {
-                actionFilter.OnActionExecuting(context);
-                if (context.Result == null)
-                {
-                    actionFilter.OnActionExecuted(await next());
-                }
+                return ExecuteActionFilter(context, next, actionFilter);
             }
             else
             {
-                await next();
+                return next();
+            }
+        }
+
+        private static async Task ExecuteActionFilter(
+            ActionExecutingContext context, 
+            ActionExecutionDelegate next,
+            IActionFilter actionFilter)
+        {
+            actionFilter.OnActionExecuting(context);
+            if (context.Result == null)
+            {
+                actionFilter.OnActionExecuted(await next());
             }
         }
     }

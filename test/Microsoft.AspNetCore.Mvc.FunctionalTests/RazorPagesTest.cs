@@ -1209,6 +1209,29 @@ Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary`1[AspNetCore._InjectedP
             Assert.Equal(expected, response.Trim());
         }
 
+        [Fact]
+        public async Task PageHandlerFilterOnPageModelIsExecuted()
+        {
+            // Arrange
+            var expected = "Hello from OnPageHandlerExecuting";
+
+            // Act
+            var response = await Client.GetStringAsync("/ModelAsFilter?message=Hello+world");
+
+            // Assert
+            Assert.Equal(expected, response.Trim());
+        }
+
+        [Fact]
+        public async Task ResultFilterOnPageModelIsExecuted()
+        {
+            // Act
+            var response = await Client.GetAsync("/ModelAsFilter/TestResultFilter");
+
+            // Assert
+            Assert.Equal(HttpStatusCode.Redirect, response.StatusCode);
+        }
+
         private async Task AddAntiforgeryHeaders(HttpRequestMessage request)
         {
             var getResponse = await Client.GetAsync(request.RequestUri);

@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Mvc.Razor;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
@@ -27,7 +26,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             autorizationProvider.OnProvidersExecuting(context);
 
             // Assert
-            Assert.Empty(context.PageApplicationModel.Filters);
+            Assert.Collection(
+                context.PageApplicationModel.Filters,
+                f => Assert.IsType<PageHandlerPageFilter>(f));
         }
 
         private class PageWithAuthorizeHandlers : Page
@@ -59,6 +60,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Assert
             Assert.Collection(
                 context.PageApplicationModel.Filters,
+                f => Assert.IsType<PageHandlerPageFilter>(f),
                 f => Assert.IsType<AuthorizeFilter>(f));
         }
 
@@ -94,7 +96,12 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             autorizationProvider.OnProvidersExecuting(context);
 
             // Assert
-            var authorizeFilter = Assert.IsType<AuthorizeFilter>(Assert.Single(context.PageApplicationModel.Filters));
+            AuthorizeFilter authorizeFilter = null;
+            Assert.Collection(
+                context.PageApplicationModel.Filters,
+                f => Assert.IsType<PageHandlerPageFilter>(f),
+                f => authorizeFilter = Assert.IsType<AuthorizeFilter>(f));
+
             // Basic + Basic2 + Derived authorize
             Assert.Equal(3, authorizeFilter.Policy.Requirements.Count);
         }
@@ -133,6 +140,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             // Assert
             Assert.Collection(
                 context.PageApplicationModel.Filters,
+                f => Assert.IsType<PageHandlerPageFilter>(f),
                 f => Assert.IsType<AllowAnonymousFilter>(f));
         }
 

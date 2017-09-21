@@ -25,7 +25,9 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             provider.OnProvidersExecuting(context);
 
             // Assert
-            Assert.Empty(context.PageApplicationModel.Filters);
+            Assert.Collection(
+                context.PageApplicationModel.Filters,
+                f => Assert.IsType<PageHandlerPageFilter>(f));
         }
 
         private class PageWithoutResponseCache : Page
@@ -59,6 +61,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Collection(
                 context.PageApplicationModel.Filters,
                 f => { },
+                f => Assert.IsType<PageHandlerPageFilter>(f),
                 f =>
                 {
                     var filter = Assert.IsType<ResponseCacheFilter>(f);
@@ -104,6 +107,7 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
             Assert.Collection(
                 context.PageApplicationModel.Filters,
                 f => { },
+                f => Assert.IsType<PageHandlerPageFilter>(f),
                 f =>
                 {
                     var filter = Assert.IsType<ResponseCacheFilter>(f);

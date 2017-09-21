@@ -1,26 +1,20 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc.Core;
 using Microsoft.AspNetCore.Mvc.Filters;
 
-namespace Microsoft.AspNetCore.Mvc.Internal
+namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 {
-    /// <summary>
-    /// A filter implementation which delegates to the controller for result filter interfaces.
-    /// </summary>
-    public class ControllerResultFilter : IAsyncResultFilter, IOrderedFilter
+    public class PageHandlerResultFilter : IAsyncResultFilter, IOrderedFilter
     {
-        // Controller-filter methods run farthest from the result by default.
-        /// <inheritdoc />
-        public int Order { get; set; } = int.MinValue;
+        /// <remarks>
+        /// Filters on handlers run furthest from the action.
+        /// </remarks>
+        public int Order => int.MinValue;
 
-        /// <inheritdoc />
-        public Task OnResultExecutionAsync(
-            ResultExecutingContext context,
-            ResultExecutionDelegate next)
+        public Task OnResultExecutionAsync(ResultExecutingContext context, ResultExecutionDelegate next)
         {
             if (context == null)
             {
@@ -32,21 +26,21 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 throw new ArgumentNullException(nameof(next));
             }
 
-            var controller = context.Controller;
-            if (controller == null)
+            var handler = context.Controller;
+            if (handler == null)
             {
                 throw new InvalidOperationException(Resources.FormatPropertyOfTypeCannotBeNull(
                     nameof(context.Controller),
                     nameof(ResultExecutingContext)));
             }
 
-            if (controller is IAsyncResultFilter asyncResultFilter)
+            if (handler is IAsyncResultFilter asyncResultFilter)
             {
                 return asyncResultFilter.OnResultExecutionAsync(context, next);
             }
-            else if (controller is IResultFilter resultFilter)
+            else if (handler is IResultFilter resultFilter)
             {
-                return ExecuteResultFilter(context, next, resultFilter);
+                return ExecuteSyncFilter(context, next, resultFilter);
             }
             else
             {
@@ -54,9 +48,9 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             }
         }
 
-        private static async Task ExecuteResultFilter(
-            ResultExecutingContext context,
-            ResultExecutionDelegate next,
+        private static async Task ExecuteSyncFilter(
+            ResultExecutingContext context, 
+            ResultExecutionDelegate next, 
             IResultFilter resultFilter)
         {
             resultFilter.OnResultExecuting(context);

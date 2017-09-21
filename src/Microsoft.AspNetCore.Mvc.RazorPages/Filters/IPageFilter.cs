@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         void OnPageHandlerExecuting(PageHandlerExecutingContext context);
 
         /// <summary>
-        /// Called after the handler method executes, before the action result.
+        /// Called after the handler method executes, before the action method is invoked.
         /// </summary>
         /// <param name="context">The <see cref="PageHandlerExecutedContext"/>.</param>
         void OnPageHandlerExecuted(PageHandlerExecutedContext context);

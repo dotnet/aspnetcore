@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.AspNetCore.Mvc.RazorPages.Infrastructure;
@@ -1032,5 +1033,115 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages.Internal
 
             public void OnGetUser() { }
         }
+
+        [Fact]
+        public void PopulateFilters_AddsIFilterMetadataAttributesToModel()
+        {
+            // Arrange
+            var provider = new DefaultPageApplicationModelProvider();
+            var typeInfo = typeof(FilterModel).GetTypeInfo();
+            var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, typeInfo.GetCustomAttributes(inherit: true));
+
+            // Act
+            provider.PopulateFilters(pageModel);
+
+            // Assert
+            Assert.Collection(
+                pageModel.Filters,
+                filter => Assert.IsType<TypeFilterAttribute>(filter));
+        }
+
+        [PageModel]
+        [Serializable]
+        [TypeFilter(typeof(object))]
+        private class FilterModel
+        {
+        }
+
+        [Fact]
+        public void PopulateFilters_AddsPageHandlerPageFilter_IfPageImplementsIAsyncPageFilter()
+        {
+            // Arrange
+            var provider = new DefaultPageApplicationModelProvider();
+            var typeInfo = typeof(ModelImplementingAsyncPageFilter).GetTypeInfo();
+            var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, typeInfo.GetCustomAttributes(inherit: true));
+
+            // Act
+            provider.PopulateFilters(pageModel);
+
+            // Assert
+            Assert.Collection(
+                pageModel.Filters,
+                filter => Assert.IsType<PageHandlerPageFilter>(filter));
+        }
+
+        private class ModelImplementingAsyncPageFilter : IAsyncPageFilter
+        {
+            public Task OnPageHandlerExecutionAsync(PageHandlerExecutingContext context, PageHandlerExecutionDelegate next)
+            {
+                throw new NotImplementedException();
+            }
+
+            public Task OnPageHandlerSelectionAsync(PageHandlerSelectedContext context)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        [Fact]
+        public void PopulateFilters_AddsPageHandlerPageFilter_IfPageImplementsIPageFilter()
+        {
+            // Arrange
+            var provider = new DefaultPageApplicationModelProvider();
+            var typeInfo = typeof(ModelImplementingPageFilter).GetTypeInfo();
+            var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, typeInfo.GetCustomAttributes(inherit: true));
+
+            // Act
+            provider.PopulateFilters(pageModel);
+
+            // Assert
+            Assert.Collection(
+                pageModel.Filters,
+                filter => Assert.IsType<PageHandlerPageFilter>(filter));
+        }
+
+        private class ModelImplementingPageFilter : IPageFilter
+        {
+            public void OnPageHandlerExecuted(PageHandlerExecutedContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnPageHandlerExecuting(PageHandlerExecutingContext context)
+            {
+                throw new NotImplementedException();
+            }
+
+            public void OnPageHandlerSelected(PageHandlerSelectedContext context)
+            {
+                throw new NotImplementedException();
+            }
+        }
+
+        [Fact]
+        public void PopulateFilters_AddsPageHandlerPageFilter_ForModelDerivingFromTypeImplementingPageFilter()
+        {
+            // Arrange
+            var provider = new DefaultPageApplicationModelProvider();
+            var typeInfo = typeof(DerivedFromPageModel).GetTypeInfo();
+            var pageModel = new PageApplicationModel(new PageActionDescriptor(), typeInfo, typeInfo.GetCustomAttributes(inherit: true));
+
+            // Act
+            provider.PopulateFilters(pageModel);
+
+            // Assert
+            Assert.Collection(
+                pageModel.Filters,
+                filter => Assert.IsType<ServiceFilterAttribute>(filter),
+                filter => Assert.IsType<PageHandlerPageFilter>(filter));
+        }
+
+        [ServiceFilter(typeof(IServiceProvider))]
+        private class DerivedFromPageModel : PageModel { }
     }
 }
