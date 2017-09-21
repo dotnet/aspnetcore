@@ -28,6 +28,8 @@ namespace RepoTasks
         [Required]
         public string DestinationFolder { get; set; }
 
+        public bool Overwrite { get; set; }
+
         public override bool Execute()
         {
             if (Files?.Length == 0)
@@ -79,9 +81,14 @@ namespace RepoTasks
 
                 var destFile = Path.Combine(destDir, Path.GetFileName(file.ItemSpec));
 
-                Log.LogMessage($"Copying {file.ItemSpec} to {destFile}");
+                if (!Overwrite && File.Exists(destFile))
+                {
+                    Log.LogError($"File already exists in {destFile}");
+                    continue;
+                }
 
-                File.Copy(file.ItemSpec, destFile);
+                Log.LogMessage($"Copying {file.ItemSpec} to {destFile}");
+                File.Copy(file.ItemSpec, destFile, Overwrite);
                 expectedPackages.Remove(identity.Id);
             }
 
@@ -97,7 +104,7 @@ namespace RepoTasks
                 return false;
             }
 
-            return true;
+            return !Log.HasLoggedErrors;
         }
     }
 }

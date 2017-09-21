@@ -39,10 +39,7 @@
 
     <RepoTasks.DownloadNuGetPackages
       Packages="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))"
-      DestinationFolder="$(IntermediateMirrorPackageDir)">
-
-      <Output TaskParameter="Files" ItemName="MirroredPackageFile" />
-    </RepoTasks.DownloadNuGetPackages>
+      DestinationFolder="$(IntermediateMirrorPackageDir)" />
   </Target>
 
   <Target Name="CleanUniverseArtifacts">
@@ -209,17 +206,14 @@
     <ItemGroup>
       <PackageArtifactFile Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />
       <ExternalDependencyPackage Include="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))" Category="mirror" />
-      <MirroredPackageFile Include="$(IntermediateMirrorPackageDir)*.nupkg" />
+      <_MirroredPackageFiles Include="$(IntermediateMirrorPackageDir)*.nupkg" />
     </ItemGroup>
-
-    <RemoveDuplicates Inputs="@(MirroredPackageFile)">
-      <Output TaskParameter="Filtered" ItemName="_MirroredPackageFiles" />
-    </RemoveDuplicates>
 
     <RepoTasks.CopyPackagesToSplitFolders
       Packages="@(PackageArtifact);@(ExternalDependencyPackage)"
       Files="@(PackageArtifactFile);@(_MirroredPackageFiles)"
-      DestinationFolder="$(ArtifactsDir)" />
+      DestinationFolder="$(ArtifactsDir)"
+      Overwrite="true" />
   </Target>
 
   <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
