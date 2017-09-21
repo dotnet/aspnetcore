@@ -887,6 +887,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
         }
 
+        [Fact]
+        public async Task PING_Received_StreamIdNotZero_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendPingWithInvalidStreamIdAsync(streamId: 1);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
         [Theory]
         [InlineData(0)]
         [InlineData(1)]
@@ -1424,6 +1434,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var pingFrame = new Http2Frame();
             pingFrame.PreparePing(Http2PingFrameFlags.NONE);
             pingFrame.Length = length;
+            return SendAsync(pingFrame.Raw);
+        }
+
+        private Task SendPingWithInvalidStreamIdAsync(int streamId)
+        {
+            Assert.NotEqual(0, streamId);
+
+            var pingFrame = new Http2Frame();
+            pingFrame.PreparePing(Http2PingFrameFlags.NONE);
+            pingFrame.StreamId = streamId;
             return SendAsync(pingFrame.Raw);
         }
 
