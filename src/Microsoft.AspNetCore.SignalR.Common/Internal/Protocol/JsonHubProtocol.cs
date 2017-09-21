@@ -7,6 +7,7 @@ using System.IO;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
@@ -34,7 +35,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         /// NOT be changed using this serializer.
         /// </summary>
         public JsonHubProtocol()
-            : this(new JsonSerializer())
+            : this(JsonSerializer.Create(CreateDefaultSerializerSettings()))
         { }
 
         /// <summary>
@@ -257,6 +258,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 var payload = resultProp.Value?.ToObject(returnType, _payloadSerializer);
                 return new CompletionMessage(invocationId, error, result: payload, hasResult: true);
             }
+        }
+
+        public static JsonSerializerSettings CreateDefaultSerializerSettings()
+        {
+            return new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
         }
     }
 }

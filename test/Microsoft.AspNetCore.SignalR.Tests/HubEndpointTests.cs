@@ -1008,7 +1008,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     o.JsonSerializerSettings = new JsonSerializerSettings
                     {
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                        ContractResolver = new DefaultContractResolver()
                     };
                 });
             });
@@ -1026,7 +1026,34 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 var message = (InvocationMessage)await client.ReadAsync().OrTimeout();
 
                 var customItem = message.Arguments[0].ToString();
-                // Originally "Message" and "paramName"
+                // by default properties serialized by JsonHubProtocol are using camelCasing
+                Assert.Contains("Message", customItem);
+                Assert.Contains("paramName", customItem);
+
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task JsonHubProtocolUsesCamelCasingByDefault()
+        {
+            var serviceProvider = CreateServiceProvider();
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                await client.SendInvocationAsync(nameof(MethodHub.BroadcastItem)).OrTimeout();
+
+                var message = (InvocationMessage)await client.ReadAsync().OrTimeout();
+
+                var customItem = message.Arguments[0].ToString();
+                // originally Message, paramName
                 Assert.Contains("message", customItem);
                 Assert.Contains("paramName", customItem);
 
