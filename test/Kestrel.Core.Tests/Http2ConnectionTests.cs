@@ -923,15 +923,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task PING_Received_Sends_ACK()
+        public async Task PING_Received_SendsACK()
         {
             await InitializeConnectionAsync(_noopApplication);
 
-            await SendPingAsync();
+            await SendPingAsync(Http2PingFrameFlags.NONE);
             await ExpectAsync(Http2FrameType.PING,
                 withLength: 8,
                 withFlags: (byte)Http2PingFrameFlags.ACK,
                 withStreamId: 0);
+
+            await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task PING_Received_WithACK_DoesNotSendACK()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendPingAsync(Http2PingFrameFlags.ACK);
 
             await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
         }
@@ -942,7 +952,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(_noopApplication);
 
             await SendHeadersAsync(1, Http2HeadersFrameFlags.NONE, _browserRequestHeaders);
-            await SendPingAsync();
+            await SendPingAsync(Http2PingFrameFlags.NONE);
 
             await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
         }
@@ -1160,7 +1170,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await SendUnknownFrameTypeAsync(streamId: 1);
 
             // Check that the connection is still alive
-            await SendPingAsync();
+            await SendPingAsync(Http2PingFrameFlags.NONE);
             await ExpectAsync(Http2FrameType.PING,
                 withLength: 8,
                 withFlags: (byte)Http2PingFrameFlags.ACK,
@@ -1502,10 +1512,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return SendAsync(frame.Raw);
         }
 
-        private Task SendPingAsync()
+        private Task SendPingAsync(Http2PingFrameFlags flags)
         {
             var pingFrame = new Http2Frame();
-            pingFrame.PreparePing(Http2PingFrameFlags.NONE);
+            pingFrame.PreparePing(flags);
             return SendAsync(pingFrame.Raw);
         }
 
