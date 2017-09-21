@@ -14,14 +14,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
         {
             // TODO: Optimize for size - (e.g. use Varints)
             var length = sizeof(long);
-            var buffer = ArrayPool<byte>.Shared.Rent(length);
-            BufferWriter.WriteBigEndian<long>(buffer, payload.Length);
-            output.Write(buffer, 0, length);
-            ArrayPool<byte>.Shared.Return(buffer);
+            var buffer = ArrayPool<byte>.Shared.Rent(length + payload.Length);
+            var bufferSpan = buffer.AsSpan();
 
-            buffer = ArrayPool<byte>.Shared.Rent(payload.Length);
-            payload.CopyTo(buffer);
-            output.Write(buffer, 0, payload.Length);
+            BufferWriter.WriteBigEndian<long>(bufferSpan, payload.Length);
+            bufferSpan = bufferSpan.Slice(length);
+            payload.CopyTo(bufferSpan);
+            output.Write(buffer, 0, payload.Length + length);
+
             ArrayPool<byte>.Shared.Return(buffer);
         }
     }
