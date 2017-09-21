@@ -942,6 +942,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task GOAWAY_Received_StreamIdNonZero_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendInvalidGoAwayFrameAsync();
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public async Task GOAWAY_Received_InterleavedWithHeaders_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1481,6 +1491,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var frame = new Http2Frame();
             frame.PrepareGoAway(0, Http2ErrorCode.NO_ERROR);
+            return SendAsync(frame.Raw);
+        }
+
+        private Task SendInvalidGoAwayFrameAsync()
+        {
+            var frame = new Http2Frame();
+            frame.PrepareGoAway(0, Http2ErrorCode.NO_ERROR);
+            frame.StreamId = 1;
             return SendAsync(frame.Raw);
         }
 
