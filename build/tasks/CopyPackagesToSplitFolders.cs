@@ -51,7 +51,7 @@ namespace RepoTasks
                 if (!expectedPackages.TryGetCategory(identity.Id, out var category))
                 {
                     Log.LogError($"Unexpected package artifact with id: {identity.Id}");
-                    return false;
+                    continue;
                 }
 
                 string destDir;

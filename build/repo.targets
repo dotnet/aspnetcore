@@ -91,8 +91,6 @@
 
     <MakeDir Directories="$(_CloneRepositoryRoot)" />
 
-    <Message Text="Clone %(_CloneRepositories.Identity)" Importance="High" />
-
     <MSBuild Projects="@(_CloneRepository)"
       Targets="_CloneRepository"
       BuildInParallel="$(BuildInParallel)" />
@@ -211,11 +209,16 @@
     <ItemGroup>
       <PackageArtifactFile Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />
       <ExternalDependencyPackage Include="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))" Category="mirror" />
+      <MirroredPackageFile Include="$(IntermediateMirrorPackageDir)*.nupkg" />
     </ItemGroup>
+
+    <RemoveDuplicates Inputs="@(MirroredPackageFile)">
+      <Output TaskParameter="Filtered" ItemName="_MirroredPackageFiles" />
+    </RemoveDuplicates>
 
     <RepoTasks.CopyPackagesToSplitFolders
       Packages="@(PackageArtifact);@(ExternalDependencyPackage)"
-      Files="@(PackageArtifactFile);@(MirroredPackageFile)"
+      Files="@(PackageArtifactFile);@(_MirroredPackageFiles)"
       DestinationFolder="$(ArtifactsDir)" />
   </Target>
 
