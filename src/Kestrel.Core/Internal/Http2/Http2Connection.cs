@@ -208,6 +208,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return ProcessRstStreamFrameAsync();
                 case Http2FrameType.SETTINGS:
                     return ProcessSettingsFrameAsync();
+                case Http2FrameType.PUSH_PROMISE:
+                    throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
                 case Http2FrameType.PING:
                     return ProcessPingFrameAsync();
                 case Http2FrameType.GOAWAY:

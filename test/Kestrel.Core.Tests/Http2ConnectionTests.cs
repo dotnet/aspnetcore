@@ -853,6 +853,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task PUSH_PROMISE_Received_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendPushPromiseFrameAsync();
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public async Task PING_Received_Sends_ACK()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -1277,6 +1287,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             frame.Payload[4] = (byte)(value >> 8);
             frame.Payload[5] = (byte)value;
 
+            return SendAsync(frame.Raw);
+        }
+
+        private Task SendPushPromiseFrameAsync()
+        {
+            var frame = new Http2Frame();
+            frame.Length = 0;
+            frame.Type = Http2FrameType.PUSH_PROMISE;
+            frame.StreamId = 1;
             return SendAsync(frame.Raw);
         }
 
