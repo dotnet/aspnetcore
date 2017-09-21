@@ -9,6 +9,8 @@ namespace Microsoft.Extensions.Logging
     {
         private static Action<ILogger, Exception> _redirectToIdentityProviderForSignOutHandledResponse;
         private static Action<ILogger, Exception> _redirectToIdentityProviderHandledResponse;
+        private static Action<ILogger, Exception> _signoutCallbackRedirectHandledResponse;
+        private static Action<ILogger, Exception> _signoutCallbackRedirectSkipped;
         private static Action<ILogger, Exception> _updatingConfiguration;
         private static Action<ILogger, Exception> _receivedIdToken;
         private static Action<ILogger, Exception> _redeemingCodeForTokens;
@@ -248,6 +250,14 @@ namespace Microsoft.Extensions.Logging
                  eventId: 49,
                  logLevel: LogLevel.Information,
                  formatString: "AuthenticationScheme: {AuthenticationScheme} signed out.");
+            _signoutCallbackRedirectHandledResponse = LoggerMessage.Define(
+                eventId: 50,
+                logLevel: LogLevel.Debug,
+                formatString: "RedirectToSignedOutRedirectUri.HandledResponse");
+            _signoutCallbackRedirectSkipped = LoggerMessage.Define(
+                eventId: 51,
+                logLevel: LogLevel.Debug,
+                formatString: "RedirectToSignedOutRedirectUri.Skipped");
         }
 
         public static void UpdatingConfiguration(this ILogger logger)
@@ -343,6 +353,16 @@ namespace Microsoft.Extensions.Logging
         public static void RedirectToIdentityProviderHandledResponse(this ILogger logger)
         {
             _redirectToIdentityProviderHandledResponse(logger, null);
+        }
+
+        public static void SignoutCallbackRedirectHandledResponse(this ILogger logger)
+        {
+            _signoutCallbackRedirectHandledResponse(logger, null);
+        }
+
+        public static void SignoutCallbackRedirectSkipped(this ILogger logger)
+        {
+            _signoutCallbackRedirectSkipped(logger, null);
         }
 
         public static void UserInformationReceivedHandledResponse(this ILogger logger)

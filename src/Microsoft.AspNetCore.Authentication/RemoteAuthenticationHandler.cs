@@ -93,6 +93,10 @@ namespace Microsoft.AspNetCore.Authentication
                     {
                         return false;
                     }
+                    else if (errorContext.Result.Failure != null)
+                    {
+                        throw new InvalidOperationException("An error was returned from the RemoteFailure event.", errorContext.Result.Failure);
+                    }
                 }
 
                 throw exception;

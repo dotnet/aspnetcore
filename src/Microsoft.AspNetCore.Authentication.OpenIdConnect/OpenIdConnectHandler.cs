@@ -122,6 +122,10 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                     Logger.RemoteSignOutSkipped();
                     return false;
                 }
+                if (remoteSignOutContext.Result.Failure != null)
+                {
+                    throw new InvalidOperationException("An error was returned from the RemoteSignOut event.", remoteSignOutContext.Result.Failure);
+                }
             }
 
             if (message == null)
@@ -273,18 +277,46 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         /// Response to the callback from OpenId provider after session ended.
         /// </summary>
         /// <returns>A task executing the callback procedure</returns>
-        protected virtual Task<bool> HandleSignOutCallbackAsync()
+        protected async virtual Task<bool> HandleSignOutCallbackAsync()
         {
-            if (Request.Query.TryGetValue(OpenIdConnectParameterNames.State, out StringValues protectedState))
+            var message = new OpenIdConnectMessage(Request.Query.Select(pair => new KeyValuePair<string, string[]>(pair.Key, pair.Value)));
+            AuthenticationProperties properties = null;
+            if (!string.IsNullOrEmpty(message.State))
             {
-                var properties = Options.StateDataFormat.Unprotect(protectedState);
-                if (!string.IsNullOrEmpty(properties?.RedirectUri))
+                properties = Options.StateDataFormat.Unprotect(message.State);
+            }
+
+            var signOut = new RemoteSignOutContext(Context, Scheme, Options, message)
+            {
+                Properties = properties,
+            };
+
+            await Events.SignedOutCallbackRedirect(signOut);
+            if (signOut.Result != null)
+            {
+                if (signOut.Result.Handled)
                 {
-                    Response.Redirect(properties.RedirectUri);
+                    Logger.SignoutCallbackRedirectHandledResponse();
+                    return true;
+                }
+                if (signOut.Result.Skipped)
+                {
+                    Logger.SignoutCallbackRedirectSkipped();
+                    return false;
+                }
+                if (signOut.Result.Failure != null)
+                {
+                    throw new InvalidOperationException("An error was returned from the SignedOutCallbackRedirect event.", signOut.Result.Failure);
                 }
             }
 
-            return Task.FromResult(true);
+            properties = signOut.Properties;
+            if (!string.IsNullOrEmpty(properties?.RedirectUri))
+            {
+                Response.Redirect(properties.RedirectUri);
+            }
+
+            return true;
         }
 
         /// <summary>

@@ -39,6 +39,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public Func<RedirectContext, Task> OnRedirectToIdentityProviderForSignOut { get; set; } = context => Task.CompletedTask;
 
         /// <summary>
+        /// Invoked before redirecting to the <see cref="OpenIdConnectOptions.SignedOutRedirectUri"/> at the end of a remote sign-out flow.
+        /// </summary>
+        public Func<RemoteSignOutContext, Task> OnSignedOutCallbackRedirect { get; set; } = context => Task.CompletedTask;
+
+        /// <summary>
         /// Invoked when a request is received on the RemoteSignOutPath.
         /// </summary>
         public Func<RemoteSignOutContext, Task> OnRemoteSignOut { get; set; } = context => Task.CompletedTask;
@@ -67,6 +72,8 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public virtual Task RedirectToIdentityProvider(RedirectContext context) => OnRedirectToIdentityProvider(context);
 
         public virtual Task RedirectToIdentityProviderForSignOut(RedirectContext context) => OnRedirectToIdentityProviderForSignOut(context);
+
+        public virtual Task SignedOutCallbackRedirect(RemoteSignOutContext context) => OnSignedOutCallbackRedirect(context);
 
         public virtual Task RemoteSignOut(RemoteSignOutContext context) => OnRemoteSignOut(context);
 

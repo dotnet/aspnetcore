@@ -16,11 +16,12 @@ using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Authentication;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Primitives;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Net.Http.Headers;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
@@ -37,32 +38,22 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         private readonly Func<RemoteFailureContext, Task> FailureNotImpl = context => { throw new NotImplementedException("Failure", context.Failure); };
         private readonly Func<RedirectContext, Task> RedirectNotImpl = context => { throw new NotImplementedException("Redirect"); };
         private readonly Func<RemoteSignOutContext, Task> RemoteSignOutNotImpl = context => { throw new NotImplementedException("Remote"); };
+        private readonly Func<RemoteSignOutContext, Task> SignedOutCallbackNotImpl = context => { throw new NotImplementedException("SingedOut"); };
         private readonly RequestDelegate AppNotImpl = context => { throw new NotImplementedException("App"); };
 
         [Fact]
         public async Task OnMessageReceived_Skip_NoMoreEventsRun()
         {
             var messageReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     context.SkipHandler();
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = TokenNotImpl,
-                OnAuthorizationCodeReceived = CodeNotImpl,
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnTicketReceived = TicketNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -80,30 +71,20 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         {
             var messageReceived = false;
             var remoteFailure = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     context.Fail("Authentication was aborted from user code.");
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = context =>
+                };
+                events.OnRemoteFailure = context =>
                 {
                     remoteFailure = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = TokenNotImpl,
-                OnAuthorizationCodeReceived = CodeNotImpl,
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -124,27 +105,16 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         public async Task OnMessageReceived_Handled_NoMoreEventsRun()
         {
             var messageReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = TokenNotImpl,
-                OnAuthorizationCodeReceived = CodeNotImpl,
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "");
@@ -159,30 +129,20 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         {
             var messageReceived = false;
             var tokenValidated = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     context.SkipHandler();
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = CodeNotImpl,
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -202,34 +162,25 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var messageReceived = false;
             var tokenValidated = false;
             var remoteFailure = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     context.Fail("Authentication was aborted from user code.");
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = context =>
+                };
+                events.OnRemoteFailure = context =>
                 {
                     remoteFailure = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = CodeNotImpl,
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -252,32 +203,22 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         {
             var messageReceived = false;
             var tokenValidated = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     context.HandleResponse();
                     context.Principal = null;
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = CodeNotImpl,
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state");
@@ -295,36 +236,27 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var messageReceived = false;
             var tokenValidated = false;
             var ticketReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     context.Success();
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = CodeNotImpl,
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = context =>
+                };
+                events.OnTicketReceived = context =>
                 {
                     ticketReceived = true;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state");
@@ -342,34 +274,25 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var messageReceived = false;
             var tokenValidated = false;
             var codeReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     context.SkipHandler();
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -391,38 +314,30 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var tokenValidated = false;
             var codeReceived = false;
             var remoteFailure = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     context.Fail("Authentication was aborted from user code.");
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = context =>
+                };
+                events.OnRemoteFailure = context =>
                 {
                     remoteFailure = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -447,36 +362,27 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var messageReceived = false;
             var tokenValidated = false;
             var codeReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     context.HandleResponse();
                     context.Principal = null;
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
@@ -495,40 +401,32 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var tokenValidated = false;
             var codeReceived = false;
             var ticketReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     context.Success();
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = context =>
+                };
+                events.OnTicketReceived = context =>
                 {
                     ticketReceived = true;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
@@ -548,38 +446,30 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var tokenValidated = false;
             var codeReceived = false;
             var tokenResponseReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     context.SkipHandler();
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -603,42 +493,35 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var codeReceived = false;
             var tokenResponseReceived = false;
             var remoteFailure = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     context.Fail("Authentication was aborted from user code.");
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = context =>
+                };
+                events.OnRemoteFailure = context =>
                 {
                     remoteFailure = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -665,40 +548,32 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var tokenValidated = false;
             var codeReceived = false;
             var tokenResponseReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     context.Principal = null;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
@@ -719,44 +594,37 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var codeReceived = false;
             var ticketReceived = false;
             var tokenResponseReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     context.Success();
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = context =>
+                };
+                events.OnTicketReceived = context =>
                 {
                     ticketReceived = true;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
@@ -777,38 +645,30 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var codeReceived = false;
             var tokenResponseReceived = false;
             var tokenValidated = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     context.SkipHandler();
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -832,42 +692,35 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var tokenResponseReceived = false;
             var tokenValidated = false;
             var remoteFailure = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     context.Fail("Authentication was aborted from user code.");
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = context =>
+                };
+                events.OnRemoteFailure = context =>
                 {
                     remoteFailure = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -894,40 +747,32 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var codeReceived = false;
             var tokenResponseReceived = false;
             var tokenValidated = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     context.Principal = null;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "state=protected_state&code=my_code");
@@ -948,44 +793,37 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var ticketReceived = false;
             var tokenResponseReceived = false;
             var tokenValidated = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     context.Success();
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = context =>
+                };
+                events.OnTicketReceived = context =>
                 {
                     ticketReceived = true;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "state=protected_state&code=my_code");
@@ -1007,42 +845,35 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var codeReceived = false;
             var tokenResponseReceived = false;
             var userInfoReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     context.SkipHandler();
                     return Task.FromResult(0);
-                },
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -1068,46 +899,40 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var tokenResponseReceived = false;
             var userInfoReceived = false;
             var remoteFailure = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     context.Fail("Authentication was aborted from user code.");
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = context =>
+                };
+                events.OnRemoteFailure = context =>
                 {
                     remoteFailure = true;
                     return Task.FromResult(0);
-                },
-                OnAuthenticationFailed = FailedNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -1136,44 +961,37 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var codeReceived = false;
             var tokenResponseReceived = false;
             var userInfoReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     context.Principal = null;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
@@ -1196,49 +1014,43 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var ticketReceived = false;
             var tokenResponseReceived = false;
             var userInfoReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     // context.Ticket = null;
                     context.Success();
                     return Task.FromResult(0);
-                },
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = context =>
+                };
+                events.OnTicketReceived = context =>
                 {
                     ticketReceived = true;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
@@ -1262,47 +1074,41 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var tokenResponseReceived = false;
             var userInfoReceived = false;
             var authFailed = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     throw new NotImplementedException("TestException");
-                },
-                OnAuthenticationFailed = context =>
+                };
+                events.OnAuthenticationFailed = context =>
                 {
                     authFailed = true;
                     Assert.Equal("TestException", context.Exception.Message);
                     context.SkipHandler();
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -1330,51 +1136,46 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var userInfoReceived = false;
             var authFailed = false;
             var remoteFailure = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     throw new NotImplementedException("TestException");
-                },
-                OnAuthenticationFailed = context =>
+                };
+                events.OnAuthenticationFailed = context =>
                 {
                     authFailed = true;
                     Assert.Equal("TestException", context.Exception.Message);
                     context.Fail("Authentication was aborted from user code.");
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = context =>
+                };
+                events.OnRemoteFailure = context =>
                 {
                     remoteFailure = true;
                     return Task.FromResult(0);
-                },
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -1405,34 +1206,34 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var tokenResponseReceived = false;
             var userInfoReceived = false;
             var authFailed = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     throw new NotImplementedException("TestException");
-                },
-                OnAuthenticationFailed = context =>
+                };
+                events.OnAuthenticationFailed = context =>
                 {
                     authFailed = true;
                     Assert.Equal("TestException", context.Exception.Message);
@@ -1440,14 +1241,8 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
@@ -1472,34 +1267,34 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var tokenResponseReceived = false;
             var userInfoReceived = false;
             var authFailed = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     throw new NotImplementedException("TestException");
-                },
-                OnAuthenticationFailed = context =>
+                };
+                events.OnAuthenticationFailed = context =>
                 {
                     authFailed = true;
                     Assert.Equal("TestException", context.Exception.Message);
@@ -1515,20 +1310,15 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                     context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
                     context.Success();
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = context =>
+                };
+                events.OnTicketReceived = context =>
                 {
                     ticketReceived = true;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
@@ -1554,52 +1344,47 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var userInfoReceived = false;
             var authFailed = false;
             var remoteFailure = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     throw new NotImplementedException("TestException");
-                },
-                OnAuthenticationFailed = context =>
+                };
+                events.OnAuthenticationFailed = context =>
                 {
                     authFailed = true;
                     Assert.Equal("TestException", context.Exception.Message);
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = context =>
+                };
+                events.OnRemoteFailure = context =>
                 {
                     remoteFailure = true;
                     Assert.Equal("TestException", context.Failure.Message);
                     context.SkipHandler();
                     return Task.FromResult(0);
-                },
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -1628,53 +1413,48 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var userInfoReceived = false;
             var authFailed = false;
             var remoteFailure = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     throw new NotImplementedException("TestException");
-                },
-                OnAuthenticationFailed = context =>
+                };
+                events.OnAuthenticationFailed = context =>
                 {
                     authFailed = true;
                     Assert.Equal("TestException", context.Exception.Message);
                     return Task.FromResult(0);
-                },
-                OnRemoteFailure = context =>
+                };
+                events.OnRemoteFailure = context =>
                 {
                     remoteFailure = true;
                     Assert.Equal("TestException", context.Failure.Message);
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-                OnTicketReceived = TicketNotImpl,
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
@@ -1699,46 +1479,40 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var tokenResponseReceived = false;
             var userInfoReceived = false;
             var ticektReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     return Task.FromResult(0);
-                },
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = context =>
+                };
+                events.OnTicketReceived = context =>
                 {
                     ticektReceived = true;
                     context.SkipHandler();
                     return Task.FromResult(0);
-                },
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             context =>
             {
                 return context.Response.WriteAsync(context.Request.Path);
@@ -1765,47 +1539,41 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var tokenResponseReceived = false;
             var userInfoReceived = false;
             var ticektReceived = false;
-            var server = CreateServer(new OpenIdConnectEvents()
+            var server = CreateServer(CreateNotImpEvents(events =>
             {
-                OnMessageReceived = context =>
+                events.OnMessageReceived = context =>
                 {
                     messageReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenValidated = context =>
+                };
+                events.OnTokenValidated = context =>
                 {
                     tokenValidated = true;
                     return Task.FromResult(0);
-                },
-                OnAuthorizationCodeReceived = context =>
+                };
+                events.OnAuthorizationCodeReceived = context =>
                 {
                     codeReceived = true;
                     return Task.FromResult(0);
-                },
-                OnTokenResponseReceived = context =>
+                };
+                events.OnTokenResponseReceived = context =>
                 {
                     tokenResponseReceived = true;
                     return Task.FromResult(0);
-                },
-                OnUserInformationReceived = context =>
+                };
+                events.OnUserInformationReceived = context =>
                 {
                     userInfoReceived = true;
                     return Task.FromResult(0);
-                },
-                OnAuthenticationFailed = FailedNotImpl,
-                OnRemoteFailure = FailureNotImpl,
-                OnTicketReceived = context =>
+                };
+                events.OnTicketReceived = context =>
                 {
                     ticektReceived = true;
                     context.HandleResponse();
                     context.Response.StatusCode = StatusCodes.Status202Accepted;
                     return Task.FromResult(0);
-                },
-
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-            },
+                };
+            }),
             AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
@@ -1820,23 +1588,250 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             Assert.True(ticektReceived);
         }
 
+        [Fact]
+        public async Task OnRedirectToIdentityProviderForSignOut_Invoked()
+        {
+            var forSignOut = false;
+            var server = CreateServer(CreateNotImpEvents(events =>
+            {
+                events.OnRedirectToIdentityProviderForSignOut = context =>
+                {
+                    forSignOut = true;
+                    return Task.CompletedTask;
+                };
+            }),
+            context =>
+            {
+                return context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+            });
+
+            var client = server.CreateClient();
+            var response = await client.GetAsync("/");
+
+            Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+            Assert.Equal("http://testhost/end", response.Headers.Location.GetLeftPart(UriPartial.Path));
+            Assert.True(forSignOut);
+        }
+
+        [Fact]
+        public async Task OnRedirectToIdentityProviderForSignOut_Handled_RedirectNotInvoked()
+        {
+            var forSignOut = false;
+            var server = CreateServer(CreateNotImpEvents(events =>
+            {
+                events.OnRedirectToIdentityProviderForSignOut = context =>
+                {
+                    forSignOut = true;
+                    context.Response.StatusCode = StatusCodes.Status202Accepted;
+                    context.HandleResponse();
+                    return Task.CompletedTask;
+                };
+            }),
+            context =>
+            {
+                return context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
+            });
+
+            var client = server.CreateClient();
+            var response = await client.GetAsync("/");
+
+            Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+            Assert.Null(response.Headers.Location);
+            Assert.True(forSignOut);
+        }
+
+        [Fact]
+        public async Task OnRemoteSignOut_Invoked()
+        {
+            var forSignOut = false;
+            var server = CreateServer(CreateNotImpEvents(events =>
+            {
+                events.OnRemoteSignOut = context =>
+                {
+                    forSignOut = true;
+                    return Task.CompletedTask;
+                };
+            }),
+            AppNotImpl);
+
+            var client = server.CreateClient();
+            var response = await client.GetAsync("/signout-oidc");
+
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.True(forSignOut);
+            Assert.True(response.Headers.TryGetValues(HeaderNames.SetCookie, out var values));
+            Assert.True(SetCookieHeaderValue.TryParseStrictList(values.ToList(), out var parsedValues));
+            Assert.Equal(1, parsedValues.Count);
+            Assert.True(StringSegment.IsNullOrEmpty(parsedValues.Single().Value));
+        }
+
+        [Fact]
+        public async Task OnRemoteSignOut_Handled_NoSignout()
+        {
+            var forSignOut = false;
+            var server = CreateServer(CreateNotImpEvents(events =>
+            {
+                events.OnRemoteSignOut = context =>
+                {
+                    forSignOut = true;
+                    context.Response.StatusCode = StatusCodes.Status202Accepted;
+                    context.HandleResponse();
+                    return Task.CompletedTask;
+                };
+            }),
+            AppNotImpl);
+
+            var client = server.CreateClient();
+            var response = await client.GetAsync("/signout-oidc");
+
+            Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+            Assert.True(forSignOut);
+            Assert.False(response.Headers.TryGetValues(HeaderNames.SetCookie, out var values));
+        }
+
+        [Fact]
+        public async Task OnRemoteSignOut_Skip_NoSignout()
+        {
+            var forSignOut = false;
+            var server = CreateServer(CreateNotImpEvents(events =>
+            {
+                events.OnRemoteSignOut = context =>
+                {
+                    forSignOut = true;
+                    context.SkipHandler();
+                    return Task.CompletedTask;
+                };
+            }),
+            context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.CompletedTask;
+            });
+
+            var client = server.CreateClient();
+            var response = await client.GetAsync("/signout-oidc");
+
+            Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+            Assert.True(forSignOut);
+            Assert.False(response.Headers.TryGetValues(HeaderNames.SetCookie, out var values));
+        }
+
+        [Fact]
+        public async Task OnRedirectToSignedOutRedirectUri_Invoked()
+        {
+            var forSignOut = false;
+            var server = CreateServer(CreateNotImpEvents(events =>
+            {
+                events.OnSignedOutCallbackRedirect = context =>
+                {
+                    forSignOut = true;
+                    return Task.CompletedTask;
+                };
+            }),
+            AppNotImpl);
+
+            var client = server.CreateClient();
+            var response = await client.GetAsync("/signout-callback-oidc?state=protected_state");
+
+            Assert.Equal(HttpStatusCode.Found, response.StatusCode);
+            Assert.Equal("http://testhost/redirect", response.Headers.Location.AbsoluteUri);
+            Assert.True(forSignOut);
+        }
+
+        [Fact]
+        public async Task OnRedirectToSignedOutRedirectUri_Handled_NoRedirect()
+        {
+            var forSignOut = false;
+            var server = CreateServer(CreateNotImpEvents(events =>
+            {
+                events.OnSignedOutCallbackRedirect = context =>
+                {
+                    forSignOut = true;
+                    context.Response.StatusCode = StatusCodes.Status202Accepted;
+                    context.HandleResponse();
+                    return Task.CompletedTask;
+                };
+            }),
+            AppNotImpl);
+
+            var client = server.CreateClient();
+            var response = await client.GetAsync("/signout-callback-oidc?state=protected_state");
+
+            Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+            Assert.Null(response.Headers.Location);
+            Assert.True(forSignOut);
+        }
+
+        [Fact]
+        public async Task OnRedirectToSignedOutRedirectUri_Skipped_NoRedirect()
+        {
+            var forSignOut = false;
+            var server = CreateServer(CreateNotImpEvents(events =>
+            {
+                events.OnSignedOutCallbackRedirect = context =>
+                {
+                    forSignOut = true;
+                    context.SkipHandler();
+                    return Task.CompletedTask;
+                };
+            }),
+            context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.CompletedTask;
+            });
+
+            var client = server.CreateClient();
+            var response = await client.GetAsync("/signout-callback-oidc?state=protected_state");
+
+            Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+            Assert.Null(response.Headers.Location);
+            Assert.True(forSignOut);
+        }
+
+        private OpenIdConnectEvents CreateNotImpEvents(Action<OpenIdConnectEvents> configureEvents)
+        {
+            var events = new OpenIdConnectEvents()
+            {
+                OnMessageReceived = MessageNotImpl,
+                OnTokenValidated = TokenNotImpl,
+                OnAuthorizationCodeReceived = CodeNotImpl,
+                OnTokenResponseReceived = TokenResponseNotImpl,
+                OnUserInformationReceived = UserNotImpl,
+                OnAuthenticationFailed = FailedNotImpl,
+                OnTicketReceived = TicketNotImpl,
+                OnRemoteFailure = FailureNotImpl,
+
+                OnRedirectToIdentityProvider = RedirectNotImpl,
+                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
+                OnRemoteSignOut = RemoteSignOutNotImpl,
+                OnSignedOutCallbackRedirect = SignedOutCallbackNotImpl,
+            };
+            configureEvents(events);
+            return events;
+        }
+
         private TestServer CreateServer(OpenIdConnectEvents events, RequestDelegate appCode)
         {
             var builder = new WebHostBuilder()
                 .ConfigureServices(services =>
                 {
-                    services.AddAuthentication()
+                    services.AddAuthentication(auth =>
+                    {
+                        auth.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+                        auth.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+                    })
                         .AddCookie()
                         .AddOpenIdConnect(o =>
                     {
                         o.Events = events;
-                        o.SignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
                         o.ClientId = "ClientId";
                         o.GetClaimsFromUserInfoEndpoint = true;
                         o.Configuration = new OpenIdConnectConfiguration()
                         {
                             TokenEndpoint = "http://testhost/tokens",
                             UserInfoEndpoint = "http://testhost/user",
+                            EndSessionEndpoint = "http://testhost/end"
                         };
                         o.StateDataFormat = new TestStateDataFormat();
                         o.SecurityTokenValidator = new TestTokenValidator();
@@ -1868,7 +1863,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
             public string Protect(AuthenticationProperties data)
             {
-                throw new NotImplementedException();
+                return "protected_state";
             }
 
             public string Protect(AuthenticationProperties data, string purpose)
@@ -1879,11 +1874,13 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             public AuthenticationProperties Unprotect(string protectedText)
             {
                 Assert.Equal("protected_state", protectedText);
-                return new AuthenticationProperties(new Dictionary<string, string>()
+                var properties = new AuthenticationProperties(new Dictionary<string, string>()
                 {
                     { ".xsrf", "corrilationId" },
                     { OpenIdConnectDefaults.RedirectUriForCodePropertiesKey, "redirect_uri" }
                 });
+                properties.RedirectUri = "http://testhost/redirect";
+                return properties;
             }
 
             public AuthenticationProperties Unprotect(string protectedText, string purpose)
