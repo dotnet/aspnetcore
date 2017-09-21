@@ -114,7 +114,7 @@ namespace RepoTasks
                 }
 
                 var all = Task.WhenAll(tasks);
-                var wait = TimeSpan.FromSeconds(Math.Max(downloadCount * 5, 30));
+                var wait = TimeSpan.FromSeconds(Math.Max(downloadCount * 5, 120));
                 var delay = Task.Delay(wait);
 
                 var finished = await Task.WhenAny(all, delay);
