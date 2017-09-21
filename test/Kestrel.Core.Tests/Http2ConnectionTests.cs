@@ -693,6 +693,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task HEADERS_Received_WithPriority_StreamDependencyOnSelf_ConnectionError()
+        {
+            await InitializeConnectionAsync(_readHeadersApplication);
+
+            await SendHeadersWithPriorityAsync(1, _browserRequestHeaders, priority: 42, streamDependency: 1, endStream: true);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public async Task PRIORITY_Received_StreamIdZero_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
@@ -731,6 +741,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await SendHeadersAsync(1, Http2HeadersFrameFlags.NONE, _browserRequestHeaders);
             await SendPriorityAsync(1);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task PRIORITY_Received_StreamDependencyOnSelf_ConnectionError()
+        {
+            await InitializeConnectionAsync(_readHeadersApplication);
+
+            await SendPriorityAsync(1, streamDependency: 1);
 
             await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
         }
@@ -1507,10 +1527,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             return SendAsync(pingFrame.Raw);
         }
 
-        private Task SendPriorityAsync(int streamId)
+        private Task SendPriorityAsync(int streamId, int streamDependency = 0)
         {
             var priorityFrame = new Http2Frame();
-            priorityFrame.PreparePriority(streamId, streamDependency: 0, exclusive: false, weight: 0);
+            priorityFrame.PreparePriority(streamId, streamDependency: streamDependency, exclusive: false, weight: 0);
             return SendAsync(priorityFrame.Raw);
         }
 
