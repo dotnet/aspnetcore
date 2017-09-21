@@ -18,17 +18,16 @@
 <script>
 let transportType = signalR.TransportType[getParameterByName('transport')] || signalR.TransportType.WebSockets;
 let logger = new signalR.ConsoleLogger(signalR.LogLevel.Information);
-let http = new signalR.HttpConnection(`http://${document.location.host}/chat`, { transport: transportType, logger: logger });
-let connection = new signalR.HubConnection(http, logger);
+let connection = new signalR.HubConnection('/chat', { transport: transportType, logger: logger });
 
-connection.onClosed = e => {
+connection.onclose(e => {
     if (e) {
         appendLine('Connection closed with error: ' + e, 'red');
     }
     else {
         appendLine('Disconnected', 'green');
     }
-};
+});
 
 connection.on('SetUsersOnline', usersOnline => {
     usersOnline.forEach(user => addUserOnline(user));

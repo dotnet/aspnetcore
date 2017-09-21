@@ -67,8 +67,8 @@ export class HttpConnection implements IConnection {
             this.url += (this.url.indexOf("?") == -1 ? "?" : "&") + `id=${this.connectionId}`;
 
             this.transport = this.createTransport(this.options.transport, negotiateResponse.availableTransports);
-            this.transport.onDataReceived = this.onDataReceived;
-            this.transport.onClosed = e => this.stopConnection(true, e);
+            this.transport.onreceive = this.onreceive;
+            this.transport.onclose = e => this.stopConnection(true, e);
 
             let requestedTransferMode =
                 this.features.transferMode === TransferMode.Binary
@@ -151,8 +151,8 @@ export class HttpConnection implements IConnection {
 
         this.connectionState = ConnectionState.Disconnected;
 
-        if (raiseClosed && this.onClosed) {
-            this.onClosed(error);
+        if (raiseClosed && this.onclose) {
+            this.onclose(error);
         }
     }
 
@@ -182,6 +182,6 @@ export class HttpConnection implements IConnection {
         return normalizedUrl;
     }
 
-    onDataReceived: DataReceived;
-    onClosed: ConnectionClosed;
+    onreceive: DataReceived;
+    onclose: ConnectionClosed;
 }

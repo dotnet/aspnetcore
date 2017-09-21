@@ -54,8 +54,6 @@
             let invocationCounter = 0;
 
             document.getElementById('transportName').innerHTML = signalR.TransportType[transportType];
-
-            let url = 'http://' + document.location.host + '/streaming';
             let connection = null;
 
             click('clearButton', function () {
@@ -67,17 +65,16 @@
             });
 
             click('connectButton', function () {
-                let http = new signalR.HttpConnection(url, { transport: transportType, logger: logger });
-                connection = new signalR.HubConnection(http, logger);
+                connection = new signalR.HubConnection('/streaming', { transport: transportType, logger: logger });
 
-                connection.onClosed = function () {
+                connection.onclose(function () {
                     channelButton.disabled = true;
                     observableButton.disabled = true;
                     connectButton.disabled = false;
                     disconnectButton.disabled = true;
 
                     addLine('resultsList', 'disconnected', 'green');
-                };
+                });
 
                 connection.start()
                     .then(function () {

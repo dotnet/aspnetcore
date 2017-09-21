@@ -21,8 +21,8 @@ export interface ITransport {
     connect(url: string, requestedTransferMode: TransferMode): Promise<TransferMode>;
     send(data: any): Promise<void>;
     stop(): void;
-    onDataReceived: DataReceived;
-    onClosed: TransportClosed;
+    onreceive: DataReceived;
+    onclose: TransportClosed;
 }
 
 export class WebSocketTransport implements ITransport {
@@ -55,19 +55,19 @@ export class WebSocketTransport implements ITransport {
 
             webSocket.onmessage = (message: MessageEvent) => {
                 this.logger.log(LogLevel.Trace, `(WebSockets transport) data received: ${message.data}`);
-                if (this.onDataReceived) {
-                    this.onDataReceived(message.data);
+                if (this.onreceive) {
+                    this.onreceive(message.data);
                 }
             }
 
             webSocket.onclose = (event: CloseEvent) => {
                 // webSocket will be null if the transport did not start successfully
-                if (this.onClosed && this.webSocket) {
+                if (this.onclose && this.webSocket) {
                     if (event.wasClean === false || event.code !== 1000) {
-                        this.onClosed(new Error(`Websocket closed with status code: ${event.code} (${event.reason})`));
+                        this.onclose(new Error(`Websocket closed with status code: ${event.code} (${event.reason})`));
                     }
                     else {
-                        this.onClosed();
+                        this.onclose();
                     }
                 }
             }
@@ -90,8 +90,8 @@ export class WebSocketTransport implements ITransport {
         }
     }
 
-    onDataReceived: DataReceived;
-    onClosed: TransportClosed;
+    onreceive: DataReceived;
+    onclose: TransportClosed;
 }
 
 export class ServerSentEventsTransport implements ITransport {
@@ -116,13 +116,13 @@ export class ServerSentEventsTransport implements ITransport {
 
             try {
                 eventSource.onmessage = (e: MessageEvent) => {
-                    if (this.onDataReceived) {
+                    if (this.onreceive) {
                         try {
                             this.logger.log(LogLevel.Trace, `(SSE transport) data received: ${e.data}`);
-                            this.onDataReceived(e.data);
+                            this.onreceive(e.data);
                         } catch (error) {
-                            if (this.onClosed) {
-                                this.onClosed(error);
+                            if (this.onclose) {
+                                this.onclose(error);
                             }
                             return;
                         }
@@ -133,8 +133,8 @@ export class ServerSentEventsTransport implements ITransport {
                     reject();
 
                     // don't report an error if the transport did not start successfully
-                    if (this.eventSource && this.onClosed) {
-                        this.onClosed(new Error(e.message || "Error occurred"));
+                    if (this.eventSource && this.onclose) {
+                        this.onclose(new Error(e.message || "Error occurred"));
                     }
                 }
 
@@ -162,8 +162,8 @@ export class ServerSentEventsTransport implements ITransport {
         }
     }
 
-    onDataReceived: DataReceived;
-    onClosed: TransportClosed;
+    onreceive: DataReceived;
+    onclose: TransportClosed;
 }
 
 export class LongPollingTransport implements ITransport {
@@ -201,7 +201,7 @@ export class LongPollingTransport implements ITransport {
 
         pollXhr.onload = () => {
             if (pollXhr.status == 200) {
-                if (this.onDataReceived) {
+                if (this.onreceive) {
                     try {
                         let response = transferMode === TransferMode.Text
                             ? pollXhr.responseText
@@ -209,14 +209,14 @@ export class LongPollingTransport implements ITransport {
 
                         if (response) {
                             this.logger.log(LogLevel.Trace, `(LongPolling transport) data received: ${response}`);
-                            this.onDataReceived(response);
+                            this.onreceive(response);
                         }
                         else {
                             this.logger.log(LogLevel.Information, "(LongPolling transport) timed out");
                         }
                     } catch (error) {
-                        if (this.onClosed) {
-                            this.onClosed(error);
+                        if (this.onclose) {
+                            this.onclose(error);
                         }
                         return;
                     }
@@ -224,21 +224,21 @@ export class LongPollingTransport implements ITransport {
                 this.poll(url, transferMode);
             }
             else if (this.pollXhr.status == 204) {
-                if (this.onClosed) {
-                    this.onClosed();
+                if (this.onclose) {
+                    this.onclose();
                 }
             }
             else {
-                if (this.onClosed) {
-                    this.onClosed(new HttpError(pollXhr.statusText, pollXhr.status));
+                if (this.onclose) {
+                    this.onclose(new HttpError(pollXhr.statusText, pollXhr.status));
                 }
             }
         };
 
         pollXhr.onerror = () => {
-            if (this.onClosed) {
+            if (this.onclose) {
                 // network related error or denied cross domain request
-                this.onClosed(new Error("Sending HTTP request failed."));
+                this.onclose(new Error("Sending HTTP request failed."));
             }
         };
 
@@ -270,8 +270,8 @@ export class LongPollingTransport implements ITransport {
         }
     }
 
-    onDataReceived: DataReceived;
-    onClosed: TransportClosed;
+    onreceive: DataReceived;
+    onclose: TransportClosed;
 }
 
 const headers = new Map<string, string>();
