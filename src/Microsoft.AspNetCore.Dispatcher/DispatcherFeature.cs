@@ -7,33 +7,10 @@ namespace Microsoft.AspNetCore.Dispatcher
 {
     public class DispatcherFeature : IDispatcherFeature
     {
-        private Endpoint _endpoint;
-        private RequestDelegate _next;
+        public Endpoint Endpoint { get; set; }
 
-        public Endpoint Endpoint
-        {
-            get
-            {
-                return _endpoint;
-            }
+        public RequestDelegate RequestDelegate { get; set; }
 
-            set
-            {
-                _endpoint = value;
-            }
-        }
-
-        public RequestDelegate RequestDelegate
-        {
-            get
-            {
-                return _next;
-            }
-
-            set
-            {
-                _next = value;
-            }
-        }
+        public DispatcherValueCollection Values { get; set; }
     }
 }

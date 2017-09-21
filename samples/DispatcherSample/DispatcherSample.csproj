@@ -11,6 +11,7 @@
 
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting" />
     <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" />

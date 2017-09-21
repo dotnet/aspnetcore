@@ -1,16 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using Microsoft.AspNetCore.Http;
+using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public interface IDispatcherFeature
+    public abstract class EndpointSelector
     {
-        Endpoint Endpoint { get; set; }
-
-        RequestDelegate RequestDelegate { get; set; }
-
-        DispatcherValueCollection Values { get; set; }
+        public abstract Task SelectAsync(EndpointSelectorContext context);
     }
 }

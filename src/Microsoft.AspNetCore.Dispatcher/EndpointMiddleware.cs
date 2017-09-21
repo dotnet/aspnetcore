@@ -4,20 +4,27 @@
 using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
     public class EndpointMiddleware
     {
+        private readonly ILogger _logger;
         private readonly DispatcherOptions _options;
-        private RequestDelegate _next;
+        private readonly RequestDelegate _next;
 
-        public EndpointMiddleware(IOptions<DispatcherOptions> options, RequestDelegate next)
+        public EndpointMiddleware(IOptions<DispatcherOptions> options, ILogger<DispatcherMiddleware> logger, RequestDelegate next)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
+            }
+
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
             }
 
             if (next == null)
@@ -26,6 +33,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
 
             _options = options.Value;
+            _logger = logger;
             _next = next;
         }
 
@@ -47,7 +55,17 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             if (feature.RequestDelegate != null)
             {
-                await feature.RequestDelegate(context);
+                _logger.LogInformation("Executing endpoint {Endpoint}", feature.Endpoint.DisplayName);
+                try
+                {
+                    await feature.RequestDelegate(context);
+                }
+                finally
+                {
+                    _logger.LogInformation("Executed endpoint {Endpoint}", feature.Endpoint.DisplayName);
+                }
+
+                return;
             }
 
             await _next(context);

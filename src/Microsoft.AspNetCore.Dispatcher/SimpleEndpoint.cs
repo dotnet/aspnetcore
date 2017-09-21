@@ -8,29 +8,34 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class SimpleEndpoint : Endpoint
+    public class SimpleEndpoint : Endpoint, IDispatcherValueSelectableEndpoint
     {
         public SimpleEndpoint(RequestDelegate requestDelegate)
-            : this(requestDelegate, Array.Empty<object>(), null)
+            : this(requestDelegate, Array.Empty<object>(), null, null)
         {
         }
 
         public SimpleEndpoint(Func<RequestDelegate, RequestDelegate> delegateFactory)
-            : this(delegateFactory, Array.Empty<object>(), null)
+            : this(delegateFactory, Array.Empty<object>(), null, null)
         {
         }
 
         public SimpleEndpoint(RequestDelegate requestDelegate, IEnumerable<object> metadata)
-            : this(requestDelegate, metadata, null)
+            : this(requestDelegate, metadata, null, null)
         {
         }
 
         public SimpleEndpoint(Func<RequestDelegate, RequestDelegate> delegateFactory, IEnumerable<object> metadata)
-            : this(delegateFactory, metadata, null)
+            : this(delegateFactory, metadata, null, null)
         {
         }
 
-        public SimpleEndpoint(RequestDelegate requestDelegate, IEnumerable<object> metadata, string displayName)
+        public SimpleEndpoint(Func<RequestDelegate, RequestDelegate> delegateFactory, IEnumerable<object> metadata, object values)
+            : this(delegateFactory, metadata, null, null)
+        {
+        }
+
+        public SimpleEndpoint(RequestDelegate requestDelegate, IEnumerable<object> metadata, object values, string displayName)
         {
             if (metadata == null)
             {
@@ -42,12 +47,13 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(requestDelegate));
             }
 
-            DisplayName = displayName;
+            HandlerFactory = (next) => requestDelegate;
             Metadata = metadata.ToArray();
-            DelegateFactory = (next) => requestDelegate;
+            Values = new DispatcherValueCollection(values);
+            DisplayName = displayName;
         }
 
-        public SimpleEndpoint(Func<RequestDelegate, RequestDelegate> delegateFactory, IEnumerable<object> metadata, string displayName)
+        public SimpleEndpoint(Func<RequestDelegate, RequestDelegate> delegateFactory, IEnumerable<object> metadata, object values, string displayName)
         {
             if (metadata == null)
             {
@@ -59,15 +65,18 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(delegateFactory));
             }
 
-            DisplayName = displayName;
+            HandlerFactory = delegateFactory;
             Metadata = metadata.ToArray();
-            DelegateFactory = delegateFactory;
+            Values = new DispatcherValueCollection(values);
+            DisplayName = displayName;
         }
 
         public override string DisplayName { get; }
 
         public override IReadOnlyList<object> Metadata { get; }
 
-        public Func<RequestDelegate, RequestDelegate> DelegateFactory { get; }
+        public Func<RequestDelegate, RequestDelegate> HandlerFactory { get; }
+
+        public DispatcherValueCollection Values { get; }
     }
 }
