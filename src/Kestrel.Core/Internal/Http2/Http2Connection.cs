@@ -218,9 +218,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     return ProcessWindowUpdateFrameAsync();
                 case Http2FrameType.CONTINUATION:
                     return ProcessContinuationFrameAsync<TContext>(application);
+                default:
+                    return ProcessUnknownFrameAsync();
             }
-
-            return Task.CompletedTask;
         }
 
         private Task ProcessDataFrameAsync()
@@ -449,6 +449,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 _lastStreamId = _currentHeadersStream.StreamId;
                 _ = _currentHeadersStream.ProcessRequestsAsync();
                 _currentHeadersStream = null;
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private Task ProcessUnknownFrameAsync()
+        {
+            if (_currentHeadersStream != null)
+            {
+                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             return Task.CompletedTask;

@@ -1063,6 +1063,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
+        public async Task UnknownFrameType_Received_Ignored()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendUnknownFrameTypeAsync(streamId: 1);
+
+            // Check that the connection is still alive
+            await SendPingAsync();
+            await ExpectAsync(Http2FrameType.PING,
+                withLength: 8,
+                withFlags: (byte)Http2PingFrameFlags.ACK,
+                withStreamId: 0);
+
+            await StopConnectionAsync(0, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task UnknownFrameType_Received_InterleavedWithHeaders_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendHeadersAsync(1, Http2HeadersFrameFlags.NONE, _browserRequestHeaders);
+            await SendUnknownFrameTypeAsync(streamId: 1);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
         public async Task ConnectionError_AbortsAllStreams()
         {
             await InitializeConnectionAsync(_waitForAbortApplication);
@@ -1448,6 +1476,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var frame = new Http2Frame();
             frame.PrepareWindowUpdate(streamId, sizeIncrement);
             frame.Length = length;
+            return SendAsync(frame.Raw);
+        }
+
+        private Task SendUnknownFrameTypeAsync(int streamId)
+        {
+            var frame = new Http2Frame();
+            frame.StreamId = streamId;
+            frame.Type = (Http2FrameType)42;
+            frame.Length = 0;
             return SendAsync(frame.Raw);
         }
 
