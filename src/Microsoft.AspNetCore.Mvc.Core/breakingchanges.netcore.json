@@ -1,7 +1,2 @@
 [
-    {
-      "TypeId": "public class Microsoft.AspNetCore.Mvc.RedirectToPageResult : Microsoft.AspNetCore.Mvc.ActionResult, Microsoft.AspNetCore.Mvc.ViewFeatures.IKeepTempDataResult",
-      "MemberId": "public override System.Void ExecuteResult(Microsoft.AspNetCore.Mvc.ActionContext context)",
-      "Kind": "Removal"
-    }
 ]
