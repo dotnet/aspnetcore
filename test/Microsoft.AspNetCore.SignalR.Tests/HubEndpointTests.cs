@@ -4,11 +4,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using System.Security.Claims;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
@@ -21,7 +23,6 @@ using MsgPack.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
-using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
@@ -1149,6 +1150,32 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task ConnectionClosedIfWritingToTransportFails()
+        {
+            // MessagePack does not support serializing objects or private types (including anonymous types)
+            // and throws. In this test we make sure that this exception closes the connection and bubbles up.
+
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient(false, new MessagePackHubProtocol()))
+            {
+                var transportFeature = new Mock<IConnectionTransportFeature>();
+                transportFeature.SetupGet(f => f.TransportCapabilities).Returns(TransferMode.Binary);
+                client.Connection.Features.Set(transportFeature.Object);
+
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                await client.SendInvocationAsync(nameof(MethodHub.SendAnonymousObject)).OrTimeout();
+
+                await Assert.ThrowsAsync<SerializationException>(() => endPointLifetime.OrTimeout());
+            }
+        }
+
         private static void AssertHubMessage(HubMessage expected, HubMessage actual)
         {
             // We aren't testing InvocationIds here
@@ -1565,6 +1592,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public string ConcatString(byte b, int i, char c, string s)
             {
                 return $"{b}, {i}, {c}, {s}";
+            }
+
+            public Task SendAnonymousObject()
+            {
+                return Clients.Client(Context.ConnectionId).InvokeAsync("Send", new { });
             }
 
             public override Task OnDisconnectedAsync(Exception e)

@@ -76,19 +76,26 @@ namespace Microsoft.AspNetCore.SignalR
             var protocolReaderWriter = connectionContext.ProtocolReaderWriter;
             async Task WriteToTransport()
             {
-                while (await output.In.WaitToReadAsync())
+                try
                 {
-                    while (output.In.TryRead(out var hubMessage))
+                    while (await output.In.WaitToReadAsync())
                     {
-                        var buffer = protocolReaderWriter.WriteMessage(hubMessage);
-                        while (await connection.Transport.Out.WaitToWriteAsync())
+                        while (output.In.TryRead(out var hubMessage))
                         {
-                            if (connection.Transport.Out.TryWrite(buffer))
+                            var buffer = protocolReaderWriter.WriteMessage(hubMessage);
+                            while (await connection.Transport.Out.WaitToWriteAsync())
                             {
-                                break;
+                                if (connection.Transport.Out.TryWrite(buffer))
+                                {
+                                    break;
+                                }
                             }
                         }
                     }
+                }
+                catch (Exception ex)
+                {
+                    connectionContext.Abort(ex);
                 }
             }
 
@@ -244,7 +251,7 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task DispatchMessagesAsync(HubConnectionContext connection)
         {
-            // Since we dispatch multiple hub invocations in parallel, we need a way to communicate failure back to the main processing loop. 
+            // Since we dispatch multiple hub invocations in parallel, we need a way to communicate failure back to the main processing loop.
             // This is done by aborting the connection.
 
             try
