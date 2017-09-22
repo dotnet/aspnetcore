@@ -425,7 +425,7 @@ namespace Microsoft.AspNetCore.Mvc
                         new Type[]
                         {
                             typeof(DefaultApiDescriptionProvider),
-                            typeof(ProblemDetailsApiDescriptionProvider),
+                            typeof(ApiControllerApiDescriptionProvider),
                             typeof(JsonPatchOperationsArrayProvider),
                         }
                     },

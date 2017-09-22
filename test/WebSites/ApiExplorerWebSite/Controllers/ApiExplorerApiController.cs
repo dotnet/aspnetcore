@@ -5,9 +5,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ApiExplorerWebSite
 {
-    [Route("ApiExplorerProblemDetails/[action]")]
-    [ProblemDetails]
-    public class ApiExplorerProblemDetailsController : Controller
+    [Route("ApiExplorerApiController/[action]")]
+    [ApiController]
+    public class ApiExplorerApiController : Controller
     {
         public IActionResult ActionWithoutParameters() => Ok();
 

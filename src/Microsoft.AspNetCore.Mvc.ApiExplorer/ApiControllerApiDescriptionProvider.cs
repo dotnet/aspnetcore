@@ -5,15 +5,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 {
-    public class ProblemDetailsApiDescriptionProvider : IApiDescriptionProvider
+    public class ApiControllerApiDescriptionProvider : IApiDescriptionProvider
     {
         private readonly IModelMetadataProvider _modelMetadaProvider;
 
-        public ProblemDetailsApiDescriptionProvider(IModelMetadataProvider modelMetadataProvider)
+        public ApiControllerApiDescriptionProvider(IModelMetadataProvider modelMetadataProvider)
         {
             _modelMetadaProvider = modelMetadataProvider;
         }
@@ -31,7 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
         {
             foreach (var apiDescription in context.Results)
             {
-                if (!apiDescription.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is ProblemDetailsAttribute))
+                if (!apiDescription.ActionDescriptor.FilterDescriptors.Any(f => f.Filter is IApiBehaviorMetadata))
                 {
                     continue;
                 }

@@ -1069,7 +1069,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ProblemDetails_AddsProblemAsDefaultErrorResult()
         {
             // Act
-            var body = await Client.GetStringAsync("ApiExplorerProblemDetails/ActionWithoutParameters");
+            var body = await Client.GetStringAsync("ApiExplorerApiController/ActionWithoutParameters");
             var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
 
             // Assert
@@ -1087,7 +1087,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task ProblemDetails_AddsProblemAsErrorResultForBadResult_WhenActionHasParameters()
         {
             // Act
-            var body = await Client.GetStringAsync("ApiExplorerProblemDetails/ActionWithSomeParameters");
+            var body = await Client.GetStringAsync("ApiExplorerApiController/ActionWithSomeParameters");
             var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
 
             // Assert
@@ -1108,8 +1108,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Theory]
-        [InlineData("ApiExplorerProblemDetails/ActionWithIdParameter")]
-        [InlineData("ApiExplorerProblemDetails/ActionWithIdSuffixParameter")]
+        [InlineData("ApiExplorerApiController/ActionWithIdParameter")]
+        [InlineData("ApiExplorerApiController/ActionWithIdSuffixParameter")]
         public async Task ProblemDetails_AddsProblemAsErrorResultForNotFoundResult_WhenActionHasAnIdParameters(string url)
         {
             // Act

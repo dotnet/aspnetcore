@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddEnumerable(
                 ServiceDescriptor.Transient<IApiDescriptionProvider, DefaultApiDescriptionProvider>());
             services.TryAddEnumerable(
-                ServiceDescriptor.Transient<IApiDescriptionProvider, ProblemDetailsApiDescriptionProvider>());
+                ServiceDescriptor.Transient<IApiDescriptionProvider, ApiControllerApiDescriptionProvider>());
         }
     }
 }
