@@ -39,52 +39,59 @@ namespace Microsoft.CodeAnalysis.Razor
 
             var simulatedChange = new SourceChange(previousLineEndIndex, 0, string.Empty);
             var owningSpan = LocateOwner(syntaxTree.Root, simulatedChange);
+            if (owningSpan.Kind == SpanKindInternal.Code)
+            {
+                // Example,
+                // @{\n
+                //   ^  - The newline here is a code span and we should just let the default c# editor take care of indentation.
+
+                return null;
+            }
 
             int? desiredIndentation = null;
 
-            if (owningSpan.Kind != SpanKindInternal.Code)
+            SyntaxTreeNode owningChild = owningSpan;
+            while ((owningChild.Parent != null) && !desiredIndentation.HasValue)
             {
-                SyntaxTreeNode owningChild = owningSpan;
-                while ((owningChild.Parent != null) && !desiredIndentation.HasValue)
+                var owningParent = owningChild.Parent;
+                var children = new List<SyntaxTreeNode>(owningParent.Children);
+                for (var i = 0; i < children.Count; i++)
                 {
-                    Block owningParent = owningChild.Parent;
-                    List<SyntaxTreeNode> children = new List<SyntaxTreeNode>(owningParent.Children);
-                    for (int i = 0; i < children.Count; i++)
+                    var currentChild = children[i];
+                    if (!currentChild.IsBlock)
                     {
-                        SyntaxTreeNode curChild = children[i];
-                        if (!curChild.IsBlock)
+                        var currentSpan = currentChild as Span;
+                        if (currentSpan.Symbols.Count == 1 &&
+                            currentSpan.Symbols[0] is CSharpSymbol symbol &&
+                            symbol.Type == CSharpSymbolType.LeftBrace)
                         {
-                            Span curSpan = curChild as Span;
-                            if (curSpan.Kind == SpanKindInternal.MetaCode)
+                            var extraIndent = 0;
+
+                            // Dev11 337312: Only indent one level deeper if the item after the open curly brace is a markup block
+                            if (i < children.Count - 1)
                             {
-                                var extraIndent = 0;
-
-                                // Dev11 337312: Only indent one level deeper if the item after the metacode is a markup block
-                                if (i < children.Count - 1)
+                                var nextChild = children[i + 1];
+                                if (nextChild.IsBlock && ((nextChild as Block).Type == BlockKindInternal.Markup))
                                 {
-                                    SyntaxTreeNode nextChild = children[i + 1];
-                                    if (nextChild.IsBlock && ((nextChild as Block).Type == BlockKindInternal.Markup))
-                                    {
-                                        extraIndent = indentSize;
-                                    }
+                                    extraIndent = indentSize;
                                 }
-
-                                // We can't rely on the syntax trees representation of the source document because partial parses may have mutated
-                                // the underlying SyntaxTree text buffer. Because of this, if we want to provide accurate indentations we need to
-                                // operate on the current line representation as indicated by the provider.
-                                var line = getLineContent(curSpan.Start.LineIndex);
-                                desiredIndentation = GetIndentLevelOfLine(line, tabSize) + indentSize;
                             }
-                        }
 
-                        if (curChild == owningChild)
-                        {
-                            break;
+                            // We can't rely on the syntax trees representation of the source document because partial parses may have mutated
+                            // the underlying SyntaxTree text buffer. Because of this, if we want to provide accurate indentations we need to
+                            // operate on the current line representation as indicated by the provider.
+                            var line = getLineContent(currentSpan.Start.LineIndex);
+                            desiredIndentation = GetIndentLevelOfLine(line, tabSize) + indentSize;
                         }
                     }
 
-                    owningChild = owningParent;
+                    if (currentChild == owningChild)
+                    {
+                        break;
+                    }
                 }
+
+                owningChild = owningParent;
             }
 
             return desiredIndentation;
@@ -94,7 +101,7 @@ namespace Microsoft.CodeAnalysis.Razor
         {
             // Ask each child recursively
             Span owner = null;
-            foreach (SyntaxTreeNode element in root.Children)
+            foreach (var element in root.Children)
             {
                 if (element.Start.AbsoluteIndex > change.Span.AbsoluteIndex)
                 {
@@ -102,7 +109,7 @@ namespace Microsoft.CodeAnalysis.Razor
                     break;
                 }
 
-                int elementLen = element.Length;
+                var elementLen = element.Length;
                 if (element.Start.AbsoluteIndex + elementLen < change.Span.AbsoluteIndex)
                 {
                     // not far enough
@@ -111,14 +118,14 @@ namespace Microsoft.CodeAnalysis.Razor
 
                 if (element.IsBlock)
                 {
-                    Block block = element as Block;
+                    var block = element as Block;
 
                     if (element.Start.AbsoluteIndex + elementLen == change.Span.AbsoluteIndex)
                     {
-                        Span lastDescendant = block.FindLastDescendentSpan();
+                        var lastDescendant = block.FindLastDescendentSpan();
                         if ((lastDescendant == null) && (block is TagHelperBlock))
                         {
-                            TagHelperBlock tagHelperBlock = (TagHelperBlock)block;
+                            var tagHelperBlock = (TagHelperBlock)block;
                             if (tagHelperBlock.SourceEndTag != null)
                             {
                                 lastDescendant = tagHelperBlock.SourceEndTag.FindLastDescendentSpan();
@@ -157,7 +164,7 @@ namespace Microsoft.CodeAnalysis.Razor
                 }
                 else
                 {
-                    Span span = element as Span;
+                    var span = element as Span;
                     if (span.EditHandler.OwnsChange(span, change))
                     {
                         owner = span;
@@ -168,11 +175,10 @@ namespace Microsoft.CodeAnalysis.Razor
 
             if (owner == null)
             {
-                TagHelperBlock tagHelperNode = root as TagHelperBlock;
-                if (tagHelperNode != null)
+                if (root is TagHelperBlock tagHelperNode)
                 {
-                    Block sourceStartTag = tagHelperNode.SourceStartTag;
-                    Block sourceEndTag = tagHelperNode.SourceEndTag;
+                    var sourceStartTag = tagHelperNode.SourceStartTag;
+                    var sourceEndTag = tagHelperNode.SourceEndTag;
                     if ((sourceStartTag.Start.AbsoluteIndex <= change.Span.AbsoluteIndex) &&
                         (sourceStartTag.Start.AbsoluteIndex + sourceStartTag.Length >= change.Span.AbsoluteIndex))
                     {
