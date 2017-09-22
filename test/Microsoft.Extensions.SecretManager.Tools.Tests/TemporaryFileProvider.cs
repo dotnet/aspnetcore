@@ -5,7 +5,7 @@ using System;
 using System.IO;
 using System.Text;
 
-namespace Microsoft.Extensions.SecretsManager.Tools.Tests
+namespace Microsoft.Extensions.SecretManager.Tools.Tests
 {
     internal class TemporaryFileProvider : IDisposable
     {

@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Tools.Internal;
@@ -14,19 +15,20 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
     {
         private const string DefaultConfig = "Debug";
         private readonly IReporter _reporter;
+        private readonly string _targetsFile;
         private readonly string _workingDirectory;
 
         public ProjectIdResolver(IReporter reporter, string workingDirectory)
         {
             _workingDirectory = workingDirectory;
             _reporter = reporter;
+            _targetsFile = FindTargetsFile();
         }
 
         public string Resolve(string project, string configuration)
         {
             var finder = new MsBuildProjectFinder(_workingDirectory);
             var projectFile = finder.FindMsBuildProject(project);
-            EnsureProjectExtensionTargetsExist(projectFile);
 
             _reporter.Verbose(Resources.FormatMessage_Project_File_Path(projectFile));
 
@@ -42,9 +44,11 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
                     "msbuild",
                     projectFile,
                     "/nologo",
-                    "/t:_ExtractUserSecretsMetadata", // defined in ProjectIdResolverTargets.xml
-                    $"/p:_UserSecretsMetadataFile={outputFile}",
-                    $"/p:Configuration={configuration}"
+                    "/t:_ExtractUserSecretsMetadata", // defined in SecretManager.targets
+                    "/p:_UserSecretsMetadataFile=" + outputFile,
+                    "/p:Configuration=" + configuration,
+                    "/p:CustomAfterMicrosoftCommonTargets=" + _targetsFile,
+                    "/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + _targetsFile,
                 };
                 var psi = new ProcessStartInfo
                 {
@@ -82,25 +86,25 @@ namespace Microsoft.Extensions.SecretManager.Tools.Internal
             }
         }
 
-        private void EnsureProjectExtensionTargetsExist(string projectFile)
+        private string FindTargetsFile()
         {
-            // relies on MSBuildProjectExtensionsPath and Microsoft.Common.targets to import this file
-            // into the target project
-            var projectExtensionsPath = Path.Combine(
-                Path.GetDirectoryName(projectFile),
-                "obj",
-                $"{Path.GetFileName(projectFile)}.usersecrets.targets");
-
-            Directory.CreateDirectory(Path.GetDirectoryName(projectExtensionsPath));
-
-            // should overwrite the file always. Hypothetically, another version of the user-secrets tool
-            // could have already put a file here. We want to ensure the target file matches the currently
-            // running tool
-            using (var resource = GetType().GetTypeInfo().Assembly.GetManifestResourceStream("ProjectIdResolverTargets.xml"))
-            using (var stream = new FileStream(projectExtensionsPath, FileMode.Create))
+            var assemblyDir = Path.GetDirectoryName(typeof(ProjectIdResolver).Assembly.Location);
+            var searchPaths = new[]
             {
-                resource.CopyTo(stream);
+                AppContext.BaseDirectory,
+                assemblyDir,
+                Path.Combine(assemblyDir, "../../toolassets"), // from nuget cache
+                Path.Combine(assemblyDir, "toolassets"), // from local build
+                Path.Combine(AppContext.BaseDirectory, "../../toolassets"), // relative to packaged deps.json
+            };
+
+            var targetPath = searchPaths.Select(p => Path.Combine(p, "SecretManager.targets")).FirstOrDefault(File.Exists);
+            if (targetPath == null)
+            {
+                _reporter.Error("Fatal error: could not find SecretManager.targets");
+                return null;
             }
+            return targetPath;
         }
 
         private static void TryDelete(string file)
