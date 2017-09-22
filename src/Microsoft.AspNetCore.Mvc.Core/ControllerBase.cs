@@ -1791,6 +1791,32 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         /// <summary>
+        /// Creates an <see cref="ConflictResult"/> that produces a <see cref="StatusCodes.Status409Conflict"/> response.
+        /// </summary>
+        /// <returns>The created <see cref="ConflictResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ConflictResult Conflict()
+            => new ConflictResult();
+
+        /// <summary>
+        /// Creates an <see cref="ConflictObjectResult"/> that produces a <see cref="StatusCodes.Status409Conflict"/> response.
+        /// </summary>
+        /// <param name="error">Contains errors to be returned to the client.</param>
+        /// <returns>The created <see cref="ConflictObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ConflictObjectResult Conflict(object error)
+            => new ConflictObjectResult(error);
+
+        /// <summary>
+        /// Creates an <see cref="ConflictObjectResult"/> that produces a <see cref="StatusCodes.Status409Conflict"/> response.
+        /// </summary>
+        /// <param name="modelState">The model state dictionary containing errors to be returned to the client.</param>
+        /// <returns>The created <see cref="ConflictObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual ConflictObjectResult Conflict(ModelStateDictionary modelState)
+            => new ConflictObjectResult(modelState);
+
+        /// <summary>
         /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
