@@ -37,6 +37,40 @@ describe('hubConnection', function () {
                 });
             });
 
+            it('can invoke server method structural object and receive structural result', function (done) {
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
+
+                hubConnection.on('CustomObject', function (customObject) {
+                    // messageapack does not have a setting to use camelCasing
+                    if (protocol.name == 'messagepack') {
+                        expect(customObject.Name).toBe('test');
+                        expect(customObject.Value).toBe(42);
+                    }
+                    else {
+                        expect(customObject.name).toBe('test');
+                        expect(customObject.value).toBe(42);
+                    }
+                    hubConnection.stop();
+                });
+
+                hubConnection.onclose(function (error) {
+                    expect(error).toBe(undefined);
+                    done();
+                });
+
+                hubConnection.start().then(function () {
+                    hubConnection.send('SendCustomObject', { Name: "test", Value: 42});
+                }).catch(function (e) {
+                    fail(e);
+                    done();
+                });
+            });
+
             it('can stream server method and receive result', function (done) {
 
                 var options = {
