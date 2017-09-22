@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             foreach (var entry in _options.Dispatchers)
             {
-                await entry(httpContext);
+                await entry.Dispatcher(httpContext);
                 if (feature.Endpoint != null || feature.RequestDelegate != null)
                 {
                     _logger.LogInformation("Matched endpoint {Endpoint}", feature.Endpoint.DisplayName);

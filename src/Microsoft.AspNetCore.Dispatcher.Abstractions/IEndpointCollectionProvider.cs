@@ -2,15 +2,14 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    [DebuggerDisplay("{DisplayName,nq}")]
-    public abstract class Endpoint
+    public interface IEndpointCollectionProvider
     {
-        public abstract string DisplayName { get; }
+        IReadOnlyList<Endpoint> Endpoints { get; }
 
-        public abstract IReadOnlyList<object> Metadata { get; }
+        IChangeToken ChangeToken { get; }
     }
 }

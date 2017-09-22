@@ -6,13 +6,29 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public abstract class DispatcherBase
+    public abstract class DispatcherBase : IAddressCollectionProvider, IEndpointCollectionProvider
     {
-        private IList<Endpoint> _endpoints;
-        private IList<EndpointSelector> _endpointSelectors;
+        private List<Address> _addresses;
+        private List<Endpoint> _endpoints;
+        private List<EndpointSelector> _endpointSelectors;
+
+        public virtual IList<Address> Addresses
+        {
+            get
+            {
+                if (_addresses == null)
+                {
+                    _addresses = new List<Address>();
+                }
+
+                return _addresses;
+            }
+        }
 
         public virtual IList<Endpoint> Endpoints
         {
@@ -39,6 +55,12 @@ namespace Microsoft.AspNetCore.Dispatcher
                 return _endpointSelectors;
             }
         }
+
+        public IChangeToken ChangeToken => NullChangeToken.Singleton;
+
+        IReadOnlyList<Address> IAddressCollectionProvider.Addresses => _addresses;
+
+        IReadOnlyList<Endpoint> IEndpointCollectionProvider.Endpoints => _endpoints;
 
         public virtual async Task InvokeAsync(HttpContext httpContext)
         {

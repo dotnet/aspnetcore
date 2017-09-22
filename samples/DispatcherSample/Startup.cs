@@ -30,6 +30,13 @@ namespace DispatcherSample
             {
                 options.Dispatchers.Add(new RouteTemplateDispatcher("{controller=Home}/{action=Index}/{id?}", ConstraintResolver)
                 {
+                    Addresses =
+                    {
+                        new DispatcherValueAddress(new { controller = "Home", action = "Index", }, new object[]{ new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, "Home:Index()"),
+                        new DispatcherValueAddress(new { controller = "Home", action = "About", }, new object[]{ new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, "Home:About()"),
+                        new DispatcherValueAddress(new { controller = "Admin", action = "Index", }, new object[]{ new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, "Admin:Index()"),
+                        new DispatcherValueAddress(new { controller = "Admin", action = "Users", }, new object[]{ new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, "Admin:GetUsers()/Admin:EditUsers()"),
+                    },
                     Endpoints =
                     {
                         new SimpleEndpoint(Home_Index, Array.Empty<object>(), new { controller = "Home", action = "Index", }, "Home:Index()"),
@@ -43,14 +50,14 @@ namespace DispatcherSample
                         new DispatcherValueEndpointSelector(),
                         new HttpMethodEndpointSelector(),
                     }
-                }.InvokeAsync);
+                });
 
                 options.HandlerFactories.Add((endpoint) => (endpoint as SimpleEndpoint)?.HandlerFactory);
             });
 
-            services.AddSingleton<UrlGenerator>();
-            services.AddSingleton<RouteValueAddressTable>();
             services.AddDispatcher();
+            services.AddRouting();
+            services.AddSingleton<RouteTemplateUrlGenerator>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILogger<Startup> logger)
@@ -85,12 +92,15 @@ namespace DispatcherSample
 
         public static Task Home_Index(HttpContext httpContext)
         {
-            var urlGenerator = httpContext.RequestServices.GetService<UrlGenerator>();
-            var url = urlGenerator.GenerateURL(new RouteValueDictionary(new { Movie = "The Lion King", Character = "Mufasa" }), httpContext);
+            var url = httpContext.RequestServices.GetService<RouteTemplateUrlGenerator>();
             return httpContext.Response.WriteAsync(
                 $"<html>" +
                 $"<body>" +
-                $"<p>Generated url: {url}</p>" +
+                $"<h1>Some links you can visit</h1>" +
+                $"<p><a href=\"{url.GenerateUrl(httpContext, new { controller = "Home", action = "Index", })}\">Home:Index()</a></p>" +
+                $"<p><a href=\"{url.GenerateUrl(httpContext, new { controller = "Home", action = "About", })}\">Home:About()</a></p>" +
+                $"<p><a href=\"{url.GenerateUrl(httpContext, new { controller = "Admin", action = "Index", })}\">Admin:Index()</a></p>" +
+                $"<p><a href=\"{url.GenerateUrl(httpContext, new { controller = "Admin", action = "Users", })}\">Admin:GetUsers()/Admin:EditUsers()</a></p>" +
                 $"</body>" +
                 $"</html>");
         }

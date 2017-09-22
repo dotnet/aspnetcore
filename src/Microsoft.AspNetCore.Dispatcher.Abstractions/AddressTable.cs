@@ -2,15 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
-using System.Diagnostics;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    [DebuggerDisplay("{DisplayName,nq}")]
-    public abstract class Endpoint
+    public abstract class AddressTable
     {
-        public abstract string DisplayName { get; }
-
-        public abstract IReadOnlyList<object> Metadata { get; }
+        public abstract IReadOnlyList<IReadOnlyList<Address>> AddressGroups { get; }
     }
 }
