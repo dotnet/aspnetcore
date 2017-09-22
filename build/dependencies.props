@@ -15,6 +15,17 @@
     </ExternalDependency>
   </ItemDefinitionGroup>
 
+  <!-- .NET Core feed -->
+  <PropertyGroup>
+    <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</DotNetCoreFeed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ExternalDependency Include="Microsoft.NETCore.App" Version="2.0.2-servicing-25715-02" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.NETCore.DotNetHostPolicy" Version="2.0.2-servicing-25715-02" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.NETCore.DotNetHostResolver" Version="2.0.2-servicing-25715-02" Source="$(DotNetCoreFeed)" Mirror="true" />
+  </ItemGroup>
+
   <!-- ASP.NET Core Tools feed -->
   <PropertyGroup>
     <RoslynFeed>https://dotnet.myget.org/F/roslyn/api/v3/index.json</RoslynFeed>
@@ -119,7 +130,6 @@
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="1.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Win32.Registry" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Moq" Version="4.7.49" Source="$(DefaultNuGetFeed)" Private="true"/>
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="1.0.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Newtonsoft.Json" Version="9.0.1" Source="$(DefaultNuGetFeed)" Private="true">
