@@ -1990,6 +1990,52 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Empty(errors);
         }
 
+        [Fact]
+        public void UnprocessableEntity_SetsStatusCode()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.UnprocessableEntity();
+
+            // Assert
+            Assert.IsType<UnprocessableEntityResult>(result);
+            Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+        }
+
+        [Fact]
+        public void UnprocessableEntity_SetsStatusCodeAndValue_Object()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var obj = new object();
+
+            // Act
+            var result = controller.UnprocessableEntity(obj);
+
+            // Assert
+            Assert.IsType<UnprocessableEntityObjectResult>(result);
+            Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+            Assert.Equal(obj, result.Value);
+        }
+
+        [Fact]
+        public void UnprocessableEntity_SetsStatusCodeAndValue_ModelState()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.UnprocessableEntity(new ModelStateDictionary());
+
+            // Assert
+            Assert.IsType<UnprocessableEntityObjectResult>(result);
+            Assert.Equal(StatusCodes.Status422UnprocessableEntity, result.StatusCode);
+            var errors = Assert.IsType<SerializableError>(result.Value);
+            Assert.Empty(errors);
+        }
+
         [Theory]
         [MemberData(nameof(PublicNormalMethodsFromControllerBase))]
         public void NonActionAttribute_IsOnEveryPublicNormalMethodFromControllerBase(MethodInfo method)

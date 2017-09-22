@@ -1400,6 +1400,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
+        /// <param name="error">An error object to be returned to the client.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
         public virtual BadRequestObjectResult BadRequest(object error)
@@ -1408,6 +1409,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Creates an <see cref="BadRequestObjectResult"/> that produces a <see cref="StatusCodes.Status400BadRequest"/> response.
         /// </summary>
+        /// <param name="modelState">The model state dictionary containing errors to be returned to the client.</param>
         /// <returns>The created <see cref="BadRequestObjectResult"/> for the response.</returns>
         [NonAction]
         public virtual BadRequestObjectResult BadRequest(ModelStateDictionary modelState)
@@ -1418,6 +1420,43 @@ namespace Microsoft.AspNetCore.Mvc
             }
 
             return new BadRequestObjectResult(modelState);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="UnprocessableEntityResult"/> that produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
+        /// </summary>
+        /// <returns>The created <see cref="UnprocessableEntityResult"/> for the response.</returns>
+        [NonAction]
+        public virtual UnprocessableEntityResult UnprocessableEntity()
+        {
+            return new UnprocessableEntityResult();
+        }
+
+        /// <summary>
+        /// Creates an <see cref="UnprocessableEntityObjectResult"/> that produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
+        /// </summary>
+        /// <param name="error">An error object to be returned to the client.</param>
+        /// <returns>The created <see cref="UnprocessableEntityObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual UnprocessableEntityObjectResult UnprocessableEntity(object error)
+        {
+            return new UnprocessableEntityObjectResult(error);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="UnprocessableEntityObjectResult"/> that produces a <see cref="StatusCodes.Status422UnprocessableEntity"/> response.
+        /// </summary>
+        /// <param name="modelState">The model state dictionary containing errors to be returned to the client.</param>
+        /// <returns>The created <see cref="UnprocessableEntityObjectResult"/> for the response.</returns>
+        [NonAction]
+        public virtual UnprocessableEntityObjectResult UnprocessableEntity(ModelStateDictionary modelState)
+        {
+            if (modelState == null)
+            {
+                throw new ArgumentNullException(nameof(modelState));
+            }
+
+            return new UnprocessableEntityObjectResult(modelState);
         }
 
         /// <summary>
