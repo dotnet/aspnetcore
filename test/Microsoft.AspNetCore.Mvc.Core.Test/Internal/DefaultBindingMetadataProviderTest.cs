@@ -1,6 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
+using System.Reflection;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
@@ -22,7 +24,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                new ModelAttributes(attributes));
+                new ModelAttributes(attributes, null, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -46,7 +48,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                new ModelAttributes(attributes));
+                new ModelAttributes(attributes, null, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -69,7 +71,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                new ModelAttributes(attributes));
+                new ModelAttributes(attributes, null, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                new ModelAttributes(attributes));
+                new ModelAttributes(attributes, null, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -116,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                new ModelAttributes(attributes));
+                new ModelAttributes(attributes, null, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -140,7 +142,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                new ModelAttributes(attributes));
+                new ModelAttributes(attributes, null, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -162,7 +164,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
-                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], propertyAttributes, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -185,7 +187,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
-                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], propertyAttributes, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -208,7 +210,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
-                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], propertyAttributes, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -231,7 +233,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
-                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], propertyAttributes, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -254,7 +256,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
-                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], propertyAttributes, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -264,6 +266,147 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             Assert.True(context.BindingMetadata.IsBindingAllowed);
             Assert.True(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void CreateBindingDetails_FindsBindingBehaviorNever_OnParameter()
+        {
+            // Arrange
+            var parameterAttributes = new object[]
+            {
+                new BindingBehaviorAttribute(BindingBehavior.Never),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
+                new ModelAttributes(null, null, parameterAttributes));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.CreateBindingMetadata(context);
+
+            // Assert
+            Assert.False(context.BindingMetadata.IsBindingAllowed);
+            Assert.False(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void CreateBindingDetails_FindsBindNever_OnParameter()
+        {
+            // Arrange
+            var parameterAttributes = new object[]
+            {
+                new BindNeverAttribute(),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
+                new ModelAttributes(null, null, parameterAttributes));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.CreateBindingMetadata(context);
+
+            // Assert
+            Assert.False(context.BindingMetadata.IsBindingAllowed);
+            Assert.False(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void CreateBindingDetails_FindsBindingBehaviorOptional_OnParameter()
+        {
+            // Arrange
+            var parameterAttributes = new object[]
+            {
+                new BindingBehaviorAttribute(BindingBehavior.Optional),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
+                new ModelAttributes(null, null, parameterAttributes));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.CreateBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.False(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void CreateBindingDetails_FindsBindingBehaviorRequired_OnParameter()
+        {
+            // Arrange
+            var parameterAttributes = new object[]
+            {
+                new BindingBehaviorAttribute(BindingBehavior.Required),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
+                new ModelAttributes(null, null, parameterAttributes));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.CreateBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.True(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void CreateBindingDetails_FindsBindRequired_OnParameter()
+        {
+            // Arrange
+            var parameterAttributes = new object[]
+            {
+                new BindRequiredAttribute(),
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
+                new ModelAttributes(null, null, parameterAttributes));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.CreateBindingMetadata(context);
+
+            // Assert
+            Assert.True(context.BindingMetadata.IsBindingAllowed);
+            Assert.True(context.BindingMetadata.IsBindingRequired);
+        }
+
+        [Fact]
+        public void CreateBindingDetails_FindsCustomAttributes_OnParameter()
+        {
+            // Arrange
+            var parameterAttributes = new object[]
+            {
+                new CustomAttribute { Identifier = "Instance1" },
+                new CustomAttribute { Identifier = "Instance2" }
+            };
+
+            var context = new BindingMetadataProviderContext(
+                ModelMetadataIdentity.ForParameter(ParameterInfos.SampleParameterInfo),
+                new ModelAttributes(null, null, parameterAttributes));
+
+            var provider = new DefaultBindingMetadataProvider();
+
+            // Act
+            provider.CreateBindingMetadata(context);
+
+            // Assert
+            Assert.Collection(context.Attributes,
+                a => Assert.Equal("Instance1", ((CustomAttribute)a).Identifier),
+                a => Assert.Equal("Instance2", ((CustomAttribute)a).Identifier));
+            Assert.Equal(2, context.ParameterAttributes.Count);
         }
 
         // These attributes have conflicting behavior - the 'required' behavior should be used because
@@ -280,7 +423,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
-                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], propertyAttributes, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -298,7 +441,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindRequiredOnClass)),
-                new ModelAttributes(propertyAttributes: new object[0], typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], new object[0], null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -316,7 +459,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindNeverOnClass)),
-                new ModelAttributes(propertyAttributes: new object[0], typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], new object[0], null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -334,7 +477,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(InheritedBindNeverOnClass)),
-                new ModelAttributes(propertyAttributes: new object[0], typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], new object[0], null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -357,7 +500,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindNeverOnClass)),
-                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], propertyAttributes, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -380,7 +523,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindNeverOnClass)),
-                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], propertyAttributes, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -403,7 +546,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(InheritedBindNeverOnClass)),
-                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], propertyAttributes, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -426,7 +569,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindRequiredOnClass)),
-                new ModelAttributes(propertyAttributes, typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], propertyAttributes, null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -445,7 +588,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(string), "Property", typeof(BindRequiredOverridesInheritedBindNever)),
-                new ModelAttributes(propertyAttributes: new object[0], typeAttributes: new object[0]));
+                new ModelAttributes(new object[0], new object[0], null));
 
             var provider = new DefaultBindingMetadataProvider();
 
@@ -470,7 +613,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForType(typeof(string)),
-                new ModelAttributes(attributes));
+                new ModelAttributes(attributes, null, null));
 
             // These values shouldn't be changed since this is a Type-Metadata
             context.BindingMetadata.IsBindingAllowed = initialValue;
@@ -501,7 +644,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             var context = new BindingMetadataProviderContext(
                 ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string)),
-                new ModelAttributes(propertyAttributes: new object[0], typeAttributes: typeAttributes));
+                new ModelAttributes(typeAttributes, new object[0], null));
 
             // These values shouldn't be changed since this is a Type-Metadata
             context.BindingMetadata.IsBindingAllowed = initialValue;
@@ -544,6 +687,23 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 BindingSource = bindingSource;
             }
+        }
+
+        private class ParameterInfos
+        {
+            public void Method(object param1)
+            {
+            }
+
+            public static ParameterInfo SampleParameterInfo
+                = typeof(ParameterInfos)
+                    .GetMethod(nameof(ParameterInfos.Method))
+                    .GetParameters()[0];
+        }
+        
+        private class CustomAttribute : Attribute
+        {
+            public string Identifier { get; set; }
         }
     }
 }

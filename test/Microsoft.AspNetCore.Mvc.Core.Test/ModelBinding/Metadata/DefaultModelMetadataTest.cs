@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 Enumerable.Empty<IMetadataDetailsProvider>());
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             // Act
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 Enumerable.Empty<IMetadataDetailsProvider>());
 
             var key = ModelMetadataIdentity.ForType(typeof(Exception));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             // Act
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForProperty(typeof(string), "Message", typeof(Exception));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], new object[0], null));
 
             // Act
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(modelType);
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(modelType);
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -188,7 +188,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(modelType);
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
             cache.BindingMetadata = new BindingMetadata()
             {
                 IsBindingAllowed = false, // Will be ignored.
@@ -213,7 +213,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(modelType);
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
             cache.BindingMetadata = new BindingMetadata()
             {
                 IsBindingRequired = true, // Will be ignored.
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(modelType);
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -260,7 +260,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(modelType);
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -285,13 +285,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                     detailsProvider,
                     new DefaultMetadataDetails(
                         ModelMetadataIdentity.ForProperty(typeof(int), "Prop1", typeof(string)),
-                        attributes: new ModelAttributes(new object[0], new object[0]))),
+                        attributes: new ModelAttributes(new object[0], new object[0], null))),
                 new DefaultModelMetadata(
                     provider.Object,
                     detailsProvider,
                     new DefaultMetadataDetails(
                         ModelMetadataIdentity.ForProperty(typeof(int), "Prop2", typeof(string)),
-                        attributes: new ModelAttributes(new object[0], new object[0]))),
+                        attributes: new ModelAttributes(new object[0], new object[0], null))),
             };
 
             provider
@@ -299,7 +299,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 .Returns(expectedProperties);
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider.Object, detailsProvider, cache);
 
@@ -361,7 +361,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                     detailsProvider,
                     new DefaultMetadataDetails(
                         ModelMetadataIdentity.ForProperty(typeof(int), originalName, typeof(string)),
-                        attributes: new ModelAttributes(new object[0], new object[0]))));
+                        attributes: new ModelAttributes(new object[0], new object[0], null))));
             }
 
             provider
@@ -369,7 +369,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 .Returns(expectedProperties);
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider.Object, detailsProvider, cache);
 
@@ -461,7 +461,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             {
                 var propertyCache = new DefaultMetadataDetails(
                         ModelMetadataIdentity.ForProperty(typeof(int), kvp.Key, typeof(string)),
-                        attributes: new ModelAttributes(new object[0], new object[0]));
+                        attributes: new ModelAttributes(new object[0], new object[0], null));
 
                 propertyCache.DisplayMetadata = new DisplayMetadata();
                 propertyCache.DisplayMetadata.Order = kvp.Value;
@@ -477,7 +477,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 .Returns(expectedProperties);
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider.Object, detailsProvider, cache);
 
@@ -497,7 +497,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -518,7 +518,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var detailsProvider = new EmptyCompositeMetadataDetailsProvider();
 
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -539,7 +539,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(int[]));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
             cache.BindingMetadata = new BindingMetadata()
             {
                 IsReadOnly = true, // Will be ignored.
@@ -562,7 +562,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(TypeWithProperties));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -581,7 +581,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(TypeWithProperties));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -600,7 +600,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(TypeWithProperties));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -624,7 +624,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(modelType);
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -651,7 +651,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(TypeWithProperties));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
 
             var metadata = new DefaultModelMetadata(provider, detailsProvider, cache);
 
@@ -683,7 +683,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(int));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
             cache.ValidationMetadata = new ValidationMetadata
             {
                 PropertyValidationFilter = value,
@@ -706,7 +706,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(int));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
             cache.ValidationMetadata = new ValidationMetadata()
             {
                 ValidateChildren = true,
@@ -729,7 +729,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var provider = new DefaultModelMetadataProvider(detailsProvider);
 
             var key = ModelMetadataIdentity.ForType(typeof(XmlDocument));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
             cache.ValidationMetadata = new ValidationMetadata()
             {
                 ValidateChildren = false,
@@ -750,7 +750,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             // Arrange
             var detailsProvider = new Mock<ICompositeMetadataDetailsProvider>();
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
             var metadataProvider = new Mock<IModelMetadataProvider>();
             metadataProvider
                 .Setup(mp => mp.GetMetadataForType(typeof(string)))
@@ -770,7 +770,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             // Arrange
             var detailsProvider = new Mock<ICompositeMetadataDetailsProvider>();
             var key = ModelMetadataIdentity.ForType(typeof(string));
-            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0]));
+            var cache = new DefaultMetadataDetails(key, new ModelAttributes(new object[0], null, null));
             var metadataProvider = new Mock<IModelMetadataProvider>();
             metadataProvider
                 .Setup(mp => mp.GetMetadataForProperties(typeof(Exception)))

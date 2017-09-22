@@ -196,6 +196,54 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             Assert.Empty(result);
         }
 
+        [Fact]
+        public void Validate_RequiredButNullAtTopLevel_Invalid()
+        {
+            // Arrange
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(string), "Length");
+            var validator = new DataAnnotationsModelValidator(
+                new ValidationAttributeAdapterProvider(),
+                new RequiredAttribute(),
+                stringLocalizer: null);
+            var validationContext = new ModelValidationContext(
+                actionContext: new ActionContext(),
+                modelMetadata: metadata,
+                metadataProvider: _metadataProvider,
+                container: null,
+                model: null);
+
+            // Act
+            var result = validator.Validate(validationContext);
+
+            // Assert
+            var validationResult = result.Single();
+            Assert.Empty(validationResult.MemberName);
+            Assert.Equal(new RequiredAttribute().FormatErrorMessage("Length"), validationResult.Message);
+        }
+
+        [Fact]
+        public void Validate_RequiredAndNotNullAtTopLevel_Valid()
+        {
+            // Arrange
+            var metadata = _metadataProvider.GetMetadataForProperty(typeof(string), "Length");
+            var validator = new DataAnnotationsModelValidator(
+                new ValidationAttributeAdapterProvider(),
+                new RequiredAttribute(),
+                stringLocalizer: null);
+            var validationContext = new ModelValidationContext(
+                actionContext: new ActionContext(),
+                modelMetadata: metadata,
+                metadataProvider: _metadataProvider,
+                container: null,
+                model: 123);
+
+            // Act
+            var result = validator.Validate(validationContext);
+
+            // Assert
+            Assert.Empty(result);
+        }
+
         public static TheoryData<string, IEnumerable<string>, IEnumerable<ModelValidationResult>>
             Valdate_ReturnsExpectedResults_Data
         {

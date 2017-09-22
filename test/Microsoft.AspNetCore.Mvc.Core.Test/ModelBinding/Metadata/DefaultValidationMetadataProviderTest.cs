@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { new ValidateNeverAttribute() };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
 
             // Act
             provider.CreateValidationMetadata(context);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { new ValidateNeverAttribute() };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], attributes));
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0], null));
 
             // Act
             provider.CreateValidationMetadata(context);
@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
 
             var attributes = new Attribute[] { new ValidateNeverAttribute() };
             var key = ModelMetadataIdentity.ForType(typeof(ValidateNeverClass));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes));
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, null, null));
 
             // Act
             provider.CreateValidationMetadata(context);
@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 typeof(string),
                 nameof(ValidateNeverClass.ClassName),
                 typeof(ValidateNeverClass));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0]));
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0], null));
 
             // Act
             provider.CreateValidationMetadata(context);
@@ -97,7 +97,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 typeof(string),
                 nameof(ValidateNeverSubclass.SubclassName),
                 typeof(ValidateNeverSubclass));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0]));
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0], null));
 
             // Act
             provider.CreateValidationMetadata(context);
@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var attribute = new TestClientModelValidationAttribute();
             var attributes = new Attribute[] { attribute };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
 
             // Act
             provider.CreateValidationMetadata(context);
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var attribute = new TestModelValidationAttribute();
             var attributes = new Attribute[] { attribute };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
 
             // Act
             provider.CreateValidationMetadata(context);
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
             var attribute = new TestValidationAttribute();
             var attributes = new Attribute[] { attribute };
             var key = ModelMetadataIdentity.ForProperty(typeof(int), "Length", typeof(string));
-            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
+            var context = new ValidationMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
             context.ValidationMetadata.ValidatorMetadata.Add(attribute);
 
             // Act

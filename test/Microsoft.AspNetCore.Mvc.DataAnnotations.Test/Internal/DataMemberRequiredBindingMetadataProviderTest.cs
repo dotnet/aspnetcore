@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 typeof(string),
                 nameof(ClassWithDataMemberIsRequiredTrue.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredTrue));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
 
             // Act
             provider.CreateBindingMetadata(context);
@@ -51,7 +51,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 typeof(string),
                 nameof(ClassWithDataMemberIsRequiredFalse.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredFalse));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 
@@ -76,7 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             };
 
             var key = ModelMetadataIdentity.ForType(typeof(ClassWithDataMemberIsRequiredTrue));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 
@@ -99,7 +99,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 typeof(string),
                 nameof(ClassWithoutAttributes.StringProperty),
                 typeof(ClassWithoutAttributes));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0]));
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0], null));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 
@@ -127,7 +127,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 typeof(string),
                 nameof(ClassWithDataMemberIsRequiredTrueWithoutDataContract.StringProperty),
                 typeof(ClassWithDataMemberIsRequiredTrueWithoutDataContract));
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(attributes, new object[0]));
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], attributes, null));
 
             context.BindingMetadata.IsBindingRequired = initialValue;
 

@@ -105,7 +105,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 new ParameterBinder(
                     modelMetadataProvider,
                     modelBinderFactory,
-                    Mock.Of<IObjectModelValidator>()),
+                    Mock.Of<IModelValidatorProvider>()),
                 modelBinderFactory,
                 modelMetadataProvider,
                 filterProviders,

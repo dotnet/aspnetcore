@@ -18,5 +18,31 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             
             return await parameterBinder.BindModelAsync(context, valueProvider, parameter);
         }
+        public static async Task<ModelBindingResult> BindModelAsync(
+            this ParameterBinder parameterBinder,
+            ParameterDescriptor parameter,
+            ControllerContext context,
+            IModelMetadataProvider modelMetadataProvider,
+            ModelMetadata modelMetadata)
+        {
+            var valueProvider = await CompositeValueProvider.CreateAsync(context);
+
+            var modelBinderFactory = ModelBindingTestHelper.GetModelBinderFactory(modelMetadataProvider);
+
+            var modelBinder = modelBinderFactory.CreateBinder(new ModelBinderFactoryContext
+            {
+                BindingInfo = parameter.BindingInfo,
+                Metadata = modelMetadata,
+                CacheToken = parameter,
+            });
+
+            return await parameterBinder.BindModelAsync(
+                context,
+                modelBinder,
+                valueProvider,
+                parameter,
+                modelMetadata,
+                value: null);
+        }
     }
 }

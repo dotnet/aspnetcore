@@ -15,6 +15,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
     /// </summary>
     public class DataAnnotationsModelValidator : IModelValidator
     {
+        private static readonly object _emptyValidationContextInstance = new object();
         private readonly IStringLocalizer _stringLocalizer;
         private readonly IValidationAttributeAdapterProvider _validationAttributeAdapterProvider;
 
@@ -83,7 +84,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
             var container = validationContext.Container;
 
             var context = new ValidationContext(
-                instance: container ?? validationContext.Model,
+                instance: container ?? validationContext.Model ?? _emptyValidationContextInstance,
                 serviceProvider: validationContext.ActionContext?.HttpContext?.RequestServices,
                 items: null)
             {

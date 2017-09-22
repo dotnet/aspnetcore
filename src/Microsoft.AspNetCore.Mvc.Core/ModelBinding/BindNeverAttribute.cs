@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     /// system excludes that property. When applied to a type, the model binding system excludes all properties that
     /// type defines.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property, AllowMultiple = false, Inherited = true)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
     public sealed class BindNeverAttribute : BindingBehaviorAttribute
     {
         /// <summary>

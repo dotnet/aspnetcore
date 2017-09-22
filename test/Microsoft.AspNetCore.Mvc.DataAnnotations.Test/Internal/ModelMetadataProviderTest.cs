@@ -1066,7 +1066,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 {
                     return new DefaultMetadataDetails(
                         key,
-                        new ModelAttributes(_attributes.Concat(entry.ModelAttributes.TypeAttributes).ToArray()));
+                        new ModelAttributes(_attributes.Concat(entry.ModelAttributes.TypeAttributes).ToArray(), null, null));
                 }
 
                 return entry;
@@ -1079,7 +1079,7 @@ namespace Microsoft.AspNetCore.Mvc.DataAnnotations.Internal
                 {
                     return new DefaultMetadataDetails(
                         e.Key,
-                        new ModelAttributes(_attributes.Concat(e.ModelAttributes.PropertyAttributes), e.ModelAttributes.TypeAttributes));
+                        new ModelAttributes(e.ModelAttributes.TypeAttributes, _attributes.Concat(e.ModelAttributes.PropertyAttributes), null));
                 })
                 .ToArray();
             }

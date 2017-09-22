@@ -13,15 +13,110 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Binders;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
-using Microsoft.AspNetCore.Mvc.RazorPages;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Metadata;
 using Microsoft.AspNetCore.Routing;
 using Moq;
 using Xunit;
+using System.Linq;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
     public class ControllerBinderDelegateProviderTest
     {
+        [Fact]
+        public async Task BindActionArgumentsAsync_DoesNotAddActionArgumentsOrCallBinderOrValidator_IfBindingIsNotAllowed_OnParameter()
+        {
+            // Arrange
+            var actionDescriptor = GetActionDescriptor();
+            actionDescriptor.Parameters.Add(
+                new ControllerParameterDescriptor
+                {
+                    Name = "foo",
+                    ParameterType = typeof(object),
+                    BindingInfo = new BindingInfo(),
+                    ParameterInfo = ParameterInfos.BindNeverParameterInfo
+                });
+
+            var controllerContext = GetControllerContext(actionDescriptor);
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
+
+            var binder = new Mock<IModelBinder>();
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
+                .Verifiable();
+
+            var mockValidator = CreateMockValidator();
+            var factory = GetModelBinderFactory(binder.Object);
+            var controller = new TestController();
+            var parameterBinder = GetParameterBinder(factory);
+
+            // Act
+            var binderDelegate = ControllerBinderDelegateProvider.CreateBinderDelegate(
+                parameterBinder,
+                factory,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                actionDescriptor);
+
+            await binderDelegate(controllerContext, controller, arguments);
+
+            // Assert
+            Assert.Empty(arguments);
+            binder
+                .Verify(o => o.BindModelAsync(
+                    It.IsAny<DefaultModelBindingContext>()),
+                Times.Never());
+            mockValidator
+                .Verify(o => o.Validate(
+                    It.IsAny<ModelValidationContext>()),
+                Times.Never());
+        }
+
+        [Fact]
+        public async Task BindActionArgumentsAsync_DoesNotAddActionArgumentsOrCallBinderOrValidator_IfBindingIsNotAllowed_OnProperty()
+        {
+            // Arrange
+            var actionDescriptor = GetActionDescriptor();
+            actionDescriptor.BoundProperties.Add(
+                new ParameterDescriptor
+                {
+                    Name = nameof(TestController.RequiredButBindNeverProperty),
+                    ParameterType = typeof(object)
+                });
+
+            var controllerContext = GetControllerContext(actionDescriptor);
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
+
+            var binder = new Mock<IModelBinder>();
+            binder
+                .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
+                .Verifiable();
+
+            var mockValidator = CreateMockValidator();
+            var factory = GetModelBinderFactory(binder.Object);
+            var controller = new TestController();
+            var parameterBinder = GetParameterBinder(factory);
+
+            // Act
+            var binderDelegate = ControllerBinderDelegateProvider.CreateBinderDelegate(
+                parameterBinder,
+                factory,
+                TestModelMetadataProvider.CreateDefaultProvider(),
+                actionDescriptor);
+
+            await binderDelegate(controllerContext, controller, arguments);
+
+            // Assert
+            Assert.Empty(arguments);
+            binder
+                .Verify(o => o.BindModelAsync(
+                    It.IsAny<DefaultModelBindingContext>()),
+                Times.Never());
+            mockValidator
+                .Verify(o => o.Validate(
+                    It.IsAny<ModelValidationContext>()),
+                Times.Never());
+        }
+
         [Fact]
         public async Task BindActionArgumentsAsync_DoesNotAddActionArguments_IfBinderReturnsNull()
         {
@@ -100,7 +195,6 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         public async Task BindActionArgumentsAsync_AddsActionArguments_IfBinderReturnsNotNull()
         {
             // Arrange
-            Func<object, int> method = foo => 1;
             var actionDescriptor = GetActionDescriptor();
             actionDescriptor.Parameters.Add(
                 new ParameterDescriptor
@@ -144,30 +238,119 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public async Task BindActionArgumentsAsync_GetsMetadataFromParameter()
+        {
+            // Arrange
+            var actionDescriptor = GetActionDescriptor();
+            actionDescriptor.Parameters.Add(
+                new ControllerParameterDescriptor
+                {
+                    Name = "foo",
+                    ParameterType = typeof(object),
+                    ParameterInfo = ParameterInfos.NoAttributesParameterInfo
+                });
+
+            var controllerContext = GetControllerContext(actionDescriptor);
+
+            var mockBinder = new Mock<IModelBinder>();
+            var factory = GetModelBinderFactory(mockBinder.Object);
+
+            var parameterBinder = GetParameterBinder(factory, CreateMockValidator().Object);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
+
+            var modelMetadata = new Mock<FakeModelMetadata>();
+            modelMetadata.Setup(m => m.IsBindingAllowed).Returns(true);
+            var mockMetadataProvider = new Mock<DefaultModelMetadataProvider>(
+                Mock.Of<ICompositeMetadataDetailsProvider>());
+            mockMetadataProvider
+                .Setup(p => p.GetMetadataForParameter(ParameterInfos.NoAttributesParameterInfo))
+                .Returns(modelMetadata.Object);
+
+            // Act
+            var binderDelegate = ControllerBinderDelegateProvider.CreateBinderDelegate(
+                parameterBinder,
+                factory,
+                mockMetadataProvider.Object,
+                actionDescriptor);
+
+            await binderDelegate(controllerContext, controller, arguments);
+
+            // Assert
+            mockBinder
+                .Verify(o => o.BindModelAsync(
+                    It.Is<ModelBindingContext>(context => context.ModelMetadata == modelMetadata.Object)),
+                Times.Once());
+        }
+
+        [Fact]
+        public async Task BindActionArgumentsAsync_GetsMetadataFromType_IsMetadataProviderIsNotDefaultMetadataProvider()
+        {
+            // Arrange
+            var actionDescriptor = GetActionDescriptor();
+            actionDescriptor.Parameters.Add(
+                new ControllerParameterDescriptor
+                {
+                    Name = "foo",
+                    ParameterType = typeof(Person)
+                });
+
+            var controllerContext = GetControllerContext(actionDescriptor);
+
+            var mockBinder = new Mock<IModelBinder>();
+            var factory = GetModelBinderFactory(mockBinder.Object);
+
+            var parameterBinder = GetParameterBinder(factory, CreateMockValidator().Object);
+            var controller = new TestController();
+            var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
+
+            var modelMetadata = new Mock<FakeModelMetadata>();
+            modelMetadata.Setup(m => m.IsBindingAllowed).Returns(true);
+            var mockMetadataProvider = new Mock<IModelMetadataProvider>();
+            mockMetadataProvider
+                .Setup(p => p.GetMetadataForType(typeof(Person)))
+                .Returns(modelMetadata.Object);
+
+            // Act
+            var binderDelegate = ControllerBinderDelegateProvider.CreateBinderDelegate(
+                parameterBinder,
+                factory,
+                mockMetadataProvider.Object,
+                actionDescriptor);
+
+            await binderDelegate(controllerContext, controller, arguments);
+
+            // Assert
+            mockBinder
+                .Verify(o => o.BindModelAsync(
+                    It.Is<ModelBindingContext>(context => context.ModelMetadata == modelMetadata.Object)),
+                Times.Once());
+        }
+
+        [Fact]
         public async Task BindActionArgumentsAsync_CallsValidator_IfModelBinderSucceeds()
         {
             // Arrange
             var actionDescriptor = GetActionDescriptor();
             actionDescriptor.Parameters.Add(
-                new ParameterDescriptor
+                new ControllerParameterDescriptor
                 {
                     Name = "foo",
                     ParameterType = typeof(object),
+                    ParameterInfo = ParameterInfos.CustomValidationParameterInfo
                 });
 
             var controllerContext = GetControllerContext(actionDescriptor);
 
             var factory = GetModelBinderFactory("Hello");
 
-            var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
+            var mockValidator = CreateMockValidator();
             mockValidator
-                .Setup(o => o.Validate(
-                    It.IsAny<ActionContext>(),
-                    It.IsAny<ValidationStateDictionary>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>()));
+                .Setup(o => o.Validate(It.IsAny<ModelValidationContext>()))
+                .Returns(new[] { new ModelValidationResult("memberName", "some message") });
 
-            var parameterBinder = GetParameterBinder(factory, mockValidator.Object);
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var parameterBinder = GetParameterBinder(factory, mockValidator.Object, modelMetadataProvider);
             var controller = new TestController();
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
@@ -175,7 +358,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var binderDelegate = ControllerBinderDelegateProvider.CreateBinderDelegate(
                 parameterBinder,
                 factory,
-                TestModelMetadataProvider.CreateDefaultProvider(),
+                modelMetadataProvider,
                 actionDescriptor);
 
             await binderDelegate(controllerContext, controller, arguments);
@@ -183,18 +366,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             mockValidator
                 .Verify(o => o.Validate(
-                    It.IsAny<ActionContext>(),
-                    It.IsAny<ValidationStateDictionary>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>()),
+                    It.IsAny<ModelValidationContext>()),
             Times.Once());
+
+            Assert.False(controllerContext.ModelState.IsValid);
+            Assert.Equal(
+                "some message",
+                controllerContext.ModelState["memberName"].Errors.Single().ErrorMessage);
         }
 
         [Fact]
         public async Task BindActionArgumentsAsync_DoesNotCallValidator_IfModelBinderFails()
         {
             // Arrange
-            Func<object, int> method = foo => 1;
             var actionDescriptor = GetActionDescriptor();
             actionDescriptor.Parameters.Add(
                 new ParameterDescriptor
@@ -212,14 +396,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
                 .Returns(Task.CompletedTask);
 
-            var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
-            mockValidator
-                .Setup(o => o.Validate(
-                    It.IsAny<ActionContext>(),
-                    It.IsAny<ValidationStateDictionary>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>()));
-
+            var mockValidator = CreateMockValidator();
             var factory = GetModelBinderFactory(binder.Object);
             var controller = new TestController();
             var parameterBinder = GetParameterBinder(factory, mockValidator.Object);
@@ -236,10 +413,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             mockValidator
                 .Verify(o => o.Validate(
-                    It.IsAny<ActionContext>(),
-                    It.IsAny<ValidationStateDictionary>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>()),
+                    It.IsAny<ModelValidationContext>()),
                 Times.Never());
         }
 
@@ -251,7 +425,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             actionDescriptor.BoundProperties.Add(
                 new ParameterDescriptor
                 {
-                    Name = nameof(TestController.StringProperty),
+                    Name = nameof(TestController.ValidatedProperty),
                     ParameterType = typeof(string),
                 });
 
@@ -259,22 +433,20 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var controller = new TestController();
             var arguments = new Dictionary<string, object>(StringComparer.Ordinal);
 
-            var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
+            var mockValidator = CreateMockValidator();
             mockValidator
-                .Setup(o => o.Validate(
-                    It.IsAny<ActionContext>(),
-                    It.IsAny<ValidationStateDictionary>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>()));
+                .Setup(o => o.Validate(It.IsAny<ModelValidationContext>()))
+                .Returns(new[] { new ModelValidationResult("memberName", "some message") });
 
             var factory = GetModelBinderFactory("Hello");
-            var parameterBinder = GetParameterBinder(factory, mockValidator.Object);
+            var modelMetadataProvider = TestModelMetadataProvider.CreateDefaultProvider();
+            var parameterBinder = GetParameterBinder(factory, mockValidator.Object, modelMetadataProvider);
 
             // Act
             var binderDelegate = ControllerBinderDelegateProvider.CreateBinderDelegate(
                 parameterBinder,
                 factory,
-                TestModelMetadataProvider.CreateDefaultProvider(),
+                modelMetadataProvider,
                 actionDescriptor);
 
             await binderDelegate(controllerContext, controller, arguments);
@@ -282,18 +454,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             mockValidator
                 .Verify(o => o.Validate(
-                    It.IsAny<ActionContext>(),
-                    It.IsAny<ValidationStateDictionary>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>()),
+                    It.IsAny<ModelValidationContext>()),
                 Times.Once());
+            Assert.False(controllerContext.ModelState.IsValid);
+            Assert.Equal(
+                "some message",
+                controllerContext.ModelState["memberName"].Errors.Single().ErrorMessage);
         }
 
         [Fact]
         public async Task BindActionArgumentsAsync_DoesNotCallValidator_ForControllerProperties_IfModelBinderFails()
         {
             // Arrange
-            Func<object, int> method = foo => 1;
             var actionDescriptor = GetActionDescriptor();
             actionDescriptor.BoundProperties.Add(
                 new ParameterDescriptor
@@ -311,14 +483,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 .Setup(b => b.BindModelAsync(It.IsAny<DefaultModelBindingContext>()))
                 .Returns(Task.CompletedTask);
 
-            var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
-            mockValidator
-                .Setup(o => o.Validate(
-                    It.IsAny<ActionContext>(),
-                    It.IsAny<ValidationStateDictionary>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>()));
-
+            var mockValidator = CreateMockValidator();
             var factory = GetModelBinderFactory(binder.Object);
             var parameterBinder = GetParameterBinder(factory, mockValidator.Object);
 
@@ -334,10 +499,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Assert
             mockValidator
                 .Verify(o => o.Validate(
-                    It.IsAny<ActionContext>(),
-                    It.IsAny<ValidationStateDictionary>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>()),
+                    It.IsAny<ModelValidationContext>()),
                 Times.Never());
         }
 
@@ -845,10 +1007,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var modelMetadataProvider = new EmptyModelMetadataProvider();
             var modelBinderProvider = new BodyModelBinderProvider(new[] { Mock.Of<IInputFormatter>() }, Mock.Of<IHttpRequestStreamReaderFactory>());
             var factory = TestModelBinderFactory.CreateDefault(modelBinderProvider);
+            var modelValidatorProvider = new Mock<IModelValidatorProvider>(MockBehavior.Strict).Object;
             var parameterBinder = new Mock<ParameterBinder>(
                 new EmptyModelMetadataProvider(),
                 factory,
-                CreateMockValidator());
+                modelValidatorProvider);
             parameterBinder.Setup(p => p.BindModelAsync(
                 It.IsAny<ActionContext>(),
                 It.IsAny<IModelBinder>(),
@@ -959,11 +1122,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
         private static ParameterBinder GetParameterBinder(
             IModelBinderFactory factory = null,
-            IObjectModelValidator validator = null)
+            IModelValidator validator = null,
+            IModelMetadataProvider modelMetadataProvider = null)
         {
             if (validator == null)
             {
-                validator = CreateMockValidator();
+                validator = CreateMockValidator().Object;
             }
 
             if (factory == null)
@@ -971,22 +1135,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 factory = TestModelBinderFactory.CreateDefault();
             }
 
+            var validatorProvider = new Mock<IModelValidatorProvider>();
+            validatorProvider
+                .Setup(p => p.CreateValidators(It.IsAny<ModelValidatorProviderContext>()))
+                .Callback<ModelValidatorProviderContext>(context =>
+                {
+                    foreach (var result in context.Results)
+                    {
+                        result.Validator = validator;
+                        result.IsReusable = true;
+                    }
+                });
+
             return new ParameterBinder(
-                TestModelMetadataProvider.CreateDefaultProvider(),
+                modelMetadataProvider ?? TestModelMetadataProvider.CreateDefaultProvider(),
                 factory,
-                validator);
+                validatorProvider.Object);
         }
 
-        private static IObjectModelValidator CreateMockValidator()
+        private static Mock<IModelValidator> CreateMockValidator()
         {
-            var mockValidator = new Mock<IObjectModelValidator>(MockBehavior.Strict);
+            var mockValidator = new Mock<IModelValidator>(MockBehavior.Strict);
             mockValidator
                 .Setup(o => o.Validate(
-                    It.IsAny<ActionContext>(),
-                    It.IsAny<ValidationStateDictionary>(),
-                    It.IsAny<string>(),
-                    It.IsAny<object>()));
-            return mockValidator.Object;
+                    It.IsAny<ModelValidationContext>()));
+            return mockValidator;
         }
 
         // No need for bind-related attributes on properties in this controller class. Properties are added directly
@@ -1008,6 +1181,12 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public int NonNullableProperty { get; set; }
 
             public int? NullableProperty { get; set; }
+
+            [CustomValidation("Test message")] public string ValidatedProperty { get; set; }
+
+            // Despite being "required", the BindNever means this property won't be involved
+            // in binding, so no validation will be performed
+            [Required, BindNever] public string RequiredButBindNeverProperty { get; set; }
         }
 
         private class Person : IEquatable<Person>, IEquatable<object>
@@ -1033,6 +1212,54 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         private class ValueProviderMetadataAttribute : Attribute, IBindingSourceMetadata
         {
             public BindingSource BindingSource { get { return BindingSource.Query; } }
+        }
+
+        private class CustomValidationAttribute : Attribute, IModelValidator
+        {
+            public string Message { get; }
+
+            public CustomValidationAttribute(string message)
+            {
+                Message = message;
+            }
+
+            public IEnumerable<ModelValidationResult> Validate(ModelValidationContext context)
+            {
+                yield return new ModelValidationResult(context.ModelMetadata.BinderModelName, Message);
+            }
+        }
+
+        private class ParameterInfos
+        {
+            public void Method(
+                object param1,
+                [BindNever] object param2,
+                [CustomValidation("some message")] string param3)
+            {
+            }
+
+            public static ParameterInfo NoAttributesParameterInfo
+                = typeof(ParameterInfos)
+                    .GetMethod(nameof(ParameterInfos.Method))
+                    .GetParameters()[0];
+
+            public static ParameterInfo BindNeverParameterInfo
+                = typeof(ParameterInfos)
+                    .GetMethod(nameof(ParameterInfos.Method))
+                    .GetParameters()[1];
+
+            public static ParameterInfo CustomValidationParameterInfo
+                = typeof(ParameterInfos)
+                    .GetMethod(nameof(ParameterInfos.Method))
+                    .GetParameters()[2];
+        }
+
+        public abstract class FakeModelMetadata : ModelMetadata
+        {
+            public FakeModelMetadata()
+                : base(ModelMetadataIdentity.ForType(typeof(string)))
+            {
+            }
         }
     }
 }

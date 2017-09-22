@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 nameof(Person.Age),
                 typeof(Person));
 
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0]));
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0], null));
 
             context.BindingMetadata.IsBindingAllowed = initialValue;
 
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
                 nameof(Person.Age),
                 typeof(Person));
 
-            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0]));
+            var context = new BindingMetadataProviderContext(key, new ModelAttributes(new object[0], new object[0], null));
 
             context.BindingMetadata.IsBindingAllowed = initialValue;
 

@@ -79,7 +79,20 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
         /// <returns><c>true</c> if the object is valid, otherwise <c>false</c>.</returns>
         public bool Validate(ModelMetadata metadata, string key, object model)
         {
-            if (model == null && key != null)
+            return Validate(metadata, key, model, alwaysValidateAtTopLevel: false);
+        }
+
+        /// <summary>
+        /// Validates a object.
+        /// </summary>
+        /// <param name="metadata">The <see cref="ModelMetadata"/> associated with the model.</param>
+        /// <param name="key">The model prefix key.</param>
+        /// <param name="model">The model object.</param>
+        /// <param name="alwaysValidateAtTopLevel">If <c>true</c>, applies validation rules even if the top-level value is <c>null</c>.</param>
+        /// <returns><c>true</c> if the object is valid, otherwise <c>false</c>.</returns>
+        public bool Validate(ModelMetadata metadata, string key, object model, bool alwaysValidateAtTopLevel)
+        {
+            if (model == null && key != null && !alwaysValidateAtTopLevel)
             {
                 var entry = _modelState[key];
                 if (entry != null && entry.ValidationState != ModelValidationState.Valid)
@@ -128,6 +141,14 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Validation
                     {
                         var result = results[i];
                         var key = ModelNames.CreatePropertyModelName(_key, result.MemberName);
+
+                        // If this is a top-level parameter/property, the key would be empty,
+                        // so use the name of the top-level property
+                        if (string.IsNullOrEmpty(key) && _metadata.PropertyName != null)
+                        {
+                            key = _metadata.PropertyName;
+                        }
+
                         _modelState.TryAddModelError(key, result.Message);
                     }
                 }

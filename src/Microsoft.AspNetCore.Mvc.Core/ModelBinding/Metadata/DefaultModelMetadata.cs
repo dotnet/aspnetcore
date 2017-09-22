@@ -259,13 +259,13 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Metadata
         {
             get
             {
-                if (MetadataKind == ModelMetadataKind.Property)
+                if (MetadataKind == ModelMetadataKind.Type)
                 {
-                    return BindingMetadata.IsBindingAllowed;
+                    return true;
                 }
                 else
                 {
-                    return true;
+                    return BindingMetadata.IsBindingAllowed;
                 }
             }
         }

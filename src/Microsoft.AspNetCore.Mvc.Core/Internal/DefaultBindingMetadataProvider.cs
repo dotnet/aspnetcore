@@ -68,25 +68,31 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 context.BindingMetadata.PropertyFilterProvider = composite;
             }
 
-            if (context.Key.MetadataKind == ModelMetadataKind.Property)
+            var bindingBehavior = FindBindingBehavior(context);
+            if (bindingBehavior != null)
             {
-                // BindingBehavior can fall back to attributes on the Container Type, but we should ignore
-                // attributes on the Property Type.
-                var bindingBehavior = context.PropertyAttributes.OfType<BindingBehaviorAttribute>().FirstOrDefault();
-                if (bindingBehavior == null)
-                {
-                    bindingBehavior =
-                        context.Key.ContainerType.GetTypeInfo()
-                        .GetCustomAttributes(typeof(BindingBehaviorAttribute), inherit: true)
-                        .OfType<BindingBehaviorAttribute>()
-                        .FirstOrDefault();
-                }
+                context.BindingMetadata.IsBindingAllowed = bindingBehavior.Behavior != BindingBehavior.Never;
+                context.BindingMetadata.IsBindingRequired = bindingBehavior.Behavior == BindingBehavior.Required;
+            }
+        }
 
-                if (bindingBehavior != null)
-                {
-                    context.BindingMetadata.IsBindingAllowed = bindingBehavior.Behavior != BindingBehavior.Never;
-                    context.BindingMetadata.IsBindingRequired = bindingBehavior.Behavior == BindingBehavior.Required;
-                }
+        private static BindingBehaviorAttribute FindBindingBehavior(BindingMetadataProviderContext context)
+        {
+            switch (context.Key.MetadataKind)
+            {
+                case ModelMetadataKind.Property:
+                    // BindingBehavior can fall back to attributes on the Container Type, but we should ignore
+                    // attributes on the Property Type.
+                    var matchingAttributes = context.PropertyAttributes.OfType<BindingBehaviorAttribute>();
+                    return matchingAttributes.FirstOrDefault()
+                        ?? context.Key.ContainerType.GetTypeInfo()
+                            .GetCustomAttributes(typeof(BindingBehaviorAttribute), inherit: true)
+                            .OfType<BindingBehaviorAttribute>()
+                            .FirstOrDefault();
+                case ModelMetadataKind.Parameter:
+                    return context.ParameterAttributes.OfType<BindingBehaviorAttribute>().FirstOrDefault();
+                default:
+                    return null;
             }
         }
 

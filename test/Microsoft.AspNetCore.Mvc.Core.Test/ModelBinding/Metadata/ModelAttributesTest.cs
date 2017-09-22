@@ -178,6 +178,40 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             Assert.IsType<ClassValidator>(attribute);
         }
 
+        [Fact]
+        public void GetAttributesForParameter_NoAttributes()
+        {
+            // Arrange & Act
+            var attributes = ModelAttributes.GetAttributesForParameter(
+                typeof(MethodWithParamAttributesType)
+                    .GetMethod(nameof(MethodWithParamAttributesType.Method))
+                    .GetParameters()[0]);
+
+            // Assert
+            Assert.Empty(attributes.Attributes);
+            Assert.Empty(attributes.ParameterAttributes);
+            Assert.Null(attributes.TypeAttributes);
+            Assert.Null(attributes.PropertyAttributes);
+        }
+
+        [Fact]
+        public void GetAttributesForParameter_SomeAttributes()
+        {
+            // Arrange & Act
+            var attributes = ModelAttributes.GetAttributesForParameter(
+                typeof(MethodWithParamAttributesType)
+                    .GetMethod(nameof(MethodWithParamAttributesType.Method))
+                    .GetParameters()[1]);
+
+            // Assert
+            Assert.IsType<RequiredAttribute>(attributes.Attributes[0]);
+            Assert.IsType<RangeAttribute>(attributes.Attributes[1]);
+            Assert.IsType<RequiredAttribute>(attributes.ParameterAttributes[0]);
+            Assert.IsType<RangeAttribute>(attributes.ParameterAttributes[1]);
+            Assert.Null(attributes.TypeAttributes);
+            Assert.Null(attributes.PropertyAttributes);
+        }
+
         [ClassValidator]
         private class BaseModel
         {
@@ -264,6 +298,19 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
         [Bind]
         private class MetadataPropertyType
+        {
+        }
+
+        [IrrelevantAttribute] // We verify this is ignored
+        private class MethodWithParamAttributesType
+        {
+            [IrrelevantAttribute] // We verify this is ignored
+            public void Method(object noAttribs, [Required, Range(1, 100)] int validationAttribs)
+            {
+            }
+        }
+
+        private class IrrelevantAttribute : Attribute
         {
         }
     }

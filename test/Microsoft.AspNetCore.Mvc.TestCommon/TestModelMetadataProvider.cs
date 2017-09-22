@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
     public class TestModelMetadataProvider : DefaultModelMetadataProvider
     {
         // Creates a provider with all the defaults - includes data annotations
-        public static IModelMetadataProvider CreateDefaultProvider(IStringLocalizerFactory stringLocalizerFactory = null)
+        public static ModelMetadataProvider CreateDefaultProvider(IStringLocalizerFactory stringLocalizerFactory = null)
         {
             var detailsProviders = new IMetadataDetailsProvider[]
             {
