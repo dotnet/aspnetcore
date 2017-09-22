@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Formatters.Xml, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Formatters.Xml, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Mvc.ModelBinding.Metadata.DataMemberRequiredBindingMetadataProvider",
@@ -198,6 +198,18 @@
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "suppressInputFormatterBuffering",
+              "Type": "System.Boolean"
+            }
+          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -506,6 +518,18 @@
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "suppressInputFormatterBuffering",
+              "Type": "System.Boolean"
+            }
+          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -1254,6 +1278,16 @@
           "ReadOnly": true,
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "XsdDataContractExporter",
+          "Parameters": [],
+          "ReturnType": "System.Runtime.Serialization.XsdDataContractExporter",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -1262,12 +1296,13 @@
       "Name": "Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal.MvcXmlDataContractSerializerMvcOptionsSetup",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.Extensions.Options.ConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
-      "ImplementedInterfaces": [],
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>"
+      ],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "ConfigureMvc",
+          "Name": "Configure",
           "Parameters": [
             {
               "Name": "options",
@@ -1275,7 +1310,9 @@
             }
           ],
           "ReturnType": "System.Void",
-          "Static": true,
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1293,12 +1330,13 @@
       "Name": "Microsoft.AspNetCore.Mvc.Formatters.Xml.Internal.MvcXmlSerializerMvcOptionsSetup",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.Extensions.Options.ConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
-      "ImplementedInterfaces": [],
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>"
+      ],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "ConfigureMvc",
+          "Name": "Configure",
           "Parameters": [
             {
               "Name": "options",
@@ -1306,7 +1344,9 @@
             }
           ],
           "ReturnType": "System.Void",
-          "Static": true,
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
           "Visibility": "Public",
           "GenericParameter": []
         },
