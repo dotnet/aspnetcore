@@ -2066,6 +2066,53 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Empty(errors);
         }
 
+        [Fact]
+        public void Conflict_SetsStatusCode()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var obj = new object();
+
+            // Act
+            var result = controller.Conflict();
+
+            // Assert
+            Assert.IsType<ConflictResult>(result);
+            Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
+        }
+
+        [Fact]
+        public void Conflict_SetsStatusCodeAndValue_Object()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var obj = new object();
+
+            // Act
+            var result = controller.Conflict(obj);
+
+            // Assert
+            Assert.IsType<ConflictObjectResult>(result);
+            Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
+            Assert.Equal(obj, result.Value);
+        }
+
+        [Fact]
+        public void Conflict_SetsStatusCodeAndValue_ModelState()
+        {
+            // Arrange
+            var controller = new TestableController();
+
+            // Act
+            var result = controller.Conflict(new ModelStateDictionary());
+
+            // Assert
+            Assert.IsType<ConflictObjectResult>(result);
+            Assert.Equal(StatusCodes.Status409Conflict, result.StatusCode);
+            var errors = Assert.IsType<SerializableError>(result.Value);
+            Assert.Empty(errors);
+        }
+
         [Theory]
         [MemberData(nameof(PublicNormalMethodsFromControllerBase))]
         public void NonActionAttribute_IsOnEveryPublicNormalMethodFromControllerBase(MethodInfo method)

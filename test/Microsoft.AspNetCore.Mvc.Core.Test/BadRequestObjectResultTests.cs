@@ -14,22 +14,22 @@ namespace Microsoft.AspNetCore.Mvc
         {
             // Arrange & Act
             var obj = new object();
-            var badRequestObjecResult = new BadRequestObjectResult(obj);
+            var badRequestObjectResult = new BadRequestObjectResult(obj);
 
             // Assert
-            Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjecResult.StatusCode);
-            Assert.Equal(obj, badRequestObjecResult.Value);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);
+            Assert.Equal(obj, badRequestObjectResult.Value);
         }
 
         [Fact]
         public void BadRequestObjectResult_ModelState_SetsStatusCodeAndValue()
         {
             // Arrange & Act
-            var badRequestObjecResult = new BadRequestObjectResult(new ModelStateDictionary());
+            var badRequestObjectResult = new BadRequestObjectResult(new ModelStateDictionary());
 
             // Assert
-            Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjecResult.StatusCode);
-            var errors = Assert.IsType<SerializableError>(badRequestObjecResult.Value);
+            Assert.Equal(StatusCodes.Status400BadRequest, badRequestObjectResult.StatusCode);
+            var errors = Assert.IsType<SerializableError>(badRequestObjectResult.Value);
             Assert.Empty(errors);
         }
     }
