@@ -169,7 +169,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         }
                         catch (Exception ex)
                         {
-                            _logger.ExceptionThrownFromEventHandler(_connectionId, nameof(Connected), ex);
+                            _logger.ExceptionThrownFromHandler(_connectionId, nameof(Connected), ex);
                         }
                     }
                 });
@@ -205,7 +205,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         }
                         catch (Exception ex)
                         {
-                            _logger.ExceptionThrownFromEventHandler(_connectionId, nameof(Closed), ex);
+                            _logger.ExceptionThrownFromHandler(_connectionId, nameof(Closed), ex);
                         }
                     }
                 });
@@ -366,7 +366,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.ExceptionThrownFromEventHandler(_connectionId, nameof(Received), ex);
+                                    _logger.ExceptionThrownFromHandler(_connectionId, nameof(Received), ex);
                                 }
                             }
                         });

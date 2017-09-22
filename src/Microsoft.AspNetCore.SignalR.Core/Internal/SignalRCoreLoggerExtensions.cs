@@ -11,43 +11,43 @@ namespace Microsoft.AspNetCore.SignalR.Core.Internal
     {
         // Category: HubEndPoint<THub>
         private static readonly Action<ILogger, string, Exception> _usingHubProtocol =
-            LoggerMessage.Define<string>(LogLevel.Information, 0, "Using HubProtocol '{protocol}'.");
+            LoggerMessage.Define<string>(LogLevel.Information, new EventId(0, nameof(UsingHubProtocol)), "Using HubProtocol '{protocol}'.");
 
         private static readonly Action<ILogger, Exception> _negotiateCanceled =
-            LoggerMessage.Define(LogLevel.Debug, 1, "Negotiate was canceled.");
+            LoggerMessage.Define(LogLevel.Debug, new EventId(1, nameof(NegotiateCanceled)), "Negotiate was canceled.");
 
         private static readonly Action<ILogger, Exception> _errorProcessingRequest =
-            LoggerMessage.Define(LogLevel.Error, 2, "Error when processing requests.");
+            LoggerMessage.Define(LogLevel.Error, new EventId(2, nameof(ErrorProcessingRequest)), "Error when processing requests.");
 
         private static readonly Action<ILogger, string, Exception> _errorInvokingHubMethod =
-            LoggerMessage.Define<string>(LogLevel.Error, 3, "Error when invoking '{hubMethod}' on hub.");
+            LoggerMessage.Define<string>(LogLevel.Error, new EventId(3, nameof(ErrorInvokingHubMethod)), "Error when invoking '{hubMethod}' on hub.");
 
         private static readonly Action<ILogger, InvocationMessage, Exception> _receivedHubInvocation =
-            LoggerMessage.Define<InvocationMessage>(LogLevel.Debug, 4, "Received hub invocation: {invocationMessage}.");
+            LoggerMessage.Define<InvocationMessage>(LogLevel.Debug, new EventId(4, nameof(ReceivedHubInvocation)), "Received hub invocation: {invocationMessage}.");
 
         private static readonly Action<ILogger, string, Exception> _unsupportedMessageReceived =
-            LoggerMessage.Define<string>(LogLevel.Error, 5, "Received unsupported message of type '{messageType}'.");
+            LoggerMessage.Define<string>(LogLevel.Error, new EventId(5, nameof(UnsupportedMessageReceived)), "Received unsupported message of type '{messageType}'.");
 
         private static readonly Action<ILogger, string, Exception> _unknownHubMethod =
-            LoggerMessage.Define<string>(LogLevel.Error, 6, "Unknown hub method '{hubMethod}'.");
+            LoggerMessage.Define<string>(LogLevel.Error, new EventId(6, nameof(UnknownHubMethod)), "Unknown hub method '{hubMethod}'.");
 
         private static readonly Action<ILogger, Exception> _outboundChannelClosed =
-            LoggerMessage.Define(LogLevel.Warning, 7, "Outbound channel was closed while trying to write hub message.");
+            LoggerMessage.Define(LogLevel.Warning, new EventId(7, nameof(OutboundChannelClosed)), "Outbound channel was closed while trying to write hub message.");
 
         private static readonly Action<ILogger, string, Exception> _hubMethodNotAuthorized =
-            LoggerMessage.Define<string>(LogLevel.Debug, 8, "Failed to invoke '{hubMethod}' because user is unauthorized.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(8, nameof(HubMethodNotAuthorized)), "Failed to invoke '{hubMethod}' because user is unauthorized.");
 
         private static readonly Action<ILogger, string, string, Exception> _streamingResult =
-            LoggerMessage.Define<string, string>(LogLevel.Trace, 9, "{invocationId}: Streaming result of type '{resultType}'.");
+            LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(9, nameof(StreamingResult)), "{invocationId}: Streaming result of type '{resultType}'.");
 
         private static readonly Action<ILogger, string, string, Exception> _sendingResult =
-            LoggerMessage.Define<string, string>(LogLevel.Trace, 10, "{invocationId}: Sending result of type '{resultType}'.");
+            LoggerMessage.Define<string, string>(LogLevel.Trace, new EventId(10, nameof(SendingResult)), "{invocationId}: Sending result of type '{resultType}'.");
 
         private static readonly Action<ILogger, string, Exception> _failedInvokingHubMethod =
-            LoggerMessage.Define<string>(LogLevel.Error, 11, "Failed to invoke hub method '{hubMethod}'.");
+            LoggerMessage.Define<string>(LogLevel.Error, new EventId(11, nameof(FailedInvokingHubMethod)), "Failed to invoke hub method '{hubMethod}'.");
 
         private static readonly Action<ILogger, string, Exception> _hubMethodBound =
-            LoggerMessage.Define<string>(LogLevel.Trace, 12, "Hub method '{hubMethod}' is bound.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(12, nameof(HubMethodBound)), "Hub method '{hubMethod}' is bound.");
 
         public static void UsingHubProtocol(this ILogger logger, string hubProtocol)
         {
