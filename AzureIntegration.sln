@@ -1,7 +1,7 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26814.1
-MinimumVisualStudioVersion = 10.0.40219.1
+MinimumVisualStudioVersion = 15.0.26730.03
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.AzureAppServicesIntegration", "src\Microsoft.AspNetCore.AzureAppServicesIntegration\Microsoft.AspNetCore.AzureAppServicesIntegration.csproj", "{5916BEB5-0969-469B-976C-A392E015DFAC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{FF9B744E-6C59-40CC-9E41-9D2EBD292435}"
