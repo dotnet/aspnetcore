@@ -1,37 +1,6 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Routing, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Routing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
-    {
-      "Name": "Microsoft.AspNetCore.Builder.RoutingBuilderExtensions",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "Static": true,
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "UseRouter",
-          "Parameters": [
-            {
-              "Name": "builder",
-              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
-            },
-            {
-              "Name": "router",
-              "Type": "Microsoft.AspNetCore.Routing.IRouter"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
     {
       "Name": "Microsoft.AspNetCore.Builder.MapRouteRouteBuilderExtensions",
       "Visibility": "Public",
@@ -196,6 +165,56 @@
               "Type": "Microsoft.AspNetCore.Routing.IRouter"
             }
           ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.RoutingBuilderExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseRouter",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "router",
+              "Type": "Microsoft.AspNetCore.Routing.IRouter"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseRouter",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "action",
+              "Type": "System.Action<Microsoft.AspNetCore.Routing.IRouteBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -422,7 +441,7 @@
         },
         {
           "Kind": "Method",
-          "Name": "MapRoute",
+          "Name": "MapMiddlewareRoute",
           "Parameters": [
             {
               "Name": "builder",
@@ -468,6 +487,29 @@
         },
         {
           "Kind": "Method",
+          "Name": "MapMiddlewareDelete",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Routing.IRouteBuilder"
+            },
+            {
+              "Name": "template",
+              "Type": "System.String"
+            },
+            {
+              "Name": "action",
+              "Type": "System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "MapDelete",
           "Parameters": [
             {
@@ -479,8 +521,8 @@
               "Type": "System.String"
             },
             {
-              "Name": "action",
-              "Type": "System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>"
+              "Name": "handler",
+              "Type": "System.Func<Microsoft.AspNetCore.Http.HttpRequest, Microsoft.AspNetCore.Http.HttpResponse, Microsoft.AspNetCore.Routing.RouteData, System.Threading.Tasks.Task>"
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
@@ -514,7 +556,76 @@
         },
         {
           "Kind": "Method",
+          "Name": "MapMiddlewareGet",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Routing.IRouteBuilder"
+            },
+            {
+              "Name": "template",
+              "Type": "System.String"
+            },
+            {
+              "Name": "action",
+              "Type": "System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "MapGet",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Routing.IRouteBuilder"
+            },
+            {
+              "Name": "template",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
+              "Type": "System.Func<Microsoft.AspNetCore.Http.HttpRequest, Microsoft.AspNetCore.Http.HttpResponse, Microsoft.AspNetCore.Routing.RouteData, System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MapPost",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Routing.IRouteBuilder"
+            },
+            {
+              "Name": "template",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
+              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MapMiddlewarePost",
           "Parameters": [
             {
               "Name": "builder",
@@ -549,6 +660,29 @@
             },
             {
               "Name": "handler",
+              "Type": "System.Func<Microsoft.AspNetCore.Http.HttpRequest, Microsoft.AspNetCore.Http.HttpResponse, Microsoft.AspNetCore.Routing.RouteData, System.Threading.Tasks.Task>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MapPut",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Routing.IRouteBuilder"
+            },
+            {
+              "Name": "template",
+              "Type": "System.String"
+            },
+            {
+              "Name": "handler",
               "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
             }
           ],
@@ -560,7 +694,7 @@
         },
         {
           "Kind": "Method",
-          "Name": "MapPost",
+          "Name": "MapMiddlewarePut",
           "Parameters": [
             {
               "Name": "builder",
@@ -595,7 +729,7 @@
             },
             {
               "Name": "handler",
-              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+              "Type": "System.Func<Microsoft.AspNetCore.Http.HttpRequest, Microsoft.AspNetCore.Http.HttpResponse, Microsoft.AspNetCore.Routing.RouteData, System.Threading.Tasks.Task>"
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
@@ -606,19 +740,23 @@
         },
         {
           "Kind": "Method",
-          "Name": "MapPut",
+          "Name": "MapVerb",
           "Parameters": [
             {
               "Name": "builder",
               "Type": "Microsoft.AspNetCore.Routing.IRouteBuilder"
             },
             {
+              "Name": "verb",
+              "Type": "System.String"
+            },
+            {
               "Name": "template",
               "Type": "System.String"
             },
             {
-              "Name": "action",
-              "Type": "System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>"
+              "Name": "handler",
+              "Type": "System.Func<Microsoft.AspNetCore.Http.HttpRequest, Microsoft.AspNetCore.Http.HttpResponse, Microsoft.AspNetCore.Routing.RouteData, System.Threading.Tasks.Task>"
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Routing.IRouteBuilder",
@@ -656,7 +794,7 @@
         },
         {
           "Kind": "Method",
-          "Name": "MapVerb",
+          "Name": "MapMiddlewareVerb",
           "Parameters": [
             {
               "Name": "builder",
@@ -1435,6 +1573,44 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Routing.RouteCreationException",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "System.Exception",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "message",
+              "Type": "System.String"
+            },
+            {
+              "Name": "innerException",
+              "Type": "System.Exception"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Routing.RouteHandler",
       "Visibility": "Public",
       "Kind": "Class",
@@ -1630,6 +1806,51 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "System.Collections.Generic.IEqualityComparer<System.Object>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Routing.RoutingFeature",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Routing.IRoutingFeature"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_RouteData",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Routing.RouteData",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRoutingFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RouteData",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Routing.RouteData"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRoutingFeature",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -3284,28 +3505,6 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.AspNetCore.Routing.Internal.TaskCache",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "Static": true,
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Field",
-          "Name": "CompletedTask",
-          "Parameters": [],
-          "ReturnType": "System.Threading.Tasks.Task",
-          "Static": true,
-          "ReadOnly": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
       "Name": "Microsoft.AspNetCore.Routing.Internal.UriBuilderContextPooledObjectPolicy",
       "Visibility": "Public",
       "Kind": "Class",
@@ -4626,6 +4825,61 @@
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Routing.Constraints.StringRouteConstraint",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Routing.IRouteConstraint"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Match",
+          "Parameters": [
+            {
+              "Name": "httpContext",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "route",
+              "Type": "Microsoft.AspNetCore.Routing.IRouter"
+            },
+            {
+              "Name": "routeKey",
+              "Type": "System.String"
+            },
+            {
+              "Name": "values",
+              "Type": "Microsoft.AspNetCore.Routing.RouteValueDictionary"
+            },
+            {
+              "Name": "routeDirection",
+              "Type": "Microsoft.AspNetCore.Routing.RouteDirection"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Routing.IRouteConstraint",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
