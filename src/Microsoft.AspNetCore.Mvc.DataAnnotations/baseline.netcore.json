@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.DataAnnotations, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.DataAnnotations, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Mvc.HiddenInputAttribute",
@@ -39,6 +39,59 @@
         }
       ],
       "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<T0>",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetErrorMessage",
+          "Parameters": [
+            {
+              "Name": "validationContext",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "attribute",
+              "Type": "T0"
+            },
+            {
+              "Name": "stringLocalizer",
+              "Type": "Microsoft.Extensions.Localization.IStringLocalizer"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TAttribute",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": [
+            "System.ComponentModel.DataAnnotations.ValidationAttribute"
+          ]
+        }
+      ]
     },
     {
       "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter",
@@ -115,29 +168,77 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.AttributeAdapterBase<T0>",
+      "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapter<T0>",
       "Visibility": "Public",
       "Kind": "Class",
       "Abstract": true,
-      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.ValidationAttributeAdapter<T0>",
       "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter"
+        "Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidator"
       ],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Attribute",
+          "Parameters": [],
+          "ReturnType": "T0",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddValidation",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MergeAttribute",
+          "Parameters": [
+            {
+              "Name": "attributes",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "GetErrorMessage",
           "Parameters": [
             {
-              "Name": "validationContext",
-              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ModelValidationContextBase"
+              "Name": "modelMetadata",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata"
+            },
+            {
+              "Name": "arguments",
+              "Type": "System.Object[]",
+              "IsParams": true
             }
           ],
           "ReturnType": "System.String",
           "Virtual": true,
-          "Abstract": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter",
-          "Visibility": "Public",
+          "Visibility": "Protected",
           "GenericParameter": []
         },
         {
@@ -168,10 +269,48 @@
       ]
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.ValidationAttributeAdapterProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.DataAnnotations.IValidationAttributeAdapterProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetAttributeAdapter",
+          "Parameters": [
+            {
+              "Name": "attribute",
+              "Type": "System.ComponentModel.DataAnnotations.ValidationAttribute"
+            },
+            {
+              "Name": "stringLocalizer",
+              "Type": "Microsoft.Extensions.Localization.IStringLocalizer"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.DataAnnotations.IValidationAttributeAdapterProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.CompareAttributeAdapter",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.AttributeAdapterBase<System.ComponentModel.DataAnnotations.CompareAttribute>",
+      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.CompareAttribute>",
       "ImplementedInterfaces": [],
       "Members": [
         {
@@ -363,7 +502,16 @@
         {
           "Kind": "Constructor",
           "Name": ".ctor",
-          "Parameters": [],
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            },
+            {
+              "Name": "stringLocalizerFactory",
+              "Type": "Microsoft.Extensions.Localization.IStringLocalizerFactory"
+            }
+          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -476,7 +624,7 @@
       "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.DataTypeAttributeAdapter",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.AttributeAdapterBase<System.ComponentModel.DataAnnotations.DataTypeAttribute>",
+      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.DataTypeAttribute>",
       "ImplementedInterfaces": [],
       "Members": [
         {
@@ -580,7 +728,7 @@
       "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.MaxLengthAttributeAdapter",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.AttributeAdapterBase<System.ComponentModel.DataAnnotations.MaxLengthAttribute>",
+      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.MaxLengthAttribute>",
       "ImplementedInterfaces": [],
       "Members": [
         {
@@ -638,7 +786,7 @@
       "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.MinLengthAttributeAdapter",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.AttributeAdapterBase<System.ComponentModel.DataAnnotations.MinLengthAttribute>",
+      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.MinLengthAttribute>",
       "ImplementedInterfaces": [],
       "Members": [
         {
@@ -696,12 +844,13 @@
       "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.MvcDataAnnotationsLocalizationOptionsSetup",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.Extensions.Options.ConfigureOptions<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>",
-      "ImplementedInterfaces": [],
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+      ],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "ConfigureMvc",
+          "Name": "Configure",
           "Parameters": [
             {
               "Name": "options",
@@ -709,7 +858,9 @@
             }
           ],
           "ReturnType": "System.Void",
-          "Static": true,
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -727,24 +878,23 @@
       "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.MvcDataAnnotationsMvcOptionsSetup",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.Extensions.Options.ConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
-      "ImplementedInterfaces": [],
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>"
+      ],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "ConfigureMvc",
+          "Name": "Configure",
           "Parameters": [
             {
               "Name": "options",
               "Type": "Microsoft.AspNetCore.Mvc.MvcOptions"
-            },
-            {
-              "Name": "serviceProvider",
-              "Type": "System.IServiceProvider"
             }
           ],
           "ReturnType": "System.Void",
-          "Static": true,
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -753,8 +903,32 @@
           "Name": ".ctor",
           "Parameters": [
             {
-              "Name": "serviceProvider",
-              "Type": "System.IServiceProvider"
+              "Name": "validationAttributeAdapterProvider",
+              "Type": "Microsoft.AspNetCore.Mvc.DataAnnotations.IValidationAttributeAdapterProvider"
+            },
+            {
+              "Name": "dataAnnotationLocalizationOptions",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "validationAttributeAdapterProvider",
+              "Type": "Microsoft.AspNetCore.Mvc.DataAnnotations.IValidationAttributeAdapterProvider"
+            },
+            {
+              "Name": "dataAnnotationLocalizationOptions",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            },
+            {
+              "Name": "stringLocalizerFactory",
+              "Type": "Microsoft.Extensions.Localization.IStringLocalizerFactory"
             }
           ],
           "Visibility": "Public",
@@ -835,7 +1009,7 @@
       "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.RangeAttributeAdapter",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.AttributeAdapterBase<System.ComponentModel.DataAnnotations.RangeAttribute>",
+      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.RangeAttribute>",
       "ImplementedInterfaces": [],
       "Members": [
         {
@@ -893,7 +1067,7 @@
       "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.RegularExpressionAttributeAdapter",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.AttributeAdapterBase<System.ComponentModel.DataAnnotations.RegularExpressionAttribute>",
+      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.RegularExpressionAttribute>",
       "ImplementedInterfaces": [],
       "Members": [
         {
@@ -951,7 +1125,7 @@
       "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.RequiredAttributeAdapter",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.AttributeAdapterBase<System.ComponentModel.DataAnnotations.RequiredAttribute>",
+      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.RequiredAttribute>",
       "ImplementedInterfaces": [],
       "Members": [
         {
@@ -1009,7 +1183,7 @@
       "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.StringLengthAttributeAdapter",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.AttributeAdapterBase<System.ComponentModel.DataAnnotations.StringLengthAttribute>",
+      "BaseType": "Microsoft.AspNetCore.Mvc.DataAnnotations.AttributeAdapterBase<System.ComponentModel.DataAnnotations.StringLengthAttribute>",
       "ImplementedInterfaces": [],
       "Members": [
         {
@@ -1084,145 +1258,6 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IModelValidator",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.ValidationAttributeAdapter<T0>",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidator"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_Attribute",
-          "Parameters": [],
-          "ReturnType": "T0",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "AddValidation",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.Validation.ClientModelValidationContext"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Abstract": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ModelBinding.Validation.IClientModelValidator",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "MergeAttribute",
-          "Parameters": [
-            {
-              "Name": "attributes",
-              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
-            },
-            {
-              "Name": "key",
-              "Type": "System.String"
-            },
-            {
-              "Name": "value",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Boolean",
-          "Static": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetErrorMessage",
-          "Parameters": [
-            {
-              "Name": "modelMetadata",
-              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.ModelMetadata"
-            },
-            {
-              "Name": "arguments",
-              "Type": "System.Object[]",
-              "IsParams": true
-            }
-          ],
-          "ReturnType": "System.String",
-          "Virtual": true,
-          "Visibility": "Protected",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "attribute",
-              "Type": "T0"
-            },
-            {
-              "Name": "stringLocalizer",
-              "Type": "Microsoft.Extensions.Localization.IStringLocalizer"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": [
-        {
-          "ParameterName": "TAttribute",
-          "ParameterPosition": 0,
-          "BaseTypeOrInterfaces": [
-            "System.ComponentModel.DataAnnotations.ValidationAttribute"
-          ]
-        }
-      ]
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Mvc.DataAnnotations.Internal.ValidationAttributeAdapterProvider",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Mvc.DataAnnotations.IValidationAttributeAdapterProvider"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "GetAttributeAdapter",
-          "Parameters": [
-            {
-              "Name": "attribute",
-              "Type": "System.ComponentModel.DataAnnotations.ValidationAttribute"
-            },
-            {
-              "Name": "stringLocalizer",
-              "Type": "Microsoft.Extensions.Localization.IStringLocalizer"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.DataAnnotations.IAttributeAdapter",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.DataAnnotations.IValidationAttributeAdapterProvider",
           "Visibility": "Public",
           "GenericParameter": []
         },
