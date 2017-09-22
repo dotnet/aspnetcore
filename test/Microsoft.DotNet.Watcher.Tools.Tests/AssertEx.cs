@@ -20,14 +20,14 @@ namespace Microsoft.DotNet.Watcher.Tools.Tests
 
         public static void EqualFileList(IEnumerable<string> expectedFiles, IEnumerable<string> actualFiles)
         {
-            Func<string, string> normalize = p => p.Replace('\\', '/');
+            string normalize(string p) => p.Replace('\\', '/');
             var expected = new HashSet<string>(expectedFiles.Select(normalize));
             var actual = new HashSet<string>(actualFiles.Where(p => !string.IsNullOrEmpty(p)).Select(normalize));
             if (!expected.SetEquals(actual))
             {
                 throw new AssertActualExpectedException(
-                    expected: string.Join("\n", expected),
-                    actual: string.Join("\n", actual),
+                    expected: "\n" + string.Join("\n", expected),
+                    actual:  "\n" + string.Join("\n", actual),
                     userMessage: "File sets should be equal");
             }
         }

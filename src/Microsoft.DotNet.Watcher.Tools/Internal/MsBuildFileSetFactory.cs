@@ -17,21 +17,19 @@ namespace Microsoft.DotNet.Watcher.Internal
     public class MsBuildFileSetFactory : IFileSetFactory
     {
         private const string TargetName = "GenerateWatchList";
-        private const string ProjectExtensionFileExtension = ".dotnetwatch.g.targets";
-        private const string WatchTargetsFileName = "DotNetWatchCommon.targets";
+        private const string WatchTargetsFileName = "DotNetWatch.targets";
         private readonly IReporter _reporter;
         private readonly string _projectFile;
-        private readonly string _projectExtensionsPath;
-        private readonly string _watchTargetsDir;
         private readonly OutputSink _outputSink;
         private readonly ProcessRunner _processRunner;
         private readonly bool _waitOnError;
+        private readonly IReadOnlyList<string> _buildFlags;
 
         public MsBuildFileSetFactory(IReporter reporter,
             string projectFile,
-            string msBuildProjectExtensionsPath,
-            bool waitOnError)
-            : this(reporter, projectFile, msBuildProjectExtensionsPath, new OutputSink())
+            bool waitOnError,
+            bool trace)
+            : this(reporter, projectFile, new OutputSink(), trace)
         {
             _waitOnError = waitOnError;
         }
@@ -39,8 +37,8 @@ namespace Microsoft.DotNet.Watcher.Internal
         // output sink is for testing
         internal MsBuildFileSetFactory(IReporter reporter,
             string projectFile,
-            string msBuildProjectExtensionsPath,
-            OutputSink outputSink)
+            OutputSink outputSink,
+            bool trace)
         {
             Ensure.NotNull(reporter, nameof(reporter));
             Ensure.NotNullOrEmpty(projectFile, nameof(projectFile));
@@ -48,29 +46,13 @@ namespace Microsoft.DotNet.Watcher.Internal
 
             _reporter = reporter;
             _projectFile = projectFile;
-            _watchTargetsDir = FindWatchTargetsDir();
             _outputSink = outputSink;
             _processRunner = new ProcessRunner(reporter);
-
-            // default value for MSBuildProjectExtensionsPath is $(BaseIntermediateOutputPath), which defaults to 'obj/'.
-            _projectExtensionsPath = string.IsNullOrEmpty(msBuildProjectExtensionsPath)
-                ? Path.Combine(Path.GetDirectoryName(_projectFile), "obj")
-                : msBuildProjectExtensionsPath;
+            _buildFlags = InitializeArgs(FindTargetsFile(), trace);
         }
-
-        internal List<string> BuildFlags { get; } = new List<string>
-        {
-            "/nologo",
-            "/v:n",
-            "/t:" + TargetName,
-            "/p:DotNetWatchBuild=true", // extensibility point for users
-            "/p:DesignTimeBuild=true", // don't do expensive things
-        };
 
         public async Task<IFileSet> CreateAsync(CancellationToken cancellationToken)
         {
-            EnsureInitialized();
-
             var watchList = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName());
             try
             {
@@ -91,9 +73,8 @@ namespace Microsoft.DotNet.Watcher.Internal
                         {
                             "msbuild",
                             _projectFile,
-                            $"/p:_DotNetWatchTargetsLocation={_watchTargetsDir}", // add our dotnet-watch targets
                             $"/p:_DotNetWatchListFile={watchList}"
-                        }.Concat(BuildFlags),
+                        }.Concat(_buildFlags),
                         OutputCapture = capture
                     };
 
@@ -162,29 +143,31 @@ namespace Microsoft.DotNet.Watcher.Internal
             }
         }
 
-        // Ensures file exists in $(MSBuildProjectExtensionsPath)/$(MSBuildProjectFile).dotnetwatch.targets
-        private void EnsureInitialized()
+        private IReadOnlyList<string> InitializeArgs(string watchTargetsFile, bool trace)
         {
-            // see https://github.com/Microsoft/msbuild/blob/bf9b21cc7869b96ea2289ff31f6aaa5e1d525a26/src/XMakeTasks/Microsoft.Common.targets#L127
-            var projectExtensionFile = Path.Combine(_projectExtensionsPath,
-                Path.GetFileName(_projectFile) + ProjectExtensionFileExtension);
-
-            if (!File.Exists(projectExtensionFile))
+            var args = new List<string>
             {
-                // ensure obj folder is available
-                Directory.CreateDirectory(Path.GetDirectoryName(projectExtensionFile));
+                "/nologo",
+                "/v:n",
+                "/t:" + TargetName,
+                "/p:DotNetWatchBuild=true", // extensibility point for users
+                "/p:DesignTimeBuild=true", // don't do expensive things
+                "/p:CustomAfterMicrosoftCommonTargets=" + watchTargetsFile,
+                "/p:CustomAfterMicrosoftCommonCrossTargetingTargets=" + watchTargetsFile,
+            };
 
-                using (var fileStream = new FileStream(projectExtensionFile, FileMode.Create))
-                using (var assemblyStream = GetType().GetTypeInfo().Assembly.GetManifestResourceStream("dotnetwatch.targets"))
-                {
-                    assemblyStream.CopyTo(fileStream);
-                }
+            if (trace)
+            {
+                // enables capturing markers to know which projects have been visited
+                args.Add("/p:_DotNetWatchTraceOutput=true");
             }
+
+            return args;
         }
 
-        private string FindWatchTargetsDir()
+        private string FindTargetsFile()
         {
-            var assemblyDir = Path.GetDirectoryName(GetType().GetTypeInfo().Assembly.Location);
+            var assemblyDir = Path.GetDirectoryName(typeof(MsBuildFileSetFactory).Assembly.Location);
             var searchPaths = new[]
             {
                 AppContext.BaseDirectory,
@@ -194,8 +177,13 @@ namespace Microsoft.DotNet.Watcher.Internal
                 Path.Combine(AppContext.BaseDirectory, "../../toolassets"), // relative to packaged deps.json
             };
 
-            var targetPath = searchPaths.Select(p => Path.Combine(p, WatchTargetsFileName)).First(File.Exists);
-            return Path.GetDirectoryName(targetPath);
+            var targetPath = searchPaths.Select(p => Path.Combine(p, WatchTargetsFileName)).FirstOrDefault(File.Exists);
+            if (targetPath == null)
+            {
+                _reporter.Error("Fatal error: could not find DotNetWatch.targets");
+                return null;
+            }
+            return targetPath;
         }
     }
 }

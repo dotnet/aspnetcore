@@ -13,6 +13,8 @@
 
     <!-- Binary compatiblity is not a goal for command-line tools. -->
     <EnableApiCheck>false</EnableApiCheck>
+    <BaseIntermediateOutputPath>$(MSBuildThisFileDirectory)obj\$(MSBuildProjectName)\</BaseIntermediateOutputPath>
+    <BaseOutputPath>$(MSBuildThisFileDirectory)bin\$(MSBuildProjectName)\</BaseOutputPath>
   </PropertyGroup>
 
 </Project>

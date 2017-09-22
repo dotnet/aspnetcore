@@ -87,14 +87,12 @@ namespace Microsoft.DotNet.Watcher
                 {
                     return await ListFilesAsync(_reporter,
                         options.Project,
-                        options.MSBuildProjectExtensionsPath,
                         _cts.Token);
                 }
                 else
                 {
                     return await MainInternalAsync(_reporter,
                         options.Project,
-                        options.MSBuildProjectExtensionsPath,
                         options.RemainingArguments,
                         _cts.Token);
                 }
@@ -129,7 +127,6 @@ namespace Microsoft.DotNet.Watcher
         private async Task<int> MainInternalAsync(
             IReporter reporter,
             string project,
-            string msbuildProjectExtensionsPath,
             ICollection<string> args,
             CancellationToken cancellationToken)
         {
@@ -147,8 +144,8 @@ namespace Microsoft.DotNet.Watcher
 
             var fileSetFactory = new MsBuildFileSetFactory(reporter,
                 projectFile,
-                NormalizePath(msbuildProjectExtensionsPath),
-                waitOnError: true);
+                waitOnError: true,
+                trace: false);
             var processInfo = new ProcessSpec
             {
                 Executable = DotNetMuxer.MuxerPathOrDefault(),
@@ -174,7 +171,6 @@ namespace Microsoft.DotNet.Watcher
         private async Task<int> ListFilesAsync(
             IReporter reporter,
             string project,
-            string msbuildProjectExtensionsPath,
             CancellationToken cancellationToken)
         {
             // TODO multiple projects should be easy enough to add here
@@ -191,8 +187,8 @@ namespace Microsoft.DotNet.Watcher
 
             var fileSetFactory = new MsBuildFileSetFactory(reporter,
                 projectFile,
-                NormalizePath(msbuildProjectExtensionsPath),
-                waitOnError: false);
+                waitOnError: false,
+                trace: false);
             var files = await fileSetFactory.CreateAsync(cancellationToken);
 
             if (files == null)
@@ -210,21 +206,6 @@ namespace Microsoft.DotNet.Watcher
 
         private static IReporter CreateReporter(bool verbose, bool quiet, IConsole console)
             => new PrefixConsoleReporter(console, verbose || CliContext.IsGlobalVerbose(), quiet);
-
-        private string NormalizePath(string path)
-        {
-            if (path == null || Path.IsPathRooted(path))
-            {
-                return path;
-            }
-
-            if (string.IsNullOrWhiteSpace(path))
-            {
-                return _workingDir;
-            }
-
-            return Path.Combine(_workingDir, path);
-        }
 
         public void Dispose()
         {

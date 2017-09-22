@@ -41,11 +41,6 @@ namespace Microsoft.DotNet.Watcher.Tools.FunctionalTests
                 : base("KitchenSink", logger)
             {
             }
-
-            protected override IEnumerable<string> GetDefaultArgs()
-            {
-                return new[] { "--msbuildprojectextensionspath", ".net/obj", "run", "--" };
-            }
         }
     }
 }

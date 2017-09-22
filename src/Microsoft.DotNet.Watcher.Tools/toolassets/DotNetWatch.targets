@@ -1,0 +1,68 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<!--
+=========================================================================
+GenerateWatchList
+
+Main target called by dotnet-watch. It gathers MSBuild items and writes
+them to a file.
+=========================================================================
+-->
+  <Target Name="GenerateWatchList"
+          DependsOnTargets="_CollectWatchItems">
+    <WriteLinesToFile Overwrite="true"
+                      File="$(_DotNetWatchListFile)"
+                      Lines="@(Watch -> '%(FullPath)')" />
+  </Target>
+
+<!--
+=========================================================================
+_CollectWatchItems
+
+Gathers all files to be watched.
+Returns: @(Watch)
+=========================================================================
+-->
+  <PropertyGroup>
+    <_CollectWatchItemsDependsOn Condition=" '$(TargetFrameworks)' != '' AND '$(TargetFramework)' == '' ">
+      _CollectWatchItemsPerFramework;
+    </_CollectWatchItemsDependsOn>
+    <_CollectWatchItemsDependsOn Condition=" '$(TargetFramework)' != '' ">
+      _CoreCollectWatchItems;
+    </_CollectWatchItemsDependsOn>
+  </PropertyGroup>
+
+  <Target Name="_CollectWatchItems" DependsOnTargets="$(_CollectWatchItemsDependsOn)" Returns="@(Watch)" />
+
+  <Target Name="_CollectWatchItemsPerFramework">
+    <ItemGroup>
+      <_TargetFramework Include="$(TargetFrameworks)" />
+    </ItemGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="_CoreCollectWatchItems"
+             Properties="TargetFramework=%(_TargetFramework.Identity)">
+      <Output TaskParameter="TargetOutputs" ItemName="Watch" />
+    </MSBuild>
+  </Target>
+
+  <Target Name="_CoreCollectWatchItems" Returns="@(Watch)">
+    <!-- message used to debug -->
+    <Message Importance="High" Text="Collecting watch items from '$(MSBuildProjectName)'" Condition="'$(_DotNetWatchTraceOutput)'=='true'" />
+
+    <Error Text="TargetFramework should be set" Condition="'$(TargetFramework)' == '' "/>
+
+    <ItemGroup>
+      <Watch Include="%(Compile.FullPath)" Condition="'%(Compile.Watch)' != 'false'" />
+      <Watch Include="%(EmbeddedResource.FullPath)" Condition="'%(EmbeddedResource.Watch)' != 'false'"/>
+      <Watch Include="$(MSBuildProjectFullPath)" />
+      <_WatchProjects Include="%(ProjectReference.Identity)" Condition="'%(ProjectReference.Watch)' != 'false'" />
+    </ItemGroup>
+
+    <MSBuild Projects="@(_WatchProjects)"
+             Targets="_CollectWatchItems"
+             BuildInParallel="true">
+      <Output TaskParameter="TargetOutputs" ItemName="Watch" />
+    </MSBuild>
+  </Target>
+
+</Project>

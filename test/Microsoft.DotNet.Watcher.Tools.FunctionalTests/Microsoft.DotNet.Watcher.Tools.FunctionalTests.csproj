@@ -8,9 +8,7 @@
   <ItemGroup>
     <Compile Include="..\Shared\**\*.cs" />
     <Content Include="TestProjects\**\*" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchInner.targets" Link="toolassets\DotNetWatchInner.targets" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchOuter.targets" Link="toolassets\DotNetWatchOuter.targets" CopyToOutputDirectory="PreserveNewest" />
-    <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatchCommon.targets" Link="toolassets\DotNetWatchCommon.targets" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="..\..\src\Microsoft.DotNet.Watcher.Tools\toolassets\DotNetWatch.targets" Link="toolassets\DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 
   <ItemGroup>

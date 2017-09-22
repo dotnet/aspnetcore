@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <BaseIntermediateOutputPath>.net/obj</BaseIntermediateOutputPath>
+    <BaseOutputPath>.net/bin</BaseOutputPath>
   </PropertyGroup>
 
   <Import Project="Sdk.props" Sdk="Microsoft.NET.Sdk" />

@@ -12,9 +12,8 @@
 
   <ItemGroup>
     <Compile Include="..\..\shared\**\*.cs" />
-    <EmbeddedResource Include="dotnetwatch.targets" LogicalName="dotnetwatch.targets" />
-    <None Include="prefercliruntime" Pack="true" PackagePath="\prefercliruntime" />
-    <None Include="toolassets\*.targets" Pack="true" CopyToOutputDirectory="PreserveNewest" PackagePath="%(Identity)" />
+    <Content Include="prefercliruntime" PackagePath="\prefercliruntime" />
+    <Content Include="toolassets\DotNetWatch.targets" CopyToOutputDirectory="PreserveNewest" PackagePath="%(Identity)" />
   </ItemGroup>
 
   <ItemGroup>
