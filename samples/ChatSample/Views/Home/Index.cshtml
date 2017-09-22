@@ -35,15 +35,15 @@ connection.on('SetUsersOnline', usersOnline => {
 
 connection.on('UsersJoined', users => {
     users.forEach(user => {
-        appendLine('User ' + user.Name + ' joined the chat');
+        appendLine('User ' + user.name + ' joined the chat');
         addUserOnline(user);
     });
 });
 
 connection.on('UsersLeft', users => {
     users.forEach(user => {
-        appendLine('User ' + user.Name + ' left the chat');
-        document.getElementById(user.ConnectionId).outerHTML = '';
+        appendLine('User ' + user.name + ' left the chat');
+        document.getElementById(user.connectionId).outerHTML = '';
     });
 });
 
@@ -78,12 +78,12 @@ function appendLine(line, color) {
 };
 
 function addUserOnline(user) {
-    if (document.getElementById(user.ConnectionId)) {
+    if (document.getElementById(user.connectionId)) {
         return;
     }
     var userLi = document.createElement('li');
-    userLi.innerText = `${user.Name} (${user.ConnectionId})`;
-    userLi.id = user.ConnectionId;
+    userLi.innerText = `${user.name} (${user.connectionId})`;
+    userLi.id = user.connectionId;
     document.getElementById('users').appendChild(userLi);
 }
 

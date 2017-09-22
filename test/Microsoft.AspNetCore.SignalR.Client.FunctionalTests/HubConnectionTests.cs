@@ -245,7 +245,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         public static IEnumerable<IHubProtocol> HubProtocols =>
             new IHubProtocol[]
             {
-                new JsonHubProtocol(new JsonSerializer()),
+                new JsonHubProtocol(),
                 new MessagePackHubProtocol(),
             };
 

@@ -13,8 +13,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
+using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using MsgPack;
+using MsgPack.Serialization;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Xunit;
@@ -1005,7 +1008,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     o.JsonSerializerSettings = new JsonSerializerSettings
                     {
-                        ContractResolver = new CamelCasePropertyNamesContractResolver()
+                        ContractResolver = new DefaultContractResolver()
                     };
                 });
             });
@@ -1020,12 +1023,79 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await client.SendInvocationAsync(nameof(MethodHub.BroadcastItem)).OrTimeout();
 
-                var message = await client.ReadAsync().OrTimeout() as InvocationMessage;
+                var message = (InvocationMessage)await client.ReadAsync().OrTimeout();
 
                 var customItem = message.Arguments[0].ToString();
-                // Originally "Message" and "paramName"
+                // by default properties serialized by JsonHubProtocol are using camelCasing
+                Assert.Contains("Message", customItem);
+                Assert.Contains("paramName", customItem);
+
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task JsonHubProtocolUsesCamelCasingByDefault()
+        {
+            var serviceProvider = CreateServiceProvider();
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                await client.SendInvocationAsync(nameof(MethodHub.BroadcastItem)).OrTimeout();
+
+                var message = (InvocationMessage)await client.ReadAsync().OrTimeout();
+
+                var customItem = message.Arguments[0].ToString();
+                // originally Message, paramName
                 Assert.Contains("message", customItem);
                 Assert.Contains("paramName", customItem);
+
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task HubOptionsCanUseCustomMessagePackSettings()
+        {
+            var serializationContext = MessagePackHubProtocol.CreateDefaultSerializationContext();
+            serializationContext.SerializationMethod = SerializationMethod.Array;
+
+            var serviceProvider = CreateServiceProvider(services =>
+            {
+                services.AddSignalR(options =>
+                {
+                    options.MessagePackSerializationContext = serializationContext;
+                });
+            });
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var client = new TestClient(synchronousCallbacks: false, protocol: new MessagePackHubProtocol(serializationContext)))
+            {
+                var transportFeature = new Mock<IConnectionTransportFeature>();
+                transportFeature.SetupGet(f => f.TransportCapabilities).Returns(TransferMode.Binary);
+                client.Connection.Features.Set(transportFeature.Object);
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                await client.SendInvocationAsync(nameof(MethodHub.BroadcastItem)).OrTimeout();
+
+                var message = await client.ReadAsync().OrTimeout() as InvocationMessage;
+
+                var msgPackObject = Assert.IsType<MessagePackObject>(message.Arguments[0]);
+                // Custom serialization - object was serialized as an array and not a map
+                Assert.True(msgPackObject.IsArray);
+                Assert.Equal(new[] { "test", "param" }, ((MessagePackObject[])msgPackObject.ToObject()).Select(o => o.AsString()));
 
                 client.Dispose();
 
@@ -1427,6 +1497,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        public class Result
+        {
+            public string Message { get; set; }
+#pragma warning disable IDE1006 // Naming Styles
+            // testing casing
+            public string paramName { get; set; }
+#pragma warning restore IDE1006 // Naming Styles
+        }
+
         private class MethodHub : TestHub
         {
             public Task GroupRemoveMethod(string groupName)
@@ -1461,7 +1540,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             public Task BroadcastItem()
             {
-                return Clients.All.InvokeAsync("Broadcast", new { Message = "test", paramName = "test" });
+                return Clients.All.InvokeAsync("Broadcast", new Result { Message = "test", paramName = "param" });
             }
 
             public Task<int> TaskValueMethod()

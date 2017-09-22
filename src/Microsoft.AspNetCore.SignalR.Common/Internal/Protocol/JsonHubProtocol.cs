@@ -7,6 +7,7 @@ using System.IO;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
@@ -27,6 +28,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         // ONLY to be used for application payloads (args, return values, etc.)
         private JsonSerializer _payloadSerializer;
+
+        /// <summary>
+        /// Creates an instance of the <see cref="JsonHubProtocol"/> using the default <see cref="JsonSerializer"/>
+        /// to serialize application payloads (arguments, results, etc.). The serialization of the outer protocol can
+        /// NOT be changed using this serializer.
+        /// </summary>
+        public JsonHubProtocol()
+            : this(JsonSerializer.Create(CreateDefaultSerializerSettings()))
+        { }
 
         /// <summary>
         /// Creates an instance of the <see cref="JsonHubProtocol"/> using the specified <see cref="JsonSerializer"/>
@@ -248,6 +258,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 var payload = resultProp.Value?.ToObject(returnType, _payloadSerializer);
                 return new CompletionMessage(invocationId, error, result: payload, hasResult: true);
             }
+        }
+
+        public static JsonSerializerSettings CreateDefaultSerializerSettings()
+        {
+            return new JsonSerializerSettings { ContractResolver = new CamelCasePropertyNamesContractResolver() };
         }
     }
 }

@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             input = Frame(input);
 
             var binder = new TestBinder();
-            var protocol = new JsonHubProtocol(new JsonSerializer());
+            var protocol = new JsonHubProtocol();
             var ex = Assert.Throws<FormatException>(() => protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, out var messages));
             Assert.Equal(expectedMessage, ex.Message);
         }
@@ -133,7 +133,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             input = Frame(input);
 
             var binder = new TestBinder(paramTypes: new[] { typeof(int), typeof(string) }, returnType: typeof(bool));
-            var protocol = new JsonHubProtocol(new JsonSerializer());
+            var protocol = new JsonHubProtocol();
             var ex = Assert.Throws<FormatException>(() => protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, out var messages));
             Assert.Equal(expectedMessage, ex.Message);
         }
