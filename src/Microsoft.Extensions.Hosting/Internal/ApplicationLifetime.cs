@@ -107,28 +107,8 @@ namespace Microsoft.Extensions.Hosting.Internal
                 return;
             }
 
-            List<Exception> exceptions = null;
-
-            try
-            {
-                // Run the cancellation token callbacks
-                cancel.Cancel(throwOnFirstException: false);
-            }
-            catch (Exception ex)
-            {
-                if (exceptions == null)
-                {
-                    exceptions = new List<Exception>();
-                }
-
-                exceptions.Add(ex);
-            }
-
-            // Throw an aggregate exception if there were any exceptions
-            if (exceptions != null)
-            {
-                throw new AggregateException(exceptions);
-            }
+            // Run the cancellation token callbacks
+            cancel.Cancel(throwOnFirstException: false);
         }
     }
 }
