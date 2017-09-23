@@ -1,6 +1,224 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Hosting, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Hosting, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.ConventionBasedStartup",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Hosting.IStartup"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IStartup",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureServices",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "System.IServiceProvider",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IStartup",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "methods",
+              "Type": "Microsoft.AspNetCore.Hosting.Internal.StartupMethods"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.DelegateStartup",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Hosting.StartupBase<Microsoft.Extensions.DependencyInjection.IServiceCollection>",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IStartup",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "factory",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<Microsoft.Extensions.DependencyInjection.IServiceCollection>"
+            },
+            {
+              "Name": "configureApp",
+              "Type": "System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.StartupBase",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Hosting.IStartup"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IStartup",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureServices",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateServiceProvider",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "System.IServiceProvider",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.StartupBase<T0>",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "BaseType": "Microsoft.AspNetCore.Hosting.StartupBase",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateServiceProvider",
+          "Parameters": [
+            {
+              "Name": "services",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
+            }
+          ],
+          "ReturnType": "System.IServiceProvider",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureContainer",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "T0"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "factory",
+              "Type": "Microsoft.Extensions.DependencyInjection.IServiceProviderFactory<T0>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": [
+        {
+          "ParameterName": "TBuilder",
+          "ParameterPosition": 0,
+          "BaseTypeOrInterfaces": []
+        }
+      ]
+    },
     {
       "Name": "Microsoft.AspNetCore.Hosting.WebHostBuilder",
       "Visibility": "Public",
@@ -9,26 +227,6 @@
         "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
       ],
       "Members": [
-        {
-          "Kind": "Method",
-          "Name": "UseSetting",
-          "Parameters": [
-            {
-              "Name": "key",
-              "Type": "System.String"
-            },
-            {
-              "Name": "value",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
         {
           "Kind": "Method",
           "Name": "GetSetting",
@@ -47,11 +245,15 @@
         },
         {
           "Kind": "Method",
-          "Name": "UseLoggerFactory",
+          "Name": "UseSetting",
           "Parameters": [
             {
-              "Name": "loggerFactory",
-              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.String"
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
@@ -79,11 +281,27 @@
         },
         {
           "Kind": "Method",
-          "Name": "ConfigureLogging",
+          "Name": "ConfigureServices",
           "Parameters": [
             {
-              "Name": "configureLogging",
-              "Type": "System.Action<Microsoft.Extensions.Logging.ILoggerFactory>"
+              "Name": "configureServices",
+              "Type": "System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.DependencyInjection.IServiceCollection>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureAppConfiguration",
+          "Parameters": [
+            {
+              "Name": "configureDelegate",
+              "Type": "System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.Configuration.IConfigurationBuilder>"
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
@@ -182,6 +400,101 @@
               "BaseTypeOrInterfaces": []
             }
           ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseDefaultServiceProvider",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.Extensions.DependencyInjection.ServiceProviderOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseDefaultServiceProvider",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.DependencyInjection.ServiceProviderOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureAppConfiguration",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "configureDelegate",
+              "Type": "System.Action<Microsoft.Extensions.Configuration.IConfigurationBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureLogging",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "configureLogging",
+              "Type": "System.Action<Microsoft.Extensions.Logging.ILoggingBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ConfigureLogging",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "configureLogging",
+              "Type": "System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.Logging.ILoggingBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -197,7 +510,26 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "Run",
+          "Name": "StopAsync",
+          "Parameters": [
+            {
+              "Name": "host",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHost"
+            },
+            {
+              "Name": "timeout",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WaitForShutdown",
           "Parameters": [
             {
               "Name": "host",
@@ -212,7 +544,7 @@
         },
         {
           "Kind": "Method",
-          "Name": "Run",
+          "Name": "WaitForShutdownAsync",
           "Parameters": [
             {
               "Name": "host",
@@ -220,7 +552,23 @@
             },
             {
               "Name": "token",
-              "Type": "System.Threading.CancellationToken"
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Run",
+          "Parameters": [
+            {
+              "Name": "host",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHost"
             }
           ],
           "ReturnType": "System.Void",
@@ -228,148 +576,25 @@
           "Extension": true,
           "Visibility": "Public",
           "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Hosting.ConventionBasedStartup",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Hosting.IStartup"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Configure",
-          "Parameters": [
-            {
-              "Name": "app",
-              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IStartup",
-          "Visibility": "Public",
-          "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "ConfigureServices",
+          "Name": "RunAsync",
           "Parameters": [
             {
-              "Name": "services",
-              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
-            }
-          ],
-          "ReturnType": "System.IServiceProvider",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IStartup",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
+              "Name": "host",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHost"
+            },
             {
-              "Name": "methods",
-              "Type": "Microsoft.AspNetCore.Hosting.Internal.StartupMethods"
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
             }
           ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
           "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Hosting.DelegateStartup",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Hosting.StartupBase",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Configure",
-          "Parameters": [
-            {
-              "Name": "app",
-              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IStartup",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "configureApp",
-              "Type": "System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Hosting.StartupBase",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Hosting.IStartup"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "Configure",
-          "Parameters": [
-            {
-              "Name": "app",
-              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "Abstract": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IStartup",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "ConfigureServices",
-          "Parameters": [
-            {
-              "Name": "services",
-              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
-            }
-          ],
-          "ReturnType": "System.IServiceProvider",
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IStartup",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Protected",
           "GenericParameter": []
         }
       ],
@@ -388,6 +613,33 @@
           "Name": "get_Addresses",
           "Parameters": [],
           "ReturnType": "System.Collections.Generic.ICollection<System.String>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PreferHostingUrls",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PreferHostingUrls",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Hosting.Server.Features.IServerAddressesFeature",
@@ -475,7 +727,12 @@
         {
           "Kind": "Constructor",
           "Name": ".ctor",
-          "Parameters": [],
+          "Parameters": [
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Hosting.Internal.ApplicationLifetime>"
+            }
+          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -559,6 +816,56 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Hosting.Internal.ConfigureContainerBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MethodInfo",
+          "Parameters": [],
+          "ReturnType": "System.Reflection.MethodInfo",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [
+            {
+              "Name": "instance",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Action<System.Object>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetContainerType",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "configureContainerMethod",
+              "Type": "System.Reflection.MethodInfo"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Hosting.Internal.ConfigureServicesBuilder",
       "Visibility": "Public",
       "Kind": "Class",
@@ -601,6 +908,57 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Hosting.Internal.HostedServiceExecutor",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "StartAsync",
+          "Parameters": [
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StopAsync",
+          "Parameters": [
+            {
+              "Name": "token",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Hosting.Internal.HostedServiceExecutor>"
+            },
+            {
+              "Name": "services",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.Extensions.Hosting.IHostedService>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Hosting.Internal.HostingApplication",
       "Visibility": "Public",
       "Kind": "Class",
@@ -618,6 +976,22 @@
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Hosting.Internal.HostingApplication+Context",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.Server.IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication+Context>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ProcessRequestAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Hosting.Internal.HostingApplication+Context"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Hosting.Server.IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication+Context>",
@@ -645,22 +1019,6 @@
           "GenericParameter": []
         },
         {
-          "Kind": "Method",
-          "Name": "ProcessRequestAsync",
-          "Parameters": [
-            {
-              "Name": "context",
-              "Type": "Microsoft.AspNetCore.Hosting.Internal.HostingApplication+Context"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.Server.IHttpApplication<Microsoft.AspNetCore.Hosting.Internal.HostingApplication+Context>",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
@@ -674,7 +1032,7 @@
             },
             {
               "Name": "diagnosticSource",
-              "Type": "System.Diagnostics.DiagnosticSource"
+              "Type": "System.Diagnostics.DiagnosticListener"
             },
             {
               "Name": "httpContextFactory",
@@ -907,6 +1265,76 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Hosting.Internal.HostingEventSource",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Diagnostics.Tracing.EventSource",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "HostStart",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "HostStop",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RequestStart",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "path",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RequestStop",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UnhandledException",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Log",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.Internal.HostingEventSource",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Hosting.Internal.RequestServicesContainerMiddleware",
       "Visibility": "Public",
       "Kind": "Class",
@@ -1017,7 +1445,7 @@
           "Name": "LoadMethods",
           "Parameters": [
             {
-              "Name": "services",
+              "Name": "hostingServiceProvider",
               "Type": "System.IServiceProvider"
             },
             {
@@ -1070,6 +1498,14 @@
       "Members": [
         {
           "Kind": "Method",
+          "Name": "get_StartupInstance",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_ConfigureServicesDelegate",
           "Parameters": [],
           "ReturnType": "System.Func<Microsoft.Extensions.DependencyInjection.IServiceCollection, System.IServiceProvider>",
@@ -1089,17 +1525,9 @@
           "Name": ".ctor",
           "Parameters": [
             {
-              "Name": "configure",
-              "Type": "System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
+              "Name": "instance",
+              "Type": "System.Object"
+            },
             {
               "Name": "configure",
               "Type": "System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>"
@@ -1107,92 +1535,6 @@
             {
               "Name": "configureServices",
               "Type": "System.Func<Microsoft.Extensions.DependencyInjection.IServiceCollection, System.IServiceProvider>"
-            }
-          ],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Hosting.Internal.WebHost",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "ImplementedInterfaces": [
-        "Microsoft.AspNetCore.Hosting.IWebHost"
-      ],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_Services",
-          "Parameters": [],
-          "ReturnType": "System.IServiceProvider",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IWebHost",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_ServerFeatures",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Http.Features.IFeatureCollection",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IWebHost",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Initialize",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Start",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Hosting.IWebHost",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Dispose",
-          "Parameters": [],
-          "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "System.IDisposable",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "appServices",
-              "Type": "Microsoft.Extensions.DependencyInjection.IServiceCollection"
-            },
-            {
-              "Name": "hostingServiceProvider",
-              "Type": "System.IServiceProvider"
-            },
-            {
-              "Name": "options",
-              "Type": "Microsoft.AspNetCore.Hosting.Internal.WebHostOptions"
-            },
-            {
-              "Name": "config",
-              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
             }
           ],
           "Visibility": "Public",
@@ -1222,6 +1564,48 @@
             {
               "Name": "value",
               "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PreventHostingStartup",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PreventHostingStartup",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HostingStartupAssemblies",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyList<System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HostingStartupAssemblies",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.String>"
             }
           ],
           "ReturnType": "System.Void",
@@ -1355,6 +1739,27 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "get_ShutdownTimeout",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ShutdownTimeout",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
@@ -1370,6 +1775,40 @@
               "Type": "Microsoft.Extensions.Configuration.IConfiguration"
             }
           ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.Internal.WebHostUtilities",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "ParseBool",
+          "Parameters": [
+            {
+              "Name": "configuration",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -1506,19 +1945,50 @@
           "ReturnType": "System.Void",
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_EventLogEnabled",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_EventLogEnabled",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Activity",
+          "Parameters": [],
+          "ReturnType": "System.Diagnostics.Activity",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Activity",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Diagnostics.Activity"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.Extensions.Internal.Native.NativeMethods+Windows",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "Static": true,
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [],
       "GenericParameters": []
     }
   ]

@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Hosting.Server.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Hosting.Server.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Hosting.Server.IHttpApplication<T0>",
@@ -75,14 +75,18 @@
         },
         {
           "Kind": "Method",
-          "Name": "Start<T0>",
+          "Name": "StartAsync<T0>",
           "Parameters": [
             {
               "Name": "application",
               "Type": "Microsoft.AspNetCore.Hosting.Server.IHttpApplication<T0>"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
             }
           ],
-          "ReturnType": "System.Void",
+          "ReturnType": "System.Threading.Tasks.Task",
           "GenericParameter": [
             {
               "ParameterName": "TContext",
@@ -90,6 +94,18 @@
               "BaseTypeOrInterfaces": []
             }
           ]
+        },
+        {
+          "Kind": "Method",
+          "Name": "StopAsync",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -106,6 +122,25 @@
           "Name": "get_Addresses",
           "Parameters": [],
           "ReturnType": "System.Collections.Generic.ICollection<System.String>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PreferHostingUrls",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PreferHostingUrls",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
           "GenericParameter": []
         }
       ],

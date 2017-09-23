@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Hosting.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Hosting.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Hosting.EnvironmentName",
@@ -207,6 +207,44 @@
         },
         {
           "Kind": "Method",
+          "Name": "PreferHostingUrls",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "preferHostingUrls",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UseShutdownTimeout",
+          "Parameters": [
+            {
+              "Name": "hostBuilder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            },
+            {
+              "Name": "timeout",
+              "Type": "System.TimeSpan"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "Start",
           "Parameters": [
             {
@@ -298,6 +336,37 @@
           "ReturnType": "System.Boolean",
           "Static": true,
           "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.HostingStartupAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_HostingStartupType",
+          "Parameters": [],
+          "ReturnType": "System.Type",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "hostingStartupType",
+              "Type": "System.Type"
+            }
+          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -467,6 +536,28 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Hosting.IHostingStartup",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Configure",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Hosting.IWebHostBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Hosting.IStartup",
       "Visibility": "Public",
       "Kind": "Interface",
@@ -551,6 +642,32 @@
           "Parameters": [],
           "ReturnType": "System.Void",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StartAsync",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StopAsync",
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -571,11 +688,11 @@
         },
         {
           "Kind": "Method",
-          "Name": "UseLoggerFactory",
+          "Name": "ConfigureAppConfiguration",
           "Parameters": [
             {
-              "Name": "loggerFactory",
-              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+              "Name": "configureDelegate",
+              "Type": "System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.Configuration.IConfigurationBuilder>"
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
@@ -595,14 +712,26 @@
         },
         {
           "Kind": "Method",
-          "Name": "ConfigureLogging",
+          "Name": "ConfigureServices",
           "Parameters": [
             {
-              "Name": "configureLogging",
-              "Type": "System.Action<Microsoft.Extensions.Logging.ILoggerFactory>"
+              "Name": "configureServices",
+              "Type": "System.Action<Microsoft.AspNetCore.Hosting.WebHostBuilderContext, Microsoft.Extensions.DependencyInjection.IServiceCollection>"
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetSetting",
+          "Parameters": [
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
           "GenericParameter": []
         },
         {
@@ -620,17 +749,63 @@
           ],
           "ReturnType": "Microsoft.AspNetCore.Hosting.IWebHostBuilder",
           "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Hosting.WebHostBuilderContext",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_HostingEnvironment",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Hosting.IHostingEnvironment",
+          "Visibility": "Public",
+          "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "GetSetting",
+          "Name": "set_HostingEnvironment",
           "Parameters": [
             {
-              "Name": "key",
-              "Type": "System.String"
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Hosting.IHostingEnvironment"
             }
           ],
-          "ReturnType": "System.String",
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Configuration",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Configuration.IConfiguration",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Configuration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Configuration.IConfiguration"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
           "GenericParameter": []
         }
       ],
@@ -658,6 +833,16 @@
         {
           "Kind": "Field",
           "Name": "StartupAssemblyKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "HostingStartupAssembliesKey",
           "Parameters": [],
           "ReturnType": "System.String",
           "Static": true,
@@ -718,6 +903,36 @@
         {
           "Kind": "Field",
           "Name": "ContentRootKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "PreferHostingUrlsKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "PreventHostingStartupKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "ShutdownTimeoutKey",
           "Parameters": [],
           "ReturnType": "System.String",
           "Static": true,
