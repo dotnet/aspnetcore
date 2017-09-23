@@ -1340,6 +1340,20 @@ namespace Microsoft.AspNetCore.Mvc.Core
         internal static string FormatValidationProblemDescription_Title()
             => GetString("ValidationProblemDescription_Title");
 
+        /// <summary>
+        /// Action methods on controllers annotated with {0} must have an attribute route.
+        /// </summary>
+        internal static string ApiController_AttributeRouteRequired
+        {
+            get => GetString("ApiController_AttributeRouteRequired");
+        }
+
+        /// <summary>
+        /// Action methods on controllers annotated with {0} must have an attribute route.
+        /// </summary>
+        internal static string FormatApiController_AttributeRouteRequired(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ApiController_AttributeRouteRequired"), p0);
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

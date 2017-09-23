@@ -33,9 +33,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         /// <remarks>
-        /// Order is set to execute after the <see cref="DefaultApplicationModelProvider"/>.
+        /// Order is set to execute after the <see cref="DefaultApplicationModelProvider"/> and allow any other user
+        /// <see cref="IApplicationModelProvider"/> that configure routing to execute.
         /// </remarks>
-        public int Order => -1000 + 10;
+        public int Order => -1000 + 100;
 
         public void OnProvidersExecuted(ApplicationModelProviderContext context)
         {
@@ -45,21 +46,19 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             foreach (var controllerModel in context.Result.Controllers)
             {
-                if (controllerModel.Attributes.OfType<IApiBehaviorMetadata>().Any())
-                {
-                    if (_apiBehaviorOptions.EnableModelStateInvalidFilter)
-                    {
-                        Debug.Assert(_apiBehaviorOptions.InvalidModelStateResponseFactory != null);
-                        controllerModel.Filters.Add(_modelStateInvalidFilter);
-                    }
-
-                    continue;
-                }
+                var isApiController = controllerModel.Attributes.OfType<IApiBehaviorMetadata>().Any();
+                var controllerHasSelectorModel = controllerModel.Selectors.Any(s => s.AttributeRouteModel != null);
 
                 foreach (var actionModel in controllerModel.Actions)
                 {
-                    if (actionModel.Attributes.OfType<IApiBehaviorMetadata>().Any())
+                    if (isApiController || actionModel.Attributes.OfType<IApiBehaviorMetadata>().Any())
                     {
+                        if (!controllerHasSelectorModel && !actionModel.Selectors.Any(s => s.AttributeRouteModel != null))
+                        {
+                            // Require attribute routing with controllers annotated with ApiControllerAttribute
+                            throw new InvalidOperationException(Resources.FormatApiController_AttributeRouteRequired(nameof(ApiControllerAttribute)));
+                        }
+
                         if (_apiBehaviorOptions.EnableModelStateInvalidFilter)
                         {
                             Debug.Assert(_apiBehaviorOptions.InvalidModelStateResponseFactory != null);

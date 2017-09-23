@@ -415,4 +415,7 @@
   <data name="ValidationProblemDescription_Title" xml:space="preserve">
     <value>One or more validation errors occured.</value>
   </data>
+  <data name="ApiController_AttributeRouteRequired" xml:space="preserve">
+    <value>Action methods on controllers annotated with {0} must have an attribute route.</value>
+  </data>
 </root>

@@ -22,15 +22,15 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 InvalidModelStateResponseFactory = _ => null,
             });
-            
+
             var provider = new ApiControllerApplicationModelProvider(options, NullLoggerFactory.Instance);
 
             // Act
             provider.OnProvidersExecuting(context);
 
             // Assert
-            var controllerModel = Assert.Single(context.Result.Controllers);
-            Assert.IsType<ModelStateInvalidFilter>(controllerModel.Filters.Last());
+            var actionModel = Assert.Single(Assert.Single(context.Result.Controllers).Actions);
+            Assert.IsType<ModelStateInvalidFilter>(actionModel.Filters.Last());
         }
 
         [Fact]
@@ -109,6 +109,25 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 });
         }
 
+        [Fact]
+        public void OnProvidersExecuting_ThrowsIfControllerWithAttribute_HasActionsWithoutAttributeRouting()
+        {
+            // Arrange
+            var context = GetContext(typeof(ActionsWithoutAttributeRouting));
+            var options = new TestOptionsManager<ApiBehaviorOptions>(new ApiBehaviorOptions
+            {
+                InvalidModelStateResponseFactory = _ => null,
+            });
+
+            var provider = new ApiControllerApplicationModelProvider(options, NullLoggerFactory.Instance);
+
+            // Act & Assert
+            var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));
+            Assert.Equal(
+                "Action methods on controllers annotated with ApiControllerAttribute must have an attribute route.",
+                ex.Message);
+        }
+
         private static ApplicationModelProviderContext GetContext(Type type)
         {
             var context = new ApplicationModelProviderContext(new[] { type.GetTypeInfo() });
@@ -117,18 +136,26 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [ApiController]
+        [Route("TestApi")]
         private class TestApiController : Controller
         {
+            [HttpGet]
             public IActionResult TestAction() => null;
         }
 
-        
         private class SimpleController : Controller
         {
             public IActionResult ActionWithoutFilter() => null;
 
             [TestApiBehavior]
+            [HttpGet("/Simple/ActionWithFilter")]
             public IActionResult ActionWithFilter() => null;
+        }
+
+        [ApiController]
+        private class ActionsWithoutAttributeRouting
+        {
+            public IActionResult Index() => null;
         }
 
         [AttributeUsage(AttributeTargets.Method)]
