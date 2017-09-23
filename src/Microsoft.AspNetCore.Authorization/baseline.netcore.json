@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Authorization, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Authorization, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Extensions.DependencyInjection.AuthorizationServiceCollectionExtensions",
@@ -60,6 +60,54 @@
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authorization.AuthorizationFailure",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_FailCalled",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_FailedRequirements",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ExplicitFail",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.AuthorizationFailure",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Failed",
+          "Parameters": [
+            {
+              "Name": "failed",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.AuthorizationFailure",
+          "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -208,6 +256,7 @@
           "Name": "get_Requirements",
           "Parameters": [],
           "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement>",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -216,6 +265,7 @@
           "Name": "get_User",
           "Parameters": [],
           "ReturnType": "System.Security.Claims.ClaimsPrincipal",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -224,6 +274,7 @@
           "Name": "get_Resource",
           "Parameters": [],
           "ReturnType": "System.Object",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -232,6 +283,7 @@
           "Name": "get_PendingRequirements",
           "Parameters": [],
           "ReturnType": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement>",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -240,6 +292,7 @@
           "Name": "get_HasFailed",
           "Parameters": [],
           "ReturnType": "System.Boolean",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -248,6 +301,7 @@
           "Name": "get_HasSucceeded",
           "Parameters": [],
           "ReturnType": "System.Boolean",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -256,6 +310,7 @@
           "Name": "Fail",
           "Parameters": [],
           "ReturnType": "System.Void",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -269,6 +324,7 @@
             }
           ],
           "ReturnType": "System.Void",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -301,6 +357,27 @@
       "Kind": "Class",
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_InvokeHandlersAfterFailure",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_InvokeHandlersAfterFailure",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_DefaultPolicy",
@@ -715,6 +792,63 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Authorization.AuthorizationResult",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Succeeded",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Failure",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.AuthorizationFailure",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Success",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.AuthorizationResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Failed",
+          "Parameters": [
+            {
+              "Name": "failure",
+              "Type": "Microsoft.AspNetCore.Authorization.AuthorizationFailure"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.AuthorizationResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Failed",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.AuthorizationResult",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Authorization.AuthorizationServiceExtensions",
       "Visibility": "Public",
       "Kind": "Class",
@@ -744,7 +878,7 @@
               "Type": "Microsoft.AspNetCore.Authorization.IAuthorizationRequirement"
             }
           ],
-          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult>",
           "Static": true,
           "Extension": true,
           "Visibility": "Public",
@@ -771,7 +905,7 @@
               "Type": "Microsoft.AspNetCore.Authorization.AuthorizationPolicy"
             }
           ],
-          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult>",
           "Static": true,
           "Extension": true,
           "Visibility": "Public",
@@ -794,7 +928,7 @@
               "Type": "Microsoft.AspNetCore.Authorization.AuthorizationPolicy"
             }
           ],
-          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult>",
           "Static": true,
           "Extension": true,
           "Visibility": "Public",
@@ -817,7 +951,7 @@
               "Type": "System.String"
             }
           ],
-          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult>",
           "Static": true,
           "Extension": true,
           "Visibility": "Public",
@@ -891,12 +1025,36 @@
         },
         {
           "Kind": "Method",
-          "Name": "get_ActiveAuthenticationSchemes",
+          "Name": "get_AuthenticationSchemes",
           "Parameters": [],
           "ReturnType": "System.String",
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Authorization.IAuthorizeData",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AuthenticationSchemes",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authorization.IAuthorizeData",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ActiveAuthenticationSchemes",
+          "Parameters": [],
+          "ReturnType": "System.String",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -910,9 +1068,6 @@
             }
           ],
           "ReturnType": "System.Void",
-          "Sealed": true,
-          "Virtual": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Authorization.IAuthorizeData",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -930,6 +1085,120 @@
             {
               "Name": "policy",
               "Type": "System.String"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authorization.DefaultAuthorizationEvaluator",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authorization.IAuthorizationEvaluator"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.AuthorizationResult",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authorization.IAuthorizationEvaluator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authorization.DefaultAuthorizationHandlerContextFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authorization.IAuthorizationHandlerContextFactory"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateContext",
+          "Parameters": [
+            {
+              "Name": "requirements",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement>"
+            },
+            {
+              "Name": "user",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            },
+            {
+              "Name": "resource",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authorization.IAuthorizationHandlerContextFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authorization.DefaultAuthorizationHandlerProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Authorization.IAuthorizationHandlerProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetHandlersAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationHandler>>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Authorization.IAuthorizationHandlerProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "handlers",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationHandler>"
             }
           ],
           "Visibility": "Public",
@@ -1012,7 +1281,7 @@
               "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement>"
             }
           ],
-          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult>",
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Authorization.IAuthorizationService",
@@ -1036,7 +1305,7 @@
               "Type": "System.String"
             }
           ],
-          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult>",
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Authorization.IAuthorizationService",
@@ -1053,11 +1322,23 @@
             },
             {
               "Name": "handlers",
-              "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationHandler>"
+              "Type": "Microsoft.AspNetCore.Authorization.IAuthorizationHandlerProvider"
             },
             {
               "Name": "logger",
               "Type": "Microsoft.Extensions.Logging.ILogger<Microsoft.AspNetCore.Authorization.DefaultAuthorizationService>"
+            },
+            {
+              "Name": "contextFactory",
+              "Type": "Microsoft.AspNetCore.Authorization.IAuthorizationHandlerContextFactory"
+            },
+            {
+              "Name": "evaluator",
+              "Type": "Microsoft.AspNetCore.Authorization.IAuthorizationEvaluator"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authorization.AuthorizationOptions>"
             }
           ],
           "Visibility": "Public",
@@ -1073,6 +1354,28 @@
       "Abstract": true,
       "ImplementedInterfaces": [],
       "Members": [],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authorization.IAuthorizationEvaluator",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Evaluate",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.AuthorizationResult",
+          "GenericParameter": []
+        }
+      ],
       "GenericParameters": []
     },
     {
@@ -1092,6 +1395,58 @@
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authorization.IAuthorizationHandlerContextFactory",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateContext",
+          "Parameters": [
+            {
+              "Name": "requirements",
+              "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement>"
+            },
+            {
+              "Name": "user",
+              "Type": "System.Security.Claims.ClaimsPrincipal"
+            },
+            {
+              "Name": "resource",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Authorization.IAuthorizationHandlerProvider",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetHandlersAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Authorization.AuthorizationHandlerContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task<System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationHandler>>",
           "GenericParameter": []
         }
       ],
@@ -1159,7 +1514,7 @@
               "Type": "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Authorization.IAuthorizationRequirement>"
             }
           ],
-          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult>",
           "GenericParameter": []
         },
         {
@@ -1179,7 +1534,7 @@
               "Type": "System.String"
             }
           ],
-          "ReturnType": "System.Threading.Tasks.Task<System.Boolean>",
+          "ReturnType": "System.Threading.Tasks.Task<Microsoft.AspNetCore.Authorization.AuthorizationResult>",
           "GenericParameter": []
         }
       ],
@@ -1232,14 +1587,14 @@
         },
         {
           "Kind": "Method",
-          "Name": "get_ActiveAuthenticationSchemes",
+          "Name": "get_AuthenticationSchemes",
           "Parameters": [],
           "ReturnType": "System.String",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "set_ActiveAuthenticationSchemes",
+          "Name": "set_AuthenticationSchemes",
           "Parameters": [
             {
               "Name": "value",
@@ -1588,6 +1943,5 @@
       ],
       "GenericParameters": []
     }
-  ],
-  "SourceFilters": []
+  ]
 }

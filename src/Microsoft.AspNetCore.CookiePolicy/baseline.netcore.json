@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.CookiePolicy, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.CookiePolicy, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Builder.CookiePolicyAppBuilderExtensions",
@@ -53,6 +53,27 @@
       "Kind": "Class",
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_MinimumSameSitePolicy",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.SameSiteMode",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MinimumSameSitePolicy",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.SameSiteMode"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_HttpOnly",
@@ -387,6 +408,5 @@
       ],
       "GenericParameters": []
     }
-  ],
-  "SourceFilters": []
+  ]
 }

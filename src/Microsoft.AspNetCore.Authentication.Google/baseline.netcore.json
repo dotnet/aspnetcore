@@ -1,6 +1,102 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.Google, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Authentication.Google, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
+    {
+      "Name": "Microsoft.Extensions.DependencyInjection.GoogleExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddGoogle",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddGoogle",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Authentication.Google.GoogleOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddGoogle",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder"
+            },
+            {
+              "Name": "authenticationScheme",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Authentication.Google.GoogleOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddGoogle",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder"
+            },
+            {
+              "Name": "authenticationScheme",
+              "Type": "System.String"
+            },
+            {
+              "Name": "displayName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "configureOptions",
+              "Type": "System.Action<Microsoft.AspNetCore.Authentication.Google.GoogleOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
     {
       "Name": "Microsoft.AspNetCore.Authentication.Google.GoogleDefaults",
       "Visibility": "Public",
@@ -10,6 +106,16 @@
       "Sealed": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Field",
+          "Name": "DisplayName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Field",
           "Name": "AuthorizationEndpoint",
@@ -65,76 +171,6 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "GetId",
-          "Parameters": [
-            {
-              "Name": "user",
-              "Type": "Newtonsoft.Json.Linq.JObject"
-            }
-          ],
-          "ReturnType": "System.String",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetName",
-          "Parameters": [
-            {
-              "Name": "user",
-              "Type": "Newtonsoft.Json.Linq.JObject"
-            }
-          ],
-          "ReturnType": "System.String",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetGivenName",
-          "Parameters": [
-            {
-              "Name": "user",
-              "Type": "Newtonsoft.Json.Linq.JObject"
-            }
-          ],
-          "ReturnType": "System.String",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetFamilyName",
-          "Parameters": [
-            {
-              "Name": "user",
-              "Type": "Newtonsoft.Json.Linq.JObject"
-            }
-          ],
-          "ReturnType": "System.String",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "GetProfile",
-          "Parameters": [
-            {
-              "Name": "user",
-              "Type": "Newtonsoft.Json.Linq.JObject"
-            }
-          ],
-          "ReturnType": "System.String",
-          "Static": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "GetEmail",
           "Parameters": [
             {
@@ -151,51 +187,37 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.AspNetCore.Authentication.Google.GoogleMiddleware",
+      "Name": "Microsoft.AspNetCore.Authentication.Google.GoogleOptions",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Authentication.OAuth.OAuthMiddleware<Microsoft.AspNetCore.Builder.GoogleOptions>",
+      "BaseType": "Microsoft.AspNetCore.Authentication.OAuth.OAuthOptions",
       "ImplementedInterfaces": [],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "CreateHandler",
+          "Name": "get_AccessType",
           "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Authentication.AuthenticationHandler<Microsoft.AspNetCore.Builder.GoogleOptions>",
-          "Virtual": true,
-          "Override": true,
-          "Visibility": "Protected",
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AccessType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
           "GenericParameter": []
         },
         {
           "Kind": "Constructor",
           "Name": ".ctor",
-          "Parameters": [
-            {
-              "Name": "next",
-              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
-            },
-            {
-              "Name": "dataProtectionProvider",
-              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider"
-            },
-            {
-              "Name": "loggerFactory",
-              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
-            },
-            {
-              "Name": "encoder",
-              "Type": "System.Text.Encodings.Web.UrlEncoder"
-            },
-            {
-              "Name": "sharedOptions",
-              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Authentication.SharedAuthenticationOptions>"
-            },
-            {
-              "Name": "options",
-              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Builder.GoogleOptions>"
-            }
-          ],
+          "Parameters": [],
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -236,7 +258,7 @@
             },
             {
               "Name": "options",
-              "Type": "Microsoft.AspNetCore.Builder.GoogleOptions"
+              "Type": "Microsoft.AspNetCore.Authentication.Google.GoogleOptions"
             }
           ],
           "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
@@ -247,45 +269,6 @@
         }
       ],
       "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Builder.GoogleOptions",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "BaseType": "Microsoft.AspNetCore.Builder.OAuthOptions",
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_AccessType",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_AccessType",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Constructor",
-          "Name": ".ctor",
-          "Parameters": [],
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
     }
-  ],
-  "SourceFilters": []
+  ]
 }
