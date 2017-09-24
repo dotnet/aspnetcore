@@ -150,6 +150,40 @@ namespace Microsoft.AspNetCore.Sockets.Tests
             }
         }
 
+        [Fact]
+        public async Task PostNotAllowedForWebSocketConnections()
+        {
+            var manager = CreateConnectionManager();
+            var dispatcher = new HttpConnectionDispatcher(manager, new LoggerFactory());
+            var connection = manager.CreateConnection();
+            connection.Metadata[ConnectionMetadataNames.Transport] = TransportType.WebSockets;
+
+            using (var strm = new MemoryStream())
+            {
+                var context = new DefaultHttpContext();
+                context.Response.Body = strm;
+
+                var services = new ServiceCollection();
+                services.AddEndPoint<TestEndPoint>();
+                services.AddOptions();
+                context.Request.Path = "/foo";
+                context.Request.Method = "POST";
+                var values = new Dictionary<string, StringValues>();
+                values["id"] = connection.ConnectionId;
+                var qs = new QueryCollection(values);
+                context.Request.Query = qs;
+
+                var builder = new SocketBuilder(services.BuildServiceProvider());
+                builder.UseEndPoint<TestEndPoint>();
+                var app = builder.Build();
+                await dispatcher.ExecuteAsync(context, new HttpSocketOptions(), app);
+
+                Assert.Equal(StatusCodes.Status405MethodNotAllowed, context.Response.StatusCode);
+                await strm.FlushAsync();
+                Assert.Equal("POST requests are not allowed for WebSocket connections.", Encoding.UTF8.GetString(strm.ToArray()));
+            }
+        }
+
         [Theory]
         [InlineData(TransportType.ServerSentEvents)]
         [InlineData(TransportType.LongPolling)]

@@ -50,6 +50,9 @@ namespace Microsoft.AspNetCore.Sockets.Internal
         private static readonly Action<ILogger, DateTime, string, TransportType, TransportType, Exception> _cannotChangeTransport =
             LoggerMessage.Define<DateTime, string, TransportType, TransportType>(LogLevel.Debug, new EventId(7, nameof(CannotChangeTransport)), "{time}: Connection Id {connectionId}: Cannot change transports mid-connection; currently using {transportType}, requesting {requestedTransport}.");
 
+        private static readonly Action<ILogger, DateTime, string, Exception> _postNotallowedForWebsockets =
+            LoggerMessage.Define<DateTime, string>(LogLevel.Debug, new EventId(8, nameof(PostNotAllowedForWebSockets)), "{time}: Connection Id {connectionId}: POST requests are not allowed for websocket connections.");
+
         private static readonly Action<ILogger, DateTime, string, Exception> _negotiationRequest =
             LoggerMessage.Define<DateTime, string>(LogLevel.Debug, new EventId(8, nameof(NegotiationRequest)), "{time}: Connection Id {connectionId}: Sending negotiation response.");
 
@@ -198,6 +201,14 @@ namespace Microsoft.AspNetCore.Sockets.Internal
             if (logger.IsEnabled(LogLevel.Debug))
             {
                 _cannotChangeTransport(logger, DateTime.Now, connectionId, transport, requestTransport, null);
+            }
+        }
+
+        public static void PostNotAllowedForWebSockets(this ILogger logger, string connectionId)
+        {
+            if (logger.IsEnabled(LogLevel.Debug))
+            {
+                _postNotallowedForWebsockets(logger, DateTime.Now, connectionId, null);
             }
         }
 

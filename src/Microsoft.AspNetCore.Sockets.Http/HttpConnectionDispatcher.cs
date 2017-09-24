@@ -388,6 +388,15 @@ namespace Microsoft.AspNetCore.Sockets
                 return;
             }
 
+            var transport = (TransportType?)connection.Metadata[ConnectionMetadataNames.Transport];
+            if (transport == TransportType.WebSockets)
+            {
+                _logger.PostNotAllowedForWebSockets(connection.ConnectionId);
+                context.Response.StatusCode = StatusCodes.Status405MethodNotAllowed;
+                await context.Response.WriteAsync("POST requests are not allowed for WebSocket connections.");
+                return;
+            }
+
             // TODO: Use a pool here
 
             byte[] buffer;
