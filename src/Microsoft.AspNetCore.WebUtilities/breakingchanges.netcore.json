@@ -1,7 +1,0 @@
-[
-  {
-    "TypeId": "public class Microsoft.AspNetCore.WebUtilities.HttpResponseStreamWriter : System.IO.TextWriter",
-    "MemberId": "public const System.Int32 DefaultBufferSize = 1024",
-    "Kind": "Removal"
-  }
-]

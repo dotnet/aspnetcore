@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.Net.Http.Headers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.Net.Http.Headers, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.Net.Http.Headers.CacheControlHeaderValue",
@@ -32,7 +32,7 @@
           "Kind": "Method",
           "Name": "get_NoCacheHeaders",
           "Parameters": [],
-          "ReturnType": "System.Collections.Generic.ICollection<System.String>",
+          "ReturnType": "System.Collections.Generic.ICollection<Microsoft.Extensions.Primitives.StringSegment>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -250,7 +250,7 @@
           "Kind": "Method",
           "Name": "get_PrivateHeaders",
           "Parameters": [],
-          "ReturnType": "System.Collections.Generic.ICollection<System.String>",
+          "ReturnType": "System.Collections.Generic.ICollection<Microsoft.Extensions.Primitives.StringSegment>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -345,7 +345,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.CacheControlHeaderValue",
@@ -359,7 +359,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "parsedValue",
@@ -378,6 +378,126 @@
           "Parameters": [],
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "PublicString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "PrivateString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MaxAgeString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "SharedMaxAgeString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "NoCacheString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "NoStoreString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MaxStaleString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MinFreshString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "NoTransformString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "OnlyIfCachedString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "MustRevalidateString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "ProxyRevalidateString",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -392,7 +512,7 @@
           "Kind": "Method",
           "Name": "get_DispositionType",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -402,7 +522,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -421,7 +541,7 @@
           "Kind": "Method",
           "Name": "get_Name",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -431,7 +551,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -442,7 +562,7 @@
           "Kind": "Method",
           "Name": "get_FileName",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -452,7 +572,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -463,7 +583,7 @@
           "Kind": "Method",
           "Name": "get_FileNameStar",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -473,7 +593,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -570,7 +690,7 @@
           "Parameters": [
             {
               "Name": "fileName",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -583,7 +703,7 @@
           "Parameters": [
             {
               "Name": "fileName",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -631,7 +751,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.ContentDispositionHeaderValue",
@@ -645,7 +765,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "parsedValue",
@@ -664,9 +784,51 @@
           "Parameters": [
             {
               "Name": "dispositionType",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Net.Http.Headers.ContentDispositionHeaderValueIdentityExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "IsFileDisposition",
+          "Parameters": [
+            {
+              "Name": "header",
+              "Type": "Microsoft.Net.Http.Headers.ContentDispositionHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsFormDisposition",
+          "Parameters": [
+            {
+              "Name": "header",
+              "Type": "Microsoft.Net.Http.Headers.ContentDispositionHeaderValue"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Extension": true,
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -683,7 +845,7 @@
           "Kind": "Method",
           "Name": "get_Unit",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -693,7 +855,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -781,7 +943,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.ContentRangeHeaderValue",
@@ -795,7 +957,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "parsedValue",
@@ -869,7 +1031,7 @@
           "Kind": "Method",
           "Name": "get_Name",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -879,7 +1041,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -890,7 +1052,7 @@
           "Kind": "Method",
           "Name": "get_Value",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -900,7 +1062,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -923,7 +1085,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.CookieHeaderValue",
@@ -937,7 +1099,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "parsedValue",
@@ -1047,7 +1209,7 @@
           "Parameters": [
             {
               "Name": "name",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "Visibility": "Public",
@@ -1059,11 +1221,11 @@
           "Parameters": [
             {
               "Name": "name",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "Visibility": "Public",
@@ -1091,7 +1253,7 @@
           "Kind": "Method",
           "Name": "get_Tag",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1140,11 +1302,28 @@
         },
         {
           "Kind": "Method",
+          "Name": "Compare",
+          "Parameters": [
+            {
+              "Name": "other",
+              "Type": "Microsoft.Net.Http.Headers.EntityTagHeaderValue"
+            },
+            {
+              "Name": "useStrongComparison",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "Parse",
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.EntityTagHeaderValue",
@@ -1158,7 +1337,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "parsedValue",
@@ -1243,7 +1422,7 @@
           "Parameters": [
             {
               "Name": "tag",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "Visibility": "Public",
@@ -1255,7 +1434,7 @@
           "Parameters": [
             {
               "Name": "tag",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "isWeak",
@@ -1451,7 +1630,7 @@
           "Visibility": "Public",
           "GenericParameter": [],
           "Constant": true,
-          "Literal": "\"ContentMD5\""
+          "Literal": "\"Content-MD5\""
         },
         {
           "Kind": "Field",
@@ -1886,11 +2065,71 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "TryParseInt64",
+          "Name": "TryParseSeconds",
+          "Parameters": [
+            {
+              "Name": "headerValues",
+              "Type": "Microsoft.Extensions.Primitives.StringValues"
+            },
+            {
+              "Name": "targetValue",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "ContainsCacheDirective",
+          "Parameters": [
+            {
+              "Name": "cacheControlDirectives",
+              "Type": "Microsoft.Extensions.Primitives.StringValues"
+            },
+            {
+              "Name": "targetDirectives",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseNonNegativeInt32",
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "result",
+              "Type": "System.Int32",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "TryParseNonNegativeInt64",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "result",
@@ -1905,7 +2144,7 @@
         },
         {
           "Kind": "Method",
-          "Name": "FormatInt64",
+          "Name": "FormatNonNegativeInt64",
           "Parameters": [
             {
               "Name": "value",
@@ -1923,7 +2162,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "result",
@@ -1952,14 +2191,32 @@
         },
         {
           "Kind": "Method",
+          "Name": "FormatDate",
+          "Parameters": [
+            {
+              "Name": "dateTime",
+              "Type": "System.DateTimeOffset"
+            },
+            {
+              "Name": "quoted",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "RemoveQuotes",
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
@@ -1977,7 +2234,7 @@
           "Kind": "Method",
           "Name": "get_Charset",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1987,7 +2244,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -2019,7 +2276,7 @@
           "Kind": "Method",
           "Name": "get_Boundary",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2029,7 +2286,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -2069,7 +2326,7 @@
           "Kind": "Method",
           "Name": "get_MediaType",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2079,7 +2336,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -2090,7 +2347,7 @@
           "Kind": "Method",
           "Name": "get_Type",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2098,7 +2355,7 @@
           "Kind": "Method",
           "Name": "get_SubType",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2196,7 +2453,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.MediaTypeHeaderValue",
@@ -2210,7 +2467,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "parsedValue",
@@ -2295,7 +2552,7 @@
           "Parameters": [
             {
               "Name": "mediaType",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "Visibility": "Public",
@@ -2307,7 +2564,7 @@
           "Parameters": [
             {
               "Name": "mediaType",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "quality",
@@ -2370,7 +2627,7 @@
           "Kind": "Method",
           "Name": "get_Name",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2378,7 +2635,7 @@
           "Kind": "Method",
           "Name": "get_Value",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2388,7 +2645,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -2450,7 +2707,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.NameValueHeaderValue",
@@ -2464,7 +2721,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "parsedValue",
@@ -2563,7 +2820,7 @@
             },
             {
               "Name": "name",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.NameValueHeaderValue",
@@ -2577,7 +2834,7 @@
           "Parameters": [
             {
               "Name": "name",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "Visibility": "Public",
@@ -2589,11 +2846,11 @@
           "Parameters": [
             {
               "Name": "name",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "Visibility": "Public",
@@ -2665,7 +2922,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.RangeConditionHeaderValue",
@@ -2679,7 +2936,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "parsedValue",
@@ -2741,7 +2998,7 @@
           "Kind": "Method",
           "Name": "get_Unit",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2751,7 +3008,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -2807,7 +3064,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.RangeHeaderValue",
@@ -2821,7 +3078,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "parsedValue",
@@ -2937,6 +3194,37 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.Net.Http.Headers.SameSiteMode",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Lax",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Strict",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.Net.Http.Headers.SetCookieHeaderValue",
       "Visibility": "Public",
       "Kind": "Class",
@@ -2946,7 +3234,7 @@
           "Kind": "Method",
           "Name": "get_Name",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2956,7 +3244,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -2967,7 +3255,7 @@
           "Kind": "Method",
           "Name": "get_Value",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2977,7 +3265,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -3030,7 +3318,7 @@
           "Kind": "Method",
           "Name": "get_Domain",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -3040,7 +3328,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -3051,7 +3339,7 @@
           "Kind": "Method",
           "Name": "get_Path",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -3061,7 +3349,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "System.Void",
@@ -3083,6 +3371,27 @@
             {
               "Name": "value",
               "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SameSite",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Net.Http.Headers.SameSiteMode",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SameSite",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.Net.Http.Headers.SameSiteMode"
             }
           ],
           "ReturnType": "System.Void",
@@ -3139,7 +3448,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.SetCookieHeaderValue",
@@ -3153,7 +3462,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "parsedValue",
@@ -3263,7 +3572,7 @@
           "Parameters": [
             {
               "Name": "name",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "Visibility": "Public",
@@ -3275,11 +3584,11 @@
           "Parameters": [
             {
               "Name": "name",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "Visibility": "Public",
@@ -3298,7 +3607,7 @@
           "Kind": "Method",
           "Name": "get_Value",
           "Parameters": [],
-          "ReturnType": "System.String",
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -3351,7 +3660,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "ReturnType": "Microsoft.Net.Http.Headers.StringWithQualityHeaderValue",
@@ -3365,7 +3674,7 @@
           "Parameters": [
             {
               "Name": "input",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "parsedValue",
@@ -3450,7 +3759,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             }
           ],
           "Visibility": "Public",
@@ -3462,7 +3771,7 @@
           "Parameters": [
             {
               "Name": "value",
-              "Type": "System.String"
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
             },
             {
               "Name": "quality",

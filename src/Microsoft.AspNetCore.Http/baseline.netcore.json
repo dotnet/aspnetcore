@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Http, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Http, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Builder.Internal.ApplicationBuilder",
@@ -692,6 +692,33 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_ContentLength",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.IHeaderDictionary",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ContentLength",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.IHeaderDictionary",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Count",
           "Parameters": [],
           "ReturnType": "System.Int32",
@@ -1018,10 +1045,6 @@
           "Name": ".ctor",
           "Parameters": [
             {
-              "Name": "poolProvider",
-              "Type": "Microsoft.Extensions.ObjectPool.ObjectPoolProvider"
-            },
-            {
               "Name": "formOptions",
               "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions>"
             }
@@ -1034,16 +1057,67 @@
           "Name": ".ctor",
           "Parameters": [
             {
-              "Name": "poolProvider",
-              "Type": "Microsoft.Extensions.ObjectPool.ObjectPoolProvider"
-            },
-            {
               "Name": "formOptions",
               "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Http.Features.FormOptions>"
             },
             {
               "Name": "httpContextAccessor",
               "Type": "Microsoft.AspNetCore.Http.IHttpContextAccessor"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.MiddlewareFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Http.IMiddlewareFactory"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "middlewareType",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Http.IMiddleware",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.IMiddlewareFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Release",
+          "Parameters": [
+            {
+              "Name": "middleware",
+              "Type": "Microsoft.AspNetCore.Http.IMiddleware"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Http.IMiddlewareFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "serviceProvider",
+              "Type": "System.IServiceProvider"
             }
           ],
           "Visibility": "Public",
@@ -1190,6 +1264,31 @@
           "Parameters": [],
           "ReturnType": "System.Void",
           "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Id",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Id",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
           "Visibility": "Public",
           "GenericParameter": []
         },

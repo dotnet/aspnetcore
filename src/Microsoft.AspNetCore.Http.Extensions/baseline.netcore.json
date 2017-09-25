@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Extensions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Extensions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Http.HeaderDictionaryTypeExtensions",
@@ -1284,6 +1284,33 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Http.Extensions.HttpRequestMultipartExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GetMultipartBoundary",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "Microsoft.AspNetCore.Http.HttpRequest"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Http.Extensions.QueryBuilder",
       "Visibility": "Public",
       "Kind": "Class",
@@ -1435,6 +1462,36 @@
           "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CopyToAsync",
+          "Parameters": [
+            {
+              "Name": "source",
+              "Type": "System.IO.Stream"
+            },
+            {
+              "Name": "destination",
+              "Type": "System.IO.Stream"
+            },
+            {
+              "Name": "count",
+              "Type": "System.Nullable<System.Int64>"
+            },
+            {
+              "Name": "bufferSize",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "cancel",
+              "Type": "System.Threading.CancellationToken"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -1518,6 +1575,45 @@
         },
         {
           "Kind": "Method",
+          "Name": "FromAbsolute",
+          "Parameters": [
+            {
+              "Name": "uri",
+              "Type": "System.String"
+            },
+            {
+              "Name": "scheme",
+              "Type": "System.String",
+              "Direction": "Out"
+            },
+            {
+              "Name": "host",
+              "Type": "Microsoft.AspNetCore.Http.HostString",
+              "Direction": "Out"
+            },
+            {
+              "Name": "path",
+              "Type": "Microsoft.AspNetCore.Http.PathString",
+              "Direction": "Out"
+            },
+            {
+              "Name": "query",
+              "Type": "Microsoft.AspNetCore.Http.QueryString",
+              "Direction": "Out"
+            },
+            {
+              "Name": "fragment",
+              "Type": "Microsoft.AspNetCore.Http.FragmentString",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "Encode",
           "Parameters": [
             {
@@ -1533,6 +1629,21 @@
         {
           "Kind": "Method",
           "Name": "GetEncodedUrl",
+          "Parameters": [
+            {
+              "Name": "request",
+              "Type": "Microsoft.AspNetCore.Http.HttpRequest"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetEncodedPathAndQuery",
           "Parameters": [
             {
               "Name": "request",

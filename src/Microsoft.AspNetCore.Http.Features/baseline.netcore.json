@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Features, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Features, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Http.CookieOptions",
@@ -85,6 +85,27 @@
             {
               "Name": "value",
               "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SameSite",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.SameSiteMode",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SameSite",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.SameSiteMode"
             }
           ],
           "ReturnType": "System.Void",
@@ -368,6 +389,25 @@
           ],
           "ReturnType": "System.Void",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ContentLength",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ContentLength",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -611,14 +651,26 @@
         {
           "Kind": "Method",
           "Name": "LoadAsync",
-          "Parameters": [],
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
           "ReturnType": "System.Threading.Tasks.Task",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
           "Name": "CommitAsync",
-          "Parameters": [],
+          "Parameters": [
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
           "ReturnType": "System.Threading.Tasks.Task",
           "GenericParameter": []
         },
@@ -673,6 +725,37 @@
           "Parameters": [],
           "ReturnType": "System.Void",
           "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.SameSiteMode",
+      "Visibility": "Public",
+      "Kind": "Enumeration",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Field",
+          "Name": "None",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "0"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Lax",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "1"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Strict",
+          "Parameters": [],
+          "GenericParameter": [],
+          "Literal": "2"
         }
       ],
       "GenericParameters": []
@@ -1161,6 +1244,35 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Http.Features.IHttpBodyControlFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_AllowSynchronousIO",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_AllowSynchronousIO",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Http.Features.IHttpBufferingFeature",
       "Visibility": "Public",
       "Kind": "Interface",
@@ -1281,6 +1393,42 @@
             {
               "Name": "value",
               "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_IsReadOnly",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_MaxRequestBodySize",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.Int64>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_MaxRequestBodySize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.Int64>"
             }
           ],
           "ReturnType": "System.Void",

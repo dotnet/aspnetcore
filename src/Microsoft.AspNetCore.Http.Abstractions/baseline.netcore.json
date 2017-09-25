@@ -1,75 +1,6 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Abstractions, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Http.Abstractions, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
-    {
-      "Name": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
-      "Visibility": "Public",
-      "Kind": "Interface",
-      "Abstract": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "get_ApplicationServices",
-          "Parameters": [],
-          "ReturnType": "System.IServiceProvider",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_ApplicationServices",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.IServiceProvider"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_ServerFeatures",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Http.Features.IFeatureCollection",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_Properties",
-          "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IDictionary<System.String, System.Object>",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Use",
-          "Parameters": [
-            {
-              "Name": "middleware",
-              "Type": "System.Func<Microsoft.AspNetCore.Http.RequestDelegate, Microsoft.AspNetCore.Http.RequestDelegate>"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "New",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "Build",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Http.RequestDelegate",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
     {
       "Name": "Microsoft.AspNetCore.Builder.MapExtensions",
       "Visibility": "Public",
@@ -259,6 +190,141 @@
           "Static": true,
           "Extension": true,
           "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.UsePathBaseExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UsePathBase",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "pathBase",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.UseWhenExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "UseWhen",
+          "Parameters": [
+            {
+              "Name": "app",
+              "Type": "Microsoft.AspNetCore.Builder.IApplicationBuilder"
+            },
+            {
+              "Name": "predicate",
+              "Type": "System.Func<Microsoft.AspNetCore.Http.HttpContext, System.Boolean>"
+            },
+            {
+              "Name": "configuration",
+              "Type": "System.Action<Microsoft.AspNetCore.Builder.IApplicationBuilder>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_ApplicationServices",
+          "Parameters": [],
+          "ReturnType": "System.IServiceProvider",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ApplicationServices",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ServerFeatures",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Features.IFeatureCollection",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Properties",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.String, System.Object>",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Use",
+          "Parameters": [
+            {
+              "Name": "middleware",
+              "Type": "System.Func<Microsoft.AspNetCore.Http.RequestDelegate, Microsoft.AspNetCore.Http.RequestDelegate>"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "New",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Builder.IApplicationBuilder",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.RequestDelegate",
           "GenericParameter": []
         }
       ],
@@ -457,12 +523,75 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Builder.Extensions.UsePathBaseMiddleware",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Invoke",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "next",
+              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+            },
+            {
+              "Name": "pathBase",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Http.ConnectionInfo",
       "Visibility": "Public",
       "Kind": "Class",
       "Abstract": true,
       "ImplementedInterfaces": [],
       "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Id",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Id",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
         {
           "Kind": "Method",
           "Name": "get_RemoteIpAddress",
@@ -615,6 +744,214 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Http.CookieBuilder",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Name",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Name",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Path",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Path",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Domain",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Domain",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_HttpOnly",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_HttpOnly",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Boolean"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SameSite",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.SameSiteMode",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SameSite",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.SameSiteMode"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_SecurePolicy",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.CookieSecurePolicy",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SecurePolicy",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.CookieSecurePolicy"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Expiration",
+          "Parameters": [],
+          "ReturnType": "System.Nullable<System.TimeSpan>",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Expiration",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Nullable<System.TimeSpan>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Http.CookieOptions",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Build",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "expiresFrom",
+              "Type": "System.DateTimeOffset"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Http.CookieOptions",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Http.CookieSecurePolicy",
       "Visibility": "Public",
       "Kind": "Enumeration",
@@ -641,6 +978,172 @@
           "Parameters": [],
           "GenericParameter": [],
           "Literal": "2"
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.HeaderDictionaryExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Append",
+          "Parameters": [
+            {
+              "Name": "headers",
+              "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "value",
+              "Type": "Microsoft.Extensions.Primitives.StringValues"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AppendCommaSeparatedValues",
+          "Parameters": [
+            {
+              "Name": "headers",
+              "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "values",
+              "Type": "System.String[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetCommaSeparatedValues",
+          "Parameters": [
+            {
+              "Name": "headers",
+              "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String[]",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetCommaSeparatedValues",
+          "Parameters": [
+            {
+              "Name": "headers",
+              "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "values",
+              "Type": "System.String[]",
+              "IsParams": true
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.HttpResponseWritingExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "WriteAsync",
+          "Parameters": [
+            {
+              "Name": "response",
+              "Type": "Microsoft.AspNetCore.Http.HttpResponse"
+            },
+            {
+              "Name": "text",
+              "Type": "System.String"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "WriteAsync",
+          "Parameters": [
+            {
+              "Name": "response",
+              "Type": "Microsoft.AspNetCore.Http.HttpResponse"
+            },
+            {
+              "Name": "text",
+              "Type": "System.String"
+            },
+            {
+              "Name": "encoding",
+              "Type": "System.Text.Encoding"
+            },
+            {
+              "Name": "cancellationToken",
+              "Type": "System.Threading.CancellationToken",
+              "DefaultValue": "default(System.Threading.CancellationToken)"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -1245,6 +1748,234 @@
           "Name": ".ctor",
           "Parameters": [],
           "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.HttpMethods",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "IsConnect",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsDelete",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsGet",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsHead",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsOptions",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsPatch",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsPost",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsPut",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "IsTrace",
+          "Parameters": [
+            {
+              "Name": "method",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Connect",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Delete",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Get",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Head",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Options",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Patch",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Post",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Put",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Trace",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
           "GenericParameter": []
         }
       ],
@@ -1997,6 +2728,66 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Http.IMiddleware",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "InvokeAsync",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "next",
+              "Type": "Microsoft.AspNetCore.Http.RequestDelegate"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.IMiddlewareFactory",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Create",
+          "Parameters": [
+            {
+              "Name": "middlewareType",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Http.IMiddleware",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Release",
+          "Parameters": [
+            {
+              "Name": "middleware",
+              "Type": "Microsoft.AspNetCore.Http.IMiddleware"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Http.PathString",
       "Visibility": "Public",
       "Kind": "Struct",
@@ -2126,6 +2917,56 @@
             {
               "Name": "comparisonType",
               "Type": "System.StringComparison"
+            },
+            {
+              "Name": "remaining",
+              "Type": "Microsoft.AspNetCore.Http.PathString",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StartsWithSegments",
+          "Parameters": [
+            {
+              "Name": "other",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            },
+            {
+              "Name": "matched",
+              "Type": "Microsoft.AspNetCore.Http.PathString",
+              "Direction": "Out"
+            },
+            {
+              "Name": "remaining",
+              "Type": "Microsoft.AspNetCore.Http.PathString",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "StartsWithSegments",
+          "Parameters": [
+            {
+              "Name": "other",
+              "Type": "Microsoft.AspNetCore.Http.PathString"
+            },
+            {
+              "Name": "comparisonType",
+              "Type": "System.StringComparison"
+            },
+            {
+              "Name": "matched",
+              "Type": "Microsoft.AspNetCore.Http.PathString",
+              "Direction": "Out"
             },
             {
               "Name": "remaining",
@@ -2737,6 +3578,39 @@
       "Members": [
         {
           "Kind": "Field",
+          "Name": "Status100Continue",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "100"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status101SwitchingProtocols",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "101"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status102Processing",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "102"
+        },
+        {
+          "Kind": "Field",
           "Name": "Status200OK",
           "Parameters": [],
           "ReturnType": "System.Int32",
@@ -2811,6 +3685,39 @@
           "GenericParameter": [],
           "Constant": true,
           "Literal": "206"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status207MultiStatus",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "207"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status208AlreadyReported",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "208"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status226IMUsed",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "226"
         },
         {
           "Kind": "Field",
@@ -2899,6 +3806,17 @@
           "GenericParameter": [],
           "Constant": true,
           "Literal": "307"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status308PermanentRedirect",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "308"
         },
         {
           "Kind": "Field",
@@ -3056,7 +3974,29 @@
         },
         {
           "Kind": "Field",
+          "Name": "Status413PayloadTooLarge",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "413"
+        },
+        {
+          "Kind": "Field",
           "Name": "Status414RequestUriTooLong",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "414"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status414UriTooLong",
           "Parameters": [],
           "ReturnType": "System.Int32",
           "Static": true,
@@ -3079,6 +4019,17 @@
         {
           "Kind": "Field",
           "Name": "Status416RequestedRangeNotSatisfiable",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "416"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status416RangeNotSatisfiable",
           "Parameters": [],
           "ReturnType": "System.Int32",
           "Static": true,
@@ -3119,6 +4070,105 @@
           "GenericParameter": [],
           "Constant": true,
           "Literal": "419"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status421MisdirectedRequest",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "421"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status422UnprocessableEntity",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "422"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status423Locked",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "423"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status424FailedDependency",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "424"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status426UpgradeRequired",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "426"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status428PreconditionRequired",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "428"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status429TooManyRequests",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "429"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status431RequestHeaderFieldsTooLarge",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "431"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status451UnavailableForLegalReasons",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "451"
         },
         {
           "Kind": "Field",
@@ -3196,6 +4246,50 @@
           "GenericParameter": [],
           "Constant": true,
           "Literal": "506"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status507InsufficientStorage",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "507"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status508LoopDetected",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "508"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status510NotExtended",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "510"
+        },
+        {
+          "Kind": "Field",
+          "Name": "Status511NetworkAuthenticationRequired",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "511"
         }
       ],
       "GenericParameters": []
@@ -3262,7 +4356,238 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.AspNetCore.Http.HeaderDictionaryExtensions",
+      "Name": "Microsoft.AspNetCore.Http.Internal.HeaderSegment",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "System.IEquatable<Microsoft.AspNetCore.Http.Internal.HeaderSegment>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Formatting",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Data",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringSegment",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "other",
+              "Type": "Microsoft.AspNetCore.Http.Internal.HeaderSegment"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IEquatable<Microsoft.AspNetCore.Http.Internal.HeaderSegment>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "op_Equality",
+          "Parameters": [
+            {
+              "Name": "left",
+              "Type": "Microsoft.AspNetCore.Http.Internal.HeaderSegment"
+            },
+            {
+              "Name": "right",
+              "Type": "Microsoft.AspNetCore.Http.Internal.HeaderSegment"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "op_Inequality",
+          "Parameters": [
+            {
+              "Name": "left",
+              "Type": "Microsoft.AspNetCore.Http.Internal.HeaderSegment"
+            },
+            {
+              "Name": "right",
+              "Type": "Microsoft.AspNetCore.Http.Internal.HeaderSegment"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "formatting",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            },
+            {
+              "Name": "data",
+              "Type": "Microsoft.Extensions.Primitives.StringSegment"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Http.Internal.HeaderSegment>",
+        "System.IEquatable<Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "other",
+              "Type": "Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IEquatable<Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Equals",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHashCode",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "op_Equality",
+          "Parameters": [
+            {
+              "Name": "left",
+              "Type": "Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection"
+            },
+            {
+              "Name": "right",
+              "Type": "Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "op_Inequality",
+          "Parameters": [
+            {
+              "Name": "left",
+              "Type": "Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection"
+            },
+            {
+              "Name": "right",
+              "Type": "Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection"
+            }
+          ],
+          "ReturnType": "System.Boolean",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetEnumerator",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection+Enumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "headers",
+              "Type": "Microsoft.Extensions.Primitives.StringValues"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Internal.ParsingHelpers",
       "Visibility": "Public",
       "Kind": "Class",
       "Abstract": true,
@@ -3272,7 +4597,61 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "Append",
+          "Name": "GetHeader",
+          "Parameters": [
+            {
+              "Name": "headers",
+              "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringValues",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHeaderSplit",
+          "Parameters": [
+            {
+              "Name": "headers",
+              "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringValues",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetHeaderUnmodified",
+          "Parameters": [
+            {
+              "Name": "headers",
+              "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.Primitives.StringValues",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetHeaderJoined",
           "Parameters": [
             {
               "Name": "headers",
@@ -3289,13 +4668,34 @@
           ],
           "ReturnType": "System.Void",
           "Static": true,
-          "Extension": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "AppendCommaSeparatedValues",
+          "Name": "SetHeaderUnmodified",
+          "Parameters": [
+            {
+              "Name": "headers",
+              "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary"
+            },
+            {
+              "Name": "key",
+              "Type": "System.String"
+            },
+            {
+              "Name": "values",
+              "Type": "System.Nullable<Microsoft.Extensions.Primitives.StringValues>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AppendHeaderJoined",
           "Parameters": [
             {
               "Name": "headers",
@@ -3313,32 +4713,12 @@
           ],
           "ReturnType": "System.Void",
           "Static": true,
-          "Extension": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "GetCommaSeparatedValues",
-          "Parameters": [
-            {
-              "Name": "headers",
-              "Type": "Microsoft.AspNetCore.Http.IHeaderDictionary"
-            },
-            {
-              "Name": "key",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.String[]",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "SetCommaSeparatedValues",
+          "Name": "AppendHeaderUnmodified",
           "Parameters": [
             {
               "Name": "headers",
@@ -3350,77 +4730,11 @@
             },
             {
               "Name": "values",
-              "Type": "System.String[]",
-              "IsParams": true
+              "Type": "Microsoft.Extensions.Primitives.StringValues"
             }
           ],
           "ReturnType": "System.Void",
           "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        }
-      ],
-      "GenericParameters": []
-    },
-    {
-      "Name": "Microsoft.AspNetCore.Http.HttpResponseWritingExtensions",
-      "Visibility": "Public",
-      "Kind": "Class",
-      "Abstract": true,
-      "Static": true,
-      "Sealed": true,
-      "ImplementedInterfaces": [],
-      "Members": [
-        {
-          "Kind": "Method",
-          "Name": "WriteAsync",
-          "Parameters": [
-            {
-              "Name": "response",
-              "Type": "Microsoft.AspNetCore.Http.HttpResponse"
-            },
-            {
-              "Name": "text",
-              "Type": "System.String"
-            },
-            {
-              "Name": "cancellationToken",
-              "Type": "System.Threading.CancellationToken",
-              "DefaultValue": "default(System.Threading.CancellationToken)"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task",
-          "Static": true,
-          "Extension": true,
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "WriteAsync",
-          "Parameters": [
-            {
-              "Name": "response",
-              "Type": "Microsoft.AspNetCore.Http.HttpResponse"
-            },
-            {
-              "Name": "text",
-              "Type": "System.String"
-            },
-            {
-              "Name": "encoding",
-              "Type": "System.Text.Encoding"
-            },
-            {
-              "Name": "cancellationToken",
-              "Type": "System.Threading.CancellationToken",
-              "DefaultValue": "default(System.Threading.CancellationToken)"
-            }
-          ],
-          "ReturnType": "System.Threading.Tasks.Task",
-          "Static": true,
-          "Extension": true,
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -4016,6 +5330,74 @@
             {
               "Name": "items",
               "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Http.Internal.HeaderSegmentCollection+Enumerator",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Http.Internal.HeaderSegment>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Current",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.Internal.HeaderSegment",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.Generic.IEnumerator<Microsoft.AspNetCore.Http.Internal.HeaderSegment>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "MoveNext",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.IEnumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Reset",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Collections.IEnumerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "headers",
+              "Type": "Microsoft.Extensions.Primitives.StringValues"
             }
           ],
           "Visibility": "Public",
