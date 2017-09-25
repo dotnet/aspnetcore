@@ -39,6 +39,11 @@ namespace FunctionalTests
 
         public class TestFixture : CoreCLRApplicationTestFixture<SimpleApp.Startup>
         {
+            public TestFixture()
+            {
+                PublishOnly = true;
+            }
+
             protected override DeploymentParameters GetDeploymentParameters()
             {
                 var deploymentParameters = base.GetDeploymentParameters();

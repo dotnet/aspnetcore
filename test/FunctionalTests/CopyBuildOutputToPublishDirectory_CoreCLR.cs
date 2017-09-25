@@ -5,19 +5,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace FunctionalTests
 {
-    [OSSkipCondition(OperatingSystems.Linux)]
-    [OSSkipCondition(OperatingSystems.MacOSX)]
-    public class ViewCompilationOptions_Desktop_ScenarioRefAssembliesDoNotGetPublished :
-        LoggedTest, IClassFixture<ViewCompilationOptions_Desktop_ScenarioRefAssembliesDoNotGetPublished.TestFixture>
+    public class CopyBuildOutputToPublishDirectory_CoreCLR :
+        LoggedTest, IClassFixture<CopyBuildOutputToPublishDirectory_CoreCLR.TestFixture>
     {
-        public ViewCompilationOptions_Desktop_ScenarioRefAssembliesDoNotGetPublished(
+        public CopyBuildOutputToPublishDirectory_CoreCLR(
             TestFixture fixture,
             ITestOutputHelper output)
             : base(output)
@@ -27,8 +24,8 @@ namespace FunctionalTests
 
         public ApplicationTestFixture Fixture { get; }
 
-        [ConditionalFact]
-        public async Task PublishingWithOption_AllowsPublishingRefAssemblies()
+        [Fact]
+        public async Task PublishingWithOption_SkipsPublishingPrecompiledDll()
         {
             using (StartLog(out var loggerFactory))
             {
@@ -36,11 +33,14 @@ namespace FunctionalTests
                 var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
 
                 // Act & Assert
-                Assert.True(Directory.Exists(Path.Combine(deployment.ContentRoot, "refs")));
+                var dllFile = Path.Combine(deployment.ContentRoot, "SimpleApp.PrecompiledViews.dll");
+                var pdbFile = Path.ChangeExtension(dllFile, ".pdb");
+                Assert.False(File.Exists(dllFile), $"{dllFile} exists at deployment.");
+                Assert.True(File.Exists(pdbFile), $"{pdbFile} does not exist at deployment.");
             }
         }
 
-        public class TestFixture : DesktopApplicationTestFixture<SimpleApp.Startup>
+        public class TestFixture : CoreCLRApplicationTestFixture<SimpleApp.Startup>
         {
             public TestFixture()
             {
@@ -51,7 +51,7 @@ namespace FunctionalTests
             {
                 var deploymentParameters = base.GetDeploymentParameters();
                 deploymentParameters.PublishEnvironmentVariables.Add(
-                    new KeyValuePair<string, string>("MvcRazorExcludeRefAssembliesFromPublish", "false"));
+                    new KeyValuePair<string, string>("CopyBuildOutputToPublishDirectory", "false"));
 
                 return deploymentParameters;
             }

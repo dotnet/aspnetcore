@@ -14,10 +14,10 @@ namespace FunctionalTests
 {
     [OSSkipCondition(OperatingSystems.Linux)]
     [OSSkipCondition(OperatingSystems.MacOSX)]
-    public class ViewCompilationOptions_Desktop_ScenarioRefAssembliesDoNotGetPublished :
-        LoggedTest, IClassFixture<ViewCompilationOptions_Desktop_ScenarioRefAssembliesDoNotGetPublished.TestFixture>
+    public class CopyOutputSymbolsToPublishDirectoryTest_Desktop :
+        LoggedTest, IClassFixture<CopyOutputSymbolsToPublishDirectoryTest_Desktop.TestFixture>
     {
-        public ViewCompilationOptions_Desktop_ScenarioRefAssembliesDoNotGetPublished(
+        public CopyOutputSymbolsToPublishDirectoryTest_Desktop(
             TestFixture fixture,
             ITestOutputHelper output)
             : base(output)
@@ -28,7 +28,7 @@ namespace FunctionalTests
         public ApplicationTestFixture Fixture { get; }
 
         [ConditionalFact]
-        public async Task PublishingWithOption_AllowsPublishingRefAssemblies()
+        public async Task PublishingWithOption_SkipsPublishingPdb()
         {
             using (StartLog(out var loggerFactory))
             {
@@ -36,7 +36,10 @@ namespace FunctionalTests
                 var deployment = await Fixture.CreateDeploymentAsync(loggerFactory);
 
                 // Act & Assert
-                Assert.True(Directory.Exists(Path.Combine(deployment.ContentRoot, "refs")));
+                var dllFile = Path.Combine(deployment.ContentRoot, "SimpleApp.PrecompiledViews.dll");
+                var pdbFile = Path.ChangeExtension(dllFile, ".pdb");
+                Assert.True(File.Exists(dllFile), $"{dllFile} does not exist at deployment.");
+                Assert.False(File.Exists(pdbFile), $"{pdbFile} exists at deployment.");
             }
         }
 
@@ -51,7 +54,7 @@ namespace FunctionalTests
             {
                 var deploymentParameters = base.GetDeploymentParameters();
                 deploymentParameters.PublishEnvironmentVariables.Add(
-                    new KeyValuePair<string, string>("MvcRazorExcludeRefAssembliesFromPublish", "false"));
+                    new KeyValuePair<string, string>("CopyOutputSymbolsToPublishDirectory", "false"));
 
                 return deploymentParameters;
             }

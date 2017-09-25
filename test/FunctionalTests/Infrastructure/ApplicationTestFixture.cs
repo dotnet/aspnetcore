@@ -26,6 +26,8 @@ namespace FunctionalTests
 
         public string ApplicationPath { get; }
 
+        public bool PublishOnly { get; set; }
+
         protected abstract DeploymentParameters GetDeploymentParameters();
 
         protected DeploymentParameters GetDeploymentParameters(RuntimeFlavor flavor)
@@ -77,7 +79,15 @@ namespace FunctionalTests
                 if (_deploymentTask == null)
                 {
                     var deploymentParameters = GetDeploymentParameters();
-                    _deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory);
+                    if (PublishOnly)
+                    {
+                        _deployer = new PublishOnlyDeployer(deploymentParameters, loggerFactory);
+                    }
+                    else
+                    {
+                        _deployer = ApplicationDeployerFactory.Create(deploymentParameters, loggerFactory);
+                    }
+
                     _deploymentTask = _deployer.DeployAsync();
                 }
             }
