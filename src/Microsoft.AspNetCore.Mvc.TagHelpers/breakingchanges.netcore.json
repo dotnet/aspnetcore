@@ -1,7 +1,0 @@
-[
-    {
-        "TypeId": "public class Microsoft.AspNetCore.Mvc.TagHelpers.CacheTagHelper : Microsoft.AspNetCore.Mvc.TagHelpers.CacheTagHelperBase",
-        "MemberId": "public .ctor(Microsoft.Extensions.Caching.Memory.IMemoryCache memoryCache, System.Text.Encodings.Web.HtmlEncoder htmlEncoder)",
-        "Kind": "Removal"
-    }
-]

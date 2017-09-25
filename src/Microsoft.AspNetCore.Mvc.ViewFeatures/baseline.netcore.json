@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.ViewFeatures, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.ViewFeatures, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Mvc.AutoValidateAntiforgeryTokenAttribute",
@@ -425,6 +425,106 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.CookieTempDataProviderOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Cookie",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Http.CookieBuilder",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Cookie",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Http.CookieBuilder"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Path",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Path",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Domain",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Domain",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_CookieName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_CookieName",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Mvc.IgnoreAntiforgeryTokenAttribute",
       "Visibility": "Public",
       "Kind": "Class",
@@ -643,6 +743,14 @@
             }
           ],
           "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Model",
+          "Parameters": [],
+          "ReturnType": "System.Object",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1032,6 +1140,24 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.TempDataAttribute",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Sealed": true,
+      "BaseType": "System.Attribute",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Mvc.ValidateAntiForgeryTokenAttribute",
       "Visibility": "Public",
       "Kind": "Class",
@@ -1135,6 +1261,14 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_UserClaimsPrincipal",
+          "Parameters": [],
+          "ReturnType": "System.Security.Claims.ClaimsPrincipal",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_RouteData",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Routing.RouteData",
@@ -1212,6 +1346,14 @@
           "Name": "get_ViewData",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_TempData",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1390,27 +1532,6 @@
         },
         {
           "Kind": "Method",
-          "Name": "get_ContentType",
-          "Parameters": [],
-          "ReturnType": "System.String",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_ContentType",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "System.String"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
           "Name": "get_StatusCode",
           "Parameters": [],
           "ReturnType": "System.Nullable<System.Int32>",
@@ -1424,27 +1545,6 @@
             {
               "Name": "value",
               "Type": "System.Nullable<System.Int32>"
-            }
-          ],
-          "ReturnType": "System.Void",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "get_TempData",
-          "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
-        {
-          "Kind": "Method",
-          "Name": "set_TempData",
-          "Parameters": [
-            {
-              "Name": "value",
-              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary"
             }
           ],
           "ReturnType": "System.Void",
@@ -1495,6 +1595,14 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_Model",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_ViewData",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary",
@@ -1516,19 +1624,40 @@
         },
         {
           "Kind": "Method",
-          "Name": "get_ViewEngine",
+          "Name": "get_TempData",
           "Parameters": [],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine",
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary",
           "Visibility": "Public",
           "GenericParameter": []
         },
         {
           "Kind": "Method",
-          "Name": "set_ViewEngine",
+          "Name": "set_TempData",
           "Parameters": [
             {
               "Name": "value",
-              "Type": "Microsoft.AspNetCore.Mvc.ViewEngines.IViewEngine"
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ContentType",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ContentType",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
             }
           ],
           "ReturnType": "System.Void",
@@ -2882,6 +3011,14 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_TempData",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Writer",
           "Parameters": [],
           "ReturnType": "System.IO.TextWriter",
@@ -2991,6 +3128,16 @@
           ],
           "ReturnType": "System.Boolean",
           "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "ViewComponentSuffix",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -3123,6 +3270,27 @@
             {
               "Name": "value",
               "Type": "System.Reflection.MethodInfo"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Parameters",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IReadOnlyList<System.Reflection.ParameterInfo>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Parameters",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IReadOnlyList<System.Reflection.ParameterInfo>"
             }
           ],
           "ReturnType": "System.Void",
@@ -7924,7 +8092,7 @@
           "Name": "TextBox",
           "Parameters": [
             {
-              "Name": "current",
+              "Name": "expression",
               "Type": "System.String"
             },
             {
@@ -9091,6 +9259,14 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_HasInnerHtml",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_TagName",
           "Parameters": [],
           "ReturnType": "System.String",
@@ -9273,6 +9449,38 @@
           "Sealed": true,
           "Virtual": true,
           "ImplementedInterface": "Microsoft.AspNetCore.Html.IHtmlContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RenderBody",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Html.IHtmlContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RenderStartTag",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Html.IHtmlContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RenderEndTag",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Html.IHtmlContent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "RenderSelfClosingTag",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Html.IHtmlContent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -10163,6 +10371,83 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.CookieTempDataProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "LoadTempData",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.String, System.Object>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SaveTempData",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Http.HttpContext"
+            },
+            {
+              "Name": "values",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.Object>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "dataProtectionProvider",
+              "Type": "Microsoft.AspNetCore.DataProtection.IDataProtectionProvider"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
+            },
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.CookieTempDataProviderOptions>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "CookieName",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultHtmlGenerator",
       "Visibility": "Public",
       "Kind": "Class",
@@ -10282,6 +10567,53 @@
         },
         {
           "Kind": "Method",
+          "Name": "GeneratePageLink",
+          "Parameters": [
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "linkText",
+              "Type": "System.String"
+            },
+            {
+              "Name": "pageName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "pageHandler",
+              "Type": "System.String"
+            },
+            {
+              "Name": "protocol",
+              "Type": "System.String"
+            },
+            {
+              "Name": "hostname",
+              "Type": "System.String"
+            },
+            {
+              "Name": "fragment",
+              "Type": "System.String"
+            },
+            {
+              "Name": "routeValues",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "htmlAttributes",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Rendering.TagBuilder",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "GenerateAntiforgery",
           "Parameters": [
             {
@@ -10368,6 +10700,45 @@
             {
               "Name": "routeValues",
               "Type": "System.Object"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "htmlAttributes",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Rendering.TagBuilder",
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GeneratePageForm",
+          "Parameters": [
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "pageName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "pageHandler",
+              "Type": "System.String"
+            },
+            {
+              "Name": "routeValues",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "fragment",
+              "Type": "System.String"
             },
             {
               "Name": "method",
@@ -10941,6 +11312,32 @@
         },
         {
           "Kind": "Method",
+          "Name": "AddPlaceholderAttribute",
+          "Parameters": [
+            {
+              "Name": "viewData",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary"
+            },
+            {
+              "Name": "tagBuilder",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.TagBuilder"
+            },
+            {
+              "Name": "modelExplorer",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer"
+            },
+            {
+              "Name": "expression",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "AddValidationAttributes",
           "Parameters": [
             {
@@ -11008,6 +11405,153 @@
             {
               "Name": "htmlEncoder",
               "Type": "System.Text.Encodings.Web.HtmlEncoder"
+            },
+            {
+              "Name": "validationAttributeProvider",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ValidationHtmlAttributeProvider"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultHtmlGeneratorExtensions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "GenerateForm",
+          "Parameters": [
+            {
+              "Name": "generator",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator"
+            },
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "actionName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "controllerName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "fragment",
+              "Type": "System.String"
+            },
+            {
+              "Name": "routeValues",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "htmlAttributes",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Rendering.TagBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GenerateRouteForm",
+          "Parameters": [
+            {
+              "Name": "generator",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.IHtmlGenerator"
+            },
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "routeName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "routeValues",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "fragment",
+              "Type": "System.String"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "htmlAttributes",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Rendering.TagBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.DefaultValidationHtmlAttributeProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Mvc.ViewFeatures.ValidationHtmlAttributeProvider",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddValidationAttributes",
+          "Parameters": [
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "modelExplorer",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer"
+            },
+            {
+              "Name": "attributes",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "optionsAccessor",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions>"
+            },
+            {
+              "Name": "metadataProvider",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider"
             },
             {
               "Name": "clientValidatorCache",
@@ -13607,6 +14151,50 @@
         },
         {
           "Kind": "Method",
+          "Name": "GeneratePageLink",
+          "Parameters": [
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "linkText",
+              "Type": "System.String"
+            },
+            {
+              "Name": "pageName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "pageHandler",
+              "Type": "System.String"
+            },
+            {
+              "Name": "protocol",
+              "Type": "System.String"
+            },
+            {
+              "Name": "hostname",
+              "Type": "System.String"
+            },
+            {
+              "Name": "fragment",
+              "Type": "System.String"
+            },
+            {
+              "Name": "routeValues",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "htmlAttributes",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Rendering.TagBuilder",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "GenerateAntiforgery",
           "Parameters": [
             {
@@ -13684,6 +14272,42 @@
             {
               "Name": "routeValues",
               "Type": "System.Object"
+            },
+            {
+              "Name": "method",
+              "Type": "System.String"
+            },
+            {
+              "Name": "htmlAttributes",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Rendering.TagBuilder",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GeneratePageForm",
+          "Parameters": [
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "pageName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "pageHandler",
+              "Type": "System.String"
+            },
+            {
+              "Name": "routeValues",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "fragment",
+              "Type": "System.String"
             },
             {
               "Name": "method",
@@ -15531,6 +16155,72 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.ValidationHtmlAttributeProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "AddValidationAttributes",
+          "Parameters": [
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "modelExplorer",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer"
+            },
+            {
+              "Name": "attributes",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Abstract": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddAndTrackValidationAttributes",
+          "Parameters": [
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "modelExplorer",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer"
+            },
+            {
+              "Name": "expression",
+              "Type": "System.String"
+            },
+            {
+              "Name": "attributes",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.ViewContextAttribute",
       "Visibility": "Public",
       "Kind": "Class",
@@ -16077,6 +16767,22 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "GetActivatorDelegate",
+          "Parameters": [
+            {
+              "Name": "actionDescriptor",
+              "Type": "Microsoft.AspNetCore.Mvc.Controllers.ControllerActionDescriptor"
+            }
+          ],
+          "ReturnType": "System.Action<Microsoft.AspNetCore.Mvc.ControllerContext, System.Object>",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Internal.IControllerPropertyActivator",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
@@ -16290,6 +16996,22 @@
             {
               "Name": "propertyInfo",
               "Type": "System.Reflection.PropertyInfo"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "container",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "propertyInfo",
+              "Type": "System.Reflection.PropertyInfo"
             },
             {
               "Name": "valueAccessor",
@@ -16342,6 +17064,14 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_ModelMetadataProvider",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_WriterFactory",
           "Parameters": [],
           "ReturnType": "Microsoft.AspNetCore.Mvc.Internal.IHttpResponseStreamWriterFactory",
@@ -16383,6 +17113,27 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "ExecuteAsync",
+          "Parameters": [
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "contentType",
+              "Type": "System.String"
+            },
+            {
+              "Name": "statusCode",
+              "Type": "System.Nullable<System.Int32>"
+            }
+          ],
+          "ReturnType": "System.Threading.Tasks.Task",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
@@ -16415,12 +17166,87 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "writerFactory",
+              "Type": "Microsoft.AspNetCore.Mvc.Internal.IHttpResponseStreamWriterFactory"
+            },
+            {
+              "Name": "viewEngine",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewEngines.ICompositeViewEngine"
+            },
+            {
+              "Name": "diagnosticSource",
+              "Type": "System.Diagnostics.DiagnosticSource"
+            }
+          ],
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Field",
           "Name": "DefaultContentType",
           "Parameters": [],
           "ReturnType": "System.String",
           "Static": true,
           "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ArrayPoolBufferSource",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ICharBufferSource"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Rent",
+          "Parameters": [
+            {
+              "Name": "bufferSize",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Char[]",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ICharBufferSource",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Return",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.Char[]"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ICharBufferSource",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "pool",
+              "Type": "System.Buffers.ArrayPool<System.Char>"
+            }
+          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -16501,6 +17327,188 @@
               "BaseTypeOrInterfaces": []
             }
           ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.CharArrayBufferSource",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ICharBufferSource"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Rent",
+          "Parameters": [
+            {
+              "Name": "bufferSize",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Char[]",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ICharBufferSource",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Return",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.Char[]"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ICharBufferSource",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Instance",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.CharArrayBufferSource",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ControllerSaveTempDataPropertyFilter",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.SaveTempDataPropertyFilterBase",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.Filters.IActionFilter"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "OnActionExecuted",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Filters.IActionFilter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnActionExecuting",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Filters.IActionFilter",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "factory",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ControllerSaveTempDataPropertyFilterFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.Filters.IFilterFactory"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_TempDataProperties",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.TempDataProperty>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_TempDataProperties",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.TempDataProperty>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_IsReusable",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Filters.IFilterFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateInstance",
+          "Parameters": [
+            {
+              "Name": "serviceProvider",
+              "Type": "System.IServiceProvider"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.Filters.IFilterFactory",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -17142,6 +18150,64 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ICharBufferSource",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Rent",
+          "Parameters": [
+            {
+              "Name": "bufferSize",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Char[]",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Return",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.Char[]"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ISaveTempDataCallback",
+      "Visibility": "Public",
+      "Kind": "Interface",
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.Filters.IFilterMetadata"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "OnTempDataSaving",
+          "Parameters": [
+            {
+              "Name": "tempData",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.IViewBufferScope",
       "Visibility": "Public",
       "Kind": "Interface",
@@ -17288,24 +18354,23 @@
       "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.MvcViewOptionsSetup",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.Extensions.Options.ConfigureOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions>",
-      "ImplementedInterfaces": [],
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions>"
+      ],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "ConfigureMvc",
+          "Name": "Configure",
           "Parameters": [
             {
               "Name": "options",
               "Type": "Microsoft.AspNetCore.Mvc.MvcViewOptions"
-            },
-            {
-              "Name": "serviceProvider",
-              "Type": "System.IServiceProvider"
             }
           ],
           "ReturnType": "System.Void",
-          "Static": true,
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -17314,10 +18379,112 @@
           "Name": ".ctor",
           "Parameters": [
             {
-              "Name": "serviceProvider",
-              "Type": "System.IServiceProvider"
+              "Name": "dataAnnotationLocalizationOptions",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            },
+            {
+              "Name": "validationAttributeAdapterProvider",
+              "Type": "Microsoft.AspNetCore.Mvc.DataAnnotations.IValidationAttributeAdapterProvider"
             }
           ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "dataAnnotationOptions",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.DataAnnotations.MvcDataAnnotationsLocalizationOptions>"
+            },
+            {
+              "Name": "validationAttributeAdapterProvider",
+              "Type": "Microsoft.AspNetCore.Mvc.DataAnnotations.IValidationAttributeAdapterProvider"
+            },
+            {
+              "Name": "stringLocalizerFactory",
+              "Type": "Microsoft.Extensions.Localization.IStringLocalizerFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.NameAndIdProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateSanitizedId",
+          "Parameters": [
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "fullName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "invalidCharReplacement",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GenerateId",
+          "Parameters": [
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "tagBuilder",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.TagBuilder"
+            },
+            {
+              "Name": "fullName",
+              "Type": "System.String"
+            },
+            {
+              "Name": "invalidCharReplacement",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetFullHtmlFieldName",
+          "Parameters": [
+            {
+              "Name": "viewContext",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            },
+            {
+              "Name": "expression",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -17567,6 +18734,119 @@
           ],
           "Visibility": "Public",
           "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.PagedCharBuffer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "System.IDisposable"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_BufferSource",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ICharBufferSource",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Pages",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<System.Char[]>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Length",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Append",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Char"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Append",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Append",
+          "Parameters": [
+            {
+              "Name": "buffer",
+              "Type": "System.Char[]"
+            },
+            {
+              "Name": "index",
+              "Type": "System.Int32"
+            },
+            {
+              "Name": "count",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Clear",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Dispose",
+          "Parameters": [],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.IDisposable",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "bufferSource",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ICharBufferSource"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
         },
         {
           "Kind": "Field",
@@ -17765,15 +19045,218 @@
       "GenericParameters": []
     },
     {
-      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.TempDataMvcOptionsSetup",
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.SaveTempDataPropertyFilterBase",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.Extensions.Options.ConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
-      "ImplementedInterfaces": [],
+      "Abstract": true,
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ISaveTempDataCallback"
+      ],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "ConfigureMvc",
+          "Name": "get_Properties",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.TempDataProperty>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Properties",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.TempDataProperty>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Subject",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Subject",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_OriginalValues",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.Reflection.PropertyInfo, System.Object>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnTempDataSaving",
+          "Parameters": [
+            {
+              "Name": "tempData",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ISaveTempDataCallback",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetTempDataProperties",
+          "Parameters": [
+            {
+              "Name": "type",
+              "Type": "System.Type"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.TempDataProperty>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetPropertyVaules",
+          "Parameters": [
+            {
+              "Name": "tempData",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionary"
+            },
+            {
+              "Name": "subject",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "factory",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "_factory",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory",
+          "ReadOnly": true,
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "Prefix",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Static": true,
+          "Visibility": "Protected",
+          "GenericParameter": [],
+          "Constant": true,
+          "Literal": "\"TempDataProperty-\""
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.TempDataApplicationModelProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ApplicationModels.IApplicationModelProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Order",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ApplicationModels.IApplicationModelProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnProvidersExecuted",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ApplicationModels.IApplicationModelProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnProvidersExecuting",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ApplicationModels.ApplicationModelProviderContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ApplicationModels.IApplicationModelProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.TempDataMvcOptionsSetup",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Configure",
           "Parameters": [
             {
               "Name": "options",
@@ -17781,7 +19264,144 @@
             }
           ],
           "ReturnType": "System.Void",
-          "Static": true,
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.TempDataProperty",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_TempDataKey",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PropertyInfo",
+          "Parameters": [],
+          "ReturnType": "System.Reflection.PropertyInfo",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetValue",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "SetValue",
+          "Parameters": [
+            {
+              "Name": "obj",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "value",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "tempDataKey",
+              "Type": "System.String"
+            },
+            {
+              "Name": "propertyInfo",
+              "Type": "System.Reflection.PropertyInfo"
+            },
+            {
+              "Name": "getter",
+              "Type": "System.Func<System.Object, System.Object>"
+            },
+            {
+              "Name": "setter",
+              "Type": "System.Action<System.Object, System.Object>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.TempDataSerializer",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "Deserialize",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Byte[]"
+            }
+          ],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.String, System.Object>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Serialize",
+          "Parameters": [
+            {
+              "Name": "values",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.Object>"
+            }
+          ],
+          "ReturnType": "System.Byte[]",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "EnsureObjectCanBeSerialized",
+          "Parameters": [
+            {
+              "Name": "item",
+              "Type": "System.Object"
+            }
+          ],
+          "ReturnType": "System.Void",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -17929,9 +19549,22 @@
       "Members": [
         {
           "Kind": "Method",
-          "Name": "get_Pages",
+          "Name": "get_Count",
           "Parameters": [],
-          "ReturnType": "System.Collections.Generic.IList<Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ViewBufferPage>",
+          "ReturnType": "System.Int32",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Item",
+          "Parameters": [
+            {
+              "Name": "index",
+              "Type": "System.Int32"
+            }
+          ],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ViewBufferPage",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -18613,6 +20246,7 @@
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -18623,10 +20257,6 @@
             {
               "Name": "mvcHelperOptions",
               "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.MvcViewOptions>"
-            },
-            {
-              "Name": "viewComponentHelper",
-              "Type": "Microsoft.AspNetCore.Mvc.IViewComponentHelper"
             },
             {
               "Name": "loggerFactory",
@@ -18645,6 +20275,46 @@
               "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ITempDataDictionaryFactory"
             }
           ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.ViewFeatures.Internal.ViewDataDictionaryFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateFactory",
+          "Parameters": [
+            {
+              "Name": "modelType",
+              "Type": "System.Reflection.TypeInfo"
+            }
+          ],
+          "ReturnType": "System.Func<Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider, Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary>",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "CreateNestedFactory",
+          "Parameters": [
+            {
+              "Name": "modelType",
+              "Type": "System.Reflection.TypeInfo"
+            }
+          ],
+          "ReturnType": "System.Func<Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary, Microsoft.AspNetCore.Mvc.ViewFeatures.ViewDataDictionary>",
+          "Static": true,
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -18751,19 +20421,6 @@
       "Kind": "Class",
       "ImplementedInterfaces": [],
       "Members": [
-        {
-          "Kind": "Method",
-          "Name": "GetViewComponentMethodExecutor",
-          "Parameters": [
-            {
-              "Name": "viewComponentContext",
-              "Type": "Microsoft.AspNetCore.Mvc.ViewComponents.ViewComponentContext"
-            }
-          ],
-          "ReturnType": "Microsoft.AspNetCore.Mvc.Internal.ObjectMethodExecutor",
-          "Visibility": "Public",
-          "GenericParameter": []
-        },
         {
           "Kind": "Constructor",
           "Name": ".ctor",
@@ -18960,6 +20617,55 @@
           "Extension": true,
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddSessionStateTempDataProvider",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddCookieTempDataProvider",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddCookieTempDataProvider",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.CookieTempDataProviderOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -18990,6 +20696,21 @@
         },
         {
           "Kind": "Method",
+          "Name": "AddCookieTempDataProvider",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "AddViews",
           "Parameters": [
             {
@@ -18999,6 +20720,25 @@
             {
               "Name": "setupAction",
               "Type": "System.Action<Microsoft.AspNetCore.Mvc.MvcViewOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddCookieTempDataProvider",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.CookieTempDataProviderOptions>"
             }
           ],
           "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
@@ -19089,6 +20829,94 @@
             {
               "Name": "attributes",
               "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.AttributeDictionary"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.Extensions.Internal.ObjectMethodExecutorAwaitable+Awaiter",
+      "Visibility": "Public",
+      "Kind": "Struct",
+      "Sealed": true,
+      "ImplementedInterfaces": [
+        "System.Runtime.CompilerServices.ICriticalNotifyCompletion"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_IsCompleted",
+          "Parameters": [],
+          "ReturnType": "System.Boolean",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "GetResult",
+          "Parameters": [],
+          "ReturnType": "System.Object",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnCompleted",
+          "Parameters": [
+            {
+              "Name": "continuation",
+              "Type": "System.Action"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Runtime.CompilerServices.INotifyCompletion",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "UnsafeOnCompleted",
+          "Parameters": [
+            {
+              "Name": "continuation",
+              "Type": "System.Action"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "System.Runtime.CompilerServices.ICriticalNotifyCompletion",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "customAwaiter",
+              "Type": "System.Object"
+            },
+            {
+              "Name": "isCompletedMethod",
+              "Type": "System.Func<System.Object, System.Boolean>"
+            },
+            {
+              "Name": "getResultMethod",
+              "Type": "System.Func<System.Object, System.Object>"
+            },
+            {
+              "Name": "onCompletedMethod",
+              "Type": "System.Action<System.Object, System.Action>"
+            },
+            {
+              "Name": "unsafeOnCompletedMethod",
+              "Type": "System.Action<System.Object, System.Action>"
             }
           ],
           "Visibility": "Public",

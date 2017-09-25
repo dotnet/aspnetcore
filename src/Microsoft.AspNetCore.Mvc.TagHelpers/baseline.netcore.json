@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.TagHelpers, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.TagHelpers, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Mvc.Rendering.ValidationSummary",
@@ -46,7 +46,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -111,6 +111,48 @@
         {
           "Kind": "Method",
           "Name": "set_Area",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Page",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Page",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PageHandler",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PageHandler",
           "Parameters": [
             {
               "Name": "value",
@@ -333,7 +375,7 @@
           "ReturnType": "System.Threading.Tasks.Task",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -342,8 +384,8 @@
           "Name": ".ctor",
           "Parameters": [
             {
-              "Name": "memoryCache",
-              "Type": "Microsoft.Extensions.Caching.Memory.IMemoryCache"
+              "Name": "factory",
+              "Type": "Microsoft.AspNetCore.Mvc.TagHelpers.Internal.CacheTagHelperMemoryCacheFactory"
             },
             {
               "Name": "htmlEncoder",
@@ -381,7 +423,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -635,6 +677,53 @@
           ],
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Field",
+          "Name": "DefaultExpiration",
+          "Parameters": [],
+          "ReturnType": "System.TimeSpan",
+          "Static": true,
+          "ReadOnly": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.TagHelpers.CacheTagHelperOptions",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_SizeLimit",
+          "Parameters": [],
+          "ReturnType": "System.Int64",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_SizeLimit",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Int64"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [],
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -691,7 +780,7 @@
           "ReturnType": "System.Threading.Tasks.Task",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -738,7 +827,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -753,6 +842,48 @@
         {
           "Kind": "Method",
           "Name": "set_Names",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Include",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Include",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Exclude",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Exclude",
           "Parameters": [
             {
               "Name": "value",
@@ -806,6 +937,255 @@
       "GenericParameters": []
     },
     {
+      "Name": "Microsoft.AspNetCore.Mvc.TagHelpers.FormActionTagHelper",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "BaseType": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelper",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Order",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Virtual": true,
+          "Override": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_ViewContext",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_ViewContext",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "Microsoft.AspNetCore.Mvc.Rendering.ViewContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_UrlHelperFactory",
+          "Parameters": [],
+          "ReturnType": "Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Action",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Action",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Controller",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Controller",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Area",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Area",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Page",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Page",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PageHandler",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PageHandler",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Fragment",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Fragment",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Route",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Route",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_RouteValues",
+          "Parameters": [],
+          "ReturnType": "System.Collections.Generic.IDictionary<System.String, System.String>",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_RouteValues",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.Collections.Generic.IDictionary<System.String, System.String>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "Process",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperContext"
+            },
+            {
+              "Name": "output",
+              "Type": "Microsoft.AspNetCore.Razor.TagHelpers.TagHelperOutput"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Virtual": true,
+          "Override": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "urlHelperFactory",
+              "Type": "Microsoft.AspNetCore.Mvc.Routing.IUrlHelperFactory"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
       "Name": "Microsoft.AspNetCore.Mvc.TagHelpers.FormTagHelper",
       "Visibility": "Public",
       "Kind": "Class",
@@ -819,7 +1199,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -917,6 +1297,48 @@
         },
         {
           "Kind": "Method",
+          "Name": "get_Page",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Page",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_PageHandler",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_PageHandler",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
           "Name": "get_Antiforgery",
           "Parameters": [],
           "ReturnType": "System.Nullable<System.Boolean>",
@@ -930,6 +1352,27 @@
             {
               "Name": "value",
               "Type": "System.Nullable<System.Boolean>"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "get_Fragment",
+          "Parameters": [],
+          "ReturnType": "System.String",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "set_Fragment",
+          "Parameters": [
+            {
+              "Name": "value",
+              "Type": "System.String"
             }
           ],
           "ReturnType": "System.Void",
@@ -1047,7 +1490,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1169,7 +1612,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1306,6 +1749,24 @@
           "GenericParameter": []
         },
         {
+          "Kind": "Method",
+          "Name": "GetInputType",
+          "Parameters": [
+            {
+              "Name": "modelExplorer",
+              "Type": "Microsoft.AspNetCore.Mvc.ViewFeatures.ModelExplorer"
+            },
+            {
+              "Name": "inputTypeHint",
+              "Type": "System.String",
+              "Direction": "Out"
+            }
+          ],
+          "ReturnType": "System.String",
+          "Visibility": "Protected",
+          "GenericParameter": []
+        },
+        {
           "Kind": "Constructor",
           "Name": ".ctor",
           "Parameters": [
@@ -1334,7 +1795,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1404,7 +1865,7 @@
           "ReturnType": "System.Threading.Tasks.Task",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1437,7 +1898,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1760,7 +2221,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1830,7 +2291,7 @@
           "ReturnType": "System.Threading.Tasks.Task",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1863,7 +2324,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1900,7 +2361,7 @@
           "ReturnType": "System.Void",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1920,7 +2381,7 @@
           "ReturnType": "System.Threading.Tasks.Task",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -1948,7 +2409,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2229,7 +2690,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2316,7 +2777,7 @@
           "ReturnType": "System.Void",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2441,7 +2902,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2543,7 +3004,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2613,7 +3074,7 @@
           "ReturnType": "System.Threading.Tasks.Task",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2646,7 +3107,7 @@
           "ReturnType": "System.Int32",
           "Virtual": true,
           "Override": true,
-          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelper",
+          "ImplementedInterface": "Microsoft.AspNetCore.Razor.TagHelpers.ITagHelperComponent",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -2761,7 +3222,7 @@
             },
             {
               "Name": "result",
-              "Type": "TMode",
+              "Type": "T0",
               "Direction": "Out"
             }
           ],
@@ -2775,6 +3236,56 @@
               "BaseTypeOrInterfaces": []
             }
           ]
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.TagHelpers.Internal.CacheTagHelperMemoryCacheFactory",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Cache",
+          "Parameters": [],
+          "ReturnType": "Microsoft.Extensions.Caching.Memory.IMemoryCache",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "options",
+              "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Mvc.TagHelpers.CacheTagHelperOptions>"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.TagHelpers.Internal.CryptographyAlgorithms",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "Abstract": true,
+      "Static": true,
+      "Sealed": true,
+      "ImplementedInterfaces": [],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "CreateSHA256",
+          "Parameters": [],
+          "ReturnType": "System.Security.Cryptography.SHA256",
+          "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -3610,6 +4121,44 @@
             {
               "Name": "builder",
               "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddCacheTagHelperLimits",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcBuilder"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.TagHelpers.CacheTagHelperOptions>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddCacheTagHelperLimits",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "configure",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.TagHelpers.CacheTagHelperOptions>"
             }
           ],
           "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",

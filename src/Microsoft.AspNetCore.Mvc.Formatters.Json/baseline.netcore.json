@@ -1,5 +1,5 @@
 {
-  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Formatters.Json, Version=1.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
+  "AssemblyIdentity": "Microsoft.AspNetCore.Mvc.Formatters.Json, Version=2.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60",
   "Types": [
     {
       "Name": "Microsoft.AspNetCore.Mvc.JsonPatchExtensions",
@@ -319,6 +319,34 @@
           ],
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
+            },
+            {
+              "Name": "serializerSettings",
+              "Type": "Newtonsoft.Json.JsonSerializerSettings"
+            },
+            {
+              "Name": "charPool",
+              "Type": "System.Buffers.ArrayPool<System.Char>"
+            },
+            {
+              "Name": "objectPoolProvider",
+              "Type": "Microsoft.Extensions.ObjectPool.ObjectPoolProvider"
+            },
+            {
+              "Name": "suppressInputFormatterBuffering",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -481,6 +509,34 @@
           ],
           "Visibility": "Public",
           "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "logger",
+              "Type": "Microsoft.Extensions.Logging.ILogger"
+            },
+            {
+              "Name": "serializerSettings",
+              "Type": "Newtonsoft.Json.JsonSerializerSettings"
+            },
+            {
+              "Name": "charPool",
+              "Type": "System.Buffers.ArrayPool<System.Char>"
+            },
+            {
+              "Name": "objectPoolProvider",
+              "Type": "Microsoft.Extensions.ObjectPool.ObjectPoolProvider"
+            },
+            {
+              "Name": "suppressInputFormatterBuffering",
+              "Type": "System.Boolean"
+            }
+          ],
+          "Visibility": "Public",
+          "GenericParameter": []
         }
       ],
       "GenericParameters": []
@@ -500,6 +556,72 @@
           "Parameters": [],
           "ReturnType": "Newtonsoft.Json.JsonSerializerSettings",
           "Static": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        }
+      ],
+      "GenericParameters": []
+    },
+    {
+      "Name": "Microsoft.AspNetCore.Mvc.Formatters.Json.JsonPatchOperationsArrayProvider",
+      "Visibility": "Public",
+      "Kind": "Class",
+      "ImplementedInterfaces": [
+        "Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider"
+      ],
+      "Members": [
+        {
+          "Kind": "Method",
+          "Name": "get_Order",
+          "Parameters": [],
+          "ReturnType": "System.Int32",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnProvidersExecuting",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "OnProvidersExecuted",
+          "Parameters": [
+            {
+              "Name": "context",
+              "Type": "Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescriptionProviderContext"
+            }
+          ],
+          "ReturnType": "System.Void",
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.AspNetCore.Mvc.ApiExplorer.IApiDescriptionProvider",
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Constructor",
+          "Name": ".ctor",
+          "Parameters": [
+            {
+              "Name": "modelMetadataProvider",
+              "Type": "Microsoft.AspNetCore.Mvc.ModelBinding.IModelMetadataProvider"
+            }
+          ],
           "Visibility": "Public",
           "GenericParameter": []
         }
@@ -611,6 +733,7 @@
             }
           ],
           "ReturnType": "System.Threading.Tasks.Task",
+          "Virtual": true,
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -695,36 +818,23 @@
       "Name": "Microsoft.AspNetCore.Mvc.Formatters.Json.Internal.MvcJsonMvcOptionsSetup",
       "Visibility": "Public",
       "Kind": "Class",
-      "BaseType": "Microsoft.Extensions.Options.ConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
-      "ImplementedInterfaces": [],
+      "ImplementedInterfaces": [
+        "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>"
+      ],
       "Members": [
         {
           "Kind": "Method",
-          "Name": "ConfigureMvc",
+          "Name": "Configure",
           "Parameters": [
             {
               "Name": "options",
               "Type": "Microsoft.AspNetCore.Mvc.MvcOptions"
-            },
-            {
-              "Name": "serializerSettings",
-              "Type": "Newtonsoft.Json.JsonSerializerSettings"
-            },
-            {
-              "Name": "loggerFactory",
-              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
-            },
-            {
-              "Name": "charPool",
-              "Type": "System.Buffers.ArrayPool<System.Char>"
-            },
-            {
-              "Name": "objectPoolProvider",
-              "Type": "Microsoft.Extensions.ObjectPool.ObjectPoolProvider"
             }
           ],
           "ReturnType": "System.Void",
-          "Static": true,
+          "Sealed": true,
+          "Virtual": true,
+          "ImplementedInterface": "Microsoft.Extensions.Options.IConfigureOptions<Microsoft.AspNetCore.Mvc.MvcOptions>",
           "Visibility": "Public",
           "GenericParameter": []
         },
@@ -821,6 +931,25 @@
             {
               "Name": "setupAction",
               "Type": "System.Action<Newtonsoft.Json.JsonSerializerSettings>"
+            }
+          ],
+          "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
+          "Static": true,
+          "Extension": true,
+          "Visibility": "Public",
+          "GenericParameter": []
+        },
+        {
+          "Kind": "Method",
+          "Name": "AddJsonOptions",
+          "Parameters": [
+            {
+              "Name": "builder",
+              "Type": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder"
+            },
+            {
+              "Name": "setupAction",
+              "Type": "System.Action<Microsoft.AspNetCore.Mvc.MvcJsonOptions>"
             }
           ],
           "ReturnType": "Microsoft.Extensions.DependencyInjection.IMvcCoreBuilder",
