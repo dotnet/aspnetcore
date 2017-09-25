@@ -17,6 +17,16 @@ namespace Microsoft.AspNetCore.SignalR
 
         public override Task AddGroupAsync(string connectionId, string groupName)
         {
+            if (connectionId == null)
+            {
+                throw new ArgumentNullException(nameof(connectionId));
+            }
+
+            if (groupName == null)
+            {
+                throw new ArgumentNullException(nameof(groupName));
+            }
+
             var connection = _connections[connectionId];
             if (connection == null)
             {
@@ -36,6 +46,16 @@ namespace Microsoft.AspNetCore.SignalR
 
         public override Task RemoveGroupAsync(string connectionId, string groupName)
         {
+            if (connectionId == null)
+            {
+                throw new ArgumentNullException(nameof(connectionId));
+            }
+
+            if (groupName == null)
+            {
+                throw new ArgumentNullException(nameof(groupName));
+            }
+
             var connection = _connections[connectionId];
             if (connection == null)
             {
@@ -79,7 +99,17 @@ namespace Microsoft.AspNetCore.SignalR
 
         public override Task InvokeConnectionAsync(string connectionId, string methodName, object[] args)
         {
+            if (connectionId == null)
+            {
+                throw new ArgumentNullException(nameof(connectionId));
+            }
+
             var connection = _connections[connectionId];
+
+            if (connection == null)
+            {
+                return Task.CompletedTask;
+            }
 
             var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
 
@@ -88,6 +118,11 @@ namespace Microsoft.AspNetCore.SignalR
 
         public override Task InvokeGroupAsync(string groupName, string methodName, object[] args)
         {
+            if (groupName == null)
+            {
+                throw new ArgumentNullException(nameof(groupName));
+            }
+
             return InvokeAllWhere(methodName, args, connection =>
             {
                 var feature = connection.Features.Get<IHubGroupsFeature>();
