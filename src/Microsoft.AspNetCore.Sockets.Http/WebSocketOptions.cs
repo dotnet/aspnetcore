@@ -8,5 +8,7 @@ namespace Microsoft.AspNetCore.Sockets
     public class WebSocketOptions
     {
         public TimeSpan CloseTimeout { get; set; } = TimeSpan.FromSeconds(5);
+
+        public string SubProtocol { get; set; }
     }
 }
