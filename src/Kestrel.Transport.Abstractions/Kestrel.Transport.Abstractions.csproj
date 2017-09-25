@@ -8,7 +8,6 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;kestrel</PackageTags>
     <NoWarn>CS1570;CS1571;CS1572;CS1573;CS1574;CS1591;$(NoWarn)</NoWarn>
-    <EnableApiCheck>false</EnableApiCheck>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <UseSystemMemory>false</UseSystemMemory>
   </PropertyGroup>
