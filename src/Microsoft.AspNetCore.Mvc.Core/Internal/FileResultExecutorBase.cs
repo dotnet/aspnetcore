@@ -90,8 +90,11 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 // Assuming the request is not a range request, the Content-Length header is set to the length of the entire file. 
                 // If the request is a valid range request, this header is overwritten with the length of the range as part of the 
                 // range processing (see method SetContentLength).
-                response.ContentLength = fileLength.Value;
-
+                if (serveBody)
+                {
+                    response.ContentLength = fileLength.Value;
+                }
+                
                 if (enableRangeProcessing)
                 {
                     SetAcceptRangeHeader(context);
