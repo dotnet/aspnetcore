@@ -3,7 +3,7 @@
 
 using System.Text;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static class HeaderEncoding
     {
@@ -12,15 +12,15 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         // (e.g. IE and HttpWebRequest on intranets).
         private static Encoding Encoding = new UTF8Encoding(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
 
-        internal static unsafe string GetString(sbyte* pBytes, int byteCount)
+        internal static unsafe string GetString(byte* pBytes, int byteCount)
         {
             // net451: return new string(pBytes, 0, byteCount, Encoding);
 
-            var charCount = Encoding.GetCharCount((byte*)pBytes, byteCount);
+            var charCount = Encoding.GetCharCount(pBytes, byteCount);
             var chars = new char[charCount];
             fixed (char* pChars = chars)
             {
-                var count = Encoding.GetChars((byte*)pBytes, byteCount, pChars, charCount);
+                var count = Encoding.GetChars(pBytes, byteCount, pChars, charCount);
                 System.Diagnostics.Debug.Assert(count == charCount);
             }
             return new string(chars);

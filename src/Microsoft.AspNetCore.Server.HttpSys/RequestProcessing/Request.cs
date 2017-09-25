@@ -5,11 +5,11 @@ using System;
 using System.Globalization;
 using System.IO;
 using System.Net;
-using System.Security.Claims;
 using System.Security.Cryptography.X509Certificates;
 using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -27,8 +27,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private long? _contentLength;
         private RequestStream _nativeStream;
 
-        private SocketAddress _localEndPoint;
-        private SocketAddress _remoteEndPoint;
+        private AspNetCore.HttpSys.Internal.SocketAddress _localEndPoint;
+        private AspNetCore.HttpSys.Internal.SocketAddress _remoteEndPoint;
 
         private bool _isDisposed = false;
 
@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             var originalPath = RequestUriBuilder.DecodeAndUnescapePath(rawUrlInBytes);
 
             // 'OPTIONS * HTTP/1.1'
-            if (KnownMethod == HttpApi.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
+            if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawUrl, "*", StringComparison.Ordinal))
             {
                 PathBase = string.Empty;
                 Path = string.Empty;
@@ -79,9 +79,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             ProtocolVersion = _nativeRequestContext.GetVersion();
 
-            Headers = new HeaderCollection(new RequestHeaders(_nativeRequestContext));
+            Headers = new RequestHeaders(_nativeRequestContext);
 
-            User = nativeRequestContext.GetUser();
+            User = _nativeRequestContext.GetUser();
 
             // GetTlsTokenBindingInfo(); TODO: https://github.com/aspnet/HttpSysServer/issues/231
 
@@ -136,11 +136,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        public HeaderCollection Headers { get; }
+        public RequestHeaders Headers { get; }
 
-        internal HttpApi.HTTP_VERB KnownMethod { get; }
+        internal HttpApiTypes.HTTP_VERB KnownMethod { get; }
 
-        internal bool IsHeadMethod => KnownMethod == HttpApi.HTTP_VERB.HttpVerbHEAD;
+        internal bool IsHeadMethod => KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbHEAD;
 
         public string Method { get; }
 
@@ -190,7 +190,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        private SocketAddress RemoteEndPoint
+        private AspNetCore.HttpSys.Internal.SocketAddress RemoteEndPoint
         {
             get
             {
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        private SocketAddress LocalEndPoint
+        private AspNetCore.HttpSys.Internal.SocketAddress LocalEndPoint
         {
             get
             {

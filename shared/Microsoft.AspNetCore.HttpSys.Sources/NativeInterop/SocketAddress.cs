@@ -6,9 +6,10 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Net;
+using System.Net.Sockets;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     // a little perf app measured these times when comparing the internal
     // buffer implemented as a managed byte[] or unmanaged memory IntPtr

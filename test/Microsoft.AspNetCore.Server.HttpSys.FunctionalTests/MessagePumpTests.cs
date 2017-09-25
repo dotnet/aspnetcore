@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;

@@ -3,7 +3,7 @@
 
 using System;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static class NclUtilities
     {

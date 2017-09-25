@@ -9,8 +9,9 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
-using static Microsoft.AspNetCore.Server.HttpSys.UnsafeNclNativeMethods;
+using static Microsoft.AspNetCore.HttpSys.Internal.UnsafeNclNativeMethods;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -132,7 +133,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             uint statusCode = 0;
-            HttpApi.HTTP_DATA_CHUNK[] dataChunks;
+            HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks;
             var pinnedBuffers = PinDataBuffers(endOfRequest, data, out dataChunks);
             try
             {
@@ -142,7 +143,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 }
                 else
                 {
-                    fixed (HttpApi.HTTP_DATA_CHUNK* pDataChunks = dataChunks)
+                    fixed (HttpApiTypes.HTTP_DATA_CHUNK* pDataChunks = dataChunks)
                     {
                         statusCode = HttpApi.HttpSendResponseEntityBody(
                                 RequestQueueHandle,
@@ -183,7 +184,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
         }
 
-        private List<GCHandle> PinDataBuffers(bool endOfRequest, ArraySegment<byte> data, out HttpApi.HTTP_DATA_CHUNK[] dataChunks)
+        private List<GCHandle> PinDataBuffers(bool endOfRequest, ArraySegment<byte> data, out HttpApiTypes.HTTP_DATA_CHUNK[] dataChunks)
         {
             var pins = new List<GCHandle>();
             var chunked = _requestContext.Response.BoundaryType == BoundaryType.Chunked;
@@ -192,14 +193,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // Figure out how many data chunks
             if (chunked && data.Count == 0 && endOfRequest)
             {
-                dataChunks = new HttpApi.HTTP_DATA_CHUNK[1];
+                dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[1];
                 SetDataChunk(dataChunks, ref currentChunk, pins, new ArraySegment<byte>(Helpers.ChunkTerminator));
                 return pins;
             }
             else if (data.Count == 0)
             {
                 // No data
-                dataChunks = new HttpApi.HTTP_DATA_CHUNK[0];
+                dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[0];
                 return pins;
             }
 
@@ -215,7 +216,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     chunkCount += 1;
                 }
             }
-            dataChunks = new HttpApi.HTTP_DATA_CHUNK[chunkCount];
+            dataChunks = new HttpApiTypes.HTTP_DATA_CHUNK[chunkCount];
 
             if (chunked)
             {
@@ -238,11 +239,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             return pins;
         }
 
-        private static void SetDataChunk(HttpApi.HTTP_DATA_CHUNK[] chunks, ref int chunkIndex, List<GCHandle> pins, ArraySegment<byte> buffer)
+        private static void SetDataChunk(HttpApiTypes.HTTP_DATA_CHUNK[] chunks, ref int chunkIndex, List<GCHandle> pins, ArraySegment<byte> buffer)
         {
             var handle = GCHandle.Alloc(buffer.Array, GCHandleType.Pinned);
             pins.Add(handle);
-            chunks[chunkIndex].DataChunkType = HttpApi.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
+            chunks[chunkIndex].DataChunkType = HttpApiTypes.HTTP_DATA_CHUNK_TYPE.HttpDataChunkFromMemory;
             chunks[chunkIndex].fromMemory.pBuffer = handle.AddrOfPinnedObject() + buffer.Offset;
             chunks[chunkIndex].fromMemory.BufferLength = (uint)buffer.Count;
             chunkIndex++;
@@ -355,7 +356,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             // Last write, cache it for special cancellation handling.
-            if ((flags & HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
+            if ((flags & HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
             {
                 _lastWrite = asyncResult;
             }
@@ -405,9 +406,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             _requestContext.Abort();
         }
 
-        private HttpApi.HTTP_FLAGS ComputeLeftToWrite(long writeCount, bool endOfRequest = false)
+        private HttpApiTypes.HTTP_FLAGS ComputeLeftToWrite(long writeCount, bool endOfRequest = false)
         {
-            var flags = HttpApi.HTTP_FLAGS.NONE;
+            var flags = HttpApiTypes.HTTP_FLAGS.NONE;
             if (!_requestContext.Response.HasComputedHeaders)
             {
                 flags = _requestContext.Response.ComputeHeaders(writeCount, endOfRequest);
@@ -430,11 +431,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
             if (endOfRequest && _requestContext.Response.BoundaryType == BoundaryType.Close)
             {
-                flags |= HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
+                flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_DISCONNECT;
             }
             else if (!endOfRequest && _leftToWrite != writeCount)
             {
-                flags |= HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
+                flags |= HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA;
             }
 
             // Update _leftToWrite now so we can queue up additional async writes.
@@ -647,7 +648,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
 
             // Last write, cache it for special cancellation handling.
-            if ((flags & HttpApi.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
+            if ((flags & HttpApiTypes.HTTP_FLAGS.HTTP_SEND_RESPONSE_FLAG_MORE_DATA) == 0)
             {
                 _lastWrite = asyncResult;
             }

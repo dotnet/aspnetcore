@@ -3,6 +3,7 @@
 
 using System;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -15,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     public sealed class TimeoutManager
     {
         private static readonly int TimeoutLimitSize =
-            Marshal.SizeOf<HttpApi.HTTP_TIMEOUT_LIMIT_INFO>();
+            Marshal.SizeOf<HttpApiTypes.HTTP_TIMEOUT_LIMIT_INFO>();
 
         private UrlGroup _urlGroup;
         private int[] _timeouts;
@@ -47,11 +48,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             get
             {
-                return GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.EntityBody);
+                return GetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE.EntityBody);
             }
             set
             {
-                SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.EntityBody, value);
+                SetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE.EntityBody, value);
             }
         }
 
@@ -70,11 +71,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             get
             {
-                return GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody);
+                return GetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE.DrainEntityBody);
             }
             set
             {
-                SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody, value);
+                SetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE.DrainEntityBody, value);
             }
         }
 
@@ -88,11 +89,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             get
             {
-                return GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue);
+                return GetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE.RequestQueue);
             }
             set
             {
-                SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue, value);
+                SetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE.RequestQueue, value);
             }
         }
 
@@ -107,11 +108,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             get
             {
-                return GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection);
+                return GetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE.IdleConnection);
             }
             set
             {
-                SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection, value);
+                SetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE.IdleConnection, value);
             }
         }
 
@@ -127,11 +128,11 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             get
             {
-                return GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait);
+                return GetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE.HeaderWait);
             }
             set
             {
-                SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait, value);
+                SetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE.HeaderWait, value);
             }
         }
 
@@ -167,13 +168,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         #region Helpers
 
-        private TimeSpan GetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE type)
+        private TimeSpan GetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE type)
         {
             // Since we maintain local state, GET is local.
             return new TimeSpan(0, 0, (int)_timeouts[(int)type]);
         }
 
-        private void SetTimeSpanTimeout(HttpApi.HTTP_TIMEOUT_TYPE type, TimeSpan value)
+        private void SetTimeSpanTimeout(HttpApiTypes.HTTP_TIMEOUT_TYPE type, TimeSpan value)
         {
             // All timeouts are defined as USHORT in native layer (except MinSendRate, which is ULONG). Make sure that
             // timeout value is within range.
@@ -207,25 +208,25 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 return;
             }
 
-            var timeoutinfo = new HttpApi.HTTP_TIMEOUT_LIMIT_INFO();
+            var timeoutinfo = new HttpApiTypes.HTTP_TIMEOUT_LIMIT_INFO();
 
-            timeoutinfo.Flags = HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
+            timeoutinfo.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
             timeoutinfo.DrainEntityBody =
-                (ushort)timeouts[(int)HttpApi.HTTP_TIMEOUT_TYPE.DrainEntityBody];
+                (ushort)timeouts[(int)HttpApiTypes.HTTP_TIMEOUT_TYPE.DrainEntityBody];
             timeoutinfo.EntityBody =
-                (ushort)timeouts[(int)HttpApi.HTTP_TIMEOUT_TYPE.EntityBody];
+                (ushort)timeouts[(int)HttpApiTypes.HTTP_TIMEOUT_TYPE.EntityBody];
             timeoutinfo.RequestQueue =
-                (ushort)timeouts[(int)HttpApi.HTTP_TIMEOUT_TYPE.RequestQueue];
+                (ushort)timeouts[(int)HttpApiTypes.HTTP_TIMEOUT_TYPE.RequestQueue];
             timeoutinfo.IdleConnection =
-                (ushort)timeouts[(int)HttpApi.HTTP_TIMEOUT_TYPE.IdleConnection];
+                (ushort)timeouts[(int)HttpApiTypes.HTTP_TIMEOUT_TYPE.IdleConnection];
             timeoutinfo.HeaderWait =
-                (ushort)timeouts[(int)HttpApi.HTTP_TIMEOUT_TYPE.HeaderWait];
+                (ushort)timeouts[(int)HttpApiTypes.HTTP_TIMEOUT_TYPE.HeaderWait];
             timeoutinfo.MinSendRate = minSendBytesPerSecond;
 
             var infoptr = new IntPtr(&timeoutinfo);
 
             _urlGroup.SetProperty(
-                HttpApi.HTTP_SERVER_PROPERTY.HttpServerTimeoutsProperty,
+                HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerTimeoutsProperty,
                 infoptr, (uint)TimeoutLimitSize);
         }
 

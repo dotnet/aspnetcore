@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {

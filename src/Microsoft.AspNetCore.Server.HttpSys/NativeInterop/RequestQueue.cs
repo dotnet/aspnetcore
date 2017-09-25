@@ -4,6 +4,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Threading;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     internal class RequestQueue
     {
         private static readonly int BindingInfoSize =
-            Marshal.SizeOf<HttpApi.HTTP_BINDING_INFO>();
+            Marshal.SizeOf<HttpApiTypes.HTTP_BINDING_INFO>();
 
         private readonly UrlGroup _urlGroup;
         private readonly ILogger _logger;
@@ -54,13 +55,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // Set the association between request queue and url group. After this, requests for registered urls will 
             // get delivered to this request queue.
 
-            var info = new HttpApi.HTTP_BINDING_INFO();
-            info.Flags = HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
+            var info = new HttpApiTypes.HTTP_BINDING_INFO();
+            info.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
             info.RequestQueueHandle = Handle.DangerousGetHandle();
 
             var infoptr = new IntPtr(&info);
 
-            _urlGroup.SetProperty(HttpApi.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
+            _urlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
                 infoptr, (uint)BindingInfoSize);
         }
 
@@ -73,13 +74,13 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             // is fine since http.sys allows to set HttpServerBindingProperty multiple times for valid 
             // Url groups.
 
-            var info = new HttpApi.HTTP_BINDING_INFO();
-            info.Flags = HttpApi.HTTP_FLAGS.NONE;
+            var info = new HttpApiTypes.HTTP_BINDING_INFO();
+            info.Flags = HttpApiTypes.HTTP_FLAGS.NONE;
             info.RequestQueueHandle = IntPtr.Zero;
 
             var infoptr = new IntPtr(&info);
 
-            _urlGroup.SetProperty(HttpApi.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
+            _urlGroup.SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerBindingProperty,
                 infoptr, (uint)BindingInfoSize, throwOnError: false);
         }
 
@@ -89,7 +90,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             CheckDisposed();
 
             var result = HttpApi.HttpSetRequestQueueProperty(Handle,
-                HttpApi.HTTP_SERVER_PROPERTY.HttpServerQueueLengthProperty,
+                HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerQueueLengthProperty,
                 new IntPtr((void*)&length), (uint)Marshal.SizeOf<long>(), 0, IntPtr.Zero);
 
             if (result != 0)

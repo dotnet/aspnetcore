@@ -3,6 +3,7 @@
 
 using System;
 using System.Threading;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Win32.SafeHandles;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -17,7 +18,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         {
             serverSessionId = id;
 
-            // This class uses no real handle so we need to set a dummy handle. Otherwise, IsInvalid always remains             
+            // This class uses no real handle so we need to set a dummy handle. Otherwise, IsInvalid always remains
             // true.
 
             SetHandle(new IntPtr(1));

@@ -5,7 +5,7 @@ using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal static unsafe class UnsafeNclNativeMethods
     {

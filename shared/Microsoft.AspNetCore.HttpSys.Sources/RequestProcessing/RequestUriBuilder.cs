@@ -4,7 +4,7 @@
 using System;
 using System.Text;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     // We don't use the cooked URL because http.sys unescapes all percent-encoded values. However,
     // we also can't just use the raw Uri, since http.sys supports not only UTF-8, but also ANSI/DBCS and

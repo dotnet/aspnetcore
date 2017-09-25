@@ -3,6 +3,7 @@
 
 using System;
 using System.Diagnostics;
+using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {

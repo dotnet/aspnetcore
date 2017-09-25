@@ -45,6 +45,41 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "build", "build", "{85914BA9
 		build\Key.snk = build\Key.snk
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "shared", "shared", "{AB6964C9-A7AF-4FAC-BEA1-C8A538EC989E}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Microsoft.AspNetCore.HttpSys.Sources", "Microsoft.AspNetCore.HttpSys.Sources", "{4AB1E069-2A8A-4D46-98AE-CC82E3497038}"
+	ProjectSection(SolutionItems) = preProject
+		shared\Microsoft.AspNetCore.HttpSys.Sources\Constants.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\Constants.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NativeInterop", "NativeInterop", "{94AD33C9-1BDD-4385-A850-4B24FD5D5012}"
+	ProjectSection(SolutionItems) = preProject
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\CookedUrl.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\CookedUrl.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\HeapAllocHandle.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\HeapAllocHandle.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\HttpApiTypes.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\HttpApiTypes.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\HttpSysRequestHeader.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\HttpSysRequestHeader.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\HttpSysResponseHeader.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\HttpSysResponseHeader.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\NativeRequestInput.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\NativeRequestInput.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\NclUtilities.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\NclUtilities.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\SafeLocalFreeChannelBinding.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\SafeLocalFreeChannelBinding.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\SafeLocalMemHandle.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\SafeLocalMemHandle.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\SafeNativeOverlapped.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\SafeNativeOverlapped.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\SocketAddress.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\SocketAddress.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\UnsafeNativeMethods.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\NativeInterop\UnsafeNativeMethods.cs
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "RequestProcessing", "RequestProcessing", "{AA8C91BD-D558-468B-9258-1E186884F78D}"
+	ProjectSection(SolutionItems) = preProject
+		shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\HeaderCollection.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\HeaderCollection.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\HeaderEncoding.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\HeaderEncoding.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\HeaderParser.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\HeaderParser.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\HttpKnownHeaderNames.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\HttpKnownHeaderNames.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\NativeRequestContext.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\NativeRequestContext.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\RequestHeaders.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\RequestHeaders.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\RequestHeaders.Generated.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\RequestHeaders.Generated.cs
+		shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\SslStatus.cs = shared\Microsoft.AspNetCore.HttpSys.Sources\RequestProcessing\SslStatus.cs
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -131,6 +166,9 @@ Global
 		{8BFA392A-8B67-4454-916B-67C545EDFAEF} = {3A1E31E3-2794-4CA3-B8E2-253E96BDE514}
 		{E837249E-E666-4DF2-AFC3-7A4D70234F9F} = {E183C826-1360-4DFF-9994-F33CED5C8525}
 		{85914BA9-4168-48C5-9C3F-E2E8B1479A6E} = {5E9B546C-17AC-4BDF-BCB3-5955D4755ED8}
+		{4AB1E069-2A8A-4D46-98AE-CC82E3497038} = {AB6964C9-A7AF-4FAC-BEA1-C8A538EC989E}
+		{94AD33C9-1BDD-4385-A850-4B24FD5D5012} = {4AB1E069-2A8A-4D46-98AE-CC82E3497038}
+		{AA8C91BD-D558-468B-9258-1E186884F78D} = {4AB1E069-2A8A-4D46-98AE-CC82E3497038}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {34B42B42-FA09-41AB-9216-14073990C504}

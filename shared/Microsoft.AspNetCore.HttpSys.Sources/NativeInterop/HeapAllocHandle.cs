@@ -4,7 +4,7 @@
 using System;
 using Microsoft.Win32.SafeHandles;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal sealed class HeapAllocHandle : SafeHandleZeroOrMinusOneIsInvalid
     {

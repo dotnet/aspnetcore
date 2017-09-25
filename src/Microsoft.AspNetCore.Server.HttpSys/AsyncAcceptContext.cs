@@ -3,9 +3,10 @@
 
 using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Diagnostics.Contracts;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.HttpSys.Internal;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
 {
@@ -16,12 +17,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys
         private TaskCompletionSource<RequestContext> _tcs;
         private HttpSysListener _server;
         private NativeRequestContext _nativeRequestContext;
+        private const int DefaultBufferSize = 4096;
+        private const int AlignmentPadding = 8;
 
         internal AsyncAcceptContext(HttpSysListener server)
         {
             _server = server;
             _tcs = new TaskCompletionSource<RequestContext>();
-            _nativeRequestContext = new NativeRequestContext(this);
+            AllocateNativeRequest();
         }
 
         internal Task<RequestContext> Task
@@ -68,12 +71,10 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     {
                         // at this point we have received an unmanaged HTTP_REQUEST and memoryBlob
                         // points to it we need to hook up our authentication handling code here.
-                        bool stoleBlob = false;
                         try
                         {
                             if (server.ValidateRequest(asyncResult._nativeRequestContext) && server.ValidateAuth(asyncResult._nativeRequestContext))
                             {
-                                stoleBlob = true;
                                 RequestContext requestContext = new RequestContext(server, asyncResult._nativeRequestContext);
                                 asyncResult.Tcs.TrySetResult(requestContext);
                                 complete = true;
@@ -81,20 +82,21 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                         }
                         finally
                         {
-                            if (stoleBlob)
+                            // The request has been handed to the user, which means this code can't reuse the blob.  Reset it here.
+                            if (complete)
                             {
-                                // The request has been handed to the user, which means this code can't reuse the blob.  Reset it here.
-                                asyncResult._nativeRequestContext = complete ? null : new NativeRequestContext(asyncResult);
+                                asyncResult._nativeRequestContext = null;
                             }
                             else
                             {
-                                asyncResult._nativeRequestContext.Reset();
+                                asyncResult.AllocateNativeRequest(size: asyncResult._nativeRequestContext.Size);
                             }
                         }
                     }
                     else
                     {
-                        asyncResult._nativeRequestContext.Reset(asyncResult._nativeRequestContext.RequestId, numBytes);
+                        //  (uint)backingBuffer.Length - AlignmentPadding
+                       asyncResult.AllocateNativeRequest(numBytes, asyncResult._nativeRequestContext.RequestId);
                     }
 
                     // We need to issue a new request, either because auth failed, or because our buffer was too small the first time.
@@ -147,7 +149,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 statusCode = HttpApi.HttpReceiveHttpRequest(
                     Server.RequestQueue.Handle,
                     _nativeRequestContext.RequestId,
-                    (uint)HttpApi.HTTP_FLAGS.HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY,
+                    (uint)HttpApiTypes.HTTP_FLAGS.HTTP_RECEIVE_REQUEST_FLAG_COPY_BODY,
                     _nativeRequestContext.NativeRequest,
                     _nativeRequestContext.Size,
                     &bytesTransferred,
@@ -165,7 +167,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                 {
                     // the buffer was not big enough to fit the headers, we need
                     // to read the RequestId returned, allocate a new buffer of the required size
-                    _nativeRequestContext.Reset(_nativeRequestContext.RequestId, bytesTransferred);
+                    //  (uint)backingBuffer.Length - AlignmentPadding
+                    AllocateNativeRequest(bytesTransferred);
                     retry = true;
                 }
                 else if (statusCode == UnsafeNclNativeMethods.ErrorCodes.ERROR_SUCCESS
@@ -177,6 +180,36 @@ namespace Microsoft.AspNetCore.Server.HttpSys
             }
             while (retry);
             return statusCode;
+        }
+
+        internal void AllocateNativeRequest(uint? size = null, ulong requestId = 0)
+        {
+            //Debug.Assert(size != 0, "unexpected size");
+
+            // We can't reuse overlapped objects
+            uint newSize = size.HasValue ? size.Value : DefaultBufferSize;
+            var backingBuffer = new byte[newSize + AlignmentPadding];
+
+            var boundHandle = Server.RequestQueue.BoundHandle;
+            var nativeOverlapped = new SafeNativeOverlapped(boundHandle,
+                boundHandle.AllocateNativeOverlapped(IOCallback, this, backingBuffer));
+
+            var requestAddress = Marshal.UnsafeAddrOfPinnedArrayElement(backingBuffer, 0);
+
+            // TODO:
+            // Apparently the HttpReceiveHttpRequest memory alignment requirements for non - ARM processors
+            // are different than for ARM processors. We have seen 4 - byte - aligned buffers allocated on
+            // virtual x64/x86 machines which were accepted by HttpReceiveHttpRequest without errors. In
+            // these cases the buffer alignment may cause reading values at invalid offset. Setting buffer
+            // alignment to 0 for now.
+            // 
+            // _bufferAlignment = (int)(requestAddress.ToInt64() & 0x07);
+
+            var bufferAlignment = 0;
+
+            var nativeRequest = (HttpApiTypes.HTTP_REQUEST*)(requestAddress + bufferAlignment);
+            // nativeRequest
+            _nativeRequestContext = new NativeRequestContext(nativeOverlapped, bufferAlignment, nativeRequest, backingBuffer, requestId);
         }
 
         public object AsyncState

@@ -7,6 +7,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys

@@ -11,7 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     [GeneratedCode("TextTemplatingFileGenerator", "")]
     internal partial class RequestHeaders

@@ -4,14 +4,14 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     // Note this type should only be used while the request buffer remains pinned
     internal class CookedUrl
     {
-        private readonly HttpApi.HTTP_COOKED_URL _nativeCookedUrl;
+        private readonly HttpApiTypes.HTTP_COOKED_URL _nativeCookedUrl;
 
-        internal CookedUrl(HttpApi.HTTP_COOKED_URL nativeCookedUrl)
+        internal CookedUrl(HttpApiTypes.HTTP_COOKED_URL nativeCookedUrl)
         {
             _nativeCookedUrl = nativeCookedUrl;
         }

@@ -5,7 +5,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace Microsoft.AspNetCore.Server.HttpSys
+namespace Microsoft.AspNetCore.HttpSys.Internal
 {
     internal class SafeNativeOverlapped : SafeHandle
     {

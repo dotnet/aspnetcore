@@ -4,6 +4,7 @@
 using System;
 using System.Diagnostics;
 using System.Runtime.InteropServices;
+using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.HttpSys
@@ -11,7 +12,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys
     internal class UrlGroup : IDisposable
     {
         private static readonly int QosInfoSize =
-            Marshal.SizeOf<HttpApi.HTTP_QOS_SETTING_INFO>();
+            Marshal.SizeOf<HttpApiTypes.HTTP_QOS_SETTING_INFO>();
 
         private ServerSession _serverSession;
         private ILogger _logger;
@@ -39,18 +40,18 @@ namespace Microsoft.AspNetCore.Server.HttpSys
 
         internal unsafe void SetMaxConnections(long maxConnections)
         {
-            var connectionLimit = new HttpApi.HTTP_CONNECTION_LIMIT_INFO();
-            connectionLimit.Flags = HttpApi.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
+            var connectionLimit = new HttpApiTypes.HTTP_CONNECTION_LIMIT_INFO();
+            connectionLimit.Flags = HttpApiTypes.HTTP_FLAGS.HTTP_PROPERTY_FLAG_PRESENT;
             connectionLimit.MaxConnections = (uint)maxConnections;
 
-            var qosSettings = new HttpApi.HTTP_QOS_SETTING_INFO();
-            qosSettings.QosType = HttpApi.HTTP_QOS_SETTING_TYPE.HttpQosSettingTypeConnectionLimit;
+            var qosSettings = new HttpApiTypes.HTTP_QOS_SETTING_INFO();
+            qosSettings.QosType = HttpApiTypes.HTTP_QOS_SETTING_TYPE.HttpQosSettingTypeConnectionLimit;
             qosSettings.QosSetting = new IntPtr(&connectionLimit);
 
-            SetProperty(HttpApi.HTTP_SERVER_PROPERTY.HttpServerQosProperty, new IntPtr(&qosSettings), (uint)QosInfoSize);
+            SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY.HttpServerQosProperty, new IntPtr(&qosSettings), (uint)QosInfoSize);
         }
 
-        internal void SetProperty(HttpApi.HTTP_SERVER_PROPERTY property, IntPtr info, uint infosize, bool throwOnError = true)
+        internal void SetProperty(HttpApiTypes.HTTP_SERVER_PROPERTY property, IntPtr info, uint infosize, bool throwOnError = true)
         {            
             Debug.Assert(info != IntPtr.Zero, "SetUrlGroupProperty called with invalid pointer");
             CheckDisposed();
