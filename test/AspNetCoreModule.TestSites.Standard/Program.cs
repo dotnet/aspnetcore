@@ -4,11 +4,11 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Net.Http.Server;
 using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading;
+using System.Net;
 
 namespace AspnetCoreModule.TestSites.Standard
 {
@@ -25,7 +25,7 @@ namespace AspnetCoreModule.TestSites.Standard
             var config = new ConfigurationBuilder()
                 .AddCommandLine(args)
                 .Build();
-            
+
             string startUpClassString = Environment.GetEnvironmentVariable("ANCMTestStartupClassName");
             IWebHostBuilder builder = null;
             if (!string.IsNullOrEmpty(startUpClassString))
@@ -36,7 +36,7 @@ namespace AspnetCoreModule.TestSites.Standard
                     string pfxPassword = "testPassword";
                     if (File.Exists(@".\TestResources\testcert.pfx"))
                     {
-                        _x509Certificate2 = new X509Certificate2(@".\TestResources\testcert.pfx", pfxPassword);                        
+                        _x509Certificate2 = new X509Certificate2(@".\TestResources\testcert.pfx", pfxPassword);
                     }
                     else
                     {
@@ -46,14 +46,7 @@ namespace AspnetCoreModule.TestSites.Standard
                     builder = new WebHostBuilder()
                         .UseConfiguration(config)
                         .UseIISIntegration()
-                        .UseKestrel(options =>
-                        {
-                            HttpsConnectionFilterOptions httpsoptions = new HttpsConnectionFilterOptions();
-                            httpsoptions.ServerCertificate = _x509Certificate2;
-                            httpsoptions.ClientCertificateMode = ClientCertificateMode.RequireCertificate;
-                            httpsoptions.CheckCertificateRevocation = false;
-                            options.UseHttps(httpsoptions);
-                        })
+                        .UseKestrel()
                         .UseStartup<Startup>();
                 }
                 else if (startUpClassString == "StartupCompressionCaching")
@@ -116,33 +109,8 @@ namespace AspnetCoreModule.TestSites.Standard
             {
                 Startup.SleeptimeWhileClosing = Convert.ToInt32(shutdownDelay);
             }
-            
-            // Switch between Kestrel and WebListener for different tests. Default to Kestrel for normal app execution.
-            if (string.Equals(builder.GetSetting("server"), "Microsoft.AspNetCore.Server.WebListener", System.StringComparison.Ordinal))
-            {
-                if (string.Equals(builder.GetSetting("environment") ??
-                    Environment.GetEnvironmentVariable("ASPNETCORE_ENVIRONMENT"),
-                    "NtlmAuthentication", System.StringComparison.Ordinal))
-                {
-                    // Set up NTLM authentication for WebListener as follows.
-                    // For IIS and IISExpress use inetmgr to setup NTLM authentication on the application or
-                    // modify the applicationHost.config to enable NTLM.
-                    builder.UseWebListener(options =>
-                    {
-                        options.ListenerSettings.Authentication.AllowAnonymous = true;
-                        options.ListenerSettings.Authentication.Schemes =
-                            AuthenticationSchemes.Negotiate | AuthenticationSchemes.NTLM;
-                    });
-                }
-                else
-                {
-                    builder.UseWebListener();
-                }
-            }
-            else
-            {
-                builder.UseKestrel();
-            }
+
+            builder.UseKestrel();
 
             var host = builder.Build();
             AappLifetime = (IApplicationLifetime)host.Services.GetService(typeof(IApplicationLifetime));
@@ -152,7 +120,6 @@ namespace AspnetCoreModule.TestSites.Standard
             {
                 GracefulShutdownDelayTime = Convert.ToInt32(gracefulShutdownDelay);
             }
-            
             AappLifetime.ApplicationStarted.Register(
                 () => {
                     Thread.Sleep(1000);
@@ -178,7 +145,7 @@ namespace AspnetCoreModule.TestSites.Standard
             {
                 // ignore
             }
-            
+
             if (Startup.SleeptimeWhileClosing != 0)
             {
                 Thread.Sleep(Startup.SleeptimeWhileClosing);

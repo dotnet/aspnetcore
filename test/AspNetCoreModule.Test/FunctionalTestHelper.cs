@@ -898,8 +898,8 @@ namespace AspNetCoreModule.Test
                     requestHeaders = await GetResponse(testSite.AspNetCoreApp.GetUri("DumpRequestHeaders"), HttpStatusCode.OK);
                     if (enabledForwardWindowsAuthToken)
                     {
-                        string expectedHeaderName = "MS-ASPNETCORE-WINAUTHTOKEN";
-                        Assert.Contains(expectedHeaderName, requestHeaders.ToUpper());
+
+                        Assert.Contains("MS-ASPNETCORE-WINAUTHTOKEN", requestHeaders.ToUpper());
 
                         result = await GetResponse(testSite.AspNetCoreApp.GetUri("ImpersonateMiddleware"), HttpStatusCode.OK);
                         bool compare = false;
@@ -1376,8 +1376,8 @@ namespace AspNetCoreModule.Test
                     // Verify https request with client certificate includes the certificate header "MS-ASPNETCORE-CLIENTCERT"
                     Uri targetHttpsUriForDumpRequestHeaders = testSite.AspNetCoreApp.GetUri("DumpRequestHeaders", sslPort, protocol: "https");
                     string outputRawContent = TestUtility.RunPowershellScript("( invoke-webrequest " + targetHttpsUriForDumpRequestHeaders.OriginalString + " -CertificateThumbprint " + thumbPrintForClientAuthentication + ").RawContent.ToString()");
-                    string expectedHeaderName = "MS-ASPNETCORE-CLIENTCERT";
-                    Assert.Contains(expectedHeaderName, outputRawContent);
+
+                    Assert.Contains("MS-ASPNETCORE-CLIENTCERT", outputRawContent);
 
                     // Get the value of MS-ASPNETCORE-CLIENTCERT request header again and verify it is matched to its configured public key
                     Uri targetHttpsUriForCLIENTCERTRequestHeader = testSite.AspNetCoreApp.GetUri("GetRequestHeaderValueMS-ASPNETCORE-CLIENTCERT", sslPort, protocol: "https");
@@ -2251,7 +2251,7 @@ namespace AspNetCoreModule.Test
                 {
                     postHttpContent = new FormUrlEncodedContent(postData);
                 }
-                                
+                
                 if (numberOfRetryCount > 1 && expectedResponseStatus == HttpStatusCode.OK)
                 {
                     if (postData == null)
@@ -2337,7 +2337,6 @@ namespace AspNetCoreModule.Test
                 }
                 TestUtility.LogInformation(responseText);
                 TestUtility.LogInformation(responseStatus);
-                throw;
             }
             return result;
         }

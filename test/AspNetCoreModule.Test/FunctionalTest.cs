@@ -21,7 +21,7 @@ namespace AspNetCoreModule.Test
         {
             await DoBasicTest(appPoolBitness);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -34,7 +34,7 @@ namespace AspNetCoreModule.Test
         {
             return DoRapidFailsPerMinuteTest(appPoolBitness, valueOfRapidFailsPerMinute);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -55,7 +55,7 @@ namespace AspNetCoreModule.Test
         {
             return DoShutdownTimeLimitTest(appPoolBitness, valueOfshutdownTimeLimit, expectedClosingTime, isGraceFullShutdownEnabled);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -68,7 +68,7 @@ namespace AspNetCoreModule.Test
         {
             return DoStartupTimeLimitTest(appPoolBitness, starupTimeLimit);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -79,7 +79,7 @@ namespace AspNetCoreModule.Test
         {
             return DoRecycleApplicationAfterBackendProcessBeingKilled(appPoolBitness);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -90,7 +90,7 @@ namespace AspNetCoreModule.Test
         {
             return DoRecycleApplicationAfterW3WPProcessBeingKilled(appPoolBitness);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -101,7 +101,7 @@ namespace AspNetCoreModule.Test
         {
             return DoRecycleApplicationAfterWebConfigUpdated(appPoolBitness);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -112,7 +112,7 @@ namespace AspNetCoreModule.Test
         {
             return DoRecycleApplicationWithURLRewrite(appPoolBitness);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -123,7 +123,7 @@ namespace AspNetCoreModule.Test
         {
             return DoRecycleParentApplicationWithURLRewrite(appPoolBitness);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -140,7 +140,7 @@ namespace AspNetCoreModule.Test
         {
             return DoEnvironmentVariablesTest(environmentVariableName, environmentVariableValue, expectedEnvironmentVariableValue, appPoolBitness);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -151,7 +151,7 @@ namespace AspNetCoreModule.Test
         {
             return DoAppOfflineTestWithRenaming(appPoolBitness);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -162,7 +162,7 @@ namespace AspNetCoreModule.Test
         {
             return DoAppOfflineTestWithUrlRewriteAndDeleting(appPoolBitness);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -173,7 +173,7 @@ namespace AspNetCoreModule.Test
         {
             return DoPostMethodTest(appPoolBitness, testData);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -195,7 +195,7 @@ namespace AspNetCoreModule.Test
         {
             return DoProcessesPerApplicationTest(appPoolBitness, valueOfProcessesPerApplication);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -208,7 +208,7 @@ namespace AspNetCoreModule.Test
         {
             return DoRequestTimeoutTest(appPoolBitness, requestTimeout);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -219,7 +219,7 @@ namespace AspNetCoreModule.Test
         {
             return DoStdoutLogEnabledTest(appPoolBitness);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -232,7 +232,7 @@ namespace AspNetCoreModule.Test
         {
             return DoProcessPathAndArgumentsTest(appPoolBitness, processPath, argumentsPrefix);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -258,7 +258,7 @@ namespace AspNetCoreModule.Test
         {
             return DoCompressionTest(appPoolBitness, useCompressionMiddleWare, enableIISCompression);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -269,7 +269,7 @@ namespace AspNetCoreModule.Test
         {
             return DoCachingTest(appPoolBitness);
         }
-        
+
         [ConditionalTheory]
         [ANCMTestSkipCondition("%ANCMTestFlags%")]
         [OSSkipCondition(OperatingSystems.Linux)]

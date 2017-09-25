@@ -2,6 +2,7 @@
 // Licensed under the MIT License. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -47,18 +48,19 @@ namespace AspnetCoreModule.TestSites.Standard
                     }
                     else
                     {
-                        return context.Authentication.ChallengeAsync();
+                        return context.ChallengeAsync();
                     }
                 }
 
                 if (context.Request.Path.Equals("/Forbidden"))
                 {
-                    return context.Authentication.ForbidAsync(Microsoft.AspNetCore.Http.Authentication.AuthenticationManager.AutomaticScheme);
+                    return context.ForbidAsync();
+
                 }
 
                 if (context.Request.Path.Equals("/AutoForbid"))
                 {
-                    return context.Authentication.ChallengeAsync();
+                    return context.ChallengeAsync();
                 }
 
                 if (context.Request.Path.Equals("/RestrictedNegotiate"))
@@ -69,7 +71,7 @@ namespace AspnetCoreModule.TestSites.Standard
                     }
                     else
                     {
-                        return context.Authentication.ChallengeAsync("Negotiate");
+                        return context.ChallengeAsync("Negotiate");
                     }
                 }
 
@@ -81,7 +83,7 @@ namespace AspnetCoreModule.TestSites.Standard
                     }
                     else
                     {
-                        return context.Authentication.ChallengeAsync("NTLM");
+                        return context.ChallengeAsync("NTLM");
                     }
                 }
 

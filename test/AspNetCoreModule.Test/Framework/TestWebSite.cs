@@ -196,9 +196,9 @@ namespace AspNetCoreModule.Test.Framework
             }
 
             //
-            // Currently we use DotnetCore v1.0
+            // Currently we use DotnetCore v2.0
             //
-            string publishPath = Path.Combine(srcPath, "bin", "Debug", "netcoreapp1.0", "publish");
+            string publishPath = Path.Combine(srcPath, "bin", "Debug", "netcoreapp2.0", "publish");
             string publishPathOutput = Path.Combine(Environment.ExpandEnvironmentVariables("%SystemDrive%") + @"\", "inetpub", "ANCMTest", "publishPathOutput");
             
             //
