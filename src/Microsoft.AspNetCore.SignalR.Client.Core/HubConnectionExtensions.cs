@@ -8,95 +8,11 @@ using System.Threading.Tasks.Channels;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
-    public static class HubConnectionExtensions
+    public static partial class HubConnectionExtensions
     {
-        public static Task InvokeAsync(this HubConnection hubConnection, string methodName, params object[] args) =>
-            InvokeAsync(hubConnection, methodName, CancellationToken.None, args);
-
-        public static Task InvokeAsync(this HubConnection hubConnection, string methodName, CancellationToken cancellationToken, params object[] args)
-        {
-            if (hubConnection == null)
-            {
-                throw new ArgumentNullException(nameof(hubConnection));
-            }
-
-            return hubConnection.InvokeAsync(methodName, typeof(object), cancellationToken, args);
-        }
-
-        public static Task<TResult> InvokeAsync<TResult>(this HubConnection hubConnection, string methodName, params object[] args) =>
-            InvokeAsync<TResult>(hubConnection, methodName, CancellationToken.None, args);
-
-        public async static Task<TResult> InvokeAsync<TResult>(this HubConnection hubConnection, string methodName, CancellationToken cancellationToken, params object[] args)
-        {
-            if (hubConnection == null)
-            {
-                throw new ArgumentNullException(nameof(hubConnection));
-            }
-
-            return (TResult)await hubConnection.InvokeAsync(methodName, typeof(TResult), cancellationToken, args);
-        }
-
-        public static Task SendAsync(this HubConnection hubConnection, string methodName, params object[] args)
-        {
-            return hubConnection.SendAsync(methodName, CancellationToken.None, args);
-        }
-
-        public static Task<ReadableChannel<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, params object[] args) =>
-            StreamAsync<TResult>(hubConnection, methodName, CancellationToken.None, args);
-
-        public static async Task<ReadableChannel<TResult>> StreamAsync<TResult>(this HubConnection hubConnection, string methodName, CancellationToken cancellationToken, params object[] args)
-        {
-            if (hubConnection == null)
-            {
-                throw new ArgumentNullException(nameof(hubConnection));
-            }
-
-            var inputChannel = await hubConnection.StreamAsync(methodName, typeof(TResult), cancellationToken, args);
-            var outputChannel = Channel.CreateUnbounded<TResult>();
-
-            // Local function to provide a way to run async code as fire-and-forget
-            // The output channel is how we signal completion to the caller.
-            async Task RunChannel()
-            {
-                try
-                {
-                    while (await inputChannel.WaitToReadAsync())
-                    {
-                        while (inputChannel.TryRead(out var item))
-                        {
-                            while (!outputChannel.Out.TryWrite((TResult)item))
-                            {
-                                if (!await outputChannel.Out.WaitToWriteAsync())
-                                {
-                                    // Failed to write to the output channel because it was closed. Nothing really we can do but abort here.
-                                    return;
-                                }
-                            }
-                        }
-                    }
-
-                    // Manifest any errors in the completion task
-                    await inputChannel.Completion;
-                }
-                catch (Exception ex)
-                {
-                    outputChannel.Out.TryComplete(ex);
-                }
-                finally
-                {
-                    // This will safely no-op if the catch block above ran.
-                    outputChannel.Out.TryComplete();
-                }
-            }
-
-            _ = RunChannel();
-
-            return outputChannel.In;
-        }
-
         private static void On(this HubConnection hubConnetion, string methodName, Type[] parameterTypes, Action<object[]> handler)
         {
-            hubConnetion.On(methodName, parameterTypes, (parameters) => 
+            hubConnetion.On(methodName, parameterTypes, (parameters) =>
             {
                 handler(parameters);
                 return Task.CompletedTask;

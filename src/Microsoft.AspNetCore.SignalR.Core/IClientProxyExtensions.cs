@@ -12,6 +12,17 @@ namespace Microsoft.AspNetCore.SignalR
         /// </summary>
         /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
         /// <param name="method">name of the method to invoke</param>
+        /// <returns>A task that represents when the data has been sent to the client.</returns>
+        public static Task InvokeAsync(this IClientProxy clientProxy, string method)
+        {
+            return clientProxy.InvokeAsync(method, Array.Empty<object>());
+        }
+
+        /// <summary>
+        /// Invokes a method on the connection(s) represented by the <see cref="IClientProxy"/> instance.
+        /// </summary>
+        /// <param name="clientProxy">The <see cref="IClientProxy"/></param>
+        /// <param name="method">name of the method to invoke</param>
         /// <param name="arg1">The first argument</param>
         /// <returns>A task that represents when the data has been sent to the client.</returns>
         public static Task InvokeAsync(this IClientProxy clientProxy, string method, object arg1)
