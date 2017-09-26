@@ -28,7 +28,7 @@ namespace DispatcherSample
         {
             services.Configure<DispatcherOptions>(options =>
             {
-                options.Dispatchers.Add(new RouteTemplateDispatcher("{controller=Home}/{action=Index}/{id?}", ConstraintResolver)
+                options.Dispatchers.Add(new TreeDispatcher()
                 {
                     Addresses =
                     {
@@ -39,11 +39,11 @@ namespace DispatcherSample
                     },
                     Endpoints =
                     {
-                        new SimpleEndpoint(Home_Index, Array.Empty<object>(), new { controller = "Home", action = "Index", }, "Home:Index()"),
-                        new SimpleEndpoint(Home_About, Array.Empty<object>(), new { controller = "Home", action = "About", }, "Home:About()"),
-                        new SimpleEndpoint(Admin_Index, Array.Empty<object>(), new { controller = "Admin", action = "Index", }, "Admin:Index()"),
-                        new SimpleEndpoint(Admin_GetUsers, new object[] { new HttpMethodMetadata("GET"), new AuthorizationPolicyMetadata("Admin"), }, new { controller = "Admin", action = "Users", }, "Admin:GetUsers()"),
-                        new SimpleEndpoint(Admin_EditUsers, new object[] { new HttpMethodMetadata("POST"), new AuthorizationPolicyMetadata("Admin"), }, new { controller = "Admin", action = "Users", }, "Admin:EditUsers()"),
+                        new SimpleEndpoint(Home_Index, new object[] { new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, new { controller = "Home", action = "Index", }, "Home:Index()"),
+                        new SimpleEndpoint(Home_About, new object[] { new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, new { controller = "Home", action = "About", }, "Home:About()"),
+                        new SimpleEndpoint(Admin_Index, new object[] { new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, new { controller = "Admin", action = "Index", }, "Admin:Index()"),
+                        new SimpleEndpoint(Admin_GetUsers, new object[] { new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), new HttpMethodMetadata("GET"), new AuthorizationPolicyMetadata("Admin"), }, new { controller = "Admin", action = "Users", }, "Admin:GetUsers()"),
+                        new SimpleEndpoint(Admin_EditUsers, new object[] { new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"),  new HttpMethodMetadata("POST"), new AuthorizationPolicyMetadata("Admin"), }, new { controller = "Admin", action = "Users", }, "Admin:EditUsers()"),
                     },
                     Selectors =
                     {

@@ -60,9 +60,19 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         public IChangeToken ChangeToken => DataSource?.ChangeToken ?? NullChangeToken.Singleton;
 
-        IReadOnlyList<Address> IAddressCollectionProvider.Addresses => ((IAddressCollectionProvider)DataSource)?.Addresses ?? _addresses ?? (IReadOnlyList<Address>)Array.Empty<Address>();
+        IReadOnlyList<Address> IAddressCollectionProvider.Addresses => GetAddresses();
 
-        IReadOnlyList<Endpoint> IEndpointCollectionProvider.Endpoints => ((IEndpointCollectionProvider)DataSource)?.Endpoints ?? _endpoints ?? (IReadOnlyList<Endpoint>)Array.Empty<Endpoint>();
+        IReadOnlyList<Endpoint> IEndpointCollectionProvider.Endpoints => GetEndpoints();
+
+        protected virtual IReadOnlyList<Address> GetAddresses()
+        {
+            return ((IAddressCollectionProvider)DataSource)?.Addresses ?? _addresses ?? (IReadOnlyList<Address>)Array.Empty<Address>();
+        }
+
+        protected virtual IReadOnlyList<Endpoint> GetEndpoints()
+        {
+            return ((IEndpointCollectionProvider)DataSource)?.Endpoints ?? _endpoints ?? (IReadOnlyList<Endpoint>)Array.Empty<Endpoint>();
+        }
 
         public virtual async Task InvokeAsync(HttpContext httpContext)
         {
@@ -80,26 +90,48 @@ namespace Microsoft.AspNetCore.Dispatcher
                     return;
                 }
 
-                var selectorContext = new EndpointSelectorContext(httpContext, Endpoints.ToList(), Selectors);
-                await selectorContext.InvokeNextAsync();
-
-                switch (selectorContext.Endpoints.Count)
-                {
-                    case 0:
-                        break;
-
-                    case 1:
-                        
-                        feature.Endpoint = selectorContext.Endpoints[0];
-                        break;
-
-                    default:
-                        throw new InvalidOperationException("Ambiguous bro!");
-
-                }
+                feature.Endpoint = await SelectEndpointAsync(httpContext, GetEndpoints(), Selectors);
             }
         }
 
-        protected abstract Task<bool> TryMatchAsync(HttpContext httpContext);
+        protected virtual Task<bool> TryMatchAsync(HttpContext httpContext)
+        {
+            // By default don't apply any criteria.
+            return Task.FromResult(true);
+        }
+
+        protected virtual async Task<Endpoint> SelectEndpointAsync(HttpContext httpContext, IEnumerable<Endpoint> endpoints, IEnumerable<EndpointSelector> selectors)
+        {
+            if (httpContext == null)
+            {
+                throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (endpoints == null)
+            {
+                throw new ArgumentNullException(nameof(endpoints));
+            }
+
+            if (selectors == null)
+            {
+                throw new ArgumentNullException(nameof(selectors));
+            }
+
+            var selectorContext = new EndpointSelectorContext(httpContext, endpoints.ToList(), selectors.ToList());
+            await selectorContext.InvokeNextAsync();
+
+            switch (selectorContext.Endpoints.Count)
+            {
+                case 0:
+                    return null;
+
+                case 1:
+                    return selectorContext.Endpoints[0];
+
+                default:
+                    throw new InvalidOperationException("Ambiguous bro!");
+
+            }
+        }
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Dispatcher;
 
 namespace Microsoft.AspNetCore.Routing.Dispatcher
 {
-    public class RouteTemplateMetadata : IRouteTemplateMetadata
+    public class RouteTemplateMetadata : IRouteTemplateMetadata, ITreeDispatcherMetadata
     {
         public RouteTemplateMetadata(string routeTemplate)
             : this(routeTemplate, null)
@@ -27,5 +27,7 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
         public string RouteTemplate { get; }
 
         public DispatcherValueCollection Defaults { get; }
+
+        public int Order { get; set; }
     }
 }

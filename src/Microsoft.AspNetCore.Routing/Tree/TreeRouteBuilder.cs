@@ -268,7 +268,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             OutboundEntries.Clear();
         }
 
-        private void AddEntryToTree(UrlMatchingTree tree, InboundRouteEntry entry)
+        internal static void AddEntryToTree(UrlMatchingTree tree, InboundRouteEntry entry)
         {
             // The url matching tree represents all the routes asociated with a given
             // order. Each node in the tree represents all the different categories
