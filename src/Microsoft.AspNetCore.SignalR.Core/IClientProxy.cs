@@ -13,6 +13,6 @@ namespace Microsoft.AspNetCore.SignalR
         /// <param name="method">name of the method to invoke</param>
         /// <param name="args">argumetns to pass to the client</param>
         /// <returns>A task that represents when the data has been sent to the client.</returns>
-        Task InvokeAsync(string method, params object[] args);
+        Task InvokeAsync(string method, object[] args);
     }
 }
