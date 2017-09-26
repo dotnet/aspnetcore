@@ -21,6 +21,7 @@ using Moq;
 using MsgPack;
 using MsgPack.Serialization;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 using Xunit;
 
@@ -687,6 +688,42 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Assert.Equal("Broadcast", invocation.Target);
                     Assert.Single(invocation.Arguments);
                     Assert.Equal("test", invocation.Arguments[0]);
+                }
+
+                // kill the connections
+                firstClient.Dispose();
+                secondClient.Dispose();
+
+                await Task.WhenAll(firstEndPointTask, secondEndPointTask).OrTimeout();
+            }
+        }
+
+        [Fact]
+        public async Task SendArraySendsArrayToAllClients()
+        {
+            var serviceProvider = CreateServiceProvider();
+
+            var endPoint = serviceProvider.GetService<HubEndPoint<MethodHub>>();
+
+            using (var firstClient = new TestClient())
+            using (var secondClient = new TestClient())
+            {
+                Task firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
+                Task secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
+
+                await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
+
+                await firstClient.SendInvocationAsync(nameof(MethodHub.SendArray)).OrTimeout();
+
+                foreach (var result in await Task.WhenAll(
+                    firstClient.ReadAsync(),
+                    secondClient.ReadAsync()).OrTimeout())
+                {
+                    var invocation = Assert.IsType<InvocationMessage>(result);
+                    Assert.Equal("Array", invocation.Target);
+                    Assert.Single(invocation.Arguments);
+                    var values = ((JArray)invocation.Arguments[0]).Select(t => t.Value<int>()).ToArray();
+                    Assert.Equal(new int[] { 1, 2, 3 }, values);
                 }
 
                 // kill the connections
@@ -1568,6 +1605,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             public Task BroadcastItem()
             {
                 return Clients.All.InvokeAsync("Broadcast", new Result { Message = "test", paramName = "param" });
+            }
+
+            public Task SendArray()
+            {
+                return Clients.All.InvokeAsync("Array", new int[] { 1, 2, 3 });
             }
 
             public Task<int> TaskValueMethod()

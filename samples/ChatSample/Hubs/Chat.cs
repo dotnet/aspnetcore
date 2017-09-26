@@ -3,6 +3,7 @@
 
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ChatSample.Hubs
 {
@@ -23,12 +24,12 @@ namespace ChatSample.Hubs
 
         public override Task OnUsersJoined(UserDetails[] users)
         {
-            return Clients.Client(Context.ConnectionId).InvokeAsync("UsersJoined", new[] { users });
+            return Clients.Client(Context.ConnectionId).InvokeAsync("UsersJoined", users);
         }
 
         public override Task OnUsersLeft(UserDetails[] users)
         {
-            return Clients.Client(Context.ConnectionId).InvokeAsync("UsersLeft", new[] { users });
+            return Clients.Client(Context.ConnectionId).InvokeAsync("UsersLeft", users);
         }
 
         public async Task Send(string message)
