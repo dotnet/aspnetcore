@@ -30,6 +30,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
         }
 
+        public virtual DispatcherDataSource DataSource { get; set; }
+
         public virtual IList<Endpoint> Endpoints
         {
             get
@@ -56,11 +58,11 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
         }
 
-        public IChangeToken ChangeToken => NullChangeToken.Singleton;
+        public IChangeToken ChangeToken => DataSource?.ChangeToken ?? NullChangeToken.Singleton;
 
-        IReadOnlyList<Address> IAddressCollectionProvider.Addresses => _addresses;
+        IReadOnlyList<Address> IAddressCollectionProvider.Addresses => ((IAddressCollectionProvider)DataSource)?.Addresses ?? _addresses ?? (IReadOnlyList<Address>)Array.Empty<Address>();
 
-        IReadOnlyList<Endpoint> IEndpointCollectionProvider.Endpoints => _endpoints;
+        IReadOnlyList<Endpoint> IEndpointCollectionProvider.Endpoints => ((IEndpointCollectionProvider)DataSource)?.Endpoints ?? _endpoints ?? (IReadOnlyList<Endpoint>)Array.Empty<Endpoint>();
 
         public virtual async Task InvokeAsync(HttpContext httpContext)
         {
