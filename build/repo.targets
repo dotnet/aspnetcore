@@ -3,7 +3,7 @@
 
   <UsingTask
     TaskName="PullRequestSubmitter.PullRequestTask"
-    AssemblyFile="$(MSBuildThisFileDirectory)..\tools\PullRequestSubmitter\bin\Debug\netcoreapp2.0\PullRequestSubmitter.dll" />
+    AssemblyFile="$(MSBuildThisFileDirectory)..\tools\PullRequestSubmitter\bin\Release\netcoreapp2.0\PullRequestSubmitter.dll" />
 
   <Target Name="PushNuGetPackages">
     <ItemGroup>
@@ -16,7 +16,7 @@
     <PropertyGroup>
       <!-- Read the ASP.NET Core package version from a .deps.json file, because
            the CI server doesn't otherwise have that information to supply -->
-      <DepsFilePath>$(MSBuildThisFileDirectory)..\tools\DependencyUpdater\bin\Debug\netstandard2.0\DependencyUpdater.deps.json</DepsFilePath>
+      <DepsFilePath>$(MSBuildThisFileDirectory)..\tools\DependencyUpdater\bin\Release\netstandard2.0\DependencyUpdater.deps.json</DepsFilePath>
       <DepsFileContent>$([System.IO.File]::ReadAllText('$(DepsFilePath)'))</DepsFileContent>
       <AspNetCoreRuntimePackageVersion>$([System.Text.RegularExpressions.Regex]::Match($(DepsFileContent), `\s+"Microsoft.AspNetCore": "([^"]+)"`).Groups[1].Value)</AspNetCoreRuntimePackageVersion>
     </PropertyGroup>
