@@ -16,6 +16,7 @@
     <DebugType Condition="'$(OS)'=='Windows_NT' AND '$(TargetFramework)'=='net46'">full</DebugType>
     
     <RoslynDevVersion>2.6.0-beta1-62023-02</RoslynDevVersion>
+    <MonoDevelopAddinsVersion>0.3.18</MonoDevelopAddinsVersion>
   </PropertyGroup>
 
   <ItemGroup>

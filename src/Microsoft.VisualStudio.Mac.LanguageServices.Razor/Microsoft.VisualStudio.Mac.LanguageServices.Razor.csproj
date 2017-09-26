@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFrameworks>net46</TargetFrameworks>
+    <Description>Razor is a markup syntax for adding server-side logic to web pages. This package contains the Razor design-time infrastructure for Visual Studio for Mac.</Description>
+    <EnableApiCheck>false</EnableApiCheck>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Microsoft.VisualStudio.Editor.Razor\Microsoft.VisualStudio.Editor.Razor.csproj" />
+  </ItemGroup>
+
+</Project>

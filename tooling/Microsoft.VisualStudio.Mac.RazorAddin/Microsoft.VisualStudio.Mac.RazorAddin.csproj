@@ -1,0 +1,72 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="AddinMetadata.props" />
+  
+  <PropertyGroup>
+    <TargetFramework>net461</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="Properties\_Manifest.addin.xml" LogicalName="_Manifest.addin.xml" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 
+      By default the MonoDevelop.Addins package has restore tasks that depend on monodevelop existing on the machine. 
+      We can avoid this requirement by not letting it auto-restore monodevelop dependencies because we know which ones
+      we depend on and can bring them in manually.
+    -->
+    <PackageReference Include="MonoDevelop.Addins" Version="$(MonoDevelopAddinsVersion)" NoWarn="KRB4002" ExcludeAssets="build" />
+    <Reference Include="Mono.Addins">
+      <HintPath>$(NuGetPackageRoot)monodevelop.addins\$(MonoDevelopAddinsVersion)\build\Mono.Addins.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- 
+      The extension project can not have a direct reference to its language service pieces. They are included via the manifest above.
+      This piece ensures that transitive builds/restores occurr for this project.
+    -->
+    <ProjectReference Include="..\..\src\Microsoft.VisualStudio.Mac.LanguageServices.Razor\Microsoft.VisualStudio.Mac.LanguageServices.Razor.csproj">
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <PrivateAssets>true</PrivateAssets>
+      <OutputItemType>Content</OutputItemType>
+      <Targets>Build</Targets>
+    </ProjectReference>
+  </ItemGroup>
+
+  <!-- We need to generate assembly attributes with build time information to let MonoDevelop know RazorAddins metadata at runtime. -->
+  <Target Name="GenerateAddinAssemblyAttributes" BeforeTargets="PreBuildEvent">
+    <PropertyGroup>
+      <GeneratedAddinAssemblyInfo>$(IntermediateOutputPath)$(MSBuildProjectFile).AddinInfo.cs</GeneratedAddinAssemblyInfo>
+    </PropertyGroup>
+    
+    <ItemGroup>
+      <RazorAssemblyAttribute Include="Mono.Addins.AddinAttribute">
+        <_Parameter1>$(AddinId)</_Parameter1>
+        <Namespace>$(AddinNamespace)</Namespace>
+        <Version>$(AddinVersion)</Version>
+      </RazorAssemblyAttribute>
+      <RazorAssemblyAttribute Include="Mono.Addins.AddinNameAttribute">
+        <_Parameter1>$(AddinDetailedName)</_Parameter1>
+      </RazorAssemblyAttribute>
+      <RazorAssemblyAttribute Include="Mono.Addins.AddinCategoryAttribute">
+        <_Parameter1>$(AddinCategory)</_Parameter1>
+      </RazorAssemblyAttribute>
+      <RazorAssemblyAttribute Include="Mono.Addins.AddinDescriptionAttribute">
+        <_Parameter1>$(Description)</_Parameter1>
+      </RazorAssemblyAttribute>
+      <RazorAssemblyAttribute Include="Mono.Addins.AddinAuthorAttribute">
+        <_Parameter1>$(Authors)</_Parameter1>
+      </RazorAssemblyAttribute>
+    </ItemGroup>
+
+    <ItemGroup>
+      <!-- Ensure generated file is not already in compile sources -->
+      <Compile Remove="$(GeneratedAddinAssemblyInfo)" />
+    </ItemGroup>
+
+    <WriteCodeFragment Language="C#" OutputFile="$(GeneratedAddinAssemblyInfo)" AssemblyAttributes="@(RazorAssemblyAttribute)">
+      <Output TaskParameter="OutputFile" ItemName="Compile" />
+    </WriteCodeFragment>
+  </Target>
+</Project>

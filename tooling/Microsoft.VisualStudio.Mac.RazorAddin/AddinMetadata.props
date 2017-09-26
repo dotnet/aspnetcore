@@ -1,0 +1,12 @@
+﻿<Project>
+  <PropertyGroup>
+    <VSForMacVersion>7.0</VSForMacVersion>
+    <AddinVersion Condition="'$(BuildNumber)'!=''">$(VSForMacVersion).$(BuildNumber)</AddinVersion>
+    <AddinVersion Condition="'$(BuildNumber)'==''">$(VSForMacVersion).999999</AddinVersion>
+    <AddinId>RazorAddin</AddinId>
+    <AddinNamespace>Microsoft.VisualStudio.Mac</AddinNamespace>
+    <AddinDetailedName>Razor Language Services</AddinDetailedName>
+    <AddinCategory>Web Development</AddinCategory>
+    <Description>Language services for ASP.NET Core Razor</Description>
+  </PropertyGroup>
+</Project>
