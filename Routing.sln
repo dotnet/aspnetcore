@@ -1,6 +1,6 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26824.3000
+VisualStudioVersion = 15.0.26927.0
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0E966C37-7334-4D96-AAF6-9F49FBD166E3}"
 	ProjectSection(SolutionItems) = preProject
@@ -53,9 +53,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Dispat
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Dispatcher.Abstractions.Test", "test\Microsoft.AspNetCore.Dispatcher.Abstractions.Test\Microsoft.AspNetCore.Dispatcher.Abstractions.Test.csproj", "{14ACBCB4-3B99-425F-A5E2-07E228DEBF63}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DispatcherSample", "samples\DispatcherSample\DispatcherSample.csproj", "{6EBC8AE2-CFF7-46E1-8427-9111FD4F3E85}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DispatcherSample", "samples\DispatcherSample\DispatcherSample.csproj", "{6EBC8AE2-CFF7-46E1-8427-9111FD4F3E85}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.Dispatcher.Performance", "benchmarks\Microsoft.AspNetCore.Dispatcher.Performance\Microsoft.AspNetCore.Dispatcher.Performance.csproj", "{30AF355D-E3AB-4FF5-8A59-A253AFEBA26A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Microsoft.AspNetCore.Dispatcher.FunctionalTest", "test\Microsoft.AspNetCore.Dispatcher.FunctionalTest\Microsoft.AspNetCore.Dispatcher.FunctionalTest.csproj", "{32107601-C9BE-467B-894C-C9F2E35F03E4}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -229,6 +231,18 @@ Global
 		{30AF355D-E3AB-4FF5-8A59-A253AFEBA26A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{30AF355D-E3AB-4FF5-8A59-A253AFEBA26A}.Release|x86.ActiveCfg = Release|Any CPU
 		{30AF355D-E3AB-4FF5-8A59-A253AFEBA26A}.Release|x86.Build.0 = Release|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Debug|x86.Build.0 = Debug|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Release|x86.ActiveCfg = Release|Any CPU
+		{32107601-C9BE-467B-894C-C9F2E35F03E4}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -248,6 +262,7 @@ Global
 		{14ACBCB4-3B99-425F-A5E2-07E228DEBF63} = {95359B4B-4C85-4B44-A75B-0621905C4CF6}
 		{6EBC8AE2-CFF7-46E1-8427-9111FD4F3E85} = {C3ADD55B-B9C7-4061-8AD4-6A70D1AE3B2E}
 		{30AF355D-E3AB-4FF5-8A59-A253AFEBA26A} = {D5F39F59-5725-4127-82E7-67028D006185}
+		{32107601-C9BE-467B-894C-C9F2E35F03E4} = {95359B4B-4C85-4B44-A75B-0621905C4CF6}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {36C8D815-B7F1-479D-894B-E606FB8DECDA}
