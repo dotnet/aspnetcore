@@ -2,6 +2,7 @@ var path = require('path');
 var webpack = require('webpack');
 var ExtractTextPlugin = require('extract-text-webpack-plugin');
 var extractCSS = new ExtractTextPlugin('vendor.css');
+var { AureliaPlugin } = require('aurelia-webpack-plugin');
 
 module.exports = ({ prod } = {}) => {
     const isDevBuild = !prod;
@@ -44,6 +45,7 @@ module.exports = ({ prod } = {}) => {
         },
         plugins: [
             extractCSS,
+            new AureliaPlugin({ aureliaApp: undefined, dist: "native-modules" }),
             new webpack.ProvidePlugin({ $: 'jquery', jQuery: 'jquery' }), // Maps these identifiers to the jQuery package (because Bootstrap expects it to be a global variable)
             new webpack.DllPlugin({
                 path: path.join(__dirname, 'wwwroot', 'dist', '[name]-manifest.json'),
