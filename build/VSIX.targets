@@ -1,13 +1,14 @@
 <Project>
   <PropertyGroup>
-    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);GenerateVSIX</PackageDependsOn>
+    <RestoreDependsOn Condition="'$(OS)'=='Windows_NT'">$(RestoreDependsOn);RestoreVSIX</RestoreDependsOn>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageVSIX</PackageDependsOn>
     <VSIXName>Microsoft.VisualStudio.RazorExtension</VSIXName>
     <VSIXProject>$(RepositoryRoot)tooling\$(VSIXName)\$(VSIXName).csproj</VSIXProject>
   </PropertyGroup>
 
   <Target
     Name="GenerateVSIX"
-    DependsOnTargets="_LocateMSBuildExe;_BuildVSIX"
+    DependsOnTargets="RestoreVSIX;PackageVSIX"
     Condition="'$(OS)'=='Windows_NT'" />
 
   <Target Name="_LocateMSBuildExe" Condition="Exists('$(MSBuildProgramFiles32)')">
@@ -24,7 +25,11 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="_BuildVSIX" Condition="'$(MSBuildExePath)'!=''">
+  <Target Name="RestoreVSIX" DependsOnTargets="_LocateMSBuildExe">
+    <Exec Command="&quot;$(MSBuildExePath)&quot; &quot;$(VSIXProject)&quot; /t:Restore /v:m /p:BuildNumber=$(BuildNumber)" />
+  </Target>
+
+  <Target Name="PackageVSIX" DependsOnTargets="_LocateMSBuildExe">
     <PropertyGroup>
       <MSBuildArtifactsDir>$(ArtifactsDir)msbuild\</MSBuildArtifactsDir>
       <VSIXLogFilePath>$(MSBuildArtifactsDir)vsix.log</VSIXLogFilePath>
@@ -32,11 +37,10 @@
       <VSIXOutputPath>$(BuildDir)$(VSIXName).vsix</VSIXOutputPath>
     </PropertyGroup>
 
-    <Exec Command="&quot;$(MSBuildExePath)&quot; &quot;$(VSIXProject)&quot; /nologo /t:Restore /v:m" />
-
     <ItemGroup>
       <MSBuildArguments Include="
         $(VSIXProject);
+        /m;
         /v:M;
         /fl;
         /flp:LogFile=$(VSIXLogFilePath);
