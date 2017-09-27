@@ -56,6 +56,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             mockDebugger.SetupGet(g => g.IsAttached).Returns(true);
             _httpConnection.Debugger = mockDebugger.Object;
             _httpConnection.CreateHttp1Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
+            _httpConnection.CreateHttp2Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
 
             var now = DateTimeOffset.Now;
             _httpConnection.Tick(now);
@@ -103,6 +104,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnectionContext.ServiceContext.Log = logger;
 
             _httpConnection.CreateHttp1Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
+            _httpConnection.CreateHttp2Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
             _httpConnection.Http1Connection.Reset();
 
             // Initialize timestamp
@@ -130,6 +132,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnectionContext.ServiceContext.Log = mockLogger.Object;
 
             _httpConnection.CreateHttp1Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
+            _httpConnection.CreateHttp2Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
             _httpConnection.Http1Connection.Reset();
 
             // Initialize timestamp
@@ -172,6 +175,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnectionContext.ServiceContext.Log = mockLogger.Object;
 
             _httpConnection.CreateHttp1Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
+            _httpConnection.CreateHttp2Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
             _httpConnection.Http1Connection.Reset();
 
             // Initialize timestamp
@@ -249,6 +253,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnectionContext.ServiceContext.Log = mockLogger.Object;
 
             _httpConnection.CreateHttp1Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
+            _httpConnection.CreateHttp2Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
             _httpConnection.Http1Connection.Reset();
 
             // Initialize timestamp
@@ -317,6 +322,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnectionContext.ServiceContext.Log = mockLogger.Object;
 
             _httpConnection.CreateHttp1Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
+            _httpConnection.CreateHttp2Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
             _httpConnection.Http1Connection.Reset();
 
             // Initialize timestamp
@@ -379,6 +385,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnectionContext.ServiceContext.Log = mockLogger.Object;
 
             _httpConnection.CreateHttp1Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
+            _httpConnection.CreateHttp2Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
             _httpConnection.Http1Connection.Reset();
 
             var startTime = systemClock.UtcNow;
@@ -420,6 +427,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnectionContext.ServiceContext.Log = mockLogger.Object;
 
             _httpConnection.CreateHttp1Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
+            _httpConnection.CreateHttp2Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
             _httpConnection.Http1Connection.Reset();
             _httpConnection.Http1Connection.RequestAborted.Register(() =>
             {
@@ -454,6 +462,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnectionContext.ServiceContext.Log = mockLogger.Object;
 
             _httpConnection.CreateHttp1Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
+            _httpConnection.CreateHttp2Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
             _httpConnection.Http1Connection.Reset();
             _httpConnection.Http1Connection.RequestAborted.Register(() =>
             {
@@ -496,6 +505,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             _httpConnectionContext.ServiceContext.Log = mockLogger.Object;
 
             _httpConnection.CreateHttp1Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
+            _httpConnection.CreateHttp2Connection(new DummyApplication(), _httpConnectionContext.Transport, _httpConnectionContext.Application);
             _httpConnection.Http1Connection.Reset();
             _httpConnection.Http1Connection.RequestAborted.Register(() =>
             {

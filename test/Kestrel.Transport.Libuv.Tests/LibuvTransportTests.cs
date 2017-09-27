@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
         public async Task ConnectionCanReadAndWrite(ListenOptions listenOptions)
         {
             var serviceContext = new TestServiceContext();
-            listenOptions.UseHttpServer(listenOptions.ConnectionAdapters, serviceContext, new DummyApplication(TestApp.EchoApp));
+            listenOptions.UseHttpServer(listenOptions.ConnectionAdapters, serviceContext, new DummyApplication(TestApp.EchoApp), HttpProtocols.Http1);
 
             var transportContext = new TestLibuvTransportContext()
             {

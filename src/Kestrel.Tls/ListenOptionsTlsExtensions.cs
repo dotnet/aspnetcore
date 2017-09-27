@@ -15,7 +15,8 @@ namespace Microsoft.AspNetCore.Hosting
             return listenOptions.UseTls(new TlsConnectionAdapterOptions
             {
                 CertificatePath = certificatePath,
-                PrivateKeyPath = privateKeyPath
+                PrivateKeyPath = privateKeyPath,
+                Protocols = listenOptions.Protocols
             });
         }
 

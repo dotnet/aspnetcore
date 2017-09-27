@@ -1102,6 +1102,48 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatPositiveFiniteTimeSpanRequired()
             => GetString("PositiveFiniteTimeSpanRequired");
 
+        /// <summary>
+        /// An endpoint must be configured to serve at least one protocol.
+        /// </summary>
+        internal static string EndPointRequiresAtLeastOneProtocol
+        {
+            get => GetString("EndPointRequiresAtLeastOneProtocol");
+        }
+
+        /// <summary>
+        /// An endpoint must be configured to serve at least one protocol.
+        /// </summary>
+        internal static string FormatEndPointRequiresAtLeastOneProtocol()
+            => GetString("EndPointRequiresAtLeastOneProtocol");
+
+        /// <summary>
+        /// Using both HTTP/1.x and HTTP/2 on the same endpoint requires the use of TLS.
+        /// </summary>
+        internal static string EndPointRequiresTlsForHttp1AndHttp2
+        {
+            get => GetString("EndPointRequiresTlsForHttp1AndHttp2");
+        }
+
+        /// <summary>
+        /// Using both HTTP/1.x and HTTP/2 on the same endpoint requires the use of TLS.
+        /// </summary>
+        internal static string FormatEndPointRequiresTlsForHttp1AndHttp2()
+            => GetString("EndPointRequiresTlsForHttp1AndHttp2");
+
+        /// <summary>
+        /// HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint.
+        /// </summary>
+        internal static string EndPointHttp2NotNegotiated
+        {
+            get => GetString("EndPointHttp2NotNegotiated");
+        }
+
+        /// <summary>
+        /// HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint.
+        /// </summary>
+        internal static string FormatEndPointHttp2NotNegotiated()
+            => GetString("EndPointHttp2NotNegotiated");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Pipelines;
 using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
@@ -8,6 +9,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Protocols.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 {
@@ -20,11 +23,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private readonly IList<IConnectionAdapter> _connectionAdapters;
         private readonly ServiceContext _serviceContext;
         private readonly IHttpApplication<TContext> _application;
+        private readonly HttpProtocols _protocols;
 
-        public HttpConnectionMiddleware(IList<IConnectionAdapter> adapters, ServiceContext serviceContext, IHttpApplication<TContext> application)
+        public HttpConnectionMiddleware(IList<IConnectionAdapter> adapters, ServiceContext serviceContext, IHttpApplication<TContext> application, HttpProtocols protocols)
         {
             _serviceContext = serviceContext;
             _application = application;
+            _protocols = protocols;
 
             // Keeping these around for now so progress can be made without updating tests
             _connectionAdapters = adapters;
@@ -42,6 +47,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 ConnectionId = connectionContext.ConnectionId,
                 HttpConnectionId = httpConnectionId,
+                Protocols = _protocols,
                 ServiceContext = _serviceContext,
                 ConnectionFeatures = connectionContext.Features,
                 PipeFactory = connectionContext.PipeFactory,

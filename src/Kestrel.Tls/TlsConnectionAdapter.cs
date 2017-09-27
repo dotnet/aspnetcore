@@ -4,9 +4,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
 using Microsoft.Extensions.Logging;
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tls
     public class TlsConnectionAdapter : IConnectionAdapter
     {
         private static readonly ClosedAdaptedConnection _closedAdaptedConnection = new ClosedAdaptedConnection();
-        private static readonly HashSet<string> _serverProtocols = new HashSet<string>(new[] { "h2", "http/1.1" });
+        private static readonly List<string> _serverProtocols = new List<string>();
 
         private readonly TlsConnectionAdapterOptions _options;
         private readonly ILogger _logger;
@@ -47,6 +47,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tls
 
             _options = options;
             _logger = loggerFactory?.CreateLogger(nameof(TlsConnectionAdapter));
+
+            // Order is important. If HTTP/2 is enabled, we prefer it over HTTP/1.1. So add it first.
+            if ((options.Protocols & HttpProtocols.Http2) == HttpProtocols.Http2)
+            {
+                _serverProtocols.Add("h2");
+            }
+
+            if ((options.Protocols & HttpProtocols.Http1) == HttpProtocols.Http1)
+            {
+                _serverProtocols.Add("http/1.1");
+            }
         }
 
         public bool IsHttps => true;
