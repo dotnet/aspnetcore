@@ -17,18 +17,20 @@ using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Tests
 {
-    public class TestClient : IDisposable, IInvocationBinder
+    public class TestClient : IDisposable
     {
         private static int _id;
         private readonly HubProtocolReaderWriter _protocolReaderWriter;
+        private readonly IInvocationBinder _invocationBinder;
         private CancellationTokenSource _cts;
         private ChannelConnection<byte[]> _transport;
+
 
         public DefaultConnectionContext Connection { get; }
         public Channel<byte[]> Application { get; }
         public Task Connected => ((TaskCompletionSource<bool>)Connection.Metadata["ConnectedTask"]).Task;
 
-        public TestClient(bool synchronousCallbacks = false, IHubProtocol protocol = null, bool addClaimId = false)
+        public TestClient(bool synchronousCallbacks = false, IHubProtocol protocol = null, IInvocationBinder invocationBinder = null, bool addClaimId = false)
         {
             var options = new ChannelOptimizations { AllowSynchronousContinuations = synchronousCallbacks };
             var transportToApplication = Channel.CreateUnbounded<byte[]>(options);
@@ -51,6 +53,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             protocol = protocol ?? new JsonHubProtocol();
             _protocolReaderWriter = new HubProtocolReaderWriter(protocol, new PassThroughEncoder());
+            _invocationBinder = invocationBinder ?? new DefaultInvocationBinder();
 
             _cts = new CancellationTokenSource();
 
@@ -86,6 +89,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         messages.Add(message);
                         break;
                     case CompletionMessage _:
+                    case StreamCompletionMessage _:
                         messages.Add(message);
                         return messages;
                     default:
@@ -165,7 +169,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         public HubMessage TryRead()
         {
             if (Application.In.TryRead(out var buffer) &&
-                _protocolReaderWriter.ReadMessages(buffer, this, out var messages))
+                _protocolReaderWriter.ReadMessages(buffer, _invocationBinder, out var messages))
             {
                 return messages[0];
             }
@@ -183,15 +187,18 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             return Guid.NewGuid().ToString("N");
         }
 
-        Type[] IInvocationBinder.GetParameterTypes(string methodName)
+        private class DefaultInvocationBinder : IInvocationBinder
         {
-            // TODO: Possibly support actual client methods
-            return new[] { typeof(object) };
-        }
+            public Type[] GetParameterTypes(string methodName)
+            {
+                // TODO: Possibly support actual client methods
+                return new[] { typeof(object) };
+            }
 
-        Type IInvocationBinder.GetReturnType(string invocationId)
-        {
-            return typeof(object);
+            public Type GetReturnType(string invocationId)
+            {
+                return typeof(object);
+            }
         }
     }
 }

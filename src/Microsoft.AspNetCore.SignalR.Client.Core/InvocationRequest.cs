@@ -2,10 +2,12 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.SignalR.Client.Internal;
+using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.SignalR.Client
@@ -41,7 +43,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return req;
         }
 
-
         public static InvocationRequest Stream(CancellationToken cancellationToken, Type resultType, string invocationId,
             ILoggerFactory loggerFactory, HubConnection hubConnection, out ReadableChannel<object> result)
         {
@@ -51,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
         public abstract void Fail(Exception exception);
-        public abstract void Complete(object result);
+        public abstract void Complete(HubMessage message);
         public abstract ValueTask<bool> StreamItem(object item);
 
         protected abstract void Cancel();
@@ -77,18 +78,27 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             public ReadableChannel<object> Result => _channel.In;
 
-            public override void Complete(object result)
+            public override void Complete(HubMessage message)
             {
+                Debug.Assert(message != null, "message is null");
+
+                if (!(message is StreamCompletionMessage streamCompletionMessage))
+                {
+                    Logger.ReceivedUnexpectedMessageTypeForStreamCompletion(InvocationId, message.GetType().Name);
+                    // This is not 100% accurate but it is the only case that can be encountered today when running end-to-end
+                    // and this is the most useful message to show to the user.
+                    Fail(new InvalidOperationException($"Streaming hub methods must be invoked with the '{nameof(HubConnection)}.{nameof(HubConnection.StreamAsync)}' method."));
+                    return;
+                }
+
+                if (!string.IsNullOrEmpty(streamCompletionMessage.Error))
+                {
+                    Fail(new HubException(streamCompletionMessage.Error));
+                    return;
+                }
+
                 Logger.InvocationCompleted(InvocationId);
-                if (result != null)
-                {
-                    Logger.ReceivedUnexpectedComplete(InvocationId);
-                    _channel.Out.TryComplete(new InvalidOperationException("Server provided a result in a completion response to a streamed invocation."));
-                }
-                else
-                {
-                    _channel.Out.TryComplete();
-                }
+                _channel.Out.TryComplete();
             }
 
             public override void Fail(Exception exception)
@@ -133,10 +143,28 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             public Task<object> Result => _completionSource.Task;
 
-            public override void Complete(object result)
+            public override void Complete(HubMessage message)
             {
+                Debug.Assert(message != null, "message is null");
+
+                if (!(message is CompletionMessage completionMessage))
+                {
+                    Logger.ReceivedUnexpectedMessageTypeForStreamCompletion(InvocationId, message.GetType().Name);
+                    // This is not 100% accurate but it is the only case that can be encountered today when running end-to-end
+                    // and this is the most useful message to show to the user.
+                    Fail(new InvalidOperationException(
+                        $"Non-streaming hub methods must be invoked with the '{nameof(HubConnection)}.{nameof(HubConnection.InvokeAsync)}' method."));
+                    return;
+                }
+
+                if (!string.IsNullOrEmpty(completionMessage.Error))
+                {
+                    Fail(new HubException(completionMessage.Error));
+                    return;
+                }
+
                 Logger.InvocationCompleted(InvocationId);
-                _completionSource.TrySetResult(result);
+                _completionSource.TrySetResult(completionMessage.Result);
             }
 
             public override void Fail(Exception exception)
@@ -148,7 +176,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             public override ValueTask<bool> StreamItem(object item)
             {
                 Logger.StreamItemOnNonStreamInvocation(InvocationId);
-                _completionSource.TrySetException(new InvalidOperationException("Streaming methods must be invoked using HubConnection.Stream"));
+                _completionSource.TrySetException(new InvalidOperationException($"Streaming hub methods must be invoked with the '{nameof(HubConnection)}.{nameof(HubConnection.StreamAsync)}' method."));
 
                 // We "delivered" the stream item successfully as far as the caller cares
                 return new ValueTask<bool>(true);

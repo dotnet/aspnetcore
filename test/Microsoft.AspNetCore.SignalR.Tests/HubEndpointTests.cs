@@ -10,8 +10,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.SignalR.Internal;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
@@ -988,16 +988,23 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Theory]
-        [InlineData(nameof(StreamingHub.CounterChannel))]
-        [InlineData(nameof(StreamingHub.CounterObservable))]
-        public async Task HubsCanStreamResponses(string method)
+        [MemberData(nameof(StreamingMethodAndHubProtocols))]
+        public async Task HubsCanStreamResponses(string method, IHubProtocol protocol)
         {
             var serviceProvider = CreateServiceProvider();
 
             var endPoint = serviceProvider.GetService<HubEndPoint<StreamingHub>>();
 
-            using (var client = new TestClient())
+            var invocationBinder = new Mock<IInvocationBinder>();
+            invocationBinder.Setup(b => b.GetReturnType(It.IsAny<string>())).Returns(typeof(string));
+
+            using (var client = new TestClient(synchronousCallbacks: false, protocol: protocol, invocationBinder: invocationBinder.Object))
             {
+                var transportFeature = new Mock<IConnectionTransportFeature>();
+                transportFeature.SetupGet(f => f.TransportCapabilities)
+                    .Returns(protocol.Type == ProtocolType.Binary ? TransferMode.Binary : TransferMode.Text);
+                client.Connection.Features.Set(transportFeature.Object);
+
                 var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
 
                 await client.Connected.OrTimeout();
@@ -1009,11 +1016,25 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 AssertHubMessage(new StreamItemMessage(string.Empty, "1"), messages[1]);
                 AssertHubMessage(new StreamItemMessage(string.Empty, "2"), messages[2]);
                 AssertHubMessage(new StreamItemMessage(string.Empty, "3"), messages[3]);
-                AssertHubMessage(new CompletionMessage(string.Empty, error: null, result: null, hasResult: false), messages[4]);
+                AssertHubMessage(new StreamCompletionMessage(string.Empty, error: null), messages[4]);
 
                 client.Dispose();
 
                 await endPointLifetime.OrTimeout();
+            }
+        }
+
+        public static IEnumerable<object[]> StreamingMethodAndHubProtocols
+        {
+            get
+            {
+                foreach (var method in new[] { nameof(StreamingHub.CounterChannel), nameof(StreamingHub.CounterObservable) })
+                {
+                    foreach (var protocol in new IHubProtocol[] { new JsonHubProtocol(), new MessagePackHubProtocol() })
+                    {
+                        yield return new object[] { method, protocol };
+                    }
+                }
             }
         }
 
@@ -1270,6 +1291,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Assert.Equal(expectedCompletion.Error, actualCompletion.Error);
                     Assert.Equal(expectedCompletion.HasResult, actualCompletion.HasResult);
                     Assert.Equal(expectedCompletion.Result, actualCompletion.Result);
+                    break;
+                case StreamCompletionMessage expectedStreamCompletion:
+                    var actualStreamCompletion = Assert.IsType<StreamCompletionMessage>(actual);
+                    Assert.Equal(expectedStreamCompletion.Error, actualStreamCompletion.Error);
                     break;
                 case StreamItemMessage expectedStreamItem:
                     var actualStreamItem = Assert.IsType<StreamItemMessage>(actual);

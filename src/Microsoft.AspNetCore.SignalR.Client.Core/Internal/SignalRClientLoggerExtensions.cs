@@ -40,44 +40,53 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         private static readonly Action<ILogger, string, Exception> _dropStreamMessage =
             LoggerMessage.Define<string>(LogLevel.Warning, new EventId(9, nameof(DropStreamMessage)), "Dropped unsolicited StreamItem message for invocation '{invocationId}'.");
 
+        private static readonly Action<ILogger, string, Exception> _dropStreamCompletionMessage =
+            LoggerMessage.Define<string>(LogLevel.Warning, new EventId(10, nameof(DropStreamCompletionMessage)), "Dropped unsolicited Stream Completion message for invocation '{invocationId}'.");
+
         private static readonly Action<ILogger, Exception> _shutdownConnection =
-            LoggerMessage.Define(LogLevel.Trace, new EventId(10, nameof(ShutdownConnection)), "Shutting down connection.");
+            LoggerMessage.Define(LogLevel.Trace, new EventId(11, nameof(ShutdownConnection)), "Shutting down connection.");
 
         private static readonly Action<ILogger, Exception> _shutdownWithError =
-            LoggerMessage.Define(LogLevel.Error, new EventId(11, nameof(ShutdownWithError)), "Connection is shutting down due to an error.");
+            LoggerMessage.Define(LogLevel.Error, new EventId(12, nameof(ShutdownWithError)), "Connection is shutting down due to an error.");
 
         private static readonly Action<ILogger, string, Exception> _removeInvocation =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(12, nameof(RemoveInvocation)), "Removing pending invocation {invocationId}.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(13, nameof(RemoveInvocation)), "Removing pending invocation {invocationId}.");
 
         private static readonly Action<ILogger, string, Exception> _missingHandler =
-            LoggerMessage.Define<string>(LogLevel.Warning, new EventId(13, nameof(MissingHandler)), "Failed to find handler for '{target}' method.");
+            LoggerMessage.Define<string>(LogLevel.Warning, new EventId(14, nameof(MissingHandler)), "Failed to find handler for '{target}' method.");
 
         private static readonly Action<ILogger, string, Exception> _receivedStreamItem =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(14, nameof(ReceivedStreamItem)), "Received StreamItem for Invocation {invocationId}.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(15, nameof(ReceivedStreamItem)), "Received StreamItem for Invocation {invocationId}.");
 
         private static readonly Action<ILogger, string, Exception> _cancelingStreamItem =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(15, nameof(CancelingStreamItem)), "Canceling dispatch of StreamItem message for Invocation {invocationId}. The invocation was canceled.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(16, nameof(CancelingStreamItem)), "Canceling dispatch of StreamItem message for Invocation {invocationId}. The invocation was canceled.");
 
         private static readonly Action<ILogger, string, Exception> _receivedStreamItemAfterClose =
-            LoggerMessage.Define<string>(LogLevel.Warning, new EventId(16, nameof(ReceivedStreamItemAfterClose)), "Invocation {invocationId} received stream item after channel was closed.");
+            LoggerMessage.Define<string>(LogLevel.Warning, new EventId(17, nameof(ReceivedStreamItemAfterClose)), "Invocation {invocationId} received stream item after channel was closed.");
 
         private static readonly Action<ILogger, string, Exception> _receivedInvocationCompletion =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(17, nameof(ReceivedInvocationCompletion)), "Received Completion for Invocation {invocationId}.");
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(18, nameof(ReceivedInvocationCompletion)), "Received Completion for Invocation {invocationId}.");
 
-        private static readonly Action<ILogger, string, Exception> _cancelingCompletion =
-            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(18, nameof(CancelingCompletion)), "Canceling dispatch of Completion message for Invocation {invocationId}. The invocation was canceled.");
+        private static readonly Action<ILogger, string, Exception> _cancelingInvocationCompletion =
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(19, nameof(CancelingInvocationCompletion)), "Canceling dispatch of Completion message for Invocation {invocationId}. The invocation was canceled.");
+
+        private static readonly Action<ILogger, string, Exception> _receivedStreamCompletion =
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(20, nameof(ReceivedStreamCompletion)), "Received StreamCompletion for Invocation {invocationId}.");
+
+        private static readonly Action<ILogger, string, Exception> _cancelingStreamCompletion =
+            LoggerMessage.Define<string>(LogLevel.Trace, new EventId(21, nameof(CancelingStreamCompletion)), "Canceling dispatch of StreamCompletion message for Invocation {invocationId}. The invocation was canceled.");
 
         private static readonly Action<ILogger, string, Exception> _invokeAfterTermination =
-            LoggerMessage.Define<string>(LogLevel.Error, new EventId(19, nameof(InvokeAfterTermination)), "Invoke for Invocation '{invocationId}' was called after the connection was terminated.");
+            LoggerMessage.Define<string>(LogLevel.Error, new EventId(22, nameof(InvokeAfterTermination)), "Invoke for Invocation '{invocationId}' was called after the connection was terminated.");
 
         private static readonly Action<ILogger, string, Exception> _invocationAlreadyInUse =
-            LoggerMessage.Define<string>(LogLevel.Critical, new EventId(20, nameof(InvocationAlreadyInUse)), "Invocation ID '{invocationId}' is already in use.");
+            LoggerMessage.Define<string>(LogLevel.Critical, new EventId(23, nameof(InvocationAlreadyInUse)), "Invocation ID '{invocationId}' is already in use.");
 
         private static readonly Action<ILogger, string, Exception> _receivedUnexpectedResponse =
-            LoggerMessage.Define<string>(LogLevel.Error, new EventId(21, nameof(ReceivedUnexpectedResponse)), "Unsolicited response received for invocation '{invocationId}'.");
+            LoggerMessage.Define<string>(LogLevel.Error, new EventId(24, nameof(ReceivedUnexpectedResponse)), "Unsolicited response received for invocation '{invocationId}'.");
 
         private static readonly Action<ILogger, string, Exception> _hubProtocol =
-            LoggerMessage.Define<string>(LogLevel.Information, new EventId(22, nameof(HubProtocol)), "Using HubProtocol '{protocol}'.");
+            LoggerMessage.Define<string>(LogLevel.Information, new EventId(25, nameof(HubProtocol)), "Using HubProtocol '{protocol}'.");
 
         // Category: Streaming and NonStreaming
         private static readonly Action<ILogger, string, Exception> _invocationCreated =
@@ -93,11 +102,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
             LoggerMessage.Define<string>(LogLevel.Trace, new EventId(3, nameof(InvocationFailed)), "Invocation {invocationId} marked as failed.");
 
         // Category: Streaming
-        private static readonly Action<ILogger, string, Exception> _receivedUnexpectedComplete =
-            LoggerMessage.Define<string>(LogLevel.Error, new EventId(4, nameof(ReceivedUnexpectedComplete)), "Invocation {invocationId} received a completion result, but was invoked as a streaming invocation.");
-
         private static readonly Action<ILogger, string, Exception> _errorWritingStreamItem =
-            LoggerMessage.Define<string>(LogLevel.Error, new EventId(5, nameof(ErrorWritingStreamItem)), "Invocation {invocationId} caused an error trying to write a stream item.");
+            LoggerMessage.Define<string>(LogLevel.Error, new EventId(4, nameof(ErrorWritingStreamItem)), "Invocation {invocationId} caused an error trying to write a stream item.");
+
+        private static readonly Action<ILogger, string, string, Exception> _receivedUnexpectedMessageTypeForStreamCompletion =
+            LoggerMessage.Define<string, string>(LogLevel.Error, new EventId(5, nameof(ReceivedUnexpectedMessageTypeForStreamCompletion)), "Invocation {invocationId} was invoked as a streaming hub method but completed with '{messageType}' message.");
 
         // Category: NonStreaming
         private static readonly Action<ILogger, string, Exception> _streamItemOnNonStreamInvocation =
@@ -105,6 +114,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
 
         private static readonly Action<ILogger, string, Exception> _exceptionThrownFromCallback =
            LoggerMessage.Define<string>(LogLevel.Error, new EventId(5, nameof(ExceptionThrownFromCallback)), "An exception was thrown from the '{callback}' callback");
+
+        private static readonly Action<ILogger, string, string, Exception> _receivedUnexpectedMessageTypeForInvokeCompletion =
+            LoggerMessage.Define<string, string>(LogLevel.Error, new EventId(6, nameof(ReceivedUnexpectedMessageTypeForInvokeCompletion)), "Invocation {invocationId} was invoked as a non-streaming hub method but completed with '{messageType}' message.");
 
         public static void PreparingNonBlockingInvocation(this ILogger logger, string invocationId, string target, int count)
         {
@@ -164,6 +176,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
             _dropStreamMessage(logger, invocationId, null);
         }
 
+        public static void DropStreamCompletionMessage(this ILogger logger, string invocationId)
+        {
+            _dropStreamCompletionMessage(logger, invocationId, null);
+        }
+
         public static void ShutdownConnection(this ILogger logger)
         {
             _shutdownConnection(logger, null);
@@ -204,9 +221,19 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
             _receivedInvocationCompletion(logger, invocationId, null);
         }
 
-        public static void CancelingCompletion(this ILogger logger, string invocationId)
+        public static void CancelingInvocationCompletion(this ILogger logger, string invocationId)
         {
-            _cancelingCompletion(logger, invocationId, null);
+            _cancelingInvocationCompletion(logger, invocationId, null);
+        }
+
+        public static void ReceivedStreamCompletion(this ILogger logger, string invocationId)
+        {
+            _receivedStreamCompletion(logger, invocationId, null);
+        }
+
+        public static void CancelingStreamCompletion(this ILogger logger, string invocationId)
+        {
+            _cancelingStreamCompletion(logger, invocationId, null);
         }
 
         public static void InvokeAfterTermination(this ILogger logger, string invocationId)
@@ -249,11 +276,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
             _invocationFailed(logger, invocationId, null);
         }
 
-        public static void ReceivedUnexpectedComplete(this ILogger logger, string invocationId)
-        {
-            _receivedUnexpectedComplete(logger, invocationId, null);
-        }
-
         public static void ErrorWritingStreamItem(this ILogger logger, string invocationId, Exception exception)
         {
             _errorWritingStreamItem(logger, invocationId, exception);
@@ -267,6 +289,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         public static void ExceptionThrownFromCallback(this ILogger logger, string callbackName, Exception exception)
         {
              _exceptionThrownFromCallback(logger, callbackName, exception);
+        }
+
+        public static void ReceivedUnexpectedMessageTypeForStreamCompletion(this ILogger logger, string invocationId, string messageType)
+        {
+            _receivedUnexpectedMessageTypeForStreamCompletion(logger, invocationId, messageType, null);
+        }
+
+        public static void ReceivedUnexpectedMessageTypeForInvokeCompletion(this ILogger logger, string invocationId, string messageType)
+        {
+            _receivedUnexpectedMessageTypeForStreamCompletion(logger, invocationId, messageType, null);
         }
     }
 }

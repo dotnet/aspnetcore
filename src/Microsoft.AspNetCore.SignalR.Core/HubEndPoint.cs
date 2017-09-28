@@ -411,22 +411,31 @@ namespace Microsoft.AspNetCore.SignalR
                 catch (TargetInvocationException ex)
                 {
                     _logger.FailedInvokingHubMethod(invocationMessage.Target, ex);
-                    if (!invocationMessage.NonBlocking)
-                    {
-                        await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, ex.InnerException.Message));
-                    }
+                    await SendInvocationError(invocationMessage, connection, methodExecutor.MethodReturnType, ex.InnerException);
                 }
                 catch (Exception ex)
                 {
                     _logger.FailedInvokingHubMethod(invocationMessage.Target, ex);
-                    if (!invocationMessage.NonBlocking)
-                    {
-                        await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, ex.Message));
-                    }
+                    await SendInvocationError(invocationMessage, connection, methodExecutor.MethodReturnType, ex);
                 }
                 finally
                 {
                     hubActivator.Release(hub);
+                }
+            }
+        }
+
+        private async Task SendInvocationError(InvocationMessage invocationMessage, HubConnectionContext connection, Type returnType, Exception ex)
+        {
+            if (!invocationMessage.NonBlocking)
+            {
+                if (IsIObservable(returnType) || IsChannel(returnType, out _))
+                {
+                    await SendMessageAsync(connection, new StreamCompletionMessage(invocationMessage.InvocationId, ex.Message));
+                }
+                else
+                {
+                    await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, ex.Message));
                 }
             }
         }
@@ -463,11 +472,11 @@ namespace Microsoft.AspNetCore.SignalR
                     await SendMessageAsync(connection, new StreamItemMessage(invocationId, enumerator.Current));
                 }
 
-                await SendMessageAsync(connection, CompletionMessage.Empty(invocationId));
+                await SendMessageAsync(connection, new StreamCompletionMessage(invocationId, error: null));
             }
             catch (Exception ex)
             {
-                await SendMessageAsync(connection, CompletionMessage.WithError(invocationId, ex.Message));
+                await SendMessageAsync(connection, new StreamCompletionMessage(invocationId, error: ex.Message));
             }
             finally
             {

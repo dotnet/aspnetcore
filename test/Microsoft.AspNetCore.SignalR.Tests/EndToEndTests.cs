@@ -190,7 +190,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     logger.LogInformation("Disposed Connection");
                 }
             }
-
         }
 
         private bool IsBase64Encoded(TransferMode transferMode, IConnection connection)

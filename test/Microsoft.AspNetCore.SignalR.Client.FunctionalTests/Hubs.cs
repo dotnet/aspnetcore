@@ -2,22 +2,22 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using System.Reactive.Linq;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Channels;
 
 namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
 {
     public class TestHub : Hub
     {
-        public string HelloWorld()
-        {
-            return "Hello World!";
-        }
+        public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
 
-        public string Echo(string message)
-        {
-            return message;
-        }
+        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+        public IObservable<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
+
+        public ReadableChannel<int> StreamException() => TestHubMethodsImpl.StreamException();
 
         public async Task CallEcho(string message)
         {
@@ -28,83 +28,72 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         {
             await Clients.Client(Context.ConnectionId).InvokeAsync("NoClientHandler");
         }
-
-        public IObservable<int> Stream(int count)
-        {
-            return Observable.Interval(TimeSpan.FromMilliseconds(1))
-                             .Select((_, index) => index)
-                             .Take(count);
-        }
     }
 
     public class DynamicTestHub : DynamicHub
     {
-        public string HelloWorld()
-        {
-            return "Hello World!";
-        }
+        public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
 
-        public string Echo(string message)
-        {
-            return message;
-        }
+        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+        public IObservable<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
+
+        public ReadableChannel<int> StreamException() => TestHubMethodsImpl.StreamException();
 
         public async Task CallEcho(string message)
         {
             await Clients.Client(Context.ConnectionId).Echo(message);
         }
 
-        public IObservable<int> Stream(int count)
-        {
-            return Observable.Interval(TimeSpan.FromMilliseconds(1))
-                             .Select((_, index) => index)
-                             .Take(count);
-        }
-
-        public Task SendMessage(string message)
-        {
-            return Clients.All.Send(message);
-        }
-
         public async Task CallHandlerThatDoesntExist()
         {
             await Clients.Client(Context.ConnectionId).NoClientHandler();
         }
-
     }
 
     public class TestHubT : Hub<ITestHub>
     {
-        public string HelloWorld()
-        {
-            return "Hello World!";
-        }
+        public string HelloWorld() => TestHubMethodsImpl.HelloWorld();
 
-        public string Echo(string message)
-        {
-            return message;
-        }
+        public string Echo(string message) => TestHubMethodsImpl.Echo(message);
+
+        public IObservable<int> Stream(int count) => TestHubMethodsImpl.Stream(count);
+
+        public ReadableChannel<int> StreamException() => TestHubMethodsImpl.StreamException();
 
         public async Task CallEcho(string message)
         {
             await Clients.Client(Context.ConnectionId).Echo(message);
         }
 
-        public IObservable<int> Stream(int count)
+        public async Task CallHandlerThatDoesntExist()
+        {
+            await Clients.Client(Context.ConnectionId).NoClientHandler();
+        }
+    }
+
+    internal static class TestHubMethodsImpl
+    {
+        public static string HelloWorld()
+        {
+            return "Hello World!";
+        }
+
+        public static string Echo(string message)
+        {
+            return message;
+        }
+
+        public static IObservable<int> Stream(int count)
         {
             return Observable.Interval(TimeSpan.FromMilliseconds(1))
                              .Select((_, index) => index)
                              .Take(count);
         }
 
-        public Task SendMessage(string message)
+        public static ReadableChannel<int> StreamException()
         {
-            return Clients.All.Send(message);
-        }
-
-        public async Task CallHandlerThatDoesntExist()
-        {
-            await Clients.Client(Context.ConnectionId).NoClientHandler();
+            throw new InvalidOperationException("Error occurred while streaming.");
         }
     }
 
@@ -114,5 +103,4 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
         Task Send(string message);
         Task NoClientHandler();
     }
-
 }
