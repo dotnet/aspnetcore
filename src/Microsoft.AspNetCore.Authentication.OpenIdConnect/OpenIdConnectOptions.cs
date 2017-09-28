@@ -210,6 +210,11 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         public string ResponseType { get; set; } = OpenIdConnectResponseType.IdToken;
 
         /// <summary>
+        /// Gets or sets the 'prompt'.
+        /// </summary>
+        public string Prompt { get; set; }
+
+        /// <summary>
         /// Gets the list of permissions to request.
         /// </summary>
         public ICollection<string> Scope { get; } = new HashSet<string>();

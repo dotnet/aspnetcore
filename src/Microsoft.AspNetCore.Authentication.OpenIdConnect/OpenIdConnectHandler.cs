@@ -349,6 +349,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 RedirectUri = BuildRedirectUri(Options.CallbackPath),
                 Resource = Options.Resource,
                 ResponseType = Options.ResponseType,
+                Prompt = Options.Prompt,
                 Scope = string.Join(" ", Options.Scope)
             };
 
