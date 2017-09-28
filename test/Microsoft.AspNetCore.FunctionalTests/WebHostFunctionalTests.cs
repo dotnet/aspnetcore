@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
-using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Xunit;
@@ -51,6 +50,32 @@ namespace Microsoft.AspNetCore.Tests
         public async Task CreateDefaultBuilder_InitializeWithDefaults()
         {
             var applicationName = "CreateDefaultBuilderApp";
+            await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
+            {
+                var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);
+
+                var responseText = await response.Content.ReadAsStringAsync();
+                try
+                {
+                    // Assert server is Kestrel
+                    Assert.Equal("Kestrel", response.Headers.Server.ToString());
+
+                    // The application name will be sent in response when all asserts succeed in the test app.
+                    Assert.Equal(applicationName, responseText);
+                }
+                catch (XunitException)
+                {
+                    logger.LogWarning(response.ToString());
+                    logger.LogWarning(responseText);
+                    throw;
+                }
+            }, setTestEnvVars: true);
+        }
+
+        [Fact]
+        public async Task CreateDefaultBuilderOfT_InitializeWithDefaults()
+        {
+            var applicationName = "CreateDefaultBuilderOfTApp";
             await ExecuteTestApp(applicationName, async (deploymentResult, logger) =>
             {
                 var response = await RetryHelper.RetryRequest(() => deploymentResult.HttpClient.GetAsync(string.Empty), logger, deploymentResult.HostShutdownToken);

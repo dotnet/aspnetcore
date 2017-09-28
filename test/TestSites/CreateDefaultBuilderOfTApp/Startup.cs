@@ -3,36 +3,23 @@
 
 using System;
 using System.IO;
-using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace CreateDefaultBuilderApp
+namespace CreateDefaultBuilderOfTApp
 {
-    public class Program
+    class Startup
     {
-        static void Main(string[] args)
+        public void Configure(IApplicationBuilder app, WebHostBuilderContext webHostBuilderContext)
         {
-            string responseMessage = string.Empty;
-
-            WebHost.CreateDefaultBuilder(new[] { "--cliKey", "cliValue" })
-                .ConfigureServices((context, services) =>
-                {
-                    responseMessage = GetResponseMessage(context, services);
-                })
-                .Configure(app =>
-                {
-                    app.Run(context =>
-                    {
-                        return context.Response.WriteAsync(responseMessage);
-                    });
-                })
-                .Build().Run();
+            app.Run(context =>
+            {
+                return context.Response.WriteAsync(GetResponseMessage(webHostBuilderContext));
+            });
         }
 
-        private static string GetResponseMessage(WebHostBuilderContext context, IServiceCollection services)
+        private static string GetResponseMessage(WebHostBuilderContext context)
         {
             // Verify ContentRootPath set
             if (!string.Equals(Directory.GetCurrentDirectory(), context.HostingEnvironment.ContentRootPath, StringComparison.Ordinal))

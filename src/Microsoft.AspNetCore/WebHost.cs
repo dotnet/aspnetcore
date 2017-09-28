@@ -189,10 +189,8 @@ namespace Microsoft.AspNetCore
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="WebHostBuilder"/> class with pre-configured defaults using typed Startup
+        /// Initializes a new instance of the <see cref="WebHostBuilder"/> class with pre-configured defaults using typed Startup.
         /// </summary>
-        /// <typeparam name="T">Specify the startup type to be used by the web host.</typeparam>
-        /// <param name="args">The command line args.</param>
         /// <remarks>
         ///   The following defaults are applied to the returned <see cref="WebHostBuilder"/>:
         ///     use Kestrel as the web server,
@@ -200,27 +198,18 @@ namespace Microsoft.AspNetCore
         ///     load <see cref="IConfiguration"/> from 'appsettings.json' and 'appsettings.[<see cref="IHostingEnvironment.EnvironmentName"/>].json',
         ///     load <see cref="IConfiguration"/> from User Secrets when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development' using the entry assembly,
         ///     load <see cref="IConfiguration"/> from environment variables,
+        ///     load <see cref="IConfiguration"/> from supplied command line args,
         ///     configures the <see cref="ILoggerFactory"/> to log to the console and debug output,
         ///     enables IIS integration,
-        ///     enables the ability for frameworks to bind their options to their default configuration sections,
-        ///     adds the developer exception page when <see cref="IHostingEnvironment.EnvironmentName"/> is 'Development'
-        ///     and sets the startup class as the typed defined in T.
+        ///     enables the ability for frameworks to bind their options to their default configuration sections.
         /// </remarks>
+        /// <typeparam name ="TStartup">The type containing the startup methods for the application.</typeparam>
+        /// <param name="args">The command line args.</param>
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder CreateDefaultBuilder<T>(string[] args) where T : class
+        public static IWebHostBuilder CreateDefaultBuilder<TStartup>(string[] args) where TStartup : class
         {
-            return WebHost.CreateDefaultBuilder(args)
-                .UseStartup<T>();
-        }
-
-        /// <summary>
-        /// Builds an Microsoft.AspNetCore.Hosting.IWebHost which hosts a web application and
-        /// runs a web application and block the calling thread until host shutdown.
-        /// </summary>
-        /// <param name="builder">The <see cref="IWebHostBuilder"/></param>
-        public static void BuildAndRun(this IWebHostBuilder builder)
-        {
-            builder.Build().Run();
+            return CreateDefaultBuilder(args)
+                .UseStartup<TStartup>();
         }
     }
 }
