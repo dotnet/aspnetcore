@@ -198,22 +198,34 @@ namespace Microsoft.AspNetCore.Session
         }
 
         // This will throw if called directly and a failure occurs. The user is expected to handle the failures.
-        public async Task LoadAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task LoadAsync(CancellationToken cancellationToken = default)
         {
-            cancellationToken.ThrowIfCancellationRequested();
             if (!_loaded)
             {
                 using (var timeout = new CancellationTokenSource(_ioTimeout))
                 {
                     var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
-                    var data = await _cache.GetAsync(_sessionKey, cts.Token);
-                    if (data != null)
+                    try
                     {
-                        Deserialize(new MemoryStream(data));
+                        cts.Token.ThrowIfCancellationRequested();
+                        var data = await _cache.GetAsync(_sessionKey, cts.Token);
+                        if (data != null)
+                        {
+                            Deserialize(new MemoryStream(data));
+                        }
+                        else if (!_isNewSessionKey)
+                        {
+                            _logger.AccessingExpiredSession(_sessionKey);
+                        }
                     }
-                    else if (!_isNewSessionKey)
+                    catch (OperationCanceledException oex)
                     {
-                        _logger.AccessingExpiredSession(_sessionKey);
+                        if (timeout.Token.IsCancellationRequested)
+                        {
+                            _logger.SessionLoadingTimeout();
+                            throw new OperationCanceledException("Timed out loading the session.", oex, timeout.Token);
+                        }
+                        throw;
                     }
                 }
                 _isAvailable = true;
@@ -221,9 +233,8 @@ namespace Microsoft.AspNetCore.Session
             }
         }
 
-        public async Task CommitAsync(CancellationToken cancellationToken = default(CancellationToken))
+        public async Task CommitAsync(CancellationToken cancellationToken = default)
         {
-            cancellationToken.ThrowIfCancellationRequested();
             using (var timeout = new CancellationTokenSource(_ioTimeout))
             {
                 var cts = CancellationTokenSource.CreateLinkedTokenSource(timeout.Token, cancellationToken);
@@ -231,13 +242,19 @@ namespace Microsoft.AspNetCore.Session
                 {
                     if (_logger.IsEnabled(LogLevel.Information))
                     {
+                        // This operation is only so we can log if the session already existed.
+                        // Log and ignore failures.
                         try
                         {
+                            cts.Token.ThrowIfCancellationRequested();
                             var data = await _cache.GetAsync(_sessionKey, cts.Token);
                             if (data == null)
                             {
                                 _logger.SessionStarted(_sessionKey, Id);
                             }
+                        }
+                        catch (OperationCanceledException)
+                        {
                         }
                         catch (Exception exception)
                         {
@@ -248,17 +265,42 @@ namespace Microsoft.AspNetCore.Session
                     var stream = new MemoryStream();
                     Serialize(stream);
 
-                    await _cache.SetAsync(
-                        _sessionKey,
-                        stream.ToArray(),
-                        new DistributedCacheEntryOptions().SetSlidingExpiration(_idleTimeout),
-                        cts.Token);
-                    _isModified = false;
-                    _logger.SessionStored(_sessionKey, Id, _store.Count);
+                    try
+                    {
+                        cts.Token.ThrowIfCancellationRequested();
+                        await _cache.SetAsync(
+                            _sessionKey,
+                            stream.ToArray(),
+                            new DistributedCacheEntryOptions().SetSlidingExpiration(_idleTimeout),
+                            cts.Token);
+                        _isModified = false;
+                        _logger.SessionStored(_sessionKey, Id, _store.Count);
+                    }
+                    catch (OperationCanceledException oex)
+                    {
+                        if (timeout.Token.IsCancellationRequested)
+                        {
+                            _logger.SessionCommitTimeout();
+                            throw new OperationCanceledException("Timed out committing the session.", oex, timeout.Token);
+                        }
+                        throw;
+                    }
                 }
                 else
                 {
-                    await _cache.RefreshAsync(_sessionKey, cts.Token);
+                    try
+                    {
+                        await _cache.RefreshAsync(_sessionKey, cts.Token);
+                    }
+                    catch (OperationCanceledException oex)
+                    {
+                        if (timeout.Token.IsCancellationRequested)
+                        {
+                            _logger.SessionRefreshTimeout();
+                            throw new OperationCanceledException("Timed out refreshing the session.", oex, timeout.Token);
+                        }
+                        throw;
+                    }
                 }
             }
         }

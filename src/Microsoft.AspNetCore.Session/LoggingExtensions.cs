@@ -14,6 +14,11 @@ namespace Microsoft.Extensions.Logging
         private static Action<ILogger, string, string, int, Exception> _sessionStored;
         private static Action<ILogger, string, Exception> _sessionCacheReadException;
         private static Action<ILogger, Exception> _errorUnprotectingCookie;
+        private static Action<ILogger, Exception> _sessionLoadingTimeout;
+        private static Action<ILogger, Exception> _sessionCommitTimeout;
+        private static Action<ILogger, Exception> _sessionCommitCanceled;
+        private static Action<ILogger, Exception> _sessionRefreshTimeout;
+        private static Action<ILogger, Exception> _sessionRefreshCanceled;
 
         static LoggingExtensions()
         {
@@ -23,7 +28,7 @@ namespace Microsoft.Extensions.Logging
                 formatString: "Error closing the session.");
             _accessingExpiredSession = LoggerMessage.Define<string>(
                 eventId: 2,
-                logLevel: LogLevel.Warning,
+                logLevel: LogLevel.Information,
                 formatString: "Accessing expired session, Key:{sessionKey}");
             _sessionStarted = LoggerMessage.Define<string, string>(
                 eventId: 3,
@@ -45,6 +50,26 @@ namespace Microsoft.Extensions.Logging
                 eventId: 7,
                 logLevel: LogLevel.Warning,
                 formatString: "Error unprotecting the session cookie.");
+            _sessionLoadingTimeout = LoggerMessage.Define(
+                eventId: 8,
+                logLevel: LogLevel.Warning,
+                formatString: "Loading the session timed out.");
+            _sessionCommitTimeout = LoggerMessage.Define(
+                eventId: 9,
+                logLevel: LogLevel.Warning,
+                formatString: "Committing the session timed out.");
+            _sessionCommitCanceled = LoggerMessage.Define(
+                eventId: 10,
+                logLevel: LogLevel.Information,
+                formatString: "Committing the session was canceled.");
+            _sessionRefreshTimeout = LoggerMessage.Define(
+                eventId: 11,
+                logLevel: LogLevel.Warning,
+                formatString: "Refreshing the session timed out.");
+            _sessionRefreshCanceled = LoggerMessage.Define(
+                eventId: 12,
+                logLevel: LogLevel.Information,
+                formatString: "Refreshing the session was canceled.");
         }
 
         public static void ErrorClosingTheSession(this ILogger logger, Exception exception)
@@ -80,6 +105,31 @@ namespace Microsoft.Extensions.Logging
         public static void ErrorUnprotectingSessionCookie(this ILogger logger, Exception exception)
         {
             _errorUnprotectingCookie(logger, exception);
+        }
+
+        public static void SessionLoadingTimeout(this ILogger logger)
+        {
+            _sessionLoadingTimeout(logger, null);
+        }
+
+        public static void SessionCommitTimeout(this ILogger logger)
+        {
+            _sessionCommitTimeout(logger, null);
+        }
+
+        public static void SessionCommitCanceled(this ILogger logger)
+        {
+            _sessionCommitCanceled(logger, null);
+        }
+
+        public static void SessionRefreshTimeout(this ILogger logger)
+        {
+            _sessionRefreshTimeout(logger, null);
+        }
+
+        public static void SessionRefreshCanceled(this ILogger logger)
+        {
+            _sessionRefreshCanceled(logger, null);
         }
     }
 }
