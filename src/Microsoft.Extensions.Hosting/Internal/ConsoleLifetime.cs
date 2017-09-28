@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.Hosting.Internal
 
         public void RegisterDelayStartCallback(Action<object> callback, object state)
         {
-            if (Options.WriteStatusMessages)
+            if (!Options.SuppressStatusMessages)
             {
                 ApplicationLifetime.ApplicationStarted.Register(() =>
                 {

@@ -12,6 +12,10 @@ namespace Microsoft.AspNetCore.Hosting.TestSites
     {
         public void Configure(IApplicationBuilder app, ILoggerFactory loggerFactory, IApplicationLifetime lifetime)
         {
+            lifetime.ApplicationStarted.Register(() =>
+            {
+                Console.WriteLine("Started");
+            });
             lifetime.ApplicationStopping.Register(() =>
             {
                 Console.WriteLine("Stopping firing");

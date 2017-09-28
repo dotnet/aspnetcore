@@ -15,12 +15,13 @@ namespace Microsoft.AspNetCore.Hosting.Tests
         {
             var parameters = new Dictionary<string, string>()
             {
-                { "webroot", "wwwroot"},
-                { "applicationName", "MyProjectReference"},
-                { "startupAssembly", "MyProjectReference" },
-                { "environment", EnvironmentName.Development},
-                { "detailederrors", "true"},
-                { "captureStartupErrors", "true" }
+                { WebHostDefaults.WebRootKey, "wwwroot"},
+                { WebHostDefaults.ApplicationKey, "MyProjectReference"},
+                { WebHostDefaults.StartupAssemblyKey, "MyProjectReference" },
+                { WebHostDefaults.EnvironmentKey, EnvironmentName.Development},
+                { WebHostDefaults.DetailedErrorsKey, "true"},
+                { WebHostDefaults.CaptureStartupErrorsKey, "true" },
+                { WebHostDefaults.SuppressStatusMessagesKey, "true" }
             };
 
             var config = new WebHostOptions(new ConfigurationBuilder().AddInMemoryCollection(parameters).Build());
@@ -31,6 +32,7 @@ namespace Microsoft.AspNetCore.Hosting.Tests
             Assert.Equal(EnvironmentName.Development, config.Environment);
             Assert.True(config.CaptureStartupErrors);
             Assert.True(config.DetailedErrors);
+            Assert.True(config.SuppressStatusMessages);
         }
 
         [Fact]

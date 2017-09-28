@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Diagnostics;
 using System.IO;
-using System.Text.RegularExpressions;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.AspNetCore.Testing;
@@ -16,68 +17,20 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 {
     public class ShutdownTests : LoggedTest
     {
-        private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$");
-        private const string ApplicationStartedMessage = "Application started. Press Ctrl+C to shut down.";
+        private static readonly string StartedMessage = "Started";
+        private static readonly string CompletionMessage = "Stopping firing\n" +
+                                                            "Stopping end\n" +
+                                                            "Stopped firing\n" +
+                                                            "Stopped end";
 
-        public ShutdownTests(ITestOutputHelper output) : base(output)
-        {
-        }
+        public ShutdownTests(ITestOutputHelper output) : base(output) { }
 
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.Windows)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ShutdownTestRun()
         {
-            using (StartLog(out var loggerFactory))
-            {
-                var logger = loggerFactory.CreateLogger(nameof(ShutdownTestRun));
-
-                var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "TestAssets",
-                    "Microsoft.AspNetCore.Hosting.TestSites");
-
-                var deploymentParameters = new DeploymentParameters(
-                    applicationPath,
-                    ServerType.Kestrel,
-                    RuntimeFlavor.CoreClr,
-                    RuntimeArchitecture.x64)
-                {
-                    EnvironmentName = "Shutdown",
-                    TargetFramework = "netcoreapp2.0",
-                    ApplicationType = ApplicationType.Portable,
-                    PublishApplicationBeforeDeployment = true
-                };
-
-                deploymentParameters.EnvironmentVariables["ASPNETCORE_STARTMECHANIC"] = "Run";
-
-                using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
-                {
-                    await deployer.DeployAsync();
-
-                    string output = string.Empty;
-                    deployer.HostProcess.OutputDataReceived += (sender, args) =>
-                    {
-                        if (!string.Equals(args.Data, ApplicationStartedMessage)
-                            && !string.IsNullOrEmpty(args.Data)
-                            && !NowListeningRegex.Match(args.Data).Success)
-                        {
-                            output += args.Data + '\n';
-                        }
-                    };
-
-                    SendSIGINT(deployer.HostProcess.Id);
-
-                    WaitForExitOrKill(deployer.HostProcess);
-
-                    output = output.Trim('\n');
-
-                    Assert.Equal("Application is shutting down...\n" +
-                                    "Stopping firing\n" +
-                                    "Stopping end\n" +
-                                    "Stopped firing\n" +
-                                    "Stopped end",
-                                    output);
-                }
-            }
+            await ExecuteShutdownTest(nameof(ShutdownTestRun), "Run");
         }
 
         [ConditionalFact]
@@ -85,9 +38,14 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
         [OSSkipCondition(OperatingSystems.MacOSX)]
         public async Task ShutdownTestWaitForShutdown()
         {
+            await ExecuteShutdownTest(nameof(ShutdownTestWaitForShutdown), "WaitForShutdown");
+        }
+
+        private async Task ExecuteShutdownTest(string testName, string shutdownMechanic)
+        {
             using (StartLog(out var loggerFactory))
             {
-                var logger = loggerFactory.CreateLogger(nameof(ShutdownTestWaitForShutdown));
+                var logger = loggerFactory.CreateLogger(testName);
 
                 var applicationPath = Path.Combine(TestPathUtilities.GetSolutionRootDirectory("Hosting"), "test", "TestAssets",
                     "Microsoft.AspNetCore.Hosting.TestSites");
@@ -101,29 +59,58 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     EnvironmentName = "Shutdown",
                     TargetFramework = "netcoreapp2.0",
                     ApplicationType = ApplicationType.Portable,
-                    PublishApplicationBeforeDeployment = true
+                    PublishApplicationBeforeDeployment = true,
+                    StatusMessagesEnabled = false
                 };
 
-                deploymentParameters.EnvironmentVariables["ASPNETCORE_STARTMECHANIC"] = "WaitForShutdown";
+                deploymentParameters.EnvironmentVariables["ASPNETCORE_STARTMECHANIC"] = shutdownMechanic;
 
                 using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
                 {
                     await deployer.DeployAsync();
 
-                    string output = string.Empty;
-                    deployer.HostProcess.OutputDataReceived += (sender, args) => output += args.Data + '\n';
+                    var started = new ManualResetEventSlim();
+                    var completed = new ManualResetEventSlim();
+                    var output = string.Empty;
+                    deployer.HostProcess.OutputDataReceived += (sender, args) =>
+                    {
+                        if (!string.IsNullOrEmpty(args.Data) && args.Data.StartsWith(StartedMessage))
+                        {
+                            started.Set();
+                            output += args.Data.Substring(StartedMessage.Length) + '\n';
+                        }
+                        else
+                        {
+                            output += args.Data + '\n';
+                        }
+
+                        if (output.Contains(CompletionMessage))
+                        {
+                            completed.Set();
+                        }
+                    };
+
+                    started.Wait(50000);
+
+                    if (!started.IsSet)
+                    {
+                        throw new InvalidOperationException("Application did not start successfully");
+                    }
 
                     SendSIGINT(deployer.HostProcess.Id);
 
                     WaitForExitOrKill(deployer.HostProcess);
 
+                    completed.Wait(50000);
+
+                    if (!started.IsSet)
+                    {
+                        throw new InvalidOperationException($"Application did not write the expected output. The received output is: {output}");
+                    }
+
                     output = output.Trim('\n');
 
-                    Assert.Equal("Stopping firing\n" +
-                                    "Stopping end\n" +
-                                    "Stopped firing\n" +
-                                    "Stopped end",
-                                    output);
+                    Assert.Equal(CompletionMessage, output);
                 }
             }
         }

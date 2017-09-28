@@ -15,15 +15,11 @@ namespace IStartupInjectionAssemblyName
         {
             var server = new TestServer(CreateWebHostBuilder(args));
 
-            // Mimic application startup messages so application deployer knows that the application has started
-            Console.WriteLine("Application started. Press Ctrl+C to shut down.");
-            Console.WriteLine("Now listening on: http://localhost:5000");
-
             Task.Run(async () => Console.WriteLine(await server.CreateClient().GetStringAsync(""))).GetAwaiter().GetResult();
         }
 
         // Do not change the signature of this method. It's used for tests.
         private static IWebHostBuilder CreateWebHostBuilder(string [] args) =>
-            new WebHostBuilder().ConfigureServices(services => services.AddSingleton<IStartup, Startup>());
+            new WebHostBuilder().SuppressStatusMessages(true).ConfigureServices(services => services.AddSingleton<IStartup, Startup>());
     }
 }

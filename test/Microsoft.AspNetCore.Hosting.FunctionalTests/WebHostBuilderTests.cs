@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
@@ -16,17 +15,12 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
 {
     public class WebHostBuilderTests : LoggedTest
     {
-        private static readonly Regex NowListeningRegex = new Regex(@"^\s*Now listening on: (?<url>.*)$");
-        private const string ApplicationStartedMessage = "Application started. Press Ctrl+C to shut down.";
-
-        public WebHostBuilderTests(ITestOutputHelper output) : base(output)
-        {
-        }
+        public WebHostBuilderTests(ITestOutputHelper output) : base(output) { }
 
         [Fact]
         public async Task InjectedStartup_DefaultApplicationNameIsEntryAssembly_CoreClr()
             => await InjectedStartup_DefaultApplicationNameIsEntryAssembly(RuntimeFlavor.CoreClr);
-        
+
         [ConditionalFact]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [OSSkipCondition(OperatingSystems.Linux)]
@@ -48,7 +42,8 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     RuntimeArchitecture.x64)
                 {
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
-                    ApplicationType = ApplicationType.Portable
+                    ApplicationType = ApplicationType.Portable,
+                    StatusMessagesEnabled = false
                 };
 
                 using (var deployer = new SelfHostDeployer(deploymentParameters, loggerFactory))
@@ -59,17 +54,15 @@ namespace Microsoft.AspNetCore.Hosting.FunctionalTests
                     var mre = new ManualResetEventSlim();
                     deployer.HostProcess.OutputDataReceived += (sender, args) =>
                     {
-                        if (!string.Equals(args.Data, ApplicationStartedMessage)
-                            && !string.IsNullOrEmpty(args.Data)
-                            && !NowListeningRegex.Match(args.Data).Success)
+                        if (!string.IsNullOrWhiteSpace(args.Data))
                         {
                             output += args.Data + '\n';
                             mre.Set();
                         }
                     };
 
-                    mre.Wait(10000);
-                    
+                    mre.Wait(50000);
+
                     output = output.Trim('\n');
 
                     Assert.Equal($"IStartupInjectionAssemblyName", output);

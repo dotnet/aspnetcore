@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Hosting.Internal;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -76,7 +77,8 @@ namespace Microsoft.AspNetCore.Hosting
             var done = new ManualResetEventSlim(false);
             using (var cts = new CancellationTokenSource())
             {
-                AttachCtrlcSigtermShutdown(cts, done, shutdownMessage: "Application is shutting down...");
+                var shutdownMessage = host.Services.GetRequiredService<WebHostOptions>().SuppressStatusMessages ? string.Empty : "Application is shutting down...";
+                AttachCtrlcSigtermShutdown(cts, done, shutdownMessage: shutdownMessage);
 
                 await host.RunAsync(cts.Token, "Application started. Press Ctrl+C to shut down.");
                 done.Set();
@@ -91,22 +93,27 @@ namespace Microsoft.AspNetCore.Hosting
 
                 var hostingEnvironment = host.Services.GetService<IHostingEnvironment>();
                 var applicationLifetime = host.Services.GetService<IApplicationLifetime>();
+                var options = host.Services.GetRequiredService<WebHostOptions>();
 
-                Console.WriteLine($"Hosting environment: {hostingEnvironment.EnvironmentName}");
-                Console.WriteLine($"Content root path: {hostingEnvironment.ContentRootPath}");
-
-                var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
-                if (serverAddresses != null)
+                if (!options.SuppressStatusMessages)
                 {
-                    foreach (var address in serverAddresses)
+                    Console.WriteLine($"Hosting environment: {hostingEnvironment.EnvironmentName}");
+                    Console.WriteLine($"Content root path: {hostingEnvironment.ContentRootPath}");
+
+
+                    var serverAddresses = host.ServerFeatures.Get<IServerAddressesFeature>()?.Addresses;
+                    if (serverAddresses != null)
                     {
-                        Console.WriteLine($"Now listening on: {address}");
+                        foreach (var address in serverAddresses)
+                        {
+                            Console.WriteLine($"Now listening on: {address}");
+                        }
                     }
-                }
 
-                if (!string.IsNullOrEmpty(shutdownMessage))
-                {
-                    Console.WriteLine(shutdownMessage);
+                    if (!string.IsNullOrEmpty(shutdownMessage))
+                    {
+                        Console.WriteLine(shutdownMessage);
+                    }
                 }
 
                 await host.WaitForTokenShutdownAsync(token);

@@ -6,9 +6,9 @@ namespace Microsoft.Extensions.Hosting
     public class ConsoleLifetimeOptions
     {
         /// <summary>
-        /// Indicates if host lifetime status messages should be written to the console such as on startup.
-        /// The default is true.
+        /// Indicates if host lifetime status messages should be supressed such as on startup.
+        /// The default is false.
         /// </summary>
-        public bool WriteStatusMessages { get; set; } = true;
+        public bool SuppressStatusMessages { get; set; }
     }
 }

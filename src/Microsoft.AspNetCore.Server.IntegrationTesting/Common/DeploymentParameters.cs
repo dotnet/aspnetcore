@@ -95,6 +95,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
 
         public bool PreservePublishedApplicationForDebugging { get; set; } = false;
 
+        public bool StatusMessagesEnabled { get; set; } = true;
+
         public ApplicationType ApplicationType { get; set; }
 
         public string PublishedApplicationRootPath { get; set; }

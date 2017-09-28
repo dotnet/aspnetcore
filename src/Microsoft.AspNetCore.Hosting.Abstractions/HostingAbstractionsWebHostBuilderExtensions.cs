@@ -160,6 +160,17 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         /// <summary>
+        /// Specify if startup status messages should be suppressed.
+        /// </summary>
+        /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>
+        /// <param name="suppressStatusMessages"><c>true</c> to suppress writing of hosting startup status messages; otherwise <c>false</c>.</param>
+        /// <returns>The <see cref="IWebHostBuilder"/>.</returns>
+        public static IWebHostBuilder SuppressStatusMessages(this IWebHostBuilder hostBuilder, bool suppressStatusMessages)
+        {
+            return hostBuilder.UseSetting(WebHostDefaults.SuppressStatusMessagesKey, suppressStatusMessages ? "true" : "false");
+        }
+
+        /// <summary>
         /// Specify the amount of time to wait for the web host to shutdown.
         /// </summary>
         /// <param name="hostBuilder">The <see cref="IWebHostBuilder"/> to configure.</param>

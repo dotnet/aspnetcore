@@ -151,25 +151,35 @@ namespace Microsoft.AspNetCore.Hosting
             }
             _webHostBuilt = true;
 
-            // Warn about deprecated environment variables
-            if (Environment.GetEnvironmentVariable("Hosting:Environment") != null)
-            {
-                Console.WriteLine("The environment variable 'Hosting:Environment' is obsolete and has been replaced with 'ASPNETCORE_ENVIRONMENT'");
-            }
-
-            if (Environment.GetEnvironmentVariable("ASPNET_ENV") != null)
-            {
-                Console.WriteLine("The environment variable 'ASPNET_ENV' is obsolete and has been replaced with 'ASPNETCORE_ENVIRONMENT'");
-            }
-
-            if (Environment.GetEnvironmentVariable("ASPNETCORE_SERVER.URLS") != null)
-            {
-                Console.WriteLine("The environment variable 'ASPNETCORE_SERVER.URLS' is obsolete and has been replaced with 'ASPNETCORE_URLS'");
-            }
-
             var hostingServices = BuildCommonServices(out var hostingStartupErrors);
             var applicationServices = hostingServices.Clone();
             var hostingServiceProvider = hostingServices.BuildServiceProvider();
+
+            if (!_options.SuppressStatusMessages)
+            {
+                // Warn about deprecated environment variables
+                if (Environment.GetEnvironmentVariable("Hosting:Environment") != null)
+                {
+                    Console.WriteLine("The environment variable 'Hosting:Environment' is obsolete and has been replaced with 'ASPNETCORE_ENVIRONMENT'");
+                }
+
+                if (Environment.GetEnvironmentVariable("ASPNET_ENV") != null)
+                {
+                    Console.WriteLine("The environment variable 'ASPNET_ENV' is obsolete and has been replaced with 'ASPNETCORE_ENVIRONMENT'");
+                }
+
+                if (Environment.GetEnvironmentVariable("ASPNETCORE_SERVER.URLS") != null)
+                {
+                    Console.WriteLine("The environment variable 'ASPNETCORE_SERVER.URLS' is obsolete and has been replaced with 'ASPNETCORE_URLS'");
+                }
+            }
+
+            var logger = hostingServiceProvider.GetRequiredService<ILogger<WebHost>>();
+            // Warn about duplicate HostingStartupAssemblies
+            foreach (var assemblyName in _options.HostingStartupAssemblies.GroupBy(a => a, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
+            {
+                logger.LogWarning($"The assembly {assemblyName} was specified multiple times. Hosting startup assemblies should only be specified once.");
+            }
 
             AddApplicationServices(applicationServices, hostingServiceProvider);
 
@@ -228,6 +238,7 @@ namespace Microsoft.AspNetCore.Hosting
             _context.HostingEnvironment = _hostingEnvironment;
 
             var services = new ServiceCollection();
+            services.AddSingleton(_options);
             services.AddSingleton(_hostingEnvironment);
             services.AddSingleton(_context);
 

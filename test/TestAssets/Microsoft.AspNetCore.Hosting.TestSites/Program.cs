@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Console;
 
@@ -26,6 +25,7 @@ namespace ServerComparison.TestSites
             var builder = new WebHostBuilder()
                 .UseServer(new NoopServer())
                 .UseConfiguration(config)
+                .SuppressStatusMessages(true)
                 .ConfigureLogging((_, factory) =>
                 {
                     factory.AddConsole();
@@ -44,10 +44,6 @@ namespace ServerComparison.TestSites
                 using (var host = builder.Build())
                 {
                     host.Start();
-
-                    // Mimic application startup messages so application deployer knows that the application has started
-                    Console.WriteLine("Application started. Press Ctrl+C to shut down.");
-                    Console.WriteLine("Now listening on: http://localhost:5000");
 
                     host.WaitForShutdown();
                 }

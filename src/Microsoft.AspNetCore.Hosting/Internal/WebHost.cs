@@ -204,8 +204,11 @@ namespace Microsoft.AspNetCore.Hosting.Internal
                     _applicationServices = _applicationServiceCollection.BuildServiceProvider();
                 }
 
-                // Write errors to standard out so they can be retrieved when not in development mode.
-                Console.Out.WriteLine("Application startup exception: " + ex.ToString());
+                if (!_options.SuppressStatusMessages)
+                {
+                    // Write errors to standard out so they can be retrieved when not in development mode.
+                    Console.WriteLine("Application startup exception: " + ex.ToString());
+                }
                 var logger = _applicationServices.GetRequiredService<ILogger<WebHost>>();
                 logger.ApplicationError(ex);
 
