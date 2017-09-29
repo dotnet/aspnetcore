@@ -7,12 +7,12 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class SimpleDispatcherDataSource : DispatcherDataSource
+    public class DefaultDispatcherDataSource : DispatcherDataSource
     {
         private readonly List<Address> _addresses;
         private readonly List<Endpoint> _endpoints; 
 
-        public SimpleDispatcherDataSource()
+        public DefaultDispatcherDataSource()
         {
             _addresses = new List<Address>();
             _endpoints = new List<Endpoint>();

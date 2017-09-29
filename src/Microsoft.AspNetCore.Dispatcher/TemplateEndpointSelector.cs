@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class DispatcherValueEndpointSelector : EndpointSelector
+    public class TemplateEndpointSelector : EndpointSelector
     {
         public override Task SelectAsync(EndpointSelectorContext context)
         {
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             for (var i = context.Endpoints.Count - 1; i >= 0; i--)
             {
-                var endpoint = context.Endpoints[i] as IDispatcherValueSelectableEndpoint;
+                var endpoint = context.Endpoints[i] as ITemplateEndpoint;
                 if (!CompareRouteValues(dispatcherFeature.Values, endpoint.Values))
                 {
                     context.Endpoints.RemoveAt(i);

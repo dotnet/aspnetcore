@@ -3,8 +3,12 @@
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public interface IDispatcherValueSelectableEndpoint
+    public interface ITemplateEndpoint
     {
+        string HttpMethod { get; }
+
+        string Template { get; }
+
         DispatcherValueCollection Values { get; }
     }
 }

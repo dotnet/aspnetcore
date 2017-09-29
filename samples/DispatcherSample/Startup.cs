@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
@@ -32,27 +31,27 @@ namespace DispatcherSample
                 {
                     Addresses =
                     {
-                        new DispatcherValueAddress(new { controller = "Home", action = "Index", }, new object[]{ new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, "Home:Index()"),
-                        new DispatcherValueAddress(new { controller = "Home", action = "About", }, new object[]{ new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, "Home:About()"),
-                        new DispatcherValueAddress(new { controller = "Admin", action = "Index", }, new object[]{ new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, "Admin:Index()"),
-                        new DispatcherValueAddress(new { controller = "Admin", action = "Users", }, new object[]{ new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, "Admin:GetUsers()/Admin:EditUsers()"),
+                        new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "Index", }, "Home:Index()"),
+                        new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "About", }, "Home:About()"),
+                        new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Index", }, "Admin:Index()"),
+                        new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "Admin:GetUsers()/Admin:EditUsers()"),
                     },
                     Endpoints =
                     {
-                        new SimpleEndpoint(Home_Index, new object[] { new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, new { controller = "Home", action = "Index", }, "Home:Index()"),
-                        new SimpleEndpoint(Home_About, new object[] { new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, new { controller = "Home", action = "About", }, "Home:About()"),
-                        new SimpleEndpoint(Admin_Index, new object[] { new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), }, new { controller = "Admin", action = "Index", }, "Admin:Index()"),
-                        new SimpleEndpoint(Admin_GetUsers, new object[] { new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"), new HttpMethodMetadata("GET"), new AuthorizationPolicyMetadata("Admin"), }, new { controller = "Admin", action = "Users", }, "Admin:GetUsers()"),
-                        new SimpleEndpoint(Admin_EditUsers, new object[] { new RouteTemplateMetadata("{controller=Home}/{action=Index}/{id?}"),  new HttpMethodMetadata("POST"), new AuthorizationPolicyMetadata("Admin"), }, new { controller = "Admin", action = "Users", }, "Admin:EditUsers()"),
+                        new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "Index", }, Home_Index, "Home:Index()"),
+                        new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "About", }, Home_About, "Home:About()"),
+                        new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Index", }, Admin_Index, "Admin:Index()"),
+                        new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "GET", Admin_GetUsers, "Admin:GetUsers()", new AuthorizationPolicyMetadata("Admin")),
+                        new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "POST", Admin_EditUsers, "Admin:EditUsers()", new AuthorizationPolicyMetadata("Admin")),
                     },
                     Selectors =
                     {
-                        new DispatcherValueEndpointSelector(),
+                        new TemplateEndpointSelector(),
                         new HttpMethodEndpointSelector(),
                     }
                 });
 
-                options.HandlerFactories.Add((endpoint) => (endpoint as SimpleEndpoint)?.HandlerFactory);
+                options.HandlerFactories.Add((endpoint) => (endpoint as TemplateEndpoint)?.HandlerFactory);
             });
 
             services.AddDispatcher();

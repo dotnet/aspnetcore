@@ -18,7 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSingleton<IStartupFilter, DispatcherEndpointStartupFilter>();
             services.AddSingleton<AddressTable, DefaultAddressTable>();
-            services.AddSingleton<DispatcherValueAddressSelector>();
+            services.AddSingleton<TemplateAddressSelector>();
 
             return services;
         }

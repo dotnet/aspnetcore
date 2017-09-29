@@ -142,16 +142,16 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
             {
                 var endpoint = endpoints[i];
 
-                var metadata = endpoint.Metadata.OfType<ITreeDispatcherMetadata>().LastOrDefault();
-                if (metadata == null)
+                var templateEndpoint = endpoint as ITemplateEndpoint;
+                if (templateEndpoint == null)
                 {
                     continue;
                 }
 
-                if (!groups.TryGetValue(new Key(metadata.Order, metadata.RouteTemplate), out var group))
+                if (!groups.TryGetValue(new Key(0, templateEndpoint.Template), out var group))
                 {
                     group = new List<Endpoint>();
-                    groups.Add(new Key(metadata.Order, metadata.RouteTemplate), group);
+                    groups.Add(new Key(0, templateEndpoint.Template), group);
                 }
 
                 group.Add(endpoint);

@@ -14,11 +14,11 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
     // This isn't a proposed design, just a placeholder to demonstrate that things are wired up correctly.
     public class RouteTemplateUrlGenerator
     {
-        private readonly DispatcherValueAddressSelector _addressSelector;
+        private readonly TemplateAddressSelector _addressSelector;
         private readonly ObjectPool<UriBuildingContext> _pool;
         private readonly UrlEncoder _urlEncoder;
 
-        public RouteTemplateUrlGenerator(DispatcherValueAddressSelector addressSelector, UrlEncoder urlEncoder, ObjectPool<UriBuildingContext> pool)
+        public RouteTemplateUrlGenerator(TemplateAddressSelector addressSelector, UrlEncoder urlEncoder, ObjectPool<UriBuildingContext> pool)
         {
             _addressSelector = addressSelector;
             _urlEncoder = urlEncoder;
@@ -37,14 +37,13 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
                 throw new ArgumentNullException(nameof(values));
             }
 
-            var address = _addressSelector.SelectAddress(new DispatcherValueCollection(values));
+            var address = _addressSelector.SelectAddress(new DispatcherValueCollection(values)) as ITemplateAddress;
             if (address == null)
             {
                 throw new InvalidOperationException("Can't find address");
             }
 
-            var (template, defaults) = GetRouteTemplate(address);
-            var binder = new TemplateBinder(_urlEncoder, _pool, TemplateParser.Parse(template), defaults.AsRouteValueDictionary());
+            var binder = new TemplateBinder(_urlEncoder, _pool, TemplateParser.Parse(address.Template), new RouteValueDictionary());
 
             var feature = httpContext.Features.Get<IDispatcherFeature>();
             var result = binder.GetValues(feature.Values.AsRouteValueDictionary(), new RouteValueDictionary(values));
@@ -54,19 +53,6 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
             }
 
             return binder.BindValues(result.AcceptedValues);
-        }
-        private (string, DispatcherValueCollection) GetRouteTemplate(Address address)
-        {
-            for (var i = address.Metadata.Count - 1; i >= 0; i--)
-            {
-                var metadata = address.Metadata[i] as IRouteTemplateMetadata;
-                if (metadata != null)
-                {
-                    return (metadata.RouteTemplate, metadata.Defaults);
-                }
-            }
-
-            return (null, null);
         }
     }
 }

@@ -23,11 +23,11 @@ namespace DispatcherSample
             for (var i = context.Endpoints.Count - 1; i >= 0; i--)
             {
                 var endpoint = context.Endpoints[i];
-                IHttpMethodMetadata metadata = null;
+                ITemplateEndpoint metadata = null;
 
                 for (var j = endpoint.Metadata.Count - 1; j >= 0; j--)
                 {
-                    metadata = endpoint.Metadata[j] as IHttpMethodMetadata;
+                    metadata = endpoint.Metadata[j] as ITemplateEndpoint;
                     if (metadata != null)
                     {
                         break;
@@ -70,17 +70,9 @@ namespace DispatcherSample
             }
         }
 
-        private bool Matches(IHttpMethodMetadata metadata, string httpMethod)
+        private bool Matches(ITemplateEndpoint endpoint, string httpMethod)
         {
-            for (var i = 0; i < metadata.AllowedMethods.Count; i++)
-            {
-                if (string.Equals(metadata.AllowedMethods[i], httpMethod, StringComparison.OrdinalIgnoreCase))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return string.Equals(endpoint.HttpMethod, httpMethod, StringComparison.OrdinalIgnoreCase);
         }
     }
 }

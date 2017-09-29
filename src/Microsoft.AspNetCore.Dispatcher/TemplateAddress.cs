@@ -7,24 +7,18 @@ using System.Linq;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class DispatcherValueAddress : Address
+    public class TemplateAddress : Address, ITemplateAddress
     {
-        public DispatcherValueAddress(object values)
-            : this(values, Array.Empty<object>(), null)
+        public TemplateAddress(string template, object values, params object[] metadata)
+            : this(template, values, null, metadata)
         {
         }
 
-
-        public DispatcherValueAddress(object values, IEnumerable<object> metadata)
-            : this(values, metadata, null)
+        public TemplateAddress(string template, object values, string displayName, params object[] metadata)
         {
-        }
-
-        public DispatcherValueAddress(object values, IEnumerable<object> metadata, string displayName)
-        {
-            if (values == null)
+            if (template == null)
             {
-                throw new ArgumentNullException(nameof(values));
+                throw new ArgumentNullException(nameof(template));
             }
 
             if (metadata == null)
@@ -32,14 +26,17 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(metadata));
             }
 
+            Template = template;
             Values = new DispatcherValueCollection(values);
-            Metadata = metadata.ToArray();
             DisplayName = displayName;
+            Metadata = metadata.ToArray();
         }
 
         public override string DisplayName { get; }
 
         public override IReadOnlyList<object> Metadata { get; }
+
+        public string Template { get; }
 
         public DispatcherValueCollection Values { get; }
     }
