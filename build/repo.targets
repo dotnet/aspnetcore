@@ -127,7 +127,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories">
+  <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories" Condition="'$(SkipClone)' != 'true'">
     <ItemGroup>
       <_CloneRepository Include="$(MSBuildProjectFullPath)">
         <AdditionalProperties>
