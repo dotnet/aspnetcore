@@ -1,0 +1,11 @@
+﻿{
+  "host": "desktopClr",
+  "hostId": "RoslynCodeAnalysisService",
+  "hostGroupAllowed": true,
+  "entryPoint": {
+    "assemblyPath": "Microsoft.CodeAnalysis.Remote.Razor.dll",
+    "fullClassName": "Microsoft.CodeAnalysis.Remote.Razor.RazorLanguageService",
+    "appBasePath": "%VSAPPIDDIR%",
+    "configPath": "%PkgDefApplicationConfigFile%"
+  }
+}

@@ -93,6 +93,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
+    <Content Include="razorLanguageService64.servicehub.service.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <IncludeInVSIX>true</IncludeInVSIX>
+    </Content>
     <Content Include="WebConfiguration.png">
       <IncludeInVSIX>true</IncludeInVSIX>
     </Content>
