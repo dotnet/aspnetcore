@@ -1,12 +1,12 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-namespace Microsoft.AspNetCore.Routing.Dispatcher
+namespace Microsoft.AspNetCore.Dispatcher
 {
-    public interface ITreeDispatcherMetadata
+    public interface ITemplateAddress
     {
-        int Order { get; }
+        string Template { get; }
 
-        string RouteTemplate { get; }
+        DispatcherValueCollection Values { get; }
     }
 }

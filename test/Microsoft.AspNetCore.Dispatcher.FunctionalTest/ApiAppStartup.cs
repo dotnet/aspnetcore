@@ -58,11 +58,11 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
             {
                 Endpoints =
                 {
-                    new SimpleEndpoint(Products_Get, new object[]{ new RouteTemplateMetadata("api/products"), }),
+                    new TemplateEndpoint("api/products", Products_Get),
                 },
             });
 
-            options.HandlerFactories.Add(endpoint => (endpoint as SimpleEndpoint)?.HandlerFactory);
+            options.HandlerFactories.Add(endpoint => (endpoint as TemplateEndpoint)?.HandlerFactory);
         }
 
         private Task Products_Get(HttpContext httpContext) => httpContext.Response.WriteAsync("Hello, Products_Get");
