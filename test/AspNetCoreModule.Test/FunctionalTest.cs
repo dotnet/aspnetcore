@@ -12,7 +12,7 @@ namespace AspNetCoreModule.Test
     public class FunctionalTest : FunctionalTestHelper, IClassFixture<InitializeTestMachine>
     {
         [ConditionalTheory]
-        [ANCMTestFlags(TestFlags.Default)]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.noChange)]
@@ -164,7 +164,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestFlags(TestFlags.Default)]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789")]
@@ -175,7 +175,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestFlags(TestFlags.Default)]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
