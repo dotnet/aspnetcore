@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <LineupBuildDir>$(ArtifactsDir)lineups\</LineupBuildDir>
+    <ClearRepositoryCloneRoot Condition="'$(SkipClone)' == 'true'">false</ClearRepositoryCloneRoot>
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
     <_DependencyLineupDir>$(RepositoryRoot).deps\lineups\</_DependencyLineupDir>
