@@ -162,7 +162,7 @@ export class HttpConnection implements IConnection {
             return url;
         }
 
-        if (typeof window === 'undefined') {
+        if (typeof window === 'undefined' || !window || !window.document) {
             throw new Error(`Cannot resolve '${url}'.`);
         }
 

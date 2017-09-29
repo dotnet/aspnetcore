@@ -14,6 +14,13 @@ describe("Connection", () => {
             .toThrow(new Error("Cannot resolve '/test'."));
     });
 
+    it("cannot be created with relative url if window object is not present", () => {
+        (<any>global).window = {};
+        expect(() => new HttpConnection("/test"))
+            .toThrow(new Error("Cannot resolve '/test'."));
+        delete (<any>global).window;
+    });
+
     it("starting connection fails if getting id fails", async (done) => {
         let options: IHttpConnectionOptions = {
             httpClient: <IHttpClient>{
