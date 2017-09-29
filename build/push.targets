@@ -1,5 +1,7 @@
 <Project>
-  <Target Name="Push">
+  <Target Name="Push" DependsOnTargets="_PushNuGet;_PushNpm" />
+
+  <Target Name="_PushNuGet">
     <Error Text="Missing required property: NuGetPublishFeed"  Condition=" '$(NuGetPublishFeed)' == '' "/>
 
     <ItemGroup>
@@ -19,5 +21,26 @@
       Feed="$(NuGetPublishFeed)"
       Condition="@(_LineupPackagesToPush->Count()) != 0"
       ApiKey="$(APIKey)" />
+  </Target>
+
+  <Target Name="_PushNpm">
+    <Error Text="Missing required property: NpmRegistry"  Condition=" '$(NpmRegistry)' == '' "/>
+
+    <PropertyGroup>
+      <AuthTokenSetting>$(NpmRegistry.Replace("https:", "")):_authToken</AuthTokenSetting>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <NpmModuleArtifact Include="$(BuildDir)*.tgz" />
+    </ItemGroup>
+
+    <Exec Command="npm config set &quot;$(AuthTokenSetting)&quot; $(APIKey)" Condition=" '$(APIKey)' != '' " />
+    <Exec Command="npm publish --registry $(NpmRegistry) &quot;%(NpmModuleArtifact.Identity)&quot;"
+          Condition="@(NpmModuleArtifact->Count()) != 0"
+          ContinueOnError="true">
+      <Output TaskParameter="ExitCode" ItemName="ExitCodes" />
+    </Exec>
+    <Exec Command="npm config delete $(AuthTokenSetting)" Condition=" '$(APIKey)' != '' "/>
+    <Error Text="Publishing npm modules failed" Condition="%(ExitCodes.Identity) > 0"/>
   </Target>
 </Project>
