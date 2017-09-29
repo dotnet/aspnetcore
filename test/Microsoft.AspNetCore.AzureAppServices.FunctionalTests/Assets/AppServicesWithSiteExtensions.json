@@ -24,6 +24,17 @@
   "resources": [
     {
       "apiVersion": "2015-08-01",
+      "name": "[parameters('hostingPlanName')]",
+      "location": "West US 2",
+      "type": "Microsoft.Web/serverfarms",
+      "sku": {
+        "name": "D1"
+      },
+      "properties": {
+      }
+    },
+    {
+      "apiVersion": "2015-08-01",
       "name": "[parameters('siteName')]",
       "type": "Microsoft.Web/sites",
       "location": "West US 2",
@@ -44,6 +55,9 @@
             "[resourceId('Microsoft.Web/Sites', parameters('siteName'))]"
           ]
         }
+      ],
+      "dependsOn": [
+        "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
       ]
     }
   ],

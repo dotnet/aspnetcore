@@ -1,4 +1,4 @@
-﻿Microsoft.AspNetCore.Antiforgery
+Microsoft.AspNetCore.Antiforgery
 Microsoft.AspNetCore.Authentication
 Microsoft.AspNetCore.Authentication.Cookies
 Microsoft.AspNetCore.Authentication.Facebook
@@ -102,7 +102,7 @@ Microsoft.Extensions.Configuration.UserSecrets
 Microsoft.Extensions.Configuration.Xml
 Microsoft.Extensions.DependencyInjection
 Microsoft.Extensions.DependencyInjection.Abstractions
-//microsoft.extensions.dependencymodel - sha mismatch
+microsoft.extensions.dependencymodel
 Microsoft.Extensions.DiagnosticAdapter
 Microsoft.Extensions.FileProviders.Abstractions
 Microsoft.Extensions.FileProviders.Composite
@@ -123,7 +123,7 @@ Microsoft.Extensions.Logging.TraceSource
 Microsoft.Extensions.ObjectPool
 Microsoft.Extensions.Options
 Microsoft.Extensions.Options.ConfigurationExtensions
-Microsoft.Extensions.PlatformAbstractions
+// Microsoft.Extensions.PlatformAbstractions
 Microsoft.Extensions.Primitives
 Microsoft.Extensions.WebEncoders
 microsoft.identitymodel.logging
@@ -136,10 +136,10 @@ Microsoft.Net.Http.Server
 Microsoft.Net.WebSockets.Servern
 newtonsoft.json
 remotion.linq
-// system.collections.nongeneric - sha mismatch
-// system.collections.specialized - sha mismatch
-// system.componentmodel.primitives - sha mismatch
-// system.componentmodel.typeconverter - sha mismatch
+system.collections.nongeneric
+system.collections.specialized
+system.componentmodel.primitives
+system.componentmodel.typeconverter
 system.data.common
 system.data.sqlclient
 system.diagnostics.contracts
@@ -149,7 +149,7 @@ system.interactive.async
 system.io.pipes
 system.net.websockets
 system.private.datacontractserialization
-// system.runtime.serialization.primitives - sha mismatch
+system.runtime.serialization.primitives
 system.runtime.serialization.xml
-//system.text.encodings.web - sha mismatch
+// system.text.encodings.web
 system.xml.xmlserializer

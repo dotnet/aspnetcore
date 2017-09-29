@@ -8,6 +8,8 @@
       <runtime xdt:Transform="InsertIfMissing" >
         <environmentVariables xdt:Transform="InsertIfMissing">
           <add name="PATH" value="%XDT_EXTENSIONPATH%;%PATH%" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />
+          <!-- Uncomment when when there a need to test 1.x patch prerelease  -->
+          <!--<add name="DOTNET_HOSTING_OPTIMIZATION_CACHE" value="%XDT_EXTENSIONPATH%\DotNetCache" xdt:Locator="Match(name)" xdt:Transform="InsertIfMissing"  />-->
         </environmentVariables>
       </runtime>
     </system.webServer>

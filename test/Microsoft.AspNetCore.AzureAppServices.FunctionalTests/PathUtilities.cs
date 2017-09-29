@@ -34,6 +34,13 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             return GetAllModules(runtimeDirectory);
         }
 
+        public static string[] GetSharedRuntimeAssemblies(string dotnetPath, string runtimeVersion)
+        {
+            var dotnetHome = Path.GetDirectoryName(dotnetPath);
+            var runtimeDirectory = new DirectoryInfo(Path.Combine(dotnetHome, "shared", "Microsoft.NETCore.App", runtimeVersion));
+            return GetAllModules(runtimeDirectory);
+        }
+
         public static string GetBundledAspNetCoreVersion(string dotnetPath)
         {
             var dotnetHome = Path.GetDirectoryName(dotnetPath);

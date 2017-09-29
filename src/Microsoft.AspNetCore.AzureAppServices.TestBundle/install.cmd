@@ -1,5 +1,7 @@
 SET DOTNET=D:\Program Files (x86)\dotnet
+SET DOTNETCACHE=D:\DotNetCache
 SET RUNTIMES=%DOTNET%\shared\Microsoft.NETCore.App
+
 robocopy "%DOTNET%" "." /E /XC /XN /XO /NFL /NDL ^
     /XD "%DOTNET%\sdk" ^
     /XD "%RUNTIMES%\1.0.3" ^
@@ -10,7 +12,8 @@ robocopy "%DOTNET%" "." /E /XC /XN /XO /NFL /NDL ^
     /XD "%RUNTIMES%\2.0.0-preview1-002111-00" ^
     /XD "%RUNTIMES%\2.0.0-preview2-25407-01"
 
-copy /y dotnet.cmd D:\home\site\deployments\tools
+rem don't need this untill we test new cache
+rem robocopy "%DOTNETCACHE%" "DotNetCache" /E /XC /XN /XO /NFL /NDL
 
 rem force first time experience
 dotnet msbuild /version

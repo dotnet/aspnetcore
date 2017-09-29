@@ -6,19 +6,18 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 {
-    [Collection("Azure")]
     public class TemplateFunctionalTests
     {
+
         private static readonly string RuntimeInformationMiddlewareType = "Microsoft.AspNetCore.AzureAppServices.FunctionalTests.RuntimeInformationMiddleware";
 
         private static readonly string RuntimeInformationMiddlewareFile = Asset("RuntimeInformationMiddleware.cs");
@@ -27,63 +26,55 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
         readonly AzureFixture _fixture;
 
-        private readonly ITestOutputHelper _outputHelper;
+        private readonly ILogger _logger;
 
-        public TemplateFunctionalTests(AzureFixture fixture, ITestOutputHelper outputHelper)
+        public TemplateFunctionalTests(AzureFixture fixture, ILogger logger)
         {
             _fixture = fixture;
-            _outputHelper = outputHelper;
+            _logger = logger;
         }
 
-        [Theory]
-        [InlineData(WebAppDeploymentKind.Git, "1.0.5", "web", "Hello World!")]
-        [InlineData(WebAppDeploymentKind.Git, "1.0.5", "mvc", "Learn how to build ASP.NET apps that can run anywhere")]
-        [InlineData(WebAppDeploymentKind.Git, "1.1.2", "web", "Hello World!")]
-        [InlineData(WebAppDeploymentKind.Git, "1.1.2", "mvc", "Learn how to build ASP.NET apps that can run anywhere")]
-        //[InlineData(WebAppDeploymentKind.Ftp, "1.0.5", "web", "Hello World!")]
-        //[InlineData(WebAppDeploymentKind.Ftp, "1.0.5", "mvc", "Learn how to build ASP.NET apps that can run anywhere")]
-        //[InlineData(WebAppDeploymentKind.Ftp, "1.1.2", "web", "Hello World!")]
-        //[InlineData(WebAppDeploymentKind.Ftp, "1.1.2", "mvc", "Learn how to build ASP.NET apps that can run anywhere")]
-        public async Task LegacyTemplateRuns(WebAppDeploymentKind deploymentKind, string expectedRuntime, string template, string expected)
+        public async Task LegacyTemplateRuns(WebAppDeploymentKind deploymentKind, string templateVersion, string expectedRuntime, string template, string expected)
         {
-            var testId =  ToFriendlyName(nameof(LegacyTemplateRuns), deploymentKind, template, expectedRuntime);
+            var testId = ToFriendlyName(nameof(LegacyTemplateRuns), deploymentKind, template, templateVersion);
 
-            using (var logger = GetLogger(testId))
+            var siteTask = _fixture.Deploy(AppServicesWithSiteExtensionsTemplate, GetSiteExtensionArguments(), testId);
+
+            var testDirectory = GetTestDirectory(testId);
+
+            // we are going to deploy with 2.0 dotnet to enable WebDeploy
+            var dotnet20 = DotNet(_logger, testDirectory, "2.0");
+
+            CopyFilesToProjectDirectory(testDirectory, Asset($"AspNetCore1x{template}"));
+            CopyToProjectDirectory(testDirectory, Asset($"NuGet.{templateVersion}.config"), "NuGet.config", false);
+            CopyToProjectDirectory(testDirectory, Asset($"Legacy.{templateVersion}.{template}.csproj"));
+            InjectMiddlware(testDirectory, RuntimeInformationMiddlewareType, RuntimeInformationMiddlewareFile);
+
+            await dotnet20.ExecuteAndAssertAsync("restore");
+
+            var site = await siteTask;
+            await site.Deploy(deploymentKind, testDirectory, dotnet20, _logger);
+
+            using (var httpClient = site.CreateClient())
             {
-                var siteTask = _fixture.Deploy(AppServicesWithSiteExtensionsTemplate, GetSiteExtensionArguments(), testId);
+                var getResult = await httpClient.GetAsync("/");
+                getResult.EnsureSuccessStatusCode();
+                Assert.Contains(expected, await getResult.Content.ReadAsStringAsync());
 
-                var testDirectory = GetTestDirectory(testId);
+                getResult = await httpClient.GetAsync("/runtimeInfo");
+                getResult.EnsureSuccessStatusCode();
 
-                var dotnet = DotNet(logger, testDirectory, "1.1");
+                var runtimeInfoJson = await getResult.Content.ReadAsStringAsync();
+                _logger.LogTrace("Runtime info: {Info}", runtimeInfoJson);
 
-                await dotnet.ExecuteAndAssertAsync($"new {template}");
-
-                UpdateCSProj(testDirectory, Asset($"Legacy.{expectedRuntime}.{template}.csproj"));
-
-                InjectMiddlware(testDirectory, RuntimeInformationMiddlewareType, RuntimeInformationMiddlewareFile);
-
-                var site = await siteTask;
-                await site.Deploy(deploymentKind, testDirectory, dotnet, logger);
-
-                using (var httpClient = site.CreateClient())
-                {
-                    var getResult = await httpClient.GetAsync("/");
-                    getResult.EnsureSuccessStatusCode();
-                    Assert.Contains(expected, await getResult.Content.ReadAsStringAsync());
-
-                    getResult = await httpClient.GetAsync("/runtimeInfo");
-                    getResult.EnsureSuccessStatusCode();
-
-                    var runtimeInfo = JsonConvert.DeserializeObject<RuntimeInfo>(await getResult.Content.ReadAsStringAsync());
-                    ValidateLegacyRuntimeInfo(runtimeInfo, expectedRuntime, dotnet.Command);
-                }
+                var runtimeInfo = JsonConvert.DeserializeObject<RuntimeInfo>(runtimeInfoJson);
+                ValidateLegacyRuntimeInfo(deploymentKind, runtimeInfo, templateVersion);
             }
         }
 
-        private void ValidateLegacyRuntimeInfo(RuntimeInfo runtimeInfo, string expectedRuntime, string dotnetPath)
+        private void ValidateLegacyRuntimeInfo(WebAppDeploymentKind deploymentKind, RuntimeInfo runtimeInfo, string templateVersion)
         {
-            var cacheAssemblies = new HashSet<string>(File.ReadAllLines(Asset($"DotNetCache.{expectedRuntime}.txt")), StringComparer.InvariantCultureIgnoreCase);
-            var runtimeModules = PathUtilities.GetLatestSharedRuntimeAssemblies(dotnetPath, out _);
+            var cacheAssemblies = new HashSet<string>(File.ReadAllLines(Asset($"DotNetCache.{deploymentKind}.{templateVersion}.txt")), StringComparer.InvariantCultureIgnoreCase);
             var modulesNotInCache = new List<string>();
 
             foreach (var runtimeInfoModule in runtimeInfo.Modules)
@@ -94,80 +85,61 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                     continue;
                 }
 
-                // Verify that modules that we expect to come from runtime actually come from there
-                if (runtimeModules.Any(rutimeModule => runtimeInfoModule.ModuleName.Equals(rutimeModule, StringComparison.InvariantCultureIgnoreCase)))
-                {
-                    Assert.Contains($"shared\\Microsoft.NETCore.App\\{expectedRuntime}", runtimeInfoModule.FileName);
-                    continue;
-                }
 
                 // Check if assembly that is in the cache is loaded from it
-                if (cacheAssemblies.Contains(Path.GetFileNameWithoutExtension(runtimeInfoModule.ModuleName)))
+                var moduleName = Path.GetFileNameWithoutExtension(runtimeInfoModule.ModuleName);
+                if (cacheAssemblies.Contains(moduleName))
                 {
-                    if (runtimeInfoModule.FileName.IndexOf("D:\\DotNetCache\\x86\\", StringComparison.CurrentCultureIgnoreCase) == -1)
+                    if (runtimeInfoModule.FileName.IndexOf("\\DotNetCache\\x86\\", StringComparison.CurrentCultureIgnoreCase) == -1)
                     {
-                        modulesNotInCache.Add(runtimeInfoModule.FileName);
+                        modulesNotInCache.Add(moduleName);
                     }
                     continue;
                 }
-
-                Assert.Contains("wwwroot\\", runtimeInfoModule.FileName);
             }
 
             Assert.Empty(modulesNotInCache);
         }
 
-        [Theory]
-        [InlineData(WebAppDeploymentKind.Git, "2.0", "web", "Hello World!")]
-        [InlineData(WebAppDeploymentKind.Git, "2.0", "razor", "Learn how to build ASP.NET apps that can run anywhere.")]
-        [InlineData(WebAppDeploymentKind.Git, "2.0", "mvc", "Learn how to build ASP.NET apps that can run anywhere.")]
-        [InlineData(WebAppDeploymentKind.Git, "latest", "web", "Hello World!")]
-        [InlineData(WebAppDeploymentKind.Git, "latest", "razor", "Learn how to build ASP.NET apps that can run anywhere.")]
-        [InlineData(WebAppDeploymentKind.Git, "latest", "mvc", "Learn how to build ASP.NET apps that can run anywhere.")]
-        [InlineData(WebAppDeploymentKind.WebDeploy, "2.0", "web", "Hello World!")]
-        [InlineData(WebAppDeploymentKind.WebDeploy, "2.0", "razor", "Learn how to build ASP.NET apps that can run anywhere.")]
-        [InlineData(WebAppDeploymentKind.WebDeploy, "2.0", "mvc", "Learn how to build ASP.NET apps that can run anywhere.")]
-        [InlineData(WebAppDeploymentKind.WebDeploy, "latest", "web", "Hello World!")]
-        [InlineData(WebAppDeploymentKind.WebDeploy, "latest", "razor", "Learn how to build ASP.NET apps that can run anywhere.")]
-        [InlineData(WebAppDeploymentKind.WebDeploy, "latest", "mvc", "Learn how to build ASP.NET apps that can run anywhere.")]
         public async Task TemplateRuns(WebAppDeploymentKind deploymentKind, string dotnetVersion, string template, string expected)
         {
             var testId = ToFriendlyName(nameof(TemplateRuns), deploymentKind, template, dotnetVersion);
 
-            using (var logger = GetLogger(testId))
+            var siteTask = _fixture.Deploy(AppServicesWithSiteExtensionsTemplate, GetSiteExtensionArguments(), testId);
+
+            var testDirectory = GetTestDirectory(testId);
+            var dotnet = DotNet(_logger, testDirectory, dotnetVersion);
+
+            await dotnet.ExecuteAndAssertAsync($"--info");
+            await dotnet.ExecuteAndAssertAsync("new " + template);
+
+            InjectMiddlware(testDirectory, RuntimeInformationMiddlewareType, RuntimeInformationMiddlewareFile);
+            FixAspNetCoreVersion(testDirectory, dotnet.Command);
+
+            var site = await siteTask;
+
+            // There is no feed with packages included in lastes so we have to enable first run experience
+            if (deploymentKind == WebAppDeploymentKind.Git && dotnetVersion == "latest")
             {
-                var siteTask = _fixture.Deploy(AppServicesWithSiteExtensionsTemplate, GetSiteExtensionArguments(), testId);
+                await site.Update().WithAppSetting("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "false").ApplyAsync();
+            }
 
-                var testDirectory = GetTestDirectory(testId);
-                var dotnet = DotNet(logger, testDirectory, dotnetVersion);
+            await site.Deploy(deploymentKind, testDirectory, dotnet, _logger);
 
-                await dotnet.ExecuteAndAssertAsync("new " + template);
+            using (var httpClient = site.CreateClient())
+            {
+                var getResult = await httpClient.GetAsync("/");
+                getResult.EnsureSuccessStatusCode();
+                Assert.Contains(expected, await getResult.Content.ReadAsStringAsync());
 
-                InjectMiddlware(testDirectory, RuntimeInformationMiddlewareType, RuntimeInformationMiddlewareFile);
-                FixAspNetCoreVersion(testDirectory, dotnet.Command);
+                getResult = await httpClient.GetAsync("/runtimeInfo");
+                getResult.EnsureSuccessStatusCode();
 
-                var site = await siteTask;
+                var runtimeInfoJson = await getResult.Content.ReadAsStringAsync();
+                _logger.LogTrace("Runtime info: {Info}", runtimeInfoJson);
 
-                // There is no feed with packages included in lastes so we have to enable first run experience
-                if (deploymentKind == WebAppDeploymentKind.Git && dotnetVersion == "latest")
-                {
-                    await site.Update().WithAppSetting("DOTNET_SKIP_FIRST_TIME_EXPERIENCE", "false").ApplyAsync();
-                }
-
-                await site.Deploy(deploymentKind, testDirectory, dotnet, logger);
-
-                using (var httpClient = site.CreateClient())
-                {
-                    var getResult = await httpClient.GetAsync("/");
-                    getResult.EnsureSuccessStatusCode();
-                    Assert.Contains(expected, await getResult.Content.ReadAsStringAsync());
-
-                    getResult = await httpClient.GetAsync("/runtimeInfo");
-                    getResult.EnsureSuccessStatusCode();
-
-                    var runtimeInfo = JsonConvert.DeserializeObject<RuntimeInfo>(await getResult.Content.ReadAsStringAsync());
-                    ValidateStoreRuntimeInfo(runtimeInfo, dotnet.Command);
-                }
+                var runtimeInfo = JsonConvert.DeserializeObject<RuntimeInfo>(runtimeInfoJson);
+                ValidateStoreRuntimeInfo(runtimeInfo, dotnet.Command);
             }
         }
 
@@ -238,13 +210,6 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             File.Copy(implementationFile, csproj, true);
         }
 
-        private static void CopyToProjectDirectory(DirectoryInfo projectRoot, string fileName, string desinationFileName = null)
-        {
-            // Copy implementation file to project directory
-            var implementationFile = Path.Combine(Directory.GetCurrentDirectory(), fileName);
-            File.Copy(implementationFile, Path.Combine(projectRoot.FullName, desinationFileName ?? Path.GetFileName(fileName)), true);
-        }
-
         private static void InjectMiddlware(DirectoryInfo projectRoot, string typeName, string fileName)
         {
             // Copy implementation file to project directory
@@ -296,18 +261,52 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             return assemblyInformationalVersionAttribute.InformationalVersion;
         }
 
-        private TestLogger GetLogger([CallerMemberName] string callerName = null)
+        private static void CopyFilesToProjectDirectory(DirectoryInfo projectRoot, string directory)
         {
-            _fixture.TestLog.StartTestLog(_outputHelper, nameof(TemplateFunctionalTests), out var factory, callerName);
-            return new TestLogger(factory, factory.CreateLogger(callerName));
+            var source = directory;
+            var dest = Path.GetFullPath(projectRoot.FullName);
+
+            foreach (string path in Directory.GetDirectories(source, "*", SearchOption.AllDirectories))
+            {
+                Directory.CreateDirectory(path.Replace(source, dest));
+            }
+
+            foreach (string path in Directory.GetFiles(source, "*.*", SearchOption.AllDirectories))
+            {
+                File.Copy(path, path.Replace(source, dest), true);
+            }
         }
 
-        private TestCommand DotNet(TestLogger logger, DirectoryInfo workingDirectory, string suffix)
+
+        private static void CopyToProjectDirectory(DirectoryInfo projectRoot, string fileName, string desinationFileName = null, bool required = true)
         {
+            // Copy implementation file to project directory
+            var implementationFile = Path.Combine(Directory.GetCurrentDirectory(), fileName);
+            if (!required && !File.Exists(implementationFile))
+            {
+                return;
+            }
+
+            File.Copy(implementationFile, Path.Combine(projectRoot.FullName, desinationFileName ?? Path.GetFileName(fileName)), true);
+        }
+
+        private TestCommand DotNet(ILogger logger, DirectoryInfo workingDirectory, string suffix)
+        {
+            var packages = Path.Combine(Program.ArtifactsPath, "packages", workingDirectory.Name);
+            Directory.CreateDirectory(packages);
+            var path = string.Join(";",
+                Environment.GetEnvironmentVariable("PATH")
+                    .Split(new[] {';'}, StringSplitOptions.RemoveEmptyEntries)
+                    .Where(e => !e.Contains("dotnet")));
+
             return new TestCommand(GetDotNetPath(suffix))
             {
                 Logger = logger,
-                WorkingDirectory = workingDirectory.FullName
+                WorkingDirectory = workingDirectory.FullName,
+                Environment = {
+                    { "NUGET_PACKAGES", packages},
+                    { "PATH", path }
+                }
             };
         }
 
@@ -332,22 +331,23 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             throw new InvalidOperationException("dotnet executable was not found");
         }
 
-        private DirectoryInfo GetTestDirectory([CallerMemberName] string callerName = null)
+        private DirectoryInfo GetTestDirectory(string callerName)
         {
-            if (Directory.Exists(callerName))
+            var testDirectory = Path.Combine(Program.ArtifactsPath, "apps", callerName);
+            if (Directory.Exists(testDirectory))
             {
                 try
                 {
-                    Directory.Delete(callerName, recursive: true);
+                    Directory.Delete(testDirectory, recursive: true);
                 }
                 catch { }
             }
-            return Directory.CreateDirectory(callerName);
+            return Directory.CreateDirectory(testDirectory);
         }
 
         private static string Asset(string name)
         {
-            return "Assets\\" + name;
+            return Path.Combine("Assets", name);
         }
     }
 }

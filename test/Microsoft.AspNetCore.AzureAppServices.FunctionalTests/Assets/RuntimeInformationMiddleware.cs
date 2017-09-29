@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
                                     InformationalVersion = assembly?.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion
                                 };
                             }).ToList()
-                        }));
+                        }, Formatting.Indented));
                 return;
             }
             // Call the next delegate/middleware in the pipeline

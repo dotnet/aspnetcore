@@ -47,7 +47,7 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
         {
             var resolvedCommand = Command;
 
-            Logger.LogInformation($"Executing - {resolvedCommand} {args} - {WorkingDirectoryInfo()}");
+            Logger.LogDebug($"Executing - {resolvedCommand} {args} - {WorkingDirectoryInfo()}");
 
             return await ExecuteAsyncInternal(resolvedCommand, args);
         }
@@ -110,12 +110,12 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
             if (!string.IsNullOrWhiteSpace(stdOutString))
             {
-                Logger.LogInformation("stdout: {out}", stdOutString);
+                Logger.LogDebug("stdout: {out}", stdOutString);
             }
 
             if (!string.IsNullOrWhiteSpace(stdErrString))
             {
-                Logger.LogInformation("stderr: {err}", stdErrString);
+                Logger.LogDebug("stderr: {err}", stdErrString);
             }
 
             return new CommandResult(

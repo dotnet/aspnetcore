@@ -5,7 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
+using System.Linq.Expressions;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Microsoft.Azure.Management.AppService.Fluent;
@@ -18,55 +18,35 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Rest;
 using Newtonsoft.Json.Linq;
-using OperatingSystem = Microsoft.Azure.Management.AppService.Fluent.OperatingSystem;
 
 namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 {
     public class AzureFixture : IDisposable
     {
-        public string Timestamp { get; set; }
-
-        public AzureFixture()
+        public AzureFixture(ILoggerFactory loggerFactory)
         {
-            TestLog = AssemblyTestLog.ForAssembly(typeof(AzureFixture).Assembly);
-
-            // TODO: Temporary to see if it's useful and worth exposing
-            var globalLoggerFactory =
-                (ILoggerFactory) TestLog.GetType().GetField("_globalLoggerFactory", BindingFlags.NonPublic | BindingFlags.Instance)
-                    .GetValue(TestLog);
-
-            var logger = globalLoggerFactory.CreateLogger<AzureFixture>();
+            _logger = loggerFactory.CreateLogger<AzureFixture>();
 
             ServiceClientTracing.IsEnabled = true;
-            ServiceClientTracing.AddTracingInterceptor(new LoggingInterceptor(globalLoggerFactory.CreateLogger(nameof(ServiceClientTracing))));
+            ServiceClientTracing.AddTracingInterceptor(new LoggingInterceptor(loggerFactory.CreateLogger(nameof(ServiceClientTracing))));
 
             var clientId = GetRequiredEnvironmentVariable("AZURE_AUTH_CLIENT_ID");
             var clientSecret = GetRequiredEnvironmentVariable("AZURE_AUTH_CLIENT_SECRET");
             var tenant = GetRequiredEnvironmentVariable("AZURE_AUTH_TENANT");
 
-            var credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(clientId, clientSecret, tenant, AzureEnvironment.AzureGlobalCloud);
+            var credentials = SdkContext.AzureCredentialsFactory.FromServicePrincipal(
+                clientId, clientSecret, tenant, AzureEnvironment.AzureGlobalCloud);
             Azure = Microsoft.Azure.Management.Fluent.Azure.Configure()
                 .WithLogLevel(HttpLoggingDelegatingHandler.Level.Basic)
                 .Authenticate(credentials)
                 .WithDefaultSubscription();
 
-            Timestamp = DateTime.Now.ToString("yyyyMMddhhmmss");
             var testRunName = GetTimestampedName("FunctionalTests");
 
-            logger.LogInformation("Creating resource group {TestRunName}", testRunName);
+            _logger.LogInformation("Creating resource group {TestRunName}", testRunName);
             ResourceGroup = Azure.ResourceGroups
                 .Define(testRunName)
                 .WithRegion(Region.USWest2)
-                .Create();
-
-            var servicePlanName = GetTimestampedName("TestPlan");
-            logger.LogInformation("Creating service plan {servicePlanName}", testRunName);
-
-            Plan = Azure.AppServices.AppServicePlans.Define(servicePlanName)
-                .WithRegion(Region.USWest2)
-                .WithExistingResourceGroup(ResourceGroup)
-                .WithPricingTier(PricingTier.StandardS1)
-                .WithOperatingSystem(OperatingSystem.Windows)
                 .Create();
         }
 
@@ -81,8 +61,6 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             return authFile;
         }
 
-        public IAppServicePlan Plan { get; set; }
-
         public IStorageAccount DeploymentStorageAccount { get; set; }
 
         public AssemblyTestLog TestLog { get; set; }
@@ -93,63 +71,33 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
         public IAzure Azure { get; set; }
 
+        public string TimeStamp { get; } = DateTime.Now.ToString("yyyyMMddhhmmss");
+
         public string GetTimestampedName(string name)
         {
-            return name + Timestamp;
+            return name + "t" + TimeStamp;
         }
 
-        private Dictionary<string, List<Task<IWebApp>>> _deploymentCache = new Dictionary<string, List<Task<IWebApp>>>();
-        private int _predeploymentId;
+        private ILogger<AzureFixture> _logger;
 
-        public async Task<IWebApp> Deploy(string template, IDictionary<string, string> additionalArguments = null, [CallerMemberName] string baseName = null)
+        public Task<IWebApp> Deploy(string template, IDictionary<string, string> additionalArguments = null,
+            [CallerMemberName] string baseName = null)
         {
-            List<Task<IWebApp>> deployments;
-
-            void DeployBatch()
-            {
-                var maxId = _predeploymentId + 5;
-                for (; _predeploymentId < maxId; _predeploymentId++)
-                {
-                    deployments.Add(DeployImpl(template, additionalArguments, "PreDeploy" + _predeploymentId));
-                }
-            }
-
-            var deploymentKeyParts = new List<string>();
-            deploymentKeyParts.Add(template);
-            if (additionalArguments != null)
-            {
-                deploymentKeyParts.AddRange(additionalArguments.Select(a => a.Key + "=" + a.Value));
-            }
-            var deploymentKey = string.Join(Environment.NewLine, deploymentKeyParts);
-
-            Task<IWebApp> deployment;
-            if (!_deploymentCache.TryGetValue(deploymentKey, out deployments))
-            {
-                deployments = new List<Task<IWebApp>>();
-                DeployBatch();
-                _deploymentCache[deploymentKey] = deployments;
-            }
-
-            deployment = await Task.WhenAny(deployments);
-            deployments.Remove(deployment);
-
-            if (deployments.Count == 2)
-            {
-                DeployBatch();
-            }
-
-            return await deployment;
+            return Retry(() => DeployImp(template, additionalArguments, baseName));
         }
 
-        private async Task<IWebApp> DeployImpl(string template, IDictionary<string, string> additionalArguments = null, [CallerMemberName] string baseName = null)
+        public async Task<IWebApp> DeployImp(string template, IDictionary<string, string> additionalArguments = null,
+            [CallerMemberName] string baseName = null)
         {
             var siteName = GetTimestampedName(baseName);
             var parameters = new Dictionary<string, string>
             {
                 {"siteName", siteName},
-                {"hostingPlanName", Plan.Name},
+                {"hostingPlanName", "P" + siteName},
                 {"resourceGroupName", ResourceGroup.Name},
             };
+
+            _logger.LogDebug("Deploying {SiteName}", siteName);
 
             foreach (var pair in additionalArguments ?? Enumerable.Empty<KeyValuePair<string, string>>())
             {
@@ -157,7 +105,20 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
             }
 
             var readAllText = File.ReadAllText(template);
-            var deployment = await Azure.Deployments.Define(GetTimestampedName("D" + baseName))
+            var deploymentName = GetTimestampedName("D" + baseName);
+
+            IDeployment deployment;
+            try
+            {
+                await Azure.Deployments.DeleteByResourceGroupAsync(ResourceGroup.Name, deploymentName);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
+
+            deployment = await Azure.Deployments.Define(deploymentName)
                 .WithExistingResourceGroup(ResourceGroup)
                 .WithTemplate(readAllText)
                 .WithParameters(ToParametersObject(parameters))
@@ -166,13 +127,16 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
             deployment = await deployment.RefreshAsync();
 
-            var outputs = (JObject)deployment.Outputs;
+            var outputs = (JObject) deployment.Outputs;
 
             var siteIdOutput = outputs["siteId"];
             if (siteIdOutput == null)
             {
                 throw new InvalidOperationException("Deployment was expected to have 'siteId' output parameter");
             }
+
+            _logger.LogDebug("Deployed {SiteName}", siteName);
+
             var siteId = siteIdOutput["value"].Value<string>();
             return await Azure.AppServices.WebApps.GetByIdAsync(siteId);
         }
@@ -180,20 +144,42 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
         private JObject ToParametersObject(Dictionary<string, string> parameters)
         {
             return new JObject(
-                parameters.Select(parameter =>
-                    new JProperty(
-                        parameter.Key,
-                        new JObject(
-                            new JProperty("value", parameter.Value)))));
+                parameters.Select(
+                    parameter =>
+                        new JProperty(
+                            parameter.Key,
+                            new JObject(
+                                new JProperty("value", parameter.Value)))));
         }
 
         public void Dispose()
         {
-            TestLog.Dispose();
+            _logger.LogInformation("Cleaning up Resource Group");
             if (DeleteResourceGroup && ResourceGroup != null)
             {
                 Azure.ResourceGroups.DeleteByName(ResourceGroup.Name);
             }
+        }
+
+        private async Task<T> Retry<T>(Expression<Func<Task<T>>> function)
+        {
+            var func = function.Compile();
+            for (int i = 0; i < 5; i++)
+            {
+                try
+                {
+                    return await func();
+                }
+                catch (Exception) when (i == 4)
+                {
+                    throw;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogWarning("Operation {Operation} failed: {Message}", function.ToString(), ex.Message);
+                }
+            }
+            return default(T);
         }
     }
 }

@@ -20,22 +20,22 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
 
         public void Information(string message)
         {
-            CurrentLogger.LogInformation(message);
+            _globalLogger.LogTrace(message);
         }
 
         public void TraceError(string invocationId, Exception exception)
         {
-            CurrentLogger.LogInformation(exception, "Exception in {invocationId}", invocationId);
+            _globalLogger.LogError(exception, "Exception in {invocationId}", invocationId);
         }
 
         public void ReceiveResponse(string invocationId, HttpResponseMessage response)
         {
-            CurrentLogger.LogInformation(response.AsFormattedString());
+            _globalLogger.LogTrace(response.AsFormattedString());
         }
 
         public void SendRequest(string invocationId, HttpRequestMessage request)
         {
-            CurrentLogger.LogInformation(request.AsFormattedString());
+            _globalLogger.LogTrace(request.AsFormattedString());
         }
 
         public void Configuration(string source, string name, string value) { }
@@ -43,7 +43,5 @@ namespace Microsoft.AspNetCore.AzureAppServices.FunctionalTests
         public void EnterMethod(string invocationId, object instance, string method, IDictionary<string, object> parameters) { }
 
         public void ExitMethod(string invocationId, object returnValue) { }
-
-        private ILogger CurrentLogger => TestLogger.Current ?? _globalLogger;
     }
 }

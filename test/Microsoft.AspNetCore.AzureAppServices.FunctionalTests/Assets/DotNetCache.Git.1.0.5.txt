@@ -1,4 +1,4 @@
-﻿Microsoft.AspNetCore.Antiforgery
+Microsoft.AspNetCore.Antiforgery
 Microsoft.AspNetCore.Authentication
 Microsoft.AspNetCore.Authentication.Cookies
 Microsoft.AspNetCore.Authentication.Facebook
@@ -123,7 +123,7 @@ Microsoft.Extensions.Logging.TraceSource
 Microsoft.Extensions.ObjectPool
 Microsoft.Extensions.Options
 Microsoft.Extensions.Options.ConfigurationExtensions
-// Microsoft.Extensions.PlatformAbstractions - sha mismatch
+// Microsoft.Extensions.PlatformAbstractions
 Microsoft.Extensions.Primitives
 Microsoft.Extensions.WebEncoders
 microsoft.identitymodel.logging
@@ -151,5 +151,5 @@ system.net.websockets
 system.private.datacontractserialization
 system.runtime.serialization.primitives
 system.runtime.serialization.xml
-//system.text.encodings.web - sha mismatch
+// system.text.encodings.web
 system.xml.xmlserializer
