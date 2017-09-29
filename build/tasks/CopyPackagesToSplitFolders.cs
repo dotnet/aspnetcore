@@ -44,16 +44,26 @@ namespace RepoTasks
 
             foreach (var file in Files)
             {
+                var isSymbolsPackage = file.ItemSpec.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase);
+
                 PackageIdentity identity;
                 using (var reader = new PackageArchiveReader(file.ItemSpec))
                 {
                     identity = reader.GetIdentity();
                 }
 
-                if (!expectedPackages.TryGetCategory(identity.Id, out var category))
+                PackageCategory category;
+                if (isSymbolsPackage)
                 {
-                    Log.LogError($"Unexpected package artifact with id: {identity.Id}");
-                    continue;
+                    category = PackageCategory.Symbols;
+                }
+                else
+                {
+                    if (!expectedPackages.TryGetCategory(identity.Id, out category))
+                    {
+                        Log.LogError($"Unexpected package artifact with id: {identity.Id}");
+                        continue;
+                    }
                 }
 
                 string destDir;
@@ -72,6 +82,9 @@ namespace RepoTasks
                         break;
                     case PackageCategory.Mirror:
                         destDir = Path.Combine(DestinationFolder, "mirror");
+                        break;
+                    case PackageCategory.Symbols:
+                        destDir = Path.Combine(DestinationFolder, "symbols");
                         break;
                     default:
                         throw new NotImplementedException();

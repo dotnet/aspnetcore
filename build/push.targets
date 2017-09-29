@@ -5,7 +5,7 @@
     <ItemGroup>
       <_PackagesToPush Include="$(BuildDir)*.nupkg" />
       <_PackagesToPush Include="$(ArtifactsDir)mirror\*.nupkg" />
-      <_LineupPackagesToPush Include="$(BuildDir)*.nupkg" />
+      <_LineupPackagesToPush Include="$(LineupBuildDir)*.nupkg" />
     </ItemGroup>
 
     <PushNuGetPackages

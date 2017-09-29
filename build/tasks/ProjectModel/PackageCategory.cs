@@ -11,5 +11,6 @@ namespace RepoTasks.ProjectModel
         NoShip,
         ShipOob,
         Mirror,
+        Symbols,
     }
 }
