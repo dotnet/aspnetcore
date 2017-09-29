@@ -17,46 +17,42 @@ namespace DispatcherSample
 {
     public class Startup
     {
-        private readonly static IInlineConstraintResolver ConstraintResolver = new DefaultInlineConstraintResolver(
-            new OptionsManager<RouteOptions>(
-                new OptionsFactory<RouteOptions>(
-                    Enumerable.Empty<IConfigureOptions<RouteOptions>>(),
-                    Enumerable.Empty<IPostConfigureOptions<RouteOptions>>())));
-
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<DispatcherOptions>(options =>
-            {
-                options.Dispatchers.Add(new TreeDispatcher()
-                {
-                    Addresses =
-                    {
-                        new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "Index", }, "Home:Index()"),
-                        new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "About", }, "Home:About()"),
-                        new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Index", }, "Admin:Index()"),
-                        new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "Admin:GetUsers()/Admin:EditUsers()"),
-                    },
-                    Endpoints =
-                    {
-                        new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "Index", }, Home_Index, "Home:Index()"),
-                        new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "About", }, Home_About, "Home:About()"),
-                        new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Index", }, Admin_Index, "Admin:Index()"),
-                        new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "GET", Admin_GetUsers, "Admin:GetUsers()", new AuthorizationPolicyMetadata("Admin")),
-                        new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "POST", Admin_EditUsers, "Admin:EditUsers()", new AuthorizationPolicyMetadata("Admin")),
-                    },
-                    Selectors =
-                    {
-                        new TemplateEndpointSelector(),
-                        new HttpMethodEndpointSelector(),
-                    }
-                });
-
-                options.HandlerFactories.Add((endpoint) => (endpoint as TemplateEndpoint)?.HandlerFactory);
-            });
-
             services.AddDispatcher();
+
+            // This is a temporary layering issue, don't worry about :)
             services.AddRouting();
             services.AddSingleton<RouteTemplateUrlGenerator>();
+            services.AddSingleton<IDefaultDispatcherFactory, TreeDispatcherFactory>();
+
+            // Imagine this was done by MVC or another framework.
+            services.AddSingleton<DispatcherDataSource>(ConfigureDispatcher());
+            services.AddSingleton<EndpointSelector, TemplateEndpointSelector>();
+            services.AddSingleton<EndpointSelector, HttpMethodEndpointSelector>();
+
+        }
+
+        public DefaultDispatcherDataSource ConfigureDispatcher()
+        {
+            return new DefaultDispatcherDataSource()
+            {
+                Addresses =
+                {
+                    new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "Index", }, "Home:Index()"),
+                    new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "About", }, "Home:About()"),
+                    new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Index", }, "Admin:Index()"),
+                    new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "Admin:GetUsers()/Admin:EditUsers()"),
+                },
+                Endpoints =
+                {
+                    new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "Index", }, Home_Index, "Home:Index()"),
+                    new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "About", }, Home_About, "Home:About()"),
+                    new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Index", }, Admin_Index, "Admin:Index()"),
+                    new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "GET", Admin_GetUsers, "Admin:GetUsers()", new AuthorizationPolicyMetadata("Admin")),
+                    new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "POST", Admin_EditUsers, "Admin:EditUsers()", new AuthorizationPolicyMetadata("Admin")),
+                },
+            };
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILogger<Startup> logger)

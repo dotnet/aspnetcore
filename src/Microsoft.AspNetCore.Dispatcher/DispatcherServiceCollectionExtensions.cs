@@ -4,6 +4,8 @@
 using System;
 using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection.Extensions;
+using Microsoft.Extensions.Options;
 
 namespace Microsoft.Extensions.DependencyInjection
 {
@@ -16,9 +18,16 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
-            services.AddSingleton<IStartupFilter, DispatcherEndpointStartupFilter>();
+            // Adds the EndpointMiddleare at the end of the pipeline if the DispatcherMiddleware is in use.
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IStartupFilter, DispatcherEndpointStartupFilter>());
+
+            // Adds a default dispatcher which will collect all data sources and endpoint selectors from DI.
+            services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<DispatcherOptions>, DefaultDispatcherConfigureOptions>());
+
             services.AddSingleton<AddressTable, DefaultAddressTable>();
             services.AddSingleton<TemplateAddressSelector>();
+
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointHandlerFactoryBase, TemplateEndpointHandlerFactory>());
 
             return services;
         }

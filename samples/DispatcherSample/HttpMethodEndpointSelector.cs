@@ -22,27 +22,16 @@ namespace DispatcherSample
             var fallback = new List<Endpoint>();
             for (var i = context.Endpoints.Count - 1; i >= 0; i--)
             {
-                var endpoint = context.Endpoints[i];
-                ITemplateEndpoint metadata = null;
-
-                for (var j = endpoint.Metadata.Count - 1; j >= 0; j--)
-                {
-                    metadata = endpoint.Metadata[j] as ITemplateEndpoint;
-                    if (metadata != null)
-                    {
-                        break;
-                    }
-                }
-
-                if (metadata == null)
+                var endpoint = context.Endpoints[i] as ITemplateEndpoint;
+                if (endpoint == null || endpoint.HttpMethod == null)
                 {
                     // No metadata.
-                    fallback.Add(endpoint);
+                    fallback.Add(context.Endpoints[i]);
                     context.Endpoints.RemoveAt(i);
                 }
-                else if (Matches(metadata, context.HttpContext.Request.Method))
+                else if (string.Equals(endpoint.HttpMethod, context.HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase))
                 {
-                    // Do thing, this one matches
+                    // This one matches.
                 }
                 else
                 {
@@ -68,11 +57,6 @@ namespace DispatcherSample
 
                 await context.InvokeNextAsync();
             }
-        }
-
-        private bool Matches(ITemplateEndpoint endpoint, string httpMethod)
-        {
-            return string.Equals(endpoint.HttpMethod, httpMethod, StringComparison.OrdinalIgnoreCase);
         }
     }
 }
