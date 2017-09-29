@@ -17,7 +17,11 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
         {
             services.AddLogging();
             services.AddDispatcher();
+
+            // This is a temporary layering issue, don't worry about it :)
             services.AddRouting();
+            services.AddSingleton<RouteTemplateUrlGenerator>();
+            services.AddSingleton<IDefaultDispatcherFactory, TreeDispatcherFactory>();
 
             services.Configure<DispatcherOptions>(ConfigureDispatcher);
         }
