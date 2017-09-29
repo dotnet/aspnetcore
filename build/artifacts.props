@@ -222,7 +222,9 @@
     <PackageArtifact Include="Microsoft.Extensions.WebEncoders.Sources" Category="noship" />
     <PackageArtifact Include="Microsoft.Net.Http.Headers" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.Owin.Security.Interop" Category="ship" />
+    <PackageArtifact Include="Microsoft.VisualStudio.Editor.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.LanguageServices.Razor" Category="shipoob" />
+    <PackageArtifact Include="Microsoft.VisualStudio.Mac.LanguageServices.Razor" Category="shipoob" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.BrowserLink" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration" Category="ship" />
     <PackageArtifact Include="Microsoft.VisualStudio.Web.CodeGeneration.Contracts" Category="ship" />
