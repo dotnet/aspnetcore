@@ -51,6 +51,7 @@
   <Target Name="_BuildRepository">
     <PropertyGroup>
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration) /p:CommitHash=$(CommitHash)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /noconsolelogger '/l:RepoTasks.FlowLogger,$(MSBuildThisFileDirectory)tasks\bin\publish\RepoTasks.dll;Summary;FlowId=$(RepositoryToBuild)'</RepositoryBuildArguments>
 

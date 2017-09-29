@@ -36,18 +36,18 @@
     Build tools will *verify* that these repos will be unaffected
     by the patch update and do not need updating.
     -->
-    <ShippedRepository Include="Caching" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="Common" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="Configuration" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="DependencyInjection" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="DotNetTools" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="EventNotification" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="FileSystem" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="HtmlAbstractions" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="JsonPatch" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="Logging" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="Microsoft.Data.Sqlite" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="Options" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
-    <ShippedRepository Include="Testing" Branch="rel/2.0.0" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Caching" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Common" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Configuration" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="DependencyInjection" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="DotNetTools" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="EventNotification" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="FileSystem" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="HtmlAbstractions" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="JsonPatch" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Logging" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Microsoft.Data.Sqlite" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Options" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
+    <ShippedRepository Include="Testing" Branch="patch/2.0.1" Commit="" CloneUrl="git@github.com:aspnet/%(Identity)" />
   </ItemGroup>
 </Project>
