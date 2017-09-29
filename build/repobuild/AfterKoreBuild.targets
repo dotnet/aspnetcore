@@ -2,5 +2,6 @@
 <Project>
   <ItemGroup>
     <PackageLineup Update="Internal.AspNetCore.Universe.Lineup" Version="$(Universe_Version)" />
+    <PackageLineup Update="Internal.AspNetCore.Partners.Lineup" Version="$(Universe_Version)" />
   </ItemGroup>
 </Project>

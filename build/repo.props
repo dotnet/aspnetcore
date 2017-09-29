@@ -1,13 +1,10 @@
 <Project>
-  <Import Project="..\version.xml" />
+  <Import Project="artifacts.props" />
   <Import Project="dependencies.props" />
 
   <PropertyGroup>
     <!-- This repo does not have solutions to build -->
     <DisableDefaultTargets>true</DisableDefaultTargets>
-    <Version>$(VersionPrefix)</Version>
-    <Version Condition="'$(VersionSuffix)' != ''">$(Version)-$(VersionSuffix)</Version>
-    <Version Condition="'$(BuildNumber)' != ''">$(Version)-$(BuildNumber)</Version>
   </PropertyGroup>
 
 </Project>

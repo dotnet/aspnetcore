@@ -35,9 +35,6 @@ namespace RepoTasks
         [Output]
         public ITaskItem[] RepositoriesToBuildInOrder { get; set; }
 
-        [Output]
-        public ITaskItem[] PackagesProduced { get; set; }
-
         public override bool Execute()
         {
             var graphSpecProvider = new DependencyGraphSpecProvider(PackageSpecsDirectory.Trim());
@@ -73,17 +70,6 @@ namespace RepoTasks
                 .OrderBy(r => r.order)
                 .Select(r => r.repository)
                 .ToArray();
-
-            var packages = new List<ITaskItem>();
-            foreach (var project in repositories.SelectMany(p => p.Projects))
-            {
-                var pkg = new TaskItem(project.Name);
-                var version = project.Version ?? DefaultPackageVersion;
-                pkg.SetMetadata("Version", version);
-                packages.Add(pkg);
-            }
-
-            PackagesProduced = packages.ToArray();
 
             return true;
         }

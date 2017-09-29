@@ -1,0 +1,23 @@
+<Project>
+  <Target Name="Push">
+    <Error Text="Missing required property: NuGetPublishFeed"  Condition=" '$(NuGetPublishFeed)' == '' "/>
+
+    <ItemGroup>
+      <_PackagesToPush Include="$(BuildDir)*.nupkg" />
+      <_PackagesToPush Include="$(ArtifactsDir)mirror\*.nupkg" />
+      <_LineupPackagesToPush Include="$(BuildDir)*.nupkg" />
+    </ItemGroup>
+
+    <PushNuGetPackages
+      Packages="@(_PackagesToPush)"
+      Feed="$(NuGetPublishFeed)"
+      Condition="@(_PackagesToPush->Count()) != 0"
+      ApiKey="$(APIKey)" />
+
+    <PushNuGetPackages
+      Packages="@(_LineupPackagesToPush)"
+      Feed="$(NuGetPublishFeed)"
+      Condition="@(_LineupPackagesToPush->Count()) != 0"
+      ApiKey="$(APIKey)" />
+  </Target>
+</Project>

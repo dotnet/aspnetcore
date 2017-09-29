@@ -2,6 +2,7 @@
   <ItemDefinitionGroup>
     <Repository>
       <Branch>dev</Branch>
+      <Build>true</Build>
     </Repository>
   </ItemDefinitionGroup>
 

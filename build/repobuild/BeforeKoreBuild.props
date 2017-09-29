@@ -5,6 +5,9 @@
     <PolicyRestorePackagesPath>$([MSBuild]::NormalizeDirectory($(Universe_IntermediateDir)))packages\</PolicyRestorePackagesPath>
     <!-- Restore from the locally-built artifacts directory -->
     <PolicyRestoreAdditionalSources Condition=" Exists('$(Universe_LineupBuildDir)') ">$(PolicyRestoreAdditionalSources);$(Universe_LineupBuildDir)</PolicyRestoreAdditionalSources>
-    <PolicyRestoreAdditionalSources Condition=" Exists('$(Universe_DependencyLineupDir)') ">$(PolicyRestoreAdditionalSources);$(Universe_DependencyLineupDir)</PolicyRestoreAdditionalSources>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalRestoreSources Include="$(Universe_AdditionalRestoreSources)" Condition="'$(Universe_AdditionalRestoreSources)' != ''"/>
+  </ItemGroup>
 </Project>

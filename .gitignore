@@ -20,3 +20,4 @@ node_modules
 .deps
 global.json
 korebuild-lock.txt
+*.binlog

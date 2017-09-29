@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <package xmlns="http://schemas.microsoft.com/packaging/2012/06/nuspec.xsd">
   <metadata>
-    <id>Internal.AspNetCore.Universe.Lineup</id>
+    <id>Internal.AspNetCore.Partners.Lineup</id>
     <version>$version$</version>
     <authors>Microsoft</authors>
-    <description>This package used to unify dependency versions across all Universe repos. Internal use only.</description>
+    <description>This package used to unify external dependency versions. Internal use only.</description>
     <packageTypes>
       <packageType name="lineup" />
     </packageTypes>

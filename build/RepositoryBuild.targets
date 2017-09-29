@@ -30,7 +30,7 @@
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_Version=$(Version)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_LineupBuildDir=$(LineupBuildDir)'</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_DependencyLineupDir=$(_DependencyLineupDir)'</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_AdditionalRestoreSources=$(IntermediateMirrorPackageDir)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_IntermediateDir=$(IntermediateDir)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:CustomBeforeKoreBuildProps=$(MSBuildThisFileDirectory)repobuild\BeforeKoreBuild.props'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:CustomAfterKoreBuildTargets=$(MSBuildThisFileDirectory)repobuild\AfterKoreBuild.targets'</RepositoryBuildArguments>
@@ -59,8 +59,6 @@
 
     <ItemGroup>
       <RepositoryArtifacts Include="$(RepositoryArtifactsBuildDirectory)*" />
-      <RepositorySymbolNupkgs Include="$(RepositoryArtifactsBuildDirectory)*.symbols.nupkg" />
-      <RepositoryNupkgs Include="$(RepositoryArtifactsBuildDirectory)*.nupkg" Exclude="@(RepositorySymbolNupkgs)" />
       <RepositoryMSBuildArtifacts Include="$(RepositoryArtifactsMSBuildDirectory)**\*.*" />
     </ItemGroup>
 
@@ -71,15 +69,6 @@
     <Move
        SourceFiles="@(RepositoryMSBuildArtifacts)"
        DestinationFolder="$(ArtifactsDir)msbuild\$(RepositoryToBuild)\%(RecursiveDir)" />
-
-    <Message Text="Publishing the following packages to the volatile feed: @(RepositoryNupkgs -> '%(Filename)%(Extension)', ', ')"
-      Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
-
-    <PushNuGetPackages
-      Packages="@(RepositoryNupkgs)"
-      Feed="$(NuGetPublishVolatileFeed)"
-      ApiKey="$(APIKey)"
-      Condition="'$(PublishPackages)'=='true' AND '@(RepositoryNupkgs)' != ''" />
 
     <Message Text="============ Done building $(RepositoryToBuild) ============" Importance="High" />
   </Target>

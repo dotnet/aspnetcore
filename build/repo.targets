@@ -2,8 +2,6 @@
   <Import Project="RepositoryBuild.targets" />
 
   <PropertyGroup>
-    <NuGetPublishVolatileFeed>https://dotnet.myget.org/F/aspnetcore-volatile-dev/api/v2/package</NuGetPublishVolatileFeed>
-
     <LineupBuildDir>$(ArtifactsDir)lineups\</LineupBuildDir>
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
@@ -20,75 +18,84 @@
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">/t:Verify</_RepositoryBuildTargets>
 
-    <PrepareDependsOn>$(PrepareDependsOn);CleanUniverseArtifacts</PrepareDependsOn>
-    <CleanDependsOn>$(CleanDependsOn);CleanUniverseArtifacts</CleanDependsOn>
-    <BuildDependsOn>$(BuildDependsOn);CloneRepositories;BuildRepositories</BuildDependsOn>
+    <!-- For external packages that come from feeds will mirrored to aspnetcore feeds. -->
+    <IntermediateMirrorPackageDir>$(IntermediateDir)mirror\</IntermediateMirrorPackageDir>
+    <!-- For external packages that come from feeds we don't mirror. -->
+    <IntermediateExternalPackageDir>$(IntermediateDir)ext\</IntermediateExternalPackageDir>
+
+    <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;CleanArtifacts;CleanUniverseArtifacts</PrepareDependsOn>
+    <RestoreDependsOn>$(RestoreDependsOn);RestoreExternalDependencies</RestoreDependsOn>
+    <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
+    <CompileDependsOn>$(CompileDependsOn);CloneRepositories;BuildRepositories</CompileDependsOn>
+    <PackageDependsOn>$(PackageDependsOn);CopyPackagesByCategory</PackageDependsOn>
+    <VerifyDependsOn>$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
   </PropertyGroup>
 
   <Import Project="$(_RepositoryListToImport)" />
 
   <Target Name="CleanUniverseArtifacts">
     <RemoveDir Directories="$(_CloneRepositoryRoot)" Condition="Exists('$(_CloneRepositoryRoot)') AND '$(ClearRepositoryCloneRoot)' != 'false'" />
-    <RemoveDir Directories="$(BuildDir);$(LineupBuildDir);$(IntermediateDir)" />
-    <MakeDir Directories="$(BuildDir);$(LineupBuildDir)" />
+    <RemoveDir Directories="$(LineupBuildDir)" />
+    <MakeDir Directories="$(LineupBuildDir)" />
   </Target>
 
-  <Target Name="_ReadArtifactDependencyPackages">
-    <ItemGroup>
-      <_DependencyPackageFiles Include="$(_DependencyPackagesDirectory)*.nupkg"
-                               Exclude="$(_DependencyPackagesDirectory)*.symbols.nupkg"
-                               Condition=" '$(_DependencyPackagesDirectory)' != '' " />
-      <_DependencyLineupFiles Include="$(_DependencyLineupDir)*.nupkg"
-                              Exclude="$(_DependencyLineupDir)Internal.AspNetCore.Universe.Lineup.*.nupkg"
-                              Condition=" '$(_DependencyLineupDir)' != '' " />
-    </ItemGroup>
-
-    <RepoTasks.ReadPackageIdentity PackageFiles="@(_DependencyPackageFiles)">
-      <Output TaskParameter="PackageDefinitions" ItemName="ArtifactDependency" />
-    </RepoTasks.ReadPackageIdentity>
-
-    <RepoTasks.ReadPackageDependencies PackageFiles="@(_DependencyLineupFiles)">
-      <Output TaskParameter="PackageDefinitions" ItemName="DependencyLineupDependency" />
-    </RepoTasks.ReadPackageDependencies>
+  <Target Name="RestoreExternalDependencies">
+    <DownloadNuGetPackages
+      Packages="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))"
+      DestinationFolder="$(IntermediateMirrorPackageDir)" />
   </Target>
 
-  <Target Name="GenerateLineup" DependsOnTargets="_GenerateBuildGraph;_ReadArtifactDependencyPackages">
-    <ItemGroup>
-      <_Dependency Remove="@(_Dependency)" />
+  <Target Name="ResolveRepoInfo" DependsOnTargets="_PrepareRepositories">
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="GetArtifactInfo"
+             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(Repository.Identity)\;KoreBuildRestoreTargetsImported=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="ArtifactInfo" />
+    </MSBuild>
 
-      <!-- order matters. It defines the precendence of what ends up in the lineup. -->
-      <_Dependency Include="@(PackagesProduced)" />
-      <_Dependency Include="@(ExternalDependency)" Exclude="@(_Dependency)"  />
-      <!-- avoid duplicating dependency lineups into the universe lineup -->
-      <_Dependency Include="@(ArtifactDependency)" Exclude="@(_Dependency);@(DependencyLineupDependency)" />
-    </ItemGroup>
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="ResolveSolutions"
+             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(Repository.Identity)\;KoreBuildRestoreTargetsImported=true;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="Solution" />
+    </MSBuild>
 
-    <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)..\lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
+    <Error Text="No solutions were found in '$(_CloneRepositoryRoot)'" Condition="@(Solution->Count()) == 0" />
+  </Target>
+
+  <Target Name="GenerateLineup" DependsOnTargets="ResolveRepoInfo">
+    <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Partners.Lineup.nuspec"
                 DestinationFolder="$(LineupBuildDir)"
                 Properties="version=$(Version)"
-                Dependencies="@(_Dependency)">
+                Dependencies="@(ExternalDependency->WithMetadataValue('Lineup', 'true'))">
       <Output TaskParameter="Packages" ItemName="LineupPackage" />
     </PackNuSpec>
-  </Target>
 
-  <Target Name="PublishLineupPackage" Condition="'$(PublishPackages)'=='true' AND @(LineupPackage->Count()) != 0" >
-    <PushNuGetPackages
-      Packages="@(LineupPackage)"
-      Feed="$(NuGetPublishVolatileFeed)"
-      ApiKey="$(APIKey)" />
+    <ItemGroup>
+      <PackageArtifactInfo Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
+    </ItemGroup>
+
+    <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
+                DestinationFolder="$(LineupBuildDir)"
+                Properties="version=$(Version)"
+                Dependencies="@(PackageArtifactInfo)">
+      <Output TaskParameter="Packages" ItemName="LineupPackage" />
+    </PackNuSpec>
   </Target>
 
   <Target Name="_PrepareRepositories">
     <ItemGroup Condition="'$(KOREBUILD_REPOSITORY_INCLUDE)'!=''">
       <_RepositoriesToInclude Include="$(KOREBUILD_REPOSITORY_INCLUDE)" />
+      <Repository Update="@(Repository)" Build="false" />
       <Repository
-        Remove="@(Repository)"
-        Condition="'@(Repository)'!='@(_RepositoriesToInclude)' AND '%(Identity)'!=''" />
+        Update="@(Repository)"
+        Condition="'@(Repository)'=='@(_RepositoriesToInclude)' AND '%(Identity)'!=''"
+        Build="true" />
     </ItemGroup>
 
     <ItemGroup Condition="'$(KOREBUILD_REPOSITORY_EXCLUDE)'!=''">
       <RepositoriesToExclude Include="$(KOREBUILD_REPOSITORY_EXCLUDE)" />
-      <Repository Remove="@(RepositoriesToExclude)" />
+      <Repository Update="@(RepositoriesToExclude)" Build="false" />
     </ItemGroup>
 
     <Error Text="KOREBUILD_REPOSITORY_EXCLUDE AND KOREBUILD_REPOSITORY_INCLUDE are specified."
@@ -102,6 +109,8 @@
       Command="git config --get remote.origin.url"
       ConsoleToMSBuild="true"
       WorkingDirectory="$(RepositoryRoot)"
+      IgnoreStandardErrorWarningFormat="true"
+      StandardOutputImportance="low"
       IgnoreExitCode="true">
         <Output TaskParameter="ConsoleOutput" PropertyName="UniverseCloneUrl" />
     </Exec>
@@ -166,12 +175,14 @@
       Condition="'$(GateBranchExitCode)'!='0'"
       WorkingDirectory="$(_CloneRepositoryRoot)"
       EnvironmentVariables="GIT_TERMINAL_PROMPT=0"
+      IgnoreStandardErrorWarningFormat="true"
       Timeout="180000" />
 
     <Message Text="Resetting $(CloneRepository) commit to $(CloneRepositoryCommit) ..." Importance="High" Condition="'$(CloneRepositoryCommit)'!=''"/>
     <Exec
       Command="git reset --quiet --hard $(CloneRepositoryCommit)"
       WorkingDirectory="$(_CloneRepositoryRoot)$(CloneRepository)"
+      IgnoreStandardErrorWarningFormat="true"
       Condition="'$(CloneRepositoryCommit)'!=''" />
   </Target>
 
@@ -183,7 +194,8 @@
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
              Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(Repository.Identity)\"
-             ContinueOnError="WarnAndContinue">
+             ContinueOnError="WarnAndContinue"
+             Condition="%(Repository.Build)">
       <Output TaskParameter="TargetOutputs" ItemName="Solution" />
     </MSBuild>
 
@@ -213,12 +225,11 @@
 
   <Target Name="_GenerateBuildGraph" DependsOnTargets="_GenerateRestoreGraphSpecs">
     <RepoTasks.CalculateBuildGraph
-      Repositories="@(Repository)"
+      Repositories="@(Repository->WithMetadataValue('Build', 'true'))"
       StartGraphAt="$(BuildGraphOf)"
       DefaultPackageVersion="$(Version)"
       PackageSpecsDirectory="$(_RestoreGraphSpecsDirectory)">
       <Output TaskParameter="RepositoriesToBuildInOrder" ItemName="RepositoryToBuildInOrder" />
-      <Output TaskParameter="PackagesProduced" ItemName="PackagesProduced" />
     </RepoTasks.CalculateBuildGraph>
   </Target>
 
@@ -227,14 +238,44 @@
       NuGetConfigPath="$(_CloneRepositoryRoot)%(Repository.Identity)\NuGet.config"
       SourceName="Dependencies"
       SourceUri="$(_DependencyPackagesDirectory)"
-      Condition="Exists('$(_DependencyPackagesDirectory)')" />
+      Condition="Exists('$(_DependencyPackagesDirectory)') AND %(Repository.Build)" />
 
     <MakeDir Directories="$(BuildDir)" Condition="!Exists('$(BuildDir)')" />
 
     <UpdatePackageSource
       NuGetConfigPath="$(_CloneRepositoryRoot)%(Repository.Identity)\NuGet.config"
       SourceName="Artifacts"
+      Condition="%(Repository.Build)"
       SourceUri="$(BuildDir)" />
+  </Target>
+
+  <Target Name="CopyPackagesByCategory">
+    <ItemGroup>
+      <PackageArtifactFile Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />
+      <ExternalDependencyPackage Include="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))" Category="mirror" />
+      <_MirroredPackageFiles Include="$(IntermediateMirrorPackageDir)*.nupkg" />
+    </ItemGroup>
+
+    <RepoTasks.CopyPackagesToSplitFolders
+      Packages="@(PackageArtifact);@(ExternalDependencyPackage)"
+      Files="@(PackageArtifactFile);@(_MirroredPackageFiles)"
+      DestinationFolder="$(ArtifactsDir)"
+      Overwrite="true" />
+  </Target>
+
+  <Target Name="VerifyPackageArtifactConfig">
+    <Error Text="Invalid configuration of %(PackageArtifact.Identity). Packages marked as Metapackage='true' must be Category='ship'."
+           Condition="'%(PackageArtifact.Category)' != 'ship' AND '%(PackageArtifact.Metapackage)' == 'true' " />
+  </Target>
+
+  <Target Name="VerifyCoherentVersions" DependsOnTargets="ResolveRepoInfo">
+    <ItemGroup>
+      <ShippingPackageFiles Include="$(ArtifactsDir)ship\*.nupkg" />
+    </ItemGroup>
+
+    <RepoTasks.VerifyCoherentVersions
+      PackageFiles="@(ShippingPackageFiles)"
+      ExternalDependencies="@(ExternalDependency)" />
   </Target>
 
   <Target Name="_CreateRepositoriesListWithCommits" DependsOnTargets="_GetRepositoryCommits">

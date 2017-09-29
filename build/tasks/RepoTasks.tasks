@@ -4,7 +4,7 @@
   </PropertyGroup>
 
   <UsingTask TaskName="RepoTasks.CalculateBuildGraph" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.CopyPackagesToSplitFolders" AssemblyFile="$(_RepoTaskAssembly)" />
   <UsingTask TaskName="RepoTasks.PinVersions" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.ReadPackageIdentity" AssemblyFile="$(_RepoTaskAssembly)" />
-  <UsingTask TaskName="RepoTasks.ReadPackageDependencies" AssemblyFile="$(_RepoTaskAssembly)" />
+  <UsingTask TaskName="RepoTasks.VerifyCoherentVersions" AssemblyFile="$(_RepoTaskAssembly)" />
 </Project>
