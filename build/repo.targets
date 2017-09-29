@@ -1,5 +1,6 @@
 <Project>
   <Import Project="RepositoryBuild.targets" />
+  <Import Project="push.targets" />
 
   <PropertyGroup>
     <LineupBuildDir>$(ArtifactsDir)lineups\</LineupBuildDir>
@@ -188,7 +189,7 @@
   </Target>
 
   <Target Name="BuildRepositories"
-     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories;PublishLineupPackage" />
+     DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
 
   <Target Name="_PrepareRestoreGraphSpecs" DependsOnTargets="_PrepareRepositories">
 
