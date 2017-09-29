@@ -46,6 +46,7 @@ namespace Microsoft.Net.Http.Headers
         public const string RetryAfter = "Retry-After";
         public const string Server = "Server";
         public const string SetCookie = "Set-Cookie";
+        public const string StrictTransportSecurity = "Strict-Transport-Security";
         public const string TE = "TE";
         public const string Trailer = "Trailer";
         public const string TransferEncoding = "Transfer-Encoding";
