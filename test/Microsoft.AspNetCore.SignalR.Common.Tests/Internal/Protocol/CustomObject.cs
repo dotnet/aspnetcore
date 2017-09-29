@@ -18,6 +18,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public object NullProp { get; set; } = null;
 
+        public byte[] ByteArrProp { get; set; } = new byte[] { 1, 2, 3 };
+
         public override bool Equals(object obj)
         {
             return obj is CustomObject o && Equals(o);
@@ -36,7 +38,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 DoubleProp == right.DoubleProp &&
                 IntProp == right.IntProp &&
                 DateTime.Equals(DateTimeProp, right.DateTimeProp) &&
-                NullProp == right.NullProp;
+                NullProp == right.NullProp &&
+                System.Linq.Enumerable.SequenceEqual(ByteArrProp, right.ByteArrProp);
         }
     }
 }

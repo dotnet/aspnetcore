@@ -29,5 +29,10 @@ namespace Microsoft.AspNetCore.SignalR.Test.Server
         {
             return new string[] { "a", "b", "c" }.ToObservable();
         }
+
+        public ComplexObject EchoComplexObject(ComplexObject complexObject)
+        {
+            return complexObject;
+        }
     }
 }
