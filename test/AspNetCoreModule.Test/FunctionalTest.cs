@@ -12,7 +12,7 @@ namespace AspNetCoreModule.Test
     public class FunctionalTest : FunctionalTestHelper, IClassFixture<InitializeTestMachine>
     {
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.Default)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.noChange)]
@@ -23,7 +23,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.noChange, 5)]
@@ -36,7 +36,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 25, 19, false)]
@@ -57,7 +57,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 10)]
@@ -70,7 +70,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -81,7 +81,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -92,7 +92,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -103,7 +103,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -114,7 +114,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -125,7 +125,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData("ANCMTestBar", "bar", "bar", IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -142,7 +142,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -153,7 +153,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -164,7 +164,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.Default)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789abcdefghijklmnopqrstuvwxyz0123456789")]
@@ -175,7 +175,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.Default)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -186,7 +186,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, 10)]
@@ -197,7 +197,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "00:02:00")]
@@ -210,7 +210,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -221,7 +221,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "dotnet.exe", "./")]
@@ -234,7 +234,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, true)]
@@ -247,7 +247,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, true, true)]
@@ -260,7 +260,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -271,7 +271,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -282,7 +282,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, "MS-ASPNETCORE", "f")]
@@ -297,7 +297,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit, true)]
@@ -309,7 +309,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.noChange, false, DoAppVerifierTest_StartUpMode.UseGracefulShutdown, DoAppVerifierTest_ShutDownMode.RecycleAppPool, 1)]
@@ -325,7 +325,7 @@ namespace AspNetCoreModule.Test
         //////////////////////////////////////////////////////////
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [InlineData(IISConfigUtility.AppPoolBitness.enable32Bit)]
@@ -339,7 +339,7 @@ namespace AspNetCoreModule.Test
         // NOTE: below test scenarios are not valid for Win7 OS
         //////////////////////////////////////////////////////////
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "IIS does not support Websocket on Win7")]
@@ -353,7 +353,7 @@ namespace AspNetCoreModule.Test
         }
 
         [ConditionalTheory]
-        [ANCMTestSkipCondition("%ANCMTestFlags%")]
+        [ANCMTestFlags(TestFlags.RequireRunAsAdministrator)]
         [OSSkipCondition(OperatingSystems.Linux)]
         [OSSkipCondition(OperatingSystems.MacOSX)]
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, SkipReason = "WAS does not handle private memory limitation with Job object on Win7")]
@@ -363,5 +363,5 @@ namespace AspNetCoreModule.Test
         {
             return DoRecylingAppPoolTest(appPoolBitness);
         }
-    }
+    } 
 }

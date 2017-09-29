@@ -287,7 +287,7 @@ namespace AspNetCoreModule.Test.Framework
             }
             if (File.Exists(from))
             {
-                if (File.Exists(to) && overWrite == false)
+                if (File.Exists(to) && !overWrite)
                 {
                     return;
                 }
@@ -326,7 +326,7 @@ namespace AspNetCoreModule.Test.Framework
 
             if (File.Exists(from))
             {
-                if (File.Exists(to) && overWrite == false)
+                if (File.Exists(to) && !overWrite)
                 {
                     return;                
                 }

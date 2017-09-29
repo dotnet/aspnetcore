@@ -130,6 +130,21 @@ namespace AspNetCoreModule.Test.Framework
             }
         }
 
+        public string HostNameBinding
+        {
+            get
+            {
+                if (IisServerType == ServerType.IISExpress)
+                {
+                    return "localhost";
+                }
+                else
+                {
+                    return "";
+                }
+            }
+        }
+
         public ServerType IisServerType { get; set; }
         public string IisExpressConfigPath { get; set; }
         private int _siteId { get; set; }
@@ -138,14 +153,35 @@ namespace AspNetCoreModule.Test.Framework
         public TestWebSite(IISConfigUtility.AppPoolBitness appPoolBitness, string loggerPrefix = "ANCMTest", bool startIISExpress = true, bool copyAllPublishedFiles = false, bool attachAppVerifier = false)
         {
             _appPoolBitness = appPoolBitness;
-
+            
             //
-            // Default server type is IISExpress. we, however, should use IIS server instead if IIS server is ready to use.
+            // Initialize IisServerType
             //
-            IisServerType = ServerType.IISExpress;
-            if (IISConfigUtility.IsIISReady)
+            if (TestFlags.Enabled(TestFlags.UseFullIIS))
             {
                 IisServerType = ServerType.IIS;
+            }
+            else
+            {
+                IisServerType = ServerType.IISExpress;
+            }
+
+            //
+            // Use localhost hostname for IISExpress
+            //
+            
+
+            if (IisServerType == ServerType.IISExpress 
+                && TestFlags.Enabled(TestFlags.Wow64BitMode))
+            {
+                //
+                // In Wow64/IISExpress test context, always use 32 bit worker process
+                //
+                if (_appPoolBitness == IISConfigUtility.AppPoolBitness.noChange)
+                {
+                    TestUtility.LogInformation("Warning!!! In Wow64, _appPoolBitness should be set with enable32bit");
+                    _appPoolBitness = IISConfigUtility.AppPoolBitness.enable32Bit;
+                }
             }
 
             TestUtility.LogInformation("TestWebSite::TestWebSite() Start");
@@ -177,7 +213,7 @@ namespace AspNetCoreModule.Test.Framework
             {
                 postfix = Path.GetRandomFileName();
                 siteName = loggerPrefix.Replace(" ", "") + "_" + postfix;
-                siteRootPath = Path.Combine(Environment.ExpandEnvironmentVariables("%SystemDrive%") + @"\", "inetpub", "ANCMTest", siteName);
+                siteRootPath = Path.Combine(InitializeTestMachine.TestRootDirectory, siteName);
                 if (!Directory.Exists(siteRootPath))
                 {
                     break;
@@ -199,14 +235,14 @@ namespace AspNetCoreModule.Test.Framework
             // Currently we use DotnetCore v2.0
             //
             string publishPath = Path.Combine(srcPath, "bin", "Debug", "netcoreapp2.0", "publish");
-            string publishPathOutput = Path.Combine(Environment.ExpandEnvironmentVariables("%SystemDrive%") + @"\", "inetpub", "ANCMTest", "publishPathOutput");
+            string publishPathOutput = Path.Combine(InitializeTestMachine.TestRootDirectory, "publishPathOutput");
             
             //
             // Publish aspnetcore app
             //
             if (_publishedAspnetCoreApp != true)
             {
-                string argumentForDotNet = "publish " + srcPath;
+                string argumentForDotNet = "publish " + srcPath + " --framework netcoreapp2.0";
                 TestUtility.LogInformation("TestWebSite::TestWebSite() StandardTestApp is not published, trying to publish on the fly: dotnet.exe " + argumentForDotNet);
                 TestUtility.DeleteDirectory(publishPath);
                 TestUtility.RunCommand("dotnet", argumentForDotNet);
@@ -227,7 +263,7 @@ namespace AspNetCoreModule.Test.Framework
                     {
                         argumentFileName = "AspNetCoreModule.TestSites.Standard.dll";
                     }
-                    iisConfig.CreateSite(tempSiteName, publishPathOutput, tempId, tempId);
+                    iisConfig.CreateSite(tempSiteName, HostNameBinding, publishPathOutput, tempId, tempId);
                     iisConfig.SetANCMConfig(tempSiteName, "/", "arguments", Path.Combine(publishPathOutput, argumentFileName));
                     iisConfig.DeleteSite(tempSiteName);
                 }
@@ -306,12 +342,26 @@ namespace AspNetCoreModule.Test.Framework
                     }
                 }
                 
-                if (InitializeTestMachine.UsePrivateAspNetCoreFile == true && IisServerType == ServerType.IISExpress)
+                if (TestFlags.Enabled(TestFlags.UsePrivateANCM) && IisServerType == ServerType.IISExpress)
                 {
-                    iisConfig.AddModule("AspNetCoreModule", ("%IIS_BIN%\\" + InitializeTestMachine.PrivateFileName), null);
+                    if (TestUtility.IsOSAmd64)
+                    {
+                        if (_appPoolBitness == IISConfigUtility.AppPoolBitness.enable32Bit)
+                        {
+                            iisConfig.AddModule("AspNetCoreModule", (InitializeTestMachine.IisExpressAspnetcore_X86_path), null);
+                        }
+                        else
+                        {
+                            iisConfig.AddModule("AspNetCoreModule", (InitializeTestMachine.IisExpressAspnetcore_path), null);
+                        }
+                    }
+                    else
+                    {
+                        iisConfig.AddModule("AspNetCoreModule", (InitializeTestMachine.IisExpressAspnetcore_path), null);
+                    }
                 }
 
-                iisConfig.CreateSite(siteName, RootAppContext.PhysicalPath, _siteId, TcpPort, appPoolName);
+                iisConfig.CreateSite(siteName, HostNameBinding, RootAppContext.PhysicalPath, _siteId, TcpPort, appPoolName);
                 iisConfig.CreateApp(siteName, AspNetCoreApp.Name, AspNetCoreApp.PhysicalPath, appPoolName);
                 iisConfig.CreateApp(siteName, WebSocketApp.Name, WebSocketApp.PhysicalPath, appPoolName);
                 iisConfig.CreateApp(siteName, URLRewriteApp.Name, URLRewriteApp.PhysicalPath, appPoolName);

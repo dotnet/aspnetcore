@@ -155,7 +155,7 @@ namespace AspNetCoreModule.Test.Framework
                         {
                             ApppHostTemporaryBackupFileExtention = temporaryBackupFileExtenstion;
                             break;
-                        }                        
+                        }
                     }
                 }
 
@@ -263,7 +263,7 @@ namespace AspNetCoreModule.Test.Framework
                         addElement[attribute] = value;
                         break;
                 }
-                serverManager.CommitChanges();                 
+                serverManager.CommitChanges();
             }
         }
 
@@ -291,7 +291,7 @@ namespace AspNetCoreModule.Test.Framework
             }
         }
 
-        public void CreateSite(string siteName, string physicalPath, int siteId, int tcpPort, string appPoolName = "DefaultAppPool")
+        public void CreateSite(string siteName, string hostname, string physicalPath, int siteId, int tcpPort, string appPoolName = "DefaultAppPool")
         {
             TestUtility.LogInformation("Creating web site : " + siteName);
 
@@ -312,7 +312,7 @@ namespace AspNetCoreModule.Test.Framework
 
                 ConfigurationElement bindingElement = bindingsCollection.CreateElement("binding");
                 bindingElement["protocol"] = @"http";
-                bindingElement["bindingInformation"] = "*:" + tcpPort + ":";
+                bindingElement["bindingInformation"] = "*:" + tcpPort + ":" + hostname;
                 bindingsCollection.Add(bindingElement);
 
                 ConfigurationElementCollection siteCollection = siteElement.GetCollection();
@@ -327,7 +327,6 @@ namespace AspNetCoreModule.Test.Framework
                 applicationCollection.Add(virtualDirectoryElement);
                 siteCollection.Add(applicationElement);
                 sitesCollection.Add(siteElement);
-                
                 serverManager.CommitChanges();
             }
         }
@@ -361,7 +360,6 @@ namespace AspNetCoreModule.Test.Framework
                 virtualDirectoryElement["physicalPath"] = physicalPath;
                 applicationCollection.Add(virtualDirectoryElement);
                 siteCollection.Add(applicationElement);
-
                 serverManager.CommitChanges();
             }
         }
@@ -379,7 +377,6 @@ namespace AspNetCoreModule.Test.Framework
                 basicAuthenticationSection["enabled"] = basic;
                 ConfigurationSection windowsAuthenticationSection = config.GetSection("system.webServer/security/authentication/windowsAuthentication", siteName);
                 windowsAuthenticationSection["enabled"] = windows;
-
                 serverManager.CommitChanges();
             }
         }
@@ -416,7 +413,6 @@ namespace AspNetCoreModule.Test.Framework
                 anonymousAuthenticationSection["enabled"] = false;
                 ConfigurationSection windowsAuthenticationSection = config.GetSection("system.webServer/security/authentication/windowsAuthentication", siteName);
                 windowsAuthenticationSection["enabled"] = false;
-
                 serverManager.CommitChanges();
             }
         }
@@ -431,7 +427,6 @@ namespace AspNetCoreModule.Test.Framework
                 ConfigurationSection urlCompressionSection = config.GetSection("system.webServer/urlCompression", siteName);
                 urlCompressionSection["doStaticCompression"] = enabled;
                 urlCompressionSection["doDynamicCompression"] = enabled;
-                                
                 serverManager.CommitChanges();
             }
         }
@@ -447,7 +442,6 @@ namespace AspNetCoreModule.Test.Framework
                 anonymousAuthenticationSection["enabled"] = true;
                 ConfigurationSection windowsAuthenticationSection = config.GetSection("system.webServer/security/authentication/windowsAuthentication", siteName);
                 windowsAuthenticationSection["enabled"] = false;
-
                 serverManager.CommitChanges();
             }
         }
@@ -509,40 +503,9 @@ namespace AspNetCoreModule.Test.Framework
                 errorElement2["subStatusCode"] = subStatusCode;
                 errorElement2["path"] = path;
                 httpErrorsCollection.Add(errorElement2);
-                
                 serverManager.CommitChanges();
             }
             Thread.Sleep(500);
-        }
-
-        private static bool? _isIISInstalled = null;
-        public static bool? IsIISInstalled
-        {
-            get
-            {
-                if (_isIISInstalled == null)
-                {
-                    _isIISInstalled = true;
-                    if (_isIISInstalled == true && !File.Exists(Path.Combine(Strings.IIS64BitPath, "iiscore.dll")))
-                    {
-                        _isIISInstalled = false;
-                    }
-                    if (_isIISInstalled == true && !File.Exists(Path.Combine(Strings.IIS64BitPath, "config", "applicationhost.config")))
-                    {
-                        _isIISInstalled = false;
-                    }
-                }
-                return _isIISInstalled;
-            }
-            set
-            {
-                _isIISInstalled = value;
-            }
-        }
-
-        public static bool IsIISReady {
-            get;
-            set;
         }
         
         public bool IsAncmInstalled(ServerType servertype)
@@ -646,7 +609,7 @@ namespace AspNetCoreModule.Test.Framework
                 {
                     modulesCollection.Remove(module);
                 }
-                
+
                 serverManager.CommitChanges();
             }
             return result;
@@ -748,7 +711,6 @@ namespace AspNetCoreModule.Test.Framework
                 {
                     ApplicationPoolCollection appPools = serverManager.ApplicationPools;
                     appPools[appPoolName].ProcessModel.IdleTimeout = TimeSpan.FromMinutes(idleTimeoutMinutes);
-                    
                     serverManager.CommitChanges();
                 }
             }
@@ -767,7 +729,6 @@ namespace AspNetCoreModule.Test.Framework
                 {
                     ApplicationPoolCollection appPools = serverManager.ApplicationPools;
                     appPools[appPoolName].ProcessModel.MaxProcesses = maxProcesses;
-                    
                     serverManager.CommitChanges();
                 }
             }
@@ -788,7 +749,6 @@ namespace AspNetCoreModule.Test.Framework
                     appPools[appPoolName].ProcessModel.IdentityType = ProcessModelIdentityType.SpecificUser;
                     appPools[appPoolName].ProcessModel.UserName = userName;
                     appPools[appPoolName].ProcessModel.Password = password;
-                    
                     serverManager.CommitChanges();
                 }
             }
@@ -810,7 +770,6 @@ namespace AspNetCoreModule.Test.Framework
                 {
                     ApplicationPoolCollection appPools = serverManager.ApplicationPools;
                     appPools[appPoolName]["startMode"] = startMode;
-                    
                     serverManager.CommitChanges();
                 }
             }
@@ -841,11 +800,13 @@ namespace AspNetCoreModule.Test.Framework
                 {
                     ApplicationPoolCollection appPools = serverManager.ApplicationPools;
                     if (start)
+                    {
                         appPools[appPoolName].Start();
+                    }
                     else
+                    {
                         appPools[appPoolName].Stop();
-                    
-                    serverManager.CommitChanges();
+                    }
                 }
             }
             catch (Exception ex)
@@ -902,8 +863,9 @@ namespace AspNetCoreModule.Test.Framework
             {
                 ApplicationPoolCollection appPools = serverManager.ApplicationPools;
                 while (appPools.Count > 0)
+                {
                     appPools.RemoveAt(0);
-                
+                }
                 serverManager.CommitChanges();
             }
         }
@@ -948,7 +910,6 @@ namespace AspNetCoreModule.Test.Framework
                     b.SetAttributeValue("bindingInformation", bindingInfo);
 
                     site.Bindings.Add(b);
-
                     serverManager.CommitChanges();
                 }
             }
@@ -988,7 +949,6 @@ namespace AspNetCoreModule.Test.Framework
                         sites[siteName].Stop();
                         sites[siteName].SetAttributeValue("serverAutoStart", false);
                     }
-                    
                     serverManager.CommitChanges();
                 }
             }
@@ -1033,7 +993,6 @@ namespace AspNetCoreModule.Test.Framework
                     vdir.SetAttributeValue("physicalPath", physicalPath);
 
                     app.VirtualDirectories.Add(vdir);
-                    
                     serverManager.CommitChanges();
                 }
             }
@@ -1176,7 +1135,7 @@ namespace AspNetCoreModule.Test.Framework
             }
             return output;
         }
-                
+
         public string ExportCertificateTo(string thumbPrint, string sslStoreFrom = @"Cert:\LocalMachine\My", string sslStoreTo = @"Cert:\LocalMachine\Root", string pfxPassword = null)
         {
             string toolsPath = Path.Combine(InitializeTestMachine.GetSolutionDirectory(), "tools");
@@ -1391,8 +1350,9 @@ namespace AspNetCoreModule.Test.Framework
 
                 SiteCollection sites = serverManager.Sites;
                 while (sites.Count > 0)
+                {
                     sites.RemoveAt(0);
-                
+                }
                 serverManager.CommitChanges();
             }
         }
@@ -1406,11 +1366,8 @@ namespace AspNetCoreModule.Test.Framework
                 using (ServerManager serverManager = new ServerManager())
                 {
                     Configuration config = serverManager.GetApplicationHostConfiguration();
-
                     ConfigurationSection webLimitsSection = config.GetSection("system.applicationHost/webLimits");
                     webLimitsSection["dynamicRegistrationThreshold"] = threshold;
-
-                    
                     serverManager.CommitChanges();
                 }
             }
@@ -1418,6 +1375,6 @@ namespace AspNetCoreModule.Test.Framework
             {
                 TestUtility.LogTrace(String.Format("#################### Changing dynamicRegistrationThreshold failed. Reason: {0} ####################", ex.Message));
             }
-        }        
+        }
     }
 }
