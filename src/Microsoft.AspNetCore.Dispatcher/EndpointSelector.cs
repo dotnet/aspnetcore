@@ -8,5 +8,9 @@ namespace Microsoft.AspNetCore.Dispatcher
     public abstract class EndpointSelector
     {
         public abstract Task SelectAsync(EndpointSelectorContext context);
+
+        public virtual void Initialize(IEndpointCollectionProvider endpointProvider)
+        {
+        }
     }
 }

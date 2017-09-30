@@ -4,9 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Dispatcher
@@ -16,6 +19,21 @@ namespace Microsoft.AspNetCore.Dispatcher
         private List<Address> _addresses;
         private List<Endpoint> _endpoints;
         private List<EndpointSelector> _endpointSelectors;
+
+        private object _initialize;
+        private bool _selectorsInitialized;
+        private readonly Func<object> _initializer;
+        private object _lock;
+
+        private bool _servicesInitialized;
+
+        public DispatcherBase()
+        {
+            _lock = new object();
+            _initializer = InitializeSelectors;
+        }
+
+        protected ILogger Logger { get; private set; }
 
         public virtual IList<Address> Addresses
         {
@@ -81,6 +99,8 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(httpContext));
             }
 
+            EnsureServicesInitialized(httpContext);
+
             var feature = httpContext.Features.Get<IDispatcherFeature>();
             if (await TryMatchAsync(httpContext))
             {
@@ -117,20 +137,64 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(selectors));
             }
 
+            LazyInitializer.EnsureInitialized(ref _initialize, ref _selectorsInitialized, ref _lock, _initializer);
+
             var selectorContext = new EndpointSelectorContext(httpContext, endpoints.ToList(), selectors.ToList());
             await selectorContext.InvokeNextAsync();
 
             switch (selectorContext.Endpoints.Count)
             {
                 case 0:
+                    Logger.NoEndpointsMatched(httpContext.Request.Path);
                     return null;
 
                 case 1:
+                    Logger.EndpointMatched(selectorContext.Endpoints[0].DisplayName);
                     return selectorContext.Endpoints[0];
 
                 default:
-                    throw new InvalidOperationException("Ambiguous bro!");
+                    var endpointNames = string.Join(
+                            Environment.NewLine,
+                            selectorContext.Endpoints.Select(a => a.DisplayName));
 
+                    Logger.AmbiguousEndpoints(endpointNames);
+
+                    var message = Resources.FormatAmbiguousEndpoints(
+                        Environment.NewLine,
+                        endpointNames);
+
+                    throw new AmbiguousEndpointException(message);
+            }
+        }
+
+        private object InitializeSelectors()
+        {
+            foreach (var selector in Selectors)
+            {
+                selector.Initialize(this);
+            }
+
+            return null;
+        }
+
+        protected void EnsureServicesInitialized(HttpContext httpContext)
+        {
+            if (Volatile.Read(ref _servicesInitialized))
+            {
+                return;
+            }
+
+            EnsureServicesInitializedSlow(httpContext);
+        }
+
+        private void EnsureServicesInitializedSlow(HttpContext httpContext)
+        {
+            lock (_lock)
+            {
+                if (!Volatile.Read(ref _servicesInitialized))
+                {
+                    Logger = httpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(GetType());
+                }
             }
         }
     }

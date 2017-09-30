@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Internal;
 using Microsoft.Extensions.Logging;
 
@@ -23,13 +22,10 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
     public class TreeDispatcher : DispatcherBase
     {
         private bool _dataInitialized;
-        private bool _servicesInitialized;
         private object _lock;
         private Cache _cache;
 
         private readonly Func<Cache> _initializer;
-
-        private ILogger _logger;
 
         public TreeDispatcher()
         {
@@ -66,14 +62,14 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
                     {
                         var entry = item.Entry;
                         var matcher = item.TemplateMatcher;
-                        
+
                         values.Clear();
                         if (!matcher.TryMatch(httpContext.Request.Path, values))
                         {
                             continue;
                         }
 
-                        _logger.MatchedRoute(entry.RouteName, entry.RouteTemplate.TemplateText);
+                        Logger.MatchedRoute(entry.RouteName, entry.RouteTemplate.TemplateText);
 
                         if (!MatchConstraints(httpContext, values, entry.Constraints))
                         {
@@ -102,34 +98,13 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
                         object value;
                         values.TryGetValue(kvp.Key, out value);
 
-                        _logger.RouteValueDoesNotMatchConstraint(value, kvp.Key, kvp.Value);
+                        Logger.RouteValueDoesNotMatchConstraint(value, kvp.Key, kvp.Value);
                         return false;
                     }
                 }
             }
 
             return true;
-        }
-
-        private void EnsureServicesInitialized(HttpContext httpContext)
-        {
-            if (Volatile.Read(ref _servicesInitialized))
-            {
-                return;
-            }
-
-            EnsureServicesInitializedSlow(httpContext);
-        }
-
-        private void EnsureServicesInitializedSlow(HttpContext httpContext)
-        {
-            lock (_lock)
-            {
-                if (!Volatile.Read(ref _servicesInitialized))
-                {
-                    _logger = httpContext.RequestServices.GetRequiredService<ILogger<TreeDispatcher>>();
-                }
-            }
         }
 
         private Cache CreateCache()
