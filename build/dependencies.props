@@ -13,4 +13,6 @@
     <XunitRunnerVisualStudioVersion>2.3.0-beta2-build1317</XunitRunnerVisualStudioVersion>
     <WindowsAzureStorageVersion>8.1.4</WindowsAzureStorageVersion>
   </PropertyGroup>
+
+  <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
 </Project>
