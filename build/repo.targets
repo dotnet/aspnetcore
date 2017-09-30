@@ -1,5 +1,6 @@
 <Project>
   <Import Project="VSIX.targets" />
+  <Import Project="MPack.targets" />
   <ItemGroup>
     <Solutions Update="..\Razor.sln">
       <!-- the 'DebugNoVSIX' and 'ReleaseNoVSIX' configurations exclude the VSIX project, which doesn't build with Microsoft.NET.Sdk yet. -->

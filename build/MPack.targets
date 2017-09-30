@@ -1,0 +1,64 @@
+<Project>
+  <PropertyGroup>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);GenerateMPack</PackageDependsOn>
+    <AddinName>Microsoft.VisualStudio.Mac.RazorAddin</AddinName>
+    <AddinDirectory>$(RepositoryRoot)tooling\$(AddinName)\</AddinDirectory>
+  </PropertyGroup>
+
+  <Import Project="$(AddinDirectory)AddinMetadata.props" />
+
+  <Target
+    Name="GenerateMPack"
+    Condition="'$(OS)'=='Windows_NT'">
+    <!--
+      In our case the mpack archive requires the following:
+      1. An addin.info
+      2. An addin binary (Microsoft.VisualStudio.Mac.RazorAddin.dll)
+        a. _Manifest.addin.xml embedded
+        b. Addin assembly attributes for metadata 
+      3. All language service binaries
+    -->
+
+    <PropertyGroup>
+      <MSBuildArtifactsDir>$(ArtifactsDir)msbuild\</MSBuildArtifactsDir>
+      <MPackSourcesDir>$(MSBuildArtifactsDir)sources\</MPackSourcesDir>
+      <AddinOutputPath>$(AddinDirectory)bin\$(Configuration)\net461\</AddinOutputPath>
+      <LanguageServiceName>Microsoft.VisualStudio.Mac.LanguageServices.Razor</LanguageServiceName>
+      <LanguageServiceOutputPath>$(RepositoryRoot)src\$(LanguageServiceName)\bin\$(Configuration)\net46\</LanguageServiceOutputPath>
+      <MPackName>$(AddinName)_$(AddinVersion)</MPackName>
+      <MPackFileName>$(MPackName).mpack</MPackFileName>
+      <MPackOutputPath>$(BuildDir)$(MPackFileName)</MPackOutputPath>
+      <MPackZipFile>$(BuildDir)$(MPackName).zip</MPackZipFile>
+      <MPackManifest>$(AddinDirectory)Properties\_Manifest.addin.xml</MPackManifest>
+      <AddinInfoFilePath>$(MPackSourcesDir)addin.info</AddinInfoFilePath>
+    </PropertyGroup>
+    
+    <MakeDir Directories="$(MPackSourcesDir)" Condition="!Exists('$(MPackSourcesDir)')" />
+
+    <!-- We need to resolve the language service assemblies to generate an addin.info for the mpack -->
+    <XmlPeek XmlInputPath="$(MPackManifest)" Query="/ExtensionModel/Runtime/Import/@assembly">
+      <Output TaskParameter="Result" ItemName="LanguageServiceAssemblies" />
+    </XmlPeek>
+
+    <ItemGroup>
+      <AddinInfoLines Include="&lt;Addin id=&quot;$(AddinId)&quot; namespace=&quot;$(AddinNamespace)&quot; version=&quot;$(AddinVersion)&quot; name=&quot;$(AddinDetailedName)&quot; author=&quot;$(Authors)&quot; description=&quot;$(Description)&quot; category=&quot;$(AddinCategory)&quot;&gt;" />
+      <AddinInfoLines Include="  &lt;Runtime&gt;" />
+      <AddinInfoLines Include="    &lt;Import assembly=&quot;%(LanguageServiceAssemblies.Identity)&quot; /&gt;" />
+      <AddinInfoLines Include="    &lt;Import assembly=&quot;$(AddinName).dll&quot; /&gt;" />
+      <AddinInfoLines Include="  &lt;/Runtime&gt;" />
+      <AddinInfoLines Include="  &lt;Dependencies&gt;" />
+      <AddinInfoLines Include="  &lt;/Dependencies&gt;" />
+      <AddinInfoLines Include="&lt;/Addin&gt;" />
+    </ItemGroup>
+
+    <!-- Generate the addin.info and gather sources for mpack zipping-->
+    <WriteLinesToFile File="$(AddinInfoFilePath)" Lines="@(AddinInfoLines)" Overwrite="true" />
+    <Copy SourceFiles="$(LanguageServiceOutputPath)\%(LanguageServiceAssemblies.Identity)" DestinationFolder="$(MPackSourcesDir)" />
+    <Copy SourceFiles="$(AddinOutputPath)$(AddinName).dll" DestinationFolder="$(MPackSourcesDir)" />
+
+    <!-- We cannot use the ZipArchive task due to how it functions in CoreCLR. The archive it generates is unreadable by Visual Studio for Mac. -->
+    <Exec Command="powershell.exe -NonInteractive -command &quot;&amp; { Compress-Archive -Path $(MPackSourcesDir)* -DestinationPath $(MPackZipFile) -Force; } &quot;" />
+    <Move SourceFiles="$(MPackZipFile)" DestinationFiles="$(MPackOutputPath)" />
+  </Target>
+
+</Project>
