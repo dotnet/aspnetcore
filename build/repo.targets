@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <_CloneRepositoryRoot>$(RepositoryRoot).r\</_CloneRepositoryRoot>
+    <ClearRepositoryCloneRoot Condition="'$(SkipClone)' == 'true'">false</ClearRepositoryCloneRoot>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
     <_DependencyPackagesDirectory>$(_DependencyBuildDirectory)</_DependencyPackagesDirectory>
 
@@ -80,7 +81,7 @@
     </ItemGroup>
   </Target>
 
-  <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories">
+  <Target Name="CloneRepositories" DependsOnTargets="_PrepareRepositories" Condition="'$(SkipClone)' != 'true'">
     <ItemGroup>
       <_CloneRepositories Include="@(Repository)" />
       <_CloneRepositories Remove="%(Repository.Identity)" Condition="$([System.Environment]::GetEnvironmentVariable('BUILD_VCS_NUMBER_$(TcVcsIdPrefix)%(Repository.Identity)')) != ''" />
@@ -182,14 +183,14 @@
     <Error Text="No solutions were found in '$(_CloneRepositoryRoot)'" Condition="@(Solution->Count()) == 0" />
   </Target>
 
-  <Target Name="ComputeGraph" DependsOnTargets="ResolveRepoInfo">
+  <Target Name="ComputeGraph" DependsOnTargets="ResolveRepoInfo;GeneratePackageVersionPropsFile">
     <RepoTasks.AnalyzeBuildGraph
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo)"
       Dependencies="@(ExternalDependency)"
       ShippedArtifacts="@(ShippedArtifactInfo)"
       StartGraphAt="$(BuildGraphOf)"
-      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber)">
+      Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)">
       <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
     </RepoTasks.AnalyzeBuildGraph>
   </Target>
