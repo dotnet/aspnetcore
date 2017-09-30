@@ -52,5 +52,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// Gets or sets the etag associated with the <see cref="FileResult"/>.
         /// </summary>
         public EntityTagHeaderValue EntityTag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value that enables range processing for the <see cref="FileResult"/>.
+        /// </summary>
+        public bool EnableRangeProcessing { get; set; }
     }
 }

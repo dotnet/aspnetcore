@@ -38,6 +38,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 context,
                 result,
                 fileLength,
+                result.EnableRangeProcessing,
                 result.LastModified,
                 result.EntityTag);
 

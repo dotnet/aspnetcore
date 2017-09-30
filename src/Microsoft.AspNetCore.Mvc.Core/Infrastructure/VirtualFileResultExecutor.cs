@@ -14,7 +14,7 @@ using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Mvc.Infrastructure
 {
-    public class VirtualFileResultExecutor : FileResultExecutorBase , IActionResultExecutor<VirtualFileResult>
+    public class VirtualFileResultExecutor : FileResultExecutorBase, IActionResultExecutor<VirtualFileResult>
     {
         private readonly IHostingEnvironment _hostingEnvironment;
 
@@ -54,6 +54,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 context,
                 result,
                 fileInfo.Length,
+                result.EnableRangeProcessing,
                 lastModified,
                 result.EntityTag);
 

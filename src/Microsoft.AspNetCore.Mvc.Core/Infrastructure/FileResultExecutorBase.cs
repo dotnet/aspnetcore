@@ -41,6 +41,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             ActionContext context,
             FileResult result,
             long? fileLength,
+            bool enableRangeProcessing,
             DateTimeOffset? lastModified = null,
             EntityTagHeaderValue etag = null)
         {
@@ -59,54 +60,55 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
             var request = context.HttpContext.Request;
             var httpRequestHeaders = request.GetTypedHeaders();
+            var preconditionState = GetPreconditionState(httpRequestHeaders, lastModified, etag);
+
             var response = context.HttpContext.Response;
-            var httpResponseHeaders = response.GetTypedHeaders();
-            if (lastModified.HasValue)
-            {
-                httpResponseHeaders.LastModified = lastModified;
-            }
-            if (etag != null)
-            {
-                httpResponseHeaders.ETag = etag;
-            }
+            SetLastModifiedAndEtagHeaders(response, lastModified, etag);
 
             var serveBody = !HttpMethods.IsHead(request.Method);
-            var preconditionState = GetPreconditionState(context, httpRequestHeaders, lastModified, etag);
+
+            // Short circuit if the preconditional headers process to 304 (NotModified) or 412 (PreconditionFailed)
             if (preconditionState == PreconditionState.NotModified)
             {
                 serveBody = false;
                 response.StatusCode = StatusCodes.Status304NotModified;
+                return (range: null, rangeLength: 0, serveBody);
             }
             else if (preconditionState == PreconditionState.PreconditionFailed)
             {
                 serveBody = false;
                 response.StatusCode = StatusCodes.Status412PreconditionFailed;
+                return (range: null, rangeLength: 0, serveBody);
             }
 
             if (fileLength.HasValue)
             {
-                SetAcceptRangeHeader(context);
-                // Assuming the request is not a range request, the Content-Length header is set to the length of the entire file. 
+                // Assuming the request is not a range request, and the response body is not empty, the Content-Length header is set to 
+                // the length of the entire file. 
                 // If the request is a valid range request, this header is overwritten with the length of the range as part of the 
                 // range processing (see method SetContentLength).
                 if (serveBody)
                 {
                     response.ContentLength = fileLength.Value;
                 }
-                if (HttpMethods.IsHead(request.Method) || HttpMethods.IsGet(request.Method))
+
+                // Handle range request
+                if (enableRangeProcessing)
                 {
-                    if ((preconditionState == PreconditionState.Unspecified ||
-                        preconditionState == PreconditionState.ShouldProcess))
+                    SetAcceptRangeHeader(response);
+
+                    // If the request method is HEAD or GET, PreconditionState is Unspecified or ShouldProcess, and IfRange header is valid,
+                    // range should be processed and Range headers should be set
+                    if ((HttpMethods.IsHead(request.Method) || HttpMethods.IsGet(request.Method))
+                        && (preconditionState == PreconditionState.Unspecified || preconditionState == PreconditionState.ShouldProcess)
+                        && (IfRangeValid(httpRequestHeaders, lastModified, etag)))
                     {
-                        if (IfRangeValid(context, httpRequestHeaders, lastModified, etag))
-                        {
-                            return SetRangeHeaders(context, httpRequestHeaders, fileLength.Value);
-                        }
+                        return SetRangeHeaders(context, httpRequestHeaders, fileLength.Value);
                     }
                 }
             }
 
-            return (range: null, rangeLength: 0, serveBody: serveBody);
+            return (range: null, rangeLength: 0, serveBody);
         }
 
         private static void SetContentType(ActionContext context, FileResult result)
@@ -130,38 +132,25 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             }
         }
 
-        private static void SetAcceptRangeHeader(ActionContext context)
+        private static void SetLastModifiedAndEtagHeaders(HttpResponse response, DateTimeOffset? lastModified, EntityTagHeaderValue etag)
         {
-            var response = context.HttpContext.Response;
+            var httpResponseHeaders = response.GetTypedHeaders();
+            if (lastModified.HasValue)
+            {
+                httpResponseHeaders.LastModified = lastModified;
+            }
+            if (etag != null)
+            {
+                httpResponseHeaders.ETag = etag;
+            }
+        }
+
+        private static void SetAcceptRangeHeader(HttpResponse response)
+        {
             response.Headers[HeaderNames.AcceptRanges] = AcceptRangeHeaderValue;
         }
 
-        private static PreconditionState GetEtagMatchState(
-            IList<EntityTagHeaderValue> etagHeader,
-            EntityTagHeaderValue etag,
-            PreconditionState matchFoundState,
-            PreconditionState matchNotFoundState)
-        {
-            if (etagHeader != null && etagHeader.Any())
-            {
-                var state = matchNotFoundState;
-                foreach (var entityTag in etagHeader)
-                {
-                    if (entityTag.Equals(EntityTagHeaderValue.Any) || entityTag.Compare(etag, useStrongComparison: true))
-                    {
-                        state = matchFoundState;
-                        break;
-                    }
-                }
-
-                return state;
-            }
-
-            return PreconditionState.Unspecified;
-        }
-
         internal static bool IfRangeValid(
-            ActionContext context,
             RequestHeaders httpRequestHeaders,
             DateTimeOffset? lastModified = null,
             EntityTagHeaderValue etag = null)
@@ -193,7 +182,6 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
 
         // Internal for testing
         internal static PreconditionState GetPreconditionState(
-            ActionContext context,
             RequestHeaders httpRequestHeaders,
             DateTimeOffset? lastModified = null,
             EntityTagHeaderValue etag = null)
@@ -247,6 +235,30 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
             return state;
         }
 
+        private static PreconditionState GetEtagMatchState(
+            IList<EntityTagHeaderValue> etagHeader,
+            EntityTagHeaderValue etag,
+            PreconditionState matchFoundState,
+            PreconditionState matchNotFoundState)
+        {
+            if (etagHeader != null && etagHeader.Any())
+            {
+                var state = matchNotFoundState;
+                foreach (var entityTag in etagHeader)
+                {
+                    if (entityTag.Equals(EntityTagHeaderValue.Any) || entityTag.Compare(etag, useStrongComparison: true))
+                    {
+                        state = matchFoundState;
+                        break;
+                    }
+                }
+
+                return state;
+            }
+
+            return PreconditionState.Unspecified;
+        }
+
         private static PreconditionState GetMaxPreconditionState(params PreconditionState[] states)
         {
             var max = PreconditionState.Unspecified;
@@ -281,6 +293,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return (range: null, rangeLength: 0, serveBody: true);
             }
 
+            // Requested range is not satisfiable
             if (range == null)
             {
                 // 14.16 Content-Range - A server sending a response with status code 416 (Requested range not satisfiable)
@@ -292,23 +305,23 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 return (range: null, rangeLength: 0, serveBody: false);
             }
 
+            response.StatusCode = StatusCodes.Status206PartialContent;
             httpResponseHeaders.ContentRange = new ContentRangeHeaderValue(
                 range.From.Value,
                 range.To.Value,
                 fileLength);
 
-            response.StatusCode = StatusCodes.Status206PartialContent;
             // Overwrite the Content-Length header for valid range requests with the range length.
-            var rangeLength = SetContentLength(context, range);
+            var rangeLength = SetContentLength(response, range);
+
             return (range, rangeLength, serveBody: true);
         }
 
-        private static long SetContentLength(ActionContext context, RangeItemHeaderValue range)
+        private static long SetContentLength(HttpResponse response, RangeItemHeaderValue range)
         {
             var start = range.From.Value;
             var end = range.To.Value;
             var length = end - start + 1;
-            var response = context.HttpContext.Response;
             response.ContentLength = length;
             return length;
         }

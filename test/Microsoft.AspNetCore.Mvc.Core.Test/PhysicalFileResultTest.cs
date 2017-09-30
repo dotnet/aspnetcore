@@ -10,7 +10,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.TestCommon;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,6 +62,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
             var result = new TestPhysicalFileResult(path, "text/plain");
+            result.EnableRangeProcessing = true;
             var httpContext = GetHttpContext();
             var requestHeaders = httpContext.Request.GetTypedHeaders();
             requestHeaders.IfModifiedSince = DateTimeOffset.MinValue;
@@ -97,6 +97,7 @@ namespace Microsoft.AspNetCore.Mvc
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
             var result = new TestPhysicalFileResult(path, "text/plain");
             var entityTag = result.EntityTag = new EntityTagHeaderValue("\"Etag\"");
+            result.EnableRangeProcessing = true;
             var httpContext = GetHttpContext();
             var requestHeaders = httpContext.Request.GetTypedHeaders();
             requestHeaders.IfModifiedSince = DateTimeOffset.MinValue;
@@ -125,11 +126,41 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Fact]
+        public async Task WriteFileAsync_RangeProcessingNotEnabled_RangeRequestedIgnored()
+        {
+            // Arrange
+            var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
+            var result = new TestPhysicalFileResult(path, "text/plain");
+            var entityTag = result.EntityTag = new EntityTagHeaderValue("\"Etag\"");
+            var httpContext = GetHttpContext();
+            var requestHeaders = httpContext.Request.GetTypedHeaders();
+            requestHeaders.IfModifiedSince = DateTimeOffset.MinValue;
+            requestHeaders.Range = new RangeHeaderValue(0, 3);
+            requestHeaders.IfRange = new RangeConditionHeaderValue(new EntityTagHeaderValue("\"Etag\""));
+            httpContext.Request.Method = HttpMethods.Get;
+            httpContext.Response.Body = new MemoryStream();
+            var actionContext = new ActionContext(httpContext, new RouteData(), new ActionDescriptor());
+
+            // Act
+            await result.ExecuteResultAsync(actionContext);
+
+            // Assert
+            var httpResponse = actionContext.HttpContext.Response;
+            httpResponse.Body.Seek(0, SeekOrigin.Begin);
+            var streamReader = new StreamReader(httpResponse.Body);
+            var body = streamReader.ReadToEndAsync().Result;
+            Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
+            Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
+            Assert.Equal("FilePathResultTestFile contents�", body);
+        }
+
+        [Fact]
         public async Task WriteFileAsync_IfRangeHeaderInvalid_RangeRequestedIgnored()
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
             var result = new TestPhysicalFileResult(path, "text/plain");
+            result.EnableRangeProcessing = true;
             var entityTag = result.EntityTag = new EntityTagHeaderValue("\"Etag\"");
             var httpContext = GetHttpContext();
             var requestHeaders = httpContext.Request.GetTypedHeaders();
@@ -149,7 +180,6 @@ namespace Microsoft.AspNetCore.Mvc
             var streamReader = new StreamReader(httpResponse.Body);
             var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Equal("FilePathResultTestFile contents�", body);
         }
@@ -158,7 +188,7 @@ namespace Microsoft.AspNetCore.Mvc
         [InlineData("0-5")]
         [InlineData("bytes = ")]
         [InlineData("bytes = 1-4, 5-11")]
-        public async Task WriteFileAsync_RangeRequestIgnored(string rangeString)
+        public async Task WriteFileAsync_RangeHeaderMalformed_RangeRequestIgnored(string rangeString)
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
@@ -180,7 +210,6 @@ namespace Microsoft.AspNetCore.Mvc
             var streamReader = new StreamReader(httpResponse.Body);
             var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status200OK, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
             Assert.Equal("FilePathResultTestFile contents�", body);
@@ -194,6 +223,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
             var result = new TestPhysicalFileResult(path, "text/plain");
+            result.EnableRangeProcessing = true;
             var httpContext = GetHttpContext();
             var requestHeaders = httpContext.Request.GetTypedHeaders();
             requestHeaders.IfModifiedSince = DateTimeOffset.MinValue;
@@ -224,6 +254,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
             var result = new TestPhysicalFileResult(path, "text/plain");
+            result.EnableRangeProcessing = true;
             var httpContext = GetHttpContext();
             var requestHeaders = httpContext.Request.GetTypedHeaders();
             requestHeaders.IfUnmodifiedSince = DateTimeOffset.MinValue;
@@ -241,7 +272,6 @@ namespace Microsoft.AspNetCore.Mvc
             var streamReader = new StreamReader(httpResponse.Body);
             var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status412PreconditionFailed, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.Null(httpResponse.ContentLength);
             Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
@@ -254,6 +284,7 @@ namespace Microsoft.AspNetCore.Mvc
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
             var result = new TestPhysicalFileResult(path, "text/plain");
+            result.EnableRangeProcessing = true;
             var httpContext = GetHttpContext();
             var requestHeaders = httpContext.Request.GetTypedHeaders();
             requestHeaders.IfModifiedSince = DateTimeOffset.MinValue.AddDays(1);
@@ -271,7 +302,6 @@ namespace Microsoft.AspNetCore.Mvc
             var streamReader = new StreamReader(httpResponse.Body);
             var body = streamReader.ReadToEndAsync().Result;
             Assert.Equal(StatusCodes.Status304NotModified, httpResponse.StatusCode);
-            Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);
             Assert.Null(httpResponse.ContentLength);
             Assert.Empty(httpResponse.Headers[HeaderNames.ContentRange]);
             Assert.NotEmpty(httpResponse.Headers[HeaderNames.LastModified]);
@@ -321,16 +351,16 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Theory]
-        [InlineData(0, 3, "File", 4)]
-        [InlineData(8, 13, "Result", 6)]
-        [InlineData(null, 3, "ts¡", 3)]
-        [InlineData(8, null, "ResultTestFile contents¡", 26)]
-        public async Task ExecuteResultAsync_CallsSendFileAsyncWithRequestedRange_IfIHttpSendFilePresent(long? start, long? end, string expectedString, long contentLength)
+        [InlineData(0, 3, 4)]
+        [InlineData(8, 13, 6)]
+        [InlineData(null, 3, 3)]
+        [InlineData(8, null, 26)]
+        public async Task ExecuteResultAsync_CallsSendFileAsyncWithRequestedRange_IfIHttpSendFilePresent(long? start, long? end, long contentLength)
         {
             // Arrange
             var path = Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt"));
             var result = new TestPhysicalFileResult(path, "text/plain");
-
+            result.EnableRangeProcessing = true;
             var sendFile = new TestSendFileFeature();
             var httpContext = GetHttpContext();
             httpContext.Features.Set<IHttpSendFileFeature>(sendFile);
@@ -351,7 +381,7 @@ namespace Microsoft.AspNetCore.Mvc
             Assert.Equal(Path.GetFullPath(Path.Combine("TestFiles", "FilePathResultTestFile.txt")), sendFile.Name);
             Assert.Equal(start, sendFile.Offset);
             Assert.Equal(contentLength, sendFile.Length);
-            Assert.Equal(CancellationToken.None, sendFile.Token);            
+            Assert.Equal(CancellationToken.None, sendFile.Token);
             var contentRange = new ContentRangeHeaderValue(start.Value, end.Value, 34);
             Assert.Equal(StatusCodes.Status206PartialContent, httpResponse.StatusCode);
             Assert.Equal("bytes", httpResponse.Headers[HeaderNames.AcceptRanges]);

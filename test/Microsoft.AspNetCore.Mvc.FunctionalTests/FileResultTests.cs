@@ -2,11 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
@@ -190,6 +190,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task FileFromDisk_ReturnsFileWithFileName_RangeProcessingNotEnabled_RangeRequestedIgnored()
+        {
+            // Arrange
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "http://localhost/DownloadFiles/DownloadFromDiskWithFileName");
+            httpRequestMessage.Headers.Range = new RangeHeaderValue(0, 6);
+
+            // Act
+            var response = await Client.SendAsync(httpRequestMessage);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content.Headers.ContentType);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("This is a sample text file", body);
+        }
+
+        [Fact]
         public async Task FileFromDisk_ReturnsFileWithFileName_IfRangeHeaderValid_RangeRequest_WithLastModifiedAndEtag()
         {
             // Arrange
@@ -259,11 +277,11 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(httpRequestMessage);
 
             // Assert
-            Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             var body = await response.Content.ReadAsStringAsync();
             Assert.NotNull(body);
+            Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
             Assert.Equal(expectedBody, body);
         }
 
@@ -299,12 +317,12 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.SendAsync(httpRequestMessage);
+            var body = await response.Content.ReadAsStringAsync();
 
             // Assert
             Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
-            var body = await response.Content.ReadAsStringAsync();
             Assert.Empty(body);
         }
 
@@ -330,6 +348,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
+        public async Task FileFromStream_ReturnsFileWithFileName_RangeProcessingNotEnabled_RangeRequestedIgnored()
+        {
+            // Arrange
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "http://localhost/DownloadFiles/DownloadFromStreamWithFileName");
+            httpRequestMessage.Headers.Range = new RangeHeaderValue(0, 6);
+
+            // Act
+            var response = await Client.SendAsync(httpRequestMessage);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content.Headers.ContentType);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("This is sample text from a stream", body);
+        }
+
+        [Fact]
         public async Task FileFromStream_ReturnsFileWithFileName_IfRangeHeaderValid_RangeRequest()
         {
             // Arrange
@@ -339,13 +375,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.SendAsync(httpRequestMessage);
+            var body = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
-            var body = await response.Content.ReadAsStringAsync();
             Assert.NotNull(body);
+            Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
             Assert.Equal("This is", body);
         }
 
@@ -361,10 +397,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var response = await Client.SendAsync(httpRequestMessage);
 
             // Assert
-            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.NotNull(response.Content.Headers.ContentType);
-            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
             var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("This is sample text from a stream", body);
         }
 
@@ -397,13 +431,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.SendAsync(httpRequestMessage);
+            var body = await response.Content.ReadAsStringAsync();
 
             // Assert
-            Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
-            var body = await response.Content.ReadAsStringAsync();
             Assert.NotNull(body);
+            Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
             Assert.Equal(expectedBody, body);
         }
 
@@ -439,12 +473,15 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.SendAsync(httpRequestMessage);
+            var body = await response.Content.ReadAsStringAsync();
 
             // Assert
+            Assert.NotNull(response.Content.Headers.ContentType);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            Assert.NotNull(body);
             Assert.Equal(HttpStatusCode.RequestedRangeNotSatisfiable, response.StatusCode);
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
-            var body = await response.Content.ReadAsStringAsync();
             Assert.Empty(body);
         }
 
@@ -470,7 +507,25 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         [Fact]
-        public async Task FileFromBinaryData_ReturnsFileWithFileName_IfRangeHeaderValid_RangeRequest()
+        public async Task FileFromBinaryData_ReturnsFileWithFileName_RangeProcessingNotEnabled_RangeRequestedIgnored()
+        {
+            // Arrange
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "http://localhost/DownloadFiles/DownloadFromBinaryDataWithFileName");
+            httpRequestMessage.Headers.Range = new RangeHeaderValue(0, 6);
+
+            // Act
+            var response = await Client.SendAsync(httpRequestMessage);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content.Headers.ContentType);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("This is a sample text from a binary array", body);
+        }
+
+        [Fact]
+        public async Task FileFromBinaryData_ReturnsFileWithFileName_IfRangeHeaderValid()
         {
             // Arrange
             var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "http://localhost/DownloadFiles/DownloadFromBinaryDataWithFileName_WithEtag");
@@ -479,13 +534,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 
             // Act
             var response = await Client.SendAsync(httpRequestMessage);
+            var body = await response.Content.ReadAsStringAsync();
 
-            // Assert
-            Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
+            // Assert           
             Assert.NotNull(response.Content.Headers.ContentType);
             Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
-            var body = await response.Content.ReadAsStringAsync();
             Assert.NotNull(body);
+            Assert.Equal(HttpStatusCode.PartialContent, response.StatusCode);
             Assert.Equal("This is", body);
         }
 
@@ -555,6 +610,24 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             var contentDisposition = response.Content.Headers.ContentDisposition.ToString();
             Assert.NotNull(contentDisposition);
             Assert.Equal("attachment; filename=downloadName.txt; filename*=UTF-8''downloadName.txt", contentDisposition);
+        }
+
+        [Fact]
+        public async Task FileFromEmbeddedResources_ReturnsFileWithFileName_RangeProcessingNotEnabled_RangeRequestedIgnored()
+        {
+            // Arrange
+            var httpRequestMessage = new HttpRequestMessage(HttpMethod.Get, "http://localhost/EmbeddedFiles/DownloadFileWithFileName_RangeProcessingNotEnabled");
+            httpRequestMessage.Headers.Range = new RangeHeaderValue(0, 6);
+
+            // Act
+            var response = await Client.SendAsync(httpRequestMessage);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.NotNull(response.Content.Headers.ContentType);
+            Assert.Equal("text/plain", response.Content.Headers.ContentType.ToString());
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Equal("Sample text file as embedded resource.", body);
         }
 
         [Fact]

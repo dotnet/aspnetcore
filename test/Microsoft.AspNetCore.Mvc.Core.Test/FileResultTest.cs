@@ -297,7 +297,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             var state = FileResultExecutorBase.GetPreconditionState(
-                actionContext,
                 httpRequestHeaders,
                 lastModified,
                 etag);
@@ -334,7 +333,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             var state = FileResultExecutorBase.GetPreconditionState(
-                actionContext,
                 httpRequestHeaders,
                 lastModified,
                 etag);
@@ -370,7 +368,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             var state = FileResultExecutorBase.GetPreconditionState(
-                actionContext,
                 httpRequestHeaders,
                 lastModified,
                 etag);
@@ -398,7 +395,6 @@ namespace Microsoft.AspNetCore.Mvc
 
             // Act
             var ifRangeIsValid = FileResultExecutorBase.IfRangeValid(
-                actionContext,
                 httpRequestHeaders,
                 lastModified,
                 etag);
@@ -460,7 +456,7 @@ namespace Microsoft.AspNetCore.Mvc
 
             public Task ExecuteAsync(ActionContext context, EmptyFileResult result)
             {
-                SetHeadersAndLog(context, result, 0L);
+                SetHeadersAndLog(context, result, 0L, true);
                 result.WasWriteFileCalled = true;
                 return Task.FromResult(0);
             }

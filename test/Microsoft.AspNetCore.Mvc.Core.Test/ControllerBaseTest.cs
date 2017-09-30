@@ -1632,14 +1632,33 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Same(fileContents, result.FileContents);
             Assert.Equal("application/pdf", result.ContentType.ToString());
             Assert.Equal(string.Empty, result.FileDownloadName);
+            Assert.False(result.EnableRangeProcessing);
+        }
+
+        [Fact]
+        public void File_WithContents_EnableRangeProcessing()
+        {
+            // Arrange
+            var controller = new TestableController();
+            var fileContents = new byte[0];
+
+            // Act
+            var result = controller.File(fileContents, "application/pdf", true);
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.Same(fileContents, result.FileContents);
+            Assert.Equal("application/pdf", result.ContentType.ToString());
+            Assert.Equal(string.Empty, result.FileDownloadName);
+            Assert.True(result.EnableRangeProcessing);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData(null, "\"Etag\"")]
-        [InlineData("05/01/2008 +1:00", null)]
-        [InlineData("05/01/2008 +1:00", "\"Etag\"")]
-        public void File_WithContents_LastModifiedAndEtag(string lastModifiedString, string entityTagString)
+        [InlineData(null, null, false)]
+        [InlineData(null, "\"Etag\"", false)]
+        [InlineData("05/01/2008 +1:00", null, true)]
+        [InlineData("05/01/2008 +1:00", "\"Etag\"", true)]
+        public void File_WithContents_LastModifiedAndEtag(string lastModifiedString, string entityTagString, bool enableRangeProcessing)
         {
             // Arrange
             var controller = new TestableController();
@@ -1648,7 +1667,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act
-            var result = controller.File(fileContents, "application/pdf", lastModified, entityTag);
+            var result = controller.File(fileContents, "application/pdf", lastModified, entityTag, enableRangeProcessing);
 
             // Assert
             Assert.NotNull(result);
@@ -1657,6 +1676,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(string.Empty, result.FileDownloadName);
             Assert.Equal(lastModified, result.LastModified);
             Assert.Equal(entityTag, result.EntityTag);
+            Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
         }
 
         [Fact]
@@ -1674,14 +1694,15 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Same(fileContents, result.FileContents);
             Assert.Equal("application/pdf", result.ContentType.ToString());
             Assert.Equal("someDownloadName", result.FileDownloadName);
+            Assert.False(result.EnableRangeProcessing);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData(null, "\"Etag\"")]
-        [InlineData("05/01/2008 +1:00", null)]
-        [InlineData("05/01/2008 +1:00", "\"Etag\"")]
-        public void File_WithContentsAndFileDownloadName_LastModifiedAndEtag(string lastModifiedString, string entityTagString)
+        [InlineData(null, null, false)]
+        [InlineData(null, "\"Etag\"", false)]
+        [InlineData("05/01/2008 +1:00", null, true)]
+        [InlineData("05/01/2008 +1:00", "\"Etag\"", true)]
+        public void File_WithContentsAndFileDownloadName_LastModifiedAndEtag(string lastModifiedString, string entityTagString, bool enableRangeProcessing)
         {
             // Arrange
             var controller = new TestableController();
@@ -1690,7 +1711,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act
-            var result = controller.File(fileContents, "application/pdf", "someDownloadName", lastModified, entityTag);
+            var result = controller.File(fileContents, "application/pdf", "someDownloadName", lastModified, entityTag, enableRangeProcessing);
 
             // Assert
             Assert.NotNull(result);
@@ -1699,6 +1720,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal("someDownloadName", result.FileDownloadName);
             Assert.Equal(lastModified, result.LastModified);
             Assert.Equal(entityTag, result.EntityTag);
+            Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
         }
 
         [Fact]
@@ -1716,14 +1738,15 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(path, result.FileName);
             Assert.Equal("application/pdf", result.ContentType.ToString());
             Assert.Equal(string.Empty, result.FileDownloadName);
+            Assert.False(result.EnableRangeProcessing);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData(null, "\"Etag\"")]
-        [InlineData("05/01/2008 +1:00", null)]
-        [InlineData("05/01/2008 +1:00", "\"Etag\"")]
-        public void File_WithPath_LastModifiedAndEtag(string lastModifiedString, string entityTagString)
+        [InlineData(null, null, false)]
+        [InlineData(null, "\"Etag\"", false)]
+        [InlineData("05/01/2008 +1:00", null, true)]
+        [InlineData("05/01/2008 +1:00", "\"Etag\"", true)]
+        public void File_WithPath_LastModifiedAndEtag(string lastModifiedString, string entityTagString, bool enableRangeProcessing)
         {
             // Arrange
             var controller = new TestableController();
@@ -1732,7 +1755,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act
-            var result = controller.File(path, "application/pdf", lastModified, entityTag);
+            var result = controller.File(path, "application/pdf", lastModified, entityTag, enableRangeProcessing);
 
             // Assert
             Assert.NotNull(result);
@@ -1741,6 +1764,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(string.Empty, result.FileDownloadName);
             Assert.Equal(lastModified, result.LastModified);
             Assert.Equal(entityTag, result.EntityTag);
+            Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
         }
 
         [Fact]
@@ -1758,14 +1782,15 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(path, result.FileName);
             Assert.Equal("application/pdf", result.ContentType.ToString());
             Assert.Equal("someDownloadName", result.FileDownloadName);
+            Assert.False(result.EnableRangeProcessing);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData(null, "\"Etag\"")]
-        [InlineData("05/01/2008 +1:00", null)]
-        [InlineData("05/01/2008 +1:00", "\"Etag\"")]
-        public void File_WithPathAndFileDownloadName_LastModifiedAndEtag(string lastModifiedString, string entityTagString)
+        [InlineData(null, null, false)]
+        [InlineData(null, "\"Etag\"", false)]
+        [InlineData("05/01/2008 +1:00", null, true)]
+        [InlineData("05/01/2008 +1:00", "\"Etag\"", true)]
+        public void File_WithPathAndFileDownloadName_LastModifiedAndEtag(string lastModifiedString, string entityTagString, bool enableRangeProcessing)
         {
             // Arrange
             var controller = new TestableController();
@@ -1774,7 +1799,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act
-            var result = controller.File(path, "application/pdf", "someDownloadName", lastModified, entityTag);
+            var result = controller.File(path, "application/pdf", "someDownloadName", lastModified, entityTag, enableRangeProcessing);
 
             // Assert
             Assert.NotNull(result);
@@ -1783,6 +1808,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal("someDownloadName", result.FileDownloadName);
             Assert.Equal(lastModified, result.LastModified);
             Assert.Equal(entityTag, result.EntityTag);
+            Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
         }
 
         [Fact]
@@ -1805,14 +1831,15 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Same(fileStream, result.FileStream);
             Assert.Equal("application/pdf", result.ContentType.ToString());
             Assert.Equal(string.Empty, result.FileDownloadName);
+            Assert.False(result.EnableRangeProcessing);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData(null, "\"Etag\"")]
-        [InlineData("05/01/2008 +1:00", null)]
-        [InlineData("05/01/2008 +1:00", "\"Etag\"")]
-        public void File_WithStream_LastModifiedAndEtag(string lastModifiedString, string entityTagString)
+        [InlineData(null, null, false)]
+        [InlineData(null, "\"Etag\"", false)]
+        [InlineData("05/01/2008 +1:00", null, true)]
+        [InlineData("05/01/2008 +1:00", "\"Etag\"", true)]
+        public void File_WithStream_LastModifiedAndEtag(string lastModifiedString, string entityTagString, bool enableRangeProcessing)
         {
             // Arrange
             var mockHttpContext = new Mock<HttpContext>();
@@ -1826,7 +1853,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act
-            var result = controller.File(fileStream, "application/pdf", lastModified, entityTag);
+            var result = controller.File(fileStream, "application/pdf", lastModified, entityTag, enableRangeProcessing);
 
             // Assert
             Assert.NotNull(result);
@@ -1835,6 +1862,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal(string.Empty, result.FileDownloadName);
             Assert.Equal(lastModified, result.LastModified);
             Assert.Equal(entityTag, result.EntityTag);
+            Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
         }
 
         [Fact]
@@ -1856,14 +1884,15 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Same(fileStream, result.FileStream);
             Assert.Equal("application/pdf", result.ContentType.ToString());
             Assert.Equal("someDownloadName", result.FileDownloadName);
+            Assert.False(result.EnableRangeProcessing);
         }
 
         [Theory]
-        [InlineData(null, null)]
-        [InlineData(null, "\"Etag\"")]
-        [InlineData("05/01/2008 +1:00", null)]
-        [InlineData("05/01/2008 +1:00", "\"Etag\"")]
-        public void File_WithStreamAndFileDownloadName_LastModifiedAndEtag(string lastModifiedString, string entityTagString)
+        [InlineData(null, null, false)]
+        [InlineData(null, "\"Etag\"", false)]
+        [InlineData("05/01/2008 +1:00", null, true)]
+        [InlineData("05/01/2008 +1:00", "\"Etag\"", true)]
+        public void File_WithStreamAndFileDownloadName_LastModifiedAndEtag(string lastModifiedString, string entityTagString, bool enableRangeProcessing)
         {
             // Arrange
             var mockHttpContext = new Mock<HttpContext>();
@@ -1876,7 +1905,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var entityTag = (entityTagString == null) ? null : new EntityTagHeaderValue(entityTagString);
 
             // Act
-            var result = controller.File(fileStream, "application/pdf", "someDownloadName", lastModified, entityTag);
+            var result = controller.File(fileStream, "application/pdf", "someDownloadName", lastModified, entityTag, enableRangeProcessing);
 
             // Assert
             Assert.NotNull(result);
@@ -1885,6 +1914,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             Assert.Equal("someDownloadName", result.FileDownloadName);
             Assert.Equal(lastModified, result.LastModified);
             Assert.Equal(entityTag, result.EntityTag);
+            Assert.Equal(enableRangeProcessing, result.EnableRangeProcessing);
         }
 
         [Fact]
@@ -2738,7 +2768,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
             var controller = new TestableController();
 
             // Act
-            var result = controller.RedirectToPage("page", "handler", new { test = "value"});
+            var result = controller.RedirectToPage("page", "handler", new { test = "value" });
 
             // Assert
             Assert.Equal("page", result.PageName);

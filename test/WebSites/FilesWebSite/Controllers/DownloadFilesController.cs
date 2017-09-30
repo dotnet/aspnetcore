@@ -22,7 +22,7 @@ namespace FilesWebSite
         public IActionResult DownloadFromDisk()
         {
             var path = Path.Combine(_hostingEnvironment.ContentRootPath, "sample.txt");
-            return PhysicalFile(path, "text/plain");
+            return PhysicalFile(path, "text/plain", true);
         }
 
         public IActionResult DownloadFromDisk_WithLastModifiedAndEtag()
@@ -30,7 +30,7 @@ namespace FilesWebSite
             var path = Path.Combine(_hostingEnvironment.ContentRootPath, "sample.txt");
             var lastModified = new DateTimeOffset(year: 1999, month: 11, day: 04, hour: 3, minute: 0, second: 0, offset: new TimeSpan(0));
             var entityTag = new EntityTagHeaderValue("\"Etag\"");
-            return PhysicalFile(path, "text/plain", lastModified, entityTag);
+            return PhysicalFile(path, "text/plain", lastModified, entityTag, true);
         }
 
         public IActionResult DownloadFromDiskWithFileName()
@@ -44,7 +44,7 @@ namespace FilesWebSite
             var path = Path.Combine(_hostingEnvironment.ContentRootPath, "sample.txt");
             var lastModified = new DateTimeOffset(year: 1999, month: 11, day: 04, hour: 3, minute: 0, second: 0, offset: new TimeSpan(0));
             var entityTag = new EntityTagHeaderValue("\"Etag\"");
-            return PhysicalFile(path, "text/plain", "downloadName.txt", lastModified, entityTag);
+            return PhysicalFile(path, "text/plain", "downloadName.txt", lastModified, entityTag, true);
         }
 
         public IActionResult DownloadFromStream()
@@ -55,7 +55,7 @@ namespace FilesWebSite
             writer.Flush();
             stream.Seek(0, SeekOrigin.Begin);
 
-            return File(stream, "text/plain");
+            return File(stream, "text/plain", true);
         }
 
         public IActionResult DownloadFromStreamWithFileName()
@@ -77,13 +77,13 @@ namespace FilesWebSite
             writer.Flush();
             stream.Seek(0, SeekOrigin.Begin);
             var entityTag = new EntityTagHeaderValue("\"Etag\"");
-            return File(stream, "text/plain", "downloadName.txt", lastModified: null, entityTag: entityTag);
+            return File(stream, "text/plain", "downloadName.txt", lastModified: null, entityTag: entityTag, enableRangeProcessing: true);
         }
 
         public IActionResult DownloadFromBinaryData()
         {
             var data = Encoding.UTF8.GetBytes("This is a sample text from a binary array");
-            return File(data, "text/plain");
+            return File(data, "text/plain", true);
         }
 
         public IActionResult DownloadFromBinaryDataWithFileName()
@@ -96,7 +96,7 @@ namespace FilesWebSite
         {
             var data = Encoding.UTF8.GetBytes("This is a sample text from a binary array");
             var entityTag = new EntityTagHeaderValue("\"Etag\"");
-            return File(data, "text/plain", "downloadName.txt", lastModified: null, entityTag: entityTag);
+            return File(data, "text/plain", "downloadName.txt", lastModified: null, entityTag: entityTag, enableRangeProcessing: true);
         }
     }
 }

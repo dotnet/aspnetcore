@@ -14,7 +14,17 @@ namespace FilesWebSite
             return new VirtualFileResult("/Greetings.txt", "text/plain")
             {
                 FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
-                FileDownloadName = "downloadName.txt"
+                FileDownloadName = "downloadName.txt",
+                EnableRangeProcessing = true,
+            };
+        }
+
+        public IActionResult DownloadFileWithFileName_RangeProcessingNotEnabled()
+        {
+            return new VirtualFileResult("/Greetings.txt", "text/plain")
+            {
+                FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
+                FileDownloadName = "downloadName.txt",
             };
         }
 
@@ -23,7 +33,8 @@ namespace FilesWebSite
             var file = new VirtualFileResult("/Greetings.txt", "text/plain")
             {
                 FileProvider = new EmbeddedFileProvider(GetType().GetTypeInfo().Assembly, "FilesWebSite.EmbeddedResources"),
-                FileDownloadName = "downloadName.txt"
+                FileDownloadName = "downloadName.txt",
+                EnableRangeProcessing = true,
             };
 
             file.EntityTag = new Microsoft.Net.Http.Headers.EntityTagHeaderValue("\"Etag\"");

@@ -44,6 +44,7 @@ namespace Microsoft.AspNetCore.Mvc.Infrastructure
                 context,
                 result,
                 fileInfo.Length,
+                result.EnableRangeProcessing,
                 lastModified,
                 result.EntityTag);
 
