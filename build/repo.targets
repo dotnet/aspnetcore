@@ -96,8 +96,11 @@
     </ItemGroup>
 
     <ItemGroup Condition="'$(KOREBUILD_REPOSITORY_EXCLUDE)'!=''">
-      <RepositoriesToExclude Include="$(KOREBUILD_REPOSITORY_EXCLUDE)" />
-      <Repository Update="@(RepositoriesToExclude)" Build="false" />
+      <_RepositoriesToExclude Include="$(KOREBUILD_REPOSITORY_EXCLUDE)" />
+      <Repository
+        Update="@(Repository)"
+        Condition="'@(Repository)'=='@(_RepositoriesToExclude)' AND '%(Identity)'!=''"
+        Build="false" />
     </ItemGroup>
 
     <Error Text="KOREBUILD_REPOSITORY_EXCLUDE AND KOREBUILD_REPOSITORY_INCLUDE are specified."
@@ -192,7 +195,6 @@
      DependsOnTargets="_PrepareRepositories;_CreateRepositoriesListWithCommits;_UpdateNuGetConfig;_GenerateBuildGraph;_BuildRepositories" />
 
   <Target Name="_PrepareRestoreGraphSpecs" DependsOnTargets="_PrepareRepositories">
-
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="ResolveSolutions"
              Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(Repository.Identity)\"
