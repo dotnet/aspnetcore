@@ -57,8 +57,7 @@
     <Copy SourceFiles="$(AddinOutputPath)$(AddinName).dll" DestinationFolder="$(MPackSourcesDir)" />
 
     <!-- We cannot use the ZipArchive task due to how it functions in CoreCLR. The archive it generates is unreadable by Visual Studio for Mac. -->
-    <Exec Command="powershell.exe -NonInteractive -command &quot;&amp; { Compress-Archive -Path $(MPackSourcesDir)* -DestinationPath $(MPackZipFile) -Force; } &quot;" />
-    <Move SourceFiles="$(MPackZipFile)" DestinationFiles="$(MPackOutputPath)" />
+    <Exec Command="powershell.exe -NonInteractive -command &quot;&amp; { Add-Type -AssemblyName System.IO.Compression.FileSystem; [System.IO.Compression.ZipFile]::CreateFromDirectory('$(MPackSourcesDir)', '$(MPackOutputPath)') } &quot;" />
   </Target>
 
 </Project>
