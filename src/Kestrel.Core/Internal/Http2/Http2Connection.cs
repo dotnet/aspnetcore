@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         private readonly Http2Frame _incomingFrame = new Http2Frame();
 
         private Http2Stream _currentHeadersStream;
-        private int _lastStreamId;
+        private int _highestOpenedStreamId;
 
         private bool _stopping;
 
@@ -156,7 +156,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         stream.Abort(error);
                     }
 
-                    await _frameWriter.WriteGoAwayAsync(_lastStreamId, errorCode);
+                    await _frameWriter.WriteGoAwayAsync(_highestOpenedStreamId, errorCode);
                 }
                 finally
                 {
@@ -247,16 +247,37 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream) && !stream.HasReceivedEndStream)
+            ThrowIfIncomingFrameSentToIdleStream();
+
+            if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream) && !stream.EndStreamReceived)
             {
                 return stream.OnDataAsync(_incomingFrame.DataPayload,
                     endStream: (_incomingFrame.DataFlags & Http2DataFrameFlags.END_STREAM) == Http2DataFrameFlags.END_STREAM);
             }
 
-            return _frameWriter.WriteRstStreamAsync(_incomingFrame.StreamId, Http2ErrorCode.STREAM_CLOSED);
+            // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1
+            //
+            // ...an endpoint that receives any frames after receiving a frame with the
+            // END_STREAM flag set MUST treat that as a connection error (Section 5.4.1)
+            // of type STREAM_CLOSED, unless the frame is permitted as described below.
+            //
+            // (The allowed frame types for this situation are WINDOW_UPDATE, RST_STREAM and PRIORITY)
+            //
+            // If we couldn't find the stream, it was either alive previously but closed with
+            // END_STREAM or RST_STREAM, or it was implicitly closed when the client opened
+            // a new stream with a higher ID. Per the spec, we should send RST_STREAM if
+            // the stream was closed with RST_STREAM or implicitly, but the spec also says
+            // in http://httpwg.org/specs/rfc7540.html#rfc.section.5.4.1 that
+            //
+            // An endpoint can end a connection at any time. In particular, an endpoint MAY
+            // choose to treat a stream error as a connection error.
+            //
+            // We choose to do that here so we don't have to keep state to track implicitly closed
+            // streams vs. streams closed with END_STREAM or RST_STREAM.
+            throw new Http2ConnectionErrorException(Http2ErrorCode.STREAM_CLOSED);
         }
 
-        private Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application)
+        private async Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application)
         {
             if (_currentHeadersStream != null)
             {
@@ -278,33 +299,66 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            _currentHeadersStream = new Http2Stream<TContext>(application, new Http2StreamContext
+            if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
             {
-                ConnectionId = ConnectionId,
-                StreamId =  _incomingFrame.StreamId,
-                ServiceContext = _context.ServiceContext,
-                ConnectionFeatures = _context.ConnectionFeatures,
-                PipeFactory = _context.PipeFactory,
-                LocalEndPoint = _context.LocalEndPoint,
-                RemoteEndPoint = _context.RemoteEndPoint,
-                StreamLifetimeHandler = this,
-                FrameWriter = _frameWriter
-            });
-            _currentHeadersStream.ExpectData = (_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_STREAM) == 0;
-            _currentHeadersStream.Reset();
-
-            _streams[_incomingFrame.StreamId] = _currentHeadersStream;
-
-            _hpackDecoder.Decode(_incomingFrame.HeadersPayload, _currentHeadersStream.RequestHeaders);
-
-            if ((_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_HEADERS) == Http2HeadersFrameFlags.END_HEADERS)
-            {
-                _lastStreamId = _incomingFrame.StreamId;
-                _ = _currentHeadersStream.ProcessRequestsAsync();
-                _currentHeadersStream = null;
+                // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1
+                //
+                // ...an endpoint that receives any frames after receiving a frame with the
+                // END_STREAM flag set MUST treat that as a connection error (Section 5.4.1)
+                // of type STREAM_CLOSED, unless the frame is permitted as described below.
+                //
+                // (The allowed frame types for this situation are WINDOW_UPDATE, RST_STREAM and PRIORITY)
+                if (stream.EndStreamReceived)
+                {
+                    throw new Http2ConnectionErrorException(Http2ErrorCode.STREAM_CLOSED);
+                }
+                // TODO: trailers
             }
+            else if (_incomingFrame.StreamId <= _highestOpenedStreamId)
+            {
+                // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1
+                //
+                // The first use of a new stream identifier implicitly closes all streams in the "idle"
+                // state that might have been initiated by that peer with a lower-valued stream identifier.
+                //
+                // If we couldn't find the stream, it was previously closed (either implicitly or with
+                // END_STREAM or RST_STREAM).
+                throw new Http2ConnectionErrorException(Http2ErrorCode.STREAM_CLOSED);
+            }
+            else
+            {
+                // Start a new stream
+                _currentHeadersStream = new Http2Stream<TContext>(application, new Http2StreamContext
+                {
+                    ConnectionId = ConnectionId,
+                    StreamId = _incomingFrame.StreamId,
+                    ServiceContext = _context.ServiceContext,
+                    ConnectionFeatures = _context.ConnectionFeatures,
+                    PipeFactory = _context.PipeFactory,
+                    LocalEndPoint = _context.LocalEndPoint,
+                    RemoteEndPoint = _context.RemoteEndPoint,
+                    StreamLifetimeHandler = this,
+                    FrameWriter = _frameWriter
+                });
 
-            return Task.CompletedTask;
+                if ((_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_STREAM) == Http2HeadersFrameFlags.END_STREAM)
+                {
+                    await _currentHeadersStream.OnDataAsync(Constants.EmptyData, endStream: true);
+                }
+
+                _currentHeadersStream.Reset();
+
+                _streams[_incomingFrame.StreamId] = _currentHeadersStream;
+
+                _hpackDecoder.Decode(_incomingFrame.HeadersPayload, _currentHeadersStream.RequestHeaders);
+
+                if ((_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_HEADERS) == Http2HeadersFrameFlags.END_HEADERS)
+                {
+                    _highestOpenedStreamId = _incomingFrame.StreamId;
+                    _ = _currentHeadersStream.ProcessRequestsAsync();
+                    _currentHeadersStream = null;
+                }
+            }
         }
 
         private Task ProcessPriorityFrameAsync()
@@ -349,13 +403,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
+            ThrowIfIncomingFrameSentToIdleStream();
+
             if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
             {
                 stream.Abort(error: null);
-            }
-            else if (_incomingFrame.StreamId > _lastStreamId)
-            {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             return Task.CompletedTask;
@@ -449,16 +501,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
-            if (_incomingFrame.StreamId == 0)
+            ThrowIfIncomingFrameSentToIdleStream();
+
+            if (_incomingFrame.WindowUpdateSizeIncrement == 0)
             {
-                if (_incomingFrame.WindowUpdateSizeIncrement == 0)
+                if (_incomingFrame.StreamId == 0)
                 {
                     throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
                 }
-            }
-            else
-            {
-                if (_incomingFrame.WindowUpdateSizeIncrement == 0)
+                else
                 {
                     return _frameWriter.WriteRstStreamAsync(_incomingFrame.StreamId, Http2ErrorCode.PROTOCOL_ERROR);
                 }
@@ -478,7 +529,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if ((_incomingFrame.ContinuationFlags & Http2ContinuationFrameFlags.END_HEADERS) == Http2ContinuationFrameFlags.END_HEADERS)
             {
-                _lastStreamId = _currentHeadersStream.StreamId;
+                _highestOpenedStreamId = _currentHeadersStream.StreamId;
                 _ = _currentHeadersStream.ProcessRequestsAsync();
                 _currentHeadersStream = null;
             }
@@ -494,6 +545,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
 
             return Task.CompletedTask;
+        }
+
+        private void ThrowIfIncomingFrameSentToIdleStream()
+        {
+            // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1
+            // 5.1. Stream states
+            // ...
+            // idle:
+            // ...
+            // Receiving any frame other than HEADERS or PRIORITY on a stream in this state MUST be
+            // treated as a connection error (Section 5.4.1) of type PROTOCOL_ERROR.
+            //
+            // If the stream ID in the incoming frame is higher than the highest opened stream ID so
+            // far, then the incoming frame's target stream is in the idle state, which is the implicit
+            // initial state for all streams.
+            if (_incomingFrame.StreamId > _highestOpenedStreamId)
+            {
+                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+            }
         }
 
         void IHttp2StreamLifetimeHandler.OnStreamCompleted(int streamId)

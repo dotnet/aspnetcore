@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 {
     public class Http1OutputProducer : IHttpOutputProducer
     {
-        private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
         private static readonly ArraySegment<byte> _continueBytes = new ArraySegment<byte>(Encoding.ASCII.GetBytes("HTTP/1.1 100 Continue\r\n\r\n"));
         private static readonly byte[] _bytesHttpVersion11 = Encoding.ASCII.GetBytes("HTTP/1.1 ");
         private static readonly byte[] _bytesEndHeaders = Encoding.ASCII.GetBytes("\r\n\r\n");
@@ -71,7 +70,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
 
         public Task FlushAsync(CancellationToken cancellationToken = default(CancellationToken))
         {
-            return WriteAsync(_emptyData, cancellationToken);
+            return WriteAsync(Constants.EmptyData, cancellationToken);
         }
 
         public void Write<T>(Action<WritableBuffer, T> callback, T state)

@@ -6,13 +6,12 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     public class Http2OutputProducer : IHttpOutputProducer
     {
-        private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
-
         private readonly int _streamId;
         private readonly IHttp2FrameWriter _frameWriter;
 
@@ -47,7 +46,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Task WriteStreamSuffixAsync(CancellationToken cancellationToken)
         {
-            return _frameWriter.WriteDataAsync(_streamId, _emptyData, endStream: true, cancellationToken: cancellationToken);
+            return _frameWriter.WriteDataAsync(_streamId, Constants.EmptyData, endStream: true, cancellationToken: cancellationToken);
         }
 
         public void WriteResponseHeaders(int statusCode, string ReasonPhrase, HttpResponseHeaders responseHeaders)

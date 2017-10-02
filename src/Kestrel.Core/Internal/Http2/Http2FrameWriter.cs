@@ -7,16 +7,13 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
-using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     public class Http2FrameWriter : IHttp2FrameWriter
     {
-        private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
-
         private readonly Http2Frame _outgoingFrame = new Http2Frame();
         private readonly object _writeLock = new object();
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
@@ -48,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Task FlushAsync(CancellationToken cancellationToken)
         {
-            return WriteAsync(_emptyData);
+            return WriteAsync(Constants.EmptyData);
         }
 
         public Task Write100ContinueAsync(int streamId)

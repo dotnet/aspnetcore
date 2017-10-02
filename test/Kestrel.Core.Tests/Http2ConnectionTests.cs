@@ -467,33 +467,30 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public async Task DATA_Received_StreamIdle_StreamError()
+        public async Task DATA_Received_StreamIdle_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
 
             await SendDataAsync(1, _helloWorldBytes, endStream: false);
 
-            await WaitForStreamErrorAsync(expectedStreamId: 1, expectedErrorCode: Http2ErrorCode.STREAM_CLOSED, ignoreNonRstStreamFrames: false);
-
-            await StopConnectionAsync(expectedLastStreamId: 0, ignoreNonGoAwayFrames: false);
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
-        public async Task DATA_Received_StreamHalfClosedRemote_StreamError()
+        public async Task DATA_Received_StreamHalfClosedRemote_ConnectionError()
         {
-            await InitializeConnectionAsync(_echoWaitForAbortApplication);
+            // Use _waitForAbortApplication so we know the stream will still be active when we send the illegal DATA frame
+            await InitializeConnectionAsync(_waitForAbortApplication);
 
-            await StartStreamAsync(1, _postRequestHeaders, endStream: false);
-            await SendDataAsync(1, _helloBytes, endStream: true);
-            await SendDataAsync(1, _worldBytes, endStream: true);
+            await StartStreamAsync(1, _postRequestHeaders, endStream: true);
 
-            await WaitForStreamErrorAsync(expectedStreamId: 1, expectedErrorCode: Http2ErrorCode.STREAM_CLOSED, ignoreNonRstStreamFrames: true);
+            await SendDataAsync(1, _helloWorldBytes, endStream: false);
 
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: true);
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 1, expectedErrorCode: Http2ErrorCode.STREAM_CLOSED, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
-        public async Task DATA_Received_StreamClosed_StreamError()
+        public async Task DATA_Received_StreamClosed_ConnectionError()
         {
             await InitializeConnectionAsync(_noopApplication);
 
@@ -510,13 +507,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await SendDataAsync(1, _helloWorldBytes, endStream: false);
 
-            await WaitForStreamErrorAsync(expectedStreamId: 1, expectedErrorCode: Http2ErrorCode.STREAM_CLOSED, ignoreNonRstStreamFrames: false);
-
-            await StopConnectionAsync(expectedLastStreamId: 1, ignoreNonGoAwayFrames: false);
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 1, expectedErrorCode: Http2ErrorCode.STREAM_CLOSED, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
-        public async Task DATA_Received_StreamClosedImplicitly_StreamError()
+        public async Task DATA_Received_StreamClosedImplicitly_ConnectionError()
         {
             // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1
             //
@@ -540,9 +535,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             await SendDataAsync(1, _helloWorldBytes, endStream: true);
 
-            await WaitForStreamErrorAsync(expectedStreamId: 1, expectedErrorCode: Http2ErrorCode.STREAM_CLOSED, ignoreNonRstStreamFrames: false);
-
-            await StopConnectionAsync(expectedLastStreamId: 3, ignoreNonGoAwayFrames: false);
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 3, expectedErrorCode: Http2ErrorCode.STREAM_CLOSED, ignoreNonGoAwayFrames: false);
         }
 
         [Fact]
@@ -653,6 +646,63 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await StartStreamAsync(2, _browserRequestHeaders, endStream: true);
 
             await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_StreamClosed_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 1);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 1);
+
+            // Try to re-use the stream ID (http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1)
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 1, expectedErrorCode: Http2ErrorCode.STREAM_CLOSED, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_StreamHalfClosedRemote_ConnectionError()
+        {
+            // Use _waitForAbortApplication so we know the stream will still be active when we send the illegal DATA frame
+            await InitializeConnectionAsync(_waitForAbortApplication);
+
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await SendHeadersAsync(1, Http2HeadersFrameFlags.NONE, _browserRequestHeaders);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 1, expectedErrorCode: Http2ErrorCode.STREAM_CLOSED, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task HEADERS_Received_StreamClosedImplicitly_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await StartStreamAsync(3, _browserRequestHeaders, endStream: true);
+
+            await ExpectAsync(Http2FrameType.HEADERS,
+                withLength: 55,
+                withFlags: (byte)Http2HeadersFrameFlags.END_HEADERS,
+                withStreamId: 3);
+            await ExpectAsync(Http2FrameType.DATA,
+                withLength: 0,
+                withFlags: (byte)Http2DataFrameFlags.END_STREAM,
+                withStreamId: 3);
+
+            // Stream 1 was implicitly closed by opening stream 3 before (http://httpwg.org/specs/rfc7540.html#rfc.section.5.1.1)
+            await StartStreamAsync(1, _browserRequestHeaders, endStream: true);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 3, expectedErrorCode: Http2ErrorCode.STREAM_CLOSED, ignoreNonGoAwayFrames: false);
         }
 
         [Theory]
@@ -807,6 +857,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(_noopApplication);
 
             await SendRstStreamAsync(2);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task RST_STREAM_Received_StreamIdle_ConnectionError()
+        {
+            await InitializeConnectionAsync(_noopApplication);
+
+            await SendRstStreamAsync(1);
 
             await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
         }
@@ -1073,6 +1133,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await InitializeConnectionAsync(_noopApplication);
 
             await SendWindowUpdateAsync(0, sizeIncrement: 0);
+
+            await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
+        }
+
+        [Fact]
+        public async Task WINDOW_UPDATE_Received_StreamIdle_ConnectionError()
+        {
+            await InitializeConnectionAsync(_waitForAbortApplication);
+
+            await SendWindowUpdateAsync(1, sizeIncrement: 1);
 
             await WaitForConnectionErrorAsync(expectedLastStreamId: 0, expectedErrorCode: Http2ErrorCode.PROTOCOL_ERROR, ignoreNonGoAwayFrames: false);
         }

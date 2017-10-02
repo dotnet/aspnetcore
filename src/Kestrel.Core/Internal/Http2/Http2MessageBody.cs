@@ -29,9 +29,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             HttpRequestHeaders headers,
             Http2Stream context)
         {
-            if (!context.ExpectData)
+            if (context.EndStreamReceived)
             {
-                return MessageBody.ZeroContentLengthClose;
+                return ZeroContentLengthClose;
             }
 
             return new ForHttp2(context);
