@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// <param name="context"></param>
         protected override void SetupIdentityServices(IServiceCollection services, object context)
         {
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
             services.AddIdentity<TUser, TRole>(options =>
             {
                 options.Password.RequireDigit = false;

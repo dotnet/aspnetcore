@@ -136,7 +136,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         {
             var services = new ServiceCollection()
                 .AddSingleton<IConfiguration>(new ConfigurationBuilder().Build())
-                .AddSingleton<IHttpContextAccessor, HttpContextAccessor>()
+                .AddHttpContextAccessor()
                 .AddLogging();
             services.AddIdentity<TestUser, TestRole>()
                 .AddUserStore<NoopUserStore>()

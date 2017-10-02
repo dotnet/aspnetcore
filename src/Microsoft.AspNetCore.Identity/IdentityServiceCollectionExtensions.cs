@@ -91,7 +91,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
 
             // Hosting doesn't add IHttpContextAccessor by default
-            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
             // Identity services
             services.TryAddScoped<IUserValidator<TUser>, UserValidator<TUser>>();
             services.TryAddScoped<IPasswordValidator<TUser>, PasswordValidator<TUser>>();

@@ -24,7 +24,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         public static IServiceCollection CreateTestServices()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
             services.AddLogging();
             services.AddIdentity<IdentityUser, IdentityRole>();
             return services;

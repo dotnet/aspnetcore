@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Identity.Test
                     .AddSingleton<IConfiguration>(config)
                     .AddTransient<IUserStore<TestUser>, NoopUserStore>();
             services.AddIdentity<TestUser, TestRole>();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
             services.AddLogging();
             var manager = services.BuildServiceProvider().GetRequiredService<UserManager<TestUser>>();
             Assert.NotNull(manager.PasswordHasher);
@@ -39,7 +39,7 @@ namespace Microsoft.AspNetCore.Identity.Test
             var services = new ServiceCollection()
                     .AddSingleton<IConfiguration>(config)
                     .AddTransient<IUserStore<TestUser>, NoopUserStore>()
-                    .AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+                    .AddHttpContextAccessor();
 
             services.AddLogging();
 
@@ -1544,7 +1544,7 @@ namespace Microsoft.AspNetCore.Identity.Test
                     .AddLogging()
                     .AddSingleton<IdentityErrorDescriber>(describer)
                     .AddSingleton<IUserStore<TestUser>>(store.Object)
-                    .AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+                    .AddHttpContextAccessor();
 
             services.AddIdentity<TestUser, TestRole>();
 

@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.InMemory.Test
         public InMemoryEFUserStoreTestWithGenerics()
         {
             var services = new ServiceCollection();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
             services.AddDbContext<InMemoryContextWithGenerics>(options => options.UseInMemoryDatabase("Scratch"));
             _context = services.BuildServiceProvider().GetRequiredService<InMemoryContextWithGenerics>();
         }

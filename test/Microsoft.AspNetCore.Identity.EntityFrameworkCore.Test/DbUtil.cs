@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
             {
                 services = new ServiceCollection();
             }
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
             services.AddDbContext<TContext>(options => options.UseSqlServer(connectionString));
             return services;
         }

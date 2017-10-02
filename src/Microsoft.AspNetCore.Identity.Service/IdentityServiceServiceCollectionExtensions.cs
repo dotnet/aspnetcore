@@ -100,7 +100,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddTransient<SessionManager, SessionManager<TUser, TApplication>>();
             services.AddTransient<SessionManager<TUser, TApplication>>();
             services.AddTransient<IRedirectUriResolver, ClientApplicationValidator<TApplication>>();
-            services.TryAddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
 
             services.Configure(configure);
 

@@ -54,7 +54,7 @@ namespace Microsoft.AspNetCore.Identity.Test
         /// <param name="context"></param>
         protected virtual IdentityBuilder SetupBuilder(IServiceCollection services, object context)
         {
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
             services.AddDataProtection();
             var builder = services.AddIdentityCore<TUser>(options =>
             {

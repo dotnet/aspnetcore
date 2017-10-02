@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Identity.EntityFrameworkCore.Test
 
         protected override void SetupIdentityServices(IServiceCollection services, object context)
         {
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
             services.AddSingleton((TestDbContext)context);
             services.AddLogging();
             services.AddSingleton<ILogger<UserManager<TUser>>>(new TestLogger<UserManager<TUser>>());
