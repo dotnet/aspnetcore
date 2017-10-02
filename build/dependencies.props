@@ -18,42 +18,78 @@
   <!-- .NET Core feed -->
   <PropertyGroup>
     <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</DotNetCoreFeed>
+    <CoreSetupPackageVersion>2.0.2-servicing-25728-02</CoreSetupPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="Microsoft.NETCore.App" Version="2.0.2-servicing-25715-02" Source="$(DotNetCoreFeed)" Mirror="true">
+    <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" >
       <VariableName>RuntimeFrameworkVersion</VariableName>
       <TargetFramework>netcoreapp2.0</TargetFramework>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.NETCore.DotNetHostPolicy" Version="2.0.2-servicing-25715-02" Source="$(DotNetCoreFeed)" Mirror="true" />
-    <ExternalDependency Include="Microsoft.NETCore.DotNetHostResolver" Version="2.0.2-servicing-25715-02" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.linux-arm.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.linux-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.osx-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.rhel.6-x64.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.rhel.6-x64.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.rhel.6-x64.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.rhel.6-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.rhel.6-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x64.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetAppHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHost" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHostPolicy" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="runtime.win-x86.Microsoft.NETCore.DotNetHostResolver" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
   </ItemGroup>
 
   <!-- ASP.NET Core Tools feed -->
   <PropertyGroup>
     <RoslynFeed>https://dotnet.myget.org/F/roslyn/api/v3/index.json</RoslynFeed>
+    <RoslynDevPackageVersion>2.6.0-beta1-61924-08</RoslynDevPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="2.6.0-beta1-61924-08" Source="$(RoslynFeed)" Private="true">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true">
       <!-- This version is required for Razor to build the VSIX for VS. -->
       <NoWarn>KRB2004</NoWarn>
       <VariableName>MicrosoftCodeAnalysisCommonToolingPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="2.6.0-beta1-61924-08" Source="$(RoslynFeed)" Private="true">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true">
       <!-- This version is required for Razor to build the VSIX for VS. -->
       <NoWarn>KRB2004</NoWarn>
       <VariableName>MicrosoftCodeAnalysisCSharpToolingPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="2.6.0-beta1-61924-08" Source="$(RoslynFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="2.6.0-beta1-61924-08" Source="$(RoslynFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="2.6.0-beta1-61924-08" Source="$(RoslynFeed)" Private="true">
+    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true">
       <!-- This version is required for Razor to build the VSIX for VS. -->
       <NoWarn>KRB2004</NoWarn>
       <VariableName>MicrosoftCodeAnalysisWorkspacesCommonToolingPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="2.6.0-beta1-61924-08" Source="$(RoslynFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="2.6.0-beta1-61924-08" Source="$(RoslynFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" />
   </ItemGroup>
 
   <!-- ASP.NET Core Tools feed -->
@@ -116,7 +152,6 @@
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CSharp" Version="4.4.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.DotNet.ProjectModel" Version="1.0.0-rc3-003121" Source="$(DefaultNuGetFeed)" Private="true"/>
-    <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.14.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="2.1.4" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="15.3.0" Source="$(DefaultNuGetFeed)" Private="true"/>
