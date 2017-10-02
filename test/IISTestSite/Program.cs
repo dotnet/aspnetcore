@@ -2,9 +2,10 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.IIS;
 using Microsoft.Extensions.Logging;
 
-namespace TestSites
+namespace IISTestSite
 {
     public static class Program
     {
@@ -16,13 +17,11 @@ namespace TestSites
                     factory.AddConsole();
                     factory.AddFilter("Console", level => level >= LogLevel.Information);
                 })
-                .UseIISIntegration()
-                .UseStartup("TestSites")
-                .UseKestrel()
+                .UseNativeIIS()
+                .UseStartup("IISTestSite")
                 .Build();
 
             host.Run();
         }
     }
 }
-

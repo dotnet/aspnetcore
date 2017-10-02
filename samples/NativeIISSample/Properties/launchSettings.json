@@ -1,0 +1,39 @@
+{
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:5762/",
+      "sslPort": 0
+    }
+  },
+  "profiles": {
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
+    },
+    "Local ANCM": {
+      "commandName": "Executable",
+      "executablePath": "$(ProgramW6432)\\IIS Express\\iisexpress.exe",
+      "commandLineArgs": "/config:\"$(MSBuildThisFileDirectory)applicationhost.config\" /site:\"$(ProjectName)\" /apppool:\"Clr4IntegratedAppPool\"",
+      "environmentVariables": {
+        "IIS_SITE_PATH": "$(MSBuildThisFileDirectory)",
+        "ANCM_PATH": "$(ProgramW6432)\\IIS Express",
+        "LAUNCHER_ARGS": "$(TargetPath)",
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "LAUNCHER_PATH": "dotnet.exe"
+      }
+    },
+    "NativeIISSample": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "http://localhost:5763/"
+    }
+  }
+}

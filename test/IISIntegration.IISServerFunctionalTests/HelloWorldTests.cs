@@ -1,9 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-#if NETCOREAPP2_0
 
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Server.IntegrationTesting;
 using Microsoft.Extensions.Logging;
@@ -12,7 +13,7 @@ using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     public class HelloWorldTests : LoggedTest
     {
@@ -20,14 +21,8 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         {
         }
 
-        [Fact]
-        public Task HelloWorld_IISExpress_Clr_X64_Portable()
-        {
-            return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable);
-        }
-
-        [Fact]
-        public Task HelloWorld_IISExpress_CoreClr_X64_Portable()
+        [Fact( Skip ="See https://github.com/aspnet/IISIntegration/issues/424")]
+        public Task HelloWorld_InProcess_IISExpress_CoreClr_X64_Portable()
         {
             return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable);
         }
@@ -73,14 +68,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                         response = await deploymentResult.HttpClient.GetAsync("/Query%3FPath?query?");
                         responseText = await response.Content.ReadAsStringAsync();
                         Assert.Equal("?query?", responseText);
-
-                        response = await deploymentResult.HttpClient.GetAsync("/BodyLimit");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        Assert.Equal("null", responseText);
-
-                        response = await deploymentResult.HttpClient.GetAsync("/Auth");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        Assert.True("backcompat;Windows".Equals(responseText) || "latest;null".Equals(responseText), "Auth");
                     }
                     catch (XunitException)
                     {
@@ -93,7 +80,3 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
     }
 }
-#elif NET461
-#else
-#error Target frameworks need to be updated
-#endif

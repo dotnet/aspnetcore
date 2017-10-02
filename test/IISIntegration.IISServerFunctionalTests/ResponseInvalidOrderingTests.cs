@@ -1,6 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
-#if NETCOREAPP2_0
 
 using System;
 using System.IO;
@@ -12,38 +11,34 @@ using Xunit;
 using Xunit.Abstractions;
 using Xunit.Sdk;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
-    public class HelloWorldTests : LoggedTest
+    public class ResponseInvalidOrderingTests : LoggedTest
     {
-        public HelloWorldTests(ITestOutputHelper output) : base(output)
+        public ResponseInvalidOrderingTests(ITestOutputHelper output) : base(output)
         {
         }
 
-        [Fact]
-        public Task HelloWorld_IISExpress_Clr_X64_Portable()
+        [Theory(Skip = "See https://github.com/aspnet/IISIntegration/issues/424")]
+        [InlineData("SetStatusCodeAfterWrite")]
+        [InlineData("SetHeaderAfterWrite")]
+        public Task ResponseInvalidOrderingTests_ExpectFailure(string path)
         {
-            return HelloWorld(RuntimeFlavor.Clr, ApplicationType.Portable);
+            return SetResponseInvalidOperations(RuntimeFlavor.CoreClr, ApplicationType.Portable, path);
         }
 
-        [Fact]
-        public Task HelloWorld_IISExpress_CoreClr_X64_Portable()
-        {
-            return HelloWorld(RuntimeFlavor.CoreClr, ApplicationType.Portable);
-        }
-
-        private async Task HelloWorld(RuntimeFlavor runtimeFlavor, ApplicationType applicationType)
+        private async Task SetResponseInvalidOperations(RuntimeFlavor runtimeFlavor, ApplicationType applicationType, string path)
         {
             var serverType = ServerType.IISExpress;
             var architecture = RuntimeArchitecture.x64;
-            var testName = $"HelloWorld_{runtimeFlavor}";
+            var testName = $"SetResponseInvalidOperations_{runtimeFlavor}";
             using (StartLog(out var loggerFactory, testName))
             {
-                var logger = loggerFactory.CreateLogger("HelloWorldTest");
+                var logger = loggerFactory.CreateLogger("SetFeaturesTest");
 
                 var deploymentParameters = new DeploymentParameters(Helpers.GetTestSitesPath(), serverType, runtimeFlavor, architecture)
                 {
-                    EnvironmentName = "HelloWorld", // Will pick the Start class named 'StartupHelloWorld',
+                    EnvironmentName = "ResponseInvalidOrdering", // Will pick the Start class named 'StartupInvalidOrdering',
                     ServerConfigTemplateContent = (serverType == ServerType.IISExpress) ? File.ReadAllText("Http.config") : null,
                     SiteName = "HttpTestSite", // This is configured in the Http.config
                     TargetFramework = runtimeFlavor == RuntimeFlavor.Clr ? "net461" : "netcoreapp2.0",
@@ -58,29 +53,13 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                     // Request to base address and check if various parts of the body are rendered & measure the cold startup time.
                     var response = await RetryHelper.RetryRequest(() =>
                     {
-                        return deploymentResult.HttpClient.GetAsync(string.Empty);
+                        return deploymentResult.HttpClient.GetAsync(path);
                     }, logger, deploymentResult.HostShutdownToken, retryCount: 30);
 
                     var responseText = await response.Content.ReadAsStringAsync();
                     try
                     {
-                        Assert.Equal("Hello World", responseText);
-
-                        response = await deploymentResult.HttpClient.GetAsync("/Path%3F%3F?query");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        Assert.Equal("/Path??", responseText);
-
-                        response = await deploymentResult.HttpClient.GetAsync("/Query%3FPath?query?");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        Assert.Equal("?query?", responseText);
-
-                        response = await deploymentResult.HttpClient.GetAsync("/BodyLimit");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        Assert.Equal("null", responseText);
-
-                        response = await deploymentResult.HttpClient.GetAsync("/Auth");
-                        responseText = await response.Content.ReadAsStringAsync();
-                        Assert.True("backcompat;Windows".Equals(responseText) || "latest;null".Equals(responseText), "Auth");
+                        Assert.Equal($"Started_{path}Threw_Finished", responseText);
                     }
                     catch (XunitException)
                     {
@@ -93,7 +72,3 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
         }
     }
 }
-#elif NET461
-#else
-#error Target frameworks need to be updated
-#endif

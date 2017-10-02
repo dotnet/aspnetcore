@@ -4,7 +4,7 @@
 using System;
 using System.IO;
 
-namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
+namespace Microsoft.AspNetCore.Server.IIS.FunctionalTests
 {
     public class Helpers
     {
@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration.FunctionalTests
                 "..", // debug
                 "..", // obj
                 "..", // projectfolder
-                "TestSites"));
+                "IISTestSite"));
         }
     }
 }
