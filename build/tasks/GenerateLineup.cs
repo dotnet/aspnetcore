@@ -25,9 +25,6 @@ namespace RepoTasks
         // Can be set to filter the lists of packages when produce a list for a specific repository
         public string Repository { get; set; }
 
-        // Items to add to the RestoreAdditionalProjectSources list in project
-        public ITaskItem[] RestoreAdditionalSources { get; set; }
-
         public bool UseFloatingVersions { get; set; }
 
         public string BuildNumber { get; set; }
@@ -43,15 +40,8 @@ namespace RepoTasks
             }
 
             var items = new XElement("ItemGroup");
-            var props = new XElement("PropertyGroup");
-            var root = new XElement("Project", props, items);
+            var root = new XElement("Project", items);
             var doc = new XDocument(root);
-
-            if (RestoreAdditionalSources?.Length > 0)
-            {
-                var sources = RestoreAdditionalSources.Aggregate("$(RestoreAdditionalProjectSources)", (sum, piece) => sum + ";" + piece.ItemSpec);
-                props.Add(new XElement("RestoreAdditionalProjectSources", sources));
-            }
 
             var packages = new List<PackageInfo>();
 

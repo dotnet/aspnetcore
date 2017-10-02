@@ -18,8 +18,6 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <PinPackageSources Include="$(BuildDir)" />
-      <PinPackageSources Include="$(_DependencyPackagesDirectory)" Condition="Exists('$(_DependencyPackagesDirectory)')" />
       <PinnedArtifactInfo Include="@(ArtifactInfo)" Condition="'$(BuildGraphOf)' == ''" />
     </ItemGroup>
 
@@ -35,7 +33,6 @@
       Artifacts="@(PinnedArtifactInfo)"
       Repository="%(RepositoryBuildOrder.Identity)"
       OutputPath="%(RepositoryBuildOrder.RepositoryPath)\build\dependencies.g.targets"
-      RestoreAdditionalSources="@(PinPackageSources)"
       UseFloatingVersions="false"
       Condition="'%(RepositoryBuildOrder.RepositoryPath)' != ''"
       BuildNumber="$(BuildNumber)" />
@@ -51,6 +48,7 @@
   <Target Name="_BuildRepository">
     <PropertyGroup>
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration) /p:CommitHash=$(CommitHash)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /noconsolelogger '/l:RepoTasks.FlowLogger,$(MSBuildThisFileDirectory)tasks\bin\publish\RepoTasks.dll;Summary;FlowId=$(RepositoryToBuild)'</RepositoryBuildArguments>
