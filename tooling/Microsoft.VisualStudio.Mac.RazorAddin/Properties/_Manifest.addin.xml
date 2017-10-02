@@ -1,0 +1,15 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ExtensionModel>
+  <Runtime>
+    <Import assembly="Microsoft.VisualStudio.Editor.Razor.dll" />
+    <Import assembly="Microsoft.CodeAnalysis.Razor.Workspaces.dll" />
+    <Import assembly="Microsoft.AspNetCore.Razor.Language.dll" />
+    <Import assembly="Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X.dll" />
+    <Import assembly="Microsoft.AspNetCore.Mvc.Razor.Extensions.dll" />
+    <Import assembly="Microsoft.CodeAnalysis.Razor.dll" />
+    <Import assembly="Microsoft.CodeAnalysis.CSharp.dll" />
+    <Import assembly="Microsoft.VisualStudio.Mac.LanguageServices.Razor.dll" />
+  </Runtime>
+  <Dependencies>
+  </Dependencies>
+</ExtensionModel>
