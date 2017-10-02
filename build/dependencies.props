@@ -4,11 +4,11 @@
     <BenchmarkDotNetVersion>0.10.3</BenchmarkDotNetVersion>
     <CoreFxVersion>4.4.0</CoreFxVersion>
     <DiagnosticSourceVersion>4.4.1</DiagnosticSourceVersion>
-    <DependencyModelVersion>2.0.0</DependencyModelVersion>
     <FSharpCoreVersion>4.2.1</FSharpCoreVersion>
     <FSharpNetSdkVersion>1.0.5</FSharpNetSdkVersion>
     <InternalAspNetCoreSdkVersion>2.0.1-rtm-15400</InternalAspNetCoreSdkVersion>
     <JsonNetBsonVersion>1.0.1</JsonNetBsonVersion>
+    <MicrosoftExtensionsDependencyModelPackageVersion>2.0.2-servicing-25728-02</MicrosoftExtensionsDependencyModelPackageVersion>
     <MoqVersion>4.7.49</MoqVersion>
     <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
     <NETStandardLibraryNETFrameworkVersion>2.0.0</NETStandardLibraryNETFrameworkVersion>
