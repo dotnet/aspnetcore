@@ -42,6 +42,7 @@
     <MicrosoftAspNetCoreWebUtilitiesPackageVersion>2.1.0-preview1-28124</MicrosoftAspNetCoreWebUtilitiesPackageVersion>
     <MicrosoftAspNetWebApiClientPackageVersion>5.2.4-preview1</MicrosoftAspNetWebApiClientPackageVersion>
     <MicrosoftCodeAnalysisCSharpPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpPackageVersion>
+    <MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>2.6.1</MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion>
     <MicrosoftCodeAnalysisRazorPackageVersion>2.1.0-preview1-28124</MicrosoftCodeAnalysisRazorPackageVersion>
     <MicrosoftExtensionsCachingMemoryPackageVersion>2.1.0-preview1-28124</MicrosoftExtensionsCachingMemoryPackageVersion>
     <MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>2.1.0-preview1-28124</MicrosoftExtensionsClosedGenericMatcherSourcesPackageVersion>
