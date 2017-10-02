@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Authentication.MicrosoftAccount
             var response = await Backchannel.SendAsync(request, Context.RequestAborted);
             if (!response.IsSuccessStatusCode)
             {
-                throw new HttpRequestException($"Failed to retrived Microsoft user information ({response.StatusCode}) Please check if the authentication information is correct and the corresponding Microsoft Account API is enabled.");
+                throw new HttpRequestException($"An error occurred when retrieving Microsoft user information ({response.StatusCode}). Please check if the authentication information is correct and the corresponding Microsoft Account API is enabled.");
             }
 
             var payload = JObject.Parse(await response.Content.ReadAsStringAsync());
