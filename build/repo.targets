@@ -18,7 +18,7 @@
     <_RepositoryListToImport Condition="!Exists('$(_DependencyRepositoryList)')">$(_DefaultRepositoryList)</_RepositoryListToImport>
 
     <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'=='' AND '$(CompileOnly)'=='true'">/t:Package /t:VerifyPackages</_RepositoryBuildTargets>
-    <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">/t:Verify</_RepositoryBuildTargets>
+    <_RepositoryBuildTargets Condition="'$(_RepositoryBuildTargets)'==''">/t:Build</_RepositoryBuildTargets>
 
     <!-- For external packages that come from feeds will mirrored to aspnetcore feeds. -->
     <IntermediateMirrorPackageDir>$(IntermediateDir)mirror\</IntermediateMirrorPackageDir>
@@ -29,8 +29,8 @@
     <RestoreDependsOn>$(RestoreDependsOn);RestoreExternalDependencies</RestoreDependsOn>
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
     <CompileDependsOn>$(CompileDependsOn);CloneRepositories;BuildRepositories</CompileDependsOn>
-    <PackageDependsOn>$(PackageDependsOn);CopyPackagesByCategory</PackageDependsOn>
-    <VerifyDependsOn>$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
+    <PackageDependsOn Condition="'$(TestOnly)' != 'true'">$(PackageDependsOn);CopyPackagesByCategory</PackageDependsOn>
+    <VerifyDependsOn Condition="'$(TestOnly)' != 'true'">$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
   </PropertyGroup>
 
   <Import Project="$(_RepositoryListToImport)" />
