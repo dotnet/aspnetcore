@@ -1,0 +1,14 @@
+﻿<Project>
+  <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
+
+  <PropertyGroup>
+    <RestoreSources>$(DotNetRestoreSources)</RestoreSources>
+    <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true'">
+      $(RestoreSources);
+      https://dotnet.myget.org/F/aspnet-2-0-2-october2017-patch/api/v3/index.json;
+      https://dotnet.myget.org/F/aspnetcore-master/api/v3/index.json;
+      https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json;
+      https://api.nuget.org/v3/index.json;
+    </RestoreSources>
+  </PropertyGroup>
+</Project>
