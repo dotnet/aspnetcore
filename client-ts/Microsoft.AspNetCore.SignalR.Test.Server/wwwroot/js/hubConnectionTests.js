@@ -212,6 +212,39 @@ describe('hubConnection', function () {
                 });
                 hubConnection.start();
             });
+
+            it('can handle different types', function (done) {
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
+                hubConnection.onclose(function (error) {
+                    expect(error).toBe(undefined);
+                    done();
+                });
+
+                var complexObject = {
+                    String: 'Hello, World!',
+                    IntArray: [0x01, 0x02, 0x03, 0xff]
+                };
+
+                hubConnection.start().then(function () {
+                    return hubConnection.invoke('EchoComplexObject', complexObject);
+                })
+                .then(function(value) {
+                    expect(value).toEqual(complexObject);
+                })
+                .then(function () {
+                    hubConnection.stop();
+                })
+                .catch(function (e) {
+                    fail(e);
+                    done();
+                });
+            });
         });
     });
 });

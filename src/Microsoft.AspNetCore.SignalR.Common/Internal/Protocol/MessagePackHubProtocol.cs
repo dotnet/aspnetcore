@@ -140,7 +140,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private void WriteMessageCore(HubMessage message, Stream output)
         {
-            var packer = Packer.Create(output);
+            // PackerCompatibilityOptions.None prevents from serializing byte[] as strings
+            // and allows extended objects
+            var packer = Packer.Create(output, PackerCompatibilityOptions.None);
             switch (message)
             {
                 case InvocationMessage invocationMessage:
@@ -299,7 +301,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             var serializationContext = new SerializationContext { SerializationMethod = SerializationMethod.Map };
             // allows for serializing objects that cannot be deserialized due to the lack of the default ctor etc.
             serializationContext.CompatibilityOptions.AllowAsymmetricSerializer = true;
-
             return serializationContext;
         }
     }
