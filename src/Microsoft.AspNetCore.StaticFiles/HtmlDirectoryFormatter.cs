@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.StaticFiles
 
             context.Response.ContentType = TextHtmlUtf8;
 
-            if (Helpers.IsHeadMethod(context.Request.Method))
+            if (HttpMethods.IsHead(context.Request.Method))
             {
                 // HEAD, no response body
                 return Constants.CompletedTask;

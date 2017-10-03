@@ -111,8 +111,8 @@ namespace Microsoft.AspNetCore.StaticFiles
         public bool ValidateMethod()
         {
             _method = _request.Method;
-            _isGet = Helpers.IsGetMethod(_method);
-            _isHead = Helpers.IsHeadMethod(_method);
+            _isGet = HttpMethods.IsGet(_method);
+            _isHead = HttpMethods.IsHead(_method);
             return _isGet || _isHead;
         }
 

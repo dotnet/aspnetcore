@@ -18,20 +18,9 @@ namespace Microsoft.AspNetCore.StaticFiles
             return hostingEnv.WebRootFileProvider;
         }
 
-
         internal static bool IsGetOrHeadMethod(string method)
         {
-            return IsGetMethod(method) || IsHeadMethod(method);
-        }
-
-        internal static bool IsGetMethod(string method)
-        {
-            return string.Equals("GET", method, StringComparison.OrdinalIgnoreCase);
-        }
-
-        internal static bool IsHeadMethod(string method)
-        {
-            return string.Equals("HEAD", method, StringComparison.OrdinalIgnoreCase);
+            return HttpMethods.IsGet(method) || HttpMethods.IsHead(method);
         }
 
         internal static bool PathEndsInSlash(PathString path)
