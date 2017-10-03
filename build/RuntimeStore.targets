@@ -40,7 +40,7 @@
     <!-- Restore and pack-->
     <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj"
       Targets="Restore;Pack"
-      Properties="Configuration=$(Configuration)" />
+      Properties="Configuration=$(Configuration);AdditionalImports=$(GeneratedRestoreSourcesPropsPath)" />
 
     <!-- Copy to output directory -->
     <ItemGroup>

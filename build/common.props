@@ -1,7 +1,6 @@
 <Project>
   <Import Project="..\version.props" />
   <Import Project="dependencies.props" />
-  <Import Project="$(IntermediateDir)sources.props" Condition="Exists('$(IntermediateDir)sources.props')" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
