@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
-    /// A <see cref="StatusCodeResult"/> that when executed will produce a Conflict (409) response.
+    /// An <see cref="ObjectResult"/> that when executed will produce a Conflict (409) response.
     /// </summary>
     public class ConflictObjectResult : ObjectResult
     {
