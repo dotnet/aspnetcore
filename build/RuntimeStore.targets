@@ -44,7 +44,7 @@
 
     <!-- Copy to output directory -->
     <ItemGroup>
-      <AllMetapackageNupkgFile Include="$(_AllMetapackageDirectory)**\*.nupkg" />
+      <AllMetapackageNupkgFile Include="$(MetapackageWorkDirectory)**\*.nupkg" />
     </ItemGroup>
 
     <Copy SourceFiles="@(AllMetapackageNupkgFile)" DestinationFolder="$(BuildDir)" />
