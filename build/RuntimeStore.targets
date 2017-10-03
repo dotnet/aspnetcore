@@ -3,6 +3,7 @@
 
   <PropertyGroup>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
+    <_DependencyMirrorDirectory>$(RepositoryRoot).deps\mirror\</_DependencyMirrorDirectory>
     <_BuildScriptsDirectory>$(MSBuildThisFileDirectory)tools\scripts\</_BuildScriptsDirectory>
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
     <_RuntimeStoreWorkDirectory>$(_WorkRoot).rw\</_RuntimeStoreWorkDirectory>
@@ -65,6 +66,11 @@
       SourceName="Dependencies"
       SourceUri="$(_DependencyBuildDirectory)"
       Condition="Exists('$(_DependencyBuildDirectory)')" />
+    <UpdatePackageSource
+      NuGetConfigPath="$(_WorkRoot)NuGet.config"
+      SourceName="Mirror"
+      SourceUri="$(_DependencyMirrorDirectory)"
+      Condition="Exists('$(_DependencyMirrorDirectory)')" />
   </Target>
 
   <Target Name="_ResolveRuntimeStoreRID">
