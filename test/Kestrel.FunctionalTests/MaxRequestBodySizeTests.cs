@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                         "Host:",
                         "Content-Length: 1",
                         "",
-                        "A");
+                        "");
                     await connection.ReceiveForcedEnd(
                         "HTTP/1.1 200 OK",
                         $"Date: {server.Context.DateHeaderValue}",
