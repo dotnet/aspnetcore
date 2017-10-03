@@ -40,7 +40,7 @@ namespace BasicWebSite
 
             services.AddLogging();
             services.AddSingleton<IActionDescriptorProvider, ActionDescriptorCreationCounter>();
-            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+            services.AddHttpContextAccessor();
             services.AddSingleton<ContactsRepository>();
             services.AddSingleton<IErrorDescriptorProvider, VndErrorDescriptionProvider>();
             services.AddScoped<RequestIdService>();
