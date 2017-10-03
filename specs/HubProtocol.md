@@ -600,8 +600,19 @@ MessagePack payloads are wrapped in an outer message framing described below.
 ([Length][Body])([Length][Body])... continues until end of the connection ...
 ```
 
-* `[Length]` - A 64-bit integer in Network Byte Order (Big-endian) representing the length of the body in bytes
+* `[Length]` - A 32-bit unsigned integer encoded as VarInt. Variable size - 1-5 bytes.
 * `[Body]` - The body of the message, exactly `[Length]` bytes in length.
+
+
+##### VarInt
+
+VarInt encodes the most significant bit as a marker indicating whether the byte is the last byte of the VarInt or if it spans to the next byte. Bytes appear in the reverse order - i.e. the first byte contains the least significant bits of the value.
+
+Examples:
+ * VarInt: `0x35` (`%00110101`) - the most significant bit is 0 so the value is %x0110101 i.e. 0x35 (53)
+ * VarInt: `0x80 0x25` (`%10000000 %00101001`) - the most significant bit of the first byte is 1 so the remaining bits (%x0000000) are the lowest bits of the value. The most significant bit of the second byte is 0 meaning this is last byte of the VarInt. The actual value bits (%x0101001) need to be prepended to the bits we already read so the values is %01010010000000 i.e. 0x1480 (5248)
+
+The biggest supported payloads are 2GB in size so the biggest number we need to support is 0x7fffffff which when encoded as VarInt is 0xFF 0xFF 0xFF 0xFF 0x7F - hence the maximum size of the length prefix is 5 bytes.
 
 For example, when sending the following frames (`\n` indicates the actual Line Feed character, not an escape sequence):
 
@@ -610,9 +621,9 @@ For example, when sending the following frames (`\n` indicates the actual Line F
 
 The encoding will be as follows, as a list of binary digits in hex (text in parentheses `()` are comments). Whitespace and newlines are irrelevant and for illustration only.
 ```
-0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x0B                (start of frame; 64-bit integer value: 11)
+0x0B                                                   (start of frame; VarInt value: 11)
 0x68 0x65 0x6C 0x6C 0x6F 0x0A 0x77 0x6F 0x72 0x6C 0x64 (UTF-8 encoding of 'Hello\nWorld')
-0x00 0x00 0x00 0x00 0x00 0x00 0x00 0x02                (start of frame; 64-bit integer value: 2)
+0x02                                                   (start of frame; VarInt value: 2)
 0x01 0x02                                              (body)
 ```
 
@@ -628,10 +639,14 @@ In case of sending messages using binary encoding over text transports (e.g. Ser
 
 For example the following MsgPack payload (note: the payload consists of the length prefix and the MsgPack message):
 
-0x00 0x00 0x00 0x00 0x00 0x00 0x10 0x95 0x01 0xa1 0x31 0xc3 0xa8 0x4d 0x79 0x4d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+```
+0x10 0x95 0x01 0xa1 0x31 0xc3 0xa8 0x4d 0x79 0x4d 0x65 0x74 0x68 0x6f 0x64 0x91 0x2a
+```
 
 will look like this:
 
-32:AAAAAAAAABCVAaExw6hNeU1ldGhvZJEq;
+```
+24:EJUBoTHDqE15TWV0aG9kkSo=;
+```
 
 when sending over a text transport.
