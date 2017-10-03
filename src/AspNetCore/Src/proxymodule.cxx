@@ -85,7 +85,6 @@ CProxyModule::OnExecuteRequestHandler(
     ASPNETCORE_APPLICATION* pAspNetCoreApplication;
     ASPNETCORE_CONFIG::GetConfig(pHttpContext, &config);
 
-    // TODO store whether we are inproc or outofproc so we don't need to check the config everytime?
     if (config->QueryIsOutOfProcess())// case insensitive
     {
         m_pHandler = new FORWARDING_HANDLER(pHttpContext);
