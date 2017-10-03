@@ -46,15 +46,8 @@ describe('hubConnection', function () {
                 var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
 
                 hubConnection.on('CustomObject', function (customObject) {
-                    // messageapack does not have a setting to use camelCasing
-                    if (protocol.name == 'messagepack') {
-                        expect(customObject.Name).toBe('test');
-                        expect(customObject.Value).toBe(42);
-                    }
-                    else {
-                        expect(customObject.name).toBe('test');
-                        expect(customObject.value).toBe(42);
-                    }
+                    expect(customObject.Name).toBe('test');
+                    expect(customObject.Value).toBe(42);
                     hubConnection.stop();
                 });
 
