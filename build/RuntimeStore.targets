@@ -171,27 +171,23 @@
   </Target>
 
   <Target Name="AddManifestsToMetapackage">
-    <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{branch}\{build-number}"
-        Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
-
     <ItemGroup>
-      <MetaPackageNupkg Include="$(COHERENCE_DROP_LOCATION)\ship\Microsoft.AspNetCore.All.*.nupkg" />
+      <MetaPackageNupkg Include="$(_DependencyBuildDirectory)Microsoft.AspNetCore.All.*.nupkg" />
       <ManifestFiles Include="$(ArtifactsDir)*.xml"/>
     </ItemGroup>
 
-    <RemoveDir Directories="@(MetaPackageNupkg->'$(_WorkRoot)%(Filename)')" />
-    <Copy SourceFiles="@(MetaPackageNupkg)" DestinationFolder="$(ArtifactsDir)" />
-    <UnzipArchive File="$(ArtifactsDir)%(MetaPackageNupkg.FileName)%(MetaPackageNupkg.Extension)" Destination="@(MetaPackageNupkg->'$(_WorkRoot)%(Filename)')" />
+    <RemoveDir Directories="$(_WorkRoot)" />
+    <UnzipArchive File="%(MetaPackageNupkg.FullPath)" Destination="$(_WorkRoot)" />
 
     <!-- Create a consolidated manifest and place in metapackage -->
     <RepoTasks.ConsolidateManifests
       Manifests="@(ManifestFiles)"
-      ManifestDestination="@(MetaPackageNupkg->'$(_WorkRoot)%(Filename)\build\aspnetcore-store-$(VersionPrefix)-$(VersionSuffix).xml')"/>
+      ManifestDestination="$(_WorkRoot)\build\aspnetcore-store-$(VersionPrefix)-$(VersionSuffix).xml"/>
 
     <ItemGroup>
-      <ArchiveFiles Include="$(TempDir)%(MetaPackageNupkg.Filename)\**\*" />
+      <ArchiveFiles Include="$(_WorkRoot)**\*" />
     </ItemGroup>
 
-    <ZipArchive File="%(MetaPackageNupkg.FullPath)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="@(MetaPackageNupkg->'$(_WorkRoot)%(Filename)')" Overwrite="true" />
+    <ZipArchive File="$(ArtifactsDir)%(MetaPackageNupkg.FileName)%(MetaPackageNupkg.Extension)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="$(_WorkRoot)" Overwrite="true" />
   </Target>
 </Project>
