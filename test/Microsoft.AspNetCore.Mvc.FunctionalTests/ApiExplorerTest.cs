@@ -1079,6 +1079,7 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 response =>
                 {
                     Assert.Equal(0, response.StatusCode);
+                    Assert.True(response.IsDefaultResponse);
                     AssertProblemDetails(response);
                 });
         }
@@ -1097,12 +1098,14 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 response =>
                 {
                     Assert.Equal(0, response.StatusCode);
+                    Assert.True(response.IsDefaultResponse);
                     AssertProblemDetails(response);
                 },
                 response => Assert.Equal(200, response.StatusCode),
                 response =>
                 {
                     Assert.Equal(400, response.StatusCode);
+                    Assert.False(response.IsDefaultResponse);
                     AssertProblemDetails(response);
                 });
         }
@@ -1123,17 +1126,20 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 response =>
                 {
                     Assert.Equal(0, response.StatusCode);
+                    Assert.True(response.IsDefaultResponse);
                     AssertProblemDetails(response);
                 },
                 response => Assert.Equal(200, response.StatusCode),
                 response =>
                 {
                     Assert.Equal(400, response.StatusCode);
+                    Assert.False(response.IsDefaultResponse);
                     AssertProblemDetails(response);
                 },
                 response =>
                 {
                     Assert.Equal(404, response.StatusCode);
+                    Assert.False(response.IsDefaultResponse);
                     AssertProblemDetails(response);
                 });
         }
@@ -1199,6 +1205,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             public string ResponseType { get; set; }
 
             public int StatusCode { get; set; }
+
+            public bool IsDefaultResponse { get; set; }
         }
 
         private class ApiExplorerResponseFormat

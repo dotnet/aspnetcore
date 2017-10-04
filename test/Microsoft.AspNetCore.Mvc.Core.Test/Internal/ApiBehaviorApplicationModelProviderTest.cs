@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
-    public class ApiControllerApplicationModelProviderTest
+    public class ApiBehaviorApplicationModelProviderTest
     {
         [Fact]
         public void OnProvidersExecuting_AddsModelStateInvalidFilter_IfTypeIsAnnotatedWithAttribute()
@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 InvalidModelStateResponseFactory = _ => null,
             });
 
-            var provider = new ApiControllerApplicationModelProvider(options, NullLoggerFactory.Instance);
+            var provider = new ApiBehaviorApplicationModelProvider(options, NullLoggerFactory.Instance);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 EnableModelStateInvalidFilter = false,
             });
 
-            var provider = new ApiControllerApplicationModelProvider(options, NullLoggerFactory.Instance);
+            var provider = new ApiBehaviorApplicationModelProvider(options, NullLoggerFactory.Instance);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -63,7 +63,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 InvalidModelStateResponseFactory = _ => null,
             });
 
-            var provider = new ApiControllerApplicationModelProvider(options, NullLoggerFactory.Instance);
+            var provider = new ApiBehaviorApplicationModelProvider(options, NullLoggerFactory.Instance);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -91,7 +91,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 EnableModelStateInvalidFilter = false,
             });
 
-            var provider = new ApiControllerApplicationModelProvider(options, NullLoggerFactory.Instance);
+            var provider = new ApiBehaviorApplicationModelProvider(options, NullLoggerFactory.Instance);
 
             // Act
             provider.OnProvidersExecuting(context);
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 InvalidModelStateResponseFactory = _ => null,
             });
 
-            var provider = new ApiControllerApplicationModelProvider(options, NullLoggerFactory.Instance);
+            var provider = new ApiBehaviorApplicationModelProvider(options, NullLoggerFactory.Instance);
 
             // Act & Assert
             var ex = Assert.Throws<InvalidOperationException>(() => provider.OnProvidersExecuting(context));

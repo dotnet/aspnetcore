@@ -12,12 +12,12 @@ using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Mvc.Internal
 {
-    public class ApiControllerApplicationModelProvider : IApplicationModelProvider
+    public class ApiBehaviorApplicationModelProvider : IApplicationModelProvider
     {
         private readonly ApiBehaviorOptions _apiBehaviorOptions;
         private readonly ModelStateInvalidFilter _modelStateInvalidFilter;
 
-        public ApiControllerApplicationModelProvider(IOptions<ApiBehaviorOptions> apiBehaviorOptions, ILoggerFactory loggerFactory)
+        public ApiBehaviorApplicationModelProvider(IOptions<ApiBehaviorOptions> apiBehaviorOptions, ILoggerFactory loggerFactory)
         {
             _apiBehaviorOptions = apiBehaviorOptions.Value;
             if (_apiBehaviorOptions.EnableModelStateInvalidFilter && _apiBehaviorOptions.InvalidModelStateResponseFactory == null)

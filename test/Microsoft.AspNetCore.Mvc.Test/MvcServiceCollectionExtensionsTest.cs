@@ -417,7 +417,7 @@ namespace Microsoft.AspNetCore.Mvc
                             typeof(CorsApplicationModelProvider),
                             typeof(AuthorizationApplicationModelProvider),
                             typeof(TempDataApplicationModelProvider),
-                            typeof(ApiControllerApplicationModelProvider),
+                            typeof(ApiBehaviorApplicationModelProvider),
                         }
                     },
                     {
@@ -425,7 +425,7 @@ namespace Microsoft.AspNetCore.Mvc
                         new Type[]
                         {
                             typeof(DefaultApiDescriptionProvider),
-                            typeof(ApiControllerApiDescriptionProvider),
+                            typeof(ApiBehaviorApiDescriptionProvider),
                             typeof(JsonPatchOperationsArrayProvider),
                         }
                     },

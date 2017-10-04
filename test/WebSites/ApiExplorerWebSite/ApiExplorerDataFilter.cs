@@ -89,7 +89,8 @@ namespace ApiExplorerWebSite
                 var responseType = new ApiExplorerResponseType()
                 {
                     StatusCode = response.StatusCode,
-                    ResponseType = response.Type?.FullName
+                    ResponseType = response.Type?.FullName,
+                    IsDefaultResponse = response.IsDefaultResponse,
                 };
 
                 foreach(var responseFormat in response.ApiResponseFormats)
@@ -152,6 +153,8 @@ namespace ApiExplorerWebSite
             public string ResponseType { get; set; }
 
             public int StatusCode { get; set; }
+
+            public bool IsDefaultResponse { get; set; }
         }
 
         private class ApiExplorerResponseFormat
