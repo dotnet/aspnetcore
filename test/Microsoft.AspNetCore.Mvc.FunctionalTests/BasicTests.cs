@@ -406,8 +406,10 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         public async Task RedirectToAction_WithEmptyActionName_UsesAmbientValue()
         {
             // Arrange
-            var product = new List<KeyValuePair<string, string>>();
-            product.Add(new KeyValuePair<string, string>("SampleInt", "20"));
+            var product = new List<KeyValuePair<string, string>>
+            {
+                new KeyValuePair<string, string>("SampleInt", "20")
+            };
 
             // Act
             var response = await Client.PostAsync("/Home/Product", new FormUrlEncodedContent(product));
