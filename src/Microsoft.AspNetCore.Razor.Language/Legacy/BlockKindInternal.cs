@@ -5,17 +5,19 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal enum BlockKindInternal
     {
+        // We want this to match the values in BlockKind so that the values are maintained when casting.
+
         // Code
-        Statement,
-        Directive,
-        Expression,
+        Statement = 0,
+        Directive = 1,
+        Expression = 3,
 
         // Markup
-        Markup,
-        Template,
+        Markup = 5,
+        Template = 7,
 
         // Special
-        Comment,
-        Tag
+        Comment = 8,
+        Tag = 9
     }
 }
