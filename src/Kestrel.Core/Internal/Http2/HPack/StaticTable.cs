@@ -1,8 +1,8 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         public static StaticTable Instance => _instance;
 
-        public int Length => _staticTable.Length;
+        public int Count => _staticTable.Length;
 
         public HeaderField this[int index] => _staticTable[index];
 
@@ -35,67 +35,70 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
         private readonly HeaderField[] _staticTable = new HeaderField[]
         {
-            new HeaderField(":authority", ""),
-            new HeaderField(":method", "GET"),
-            new HeaderField(":method", "POST"),
-            new HeaderField(":path", "/"),
-            new HeaderField(":path", "/index.html"),
-            new HeaderField(":scheme", "http"),
-            new HeaderField(":scheme", "https"),
-            new HeaderField(":status", "200"),
-            new HeaderField(":status", "204"),
-            new HeaderField(":status", "206"),
-            new HeaderField(":status", "304"),
-            new HeaderField(":status", "400"),
-            new HeaderField(":status", "404"),
-            new HeaderField(":status", "500"),
-            new HeaderField("accept-charset", ""),
-            new HeaderField("accept-encoding", "gzip, deflate"),
-            new HeaderField("accept-language", ""),
-            new HeaderField("accept-ranges", ""),
-            new HeaderField("accept", ""),
-            new HeaderField("access-control-allow-origin", ""),
-            new HeaderField("age", ""),
-            new HeaderField("allow", ""),
-            new HeaderField("authorization", ""),
-            new HeaderField("cache-control", ""),
-            new HeaderField("content-disposition", ""),
-            new HeaderField("content-encoding", ""),
-            new HeaderField("content-language", ""),
-            new HeaderField("content-length", ""),
-            new HeaderField("content-location", ""),
-            new HeaderField("content-range", ""),
-            new HeaderField("content-type", ""),
-            new HeaderField("cookie", ""),
-            new HeaderField("date", ""),
-            new HeaderField("etag", ""),
-            new HeaderField("expect", ""),
-            new HeaderField("expires", ""),
-            new HeaderField("from", ""),
-            new HeaderField("host", ""),
-            new HeaderField("if-match", ""),
-            new HeaderField("if-modified-since", ""),
-            new HeaderField("if-none-match", ""),
-            new HeaderField("if-range", ""),
-            new HeaderField("if-unmodifiedsince", ""),
-            new HeaderField("last-modified", ""),
-            new HeaderField("link", ""),
-            new HeaderField("location", ""),
-            new HeaderField("max-forwards", ""),
-            new HeaderField("proxy-authenticate", ""),
-            new HeaderField("proxy-authorization", ""),
-            new HeaderField("range", ""),
-            new HeaderField("referer", ""),
-            new HeaderField("refresh", ""),
-            new HeaderField("retry-after", ""),
-            new HeaderField("server", ""),
-            new HeaderField("set-cookie", ""),
-            new HeaderField("strict-transport-security", ""),
-            new HeaderField("transfer-encoding", ""),
-            new HeaderField("user-agent", ""),
-            new HeaderField("vary", ""),
-            new HeaderField("via", ""),
-            new HeaderField("www-authenticate", "")
+            CreateHeaderField(":authority", ""),
+            CreateHeaderField(":method", "GET"),
+            CreateHeaderField(":method", "POST"),
+            CreateHeaderField(":path", "/"),
+            CreateHeaderField(":path", "/index.html"),
+            CreateHeaderField(":scheme", "http"),
+            CreateHeaderField(":scheme", "https"),
+            CreateHeaderField(":status", "200"),
+            CreateHeaderField(":status", "204"),
+            CreateHeaderField(":status", "206"),
+            CreateHeaderField(":status", "304"),
+            CreateHeaderField(":status", "400"),
+            CreateHeaderField(":status", "404"),
+            CreateHeaderField(":status", "500"),
+            CreateHeaderField("accept-charset", ""),
+            CreateHeaderField("accept-encoding", "gzip, deflate"),
+            CreateHeaderField("accept-language", ""),
+            CreateHeaderField("accept-ranges", ""),
+            CreateHeaderField("accept", ""),
+            CreateHeaderField("access-control-allow-origin", ""),
+            CreateHeaderField("age", ""),
+            CreateHeaderField("allow", ""),
+            CreateHeaderField("authorization", ""),
+            CreateHeaderField("cache-control", ""),
+            CreateHeaderField("content-disposition", ""),
+            CreateHeaderField("content-encoding", ""),
+            CreateHeaderField("content-language", ""),
+            CreateHeaderField("content-length", ""),
+            CreateHeaderField("content-location", ""),
+            CreateHeaderField("content-range", ""),
+            CreateHeaderField("content-type", ""),
+            CreateHeaderField("cookie", ""),
+            CreateHeaderField("date", ""),
+            CreateHeaderField("etag", ""),
+            CreateHeaderField("expect", ""),
+            CreateHeaderField("expires", ""),
+            CreateHeaderField("from", ""),
+            CreateHeaderField("host", ""),
+            CreateHeaderField("if-match", ""),
+            CreateHeaderField("if-modified-since", ""),
+            CreateHeaderField("if-none-match", ""),
+            CreateHeaderField("if-range", ""),
+            CreateHeaderField("if-unmodifiedsince", ""),
+            CreateHeaderField("last-modified", ""),
+            CreateHeaderField("link", ""),
+            CreateHeaderField("location", ""),
+            CreateHeaderField("max-forwards", ""),
+            CreateHeaderField("proxy-authenticate", ""),
+            CreateHeaderField("proxy-authorization", ""),
+            CreateHeaderField("range", ""),
+            CreateHeaderField("referer", ""),
+            CreateHeaderField("refresh", ""),
+            CreateHeaderField("retry-after", ""),
+            CreateHeaderField("server", ""),
+            CreateHeaderField("set-cookie", ""),
+            CreateHeaderField("strict-transport-security", ""),
+            CreateHeaderField("transfer-encoding", ""),
+            CreateHeaderField("user-agent", ""),
+            CreateHeaderField("vary", ""),
+            CreateHeaderField("via", ""),
+            CreateHeaderField("www-authenticate", "")
         };
+
+        private static HeaderField CreateHeaderField(string name, string value)
+            => new HeaderField(Encoding.ASCII.GetBytes(name), Encoding.ASCII.GetBytes(value));
     }
 }

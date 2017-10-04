@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 {
@@ -301,45 +299,108 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
             return _encodingTable[data];
         }
 
-        public static string Decode(byte[] data, int offset, int count)
+        /// <summary>
+        /// Decodes a Huffman encoded string from a byte array.
+        /// </summary>
+        /// <param name="src">The source byte array containing the encoded data.</param>
+        /// <param name="offset">The offset in the byte array where the coded data starts.</param>
+        /// <param name="count">The number of bytes to decode.</param>
+        /// <param name="dst">The destination byte array to store the decoded data.</param>
+        /// <returns>The number of decoded symbols.</returns>
+        public static int Decode(byte[] src, int offset, int count, byte[] dst)
         {
-            var sb = new StringBuilder();
-
             var i = offset;
+            var j = 0;
             var lastDecodedBits = 0;
             while (i < count)
             {
-                var next = (uint)(data[i] << 24 + lastDecodedBits);
-                next |= (i + 1 < data.Length ? (uint)(data[i + 1] << 16 + lastDecodedBits) : 0);
-                next |= (i + 2 < data.Length ? (uint)(data[i + 2] << 8 + lastDecodedBits) : 0);
-                next |= (i + 3 < data.Length ? (uint)(data[i + 3] << lastDecodedBits) : 0);
+                var next = (uint)(src[i] << 24 + lastDecodedBits);
+                next |= (i + 1 < src.Length ? (uint)(src[i + 1] << 16 + lastDecodedBits) : 0);
+                next |= (i + 2 < src.Length ? (uint)(src[i + 2] << 8 + lastDecodedBits) : 0);
+                next |= (i + 3 < src.Length ? (uint)(src[i + 3] << lastDecodedBits) : 0);
 
                 var ones = (uint)(int.MinValue >> (8 - lastDecodedBits - 1));
-                if (i == count - 1 && (next & ones) == ones)
+                if (i == count - 1 && lastDecodedBits > 0 && (next & ones) == ones)
                 {
-                    // Padding
+                    // The remaining 7 or less bits are all 1, which is padding.
+                    // We specifically check that lastDecodedBits > 0 because padding
+                    // longer than 7 bits should be treated as a decoding error.
+                    // http://httpwg.org/specs/rfc7541.html#rfc.section.5.2
                     break;
                 }
 
-                var ch = Decode(next, out var decodedBits);
-                sb.Append((char)ch);
+                // The longest possible symbol size is 30 bits. If we're at the last 4 bytes
+                // of the input, we need to make sure we pass the correct number of valid bits
+                // left, otherwise the trailing 0s in next may form a valid symbol.
+                var validBits = Math.Min(30, (8 - lastDecodedBits) + (count - i - 1) * 8);
+                var ch = Decode(next, validBits, out var decodedBits);
 
+                if (ch == -1)
+                {
+                    // No valid symbol could be decoded with the bits in next
+                    throw new HuffmanDecodingException(CoreStrings.HPackHuffmanErrorIncomplete);
+                }
+                else if (ch == 256)
+                {
+                    // A Huffman-encoded string literal containing the EOS symbol MUST be treated as a decoding error.
+                    // http://httpwg.org/specs/rfc7541.html#rfc.section.5.2
+                    throw new HuffmanDecodingException(CoreStrings.HPackHuffmanErrorEOS);
+                }
+
+                if (j == dst.Length)
+                {
+                    throw new HuffmanDecodingException(CoreStrings.HPackHuffmanErrorDestinationTooSmall);
+                }
+
+                dst[j++] = (byte)ch;
+
+                // If we crossed a byte boundary, advance i so we start at the next byte that's not fully decoded.
                 lastDecodedBits += decodedBits;
                 i += lastDecodedBits / 8;
+
+                // Modulo 8 since we only care about how many bits were decoded in the last byte that we processed.
                 lastDecodedBits %= 8;
             }
 
-            return sb.ToString();
+            return j;
         }
 
-        public static int Decode(uint data, out int decodedBits)
+        /// <summary>
+        /// Decodes a single symbol from a 32-bit word.
+        /// </summary>
+        /// <param name="data">A 32-bit word containing a Huffman encoded symbol.</param>
+        /// <param name="validBits">
+        /// The number of bits in <paramref name="data"/> that may contain an encoded symbol.
+        /// This is not the exact number of bits that encode the symbol. Instead, it prevents
+        /// decoding the lower bits of <paramref name="data"/> if they don't contain any
+        /// encoded data.
+        /// </param>
+        /// <param name="decodedBits">The number of bits decoded from <paramref name="data"/>.</param>
+        /// <returns>The decoded symbol.</returns>
+        public static int Decode(uint data, int validBits, out int decodedBits)
         {
+            // The code below implements the decoding logic for a canonical Huffman code.
+            //
+            // To decode a symbol, we scan the decoding table, which is sorted by ascending symbol bit length.
+            // For each bit length b, we determine the maximum b-bit encoded value, plus one (that is codeMax).
+            // This is done with the following logic:
+            //
+            // if we're at the first entry in the table,
+            //    codeMax = the # of symbols encoded in b bits
+            // else,
+            //    left-shift codeMax by the difference between b and the previous entry's bit length,
+            //    then increment codeMax by the # of symbols encoded in b bits
+            //
+            // Next, we look at the value v encoded in the highest b bits of data. If v is less than codeMax,
+            // those bits correspond to a Huffman encoded symbol. We find the corresponding decoded
+            // symbol in the list of values associated with bit length b in the decoding table by indexing it
+            // with codeMax - v.
+
             var codeMax = 0;
 
-            for (var i = 0; i < _decodingTable.Length; i++)
+            for (var i = 0; i < _decodingTable.Length && _decodingTable[i].codeLength <= validBits; i++)
             {
                 var (codeLength, codes) = _decodingTable[i];
-                var mask = int.MinValue >> (codeLength - 1);
 
                 if (i > 0)
                 {
@@ -348,6 +409,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
 
                 codeMax += codes.Length;
 
+                var mask = int.MinValue >> (codeLength - 1);
                 var masked = (data & mask) >> (32 - codeLength);
 
                 if (masked < codeMax)
@@ -357,7 +419,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack
                 }
             }
 
-            throw new Exception();
+            decodedBits = 0;
+            return -1;
         }
     }
 }

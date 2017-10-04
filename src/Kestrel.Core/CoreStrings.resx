@@ -360,4 +360,28 @@
   <data name="EndPointHttp2NotNegotiated" xml:space="preserve">
     <value>HTTP/2 over TLS was not negotiated on an HTTP/2-only endpoint.</value>
   </data>
+  <data name="HPackErrorDynamicTableSizeUpdateTooLarge" xml:space="preserve">
+    <value>A dynamic table size of {size} octets is greater than the configured maximum size of {maxSize} octets.</value>
+  </data>
+  <data name="HPackErrorIndexOutOfRange" xml:space="preserve">
+    <value>Index {index} is outside the bounds of the header field table.</value>
+  </data>
+  <data name="HPackHuffmanErrorIncomplete" xml:space="preserve">
+    <value>Input data could not be fully decoded.</value>
+  </data>
+  <data name="HPackHuffmanErrorEOS" xml:space="preserve">
+    <value>Input data contains the EOS symbol.</value>
+  </data>
+  <data name="HPackHuffmanErrorDestinationTooSmall" xml:space="preserve">
+    <value>The destination buffer is not large enough to store the decoded data.</value>
+  </data>
+  <data name="HPackHuffmanError" xml:space="preserve">
+    <value>Huffman decoding error.</value>
+  </data>
+  <data name="HPackStringLengthTooLarge" xml:space="preserve">
+    <value>Decoded string length of {length} octets is greater than the configured maximum length of {maxStringLength} octets.</value>
+  </data>
+  <data name="HPackErrorIncompleteHeaderBlock" xml:space="preserve">
+    <value>The header block was incomplete and could not be fully decoded.</value>
+  </data>
 </root>

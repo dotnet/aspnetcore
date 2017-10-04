@@ -16,7 +16,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
-    public class Http2Connection : ITimeoutControl, IHttp2StreamLifetimeHandler
+    public class Http2Connection : ITimeoutControl, IHttp2StreamLifetimeHandler, IHttpHeadersHandler
     {
         public static byte[] ClientPreface { get; } = Encoding.ASCII.GetBytes("PRI * HTTP/2.0\r\n\r\nSM\r\n\r\n");
 
@@ -40,7 +40,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             _context = context;
             _frameWriter = new Http2FrameWriter(context.Transport.Output, context.Application.Input);
-            _hpackDecoder = new HPackDecoder();
+            _hpackDecoder = new HPackDecoder((int)_serverSettings.HeaderTableSize);
         }
 
         public string ConnectionId => _context.ConnectionId;
@@ -140,6 +140,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // TODO: log
                 error = ex;
                 errorCode = ex.ErrorCode;
+            }
+            catch (HPackDecodingException ex)
+            {
+                // TODO: log
+                error = ex;
+                errorCode = Http2ErrorCode.COMPRESSION_ERROR;
             }
             catch (Exception ex)
             {
@@ -350,9 +356,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
                 _streams[_incomingFrame.StreamId] = _currentHeadersStream;
 
-                _hpackDecoder.Decode(_incomingFrame.HeadersPayload, _currentHeadersStream.RequestHeaders);
+                var endHeaders = (_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_HEADERS) == Http2HeadersFrameFlags.END_HEADERS;
+                _hpackDecoder.Decode(_incomingFrame.HeadersPayload, endHeaders, handler: this);
 
-                if ((_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_HEADERS) == Http2HeadersFrameFlags.END_HEADERS)
+                if (endHeaders)
                 {
                     _highestOpenedStreamId = _incomingFrame.StreamId;
                     _ = _currentHeadersStream.ProcessRequestsAsync();
@@ -525,9 +532,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
             }
 
-            _hpackDecoder.Decode(_incomingFrame.HeadersPayload, _currentHeadersStream.RequestHeaders);
+            var endHeaders = (_incomingFrame.ContinuationFlags & Http2ContinuationFrameFlags.END_HEADERS) == Http2ContinuationFrameFlags.END_HEADERS;
+            _hpackDecoder.Decode(_incomingFrame.HeadersPayload, endHeaders, handler: this);
 
-            if ((_incomingFrame.ContinuationFlags & Http2ContinuationFrameFlags.END_HEADERS) == Http2ContinuationFrameFlags.END_HEADERS)
+            if (endHeaders)
             {
                 _highestOpenedStreamId = _currentHeadersStream.StreamId;
                 _ = _currentHeadersStream.ProcessRequestsAsync();
@@ -569,6 +577,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         void IHttp2StreamLifetimeHandler.OnStreamCompleted(int streamId)
         {
             _streams.TryRemove(streamId, out _);
+        }
+
+        public void OnHeader(Span<byte> name, Span<byte> value)
+        {
+            _currentHeadersStream.OnHeader(name, value);
         }
 
         void ITimeoutControl.SetTimeout(long ticks, TimeoutAction timeoutAction)

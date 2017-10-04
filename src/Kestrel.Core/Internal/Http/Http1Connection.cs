@@ -344,18 +344,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             }
         }
 
-        public void OnHeader(Span<byte> name, Span<byte> value)
-        {
-            _requestHeadersParsed++;
-            if (_requestHeadersParsed > ServerOptions.Limits.MaxRequestHeaderCount)
-            {
-                ThrowRequestRejected(RequestRejectionReason.TooManyHeaders);
-            }
-            var valueString = value.GetAsciiStringNonNullCharacters();
-
-            HttpRequestHeaders.Append(name, valueString);
-        }
-
         protected void EnsureHostHeaderExists()
         {
             if (_httpVersion == Http.HttpVersion.Http10)
