@@ -139,6 +139,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Tls
             if (OpenSsl.BIO_ctrl_pending(_inputBio) == 0)
             {
                 var bytesRead = await _innerStream.ReadAsync(_inputBuffer, 0, _inputBuffer.Length, cancellationToken);
+
+                if (bytesRead == 0)
+                {
+                    return 0;
+                }
+
                 OpenSsl.BIO_write(_inputBio, _inputBuffer, 0, bytesRead);
             }
 
