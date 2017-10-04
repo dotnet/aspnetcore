@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             DirectiveKind.SingleLine,
             builder =>
             {
-                builder.AddTypeToken();
+                builder.AddTypeToken(Resources.InheritsDirective_TypeToken_Name, Resources.InheritsDirective_TypeToken_Description);
                 builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
                 builder.Description = Resources.InheritsDirective_Description;
             });

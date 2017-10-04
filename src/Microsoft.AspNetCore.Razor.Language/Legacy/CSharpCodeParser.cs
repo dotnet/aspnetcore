@@ -23,7 +23,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             DirectiveKind.SingleLine,
             builder =>
             {
-                builder.AddStringToken();
+                builder.AddStringToken(Resources.AddTagHelperDirective_StringToken_Name, Resources.AddTagHelperDirective_StringToken_Description);
                 builder.Description = Resources.AddTagHelperDirective_Description;
             });
 
@@ -32,7 +32,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             DirectiveKind.SingleLine,
             builder =>
             {
-                builder.AddStringToken();
+                builder.AddStringToken(Resources.RemoveTagHelperDirective_StringToken_Name, Resources.RemoveTagHelperDirective_StringToken_Description);
                 builder.Description = Resources.RemoveTagHelperDirective_Description;
             });
 
@@ -41,7 +41,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             DirectiveKind.SingleLine,
             builder =>
             {
-                builder.AddStringToken();
+                builder.AddStringToken(Resources.TagHelperPrefixDirective_PrefixToken_Name, Resources.TagHelperPrefixDirective_PrefixToken_Description);
                 builder.Description = Resources.TagHelperPrefixDirective_Description;
             });
 

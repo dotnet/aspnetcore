@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             DirectiveKind.SingleLine,
             builder =>
             {
-                builder.AddOptionalStringToken();
+                builder.AddOptionalStringToken(Resources.PageDirective_RouteToken_Name, Resources.PageDirective_RouteToken_Description);
                 builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
                 builder.Description = Resources.PageDirective_Description;
             });

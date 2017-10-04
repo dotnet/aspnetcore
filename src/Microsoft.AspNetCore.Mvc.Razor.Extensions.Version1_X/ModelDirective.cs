@@ -16,8 +16,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             DirectiveKind.SingleLine,
             builder =>
             {
-                builder.AddTypeToken();
+                builder.AddTypeToken(Resources.ModelDirective_TypeToken_Name, Resources.ModelDirective_TypeToken_Description);
                 builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
+                builder.Description = Resources.ModelDirective_Description;
             });
 
         public static IRazorEngineBuilder Register(IRazorEngineBuilder builder)

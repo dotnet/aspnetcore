@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             => GetString("ArgumentCannotBeNullOrEmpy");
 
         /// <summary>
-        /// Declare a property and inject a service from the application's service container into it.
+        /// Inject a service from the application's service container into a property.
         /// </summary>
         internal static string InjectDirective_Description
         {
@@ -33,13 +33,69 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         /// <summary>
-        /// Declare a property and inject a service from the application's service container into it.
+        /// Inject a service from the application's service container into a property.
         /// </summary>
         internal static string FormatInjectDirective_Description()
             => GetString("InjectDirective_Description");
 
         /// <summary>
-        /// Specify the view or page model for the current document.
+        /// The name of the property.
+        /// </summary>
+        internal static string InjectDirective_MemberToken_Description
+        {
+            get => GetString("InjectDirective_MemberToken_Description");
+        }
+
+        /// <summary>
+        /// The name of the property.
+        /// </summary>
+        internal static string FormatInjectDirective_MemberToken_Description()
+            => GetString("InjectDirective_MemberToken_Description");
+
+        /// <summary>
+        /// PropertyName
+        /// </summary>
+        internal static string InjectDirective_MemberToken_Name
+        {
+            get => GetString("InjectDirective_MemberToken_Name");
+        }
+
+        /// <summary>
+        /// PropertyName
+        /// </summary>
+        internal static string FormatInjectDirective_MemberToken_Name()
+            => GetString("InjectDirective_MemberToken_Name");
+
+        /// <summary>
+        /// The type of the service to inject.
+        /// </summary>
+        internal static string InjectDirective_TypeToken_Description
+        {
+            get => GetString("InjectDirective_TypeToken_Description");
+        }
+
+        /// <summary>
+        /// The type of the service to inject.
+        /// </summary>
+        internal static string FormatInjectDirective_TypeToken_Description()
+            => GetString("InjectDirective_TypeToken_Description");
+
+        /// <summary>
+        /// TypeName
+        /// </summary>
+        internal static string InjectDirective_TypeToken_Name
+        {
+            get => GetString("InjectDirective_TypeToken_Name");
+        }
+
+        /// <summary>
+        /// TypeName
+        /// </summary>
+        internal static string FormatInjectDirective_TypeToken_Name()
+            => GetString("InjectDirective_TypeToken_Name");
+
+        /// <summary>
+        /// Specify the view or page model for the page.
         /// </summary>
         internal static string ModelDirective_Description
         {
@@ -47,10 +103,38 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         /// <summary>
-        /// Specify the view or page model for the current document.
+        /// Specify the view or page model for the page.
         /// </summary>
         internal static string FormatModelDirective_Description()
             => GetString("ModelDirective_Description");
+
+        /// <summary>
+        /// The model type.
+        /// </summary>
+        internal static string ModelDirective_TypeToken_Description
+        {
+            get => GetString("ModelDirective_TypeToken_Description");
+        }
+
+        /// <summary>
+        /// The model type.
+        /// </summary>
+        internal static string FormatModelDirective_TypeToken_Description()
+            => GetString("ModelDirective_TypeToken_Description");
+
+        /// <summary>
+        /// TypeName
+        /// </summary>
+        internal static string ModelDirective_TypeToken_Name
+        {
+            get => GetString("ModelDirective_TypeToken_Name");
+        }
+
+        /// <summary>
+        /// TypeName
+        /// </summary>
+        internal static string FormatModelDirective_TypeToken_Name()
+            => GetString("ModelDirective_TypeToken_Name");
 
         /// <summary>
         /// The 'inherits' keyword is not allowed when a '{0}' keyword is used.
@@ -123,7 +207,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             => string.Format(CultureInfo.CurrentCulture, GetString("MvcRazorParser_InvalidPropertyType"), p0, p1, p2);
 
         /// <summary>
-        /// Specify the base namespace for the current document.
+        /// Specify the base namespace for the page.
         /// </summary>
         internal static string NamespaceDirective_Description
         {
@@ -131,10 +215,38 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         /// <summary>
-        /// Specify the base namespace for the current document.
+        /// Specify the base namespace for the page.
         /// </summary>
         internal static string FormatNamespaceDirective_Description()
             => GetString("NamespaceDirective_Description");
+
+        /// <summary>
+        /// The namespace for the page.
+        /// </summary>
+        internal static string NamespaceDirective_NamespaceToken_Description
+        {
+            get => GetString("NamespaceDirective_NamespaceToken_Description");
+        }
+
+        /// <summary>
+        /// The namespace for the page.
+        /// </summary>
+        internal static string FormatNamespaceDirective_NamespaceToken_Description()
+            => GetString("NamespaceDirective_NamespaceToken_Description");
+
+        /// <summary>
+        /// Namespace
+        /// </summary>
+        internal static string NamespaceDirective_NamespaceToken_Name
+        {
+            get => GetString("NamespaceDirective_NamespaceToken_Name");
+        }
+
+        /// <summary>
+        /// Namespace
+        /// </summary>
+        internal static string FormatNamespaceDirective_NamespaceToken_Name()
+            => GetString("NamespaceDirective_NamespaceToken_Name");
 
         /// <summary>
         /// The '@{0}' directive specified in {1} file will not be imported. The directive must appear at the top of each Razor cshtml file.
@@ -151,7 +263,7 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             => string.Format(CultureInfo.CurrentCulture, GetString("PageDirectiveCannotBeImported"), p0, p1);
 
         /// <summary>
-        /// Declare the current document as a Razor Page.
+        /// Mark the page as a Razor Page.
         /// </summary>
         internal static string PageDirective_Description
         {
@@ -159,10 +271,38 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
         }
 
         /// <summary>
-        /// Declare the current document as a Razor Page.
+        /// Mark the page as a Razor Page.
         /// </summary>
         internal static string FormatPageDirective_Description()
             => GetString("PageDirective_Description");
+
+        /// <summary>
+        /// An optional route template for the page.
+        /// </summary>
+        internal static string PageDirective_RouteToken_Description
+        {
+            get => GetString("PageDirective_RouteToken_Description");
+        }
+
+        /// <summary>
+        /// An optional route template for the page.
+        /// </summary>
+        internal static string FormatPageDirective_RouteToken_Description()
+            => GetString("PageDirective_RouteToken_Description");
+
+        /// <summary>
+        /// RouteTemplate
+        /// </summary>
+        internal static string PageDirective_RouteToken_Name
+        {
+            get => GetString("PageDirective_RouteToken_Name");
+        }
+
+        /// <summary>
+        /// RouteTemplate
+        /// </summary>
+        internal static string FormatPageDirective_RouteToken_Name()
+            => GetString("PageDirective_RouteToken_Name");
 
         private static string GetString(string name, params string[] formatterNames)
         {

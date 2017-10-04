@@ -696,6 +696,146 @@ namespace Microsoft.AspNetCore.Razor.Language
         internal static string FormatInvalidRazorLanguageVersion(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidRazorLanguageVersion"), p0);
 
+        /// <summary>
+        /// Add tag helpers from the specified type name and assembly name. Specify '*' for the type name to include all tag helper types from the specified assembly.
+        /// </summary>
+        internal static string AddTagHelperDirective_StringToken_Description
+        {
+            get => GetString("AddTagHelperDirective_StringToken_Description");
+        }
+
+        /// <summary>
+        /// Add tag helpers from the specified type name and assembly name. Specify '*' for the type name to include all tag helper types from the specified assembly.
+        /// </summary>
+        internal static string FormatAddTagHelperDirective_StringToken_Description()
+            => GetString("AddTagHelperDirective_StringToken_Description");
+
+        /// <summary>
+        /// TypeName, AssemblyName
+        /// </summary>
+        internal static string AddTagHelperDirective_StringToken_Name
+        {
+            get => GetString("AddTagHelperDirective_StringToken_Name");
+        }
+
+        /// <summary>
+        /// TypeName, AssemblyName
+        /// </summary>
+        internal static string FormatAddTagHelperDirective_StringToken_Name()
+            => GetString("AddTagHelperDirective_StringToken_Name");
+
+        /// <summary>
+        /// The base type that the current page inherits.
+        /// </summary>
+        internal static string InheritsDirective_TypeToken_Description
+        {
+            get => GetString("InheritsDirective_TypeToken_Description");
+        }
+
+        /// <summary>
+        /// The base type that the current page inherits.
+        /// </summary>
+        internal static string FormatInheritsDirective_TypeToken_Description()
+            => GetString("InheritsDirective_TypeToken_Description");
+
+        /// <summary>
+        /// TypeName
+        /// </summary>
+        internal static string InheritsDirective_TypeToken_Name
+        {
+            get => GetString("InheritsDirective_TypeToken_Name");
+        }
+
+        /// <summary>
+        /// TypeName
+        /// </summary>
+        internal static string FormatInheritsDirective_TypeToken_Name()
+            => GetString("InheritsDirective_TypeToken_Name");
+
+        /// <summary>
+        /// Remove tag helpers from the specified type name and assembly name. Specify '*' for the type name to remove all tag helper types from the specified assembly.
+        /// </summary>
+        internal static string RemoveTagHelperDirective_StringToken_Description
+        {
+            get => GetString("RemoveTagHelperDirective_StringToken_Description");
+        }
+
+        /// <summary>
+        /// Remove tag helpers from the specified type name and assembly name. Specify '*' for the type name to remove all tag helper types from the specified assembly.
+        /// </summary>
+        internal static string FormatRemoveTagHelperDirective_StringToken_Description()
+            => GetString("RemoveTagHelperDirective_StringToken_Description");
+
+        /// <summary>
+        /// TypeName, AssemblyName
+        /// </summary>
+        internal static string RemoveTagHelperDirective_StringToken_Name
+        {
+            get => GetString("RemoveTagHelperDirective_StringToken_Name");
+        }
+
+        /// <summary>
+        /// TypeName, AssemblyName
+        /// </summary>
+        internal static string FormatRemoveTagHelperDirective_StringToken_Name()
+            => GetString("RemoveTagHelperDirective_StringToken_Name");
+
+        /// <summary>
+        /// The tag prefix to apply to tag helpers.
+        /// </summary>
+        internal static string TagHelperPrefixDirective_PrefixToken_Description
+        {
+            get => GetString("TagHelperPrefixDirective_PrefixToken_Description");
+        }
+
+        /// <summary>
+        /// The tag prefix to apply to tag helpers.
+        /// </summary>
+        internal static string FormatTagHelperPrefixDirective_PrefixToken_Description()
+            => GetString("TagHelperPrefixDirective_PrefixToken_Description");
+
+        /// <summary>
+        /// Prefix
+        /// </summary>
+        internal static string TagHelperPrefixDirective_PrefixToken_Name
+        {
+            get => GetString("TagHelperPrefixDirective_PrefixToken_Name");
+        }
+
+        /// <summary>
+        /// Prefix
+        /// </summary>
+        internal static string FormatTagHelperPrefixDirective_PrefixToken_Name()
+            => GetString("TagHelperPrefixDirective_PrefixToken_Name");
+
+        /// <summary>
+        /// The name of the section.
+        /// </summary>
+        internal static string SectionDirective_NameToken_Description
+        {
+            get => GetString("SectionDirective_NameToken_Description");
+        }
+
+        /// <summary>
+        /// The name of the section.
+        /// </summary>
+        internal static string FormatSectionDirective_NameToken_Description()
+            => GetString("SectionDirective_NameToken_Description");
+
+        /// <summary>
+        /// SectionName
+        /// </summary>
+        internal static string SectionDirective_NameToken_Name
+        {
+            get => GetString("SectionDirective_NameToken_Name");
+        }
+
+        /// <summary>
+        /// SectionName
+        /// </summary>
+        internal static string FormatSectionDirective_NameToken_Name()
+            => GetString("SectionDirective_NameToken_Name");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);

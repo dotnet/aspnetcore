@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Razor.Language.Extensions
             DirectiveKind.RazorBlock,
             builder =>
             {
-                builder.AddMemberToken();
+                builder.AddMemberToken(Resources.SectionDirective_NameToken_Name, Resources.SectionDirective_NameToken_Description);
                 builder.Description = Resources.SectionDirective_Description;
             });
 

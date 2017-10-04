@@ -17,18 +17,22 @@ namespace Microsoft.AspNetCore.Razor.Language
             var token = Assert.Single(descriptor.Tokens);
             Assert.Equal(DirectiveTokenKind.Member, token.Kind);
             Assert.False(token.Optional);
+            Assert.Null(token.Name);
+            Assert.Null(token.Description);
         }
 
         [Fact]
         public void AddNamespaceToken_AddsToken()
         {
             // Arrange & Act
-            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddNamespaceToken());
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddNamespaceToken("Name", "Description"));
 
             // Assert
             var token = Assert.Single(descriptor.Tokens);
             Assert.Equal(DirectiveTokenKind.Namespace, token.Kind);
             Assert.False(token.Optional);
+            Assert.Equal("Name", token.Name);
+            Assert.Equal("Description", token.Description);
         }
 
         [Fact]
@@ -41,18 +45,22 @@ namespace Microsoft.AspNetCore.Razor.Language
             var token = Assert.Single(descriptor.Tokens);
             Assert.Equal(DirectiveTokenKind.String, token.Kind);
             Assert.False(token.Optional);
+            Assert.Null(token.Name);
+            Assert.Null(token.Description);
         }
 
         [Fact]
         public void AddTypeToken_AddsToken()
         {
             // Arrange & Act
-            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddTypeToken());
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddTypeToken("Name", "Description"));
 
             // Assert
             var token = Assert.Single(descriptor.Tokens);
             Assert.Equal(DirectiveTokenKind.Type, token.Kind);
             Assert.False(token.Optional);
+            Assert.Equal("Name", token.Name);
+            Assert.Equal("Description", token.Description);
         }
 
         [Fact]
@@ -65,18 +73,22 @@ namespace Microsoft.AspNetCore.Razor.Language
             var token = Assert.Single(descriptor.Tokens);
             Assert.Equal(DirectiveTokenKind.Type, token.Kind);
             Assert.True(token.Optional);
+            Assert.Null(token.Name);
+            Assert.Null(token.Description);
         }
 
         [Fact]
         public void AddOptionalMemberToken_AddsToken()
         {
             // Arrange & Act
-            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddOptionalMemberToken());
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddOptionalMemberToken("Name", "Description"));
 
             // Assert
             var token = Assert.Single(descriptor.Tokens);
             Assert.Equal(DirectiveTokenKind.Member, token.Kind);
             Assert.True(token.Optional);
+            Assert.Equal("Name", token.Name);
+            Assert.Equal("Description", token.Description);
         }
 
         [Fact]
@@ -89,18 +101,22 @@ namespace Microsoft.AspNetCore.Razor.Language
             var token = Assert.Single(descriptor.Tokens);
             Assert.Equal(DirectiveTokenKind.Namespace, token.Kind);
             Assert.True(token.Optional);
+            Assert.Null(token.Name);
+            Assert.Null(token.Description);
         }
 
         [Fact]
         public void AddOptionalStringToken_AddsToken()
         {
             // Arrange & Act
-            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddOptionalStringToken());
+            var descriptor = DirectiveDescriptor.CreateDirective("custom", DirectiveKind.SingleLine, b => b.AddOptionalStringToken("Name", "Description"));
 
             // Assert
             var token = Assert.Single(descriptor.Tokens);
             Assert.Equal(DirectiveTokenKind.String, token.Kind);
             Assert.True(token.Optional);
+            Assert.Equal("Name", token.Name);
+            Assert.Equal("Description", token.Description);
         }
     }
 }

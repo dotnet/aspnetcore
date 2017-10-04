@@ -16,7 +16,10 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             DirectiveKind.SingleLine,
             builder =>
             {
-                builder.AddTypeToken().AddMemberToken();
+                builder
+                    .AddTypeToken(Resources.InjectDirective_TypeToken_Name, Resources.InjectDirective_TypeToken_Description)
+                    .AddMemberToken(Resources.InjectDirective_MemberToken_Name, Resources.InjectDirective_MemberToken_Description);
+
                 builder.Usage = DirectiveUsage.FileScopedMultipleOccurring;
                 builder.Description = Resources.InjectDirective_Description;
             });

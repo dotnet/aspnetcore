@@ -25,6 +25,118 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X
             => GetString("ArgumentCannotBeNullOrEmpy");
 
         /// <summary>
+        /// Inject a service from the application's service container into a property.
+        /// </summary>
+        internal static string InjectDirective_Description
+        {
+            get => GetString("InjectDirective_Description");
+        }
+
+        /// <summary>
+        /// Inject a service from the application's service container into a property.
+        /// </summary>
+        internal static string FormatInjectDirective_Description()
+            => GetString("InjectDirective_Description");
+
+        /// <summary>
+        /// The name of the property.
+        /// </summary>
+        internal static string InjectDirective_MemberToken_Description
+        {
+            get => GetString("InjectDirective_MemberToken_Description");
+        }
+
+        /// <summary>
+        /// The name of the property.
+        /// </summary>
+        internal static string FormatInjectDirective_MemberToken_Description()
+            => GetString("InjectDirective_MemberToken_Description");
+
+        /// <summary>
+        /// PropertyName
+        /// </summary>
+        internal static string InjectDirective_MemberToken_Name
+        {
+            get => GetString("InjectDirective_MemberToken_Name");
+        }
+
+        /// <summary>
+        /// PropertyName
+        /// </summary>
+        internal static string FormatInjectDirective_MemberToken_Name()
+            => GetString("InjectDirective_MemberToken_Name");
+
+        /// <summary>
+        /// The type of the service to inject.
+        /// </summary>
+        internal static string InjectDirective_TypeToken_Description
+        {
+            get => GetString("InjectDirective_TypeToken_Description");
+        }
+
+        /// <summary>
+        /// The type of the service to inject.
+        /// </summary>
+        internal static string FormatInjectDirective_TypeToken_Description()
+            => GetString("InjectDirective_TypeToken_Description");
+
+        /// <summary>
+        /// TypeName
+        /// </summary>
+        internal static string InjectDirective_TypeToken_Name
+        {
+            get => GetString("InjectDirective_TypeToken_Name");
+        }
+
+        /// <summary>
+        /// TypeName
+        /// </summary>
+        internal static string FormatInjectDirective_TypeToken_Name()
+            => GetString("InjectDirective_TypeToken_Name");
+
+        /// <summary>
+        /// Specify the view or page model for the page.
+        /// </summary>
+        internal static string ModelDirective_Description
+        {
+            get => GetString("ModelDirective_Description");
+        }
+
+        /// <summary>
+        /// Specify the view or page model for the page.
+        /// </summary>
+        internal static string FormatModelDirective_Description()
+            => GetString("ModelDirective_Description");
+
+        /// <summary>
+        /// The model type.
+        /// </summary>
+        internal static string ModelDirective_TypeToken_Description
+        {
+            get => GetString("ModelDirective_TypeToken_Description");
+        }
+
+        /// <summary>
+        /// The model type.
+        /// </summary>
+        internal static string FormatModelDirective_TypeToken_Description()
+            => GetString("ModelDirective_TypeToken_Description");
+
+        /// <summary>
+        /// TypeName
+        /// </summary>
+        internal static string ModelDirective_TypeToken_Name
+        {
+            get => GetString("ModelDirective_TypeToken_Name");
+        }
+
+        /// <summary>
+        /// TypeName
+        /// </summary>
+        internal static string FormatModelDirective_TypeToken_Name()
+            => GetString("ModelDirective_TypeToken_Name");
+
+        /// <summary>
         /// The 'inherits' keyword is not allowed when a '{0}' keyword is used.
         /// </summary>
         internal static string MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword

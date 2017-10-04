@@ -120,6 +120,30 @@
   <data name="ArgumentCannotBeNullOrEmpy" xml:space="preserve">
     <value>Value cannot be null or empty.</value>
   </data>
+  <data name="InjectDirective_Description" xml:space="preserve">
+    <value>Inject a service from the application's service container into a property.</value>
+  </data>
+  <data name="InjectDirective_MemberToken_Description" xml:space="preserve">
+    <value>The name of the property.</value>
+  </data>
+  <data name="InjectDirective_MemberToken_Name" xml:space="preserve">
+    <value>PropertyName</value>
+  </data>
+  <data name="InjectDirective_TypeToken_Description" xml:space="preserve">
+    <value>The type of the service to inject.</value>
+  </data>
+  <data name="InjectDirective_TypeToken_Name" xml:space="preserve">
+    <value>TypeName</value>
+  </data>
+  <data name="ModelDirective_Description" xml:space="preserve">
+    <value>Specify the view or page model for the page.</value>
+  </data>
+  <data name="ModelDirective_TypeToken_Description" xml:space="preserve">
+    <value>The model type.</value>
+  </data>
+  <data name="ModelDirective_TypeToken_Name" xml:space="preserve">
+    <value>TypeName</value>
+  </data>
   <data name="MvcRazorCodeParser_CannotHaveModelAndInheritsKeyword" xml:space="preserve">
     <value>The 'inherits' keyword is not allowed when a '{0}' keyword is used.</value>
   </data>

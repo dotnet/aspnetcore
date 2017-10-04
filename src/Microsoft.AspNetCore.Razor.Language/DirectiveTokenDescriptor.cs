@@ -9,6 +9,10 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public abstract bool Optional { get; }
 
+        public virtual string Name { get; }
+
+        public virtual string Description { get; }
+
         public static DirectiveTokenDescriptor CreateToken(DirectiveTokenKind kind)
         {
             return CreateToken(kind, optional: false);
@@ -16,20 +20,31 @@ namespace Microsoft.AspNetCore.Razor.Language
 
         public static DirectiveTokenDescriptor CreateToken(DirectiveTokenKind kind, bool optional)
         {
-            return new DefaultDirectiveTokenDescriptor(kind, optional);
+            return CreateToken(kind, optional, name: null, description: null);
+        }
+
+        public static DirectiveTokenDescriptor CreateToken(DirectiveTokenKind kind, bool optional, string name, string description)
+        {
+            return new DefaultDirectiveTokenDescriptor(kind, optional, name, description);
         }
 
         private class DefaultDirectiveTokenDescriptor : DirectiveTokenDescriptor
         {
-            public DefaultDirectiveTokenDescriptor(DirectiveTokenKind kind, bool optional)
+            public DefaultDirectiveTokenDescriptor(DirectiveTokenKind kind, bool optional, string name, string description)
             {
                 Kind = kind;
                 Optional = optional;
+                Name = name;
+                Description = description;
             }
 
             public override DirectiveTokenKind Kind { get; }
 
             public override bool Optional { get; }
+
+            public override string Name { get; }
+
+            public override string Description { get; }
         }
     }
 }

@@ -264,4 +264,34 @@
   <data name="InvalidRazorLanguageVersion" xml:space="preserve">
     <value>Provided value for razor language version is unsupported or invalid: '{0}'.</value>
   </data>
+  <data name="AddTagHelperDirective_StringToken_Description" xml:space="preserve">
+    <value>Add tag helpers from the specified type name and assembly name. Specify '*' for the type name to include all tag helper types from the specified assembly.</value>
+  </data>
+  <data name="AddTagHelperDirective_StringToken_Name" xml:space="preserve">
+    <value>TypeName, AssemblyName</value>
+  </data>
+  <data name="InheritsDirective_TypeToken_Description" xml:space="preserve">
+    <value>The base type that the current page inherits.</value>
+  </data>
+  <data name="InheritsDirective_TypeToken_Name" xml:space="preserve">
+    <value>TypeName</value>
+  </data>
+  <data name="RemoveTagHelperDirective_StringToken_Description" xml:space="preserve">
+    <value>Remove tag helpers from the specified type name and assembly name. Specify '*' for the type name to remove all tag helper types from the specified assembly.</value>
+  </data>
+  <data name="RemoveTagHelperDirective_StringToken_Name" xml:space="preserve">
+    <value>TypeName, AssemblyName</value>
+  </data>
+  <data name="TagHelperPrefixDirective_PrefixToken_Description" xml:space="preserve">
+    <value>The tag prefix to apply to tag helpers.</value>
+  </data>
+  <data name="TagHelperPrefixDirective_PrefixToken_Name" xml:space="preserve">
+    <value>Prefix</value>
+  </data>
+  <data name="SectionDirective_NameToken_Description" xml:space="preserve">
+    <value>The name of the section.</value>
+  </data>
+  <data name="SectionDirective_NameToken_Name" xml:space="preserve">
+    <value>SectionName</value>
+  </data>
 </root>

@@ -19,7 +19,9 @@ namespace Microsoft.AspNetCore.Mvc.Razor.Extensions
             DirectiveKind.SingleLine,
             builder =>
             {
-                builder.AddNamespaceToken();
+                builder.AddNamespaceToken(
+                    Resources.NamespaceDirective_NamespaceToken_Name,
+                    Resources.NamespaceDirective_NamespaceToken_Description);
                 builder.Usage = DirectiveUsage.FileScopedSinglyOccurring;
                 builder.Description = Resources.NamespaceDirective_Description;
             });
