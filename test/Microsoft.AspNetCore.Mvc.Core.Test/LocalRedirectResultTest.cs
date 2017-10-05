@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Internal;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
-using Microsoft.AspNetCore.Mvc.Internal;
 using Microsoft.AspNetCore.Mvc.Routing;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
@@ -87,9 +86,40 @@ namespace Microsoft.AspNetCore.Mvc
         }
 
         [Theory]
+        [InlineData("", "//", "/test")]
+        [InlineData("", "/\\", "/test")]
+        [InlineData("", "//foo", "/test")]
+        [InlineData("", "/\\foo", "/test")]
         [InlineData("", "Home/About", "/Home/About")]
         [InlineData("/myapproot", "http://www.example.com", "/test")]
         public async Task Execute_Throws_ForNonLocalUrl(
+            string appRoot,
+            string contentPath,
+            string expectedPath)
+        {
+            // Arrange
+            var httpResponse = new Mock<HttpResponse>();
+            httpResponse.Setup(o => o.Redirect(expectedPath, false))
+                        .Verifiable();
+
+            var httpContext = GetHttpContext(appRoot, contentPath, expectedPath, httpResponse.Object);
+            var actionContext = GetActionContext(httpContext);
+            var result = new LocalRedirectResult(contentPath);
+
+            // Act & Assert
+            var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => result.ExecuteResultAsync(actionContext));
+            Assert.Equal(
+                "The supplied URL is not local. A URL with an absolute path is considered local if it does not " +
+                "have a host/authority part. URLs using virtual paths ('~/') are also local.",
+                exception.Message);
+        }
+
+        [Theory]
+        [InlineData("", "~//", "//")]
+        [InlineData("", "~/\\", "/\\")]
+        [InlineData("", "~//foo", "//foo")]
+        [InlineData("", "~/\\foo", "/\\foo")]
+        public async Task Execute_Throws_ForNonLocalUrlTilde(
             string appRoot,
             string contentPath,
             string expectedPath)

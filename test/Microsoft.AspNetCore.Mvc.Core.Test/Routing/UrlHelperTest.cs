@@ -261,6 +261,40 @@ namespace Microsoft.AspNetCore.Mvc.Routing
             Assert.False(result);
         }
 
+        [Theory]
+        [InlineData("~//www.example.com")]
+        [InlineData("~//www.example.com?")]
+        [InlineData("~//www.example.com:80")]
+        [InlineData("~//www.example.com/foobar.html")]
+        [InlineData("~///www.example.com")]
+        [InlineData("~//////www.example.com")]
+        public void IsLocalUrl_RejectsTokenUrlsWithMissingSchemeName(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper("www.mysite.com");
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Theory]
+        [InlineData("~/\\")]
+        [InlineData("~/\\foo")]
+        public void IsLocalUrl_RejectsInvalidTokenUrls(string url)
+        {
+            // Arrange
+            var helper = CreateUrlHelper("www.mysite.com");
+
+            // Act
+            var result = helper.IsLocalUrl(url);
+
+            // Assert
+            Assert.False(result);
+        }
+
         [Fact]
         public void RouteUrlWithDictionary()
         {
