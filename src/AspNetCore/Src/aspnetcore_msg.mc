@@ -1,6 +1,7 @@
 ;/*++
 ;
-;Copyright (c) 2014 Microsoft Corporation
+; Copyright (c) .NET Foundation. All rights reserved.
+; Licensed under the MIT License. See License.txt in the project root for license information.
 ;
 ;Module Name:
 ;
@@ -63,6 +64,30 @@ Language=English
 
 Messageid=1006
 SymbolicName=ASPNETCORE_EVENT_SENT_SHUTDOWN_HTTP_REQUEST
+Language=English
+%1
+.
+
+Messageid=1007
+SymbolicName=ASPNETCORE_EVENT_LOAD_CLR_FALIURE
+Language=English
+%1
+.
+
+Messageid=1008
+SymbolicName=ASPNETCORE_EVENT_DUPLICATED_INPROCESS_APP
+Language=English
+%1
+.
+
+Messageid=1009
+SymbolicName=ASPNETCORE_EVENT_MIXED_HOSTING_MODEL_ERROR
+Language=English
+%1
+.
+
+Messageid=1010
+SymbolicName=ASPNETCORE_EVENT_ADD_APPLICATION_ERROR
 Language=English
 %1
 .

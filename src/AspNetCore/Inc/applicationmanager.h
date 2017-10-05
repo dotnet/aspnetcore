@@ -39,6 +39,7 @@ public:
     HRESULT
     GetApplication(
         _In_ IHttpContext*         pContext,
+        _In_ ASPNETCORE_CONFIG*    pConfig,
         _Out_ APPLICATION **       ppApplication
     );
 
@@ -121,7 +122,9 @@ private:
     //
     // we currently limit the size of m_pstrErrorInfo to 5000, be careful if you want to change its payload
     // 
-    APPLICATION_MANAGER() : m_pApplicationHash(NULL), m_pFileWatcher(NULL), m_pHttp502ErrorPage(NULL), m_pstrErrorInfo(
+    APPLICATION_MANAGER() : m_pApplicationHash(NULL), m_pFileWatcher(NULL),
+        m_pHttp502ErrorPage(NULL), m_hostingModel(HOSTING_UNKNOWN),
+        m_pstrErrorInfo(
         "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\"> \
         <html xmlns=\"http://www.w3.org/1999/xhtml\"> \
         <head> \
@@ -155,4 +158,5 @@ private:
     SRWLOCK                     m_srwLock;
     HTTP_DATA_CHUNK            *m_pHttp502ErrorPage;
     LPSTR                      m_pstrErrorInfo;
+    APP_HOSTING_MODEL          m_hostingModel;
 };

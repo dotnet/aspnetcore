@@ -114,12 +114,13 @@ inline bool IsSpace(char ch)
 #include "environmentvariablehash.h"
 #include "..\aspnetcore_msg.h"
 #include "aspnetcoreconfig.h"
-#include "aspnetcoreapplication.h"
 #include "serverprocess.h"
 #include "processmanager.h"
 #include "filewatcher.h"
 #include "application.h"
 #include "applicationmanager.h"
+#include "inprocessapplication.h"
+#include "outprocessapplication.h"
 #include "resource.h"
 #include "path.h"
 #include "debugutil.h"
@@ -130,6 +131,7 @@ inline bool IsSpace(char ch)
 #include "websockethandler.h"
 #include "forwardinghandler.h"
 #include "proxymodule.h"
+#include "fx_ver.h"
 
 FORCEINLINE
 DWORD

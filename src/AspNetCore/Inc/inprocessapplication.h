@@ -1,5 +1,5 @@
 // Copyright (c) .NET Foundation. All rights reserved.
-// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+// Licensed under the MIT License. See License.txt in the project root for license information.
 
 #pragma once
 
@@ -7,44 +7,32 @@ typedef void(*request_handler_cb) (int error, IHttpContext* pHttpContext, void* 
 typedef REQUEST_NOTIFICATION_STATUS(*PFN_REQUEST_HANDLER) (IHttpContext* pHttpContext, void* pvRequstHandlerContext);
 typedef BOOL(*PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
 
-class ASPNETCORE_APPLICATION
+#include "application.h"
+
+class IN_PROCESS_APPLICATION : public APPLICATION
 {
 public:
+    IN_PROCESS_APPLICATION();
 
-    ASPNETCORE_APPLICATION():
-        m_pConfiguration(NULL),
-        m_RequestHandler(NULL)
-    {
-    }
+    ~IN_PROCESS_APPLICATION();
 
-    ~ASPNETCORE_APPLICATION()
-    {
-        if (m_hThread != NULL)
-        {
-            CloseHandle(m_hThread);
-            m_hThread = NULL;
-        }
-
-        if (m_pInitalizeEvent != NULL)
-        {
-            CloseHandle(m_pInitalizeEvent);
-            m_pInitalizeEvent = NULL;
-        }
-    }
-
+    __override
     HRESULT
-    Initialize(
-        _In_ ASPNETCORE_CONFIG* pConfig
+    Initialize(_In_ APPLICATION_MANAGER* pApplicationManager,
+               _In_ ASPNETCORE_CONFIG*   pConfiguration);
+
+    VOID
+    Recycle(
+        VOID
     );
 
+    __override
+    VOID OnAppOfflineHandleChange();
+
+    __override
     REQUEST_NOTIFICATION_STATUS
     ExecuteRequest(
         _In_ IHttpContext* pHttpContext
-    );
-
-    VOID
-    Shutdown(
-        VOID
     );
 
     VOID
@@ -61,16 +49,13 @@ public:
         VOID
     );
 
-    ASPNETCORE_CONFIG*
-    GetConfig(
-        VOID
-    )
-    {
-		return m_pConfiguration;
-	}
+    HRESULT
+    LoadManagedApplication(
+            VOID
+        );
 
     static
-    ASPNETCORE_APPLICATION*
+    IN_PROCESS_APPLICATION*
     GetInstance(
         VOID
     )
@@ -78,12 +63,10 @@ public:
         return s_Application;
     }
 
+
 private:
     // Thread executing the .NET Core process
     HANDLE                          m_hThread;
-
-    // Configuration for this application
-    ASPNETCORE_CONFIG*              m_pConfiguration;
 
     // The request handler callback from managed code
     PFN_REQUEST_HANDLER             m_RequestHandler;
@@ -99,29 +82,41 @@ private:
     // The exit code of the .NET Core process
     INT                             m_ProcessExitCode;
 
-    static ASPNETCORE_APPLICATION*  s_Application;
+    BOOL                            m_fManagedAppLoaded;
+    BOOL                            m_fLoadManagedAppError;
 
-    static VOID
-        FindDotNetFolders(
-            _In_ STRU *pstrPath,
-            _Out_ std::vector<std::wstring> *pvFolders
-        );
+    static IN_PROCESS_APPLICATION*   s_Application;
 
-    static HRESULT
-        FindHighestDotNetVersion(
-            _In_ std::vector<std::wstring> vFolders,
-            _Out_ STRU *pstrResult
-        );
+    static
+    VOID
+    FindDotNetFolders(
+        _In_ PCWSTR pszPath,
+        _Out_ std::vector<std::wstring> *pvFolders
+    );
+
+    static
+    HRESULT
+    FindHighestDotNetVersion(
+        _In_ std::vector<std::wstring> vFolders,
+        _Out_ STRU *pstrResult
+    );
+
+    static
+    BOOL
+    DirectoryExists(
+    _In_ STRU *pstrPath  //todo: this does not need to be stru, can be PCWSTR
+    );
 
     static BOOL
-        DirectoryExists(
-            _In_ STRU *pstrPath
-        );
+    GetEnv(
+        _In_ PCWSTR pszEnvironmentVariable,
+        _Out_ STRU *pstrResult
+    );
 
-    static BOOL
-        GetEnv(
-            _In_ PCWSTR pszEnvironmentVariable,
-            _Out_ STRU *pstrResult
-        );
+    static
+    VOID
+    ExecuteAspNetCoreProcess(
+        _In_ LPVOID pContext
+    );
+
 };
-

@@ -15,6 +15,7 @@ HTTP_MODULE_ID      g_pModuleId = NULL;
 IHttpServer *       g_pHttpServer = NULL;
 BOOL                g_fAsyncDisconnectAvailable = FALSE;
 BOOL                g_fWinHttpNonBlockingCallbackAvailable = FALSE;
+BOOL                g_fRecycleProcessCalled = FALSE;
 PCWSTR              g_pszModuleName = NULL;
 HINSTANCE           g_hModule;
 HINSTANCE           g_hWinHttpModule;

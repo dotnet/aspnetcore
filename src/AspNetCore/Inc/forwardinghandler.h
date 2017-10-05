@@ -47,7 +47,8 @@ class FORWARDING_HANDLER
 public:
     
     FORWARDING_HANDLER(
-        __in IHttpContext * pW3Context
+        __in IHttpContext * pW3Context,
+        __in APPLICATION  * pApplication
     );
 
     static void * operator new(size_t size);

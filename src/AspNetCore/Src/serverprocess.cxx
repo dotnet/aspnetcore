@@ -1064,7 +1064,6 @@ Finished:
         {
             if (!fDonePrepareCommandLine)
             {
-
                 strEventMsg.SafeSnwprintf(
                     m_struAppFullPath.QueryStr(),
                     ASPNETCORE_EVENT_PROCESS_START_INTERNAL_ERROR_MSG,
@@ -1073,11 +1072,11 @@ Finished:
             else
             {
                 strEventMsg.SafeSnwprintf(
-                ASPNETCORE_EVENT_PROCESS_START_POSTCREATE_ERROR_MSG,
-                m_struAppFullPath.QueryStr(),
-                m_pszRootApplicationPath.QueryStr(),
-                struCommandLine.QueryStr(),
-                hr);
+                    ASPNETCORE_EVENT_PROCESS_START_POSTCREATE_ERROR_MSG,
+                    m_struAppFullPath.QueryStr(),
+                    m_pszRootApplicationPath.QueryStr(),
+                    struCommandLine.QueryStr(),
+                    hr);
             }
         }
 

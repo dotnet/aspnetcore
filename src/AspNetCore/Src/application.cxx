@@ -20,92 +20,16 @@ APPLICATION::~APPLICATION()
         m_pFileWatcherEntry->StopMonitor();
         m_pFileWatcherEntry = NULL;
     }
-
-    if (m_pProcessManager != NULL)
-    {
-        m_pProcessManager->ShutdownAllProcesses();
-        m_pProcessManager->DereferenceProcessManager();
-        m_pProcessManager = NULL;
-    }
-}
-
-HRESULT
-APPLICATION::Initialize(
-    _In_ APPLICATION_MANAGER* pApplicationManager,
-    _In_ LPCWSTR  pszApplication,
-    _In_ LPCWSTR  pszPhysicalPath
-)
-{
-    HRESULT hr = S_OK;
-
-    DBG_ASSERT(pszPhysicalPath != NULL);
-    DBG_ASSERT(pApplicationManager != NULL);
-    DBG_ASSERT(pszPhysicalPath != NULL);
-    m_strAppPhysicalPath.Copy(pszPhysicalPath);
-
-    m_pApplicationManager = pApplicationManager;
-
-    hr = m_applicationKey.Initialize(pszApplication);
-    if (FAILED(hr))
-    {
-        goto Finished;
-    }
-
-    if (m_pProcessManager == NULL)
-    {
-        m_pProcessManager = new PROCESS_MANAGER;
-        if (m_pProcessManager == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
-
-        hr = m_pProcessManager->Initialize();
-        if (FAILED(hr))
-        {
-            goto Finished;
-        }
-    }
-
-    if (m_pFileWatcherEntry == NULL)
-    {
-        m_pFileWatcherEntry = new FILE_WATCHER_ENTRY(pApplicationManager->GetFileWatcher());
-        if (m_pFileWatcherEntry == NULL)
-        {
-            hr = E_OUTOFMEMORY;
-            goto Finished;
-        }
-    }
-
-    UpdateAppOfflineFileHandle();
-
-Finished:
-
-    if (FAILED(hr))
-    {
-        if (m_pFileWatcherEntry != NULL)
-        {
-            m_pFileWatcherEntry->DereferenceFileWatcherEntry();
-            m_pFileWatcherEntry = NULL;
-        }
-
-        if (m_pProcessManager != NULL)
-        {
-            m_pProcessManager->DereferenceProcessManager();
-            m_pProcessManager = NULL;
-        }
-    }
-
-    return hr;
 }
 
 HRESULT
 APPLICATION::StartMonitoringAppOffline()
 {
     HRESULT hr = S_OK;
-
-    hr = m_pFileWatcherEntry->Create(m_strAppPhysicalPath.QueryStr(), L"app_offline.htm", this, NULL);
-
+    if (m_pFileWatcherEntry != NULL)
+    {
+        hr = m_pFileWatcherEntry->Create(m_pConfiguration->QueryApplicationFullPath()->QueryStr(), L"app_offline.htm", this, NULL);
+    }
     return hr;
 }
 
@@ -113,7 +37,7 @@ VOID
 APPLICATION::UpdateAppOfflineFileHandle()
 {
     STRU strFilePath;
-    PATH::ConvertPathToFullPath(L".\\app_offline.htm", m_strAppPhysicalPath.QueryStr(), &strFilePath);
+    PATH::ConvertPathToFullPath(L".\\app_offline.htm", m_pConfiguration->QueryApplicationFullPath()->QueryStr(), &strFilePath);
     APP_OFFLINE_HTM *pOldAppOfflineHtm = NULL;
     APP_OFFLINE_HTM *pNewAppOfflineHtm = NULL;
 
@@ -124,18 +48,6 @@ APPLICATION::UpdateAppOfflineFileHandle()
     else
     {
         m_fAppOfflineFound = TRUE;
-        
-        //
-        // send shutdown signal
-        //
-
-        // The reason why we send the shutdown signal before loading the new app_offline file is because we want to make some delay 
-        // before reading the appoffline.htm so that the file change can be done on time.
-        if (m_pProcessManager != NULL)
-        {
-            m_pProcessManager->SendShutdownSignal();
-        }
-
         pNewAppOfflineHtm = new APP_OFFLINE_HTM(strFilePath.QueryStr());
 
         if ( pNewAppOfflineHtm != NULL )
@@ -160,5 +72,7 @@ APPLICATION::UpdateAppOfflineFileHandle()
                 pNewAppOfflineHtm = NULL;
             }
         }
+
+        OnAppOfflineHandleChange();
     }
 }
