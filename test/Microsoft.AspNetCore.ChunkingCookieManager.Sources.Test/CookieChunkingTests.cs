@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Internal
             string testString = "abcdefghijklmnopqrstuvwxyz0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
             new ChunkingCookieManager() { ChunkSize = null }.AppendResponseCookie(context, "TestCookie", testString, new CookieOptions());
             var values = context.Response.Headers["Set-Cookie"];
-            Assert.Equal(1, values.Count);
+            Assert.Single(values);
             Assert.Equal("TestCookie=" + testString + "; path=/; samesite=lax", values[0]);
         }
 
