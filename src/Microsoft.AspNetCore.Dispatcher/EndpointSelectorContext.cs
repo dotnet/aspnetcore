@@ -13,11 +13,16 @@ namespace Microsoft.AspNetCore.Dispatcher
     {
         private int _index;
 
-        public EndpointSelectorContext(HttpContext httpContext, IList<Endpoint> endpoints, IList<EndpointSelector> selectors)
+        public EndpointSelectorContext(HttpContext httpContext, DispatcherValueCollection values, IList<Endpoint> endpoints, IList<EndpointSelector> selectors)
         {
             if (httpContext == null)
             {
                 throw new ArgumentNullException(nameof(httpContext));
+            }
+
+            if (values == null)
+            {
+                throw new ArgumentNullException(nameof(values));
             }
 
             if (endpoints == null)
@@ -31,6 +36,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
 
             HttpContext = httpContext;
+            Values = values;
             Endpoints = endpoints;
             Selectors = selectors; 
         }
@@ -40,6 +46,10 @@ namespace Microsoft.AspNetCore.Dispatcher
         public HttpContext HttpContext { get; }
 
         public IList<EndpointSelector> Selectors { get; }
+
+        public RequestDelegate ShortCircuit { get; set; }
+
+        public DispatcherValueCollection Values { get; }
 
         public Task InvokeNextAsync()
         {

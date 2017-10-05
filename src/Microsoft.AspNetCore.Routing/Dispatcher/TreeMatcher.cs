@@ -5,7 +5,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Dispatcher;
@@ -15,11 +14,10 @@ using Microsoft.AspNetCore.Routing.Logging;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.Internal;
-using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Routing.Dispatcher
 {
-    public class TreeDispatcher : DispatcherBase
+    public class TreeMatcher : MatcherBase
     {
         private bool _dataInitialized;
         private object _lock;
@@ -27,31 +25,30 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
 
         private readonly Func<Cache> _initializer;
 
-        public TreeDispatcher()
+        public TreeMatcher()
         {
             _lock = new object();
             _initializer = CreateCache;
         }
 
-        public override async Task InvokeAsync(HttpContext httpContext)
+        public override async Task MatchAsync(MatcherContext context)
         {
-            if (httpContext == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(httpContext));
+                throw new ArgumentNullException(nameof(context));
             }
 
-            EnsureServicesInitialized(httpContext);
+            EnsureServicesInitialized(context);
 
             var cache = LazyInitializer.EnsureInitialized(ref _cache, ref _dataInitialized, ref _lock, _initializer);
 
-            var feature = httpContext.Features.Get<IDispatcherFeature>();
-            var values = feature.Values?.AsRouteValueDictionary() ?? new RouteValueDictionary();
-            feature.Values = values;
+            var values = new RouteValueDictionary();
+            context.Values = values;
 
             for (var i = 0; i < cache.Trees.Length; i++)
             {
                 var tree = cache.Trees[i];
-                var tokenizer = new PathTokenizer(httpContext.Request.Path);
+                var tokenizer = new PathTokenizer(context.HttpContext.Request.Path);
 
                 var treenumerator = new Treenumerator(tree.Root, tokenizer);
 
@@ -64,21 +61,34 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
                         var matcher = item.TemplateMatcher;
 
                         values.Clear();
-                        if (!matcher.TryMatch(httpContext.Request.Path, values))
+                        if (!matcher.TryMatch(context.HttpContext.Request.Path, values))
                         {
                             continue;
                         }
 
                         Logger.MatchedRoute(entry.RouteName, entry.RouteTemplate.TemplateText);
 
-                        if (!MatchConstraints(httpContext, values, entry.Constraints))
+                        if (!MatchConstraints(context.HttpContext, values, entry.Constraints))
                         {
                             continue;
                         }
 
-                        feature.Endpoint = await SelectEndpointAsync(httpContext, (Endpoint[])entry.Tag, Selectors);
-                        if (feature.Endpoint != null || feature.RequestDelegate != null)
+                        await SelectEndpointAsync(context, (Endpoint[])entry.Tag);
+                        if (context.ShortCircuit != null)
                         {
+                            return;
+                        }
+
+                        if (context.Endpoint != null)
+                        {
+                            if (context.Endpoint is ITemplateEndpoint templateEndpoint)
+                            {
+                                foreach (var kvp in templateEndpoint.Values)
+                                {
+                                    context.Values[kvp.Key] = kvp.Value;
+                                }
+                            }
+
                             return;
                         }
                     }

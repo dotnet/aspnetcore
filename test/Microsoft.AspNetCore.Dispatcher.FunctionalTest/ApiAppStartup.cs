@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
             // This is a temporary layering issue, don't worry about it :)
             services.AddRouting();
             services.AddSingleton<RouteTemplateUrlGenerator>();
-            services.AddSingleton<IDefaultDispatcherFactory, TreeDispatcherFactory>();
+            services.AddSingleton<IDefaultMatcherFactory, TreeMatcherFactory>();
 
             services.Configure<DispatcherOptions>(ConfigureDispatcher);
         }
@@ -58,7 +58,7 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
 
         public void ConfigureDispatcher(DispatcherOptions options)
         {
-            options.Dispatchers.Add(new TreeDispatcher()
+            options.Matchers.Add(new TreeMatcher()
             {
                 Endpoints =
                 {

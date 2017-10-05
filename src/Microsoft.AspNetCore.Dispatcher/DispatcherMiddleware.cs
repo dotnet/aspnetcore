@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             {
                 throw new ArgumentNullException(nameof(next));
             }
-            
+
             _options = options.Value;
             _logger = logger;
             _next = next;
@@ -42,12 +42,38 @@ namespace Microsoft.AspNetCore.Dispatcher
             var feature = new DispatcherFeature();
             httpContext.Features.Set<IDispatcherFeature>(feature);
 
-            foreach (var entry in _options.Dispatchers)
+            var context = new MatcherContext(httpContext);
+            foreach (var entry in _options.Matchers)
             {
-                await entry.Dispatcher(httpContext);
-                if (feature.Endpoint != null || feature.RequestDelegate != null)
+                await entry.Matcher.MatchAsync(context);
+
+                if (context.ShortCircuit != null)
                 {
-                    _logger.LogInformation("Matched endpoint {Endpoint}", feature.Endpoint.DisplayName);
+                    feature.Endpoint = context.Endpoint;
+                    feature.Values = context.Values;
+
+                    await context.ShortCircuit(httpContext);
+                    return;
+                }
+
+                if (context.Endpoint != null)
+                {
+                    _logger.LogInformation("Matched endpoint {Endpoint}", context.Endpoint.DisplayName);
+
+                    feature.Endpoint = context.Endpoint;
+                    feature.Values = context.Values;
+
+                    // Associate this with the DispatcherEntry, not global
+                    for (var i = 0; i < _options.HandlerFactories.Count; i++)
+                    {
+                        var middleware = _options.HandlerFactories[i](feature.Endpoint);
+                        if (middleware != null)
+                        {
+                            feature.Handler = middleware;
+                            break;
+                        }
+                    }
+
                     break;
                 }
             }

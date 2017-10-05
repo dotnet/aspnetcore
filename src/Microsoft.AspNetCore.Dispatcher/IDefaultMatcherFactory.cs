@@ -5,10 +5,8 @@ using System.Collections.Generic;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class DispatcherOptions
+    public interface IDefaultMatcherFactory
     {
-        public MatcherCollection Matchers { get; } = new MatcherCollection();
-
-        public IList<EndpointHandlerFactory> HandlerFactories { get; } = new List<EndpointHandlerFactory>();
+        MatcherEntry CreateDispatcher(DispatcherDataSource dataSource, IEnumerable<EndpointSelector> endpointSelectors);
     }
 }

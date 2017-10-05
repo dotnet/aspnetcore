@@ -84,13 +84,14 @@ namespace Microsoft.AspNetCore.Dispatcher
         {
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = httpMethod;
+
             var selector = new HttpMethodEndpointSelector();
             var selectors = new List<EndpointSelector>()
             {
                 selector
             };
 
-            var selectorContext = new EndpointSelectorContext(httpContext, endpoints, selectors);
+            var selectorContext = new EndpointSelectorContext(httpContext, new DispatcherValueCollection(), endpoints, selectors);
             return (selectorContext, selector);
         }
 

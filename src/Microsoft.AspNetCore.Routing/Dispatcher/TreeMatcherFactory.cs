@@ -7,30 +7,30 @@ using Microsoft.AspNetCore.Dispatcher;
 
 namespace Microsoft.AspNetCore.Routing.Dispatcher
 {
-    public class TreeDispatcherFactory : IDefaultDispatcherFactory
+    public class TreeMatcherFactory : IDefaultMatcherFactory
     {
-        public DispatcherEntry CreateDispatcher(DispatcherDataSource dataSource, IEnumerable<EndpointSelector> endpointSelectors)
+        public MatcherEntry CreateDispatcher(DispatcherDataSource dataSource, IEnumerable<EndpointSelector> endpointSelectors)
         {
             if (dataSource == null)
             {
                 throw new ArgumentNullException(nameof(dataSource));
             }
 
-            var dispatcher = new TreeDispatcher()
+            var matcher = new TreeMatcher()
             {
                 DataSource = dataSource,
             };
 
             foreach (var endpointSelector in endpointSelectors)
             {
-                dispatcher.Selectors.Add(endpointSelector);
+                matcher.Selectors.Add(endpointSelector);
             }
 
-            return new DispatcherEntry()
+            return new MatcherEntry()
             {
-                AddressProvider = dispatcher,
-                Dispatcher = dispatcher.InvokeAsync,
-                EndpointProvider = dispatcher,
+                AddressProvider = matcher,
+                Matcher = matcher,
+                EndpointProvider = matcher,
             };
         }
     }

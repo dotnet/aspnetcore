@@ -37,28 +37,15 @@ namespace Microsoft.AspNetCore.Dispatcher
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context)
+        public async Task Invoke(HttpContext httpContext)
         {
-            var feature = context.Features.Get<IDispatcherFeature>();
-            if (feature.Endpoint != null && feature.RequestDelegate == null)
-            {
-                for (var i = 0; i < _options.HandlerFactories.Count; i++)
-                {
-                    var handler = _options.HandlerFactories[i](feature.Endpoint);
-                    if (handler != null)
-                    {
-                        feature.RequestDelegate = handler(_next);
-                        break;
-                    }
-                }
-            }
-
-            if (feature.RequestDelegate != null)
+            var feature = httpContext.Features.Get<IDispatcherFeature>();
+            if (feature.Handler != null)
             {
                 _logger.LogInformation("Executing endpoint {Endpoint}", feature.Endpoint.DisplayName);
                 try
                 {
-                    await feature.RequestDelegate(context);
+                    await feature.Handler(_next)(httpContext);
                 }
                 finally
                 {
@@ -68,7 +55,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 return;
             }
 
-            await _next(context);
+            await _next(httpContext);
         }
     }
 }

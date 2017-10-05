@@ -21,10 +21,10 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             _options = options.Value;
 
-            _groups = new List<Address>[options.Value.Dispatchers.Count];
-            for (var i = 0; i < options.Value.Dispatchers.Count; i++)
+            _groups = new List<Address>[options.Value.Matchers.Count];
+            for (var i = 0; i < options.Value.Matchers.Count; i++)
             {
-                _groups[i] = new List<Address>(options.Value.Dispatchers[i].AddressProvider?.Addresses ?? Array.Empty<Address>());
+                _groups[i] = new List<Address>(options.Value.Matchers[i].AddressProvider?.Addresses ?? Array.Empty<Address>());
             }
         }
 

@@ -10,12 +10,12 @@ namespace Microsoft.AspNetCore.Dispatcher
     internal class DefaultDispatcherConfigureOptions : IConfigureOptions<DispatcherOptions>
     {
         private readonly IEnumerable<DispatcherDataSource> _dataSources;
-        private readonly IDefaultDispatcherFactory _dispatcherFactory;
+        private readonly IDefaultMatcherFactory _dispatcherFactory;
         private readonly IEnumerable<EndpointSelector> _endpointSelectors;
         private readonly IEnumerable<EndpointHandlerFactoryBase> _handlerFactories;
 
         public DefaultDispatcherConfigureOptions(
-            IDefaultDispatcherFactory dispatcherFactory,
+            IDefaultMatcherFactory dispatcherFactory,
             IEnumerable<DispatcherDataSource> dataSources,
             IEnumerable<EndpointSelector> endpointSelectors,
             IEnumerable<EndpointHandlerFactoryBase> handlerFactories)
@@ -33,7 +33,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(options));
             }
 
-            options.Dispatchers.Add(_dispatcherFactory.CreateDispatcher(new CompositeDispatcherDataSource(_dataSources), _endpointSelectors));
+            options.Matchers.Add(_dispatcherFactory.CreateDispatcher(new CompositeDispatcherDataSource(_dataSources), _endpointSelectors));
 
             foreach (var handlerFactory in _handlerFactories)
             {

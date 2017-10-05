@@ -22,11 +22,10 @@ namespace DispatcherSample
             // This is a temporary layering issue, don't worry about :)
             services.AddRouting();
             services.AddSingleton<RouteTemplateUrlGenerator>();
-            services.AddSingleton<IDefaultDispatcherFactory, TreeDispatcherFactory>();
+            services.AddSingleton<IDefaultMatcherFactory, TreeMatcherFactory>();
 
             // Imagine this was done by MVC or another framework.
             services.AddSingleton<DispatcherDataSource>(ConfigureDispatcher());
-            services.AddSingleton<EndpointSelector, TemplateEndpointSelector>();
             services.AddSingleton<EndpointSelector, HttpMethodEndpointSelector>();
 
         }
@@ -37,18 +36,20 @@ namespace DispatcherSample
             {
                 Addresses =
                 {
-                    new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "Index", }, "Home:Index()"),
-                    new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "About", }, "Home:About()"),
-                    new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Index", }, "Admin:Index()"),
-                    new TemplateAddress("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "Admin:GetUsers()/Admin:EditUsers()"),
+                    new TemplateAddress("{id?}", new { controller = "Home", action = "Index", }, "Home:Index()"),
+                    new TemplateAddress("Home/About/{id?}", new { controller = "Home", action = "About", }, "Home:About()"),
+                    new TemplateAddress("Admin/Index/{id?}", new { controller = "Admin", action = "Index", }, "Admin:Index()"),
+                    new TemplateAddress("Admin/Users/{id?}", new { controller = "Admin", action = "Users", }, "Admin:GetUsers()/Admin:EditUsers()"),
                 },
                 Endpoints =
                 {
-                    new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "Index", }, Home_Index, "Home:Index()"),
-                    new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Home", action = "About", }, Home_About, "Home:About()"),
-                    new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Index", }, Admin_Index, "Admin:Index()"),
-                    new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "GET", Admin_GetUsers, "Admin:GetUsers()", new AuthorizationPolicyMetadata("Admin")),
-                    new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Admin", action = "Users", }, "POST", Admin_EditUsers, "Admin:EditUsers()", new AuthorizationPolicyMetadata("Admin")),
+                    new TemplateEndpoint("{id?}", new { controller = "Home", action = "Index", }, Home_Index, "Home:Index()"),
+                    new TemplateEndpoint("Home/{id?}", new { controller = "Home", action = "Index", }, Home_Index, "Home:Index()"),
+                    new TemplateEndpoint("Home/Index/{id?}", new { controller = "Home", action = "Index", }, Home_Index, "Home:Index()"),
+                    new TemplateEndpoint("Home/About/{id?}", new { controller = "Home", action = "About", }, Home_About, "Home:About()"),
+                    new TemplateEndpoint("Admin/Index/{id?}", new { controller = "Admin", action = "Index", }, Admin_Index, "Admin:Index()"),
+                    new TemplateEndpoint("Admin/Users/{id?}", new { controller = "Admin", action = "Users", }, "GET", Admin_GetUsers, "Admin:GetUsers()", new AuthorizationPolicyMetadata("Admin")),
+                    new TemplateEndpoint("Admin/Users/{id?}", new { controller = "Admin", action = "Users", }, "POST", Admin_EditUsers, "Admin:EditUsers()", new AuthorizationPolicyMetadata("Admin")),
                 },
             };
         }

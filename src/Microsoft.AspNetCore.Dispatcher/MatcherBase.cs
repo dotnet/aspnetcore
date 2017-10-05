@@ -14,23 +14,22 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public abstract class DispatcherBase : IAddressCollectionProvider, IEndpointCollectionProvider
+    public abstract class MatcherBase : IMatcher, IAddressCollectionProvider, IEndpointCollectionProvider
     {
         private List<Address> _addresses;
         private List<Endpoint> _endpoints;
         private List<EndpointSelector> _endpointSelectors;
 
-        private object _initialize;
-        private bool _selectorsInitialized;
-        private readonly Func<object> _initializer;
         private object _lock;
-
         private bool _servicesInitialized;
+        private bool _selectorsInitialized;
+        private readonly Func<object> _selectorInitializer;
 
-        public DispatcherBase()
+
+        public MatcherBase()
         {
             _lock = new object();
-            _initializer = InitializeSelectors;
+            _selectorInitializer = InitializeSelectors;
         }
 
         protected ILogger Logger { get; private set; }
@@ -92,39 +91,37 @@ namespace Microsoft.AspNetCore.Dispatcher
             return ((IEndpointCollectionProvider)DataSource)?.Endpoints ?? _endpoints ?? (IReadOnlyList<Endpoint>)Array.Empty<Endpoint>();
         }
 
-        public virtual async Task InvokeAsync(HttpContext httpContext)
+        public virtual async Task MatchAsync(MatcherContext context)
         {
-            if (httpContext == null)
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(httpContext));
+                throw new ArgumentNullException(nameof(context));
             }
 
-            EnsureServicesInitialized(httpContext);
+            EnsureServicesInitialized(context);
 
-            var feature = httpContext.Features.Get<IDispatcherFeature>();
-            if (await TryMatchAsync(httpContext))
+            context.Values = await MatchRequestAsync(context.HttpContext);
+            if (context.Values != null)
             {
-                if (feature.RequestDelegate != null)
-                {
-                    // Short circuit, no need to select an endpoint.
-                    return;
-                }
-
-                feature.Endpoint = await SelectEndpointAsync(httpContext, GetEndpoints(), Selectors);
+                await SelectEndpointAsync(context, GetEndpoints());
             }
         }
 
-        protected virtual Task<bool> TryMatchAsync(HttpContext httpContext)
+        protected virtual Task<DispatcherValueCollection> MatchRequestAsync(HttpContext httpContext)
         {
-            // By default don't apply any criteria.
-            return Task.FromResult(true);
+            // By default don't apply any criteria or provide any values.
+            return Task.FromResult(new DispatcherValueCollection());
         }
 
-        protected virtual async Task<Endpoint> SelectEndpointAsync(HttpContext httpContext, IEnumerable<Endpoint> endpoints, IEnumerable<EndpointSelector> selectors)
+        protected virtual void InitializeServices(IServiceProvider services)
         {
-            if (httpContext == null)
+        }
+
+        protected virtual async Task SelectEndpointAsync(MatcherContext context, IEnumerable<Endpoint> endpoints)
+        {
+            if (context == null)
             {
-                throw new ArgumentNullException(nameof(httpContext));
+                throw new ArgumentNullException(nameof(context));
             }
 
             if (endpoints == null)
@@ -132,25 +129,28 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(endpoints));
             }
 
-            if (selectors == null)
-            {
-                throw new ArgumentNullException(nameof(selectors));
-            }
+            EnsureSelectorsInitialized();
 
-            LazyInitializer.EnsureInitialized(ref _initialize, ref _selectorsInitialized, ref _lock, _initializer);
-
-            var selectorContext = new EndpointSelectorContext(httpContext, endpoints.ToList(), selectors.ToList());
+            var selectorContext = new EndpointSelectorContext(context.HttpContext, context.Values, endpoints.ToList(), Selectors.ToList());
             await selectorContext.InvokeNextAsync();
+
+            if (selectorContext.ShortCircuit != null)
+            {
+                context.ShortCircuit = selectorContext.ShortCircuit;
+                return;
+            }
 
             switch (selectorContext.Endpoints.Count)
             {
                 case 0:
-                    Logger.NoEndpointsMatched(httpContext.Request.Path);
-                    return null;
+                    Logger.NoEndpointsMatched(context.HttpContext.Request.Path);
+                    return;
 
                 case 1:
-                    Logger.EndpointMatched(selectorContext.Endpoints[0].DisplayName);
-                    return selectorContext.Endpoints[0];
+                    context.Endpoint = selectorContext.Endpoints[0];
+
+                    Logger.EndpointMatched(context.Endpoint);
+                    return;
 
                 default:
                     var endpointNames = string.Join(
@@ -167,6 +167,12 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
         }
 
+        protected void EnsureSelectorsInitialized()
+        {
+            object _ = null;
+            LazyInitializer.EnsureInitialized(ref _, ref _selectorsInitialized, ref _lock, _selectorInitializer);
+        }
+
         private object InitializeSelectors()
         {
             foreach (var selector in Selectors)
@@ -177,23 +183,25 @@ namespace Microsoft.AspNetCore.Dispatcher
             return null;
         }
 
-        protected void EnsureServicesInitialized(HttpContext httpContext)
+        protected void EnsureServicesInitialized(MatcherContext context)
         {
             if (Volatile.Read(ref _servicesInitialized))
             {
                 return;
             }
 
-            EnsureServicesInitializedSlow(httpContext);
+            EnsureServicesInitializedSlow(context);
         }
 
-        private void EnsureServicesInitializedSlow(HttpContext httpContext)
+        private void EnsureServicesInitializedSlow(MatcherContext context)
         {
             lock (_lock)
             {
                 if (!Volatile.Read(ref _servicesInitialized))
                 {
-                    Logger = httpContext.RequestServices.GetRequiredService<ILoggerFactory>().CreateLogger(GetType());
+                    var services = context.HttpContext.RequestServices;
+                    Logger = services.GetRequiredService<ILoggerFactory>().CreateLogger(GetType());
+                    InitializeServices(services);
                 }
             }
         }

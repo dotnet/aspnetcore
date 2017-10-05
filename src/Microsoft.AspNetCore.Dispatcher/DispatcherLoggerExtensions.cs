@@ -31,9 +31,9 @@ namespace Microsoft.AspNetCore.Dispatcher
             _ambiguousEndpoints(logger, ambiguousEndpoints, null);
         }
 
-        public static void EndpointMatched(this ILogger logger, string endpointName)
+        public static void EndpointMatched(this ILogger logger, Endpoint endpoint)
         {
-            _endpointMatched(logger, endpointName ?? "Unnamed endpoint", null);
+            _endpointMatched(logger, endpoint.DisplayName ?? "Unnamed endpoint", null);
         }
 
         public static void NoEndpointsMatched(this ILogger logger, PathString pathString)
