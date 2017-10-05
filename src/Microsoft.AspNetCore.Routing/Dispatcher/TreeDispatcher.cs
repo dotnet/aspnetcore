@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
                     trees.Add(new UrlMatchingTree(trees.Count));
                 }
 
-                var tree = trees[i];
+                var tree = trees[entry.Order];
 
                 TreeRouteBuilder.AddEntryToTree(tree, entry);
             }

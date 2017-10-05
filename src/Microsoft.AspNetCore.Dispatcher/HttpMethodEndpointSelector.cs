@@ -4,9 +4,8 @@
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Dispatcher;
 
-namespace DispatcherSample
+namespace Microsoft.AspNetCore.Dispatcher
 {
     public class HttpMethodEndpointSelector : EndpointSelector
     {
@@ -19,19 +18,19 @@ namespace DispatcherSample
 
             var snapshot = context.CreateSnapshot();
 
-            var fallback = new List<Endpoint>();
+            var fallbackEndpoints = new List<Endpoint>();
             for (var i = context.Endpoints.Count - 1; i >= 0; i--)
             {
                 var endpoint = context.Endpoints[i] as ITemplateEndpoint;
                 if (endpoint == null || endpoint.HttpMethod == null)
                 {
                     // No metadata.
-                    fallback.Add(context.Endpoints[i]);
+                    fallbackEndpoints.Add(context.Endpoints[i]);
                     context.Endpoints.RemoveAt(i);
                 }
                 else if (string.Equals(endpoint.HttpMethod, context.HttpContext.Request.Method, StringComparison.OrdinalIgnoreCase))
                 {
-                    // This one matches.
+                    // The request method matches the endpoint's HTTP method.
                 }
                 else
                 {
@@ -50,9 +49,9 @@ namespace DispatcherSample
                 context.RestoreSnapshot(snapshot);
                 context.Endpoints.Clear();
 
-                for (var i = 0; i < fallback.Count; i++)
+                for (var i = 0; i < fallbackEndpoints.Count; i++)
                 {
-                    context.Endpoints.Add(fallback[i]);
+                    context.Endpoints.Add(fallbackEndpoints[i]);
                 }
 
                 await context.InvokeNextAsync();

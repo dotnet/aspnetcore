@@ -9,4 +9,8 @@
     <ProjectReference Include="..\..\src\Microsoft.AspNetCore.Dispatcher\Microsoft.AspNetCore.Dispatcher.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http" />
+  </ItemGroup>
+  
 </Project>

@@ -30,5 +30,73 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("Hello, Products_Get", await response.Content.ReadAsStringAsync());
         }
+
+        [Fact]
+        public async Task ApiApp_RoutesTo_EndpointWithMatchingHttpMethod()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Post, "/api/products");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Hello, Products_Post", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ApiApp_RoutesTo_EndpointWithMatchingHttpMethod_AndMatchingRoute()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, "/api/products/3");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Hello, Products_GetWithId", await response.Content.ReadAsStringAsync());
+        }
+
+        [Fact]
+        public async Task ApiApp_RoutesTo_EndpointWithMatchingHttpMethod_DoesNotMatchExpectedRoute()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Put, "/api/services/2");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task ApiApp_NoEndpointWithMatchingHttpMethod_FallbackEndpointSelected()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Delete, "/api/products");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Equal("Hello, Products_Fallback", await response.Content.ReadAsStringAsync());
+        }
+        
+        [Fact]
+        public async Task ApiApp_NoEndpointWithMatchingHttpMethod_NoFallbackEndpointMatched()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Delete, "/api/products/4");
+
+            // Act
+            var response = await Client.SendAsync(request);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        }
     }
 }

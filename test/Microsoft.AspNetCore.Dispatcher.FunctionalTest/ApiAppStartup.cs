@@ -62,14 +62,30 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
             {
                 Endpoints =
                 {
-                    new TemplateEndpoint("api/products", Products_Get),
+                    new TemplateEndpoint("api/products", Products_Fallback),
+                    new TemplateEndpoint("api/products", new { controller = "Products", action = "Get", }, "GET", Products_Get),
+                    new TemplateEndpoint("api/products/{id}", new { controller = "Products", action = "Get", }, "GET", Products_GetWithId),
+                    new TemplateEndpoint("api/products", new { controller = "Products", action = "Post", }, "POST", Products_Post),
+                    new TemplateEndpoint("api/products/{id}", new { controller = "Products", action = "Put", }, "PUT", Products_Put),
                 },
-            });
 
+                Selectors =
+                {
+                    new HttpMethodEndpointSelector(),
+                }
+            });
             options.HandlerFactories.Add(endpoint => (endpoint as TemplateEndpoint)?.HandlerFactory);
         }
 
+        private Task Products_Fallback(HttpContext httpContext) => httpContext.Response.WriteAsync("Hello, Products_Fallback");
+
         private Task Products_Get(HttpContext httpContext) => httpContext.Response.WriteAsync("Hello, Products_Get");
+
+        private Task Products_GetWithId(HttpContext httpContext) => httpContext.Response.WriteAsync("Hello, Products_GetWithId");
+
+        private Task Products_Post(HttpContext httpContext) => httpContext.Response.WriteAsync("Hello, Products_Post");
+
+        private Task Products_Put(HttpContext httpContext) => httpContext.Response.WriteAsync("Hello, Products_Put");
 
         private class CorsPolicyMetadata
         {
