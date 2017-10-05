@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             Assert.Equal(new KeyValuePair<string, int>(), modelBindingResult.Model);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -495,7 +495,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             Assert.Equal(new KeyValuePair<string, Person>(), modelBindingResult.Model);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }

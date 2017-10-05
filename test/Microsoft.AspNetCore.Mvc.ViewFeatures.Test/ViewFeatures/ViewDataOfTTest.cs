@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
 
             // Act & Assert
             Assert.Empty(viewData);
-            Assert.Equal(0, viewData.Count);
+            Assert.Empty(viewData);
             Assert.False(viewData.IsReadOnly);
 
             Assert.NotNull(viewData.Keys);

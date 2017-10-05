@@ -2751,7 +2751,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.False(result);
-            Assert.Equal(1, controller.ModelState.Count);
+            Assert.Single(controller.ModelState);
             var error = Assert.Single(controller.ModelState["Prefix.IntegerProperty"].Errors);
             Assert.Equal("Out of range!", error.ErrorMessage);
         }
@@ -2787,7 +2787,7 @@ namespace Microsoft.AspNetCore.Mvc.Core.Test
 
             // Assert
             Assert.False(result);
-            Assert.Equal(1, controller.ModelState.Count);
+            Assert.Single(controller.ModelState);
             var error = Assert.Single(controller.ModelState["IntegerProperty"].Errors);
             Assert.Equal("Out of range!", error.ErrorMessage);
         }

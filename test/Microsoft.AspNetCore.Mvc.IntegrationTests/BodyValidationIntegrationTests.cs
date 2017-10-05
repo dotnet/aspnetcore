@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(boundPerson.Address);
 
             Assert.False(modelState.IsValid);
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(1, modelState.ErrorCount);
 
             var state = modelState["CustomParameter.Address.Number"];

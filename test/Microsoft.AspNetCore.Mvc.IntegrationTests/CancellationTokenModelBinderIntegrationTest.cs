@@ -92,7 +92,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // ModelState
             Assert.True(modelState.IsValid);
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
         }
 
         [Fact]
@@ -130,7 +130,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // ModelState
             Assert.True(modelState.IsValid);
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
         }
     }
 }

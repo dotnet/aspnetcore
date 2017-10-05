@@ -614,7 +614,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             // Assert
             Assert.True(modelState.IsValid);
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
 
             var entry = modelState["parameter"];
             Assert.Equal(ModelValidationState.Valid, entry.ValidationState);

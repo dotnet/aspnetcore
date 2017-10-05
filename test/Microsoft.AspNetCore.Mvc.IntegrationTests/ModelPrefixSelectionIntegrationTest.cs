@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Person1>(modelBindingResult.Model);
             Assert.Null(model.Name);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -104,7 +104,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Person2>(modelBindingResult.Model);
             Assert.Null(model.Name);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -143,7 +143,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Person3>(modelBindingResult.Model);
             Assert.Null(model.Name);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -192,7 +192,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Person4>(modelBindingResult.Model);
             Assert.Null(model.Name);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -238,7 +238,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Person5>(modelBindingResult.Model);
             Assert.Null(model.Name);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }

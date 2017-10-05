@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.NotNull(viewData.TemplateInfo);
             Assert.Null(viewData.Model);
             Assert.NotNull(viewData.ModelMetadata);
-            Assert.Equal(0, viewData.Count);
+            Assert.Empty(viewData);
         }
 
         [Fact]
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             Assert.NotNull(viewData.TemplateInfo);
             Assert.Null(viewData.Model);
             Assert.NotNull(viewData.ModelMetadata);
-            Assert.Equal(0, viewData.Count);
+            Assert.Empty(viewData);
         }
 
         [Fact]

@@ -79,7 +79,7 @@ namespace Microsoft.AspNetCore.Mvc.ViewFeatures
             attributes.Clear();
 
             // Assert
-            Assert.Equal(0, attributes.Count);
+            Assert.Empty(attributes);
             Assert.Empty(attributes);
         }
 

@@ -274,7 +274,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // ModelState
             Assert.False(modelState.IsValid);
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(1, modelState.ErrorCount);
 
             var key = Assert.Single(modelState.Keys);
@@ -332,7 +332,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
 
             // ModelState
             Assert.False(modelState.IsValid);
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(1, modelState.ErrorCount);
 
             var key = Assert.Single(modelState.Keys);

@@ -80,7 +80,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(model.Customer.Address);
             Assert.Equal(AddressStreetContent, model.Customer.Address.Street);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -122,7 +122,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(model.Customer.Address);
             Assert.Equal(AddressStreetContent, model.Customer.Address.Street);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -167,7 +167,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("bill", model.Customer.Name);
             Assert.Null(model.Customer.Address);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(model.Customer);
             Assert.Equal(10, model.ProductId);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -250,7 +250,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Order1>(modelBindingResult.Model);
             Assert.Null(model.Customer);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -389,7 +389,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("bill", model.Customer.Name);
             Assert.Null(model.Customer.Token);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -578,7 +578,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(model.Customer);
             Assert.Equal(10, model.ProductId);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -619,7 +619,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Order4>(modelBindingResult.Model);
             Assert.Null(model.Customer);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -756,7 +756,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("bill", model.Name);
             Assert.Null(model.ProductIds);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -795,7 +795,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(model.Name);
             Assert.Null(model.ProductIds);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -932,7 +932,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("bill", model.Name);
             Assert.Null(model.ProductIds);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -971,7 +971,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(model.Name);
             Assert.Null(model.ProductIds);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -1108,7 +1108,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("bill", model.Name);
             Assert.Null(model.ProductIds);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -1147,7 +1147,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(model.Name);
             Assert.Null(model.ProductIds);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -1609,7 +1609,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Equal("bill", model.Name);
             Assert.Equal(default(KeyValuePair<string, int>), model.ProductId);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -1648,7 +1648,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.Null(model.Name);
             Assert.Equal(default(KeyValuePair<string, int>), model.ProductId);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -1784,7 +1784,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(model.Customer.Address);
             Assert.Equal(AddressStreetContent, model.Customer.Address.Street);
 
-            Assert.Equal(0, modelState.Count);
+            Assert.Empty(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
         }
@@ -1826,7 +1826,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Order10>(modelBindingResult.Model);
             Assert.Null(model.Customer);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -1873,7 +1873,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Order10>(modelBindingResult.Model);
             Assert.Null(model.Customer);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -2074,7 +2074,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Order12>(modelBindingResult.Model);
             Assert.Null(model.ProductName);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -2118,7 +2118,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Order12>(modelBindingResult.Model);
             Assert.Null(model.ProductName);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -2158,7 +2158,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Order12>(modelBindingResult.Model);
             Assert.Equal("abc", model.ProductName);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -2202,7 +2202,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Order13>(modelBindingResult.Model);
             Assert.Null(model.OrderIds);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -2246,7 +2246,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Order13>(modelBindingResult.Model);
             Assert.Null(model.OrderIds);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 
@@ -2286,7 +2286,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             var model = Assert.IsType<Order13>(modelBindingResult.Model);
             Assert.Equal(new[] { 123 }, model.OrderIds.ToArray());
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(0, modelState.ErrorCount);
             Assert.True(modelState.IsValid);
 
@@ -2332,7 +2332,7 @@ namespace Microsoft.AspNetCore.Mvc.IntegrationTests
             Assert.NotNull(model);
             Assert.Equal(0, model.ProductId);
 
-            Assert.Equal(1, modelState.Count);
+            Assert.Single(modelState);
             Assert.Equal(1, modelState.ErrorCount);
             Assert.False(modelState.IsValid);
 

@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             dictionary.Clear();
 
             // Assert
-            Assert.Equal(0, dictionary.Count);
+            Assert.Empty(dictionary);
             Assert.Equal(0, dictionary.ErrorCount);
             Assert.Empty(dictionary);
             Assert.Equal(ModelValidationState.Valid, dictionary.ValidationState);
@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
             dictionary.Clear();
 
             // Assert
-            Assert.Equal(0, dictionary.Count);
+            Assert.Empty(dictionary);
             Assert.Equal(0, dictionary.ErrorCount);
             Assert.Empty(dictionary);
             Assert.Equal(ModelValidationState.Valid, dictionary.ValidationState);
@@ -180,7 +180,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(0, source.ErrorCount);
-            Assert.Equal(1, source.Count);
+            Assert.Single(source);
             Assert.Equal(ModelValidationState.Skipped, source["key"].ValidationState);
         }
 
@@ -239,7 +239,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(0, source.ErrorCount);
-            Assert.Equal(1, source.Count);
+            Assert.Single(source);
             Assert.Equal(ModelValidationState.Valid, source["key"].ValidationState);
         }
 
@@ -276,7 +276,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
 
             // Assert
             Assert.Equal(2, target.ErrorCount);
-            Assert.Equal(1, target.Count);
+            Assert.Single(target);
             var actual = target["key"];
             Assert.Equal(entry.RawValue, actual.RawValue);
             Assert.Equal(entry.AttemptedValue, actual.AttemptedValue);
