@@ -408,7 +408,7 @@ namespace Microsoft.AspNetCore.Routing
 
             // Assert
             Assert.NotNull(context.Handler);
-            Assert.Equal(0, context.RouteData.Values.Count);
+            Assert.Empty(context.RouteData.Values);
         }
 
         [Fact]

@@ -931,7 +931,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
             // Assert
             Assert.True(match);
-            Assert.Equal(1, values.Count);
+            Assert.Single(values);
             Assert.Equal("Home", values["controller"]);
             Assert.False(values.ContainsKey("action"));
         }
@@ -950,7 +950,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
             // Assert
             Assert.True(match);
-            Assert.Equal(0, values.Count);
+            Assert.Empty(values);
             Assert.False(values.ContainsKey("controller"));
         }
 
@@ -968,7 +968,7 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
             // Assert
             Assert.True(match);
-            Assert.Equal(0, values.Count);
+            Assert.Empty(values);
         }
 
         [Fact]

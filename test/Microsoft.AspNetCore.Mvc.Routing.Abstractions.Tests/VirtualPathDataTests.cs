@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Routing
             Assert.Equal(path, pathData.VirtualPath);
             Assert.NotNull(pathData.DataTokens);
             Assert.Equal("TestValue", pathData.DataTokens["TestKey"]);
-            Assert.Equal(1, pathData.DataTokens.Count);
+            Assert.Single(pathData.DataTokens);
             Assert.NotSame(dataTokens, pathData.DataTokens);
         }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.Collections.Generic;
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             await selector.SelectAsync(context);
 
             // Assert
-            Assert.Equal(0, context.Endpoints.Count);
+            Assert.Empty(context.Endpoints);
         }
 
         [Theory]
