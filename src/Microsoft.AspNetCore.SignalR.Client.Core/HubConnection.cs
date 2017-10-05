@@ -39,12 +39,6 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private int _nextId = 0;
 
-        public event Func<Task> Connected
-        {
-            add { _connection.Connected += value; }
-            remove { _connection.Connected -= value; }
-        }
-
         public event Func<Exception, Task> Closed
         {
             add { _connection.Closed += value; }

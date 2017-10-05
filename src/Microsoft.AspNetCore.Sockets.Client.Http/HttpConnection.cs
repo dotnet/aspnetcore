@@ -45,7 +45,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
-        public event Func<Task> Connected;
         public event Func<byte[], Task> Received;
         public event Func<Exception, Task> Closed;
 
@@ -156,24 +155,6 @@ namespace Microsoft.AspNetCore.Sockets.Client
             if (Interlocked.CompareExchange(ref _connectionState, ConnectionState.Connected, ConnectionState.Connecting)
                 == ConnectionState.Connecting)
             {
-                _ = _eventQueue.Enqueue(async () =>
-                {
-                    _logger.RaiseConnected(_connectionId);
-
-                    var connectedEventHandler = Connected;
-                    if (connectedEventHandler != null)
-                    {
-                        try
-                        {
-                            await connectedEventHandler.Invoke();
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.ExceptionThrownFromHandler(_connectionId, nameof(Connected), ex);
-                        }
-                    }
-                });
-
                 _ = Input.Completion.ContinueWith(async t =>
                 {
                     Interlocked.Exchange(ref _connectionState, ConnectionState.Disconnected);

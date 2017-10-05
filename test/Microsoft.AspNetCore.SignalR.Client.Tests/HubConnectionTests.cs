@@ -56,30 +56,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public async Task HubConnectionConnectedEventRaisedWhenTheClientIsConnected()
-        {
-            var connection = new TestConnection();
-            var hubConnection = new HubConnection(connection, Mock.Of<IHubProtocol>(), null);
-            try
-            {
-                var connectedEventRaisedTcs = new TaskCompletionSource<object>();
-                hubConnection.Connected += () =>
-                {
-                    connectedEventRaisedTcs.SetResult(null);
-                    return Task.CompletedTask;
-                };
-
-                await hubConnection.StartAsync();
-
-                await connectedEventRaisedTcs.Task.OrTimeout();
-            }
-            finally
-            {
-                await hubConnection.DisposeAsync();
-            }
-        }
-
-        [Fact]
         public async Task ClosedEventRaisedWhenTheClientIsStopped()
         {
             var hubConnection = new HubConnection(new TestConnection(), Mock.Of<IHubProtocol>(), null);
