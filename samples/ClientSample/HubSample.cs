@@ -72,7 +72,7 @@ namespace ClientSample
                         break;
                     }
 
-                    await connection.InvokeAsync<object>("Send", cts.Token, line);
+                    await connection.InvokeAsync<object>("Send", line, cts.Token);
                 }
             }
             catch (AggregateException aex) when (aex.InnerExceptions.All(e => e is OperationCanceledException))

@@ -27,11 +27,12 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 {
                     // Grab as many messages as we can from the channel
                     messages = new List<SendMessage>();
-                    while (!transportCts.Token.IsCancellationRequested && application.In.TryRead(out SendMessage message))
+                    while (!transportCts.IsCancellationRequested && application.In.TryRead(out SendMessage message))
                     {
                         messages.Add(message);
                     }
 
+                    transportCts.Token.ThrowIfCancellationRequested();
                     if (messages.Count > 0)
                     {
                         logger.SendingMessages(connectionId, messages.Count, sendUrl);
@@ -57,7 +58,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         // Set the, now filled, stream as the content
                         request.Content = new StreamContent(memoryStream);
 
-                        var response = await httpClient.SendAsync(request);
+                        var response = await httpClient.SendAsync(request, transportCts.Token);
                         response.EnsureSuccessStatusCode();
 
                         logger.SentSuccessfully(connectionId);

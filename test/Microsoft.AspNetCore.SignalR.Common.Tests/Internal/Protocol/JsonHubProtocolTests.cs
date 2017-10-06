@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{'type':3,'invocationId':42}", "Expected 'invocationId' to be of type String.")]
         [InlineData("{'type':3,'invocationId':'42','error':[]}", "Expected 'error' to be of type String.")]
 
-        [InlineData("{'type':4}", "Unknown message type: 4")]
+        [InlineData("{'type':9}", "Unknown message type: 9")]
         [InlineData("{'type':'foo'}", "Expected 'type' to be of type Integer.")]
         public void InvalidMessages(string input, string expectedMessage)
         {

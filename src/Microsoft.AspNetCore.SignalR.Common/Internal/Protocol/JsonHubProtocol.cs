@@ -25,6 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const int InvocationMessageType = 1;
         private const int ResultMessageType = 2;
         private const int CompletionMessageType = 3;
+        private const int CancelInvocationMessageType = 5;
 
         // ONLY to be used for application payloads (args, return values, etc.)
         private JsonSerializer _payloadSerializer;
@@ -111,6 +112,8 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                             return BindResultMessage(json, binder);
                         case CompletionMessageType:
                             return BindCompletionMessage(json, binder);
+                        case CancelInvocationMessageType:
+                            return BindCancelInvocationMessage(json);
                         default:
                             throw new FormatException($"Unknown message type: {type}");
                     }
@@ -137,6 +140,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     case CompletionMessage m:
                         WriteCompletionMessage(m, writer);
                         break;
+                    case CancelInvocationMessage m:
+                        WriteCancelInvocationMessage(m, writer);
+                        break;
                     default:
                         throw new InvalidOperationException($"Unsupported message type: {message.GetType().FullName}");
                 }
@@ -157,6 +163,13 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 writer.WritePropertyName(ResultPropertyName);
                 _payloadSerializer.Serialize(writer, message.Result);
             }
+            writer.WriteEndObject();
+        }
+
+        private void WriteCancelInvocationMessage(CancelInvocationMessage message, JsonTextWriter writer)
+        {
+            writer.WriteStartObject();
+            WriteHubMessageCommon(message, writer, CancelInvocationMessageType);
             writer.WriteEndObject();
         }
 
@@ -258,6 +271,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 var payload = resultProp.Value?.ToObject(returnType, _payloadSerializer);
                 return new CompletionMessage(invocationId, error, result: payload, hasResult: true);
             }
+        }
+
+        private CancelInvocationMessage BindCancelInvocationMessage(JObject json)
+        {
+            var invocationId = JsonUtils.GetRequiredProperty<string>(json, InvocationIdPropertyName, JTokenType.String);
+            return new CancelInvocationMessage(invocationId);
         }
 
         public static JsonSerializerSettings CreateDefaultSerializerSettings()

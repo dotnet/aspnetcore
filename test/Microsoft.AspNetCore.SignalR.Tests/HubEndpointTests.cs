@@ -211,6 +211,47 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         }
 
         [Fact]
+        public async Task ObservableHubRemovesSubscriptionWhenCanceledFromClient()
+        {
+            var observable = new Observable<int>();
+            var serviceProvider = CreateServiceProvider(s => s.AddSingleton(observable));
+            var endPoint = serviceProvider.GetService<HubEndPoint<ObservableHub>>();
+
+            var waitForSubscribe = new TaskCompletionSource<object>();
+            observable.OnSubscribe = o =>
+            {
+                waitForSubscribe.TrySetResult(null);
+            };
+
+            var waitForDispose = new TaskCompletionSource<object>();
+            observable.OnDispose = o =>
+            {
+                waitForDispose.TrySetResult(null);
+            };
+
+            using (var client = new TestClient())
+            {
+                var endPointTask = endPoint.OnConnectedAsync(client.Connection);
+
+                var invocationId = await client.SendInvocationAsync(nameof(ObservableHub.Subscribe), nonBlocking: false).OrTimeout();
+
+                await waitForSubscribe.Task.OrTimeout();
+
+                observable.OnNext(1);
+
+                await client.SendHubMessageAsync(new CancelInvocationMessage(invocationId)).OrTimeout();
+
+                await waitForDispose.Task.OrTimeout();
+
+                Assert.Equal(1L, ((StreamItemMessage)await client.ReadAsync().OrTimeout()).Item);
+
+                client.Dispose();
+
+                await endPointTask.OrTimeout();
+            }
+        }
+
+        [Fact]
         public async Task MissingNegotiateAndMessageSentFromHubConnectionCanBeDisposedCleanly()
         {
             var serviceProvider = CreateServiceProvider();

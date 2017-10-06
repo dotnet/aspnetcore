@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Runtime.ExceptionServices;
 using System.Security.Claims;
@@ -53,6 +54,9 @@ namespace Microsoft.AspNetCore.SignalR
         public virtual HubProtocolReaderWriter ProtocolReaderWriter { get; set; }
 
         public virtual WritableChannel<HubMessage> Output => _output;
+
+        // Currently used only for streaming methods
+        internal ConcurrentDictionary<string, CancellationTokenSource> ActiveRequestCancellationSources { get; } = new ConcurrentDictionary<string, CancellationTokenSource>();
 
         public virtual void Abort()
         {

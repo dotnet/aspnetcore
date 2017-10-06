@@ -24,9 +24,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             await Clients.Client(Context.ConnectionId).InvokeAsync("Echo", message);
         }
 
-        public IObservable<string> Stream()
+        public IObservable<int> Stream(int count)
         {
-            return new[] { "a", "b", "c" }.ToObservable();
+            return Observable.Interval(TimeSpan.FromMilliseconds(1))
+                             .Select((_, index) => index)
+                             .Take(count);
         }
     }
 
@@ -47,9 +49,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             await Clients.Client(Context.ConnectionId).Echo(message);
         }
 
-        public IObservable<string> Stream()
+        public IObservable<int> Stream(int count)
         {
-            return new[] { "a", "b", "c" }.ToObservable();
+            return Observable.Interval(TimeSpan.FromMilliseconds(1))
+                             .Select((_, index) => index)
+                             .Take(count);
         }
 
         public Task SendMessage(string message)
@@ -75,9 +79,11 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
             await Clients.Client(Context.ConnectionId).Echo(message);
         }
 
-        public IObservable<string> Stream()
+        public IObservable<int> Stream(int count)
         {
-            return new[] { "a", "b", "c" }.ToObservable();
+            return Observable.Interval(TimeSpan.FromMilliseconds(1))
+                             .Select((_, index) => index)
+                             .Take(count);
         }
 
         public Task SendMessage(string message)

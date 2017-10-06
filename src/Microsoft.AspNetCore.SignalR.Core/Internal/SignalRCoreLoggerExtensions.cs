@@ -49,6 +49,12 @@ namespace Microsoft.AspNetCore.SignalR.Core.Internal
         private static readonly Action<ILogger, string, Exception> _hubMethodBound =
             LoggerMessage.Define<string>(LogLevel.Trace, new EventId(12, nameof(HubMethodBound)), "Hub method '{hubMethod}' is bound.");
 
+        private static readonly Action<ILogger, string, Exception> _cancelStream =
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(13, nameof(CancelStream)), "Canceling stream for invocation {invocationId}.");
+
+        private static readonly Action<ILogger, Exception> _unexpectedCancel =
+            LoggerMessage.Define(LogLevel.Debug, new EventId(14, nameof(UnexpectedCancel)), "CancelInvocationMessage received unexpectedly.");
+
         public static void UsingHubProtocol(this ILogger logger, string hubProtocol)
         {
             _usingHubProtocol(logger, hubProtocol, null);
@@ -112,6 +118,16 @@ namespace Microsoft.AspNetCore.SignalR.Core.Internal
         public static void HubMethodBound(this ILogger logger, string hubMethod)
         {
             _hubMethodBound(logger, hubMethod, null);
+        }
+
+        public static void CancelStream(this ILogger logger, string invocationId)
+        {
+            _cancelStream(logger, invocationId, null);
+        }
+
+        public static void UnexpectedCancel(this ILogger logger)
+        {
+            _unexpectedCancel(logger, null);
         }
     }
 }

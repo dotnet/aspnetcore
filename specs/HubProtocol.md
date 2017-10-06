@@ -20,10 +20,11 @@ This document describes three encodings of the SignalR protocol: [JSON](http://w
 
 In the SignalR protocol, the following types of messages can be sent:
 
-* `Negotiation` Message - Sent by the client to negotiate the message format
+* `Negotiation` Message - Sent by the client to negotiate the message format.
 * `Invocation` Message - Indicates a request to invoke a particular method (the Target) with provided Arguments on the remote endpoint.
 * `StreamItem` Message - Indicates individual items of streamed response data from a previous Invocation message.
 * `Completion` Message - Indicates a previous Invocation has completed, and no further `StreamItem` messages will be received. Contains an error if the invocation concluded with an error, or the result if the invocation is not a streaming invocation.
+* `CancelInvocation` Message - Sent by the client to cancel a streaming invocation on the server.
 
 After opening a connection to the server the client must send a `Negotiation` message to the server as its first message. The negotiation message is **always** a JSON message and contains the name of the format (protocol) that will be used for the duration of the connection. If the server does not support the protocol requested by the client or the first message received from the client is not a `Negotiation` message the server must close the connection.
 
@@ -41,9 +42,9 @@ Example:
 
 ## Communication between the Caller and the Callee
 
-There a three kinds of interactions between the Caller and the Calle:
+There are three kinds of interactions between the Caller and the Callee:
 
-* Invocations - the Caller sends a message to the Calle and expects a message indicating that the invocation has been completed and optionally a result of the invocation
+* Invocations - the Caller sends a message to the Callee and expects a message indicating that the invocation has been completed and optionally a result of the invocation
 * Non-Blocking Invocations - the Caller sends a message to the Callee and does not expect any further messages for this invocation
 * Streaming Invocations - the Caller sends a message to the Callee and expects one or more results returned by the Callee followed by a message indicating the end of invocation
 
@@ -74,7 +75,7 @@ The SignalR protocol allows for multiple `StreamItem` messages to be transmitted
 
 On the Callee side, it is up to the Callee's Binder to determine if a method call will yield multiple results. For example, in .NET certain return types may indicate multiple results, while others may indicate a single result. Even then, applications may wish for multiple results to be buffered and returned in a single `Completion` frame. It is up to the Binder to decide how to map this. The Callee's Binder must encode each result in separate `StreamItem` messages, indicating the end of results by sending a `Completion` message.
 
-On the Caller side, the user code which performs the invocation indicates how it would like to receive the results and it is up the Caller's Binder to determine how to handle the result. If the Caller expects only a single result, but multiple results are returned, the Caller's Binder should yield an error indicating that multiple results were returned. However, if a Caller expects multiple results, but only a single result is returned, the Caller's Binder should yield that single result and indicate there are no further results.
+On the Caller side, the user code which performs the invocation indicates how it would like to receive the results and it is up the Caller's Binder to determine how to handle the result. If the Caller expects only a single result, but multiple results are returned, the Caller's Binder should yield an error indicating that multiple results were returned. However, if a Caller expects multiple results, but only a single result is returned, the Caller's Binder should yield that single result and indicate there are no further results. If the Caller wants to stop receiving `StreamItem` messages before the Callee sends a `Completion` message, the Caller can send a `CancelInvocation` message with the same `Invocation ID` used for the `Invocation` message that started the stream. It is possible to receive `StreamItem` messages or a `Completion` message after a `CancelInvocation` message has been sent, these can be ignored.
 
 ## Completion and results
 
@@ -223,6 +224,16 @@ S->C: Completion { Id = 42, Error = "Ran out of data!" }
 
 This should manifest to the Calling code as a sequence which emits `0`, `1`, `2`, `3`, `4`, but then fails with the error `Ran out of data!`.
 
+### Streamed Result closed early (`Stream` example above)
+
+```
+C->S: Invocation { Id = 42, Target = "Stream", Arguments = [ 5 ] }
+S->C: StreamItem { Id = 42, Item = 0 }
+S->C: StreamItem { Id = 42, Item = 1 }
+C->S: CancelInvocation { Id = 42 }
+S->C: StreamItem { Id = 42, Item = 2} // This can be ignored
+```
+
 ### Non-Blocking Call (`NonBlocking` example above)
 
 ```
@@ -248,7 +259,7 @@ Example:
 ```json
 {
     "type": 1,
-    "invocationId": 123,
+    "invocationId": "123",
     "target": "Send",
     "arguments": [
         42,
@@ -261,7 +272,7 @@ Example (Non-Blocking):
 ```json
 {
     "type": 1,
-    "invocationId": 123,
+    "invocationId": "123",
     "nonblocking": true,
     "target": "Send",
     "arguments": [
@@ -284,7 +295,7 @@ Example
 ```json
 {
     "type": 2,
-    "invocationId": 123,
+    "invocationId": "123",
     "item": 42
 }
 ```
@@ -305,7 +316,7 @@ Example - A `Completion` message with no result or error
 ```json
 {
     "type": 3,
-    "invocationId": 123
+    "invocationId": "123"
 }
 ```
 
@@ -314,7 +325,7 @@ Example - A `Completion` message with a result
 ```json
 {
     "type": 3,
-    "invocationId": 123,
+    "invocationId": "123",
     "result": 42
 }
 ```
@@ -324,7 +335,7 @@ Example - A `Completion` message with an error
 ```json
 {
     "type": 3,
-    "invocationId": 123,
+    "invocationId": "123",
     "error": "It didn't work!"
 }
 ```
@@ -334,9 +345,23 @@ Example - The following `Completion` message is a protocol error because it has 
 ```json
 {
     "type": 3,
-    "invocationId": 123,
+    "invocationId": "123",
     "result": 42,
     "error": "It didn't work!"
+}
+```
+
+### CancelInvocation Message Encoding
+A `CancelInvocation` message is a JSON object with the following properties
+
+* `type` - A `Number` with the literal value `5`, indicationg that this is a `CancelInvocation`.
+* `invocationId` - A `String` encoding the `Invocation ID` for a message.
+
+Example
+```json
+{
+    "type": 5,
+    "invocationId": "123"
 }
 ```
 
@@ -378,7 +403,7 @@ is decoded as follows:
 
 * `0x95` - 5-element array
 * `0x01` - `1` (Message Type - `Invocation` message)
-* `0xa3` - string of length 3 (Target)
+* `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
 * `0x7a` - `z`
@@ -397,7 +422,9 @@ is decoded as follows:
 
 `StreamItem` messages have the following structure:
 
+```
 [2, InvocationId, Item]
+```
 
 * `2` - Message Type - `2` indicates this is a `StreamItem` message
 * InvocationId - A `String` encoding the Invocation ID for the message
@@ -414,7 +441,7 @@ is decoded as follows:
 
 * `0x93` - 3-element array
 * `0x02` - `2` (Message Type - `StreamItem` message)
-* `0xa3` - string of length 3 (Target)
+* `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
 * `0x7a` - `z`
@@ -449,7 +476,7 @@ is decoded as follows:
 
 * `0x94` - 4-element array
 * `0x03` - `3` (Message Type - `Result` message)
-* `0xa3` - string of length 3 (Target)
+* `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
 * `0x7a` - `z`
@@ -472,7 +499,7 @@ is decoded as follows:
 
 * `0x93` - 3-element array
 * `0x03` - `3` (Message Type - `Result` message)
-* `0xa3` - string of length 3 (Target)
+* `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
 * `0x7a` - `z`
@@ -489,12 +516,39 @@ is decoded as follows:
 
 * `0x94` - 4-element array
 * `0x03` - `3` (Message Type - `Result` message)
-* `0xa3` - string of length 3 (Target)
+* `0xa3` - string of length 3 (InvocationId)
 * `0x78` - `x`
 * `0x79` - `y`
 * `0x7a` - `z`
 * `0x03` - `3` (ResultKind - Non-Void result)
 * `0x2a` - `42` (Result)
+
+### CancelInvocation Message Encoding
+
+`CancelInvocation` messages have the following structure
+
+```
+[5, InvocationId]
+```
+
+* `5` - Message Type - `5` indicates this is a `CancelInvocation` message
+* InvocationId - A `String` encoding the Invocation ID for the message
+
+Example:
+
+The following payload:
+```
+0x92 0x05 0xa3 0x78 0x79 0x7a
+```
+
+is decoded as follows:
+
+* `0x92` - 2-element array
+* `0x05` - `5` (Message Type `CancelInvocation` message)
+* `0xa3` - string of length 3 (InvocationId)
+* `0x78` - `x`
+* `0x79` - `y`
+* `0x7a` - `z`
 
 ## Protocol Buffers (ProtoBuf) Encoding
 

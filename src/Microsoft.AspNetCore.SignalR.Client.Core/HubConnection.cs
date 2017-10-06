@@ -132,8 +132,35 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task<ReadableChannel<object>> StreamAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
-            var irq = InvocationRequest.Stream(cancellationToken, returnType, GetNextId(), _loggerFactory, out var channel);
-            await InvokeCore(methodName, irq, args, nonBlocking: false);
+            var invokeCts = new CancellationTokenSource();
+            var irq = InvocationRequest.Stream(invokeCts.Token, returnType, GetNextId(), _loggerFactory, this, out var channel);
+            // After InvokeCore we don't want the irq cancellation token to be triggered.
+            // The stream invocation will be canceled by the CancelInvocationMessage, connection closing, or channel finishing.
+            using (cancellationToken.Register(token => ((CancellationTokenSource)token).Cancel(), invokeCts))
+            {
+                await InvokeCore(methodName, irq, args, nonBlocking: false);
+            }
+
+            if (cancellationToken.CanBeCanceled)
+            {
+                cancellationToken.Register(state =>
+                {
+                    var invocationReq = (InvocationRequest)state;
+                    if (!invocationReq.HubConnection._connectionActive.IsCancellationRequested)
+                    {
+                        // Fire and forget, if it fails that means we aren't connected anymore.
+                        _ = invocationReq.HubConnection.SendHubMessage(new CancelInvocationMessage(invocationReq.InvocationId), invocationReq);
+
+                        if (invocationReq.HubConnection.TryRemoveInvocation(invocationReq.InvocationId, out _))
+                        {
+                            invocationReq.Complete(null);
+                        }
+
+                        invocationReq.Dispose();
+                    }
+                }, irq);
+            }
+
             return channel;
         }
 
@@ -142,7 +169,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task<object> InvokeAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
         {
-            var irq = InvocationRequest.Invoke(cancellationToken, returnType, GetNextId(), _loggerFactory, out var task);
+            var irq = InvocationRequest.Invoke(cancellationToken, returnType, GetNextId(), _loggerFactory, this, out var task);
             await InvokeCore(methodName, irq, args, nonBlocking: false);
             return await task;
         }
@@ -152,7 +179,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private Task SendAsyncCore(string methodName, object[] args, CancellationToken cancellationToken)
         {
-            var irq = InvocationRequest.Invoke(cancellationToken, typeof(void), GetNextId(), _loggerFactory, out _);
+            var irq = InvocationRequest.Invoke(cancellationToken, typeof(void), GetNextId(), _loggerFactory, this, out _);
             return InvokeCore(methodName, irq, args, nonBlocking: true);
         }
 
@@ -184,24 +211,24 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _logger.IssueInvocation(invocationMessage.InvocationId, irq.ResultType.FullName, methodName, args);
 
             // We don't need to wait for this to complete. It will signal back to the invocation request.
-            return SendInvocation(invocationMessage, irq);
+            return SendHubMessage(invocationMessage, irq);
         }
 
-        private async Task SendInvocation(InvocationMessage invocationMessage, InvocationRequest irq)
+        private async Task SendHubMessage(HubMessage hubMessage, InvocationRequest irq)
         {
             try
             {
-                var payload = _protocolReaderWriter.WriteMessage(invocationMessage);
-                _logger.SendInvocation(invocationMessage.InvocationId);
+                var payload = _protocolReaderWriter.WriteMessage(hubMessage);
+                _logger.SendInvocation(hubMessage.InvocationId);
 
                 await _connection.SendAsync(payload, irq.CancellationToken);
-                _logger.SendInvocationCompleted(invocationMessage.InvocationId);
+                _logger.SendInvocationCompleted(hubMessage.InvocationId);
             }
             catch (Exception ex)
             {
-                _logger.SendInvocationFailed(invocationMessage.InvocationId, ex);
+                _logger.SendInvocationFailed(hubMessage.InvocationId, ex);
                 irq.Fail(ex);
-                TryRemoveInvocation(invocationMessage.InvocationId, out _);
+                TryRemoveInvocation(hubMessage.InvocationId, out _);
             }
         }
 

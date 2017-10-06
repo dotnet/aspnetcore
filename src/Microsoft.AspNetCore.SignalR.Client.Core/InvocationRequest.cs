@@ -19,8 +19,9 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public Type ResultType { get; }
         public CancellationToken CancellationToken { get; }
         public string InvocationId { get; }
+        public HubConnection HubConnection { get; private set; }
 
-        protected InvocationRequest(CancellationToken cancellationToken, Type resultType, string invocationId, ILogger logger)
+        protected InvocationRequest(CancellationToken cancellationToken, Type resultType, string invocationId, ILogger logger, HubConnection hubConnection)
         {
             _cancellationTokenRegistration = cancellationToken.Register(self => ((InvocationRequest)self).Cancel(), this);
 
@@ -28,21 +29,23 @@ namespace Microsoft.AspNetCore.SignalR.Client
             CancellationToken = cancellationToken;
             ResultType = resultType;
             Logger = logger;
+            HubConnection = hubConnection;
 
             Logger.InvocationCreated(InvocationId);
         }
 
-        public static InvocationRequest Invoke(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, out Task<object> result)
+        public static InvocationRequest Invoke(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection, out Task<object> result)
         {
-            var req = new NonStreaming(cancellationToken, resultType, invocationId, loggerFactory);
+            var req = new NonStreaming(cancellationToken, resultType, invocationId, loggerFactory, hubConnection);
             result = req.Result;
             return req;
         }
 
 
-        public static InvocationRequest Stream(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, out ReadableChannel<object> result)
+        public static InvocationRequest Stream(CancellationToken cancellationToken, Type resultType, string invocationId,
+            ILoggerFactory loggerFactory, HubConnection hubConnection, out ReadableChannel<object> result)
         {
-            var req = new Streaming(cancellationToken, resultType, invocationId, loggerFactory);
+            var req = new Streaming(cancellationToken, resultType, invocationId, loggerFactory, hubConnection);
             result = req.Result;
             return req;
         }
@@ -67,8 +70,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             private readonly Channel<object> _channel = Channel.CreateUnbounded<object>();
 
-            public Streaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory)
-                : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger<Streaming>())
+            public Streaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection)
+                : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger<Streaming>(), hubConnection)
             {
             }
 
@@ -115,7 +118,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             protected override void Cancel()
             {
-                _channel.Out.TryComplete(new OperationCanceledException("Connection terminated"));
+                _channel.Out.TryComplete(new OperationCanceledException("Invocation terminated"));
             }
         }
 
@@ -123,8 +126,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
         {
             private readonly TaskCompletionSource<object> _completionSource = new TaskCompletionSource<object>(TaskCreationOptions.RunContinuationsAsynchronously);
 
-            public NonStreaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory)
-                : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger<NonStreaming>())
+            public NonStreaming(CancellationToken cancellationToken, Type resultType, string invocationId, ILoggerFactory loggerFactory, HubConnection hubConnection)
+                : base(cancellationToken, resultType, invocationId, loggerFactory.CreateLogger<NonStreaming>(), hubConnection)
             {
             }
 

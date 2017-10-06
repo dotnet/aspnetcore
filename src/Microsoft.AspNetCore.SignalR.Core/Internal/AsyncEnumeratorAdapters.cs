@@ -89,7 +89,11 @@ namespace Microsoft.AspNetCore.SignalR.Internal
 
             public void OnNext(T value)
             {
-                _cancellationToken.ThrowIfCancellationRequested();
+                if (_cancellationToken.IsCancellationRequested)
+                {
+                    // Noop, someone else is handling the cancellation
+                    return;
+                }
 
                 // This will block the thread emitting the object if the channel is bounded and full
                 // I think this is OK, since we want to push the backpressure up. However, we may need
