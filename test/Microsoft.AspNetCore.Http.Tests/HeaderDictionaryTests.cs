@@ -30,7 +30,7 @@ namespace Microsoft.AspNetCore.Http
                     { "Header1", "Value1" }
                 });
 
-            Assert.Equal(1, headers.Count);
+            Assert.Single(headers);
             Assert.Equal<string>(new[] { "Header1" }, headers.Keys);
             Assert.True(headers.ContainsKey("header1"));
             Assert.False(headers.ContainsKey("header2"));

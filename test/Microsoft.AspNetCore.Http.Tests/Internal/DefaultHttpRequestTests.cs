@@ -166,9 +166,9 @@ namespace Microsoft.AspNetCore.Http.Internal
         {
             var request = new DefaultHttpContext().Request;
             var cookieHeaders = request.Headers["Cookie"];
-            Assert.Equal(0, cookieHeaders.Count);
+            Assert.Empty(cookieHeaders);
             var cookies0 = request.Cookies;
-            Assert.Equal(0, cookies0.Count);
+            Assert.Empty(cookies0);
             Assert.Null(cookies0["key0"]);
             Assert.False(cookies0.ContainsKey("key0"));
 

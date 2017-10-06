@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             cookies.Delete(testcookie);
 
             var cookieHeaderValues = headers[HeaderNames.SetCookie];
-            Assert.Equal(1, cookieHeaderValues.Count);
+            Assert.Single(cookieHeaderValues);
             Assert.StartsWith(testcookie, cookieHeaderValues[0]);
             Assert.Contains("path=/", cookieHeaderValues[0]);
             Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             cookies.Delete(testcookie, options);
 
             var cookieHeaderValues = headers[HeaderNames.SetCookie];
-            Assert.Equal(1, cookieHeaderValues.Count);
+            Assert.Single(cookieHeaderValues);
             Assert.StartsWith(testcookie, cookieHeaderValues[0]);
             Assert.Contains("path=/", cookieHeaderValues[0]);
             Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             cookies.Delete(testcookie);
 
             var cookieHeaderValues = headers[HeaderNames.SetCookie];
-            Assert.Equal(1, cookieHeaderValues.Count);
+            Assert.Single(cookieHeaderValues);
             Assert.StartsWith(testcookie, cookieHeaderValues[0]);
             Assert.Contains("path=/", cookieHeaderValues[0]);
             Assert.Contains("expires=Thu, 01 Jan 1970 00:00:00 GMT", cookieHeaderValues[0]);
@@ -85,7 +85,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             cookies.Append(testcookie, testcookie, cookieOptions);
 
             var cookieHeaderValues = headers[HeaderNames.SetCookie];
-            Assert.Equal(1, cookieHeaderValues.Count);
+            Assert.Single(cookieHeaderValues);
             Assert.Contains($"max-age={maxAgeTime.TotalSeconds.ToString()}", cookieHeaderValues[0]);
         }
 
@@ -117,7 +117,7 @@ namespace Microsoft.AspNetCore.Http.Tests
             cookies.Append(key, value);
 
             var cookieHeaderValues = headers[HeaderNames.SetCookie];
-            Assert.Equal(1, cookieHeaderValues.Count);
+            Assert.Single(cookieHeaderValues);
             Assert.StartsWith(expected, cookieHeaderValues[0]);
         }
     }
