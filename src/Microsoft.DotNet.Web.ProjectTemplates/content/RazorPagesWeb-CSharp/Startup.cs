@@ -129,12 +129,7 @@ namespace Company.WebApplication1
             app.UseAuthentication();
 
 #endif
-            app.UseMvc(routes =>
-            {
-                routes.MapRoute(
-                    name: "default",
-                    template: "{controller}/{action=Index}/{id?}");
-            });
+            app.UseMvc();
         }
     }
 }
