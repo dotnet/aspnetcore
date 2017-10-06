@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal;
 
 namespace Microsoft.Extensions.DependencyInjection
@@ -15,6 +16,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton(typeof(IHubContext<>), typeof(HubContext<>));
             services.AddSingleton(typeof(IHubContext<,>), typeof(HubContext<,>));
             services.AddSingleton(typeof(HubEndPoint<>), typeof(HubEndPoint<>));
+            services.AddSingleton(typeof(IUserIdProvider), typeof(DefaultUserIdProvider));
             services.AddScoped(typeof(IHubActivator<>), typeof(DefaultHubActivator<>));
 
             services.AddAuthorization();

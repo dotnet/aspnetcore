@@ -850,15 +850,15 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
             dynamic endPoint = serviceProvider.GetService(GetEndPointType(hubType));
 
-            using (var firstClient = new TestClient())
-            using (var secondClient = new TestClient())
+            using (var firstClient = new TestClient(addClaimId: true))
+            using (var secondClient = new TestClient(addClaimId: true))
             {
                 Task firstEndPointTask = endPoint.OnConnectedAsync(firstClient.Connection);
                 Task secondEndPointTask = endPoint.OnConnectedAsync(secondClient.Connection);
 
                 await Task.WhenAll(firstClient.Connected, secondClient.Connected).OrTimeout();
 
-                await firstClient.SendInvocationAsync("ClientSendMethod", secondClient.Connection.User.Identity.Name, "test").OrTimeout();
+                await firstClient.SendInvocationAsync("ClientSendMethod", secondClient.Connection.User.FindFirst(ClaimTypes.NameIdentifier)?.Value, "test").OrTimeout();
 
                 // check that 'secondConnection' has received the group send
                 var hubMessage = await secondClient.ReadAsync().OrTimeout();

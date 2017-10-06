@@ -67,6 +67,8 @@ namespace Microsoft.AspNetCore.SignalR
             Task.Factory.StartNew(_abortedCallback, this);
         }
 
+        public string UserIdentifier { get; internal set; }
+
         internal void Abort(Exception exception)
         {
             AbortException = ExceptionDispatchInfo.Capture(exception);

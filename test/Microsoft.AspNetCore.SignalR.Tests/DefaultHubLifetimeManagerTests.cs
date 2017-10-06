@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
 using System.Threading.Tasks.Channels;
+using Microsoft.AspNetCore.SignalR.Core;
 using Microsoft.AspNetCore.SignalR.Internal.Protocol;
 using Xunit;
 

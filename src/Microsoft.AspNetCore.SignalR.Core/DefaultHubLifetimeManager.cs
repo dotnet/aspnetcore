@@ -138,17 +138,14 @@ namespace Microsoft.AspNetCore.SignalR
 
         public override Task InvokeUserAsync(string userId, string methodName, object[] args)
         {
-            return InvokeAllWhere(methodName, args, connection =>
-            {
-                return string.Equals(connection.User.Identity.Name, userId, StringComparison.Ordinal);
-            });
+            return InvokeAllWhere(methodName, args, connection => 
+                string.Equals(connection.UserIdentifier, userId, StringComparison.Ordinal));
         }
 
         public override Task OnConnectedAsync(HubConnectionContext connection)
         {
             // Set the hub groups feature
             connection.Features.Set<IHubGroupsFeature>(new HubGroupsFeature());
-
             _connections.Add(connection);
             return Task.CompletedTask;
         }

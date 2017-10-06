@@ -245,9 +245,9 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 previousConnectionTask = WriteAsync(connection, message);
             });
 
-            if (connection.User.Identity.IsAuthenticated)
+            if (!string.IsNullOrEmpty(connection.UserIdentifier))
             {
-                var userChannel = _channelNamePrefix + ".user." + connection.User.Identity.Name;
+                var userChannel = _channelNamePrefix + ".user." + connection.UserIdentifier;
                 redisSubscriptions.Add(userChannel);
 
                 var previousUserTask = Task.CompletedTask;
