@@ -32,6 +32,7 @@ interface DevServerOptions {
     HotModuleReplacementServerPort: number;
     HotModuleReplacementClientOptions: StringMap<string>;
     ReactHotModuleReplacement: boolean;
+    EnvParam: any;
 }
 
 // We support these three kinds of webpack.config.js export. We don't currently support exported promises
@@ -248,7 +249,7 @@ export function createWebpackDevServer(callback: CreateDevServerCallback, option
         // In the future, we could add support for configuring the 'env' param in Startup.cs. But right
         // now, it's not clear that people will want to do that (and they can always make up their own
         // default env values in their webpack.config.js).
-        webpackConfigExport = webpackConfigExport();
+        webpackConfigExport = webpackConfigExport(options.suppliedOptions.EnvParam);
     }
     const webpackConfigArray = webpackConfigExport instanceof Array ? webpackConfigExport : [webpackConfigExport];
 

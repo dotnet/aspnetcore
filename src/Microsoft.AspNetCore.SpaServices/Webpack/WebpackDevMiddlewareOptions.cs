@@ -50,5 +50,10 @@ namespace Microsoft.AspNetCore.SpaServices.Webpack
         /// the webpack compiler.
         /// </summary>
         public IDictionary<string, string> EnvironmentVariables { get; set; }
+
+        /// <summary>
+        /// Pass in the env parameter to webpack.
+        /// </summary>
+        public object EnvParam { get; set; }
     }
 }
