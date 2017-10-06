@@ -217,7 +217,39 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         }
 
         [ForegroundFact]
-        public void GetTracker_ForRazorTextBufferWithTracker_ReturnsTheFirstTracker()
+        public void GetTracker_ITextBuffer_ForRazorTextBufferWithTracker_ReturnsTracker()
+        {
+            // Arrange
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
+            var textBuffer = Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType && b.Properties == new PropertyCollection());
+
+            // Preload the buffer's properties with a tracker, so it's like we've already tracked this one.
+            var tracker = new DefaultVisualStudioDocumentTracker(ProjectManager, ProjectService, Workspace, textBuffer);
+            textBuffer.Properties.AddProperty(typeof(VisualStudioDocumentTracker), tracker);
+
+            // Act
+            var result = factory.GetTracker(textBuffer);
+
+            // Assert
+            Assert.Same(tracker, result);
+        }
+
+        [ForegroundFact]
+        public void GetTracker_ITextBuffer_NonRazorBuffer_ReturnsNull()
+        {
+            // Arrange
+            var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
+            var textBuffer = Mock.Of<ITextBuffer>(b => b.ContentType == NonRazorContentType && b.Properties == new PropertyCollection());
+
+            // Act
+            var result = factory.GetTracker(textBuffer);
+
+            // Assert
+            Assert.Null(result);
+        }
+
+        [ForegroundFact]
+        public void GetTracker_ITextView_ForRazorTextBufferWithTracker_ReturnsTheFirstTracker()
         {
             // Arrange
             var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);
@@ -244,7 +276,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         }
 
         [ForegroundFact]
-        public void GetTracker_WithoutRazorBuffer_ReturnsNull()
+        public void GetTracker_ITextView_WithoutRazorBuffer_ReturnsNull()
         {
             // Arrange
             var factory = new DefaultVisualStudioDocumentTrackerFactory(Dispatcher, ProjectManager, ProjectService, Workspace);

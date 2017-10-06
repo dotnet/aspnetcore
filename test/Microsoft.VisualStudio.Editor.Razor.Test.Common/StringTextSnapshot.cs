@@ -4,15 +4,41 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.VisualStudio.Utilities;
 
 namespace Microsoft.VisualStudio.Text
 {
     public class StringTextSnapshot : ITextSnapshot
     {
+        private readonly List<ITextSnapshotLine> _lines;
+
         public StringTextSnapshot(string content)
         {
             Content = content;
+            _lines = new List<ITextSnapshotLine>();
+
+            var start = 0;
+            var delimiterIndex = 0;
+            while (delimiterIndex != -1)
+            {
+                var delimiterLength = 2;
+                delimiterIndex = Content.IndexOf("\r\n", start);
+
+                if (delimiterIndex == -1)
+                {
+                    delimiterLength = 1;
+                    delimiterIndex = Content.IndexOfAny(ParserHelpers.NewLineCharacters, start);
+                }
+
+                var nextLineStartIndex = delimiterIndex != -1 ? delimiterIndex + delimiterLength : Content.Length;
+
+                var lineText = Content.Substring(start, nextLineStartIndex - start);
+                _lines.Add(new SnapshotLine(lineText, start, this));
+
+                start = nextLineStartIndex;
+            }
         }
 
         public string Content { get; }
@@ -23,7 +49,7 @@ namespace Microsoft.VisualStudio.Text
 
         public int Length => Content.Length;
 
-        public VisualStudio.Text.ITextBuffer TextBuffer => throw new NotImplementedException();
+        public ITextBuffer TextBuffer => throw new NotImplementedException();
 
         public IContentType ContentType => throw new NotImplementedException();
 
@@ -39,6 +65,18 @@ namespace Microsoft.VisualStudio.Text
 
         public char[] ToCharArray(int startIndex, int length) => Content.ToCharArray();
 
+        public ITextSnapshotLine GetLineFromPosition(int position)
+        {
+            var matchingLine = _lines.FirstOrDefault(line => line.Start + line.LengthIncludingLineBreak > position);
+
+            if (position < 0 || matchingLine == null)
+            {
+                throw new ArgumentOutOfRangeException();
+            }
+
+            return matchingLine;
+        }
+
         public ITrackingPoint CreateTrackingPoint(int position, PointTrackingMode trackingMode) => throw new NotImplementedException();
 
         public ITrackingPoint CreateTrackingPoint(int position, PointTrackingMode trackingMode, TrackingFidelityMode trackingFidelity) => throw new NotImplementedException();
@@ -52,8 +90,6 @@ namespace Microsoft.VisualStudio.Text
         public ITrackingSpan CreateTrackingSpan(int start, int length, SpanTrackingMode trackingMode, TrackingFidelityMode trackingFidelity) => throw new NotImplementedException();
 
         public ITextSnapshotLine GetLineFromLineNumber(int lineNumber) => throw new NotImplementedException();
-
-        public ITextSnapshotLine GetLineFromPosition(int position) => throw new NotImplementedException();
 
         public int GetLineNumberFromPosition(int position) => throw new NotImplementedException();
 
@@ -71,7 +107,7 @@ namespace Microsoft.VisualStudio.Text
 
             public int Length => throw new NotImplementedException();
 
-            public VisualStudio.Text.ITextBuffer TextBuffer => throw new NotImplementedException();
+            public ITextBuffer TextBuffer => throw new NotImplementedException();
 
             public int VersionNumber => throw new NotImplementedException();
 
@@ -95,6 +131,56 @@ namespace Microsoft.VisualStudio.Text
             {
                 public bool IncludesLineChanges => false;
             }
+        }
+
+        private class SnapshotLine : ITextSnapshotLine
+        {
+            private readonly string _contentWithLineBreak;
+            private readonly string _content;
+
+            public SnapshotLine(string contentWithLineBreak, int start, ITextSnapshot owner)
+            {
+                _contentWithLineBreak = contentWithLineBreak;
+                _content = contentWithLineBreak;
+
+                if (_content.EndsWith("\r\n"))
+                {
+                    _content = _content.Substring(0, _content.Length - 2);
+                }
+                else if(_content.Length > 0 && ParserHelpers.NewLineCharacters.Contains(_content[_content.Length - 1]))
+                {
+                    _content = _content.Substring(0, _content.Length - 1);
+                }
+
+                Start = new SnapshotPoint(owner, start);
+                Snapshot = owner;
+            }
+
+            public ITextSnapshot Snapshot { get; }
+
+            public SnapshotPoint Start { get; }
+
+            public int Length => _content.Length;
+
+            public int LengthIncludingLineBreak => _contentWithLineBreak.Length;
+
+            public int LineBreakLength => _contentWithLineBreak.Length - _content.Length;
+
+            public string GetText() => _content;
+
+            public string GetLineBreakText() => _contentWithLineBreak.Substring(_content.Length);
+
+            public string GetTextIncludingLineBreak() => _contentWithLineBreak;
+
+            public int LineNumber => throw new NotImplementedException();
+
+            public SnapshotSpan Extent => throw new NotImplementedException();
+
+            public SnapshotSpan ExtentIncludingLineBreak => throw new NotImplementedException();
+
+            public SnapshotPoint End => throw new NotImplementedException();
+
+            public SnapshotPoint EndIncludingLineBreak => throw new NotImplementedException();
         }
     }
 }

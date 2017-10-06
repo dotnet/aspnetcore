@@ -25,5 +25,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public abstract ITextBuffer TextBuffer { get; }
 
         public abstract IReadOnlyList<ITextView> TextViews { get; }
+
+        public abstract ITextView GetFocusedTextView();
     }
 }

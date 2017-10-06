@@ -79,6 +79,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         public override Workspace Workspace => _workspace;
 
+        public override ITextView GetFocusedTextView()
+        {
+            for (var i = 0; i < TextViews.Count; i++)
+            {
+                if (TextViews[i].HasAggregateFocus)
+                {
+                    return TextViews[i];
+                }
+            }
+
+            return null;
+        }
+
         public void Subscribe()
         {
             // Fundamentally we have a Razor half of the world as as soon as the document is open - and then later 

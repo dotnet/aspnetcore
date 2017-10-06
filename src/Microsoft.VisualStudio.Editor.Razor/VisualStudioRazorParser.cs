@@ -2,15 +2,17 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Timers;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Text.Editor;
+using Microsoft.VisualStudio.Text.Operations;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
-using Timer = System.Timers.Timer;
+using Timer = System.Threading.Timer;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -18,13 +20,17 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         // Internal for testing.
         internal readonly ITextBuffer _textBuffer;
-        internal readonly Timer _idleTimer;
+        internal TimeSpan IdleDelay = TimeSpan.FromSeconds(3);
+        internal Timer _idleTimer;
 
-        private const int IdleDelay = 3000;
+        private readonly object IdleLock = new object();
         private readonly ICompletionBroker _completionBroker;
+        private readonly VisualStudioDocumentTrackerFactory _documentTrackerFactory;
         private readonly BackgroundParser _parser;
         private readonly ForegroundDispatcher _dispatcher;
+        private readonly ErrorReporter _errorReporter;
         private RazorSyntaxTreePartialParser _partialParser;
+        private BraceSmartIndenter _braceSmartIndenter;
 
         // For testing only
         internal VisualStudioRazorParser(RazorCodeDocument codeDocument)
@@ -32,7 +38,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
             CodeDocument = codeDocument;
         }
 
-        public VisualStudioRazorParser(ForegroundDispatcher dispatcher, ITextBuffer buffer, RazorTemplateEngine templateEngine, string filePath, ICompletionBroker completionBroker)
+        public VisualStudioRazorParser(
+            ForegroundDispatcher dispatcher,
+            ITextBuffer buffer,
+            RazorTemplateEngine templateEngine,
+            string filePath,
+            ErrorReporter errorReporter,
+            ICompletionBroker completionBroker,
+            VisualStudioDocumentTrackerFactory documentTrackerFactory,
+            IEditorOperationsFactoryService editorOperationsFactory)
         {
             if (dispatcher == null)
             {
@@ -54,20 +68,36 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(filePath));
             }
 
+            if (errorReporter == null)
+            {
+                throw new ArgumentNullException(nameof(errorReporter));
+            }
+
             if (completionBroker == null)
             {
                 throw new ArgumentNullException(nameof(completionBroker));
             }
 
+            if (documentTrackerFactory == null)
+            {
+                throw new ArgumentNullException(nameof(documentTrackerFactory));
+            }
+
+            if (editorOperationsFactory == null)
+            {
+                throw new ArgumentNullException(nameof(editorOperationsFactory));
+            }
+
             _dispatcher = dispatcher;
             TemplateEngine = templateEngine;
             FilePath = filePath;
+            _errorReporter = errorReporter;
             _textBuffer = buffer;
             _completionBroker = completionBroker;
+            _documentTrackerFactory = documentTrackerFactory;
             _textBuffer.Changed += TextBuffer_OnChanged;
+            _braceSmartIndenter = new BraceSmartIndenter(_dispatcher, _textBuffer, _documentTrackerFactory, editorOperationsFactory);
             _parser = new BackgroundParser(templateEngine, filePath);
-            _idleTimer = new Timer(IdleDelay);
-            _idleTimer.Elapsed += Onidle;
             _parser.ResultsReady += OnResultsReady;
 
             _parser.Start();
@@ -95,81 +125,124 @@ namespace Microsoft.VisualStudio.Editor.Razor
             _dispatcher.AssertForegroundThread();
 
             _textBuffer.Changed -= TextBuffer_OnChanged;
+            _braceSmartIndenter.Dispose();
             _parser.Dispose();
-            _idleTimer.Dispose();
+
+            StopIdleTimer();
         }
 
-        private void TextBuffer_OnChanged(object sender, TextContentChangedEventArgs contentChange)
+        // Internal for testing
+        internal void StartIdleTimer()
         {
             _dispatcher.AssertForegroundThread();
 
-            if (contentChange.Changes.Count > 0)
+            lock (IdleLock)
             {
-                // Idle timers are used to track provisional changes. Provisional changes only last for a single text change. After that normal
-                // partial parsing rules apply (stop the timer).
-                _idleTimer.Stop();
-
-
-                var firstChange = contentChange.Changes[0];
-                var lastChange = contentChange.Changes[contentChange.Changes.Count - 1];
-
-                var oldLen = lastChange.OldEnd - firstChange.OldPosition;
-                var newLen = lastChange.NewEnd - firstChange.NewPosition;
-
-                var wasChanged = true;
-                if (oldLen == newLen)
+                if (_idleTimer == null)
                 {
-                    var oldText = contentChange.Before.GetText(firstChange.OldPosition, oldLen);
-                    var newText = contentChange.After.GetText(firstChange.NewPosition, newLen);
-                    wasChanged = !string.Equals(oldText, newText, StringComparison.Ordinal);
-                }
-
-                if (wasChanged)
-                {
-                    var newText = contentChange.After.GetText(firstChange.NewPosition, newLen);
-                    var change = new SourceChange(firstChange.OldPosition, oldLen, newText);
-                    var snapshot = contentChange.After;
-                    var result = PartialParseResultInternal.Rejected;
-
-                    using (_parser.SynchronizeMainThreadState())
-                    {
-                        // Check if we can partial-parse
-                        if (_partialParser != null && _parser.IsIdle)
-                        {
-                            result = _partialParser.Parse(change);
-                        }
-                    }
-
-                    // If partial parsing failed or there were outstanding parser tasks, start a full reparse
-                    if ((result & PartialParseResultInternal.Rejected) == PartialParseResultInternal.Rejected)
-                    {
-                        _parser.QueueChange(change, snapshot);
-                    }
-
-                    if ((result & PartialParseResultInternal.Provisional) == PartialParseResultInternal.Provisional)
-                    {
-                        _idleTimer.Start();
-                    }
+                    // Timer will fire after a fixed delay, but only once.
+                    _idleTimer = new Timer(Timer_Tick, null, IdleDelay, Timeout.InfiniteTimeSpan);
                 }
             }
         }
 
-        private void Onidle(object sender, ElapsedEventArgs e)
+        // Internal for testing
+        internal void StopIdleTimer()
         {
-            _dispatcher.AssertBackgroundThread();
+            // Can be called from any thread.
 
-            var textViews = Array.Empty<ITextView>();
+            lock (IdleLock)
+            {
+                if (_idleTimer != null)
+                {
+                    _idleTimer.Dispose();
+                    _idleTimer = null;
+                }
+            }
+        }
 
-            foreach (var textView in textViews)
+        private void TextBuffer_OnChanged(object sender, TextContentChangedEventArgs args)
+        {
+            _dispatcher.AssertForegroundThread();
+
+            if (args.Changes.Count > 0)
+            {
+                // Idle timers are used to track provisional changes. Provisional changes only last for a single text change. After that normal
+                // partial parsing rules apply (stop the timer).
+                StopIdleTimer();
+            }
+
+            if (!args.TextChangeOccurred(out var changeInformation))
+            {
+                return;
+            }
+
+            var change = new SourceChange(changeInformation.firstChange.OldPosition, changeInformation.oldText.Length, changeInformation.newText);
+            var snapshot = args.After;
+            var result = PartialParseResultInternal.Rejected;
+
+            using (_parser.SynchronizeMainThreadState())
+            {
+                // Check if we can partial-parse
+                if (_partialParser != null && _parser.IsIdle)
+                {
+                    result = _partialParser.Parse(change);
+                }
+            }
+
+            // If partial parsing failed or there were outstanding parser tasks, start a full reparse
+            if ((result & PartialParseResultInternal.Rejected) == PartialParseResultInternal.Rejected)
+            {
+                _parser.QueueChange(change, snapshot);
+            }
+
+            if ((result & PartialParseResultInternal.Provisional) == PartialParseResultInternal.Provisional)
+            {
+                StartIdleTimer();
+            }
+        }
+
+        private void OnIdle(object state)
+        {
+            _dispatcher.AssertForegroundThread();
+
+            var documentTracker = _documentTrackerFactory.GetTracker(_textBuffer);
+
+            if (documentTracker == null)
+            {
+                Debug.Fail("Document tracker should never be null when checking idle state.");
+                return;
+            }
+
+            foreach (var textView in documentTracker.TextViews)
             {
                 if (_completionBroker.IsCompletionActive(textView))
                 {
+                    // Completion list is still active, need to re-start timer.
+                    StartIdleTimer();
                     return;
                 }
             }
 
-            _idleTimer.Stop();
             Reparse();
+        }
+
+        private async void Timer_Tick(object state)
+        {
+            try
+            {
+                _dispatcher.AssertBackgroundThread();
+
+                StopIdleTimer();
+
+                // We need to get back to the UI thread to properly check if a completion is active.
+                await Task.Factory.StartNew(OnIdle, null, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
+            }
+            catch (Exception ex)
+            {
+                // This is something totally unexpected, let's just send it over to the workspace.
+                await Task.Factory.StartNew(() => _errorReporter.ReportError(ex), CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
+            }
         }
 
         private void OnResultsReady(object sender, DocumentStructureChangedEventArgs args)

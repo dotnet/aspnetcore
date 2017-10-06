@@ -114,6 +114,31 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             return tracker;
         }
 
+        public override VisualStudioDocumentTracker GetTracker(ITextBuffer textBuffer)
+        {
+            if (textBuffer == null)
+            {
+                throw new ArgumentNullException(nameof(textBuffer));
+            }
+
+            _foregroundDispatcher.AssertForegroundThread();
+
+            if (!textBuffer.IsRazorBuffer())
+            {
+                // Not a Razor buffer.
+                return null;
+            }
+
+            // A little bit of hardening here, to make sure our assumptions are correct.
+            DefaultVisualStudioDocumentTracker tracker;
+            if (!textBuffer.Properties.TryGetProperty(typeof(VisualStudioDocumentTracker), out tracker))
+            {
+                Debug.Fail("The document tracker should be initialized");
+            }
+
+            return tracker;
+        }
+
         public void SubjectBuffersConnected(IWpfTextView textView, ConnectionReason reason, Collection<ITextBuffer> subjectBuffers)
         {
             if (textView == null)

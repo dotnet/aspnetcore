@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Xunit;
 
@@ -574,12 +575,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var sourceChange = new SourceChange(insertionLocation, 0, insertionText);
             var oldSnapshot = new StringTextSnapshot(initialText);
             var changedSnapshot = new StringTextSnapshot(changedText);
-            return new TestEdit
-            {
-                Change = sourceChange,
-                OldSnapshot = oldSnapshot,
-                NewSnapshot = changedSnapshot,
-            };
+            return new TestEdit(sourceChange, oldSnapshot, changedSnapshot);
         }
 
         private static RazorTemplateEngine CreateTemplateEngine(
@@ -606,26 +602,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var templateEngine = new RazorTemplateEngine(engine, project);
             templateEngine.Options.DefaultImports = RazorSourceDocument.Create("@addTagHelper *, Test", "_TestImports.cshtml");
             return templateEngine;
-        }
-
-        private class TestEdit
-        {
-            public TestEdit()
-            {
-            }
-
-            public TestEdit(int position, int oldLength, ITextSnapshot oldSnapshot, int newLength, ITextSnapshot newSnapshot, string newText)
-            {
-                Change = new SourceChange(position, oldLength, newText);
-                OldSnapshot = oldSnapshot;
-                NewSnapshot = newSnapshot;
-            }
-
-            public SourceChange Change { get; set; }
-
-            public ITextSnapshot OldSnapshot { get; set; }
-
-            public ITextSnapshot NewSnapshot { get; set; }
         }
     }
 }

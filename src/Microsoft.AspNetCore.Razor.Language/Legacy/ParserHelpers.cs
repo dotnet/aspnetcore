@@ -10,13 +10,18 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
 {
     internal static class ParserHelpers
     {
+        public static char[] NewLineCharacters = new[]
+        {
+            '\r', // Carriage return
+            '\n', // Linefeed
+            '\u0085', // Next Line
+            '\u2028', // Line separator
+            '\u2029' // Paragraph separator
+        };
+
         public static bool IsNewLine(char value)
         {
-            return value == '\r' // Carriage return
-                || value == '\n' // Linefeed
-                || value == '\u0085' // Next Line
-                || value == '\u2028' // Line separator
-                || value == '\u2029'; // Paragraph separator
+            return NewLineCharacters.Contains(value);
         }
 
         public static bool IsNewLine(string value)

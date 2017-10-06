@@ -9,10 +9,13 @@ using System.Threading;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
+using Microsoft.CodeAnalysis.Razor;
 using Microsoft.VisualStudio.Language.Intellisense;
+using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.Utilities;
+using Microsoft.VisualStudio.Text.Operations;
+using Moq;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Editor.Razor
@@ -24,13 +27,31 @@ namespace Microsoft.VisualStudio.Editor.Razor
         [Fact]
         public void ConstructorRequiresNonNullPhysicalPath()
         {
-            Assert.Throws<ArgumentException>("filePath", () => new VisualStudioRazorParser(Dispatcher, new TestTextBuffer(null), CreateTemplateEngine(), null, new TestCompletionBroker()));
+            Assert.Throws<ArgumentException>("filePath", 
+                () => new VisualStudioRazorParser(
+                    Dispatcher, 
+                    new TestTextBuffer(null), 
+                    CreateTemplateEngine(), 
+                    null,
+                    new DefaultErrorReporter(),
+                    new TestCompletionBroker(), 
+                    new Mock<VisualStudioDocumentTrackerFactory>().Object,
+                    new Mock<IEditorOperationsFactoryService>().Object));
         }
 
         [Fact]
         public void ConstructorRequiresNonEmptyPhysicalPath()
         {
-            Assert.Throws<ArgumentException>("filePath", () => new VisualStudioRazorParser(Dispatcher, new TestTextBuffer(null), CreateTemplateEngine(), string.Empty, new TestCompletionBroker()));
+            Assert.Throws<ArgumentException>("filePath", 
+                () => new VisualStudioRazorParser(
+                    Dispatcher, 
+                    new TestTextBuffer(null), 
+                    CreateTemplateEngine(), 
+                    string.Empty, 
+                    new DefaultErrorReporter(),
+                    new TestCompletionBroker(),
+                    new Mock<VisualStudioDocumentTrackerFactory>().Object,
+                    new Mock<IEditorOperationsFactoryService>().Object));
         }
 
         // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
@@ -39,9 +60,17 @@ namespace Microsoft.VisualStudio.Editor.Razor
             // Arrange
             var original = new StringTextSnapshot("Foo @bar Baz");
             var testBuffer = new TestTextBuffer(original);
-            using (var parser = new VisualStudioRazorParser(Dispatcher, testBuffer, CreateTemplateEngine(), TestLinePragmaFileName, new TestCompletionBroker()))
+            using (var parser = new VisualStudioRazorParser(
+                Dispatcher, 
+                testBuffer, 
+                CreateTemplateEngine(), 
+                TestLinePragmaFileName, 
+                new DefaultErrorReporter(),
+                new TestCompletionBroker(),
+                new Mock<VisualStudioDocumentTrackerFactory>().Object,
+                new Mock<IEditorOperationsFactoryService>().Object))
             {
-                parser._idleTimer.Interval = 100;
+                parser.IdleDelay = TimeSpan.FromMilliseconds(100);
                 var changed = new StringTextSnapshot("Foo @bap Daz");
                 var edit = new TestEdit(7, 3, original, 3, changed, "p D");
                 var parseComplete = new ManualResetEventSlim();
@@ -520,7 +549,15 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private TestParserManager CreateParserManager(ITextSnapshot originalSnapshot, int idleDelay = 50)
         {
-            var parser = new VisualStudioRazorParser(Dispatcher, new TestTextBuffer(originalSnapshot), CreateTemplateEngine(), TestLinePragmaFileName, new TestCompletionBroker());
+            var parser = new VisualStudioRazorParser(
+                Dispatcher, 
+                new TestTextBuffer(originalSnapshot), 
+                CreateTemplateEngine(), 
+                TestLinePragmaFileName,
+                new DefaultErrorReporter(),
+                new TestCompletionBroker(), 
+                new Mock<VisualStudioDocumentTrackerFactory>().Object,                
+                new Mock<IEditorOperationsFactoryService>().Object);
 
             return new TestParserManager(parser);
         }
@@ -559,12 +596,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var changed = new StringTextSnapshot(after);
             var old = new StringTextSnapshot(before);
             var change = new SourceChange(keyword.Length, 0, keyword[keyword.Length - 1].ToString());
-            var edit = new TestEdit
-            {
-                Change = change,
-                NewSnapshot = changed,
-                OldSnapshot = old
-            };
+            var edit = new TestEdit(change, old, changed);
             using (var manager = CreateParserManager(old))
             {
                 manager.InitializeWithDocument(edit.OldSnapshot);
@@ -610,7 +642,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 ParseCount = 0;
 
                 // Change idle delay to be huge in order to enable us to take control of when idle methods fire.
-                parser._idleTimer.Interval = TimeSpan.FromMinutes(2).TotalMilliseconds;
+                parser.IdleDelay = TimeSpan.FromMinutes(2);
                 _parser = parser;
                 parser.DocumentStructureChanged += (sender, args) =>
                 {
@@ -633,12 +665,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 var old = new StringTextSnapshot(string.Empty);
                 var initialChange = new SourceChange(0, 0, snapshot.GetText());
-                var edit = new TestEdit
-                {
-                    Change = initialChange,
-                    OldSnapshot = old,
-                    NewSnapshot = snapshot
-                };
+                var edit = new TestEdit(initialChange, old, snapshot);
                 ApplyEditAndWaitForParse(edit);
             }
 
@@ -667,62 +694,21 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             public void WaitForReparse()
             {
-                Assert.True(_parser._idleTimer.Enabled, "Expected the parser to be waiting for an idle invocation but it was not.");
+                Assert.True(_parser._idleTimer != null, "Expected the parser to be waiting for an idle invocation but it was not.");
 
-                _parser._idleTimer.Stop();
-                _parser._idleTimer.Interval = 50;
-                _parser._idleTimer.Start();
+                _parser.StopIdleTimer();
+                _parser.IdleDelay = TimeSpan.FromMilliseconds(50);
+                _parser.StartIdleTimer();
                 DoWithTimeoutIfNotDebugging(_reparseComplete.Wait);
                 _reparseComplete.Reset();
-                Assert.False(_parser._idleTimer.Enabled);
-                _parser._idleTimer.Interval = TimeSpan.FromMinutes(2).TotalMilliseconds;
+                Assert.Null(_parser._idleTimer);
+                _parser.IdleDelay = TimeSpan.FromMinutes(2);
             }
 
             public void Dispose()
             {
                 _parser.Dispose();
             }
-        }
-
-        private class TextChange : ITextChange
-        {
-            public TextChange(TestEdit edit) : this(edit.Change)
-            {
-            }
-
-            public TextChange(SourceChange change)
-            {
-                var changeSpan = change.Span;
-
-                OldPosition = changeSpan.AbsoluteIndex;
-                NewPosition = OldPosition;
-                OldEnd = changeSpan.AbsoluteIndex + changeSpan.Length;
-                NewEnd = changeSpan.AbsoluteIndex + change.NewText.Length;
-            }
-
-            public Text.Span OldSpan => throw new NotImplementedException();
-
-            public Text.Span NewSpan => throw new NotImplementedException();
-
-            public int OldPosition { get; }
-
-            public int NewPosition { get; }
-
-            public int Delta => throw new NotImplementedException();
-
-            public int OldEnd { get; }
-
-            public int NewEnd { get; }
-
-            public string OldText => throw new NotImplementedException();
-
-            public string NewText => throw new NotImplementedException();
-
-            public int OldLength => throw new NotImplementedException();
-
-            public int NewLength => throw new NotImplementedException();
-
-            public int LineCountDelta => throw new NotImplementedException();
         }
 
         private class TestCompletionBroker : ICompletionBroker
@@ -756,144 +742,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             {
                 throw new NotImplementedException();
             }
-        }
-
-        private class TestTextBuffer : Text.ITextBuffer
-        {
-            private ITextSnapshot _currentSnapshot;
-
-            public TestTextBuffer(ITextSnapshot initialSnapshot)
-            {
-                _currentSnapshot = initialSnapshot;
-                ReadOnlyRegionsChanged += (sender, args) => { };
-                ChangedLowPriority += (sender, args) => { };
-                ChangedHighPriority += (sender, args) => { };
-                Changing += (sender, args) => { };
-                PostChanged += (sender, args) => { };
-                ContentTypeChanged += (sender, args) => { };
-            }
-
-            public void ApplyEdit(TestEdit edit)
-            {
-                var args = new TextContentChangedEventArgs(edit.OldSnapshot, edit.NewSnapshot, new EditOptions(), null);
-                args.Changes.Add(new TextChange(edit));
-                Changed?.Invoke(this, args);
-
-                ReadOnlyRegionsChanged?.Invoke(null, null);
-                ChangedLowPriority?.Invoke(null, null);
-                ChangedHighPriority?.Invoke(null, null);
-                Changing?.Invoke(null, null);
-                PostChanged?.Invoke(null, null);
-                ContentTypeChanged?.Invoke(null, null);
-
-                _currentSnapshot = edit.NewSnapshot;
-            }
-
-            public IContentType ContentType => throw new NotImplementedException();
-
-            public ITextSnapshot CurrentSnapshot => _currentSnapshot;
-
-            public bool EditInProgress => throw new NotImplementedException();
-
-            public PropertyCollection Properties => throw new NotImplementedException();
-
-            public event EventHandler<SnapshotSpanEventArgs> ReadOnlyRegionsChanged;
-            public event EventHandler<TextContentChangedEventArgs> Changed;
-            public event EventHandler<TextContentChangedEventArgs> ChangedLowPriority;
-            public event EventHandler<TextContentChangedEventArgs> ChangedHighPriority;
-            public event EventHandler<TextContentChangingEventArgs> Changing;
-            public event EventHandler PostChanged;
-            public event EventHandler<ContentTypeChangedEventArgs> ContentTypeChanged;
-
-            public void ChangeContentType(IContentType newContentType, object editTag)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool CheckEditAccess()
-            {
-                throw new NotImplementedException();
-            }
-
-            public ITextEdit CreateEdit(EditOptions options, int? reiteratedVersionNumber, object editTag)
-            {
-                throw new NotImplementedException();
-            }
-
-            public ITextEdit CreateEdit()
-            {
-                throw new NotImplementedException();
-            }
-
-            public IReadOnlyRegionEdit CreateReadOnlyRegionEdit()
-            {
-                throw new NotImplementedException();
-            }
-
-            public ITextSnapshot Delete(Text.Span deleteSpan)
-            {
-                throw new NotImplementedException();
-            }
-
-            public NormalizedSpanCollection GetReadOnlyExtents(Text.Span span)
-            {
-                throw new NotImplementedException();
-            }
-
-            public ITextSnapshot Insert(int position, string text)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsReadOnly(int position)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsReadOnly(int position, bool isEdit)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsReadOnly(Text.Span span)
-            {
-                throw new NotImplementedException();
-            }
-
-            public bool IsReadOnly(Text.Span span, bool isEdit)
-            {
-                throw new NotImplementedException();
-            }
-
-            public ITextSnapshot Replace(Text.Span replaceSpan, string replaceWith)
-            {
-                throw new NotImplementedException();
-            }
-
-            public void TakeThreadOwnership()
-            {
-                throw new NotImplementedException();
-            }
-        }
-
-        private class TestEdit
-        {
-            public TestEdit()
-            {
-            }
-
-            public TestEdit(int position, int oldLength, ITextSnapshot oldSnapshot, int newLength, ITextSnapshot newSnapshot, string newText)
-            {
-                Change = new SourceChange(position, oldLength, newText);
-                OldSnapshot = oldSnapshot;
-                NewSnapshot = newSnapshot;
-            }
-
-            public SourceChange Change { get; set; }
-
-            public ITextSnapshot OldSnapshot { get; set; }
-
-            public ITextSnapshot NewSnapshot { get; set; }
         }
     }
 }
