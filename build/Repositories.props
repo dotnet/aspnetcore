@@ -25,6 +25,7 @@
     <Repository Include="Hosting" Commit="" CloneUrl="" />
     <Repository Include="HtmlAbstractions" Commit="" CloneUrl="" />
     <Repository Include="HttpAbstractions" Commit="" CloneUrl="" />
+    <Repository Include="HttpClientFactory" Commit="" CloneUrl="" />
     <Repository Include="HttpSysServer" Commit="" CloneUrl="" />
     <Repository Include="Identity" Commit="" CloneUrl="" />
     <Repository Include="IISIntegration" Commit="" CloneUrl="" />
