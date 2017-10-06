@@ -72,9 +72,8 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
                 Selectors =
                 {
                     new HttpMethodEndpointSelector(),
-                }
-            });
-            options.HandlerFactories.Add(endpoint => (endpoint as TemplateEndpoint)?.HandlerFactory);
+                },
+            }, new TemplateEndpointHandlerFactory());
         }
 
         private Task Products_Fallback(HttpContext httpContext) => httpContext.Response.WriteAsync("Hello, Products_Fallback");

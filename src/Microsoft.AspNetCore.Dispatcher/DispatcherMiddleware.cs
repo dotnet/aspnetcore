@@ -63,15 +63,10 @@ namespace Microsoft.AspNetCore.Dispatcher
                     feature.Endpoint = context.Endpoint;
                     feature.Values = context.Values;
 
-                    // Associate this with the DispatcherEntry, not global
-                    for (var i = 0; i < _options.HandlerFactories.Count; i++)
+                    feature.Handler = entry.HandlerFactory.CreateHandler(feature.Endpoint);
+                    if (feature.Handler == null)
                     {
-                        var middleware = _options.HandlerFactories[i](feature.Endpoint);
-                        if (middleware != null)
-                        {
-                            feature.Handler = middleware;
-                            break;
-                        }
+                        throw new InvalidOperationException("Couldn't create a handler, that's bad.");
                     }
 
                     break;

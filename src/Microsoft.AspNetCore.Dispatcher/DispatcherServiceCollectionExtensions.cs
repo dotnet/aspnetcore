@@ -27,7 +27,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddSingleton<AddressTable, DefaultAddressTable>();
             services.AddSingleton<TemplateAddressSelector>();
 
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<EndpointHandlerFactoryBase, TemplateEndpointHandlerFactory>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHandlerFactory, TemplateEndpointHandlerFactory>());
 
             return services;
         }

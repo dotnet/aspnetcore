@@ -12,13 +12,13 @@ namespace Microsoft.AspNetCore.Dispatcher
         private readonly IEnumerable<DispatcherDataSource> _dataSources;
         private readonly IDefaultMatcherFactory _dispatcherFactory;
         private readonly IEnumerable<EndpointSelector> _endpointSelectors;
-        private readonly IEnumerable<EndpointHandlerFactoryBase> _handlerFactories;
+        private readonly IEnumerable<IHandlerFactory> _handlerFactories;
 
         public DefaultDispatcherConfigureOptions(
             IDefaultMatcherFactory dispatcherFactory,
             IEnumerable<DispatcherDataSource> dataSources,
             IEnumerable<EndpointSelector> endpointSelectors,
-            IEnumerable<EndpointHandlerFactoryBase> handlerFactories)
+            IEnumerable<IHandlerFactory> handlerFactories)
         {
             _dispatcherFactory = dispatcherFactory;
             _dataSources = dataSources;
@@ -33,12 +33,15 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(options));
             }
 
-            options.Matchers.Add(_dispatcherFactory.CreateDispatcher(new CompositeDispatcherDataSource(_dataSources), _endpointSelectors));
-
-            foreach (var handlerFactory in _handlerFactories)
+            var matcher = _dispatcherFactory.CreateMatcher(new CompositeDispatcherDataSource(_dataSources), _endpointSelectors);
+            
+            options.Matchers.Add(new MatcherEntry()
             {
-                options.HandlerFactories.Add(handlerFactory.CreateHandler);
-            }
+                Matcher = matcher,
+                AddressProvider = matcher as IAddressCollectionProvider,
+                EndpointProvider = matcher as IEndpointCollectionProvider,
+                HandlerFactory = new CompositeHandlerFactory(_handlerFactories),
+            });
         }
     }
 }

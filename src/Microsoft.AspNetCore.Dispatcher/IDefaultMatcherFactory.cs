@@ -7,6 +7,6 @@ namespace Microsoft.AspNetCore.Dispatcher
 {
     public interface IDefaultMatcherFactory
     {
-        MatcherEntry CreateDispatcher(DispatcherDataSource dataSource, IEnumerable<EndpointSelector> endpointSelectors);
+        IMatcher CreateMatcher(DispatcherDataSource dataSource, IEnumerable<EndpointSelector> endpointSelectors);
     }
 }

@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 {
     public class MatcherCollection : Collection<MatcherEntry>
     {
-        public void Add(MatcherBase matcher)
+        public void Add(IMatcher matcher, IHandlerFactory handerFactory)
         {
             if (matcher == null)
             {
@@ -18,21 +18,10 @@ namespace Microsoft.AspNetCore.Dispatcher
             Add(new MatcherEntry()
             {
                 Matcher = matcher,
-                AddressProvider  = matcher,
-                EndpointProvider = matcher,
-            });
-        }
+                AddressProvider = matcher as IAddressCollectionProvider,
+                EndpointProvider = matcher as IEndpointCollectionProvider,
 
-        public void Add(IMatcher matcher)
-        {
-            if (matcher == null)
-            {
-                throw new ArgumentNullException(nameof(matcher));
-            }
-
-            Add(new MatcherEntry()
-            {
-                Matcher = matcher,
+                HandlerFactory = handerFactory,
             });
         }
     }

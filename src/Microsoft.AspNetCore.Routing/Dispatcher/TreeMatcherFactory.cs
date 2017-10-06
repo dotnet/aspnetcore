@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
 {
     public class TreeMatcherFactory : IDefaultMatcherFactory
     {
-        public MatcherEntry CreateDispatcher(DispatcherDataSource dataSource, IEnumerable<EndpointSelector> endpointSelectors)
+        public IMatcher CreateMatcher(DispatcherDataSource dataSource, IEnumerable<EndpointSelector> endpointSelectors)
         {
             if (dataSource == null)
             {
@@ -26,12 +26,7 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
                 matcher.Selectors.Add(endpointSelector);
             }
 
-            return new MatcherEntry()
-            {
-                AddressProvider = matcher,
-                Matcher = matcher,
-                EndpointProvider = matcher,
-            };
+            return matcher;
         }
     }
 }

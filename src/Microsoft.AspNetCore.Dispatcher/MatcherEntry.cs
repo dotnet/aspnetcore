@@ -5,6 +5,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 {
     public class MatcherEntry
     {
+        public IHandlerFactory HandlerFactory { get; set; }
+
         public IMatcher Matcher { get; set; }
 
         public IAddressCollectionProvider AddressProvider { get; set; }

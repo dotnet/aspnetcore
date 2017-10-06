@@ -8,7 +8,5 @@ namespace Microsoft.AspNetCore.Dispatcher
     public class DispatcherOptions
     {
         public MatcherCollection Matchers { get; } = new MatcherCollection();
-
-        public IList<EndpointHandlerFactory> HandlerFactories { get; } = new List<EndpointHandlerFactory>();
     }
 }

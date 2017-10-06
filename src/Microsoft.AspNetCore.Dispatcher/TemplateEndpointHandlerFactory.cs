@@ -6,9 +6,9 @@ using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class TemplateEndpointHandlerFactory : EndpointHandlerFactoryBase
+    public sealed class TemplateEndpointHandlerFactory : IHandlerFactory
     {
-        public override Func<RequestDelegate, RequestDelegate> CreateHandler(Endpoint endpoint)
+        public Func<RequestDelegate, RequestDelegate> CreateHandler(Endpoint endpoint)
         {
             if (endpoint == null)
             {
