@@ -45,9 +45,9 @@ namespace Microsoft.AspNetCore.Server.HttpSys
                     Assert.False(StringValues.IsNullOrEmpty(requestHeaders["Host"]));
                     Assert.Equal("close", requestHeaders["Connection"]);
                     // Apparently Http.Sys squashes request headers together.
-                    Assert.Equal(1, requestHeaders["Custom-Header"].Count);
+                    Assert.Single(requestHeaders["Custom-Header"]);
                     Assert.Equal("custom1, and custom2, custom3", requestHeaders["Custom-Header"]);
-                    Assert.Equal(1, requestHeaders["Spacer-Header"].Count);
+                    Assert.Single(requestHeaders["Spacer-Header"]);
                     Assert.Equal("spacervalue, spacervalue", requestHeaders["Spacer-Header"]);
                     return Task.FromResult(0);
                 }))
