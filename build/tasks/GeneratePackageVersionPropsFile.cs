@@ -57,28 +57,7 @@ namespace RepoTasks
                 }
                 else
                 {
-                    var sb = new StringBuilder();
-                    var first = true;
-                    foreach (var ch in pkg.ItemSpec)
-                    {
-                        if (ch == '.')
-                        {
-                            first = true;
-                            continue;
-                        }
-
-                        if (first)
-                        {
-                            first = false;
-                            sb.Append(char.ToUpperInvariant(ch));
-                        }
-                        else
-                        {
-                            sb.Append(ch);
-                        }
-                    }
-                    sb.Append("PackageVersion");
-                    packageVarName = sb.ToString();
+                    packageVarName = GetVariableName(pkg.ItemSpec);
                 }
 
                 var packageTfm = pkg.GetMetadata("TargetFramework");
@@ -109,10 +88,36 @@ namespace RepoTasks
             };
             using (var writer = XmlWriter.Create(OutputPath, settings))
             {
-                Log.LogMessage(MessageImportance.High, $"Generate {OutputPath}");
+                Log.LogMessage(MessageImportance.Normal, $"Generate {OutputPath}");
                 doc.Save(writer);
             }
             return !Log.HasLoggedErrors;
+        }
+
+        private string GetVariableName(string packageId)
+        {
+            var sb = new StringBuilder();
+            var first = true;
+            foreach (var ch in packageId)
+            {
+                if (ch == '.')
+                {
+                    first = true;
+                    continue;
+                }
+
+                if (first)
+                {
+                    first = false;
+                    sb.Append(char.ToUpperInvariant(ch));
+                }
+                else
+                {
+                    sb.Append(ch);
+                }
+            }
+            sb.Append("PackageVersion");
+            return sb.ToString();
         }
     }
 }

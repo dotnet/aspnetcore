@@ -43,7 +43,7 @@ namespace RepoTasks
             };
             using (var writer = XmlWriter.Create(OutputPath, settings))
             {
-                Log.LogMessage(MessageImportance.High, $"Generate {OutputPath}");
+                Log.LogMessage(MessageImportance.Normal, $"Generate {OutputPath}");
                 doc.Save(writer);
             }
             return !Log.HasLoggedErrors;

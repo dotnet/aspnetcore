@@ -29,14 +29,6 @@
       <Output TaskParameter="TargetOutputs" ItemName="PinnedArtifactInfo" />
     </MSBuild>
 
-    <RepoTasks.GenerateLineup
-      Artifacts="@(PinnedArtifactInfo)"
-      Repository="%(RepositoryBuildOrder.Identity)"
-      OutputPath="%(RepositoryBuildOrder.RepositoryPath)\build\dependencies.g.targets"
-      UseFloatingVersions="false"
-      Condition="'%(RepositoryBuildOrder.RepositoryPath)' != ''"
-      BuildNumber="$(BuildNumber)" />
-
     <MSBuild
       Projects="@(BatchedRepository)"
       BuildInParallel="$(BatchBuilds)"
@@ -47,6 +39,8 @@
 
   <Target Name="_BuildRepository">
     <PropertyGroup>
+      <!-- Should reduce allowable package feeds to only nuget.org. -->
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:AspNetUniverseBuildOffline=true</RepositoryBuildArguments>
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)</RepositoryBuildArguments>

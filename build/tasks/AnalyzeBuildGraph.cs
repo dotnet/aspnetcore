@@ -130,6 +130,15 @@ namespace RepoTasks
                     var matchesExternalDependency = false;
                     if (shippedPackageMap.TryGetValue(dependency.Key, out var shippedPackage))
                     {
+                        if (string.IsNullOrEmpty(dependency.Value.Version))
+                        {
+                            Log.LogKoreBuildError(
+                                project.FullPath,
+                                KoreBuildErrors.EmptyPackageReferenceVersion,
+                                message: $"Package reference to {dependency.Key} has an empty version");
+                                continue;
+                        }
+
                         matchesExternalDependency = shippedPackage.PackageInfo.Version.Equals(NuGetVersion.Parse(dependency.Value.Version));
                     }
                     else if (dependencyMap.TryGetValue(dependency.Key, out var externalVersions))
@@ -152,7 +161,7 @@ namespace RepoTasks
                 {
                     continue;
                 }
-                else if (package.PackageInfo.Version.Equals(refVersion))
+                else if (package.PackageInfo.Version.Equals(refVersion.MinVersion))
                 {
                     continue;
                 }

@@ -207,26 +207,6 @@
     </RepoTasks.AnalyzeBuildGraph>
   </Target>
 
-  <Target Name="UpdateRepoLineups" DependsOnTargets="ResolveRepoInfo">
-    <RepoTasks.GenerateLineup
-      Artifacts="@(ArtifactInfo)"
-      Repository="%(Repository.Identity)"
-      OutputPath="$(_CloneRepositoryRoot)%(Repository.Identity)\build\dependencies.targets"
-      UseFloatingVersions="true"
-      BuildNumber="$(BuildNumber)" />
-  </Target>
-
-  <Target Name="GenerateLineup" DependsOnTargets="ResolveRepoInfo">
-    <Message Text="Packages that will be produced:" Importance="High" />
-    <Message Text="  - %(ArtifactInfo.PackageId)/%(Version)" Importance="High" Condition="'%(ArtifactType)' == 'NuGetPackage'" />
-
-    <RepoTasks.GenerateLineup
-      Artifacts="@(ArtifactInfo)"
-      OutputPath="$(ArtifactsDir)dependencies.targets"
-      UseFloatingVersions="false"
-      BuildNumber="$(BuildNumber)" />
-  </Target>
-
   <Target Name="SplitPackages">
     <ItemGroup>
       <PackageArtifactFile Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />

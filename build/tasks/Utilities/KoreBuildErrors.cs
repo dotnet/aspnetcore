@@ -23,6 +23,7 @@ namespace RepoTasks.Utilities
         public const int DotNetCliReferenceReferenceHasVersion = 4003;
         public const int PackageVersionNotFoundInLineup = 4004;
         public const int UndefinedExternalDependency = 4005;
+        public const int EmptyPackageReferenceVersion = 4006;
 
         // Other unknown errors
         public const int PolicyFailedToApply = 5000;
