@@ -7,7 +7,7 @@ using Microsoft.AspNetCore.Hosting.Server;
 using System.Threading;
 using System.IO.Pipelines;
 
-namespace Microsoft.AspNetCore.Server.IIS
+namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     internal class IISHttpContextOfT<TContext> : HttpProtocol
     {

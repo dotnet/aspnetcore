@@ -8,10 +8,10 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.IIS
+namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     // Primarily copied from https://github.com/aspnet/KestrelHttpServer/blob/dev/src/Kestrel.Transport.Libuv/Internal/LibuvAwaitable.cs
-    public class IISAwaitable : ICriticalNotifyCompletion
+    internal class IISAwaitable : ICriticalNotifyCompletion
     {
         private readonly static Action _callbackCompleted = () => { };
 

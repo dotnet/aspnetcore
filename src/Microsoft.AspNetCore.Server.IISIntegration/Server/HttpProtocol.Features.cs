@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.IIS
+namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     internal partial class HttpProtocol
     {

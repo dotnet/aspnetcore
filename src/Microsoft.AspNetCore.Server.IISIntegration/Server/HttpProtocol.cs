@@ -18,7 +18,7 @@ using Microsoft.AspNetCore.HttpSys.Internal;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Server.IIS
+namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     internal abstract partial class HttpProtocol : NativeRequestContext, IDisposable
     {

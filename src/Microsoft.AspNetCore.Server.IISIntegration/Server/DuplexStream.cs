@@ -6,7 +6,7 @@ using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.IIS
+namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     // TODO redudant file, remove
     // See https://github.com/aspnet/IISIntegration/issues/426

@@ -6,9 +6,9 @@ using System.IO.Pipelines;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Microsoft.AspNetCore.Server.IIS
+namespace Microsoft.AspNetCore.Server.IISIntegration
 {
-    public class OutputProducer
+    internal class OutputProducer
     {
         private static readonly ArraySegment<byte> _emptyData = new ArraySegment<byte>(new byte[0]);
 

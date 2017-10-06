@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <Description>ASP.NET Core components for working with the IIS AspNetCoreModule.</Description>
@@ -6,18 +6,26 @@
     <NoWarn>$(NoWarn);CS1591</NoWarn>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageTags>aspnetcore;iis</PackageTags>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Numerics.Vectors" />
+    <PackageReference Include="System.Buffers" />
+    <PackageReference Include="System.IO.Pipelines" />
+    <PackageReference Include="System.Text.Encodings.Web.Utf8" />
+    <PackageReference Include="System.Memory" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" />
+    <PackageReference Include="System.Security.Principal.Windows" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Core" />
     <PackageReference Include="Microsoft.AspNetCore.Hosting.Abstractions" />
     <PackageReference Include="Microsoft.AspNetCore.Http" />
     <PackageReference Include="Microsoft.AspNetCore.Http.Extensions" />
     <PackageReference Include="Microsoft.AspNetCore.HttpOverrides" />
+    <PackageReference Include="Microsoft.AspNetCore.HttpSys.Sources" PrivateAssets="All" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" />
     <PackageReference Include="Microsoft.Extensions.Options" />
     <PackageReference Include="Microsoft.Extensions.SecurityHelper.Sources" PrivateAssets="All" />
-    <PackageReference Include="System.Security.Principal.Windows" />
   </ItemGroup>
 
 </Project>

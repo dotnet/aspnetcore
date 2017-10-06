@@ -11,9 +11,9 @@ using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Microsoft.AspNetCore.Server.IIS
+namespace Microsoft.AspNetCore.Server.IISIntegration
 {
-    public class IISHttpServer : IServer
+    internal class IISHttpServer : IServer
     {
         private static NativeMethods.PFN_REQUEST_HANDLER _requestHandler = HandleRequest;
         private static NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
@@ -121,26 +121,5 @@ namespace Microsoft.AspNetCore.Server.IIS
     internal interface IISContextFactory
     {
         HttpProtocol CreateHttpContext(IntPtr pHttpContext);
-    }
-
-    public static class WebHostBuilderExtensions
-    {
-        public static IWebHostBuilder UseNativeIIS(this IWebHostBuilder builder)
-        {
-            if (NativeMethods.is_ancm_loaded())
-            {
-                // TODO put this in options and use path.
-                var path = NativeMethods.http_get_application_full_path();
-                builder.UseContentRoot(path);
-                return builder.ConfigureServices(services =>
-                {
-                    if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-                    {
-                        services.AddSingleton<IServer, IISHttpServer>();
-                    }
-                });
-            }
-            return builder;
-        }
     }
 }

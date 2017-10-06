@@ -5,9 +5,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Server.IIS;
-using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace NativeIISSample
 {
@@ -66,7 +63,7 @@ namespace NativeIISSample
         public static void Main(string[] args)
         {
             var host = new WebHostBuilder()
-                .UseNativeIIS()
+                .UseIISIntegration()
                 .UseStartup<Startup>()
                 .Build();
 

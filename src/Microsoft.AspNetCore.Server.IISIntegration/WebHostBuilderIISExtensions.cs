@@ -2,13 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
-using Microsoft.AspNetCore.Authentication;
+using System.Runtime.InteropServices;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Server.IISIntegration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Hosting.Server;
 
 namespace Microsoft.AspNetCore.Hosting
 {
@@ -37,6 +37,21 @@ namespace Microsoft.AspNetCore.Hosting
             if (hostBuilder.GetSetting(nameof(UseIISIntegration)) != null)
             {
                 return hostBuilder;
+            }
+
+            // Check if in process
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && NativeMethods.is_ancm_loaded())
+            {
+                hostBuilder.UseSetting(nameof(UseIISIntegration), "true");
+                hostBuilder.CaptureStartupErrors(true);
+
+                var applicationPath = NativeMethods.http_get_application_full_path();
+                hostBuilder.UseContentRoot(applicationPath);
+                return hostBuilder.ConfigureServices(services =>
+                {
+                    services.AddSingleton<IServer, IISHttpServer>();
+                    services.AddAuthenticationCore();
+                });
             }
 
             var port = hostBuilder.GetSetting(ServerPort) ?? Environment.GetEnvironmentVariable($"ASPNETCORE_{ServerPort}");
