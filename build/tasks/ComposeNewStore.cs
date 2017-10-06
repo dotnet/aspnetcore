@@ -90,8 +90,8 @@ namespace RepoTasks
 
                 if (!existingFiles.TryGetValue(id, out var versions) || !versions.Contains(version))
                 {
-                    var destinationDir = Path.Combine(StoreDestination, recursiveDir);
-                    if (!Directory.Exists(Path.Combine(StoreDestination, recursiveDir)))
+                    var destinationDir = Path.Combine(SymbolsDestination, recursiveDir);
+                    if (!Directory.Exists(Path.Combine(SymbolsDestination, recursiveDir)))
                     {
                         Directory.CreateDirectory(destinationDir);
                     }
