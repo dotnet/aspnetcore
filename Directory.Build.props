@@ -14,7 +14,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.Compilers" Version="2.6.0-rdonly-ref-62111-06" PrivateAssets="All">
+    <PackageReference Include="Microsoft.NETCore.Compilers" Version="2.6.0-beta1-62126-01" PrivateAssets="All">
       <!--
         Suppresses the warning about having an explicit package version in this repo.
         We are okay with this for now as the experimental version of the compiler is unique to Kestrel (for now).
