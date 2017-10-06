@@ -13,5 +13,5 @@
 
 ### Running locally with code signing
 * Launch a shell running under redmond\fxsign (https://microsoft.sharepoint.com/teams/fxsign/SitePages/FxSign-Account.aspx)
-* `build /t:Verify /p:COHERENCE_DROP_LOCATION=<coherence-drop-share-on-ci> /p:COHERENCE_PACKAGECACHE_DROP_LOCATION:<coherence-packagecache-drop-on-ci>`
+* `build /t:Verify`
 

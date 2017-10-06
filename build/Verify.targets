@@ -60,7 +60,7 @@
   <!-- Ensures binaries in the runtime store are correctly authenticode signed -->
   <Target Name="VerifySignedRuntimeStoreBinaries">
     <ItemGroup>
-      <SignedRuntimeStoreBinaries Include="$(UnsignedPackageCachePath)**\*.dll" Exclude="$(UnsignedPackageCachePath)*.*"/>
+      <SignedRuntimeStoreBinaries Include="$(UnsignedRuntimeStorePath)**\*.dll" Exclude="$(UnsignedRuntimeStorePath)*.*"/>
     </ItemGroup>
     <RepoTasks.VerifySignedRuntimeStoreBinaries Binaries="@(SignedRuntimeStoreBinaries)" />
   </Target>

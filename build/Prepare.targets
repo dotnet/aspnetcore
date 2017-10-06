@@ -3,57 +3,31 @@
     <RemoveDir Directories="$(ArtifactsDir);$(IntermediateOutputPath)" />
   </Target>
 
-  <Target Name="GatherInputs">
-    <MakeDir Directories="$(SignedBinariesIntermediateOutputPath)" />
-    <MakeDir Directories="$(CoherenceDestinationDir)" />
-    <MakeDir Directories="$(CoherencePackageCacheDestinationDir)" />
-    <MakeDir Directories="$(CoherenceDestinationDir)vsix" />
-
-    <ItemGroup>
-      <VSIXPaths Include="$(COHERENCE_DROP_LOCATION)\build\*.vsix" />
-      <PackageCaches Include="$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.zip;$(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.tar.gz" />
-      <PackageCachesArtifacts Include="
-        $(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.nuspec;
-        $(COHERENCE_PACKAGECACHE_DROP_LOCATION)\*.txt" />
-    </ItemGroup>
-
-    <Error Text="COHERENCE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence\{branch}\{build-number}"
-      Condition=" '$(COHERENCE_DROP_LOCATION)' == '' " />
-    <Error Text="COHERENCE_PACKAGECACHE_DROP_LOCATION is not specified. This requires a path like \\aspnetci\drops\Coherence-PackageCache\{build-number}"
-      Condition=" '$(COHERENCE_PACKAGECACHE_DROP_LOCATION)' == '' " />
-
-    <Exec Command="(robocopy /NJH /NJS /NP /NS /NDL /NFL /NP /E /MT $(COHERENCE_DROP_LOCATION) $(CoherenceDestinationDir)) ^&amp; IF %ERRORLEVEL% LEQ 3 exit 0" />
-
-    <Copy SourceFiles="@(VSIXPaths)" DestinationFolder="$(CoherenceDestinationDir)vsix" SkipUnchangedFiles="true" />
-    <Copy
-      SourceFiles="$([System.IO.Path]::ChangeExtension(%(VSIXPaths.FullPath), '.json'))"
-      DestinationFolder="$(CoherenceDestinationDir)vsix"
-      SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(PackageCaches)" DestinationFolder="$(CoherencePackageCacheDestinationDir)" SkipUnchangedFiles="true" />
-    <Copy SourceFiles="@(PackageCachesArtifacts)" DestinationFolder="$(CoherencePackageCacheDestinationDir)" SkipUnchangedFiles="true" />
-  </Target>
-
   <Target Name="ExtractInputs">
     <ItemGroup>
-      <UnsignedPackages Include="$(CoherenceDestinationDir)ship\*.nupkg" />
-      <UnsignedOobPackages Include="$(CoherenceDestinationDir)shipoob\*.nupkg" />
-      <UnsignedSymbolPackages Include="$(CoherenceDestinationDir)symbols\Microsoft.Data.Sqlite*.nupkg" />
-      <UnsignedVSIX Include="$(CoherenceDestinationDir)vsix\*.vsix" />
-      <UnsignedPackageCaches Include="$(CoherencePackageCacheDestinationDir)aspnetcore-store-*.zip" />
-      <PoliCheckPackages Include="$(CoherenceDestinationDir)symbols\*.nupkg" />
+      <UnsignedPackages Include="$(DepsDirectory)ship\*.nupkg" />
+      <UnsignedOobPackages Include="$(DepsDirectory)shipoob\*.nupkg" />
+      <UnsignedSymbolPackages Include="$(DepsDirectory)symbols\Microsoft.Data.Sqlite*.nupkg" />
+      <UnsignedVSIX Include="$(DepsDirectory)vsix\*.vsix" />
+      <UnsignedRuntimeStores Include="$(DepsDirectory)store\*.zip" />
+      <PoliCheckPackages Include="$(DepsDirectory)symbols\*.nupkg" />
+      <UpdatedMetapackageNupkg Include="$(DepsDirectory)store\Microsoft.AspNetCore.All.*.nupkg" />
 
       <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedOobPackages)" Destination="$(UnsignedOobPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedSymbolPackages)" Destination="$(UnsignedSymbolPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedVSIX)" Destination="$(UnsignedVSIXPath)" />
-      <_UnzipFiles Include="@(UnsignedPackageCaches)" Destination="$(UnsignedPackageCachePath)" />
+      <_UnzipFiles Include="@(UnsignedRuntimeStores)" Destination="$(UnsignedRuntimeStorePath)" />
       <_UnzipFiles Include="@(PoliCheckPackages)" Destination="$(PoliCheckPath)" />
     </ItemGroup>
 
     <Error Text="No packages found for signing." Condition="'@(UnsignedPackages)'==''" />
     <Error Text="No OOB packages found for signing." Condition="'@(UnsignedOobPackages)'==''" />
-    <Error Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
-    <Error Text="No package cache found for signing." Condition="'@(UnsignedPackageCaches)'==''" />
+    <Warning Text="No VSIX found for signing." Condition="'@(UnsignedVSIX)'==''" />
+    <Error Text="No runtime store found for signing." Condition="'@(UnsignedRuntimeStores)'==''" />
+    <Error Text="No metapackage found for signing." Condition="'@(UpdatedMetapackageNupkg)'==''" />
+
+    <Copy SourceFiles="@(UpdatedMetapackageNupkg)" DestinationFolder="$(DepsDirectory)ship" />
 
     <UnzipArchive
       File="%(_UnzipFiles.FullPath)"

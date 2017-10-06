@@ -118,6 +118,20 @@ namespace RepoTasks
                     stream.SetLength(0);
                     updatedManifest.Save(stream);
                 }
+
+                // Metapackage needs to update manifest files
+                if (identity.Id.Equals("Microsoft.AspNetCore.All", StringComparison.OrdinalIgnoreCase))
+                {
+                    var entry = package.GetEntry($"build/aspnetcore-store-{identity.Version}.xml");
+                    var releaseLabel = identity.Version.Release;
+                    var updatedReleaseLabel = Utilities.GetNoTimestampReleaseLabel(releaseLabel);
+                    using (var entryStream = new StreamReader(entry.Open()))
+                    using (var writer = new StreamWriter(package.CreateEntry($"build/aspnetcore-store-{updatedIdentity.Version.ToNormalizedString()}.xml").Open()))
+                    {
+                            writer.Write(entryStream.ReadToEnd().Replace($"-{releaseLabel}", string.IsNullOrEmpty(updatedReleaseLabel) ? updatedReleaseLabel : $"-{updatedReleaseLabel}"));
+                    }
+                    entry.Delete();
+                }
             }
 
             var updatedTargetPath = Path.Combine(OutputDirectory, updatedIdentity.Id + '.' + updatedIdentity.Version.ToNormalizedString() + ".nupkg");
@@ -147,34 +161,7 @@ namespace RepoTasks
 
         private static NuGetVersion StripBuildVersion(NuGetVersion version)
         {
-            var releaseLabel = version.Release;
-            if (releaseLabel.StartsWith("rtm-", StringComparison.OrdinalIgnoreCase))
-            {
-                // E.g. change version 2.5.0-rtm-123123 to 2.5.0.
-                releaseLabel = string.Empty;
-            }
-            else
-            {
-                var timeStampFreeVersion = Environment.GetEnvironmentVariable("TIMESTAMP_FREE_VERSION");
-                if (string.IsNullOrEmpty(timeStampFreeVersion))
-                {
-                    timeStampFreeVersion = "final";
-                }
-
-                if (!timeStampFreeVersion.StartsWith("-"))
-                {
-                    timeStampFreeVersion = "-" + timeStampFreeVersion;
-                }
-
-                // E.g. change version 2.5.0-rc2-123123 to 2.5.0-rc2-final.
-                var index = releaseLabel.LastIndexOf('-');
-                if (index != -1)
-                {
-                    releaseLabel = releaseLabel.Substring(0, index) + timeStampFreeVersion;
-                }
-            }
-
-            return new NuGetVersion(version.Version, releaseLabel);
+            return new NuGetVersion(version.Version, Utilities.GetNoTimestampReleaseLabel(version.Release));
         }
     }
 }
