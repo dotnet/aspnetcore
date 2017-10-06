@@ -30,8 +30,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
 
             headers["custom"] = new[] { "value" };
 
-            Assert.Equal(1, headers["custom"].Count);
-            Assert.Equal("value", headers["custom"][0]);
+            var header = Assert.Single(headers["custom"]);
+            Assert.Equal("value", header);
         }
 
         [Fact]
@@ -42,10 +42,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             headers["host"] = new[] { "value" };
             headers["content-length"] = new[] { "0" };
 
-            Assert.Equal(1, headers["host"].Count);
-            Assert.Equal(1, headers["content-length"].Count);
-            Assert.Equal("value", headers["host"][0]);
-            Assert.Equal("0", headers["content-length"][0]);
+            var host = Assert.Single(headers["host"]);
+            var contentLength = Assert.Single(headers["content-length"]);
+            Assert.Equal("value", host);
+            Assert.Equal("0", contentLength);
         }
 
         [Fact]
