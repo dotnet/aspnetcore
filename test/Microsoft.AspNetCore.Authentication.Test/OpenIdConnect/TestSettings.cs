@@ -249,7 +249,13 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             ValidateParameter(OpenIdConnectParameterNames.State, ExpectedState, actualParams, errors, htmlEncoded);
 
         private void ValidateSkuTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
-            ValidateParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NET", actualParams, errors, htmlEncoded);
+#if NETCOREAPP2_0
+            ValidateParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NETSTANDARD1_4", actualParams, errors, htmlEncoded);
+#elif NET461
+            ValidateParameter(OpenIdConnectParameterNames.SkuTelemetry, "ID_NET451", actualParams, errors, htmlEncoded);
+#else
+#error Invalid target framework.
+#endif
 
         private void ValidateVersionTelemetry(IDictionary<string, string> actualParams, ICollection<string> errors, bool htmlEncoded) =>
             ValidateParameter(OpenIdConnectParameterNames.VersionTelemetry, typeof(OpenIdConnectMessage).GetTypeInfo().Assembly.GetName().Version.ToString(), actualParams, errors, htmlEncoded);
