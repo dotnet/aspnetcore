@@ -11,5 +11,6 @@ namespace RepoTasks.Utilities
         NoShip,
         ShipOob,
         Mirror,
+        Symbols,
     }
 }

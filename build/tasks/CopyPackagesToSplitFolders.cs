@@ -50,7 +50,13 @@ namespace RepoTasks
                     identity = reader.GetIdentity();
                 }
 
-                if (!expectedPackages.TryGetCategory(identity.Id, out var category))
+                var isSymbolsPackage = file.ItemSpec.EndsWith(".symbols.nupkg", StringComparison.OrdinalIgnoreCase);
+                PackageCategory category;
+                if (isSymbolsPackage)
+                {
+                    category = PackageCategory.Symbols;
+                }
+                else if (!expectedPackages.TryGetCategory(identity.Id, out category))
                 {
                     Log.LogError($"Unexpected package artifact with id: {identity.Id}");
                     continue;
@@ -72,6 +78,9 @@ namespace RepoTasks
                         break;
                     case PackageCategory.Mirror:
                         destDir = Path.Combine(DestinationFolder, "mirror");
+                        break;
+                    case PackageCategory.Symbols:
+                        destDir = Path.Combine(DestinationFolder, "symbols");
                         break;
                     default:
                         throw new NotImplementedException();

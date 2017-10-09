@@ -209,7 +209,7 @@
 
   <Target Name="SplitPackages">
     <ItemGroup>
-      <PackageArtifactFile Include="$(BuildDir)*.nupkg" Exclude="$(BuildDir)*.symbols.nupkg" />
+      <PackageArtifactFile Include="$(BuildDir)*.nupkg" />
       <ExternalDependencyPackage Include="@(ExternalDependency->WithMetadataValue('Mirror', 'true'))" Category="mirror" />
       <_MirroredPackageFiles Include="$(IntermediateMirrorPackageDir)*.nupkg" />
     </ItemGroup>
