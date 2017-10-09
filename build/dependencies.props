@@ -265,7 +265,6 @@ not building again in this patch.
   <ItemGroup>
     <ExternalDependency Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.AspNetCore.JsonPatch" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.AspNetCore.Testing" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Data.Sqlite" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Data.Sqlite.Core" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Extensions.Caching.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
@@ -294,7 +293,6 @@ not building again in this patch.
     <ExternalDependency Include="Microsoft.Extensions.Logging.Configuration" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="Microsoft.Extensions.Logging.Testing" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Extensions.ObjectPool" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Extensions.Options" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
@@ -308,11 +306,13 @@ not building again in this patch.
   </PropertyGroup>
 
   <ItemGroup>
+    <ExternalDependency Include="Microsoft.AspNetCore.Testing" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Testing" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.Process.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
