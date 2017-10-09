@@ -10,6 +10,14 @@ namespace Microsoft.Net.Http.Headers
         public const string AcceptEncoding = "Accept-Encoding";
         public const string AcceptLanguage = "Accept-Language";
         public const string AcceptRanges = "Accept-Ranges";
+        public const string AccessControlAllowCredentials = "Access-Control-Allow-Credentials";
+        public const string AccessControlAllowHeaders = "Access-Control-Allow-Headers";
+        public const string AccessControlAllowMethods = "Access-Control-Allow-Methods";
+        public const string AccessControlAllowOrigin = "Access-Control-Allow-Origin";
+        public const string AccessControlExposeHeaders = "Access-Control-Expose-Headers";
+        public const string AccessControlMaxAge = "Access-Control-Max-Age";
+        public const string AccessControlRequestHeaders = "Access-Control-Request-Headers";
+        public const string AccessControlRequestMethod = "Access-Control-Request-Method";
         public const string Age = "Age";
         public const string Allow = "Allow";
         public const string Authorization = "Authorization";
@@ -38,6 +46,7 @@ namespace Microsoft.Net.Http.Headers
         public const string LastModified = "Last-Modified";
         public const string Location = "Location";
         public const string MaxForwards = "Max-Forwards";
+        public const string Origin = "Origin";
         public const string Pragma = "Pragma";
         public const string ProxyAuthenticate = "Proxy-Authenticate";
         public const string ProxyAuthorization = "Proxy-Authorization";
