@@ -72,6 +72,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <ExternalDependency Include="Microsoft.CodeAnalysis" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <!-- This version is required for Razor to build the VSIX for VS. -->
+      <NoWarn>KRB2004</NoWarn>
+      <VariableName>MicrosoftCodeAnalysisToolingPackageVersion</VariableName>
+    </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <!-- This version is required for Razor to build the VSIX for VS. -->
       <NoWarn>KRB2004</NoWarn>
@@ -82,13 +87,29 @@
       <NoWarn>KRB2004</NoWarn>
       <VariableName>MicrosoftCodeAnalysisCSharpToolingPackageVersion</VariableName>
     </ExternalDependency>
-    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" />
-    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <!-- This version is required for Razor to build the VSIX for VS. -->
+      <NoWarn>KRB2004</NoWarn>
+      <VariableName>MicrosoftCodeAnalysisCSharpWorkspacesToolingPackageVersion</VariableName>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <!-- This version is required for Razor to build the VSIX for VS. -->
+      <NoWarn>KRB2004</NoWarn>
+      <VariableName>MicrosoftCodeAnalysisVisualBasicToolingPackageVersion</VariableName>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.VisualBasic.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
+      <!-- This version is required for Razor to build the VSIX for VS. -->
+      <NoWarn>KRB2004</NoWarn>
+      <VariableName>MicrosoftCodeAnalysisVisualBasicWorkspacesToolingPackageVersion</VariableName>
+    </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true">
       <!-- This version is required for Razor to build the VSIX for VS. -->
       <NoWarn>KRB2004</NoWarn>
       <VariableName>MicrosoftCodeAnalysisWorkspacesCommonToolingPackageVersion</VariableName>
     </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.EditorFeatures.Text" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Razor.ServiceHub" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.CodeAnalysis.Remote.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices.Razor.RemoteClient" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.LanguageServices" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" />
   </ItemGroup>
