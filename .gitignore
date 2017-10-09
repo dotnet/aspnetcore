@@ -22,4 +22,4 @@ node_modules
 .w
 .deps
 global.json
-korebuild-lock.txt
+msbuild.ProjectImports.zip
