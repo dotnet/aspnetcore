@@ -185,6 +185,11 @@ namespace Microsoft.AspNetCore
                     options.ValidateScopes = context.HostingEnvironment.IsDevelopment();
                 });
 
+            if (args != null)
+            {
+                builder.UseConfiguration(new ConfigurationBuilder().AddCommandLine(args).Build());
+            }
+
             return builder;
         }
 
@@ -206,10 +211,7 @@ namespace Microsoft.AspNetCore
         /// <typeparam name ="TStartup">The type containing the startup methods for the application.</typeparam>
         /// <param name="args">The command line args.</param>
         /// <returns>The initialized <see cref="IWebHostBuilder"/>.</returns>
-        public static IWebHostBuilder CreateDefaultBuilder<TStartup>(string[] args) where TStartup : class
-        {
-            return CreateDefaultBuilder(args)
-                .UseStartup<TStartup>();
-        }
+        public static IWebHostBuilder CreateDefaultBuilder<TStartup>(string[] args) where TStartup : class =>
+            CreateDefaultBuilder(args).UseStartup<TStartup>();
     }
 }
