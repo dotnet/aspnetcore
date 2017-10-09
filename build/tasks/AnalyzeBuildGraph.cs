@@ -34,10 +34,6 @@ namespace RepoTasks
         [Required]
         public ITaskItem[] Dependencies { get; set; }
 
-        // Artifacts that already shipped from repos
-        [Required]
-        public ITaskItem[] ShippedArtifacts { get; set; }
-
         [Required]
         public string Properties { get; set; }
 
@@ -90,12 +86,6 @@ namespace RepoTasks
 
         private void EnsureConsistentGraph(IEnumerable<ArtifactInfo.Package> packages, IEnumerable<SolutionInfo> solutions)
         {
-             var shippedPackageMap = ShippedArtifacts
-                .Select(ArtifactInfo.Parse)
-                .OfType<ArtifactInfo.Package>()
-                .Where(p => !p.IsSymbolsArtifact)
-                .ToDictionary(p => p.PackageInfo.Id, p => p, StringComparer.OrdinalIgnoreCase);
-
             // ensure versions cascade
             var buildPackageMap = packages.ToDictionary(p => p.PackageInfo.Id, p => p, StringComparer.OrdinalIgnoreCase);
             var dependencyMap = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
@@ -126,27 +116,8 @@ namespace RepoTasks
                 if (!buildPackageMap.TryGetValue(dependency.Key, out var package))
                 {
                     // This dependency is not one of the packages that will be compiled by this run of Universe.
-
-                    var matchesExternalDependency = false;
-                    if (shippedPackageMap.TryGetValue(dependency.Key, out var shippedPackage))
-                    {
-                        if (string.IsNullOrEmpty(dependency.Value.Version))
-                        {
-                            Log.LogKoreBuildError(
-                                project.FullPath,
-                                KoreBuildErrors.EmptyPackageReferenceVersion,
-                                message: $"Package reference to {dependency.Key} has an empty version");
-                                continue;
-                        }
-
-                        matchesExternalDependency = shippedPackage.PackageInfo.Version.Equals(NuGetVersion.Parse(dependency.Value.Version));
-                    }
-                    else if (dependencyMap.TryGetValue(dependency.Key, out var externalVersions))
-                    {
-                        matchesExternalDependency = externalVersions.Contains(dependency.Value.Version);
-                    }
-
-                    if (!matchesExternalDependency)
+                    if (!dependencyMap.TryGetValue(dependency.Key, out var externalVersions)
+                        || !externalVersions.Contains(dependency.Value.Version))
                     {
                         Log.LogKoreBuildError(
                             project.FullPath,
@@ -168,15 +139,7 @@ namespace RepoTasks
 
                 if (!solution.ShouldBuild)
                 {
-                    if (!shippedPackageMap.TryGetValue(project.PackageId, out _))
-                    {
-                        Log.LogMessage(MessageImportance.Normal, $"Detected inconsistent in a sample or test project {project.FullPath}");
-                        continue;
-                    }
-                    else
-                    {
-                        reposThatShouldPatch.Add(Path.GetFileName(Path.GetDirectoryName(solution.FullPath)));
-                    }
+                    reposThatShouldPatch.Add(Path.GetFileName(Path.GetDirectoryName(solution.FullPath)));
                 }
 
                 inconsistentVersions.Add(new VersionMismatch

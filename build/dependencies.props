@@ -132,7 +132,7 @@
     <ExternalDependency Include="BenchmarkDotNet" Version="0.10.3" Source="$(DefaultNuGetFeed)" Private="true"/>
     <ExternalDependency Include="EntityFramework" Version="6.1.3" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="FSharp.Core" Version="4.2.1" Source="$(DefaultNuGetFeed)" Private="true" />
-    <ExternalDependency Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.1.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.AspNet.Identity.EntityFramework" Version="2.2.1" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.AspNet.WebApi.Client" Version="5.2.2" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.Azure.KeyVault" Version="2.3.2" Source="$(DefaultNuGetFeed)" />
@@ -252,5 +252,76 @@
       <!-- It is okay to have multiple versions of test-only dependencies. -->
       <NoWarn>KRB2004</NoWarn>
     </ExternalDependency>
+  </ItemGroup>
+
+<!--
+**********************************************************
+Packages built in a previous version of ASP.NET Core, but
+not building again in this patch.
+**********************************************************
+-->
+
+  <!-- Shipped dependencies from previous builds -->
+  <ItemGroup>
+    <ExternalDependency Include="Microsoft.AspNetCore.Html.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.AspNetCore.JsonPatch" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.AspNetCore.Testing" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Data.Sqlite" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Data.Sqlite.Core" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.Memory" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.Redis" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Caching.SqlServer" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Binder" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Composite" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Embedded" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileProviders.Physical" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.FileSystemGlobbing" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.AzureAppServices" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Configuration" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.Testing" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.ObjectPool" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Options" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.Primitives" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+    <ExternalDependency Include="Microsoft.Extensions.WebEncoders" Version="2.0.0" Source="$(DefaultNuGetFeed)" />
+  </ItemGroup>
+
+  <!-- Non-shipped dependencies from previous builds -->
+  <PropertyGroup>
+    <AspNetCoreMasterFeed>https://dotnet.myget.org/F/aspnetcore-master/api/v3/index.json</AspNetCoreMasterFeed>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ExternalDependency Include="Microsoft.Extensions.ActivatorUtilities.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.ClosedGenericMatcher.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.CommandLineUtils.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.CopyOnWriteDictionary.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.HashCodeCombiner.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.ObjectMethodExecutor.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.ParameterDefaultValue.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.Process.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.PropertyActivator.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.PropertyHelper.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.RazorViews.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.SecurityHelper.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.StackTrace.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.TypeNameHelper.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
+    <ExternalDependency Include="Microsoft.Extensions.WebEncoders.Sources" Version="2.0.0" Source="$(AspNetCoreMasterFeed)" Private="true" Mirror="true" />
   </ItemGroup>
 </Project>

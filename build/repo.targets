@@ -48,7 +48,6 @@
     <ItemGroup>
       <_LineupPackages Include="@(ExternalDependency)" />
       <_LineupPackages Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition=" '%(ArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
-      <_LineupPackages Include="%(ShippedArtifactInfo.PackageId)" Version="%(ShippedArtifactInfo.Version)" Condition=" '%(ShippedArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
 
       <_LineupSources Include="$(_DependencyPackagesDirectory)" Condition="'$(_DependencyPackagesDirectory)' != '' AND Exists('$(_DependencyPackagesDirectory)')" />
       <_LineupSources Include="$(BuildDir)" />
@@ -200,7 +199,6 @@
       Solutions="@(Solution)"
       Artifacts="@(ArtifactInfo)"
       Dependencies="@(ExternalDependency)"
-      ShippedArtifacts="@(ShippedArtifactInfo)"
       StartGraphAt="$(BuildGraphOf)"
       Properties="Configuration=$(Configuration);BuildNumber=$(BuildNumber);DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)">
       <Output TaskParameter="RepositoryBuildOrder" ItemName="RepositoryBuildOrder" />
