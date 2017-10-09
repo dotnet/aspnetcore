@@ -12,9 +12,9 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Mvc.FunctionalTests
 {
-    public class ApiControllerAttributeTests : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
+    public class ApiBehaviorTest : IClassFixture<MvcTestFixture<BasicWebSite.Startup>>
     {
-        public ApiControllerAttributeTests(MvcTestFixture<BasicWebSite.Startup> fixture)
+        public ApiBehaviorTest(MvcTestFixture<BasicWebSite.Startup> fixture)
         {
             Client = fixture.Client;
         }
@@ -96,6 +96,44 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 Assert.Equal(expected[i].Path, expected[i].Path);
                 Assert.Equal(expected[i].Message, expected[i].Message);
             }
+        }
+
+        [Fact]
+        public async Task ActionsWithApiBehavior_InferFromBodyParameters()
+        {
+            // Arrange
+            var input = new Contact
+            {
+                ContactId = 13,
+                Name = "Test123",
+            };
+
+            // Act
+            var response = await Client.PostAsJsonAsync("/contact/ActionWithInferredFromBodyParameter", input);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = JsonConvert.DeserializeObject<Contact>(await response.Content.ReadAsStringAsync());
+            Assert.Equal(input.ContactId, result.ContactId);
+            Assert.Equal(input.Name, result.Name);
+        }
+
+        [Fact]
+        public async Task ActionsWithApiBehavior_InferQueryAndRouteParameters()
+        {
+            // Arrange
+            var id = 31;
+            var name = "test";
+            var email = "email@test.com";
+            var url = $"/contact/ActionWithInferredRouteAndQueryParameters/{name}/{id}?email={email}";
+            var response = await Client.PostAsync(url, new StringContent(string.Empty));
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            var result = JsonConvert.DeserializeObject<Contact>(await response.Content.ReadAsStringAsync());
+            Assert.Equal(id, result.ContactId);
+            Assert.Equal(name, result.Name);
+            Assert.Equal(email, result.Email);
         }
     }
 }

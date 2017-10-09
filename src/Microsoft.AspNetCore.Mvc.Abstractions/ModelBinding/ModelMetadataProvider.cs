@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNetCore.Mvc.Abstractions;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding
 {
@@ -31,7 +30,7 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding
         /// Supplies metadata describing a parameter.
         /// </summary>
         /// <param name="parameter">The <see cref="ParameterInfo"/>.</param>
-        /// <returns>A <see cref="ModelMetadata"/> instance describing properties of the <see cref="ActionDescriptor"/>.</returns>
+        /// <returns>A <see cref="ModelMetadata"/> instance describing the <paramref name="parameter"/>.</returns>
         public abstract ModelMetadata GetMetadataForParameter(ParameterInfo parameter);
     }
 }

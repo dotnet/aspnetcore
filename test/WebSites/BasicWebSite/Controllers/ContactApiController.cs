@@ -47,5 +47,19 @@ namespace BasicWebSite
             _repository.Add(contact);
             return CreatedAtAction(nameof(Get), new { id = contact.ContactId }, contact);
         }
+
+        [HttpPost("ActionWithInferredFromBodyParameter")]
+        public ActionResult<Contact> ActionWithInferredFromBodyParameter(Contact contact) => contact;
+
+        [HttpPost("ActionWithInferredRouteAndQueryParameters/{name}/{id}")]
+        public ActionResult<Contact> ActionWithInferredRouteAndQueryParameter(int id, string name, string email)
+        {
+            return new Contact
+            {
+                ContactId = id,
+                Name = name,
+                Email = email,
+            };
+        }
     }
 }
