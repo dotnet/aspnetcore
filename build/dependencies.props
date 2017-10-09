@@ -14,7 +14,7 @@
     <NETStandardImplicitPackageVersion>2.0.0-*</NETStandardImplicitPackageVersion>
     <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0-*</RuntimeFrameworkVersion>
     <TestSdkVersion>15.3.0</TestSdkVersion>
-    <XunitVersion>2.3.0-rc3-build3818</XunitVersion>
+    <XunitVersion>2.3.0</XunitVersion>
   </PropertyGroup>
 
   <!-- defines the default values for each item type -->
