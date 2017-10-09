@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         [Fact]
         public Task ThrowsWhenMaxAgeIsNegative()
         {
-            return TestConfigurationException<InvalidOperationException>(
+            return TestConfigurationException<ArgumentOutOfRangeException>(
                 o =>
                 {
                     o.SignInScheme = "TestScheme";
@@ -126,7 +126,7 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
                     o.Authority = TestServerBuilder.DefaultAuthority;
                     o.MaxAge = TimeSpan.FromSeconds(-1);
                 },
-                ex => Assert.Equal("MaxAge must not be a negative TimeSpan.", ex.Message)
+                ex => Assert.StartsWith("The value must not be a negative TimeSpan.", ex.Message)
             );
         }
 

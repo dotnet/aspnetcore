@@ -355,9 +355,9 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
 
             // Add the 'max_age' parameter to the authentication request if MaxAge is not null.
             // See http://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
-            if (Options.MaxAge != null)
+            if (Options.MaxAge.HasValue)
             {
-                message.MaxAge = Convert.ToInt64(Math.Floor(((TimeSpan)Options.MaxAge).TotalSeconds))
+                message.MaxAge = Convert.ToInt64(Math.Floor((Options.MaxAge.Value).TotalSeconds))
                     .ToString(CultureInfo.InvariantCulture);
             }
 

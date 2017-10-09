@@ -414,8 +414,8 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         public async Task Challenge_WithDefaultMaxAge_HasExpectedMaxAgeParam()
         {
             var settings = new TestSettings(
-                opt => 
-                { 
+                opt =>
+                {
                     opt.ClientId = "Test Id";
                     opt.Authority = TestServerBuilder.DefaultAuthority;
                 });
@@ -434,8 +434,8 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         public async Task Challenge_WithSpecificMaxAge_HasExpectedMaxAgeParam()
         {
             var settings = new TestSettings(
-                opt => 
-                { 
+                opt =>
+                {
                     opt.ClientId = "Test Id";
                     opt.Authority = TestServerBuilder.DefaultAuthority;
                     opt.MaxAge = TimeSpan.FromMinutes(20);

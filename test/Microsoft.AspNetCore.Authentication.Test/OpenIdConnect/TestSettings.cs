@@ -4,14 +4,12 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Xml.Linq;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Xunit;
@@ -270,10 +268,10 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
         private void ValidateMaxAge(IDictionary<string, string> actualQuery, ICollection<string> errors, bool htmlEncoded)
         {
-            if(_options.MaxAge != null) 
+            if(_options.MaxAge.HasValue)
             {
-                string expectedMaxAge = Convert.ToInt64(Math.Floor(((TimeSpan)_options.MaxAge).TotalSeconds))
-                    .ToString(CultureInfo.InvariantCulture);
+                Assert.Equal(TimeSpan.FromMinutes(20), _options.MaxAge.Value);
+                string expectedMaxAge = "1200";
                 ValidateParameter(OpenIdConnectParameterNames.MaxAge, expectedMaxAge, actualQuery, errors, htmlEncoded);
             }
             else if(actualQuery.ContainsKey(OpenIdConnectParameterNames.MaxAge))
