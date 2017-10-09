@@ -14,8 +14,8 @@
     <None Remove="node_modules\**\*" />
     <EmbeddedResource Include="Content\**\*" />
     <ProjectReference Include="..\Microsoft.AspNetCore.NodeServices\Microsoft.AspNetCore.NodeServices.csproj" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="$(AspNetCoreVersion)" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="$(AspNetCoreVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.TagHelpers" Version="$(MicrosoftAspNetCoreMvcTagHelpersPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="$(MicrosoftAspNetCoreMvcViewFeaturesPackageVersion)" />
   </ItemGroup>
 
   <Target Name="PrepublishScript" BeforeTargets="PrepareForPublish" Condition=" '$(IsCrossTargetingBuild)' != 'true' ">

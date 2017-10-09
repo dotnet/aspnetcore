@@ -1,13 +1,20 @@
 ﻿<Project>
   <PropertyGroup>
-    <AspNetCoreVersion>2.0.0</AspNetCoreVersion>
-    <AutoMapperVersion>5.0.2</AutoMapperVersion>
-    <InternalAspNetCoreSdkVersion>2.0.1-rtm-15400</InternalAspNetCoreSdkVersion>
-    <JsonNetVersion>10.0.1</JsonNetVersion>
-    <NETStandardImplicitPackageVersion>2.0.0</NETStandardImplicitPackageVersion>
-    <NETStandardLibraryNETFrameworkVersion>2.0.0</NETStandardLibraryNETFrameworkVersion>
-    <RuntimeFrameworkVersion Condition="'$(TargetFramework)'=='netcoreapp2.0'">2.0.0</RuntimeFrameworkVersion>
-    <ThreadingDataflowVersion>4.8.0</ThreadingDataflowVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.0.2-beta-15522</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreDiagnosticsPackageVersion>2.0.1-rtm-83</MicrosoftAspNetCoreDiagnosticsPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.0.1-rtm-83</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.0.1-rtm-83</MicrosoftAspNetCoreHostingPackageVersion>
+    <MicrosoftAspNetCoreMvcPackageVersion>2.0.1-rtm-83</MicrosoftAspNetCoreMvcPackageVersion>
+    <MicrosoftAspNetCoreMvcTagHelpersPackageVersion>2.0.1-rtm-83</MicrosoftAspNetCoreMvcTagHelpersPackageVersion>
+    <MicrosoftAspNetCoreMvcViewFeaturesPackageVersion>2.0.1-rtm-83</MicrosoftAspNetCoreMvcViewFeaturesPackageVersion>
+    <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.0.1-rtm-83</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
+    <MicrosoftAspNetCoreServerKestrelPackageVersion>2.0.1-rtm-83</MicrosoftAspNetCoreServerKestrelPackageVersion>
+    <MicrosoftAspNetCoreStaticFilesPackageVersion>2.0.1-rtm-83</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftExtensionsDependencyInjectionPackageVersion>2.0.0</MicrosoftExtensionsDependencyInjectionPackageVersion>
+    <MicrosoftExtensionsLoggingConsolePackageVersion>2.0.0</MicrosoftExtensionsLoggingConsolePackageVersion>
+    <MicrosoftExtensionsLoggingDebugPackageVersion>2.0.0</MicrosoftExtensionsLoggingDebugPackageVersion>
+    <NewtonsoftJsonRuntimePackageVersion>10.0.1</NewtonsoftJsonRuntimePackageVersion>
+    <SystemThreadingTasksDataflowPackageVersion>4.8.0</SystemThreadingTasksDataflowPackageVersion>
   </PropertyGroup>
 
   <Import Project="$(DotNetPackageVersionPropsPath)" Condition=" '$(DotNetPackageVersionPropsPath)' != '' " />
