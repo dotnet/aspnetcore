@@ -17,7 +17,7 @@ Microsoft.AspNetCore.DataProtection.IDataProtector</Description>
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Extensions.WebEncoders.Sources" Version="$(AspNetCoreVersion)" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.Extensions.WebEncoders.Sources" Version="$(MicrosoftExtensionsWebEncodersSourcesPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>
