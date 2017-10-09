@@ -1,0 +1,35 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>dotnet-developercertificates</AssemblyName>
+    <OutputType>exe</OutputType>
+    <Description>Command line tool to generate certificates used in ASP.NET Core during development.</Description>
+    <PackageId>Microsoft.AspNetCore.DeveloperCertificates.Tools</PackageId>
+    <PackageTags>dotnet;developercertificates</PackageTags>
+    <PackageType>DotnetCliTool</PackageType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\shared\CliContext.cs" Link="CliContext.cs" />
+    <Compile Include="..\..\shared\CommandLineApplicationExtensions.cs" Link="CommandLineApplicationExtensions.cs" />
+    <Compile Include="..\..\shared\ConsoleReporter.cs" Link="ConsoleReporter.cs" />
+    <Compile Include="..\..\shared\DebugHelper.cs" Link="DebugHelper.cs" />
+    <Compile Include="..\..\shared\Ensure.cs" Link="Ensure.cs" />
+    <Compile Include="..\..\shared\IConsole.cs" Link="IConsole.cs" />
+    <Compile Include="..\..\shared\IReporter.cs" Link="IReporter.cs" />
+    <Compile Include="..\..\shared\NullReporter.cs" Link="NullReporter.cs" />
+    <Compile Include="..\..\shared\PhysicalConsole.cs" Link="PhysicalConsole.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="prefercliruntime" PackagePath="\prefercliruntime" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.Extensions.CommandLineUtils.Sources" PrivateAssets="All" />
+    <PackageReference Include="System.Security.Cryptography.Cng" />
+  </ItemGroup>
+
+</Project>

@@ -19,12 +19,10 @@
           "DotnetCliTool"
         ]
       },
-      "Microsoft.AspNetCore.CertificateGeneration.Task": {
-        "exclusions":{
-          "BUILD_ITEMS_FRAMEWORK": {
-            "*": "This is an MSBuild task intended to run through dotnet msbuild /t:Target independently of whether your project targets full framework or .net core."
-          }
-        }
+      "Microsoft.AspNetCore.DeveloperCertificates.Tools": {
+        "packageTypes": [
+          "DotnetCliTool"
+        ]
       }
     }
   },
