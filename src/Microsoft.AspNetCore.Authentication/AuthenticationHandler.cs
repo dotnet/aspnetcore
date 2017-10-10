@@ -87,7 +87,7 @@ namespace Microsoft.AspNetCore.Authentication
             Context = context;
 
             Options = OptionsMonitor.Get(Scheme.Name) ?? new TOptions();
-            Options.Validate();
+            Options.Validate(Scheme.Name);
 
             await InitializeEventsAsync();
             await InitializeHandlerAsync();

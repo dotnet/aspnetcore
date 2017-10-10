@@ -33,6 +33,19 @@ namespace Microsoft.AspNetCore.Authentication
         }
 
         /// <summary>
+        /// Checks that the options are valid for a specific scheme
+        /// </summary>
+        /// <param name="scheme">The scheme being validated.</param>
+        public override void Validate(string scheme)
+        {
+            base.Validate(scheme);
+            if (string.Equals(scheme, SignInScheme, StringComparison.Ordinal))
+            {
+                throw new InvalidOperationException(Resources.Exception_RemoteSignInSchemeCannotBeSelf);
+            }
+        }
+
+        /// <summary>
         /// Check that the options are valid.  Should throw an exception if things are not ok.
         /// </summary>
         public override void Validate()

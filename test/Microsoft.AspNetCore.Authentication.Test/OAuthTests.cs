@@ -27,6 +27,9 @@ namespace Microsoft.AspNetCore.Authentication.OAuth
                     o.SignInScheme = "weeblie";
                     o.ClientId = "whatever";
                     o.ClientSecret = "whatever";
+                    o.CallbackPath = "/whatever";
+                    o.AuthorizationEndpoint = "/whatever";
+                    o.TokenEndpoint = "/whatever";
                 }));
             var error = await Assert.ThrowsAsync<InvalidOperationException>(() => server.SendAsync("https://example.com/"));
             Assert.Contains("cannot be set to itself", error.Message);

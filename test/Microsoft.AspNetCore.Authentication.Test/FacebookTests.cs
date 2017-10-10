@@ -29,7 +29,11 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         {
             var server = CreateServer(
                 app => { },
-                services => services.AddAuthentication().AddFacebook(o => o.SignInScheme = FacebookDefaults.AuthenticationScheme),
+                services => services.AddAuthentication().AddFacebook(o => {
+                    o.AppId = "whatever";
+                    o.AppSecret = "whatever";
+                    o.SignInScheme = FacebookDefaults.AuthenticationScheme;
+                }),
                 context => 
                 {
                     // Gross
@@ -45,7 +49,10 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         {
             var server = CreateServer(
                 app => { },
-                services => services.AddAuthentication(o => o.DefaultScheme = FacebookDefaults.AuthenticationScheme).AddFacebook(),
+                services => services.AddAuthentication(o => o.DefaultScheme = FacebookDefaults.AuthenticationScheme).AddFacebook(o => {
+                    o.AppId = "whatever";
+                    o.AppSecret = "whatever";
+                }),
                 context =>
                 {
                     // Gross
@@ -61,7 +68,10 @@ namespace Microsoft.AspNetCore.Authentication.Facebook
         {
             var server = CreateServer(
                 app => { },
-                services => services.AddAuthentication(o => o.DefaultSignInScheme = FacebookDefaults.AuthenticationScheme).AddFacebook(),
+                services => services.AddAuthentication(o => o.DefaultSignInScheme = FacebookDefaults.AuthenticationScheme).AddFacebook(o => {
+                    o.AppId = "whatever";
+                    o.AppSecret = "whatever";
+                }),
                 context =>
                 {
                     // Gross
