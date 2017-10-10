@@ -517,30 +517,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
                         // If _requestAbort is set, the connection has already been closed.
                         if (_requestAborted == 0)
                         {
-                            if (HasResponseStarted)
-                            {
-                                // If the response has already started, call ProduceEnd() before
-                                // consuming the rest of the request body to prevent
-                                // delaying clients waiting for the chunk terminator:
-                                //
-                                // https://github.com/dotnet/corefx/issues/17330#issuecomment-288248663
-                                //
-                                // ProduceEnd() must be called before _application.DisposeContext(), to ensure
-                                // HttpContext.Response.StatusCode is correctly set when
-                                // IHttpContextFactory.Dispose(HttpContext) is called.
-                                await ProduceEnd();
-                            }
+                            // Call ProduceEnd() before consuming the rest of the request body to prevent
+                            // delaying clients waiting for the chunk terminator:
+                            //
+                            // https://github.com/dotnet/corefx/issues/17330#issuecomment-288248663
+                            //
+                            // This also prevents the 100 Continue response from being sent if the app
+                            // never tried to read the body.
+                            // https://github.com/aspnet/KestrelHttpServer/issues/2102
+                            //
+                            // ProduceEnd() must be called before _application.DisposeContext(), to ensure
+                            // HttpContext.Response.StatusCode is correctly set when
+                            // IHttpContextFactory.Dispose(HttpContext) is called.
+                            await ProduceEnd();
 
                             // ForZeroContentLength does not complete the reader nor the writer
                             if (!messageBody.IsEmpty && _keepAlive)
                             {
                                 // Finish reading the request body in case the app did not.
                                 await messageBody.ConsumeAsync();
-                            }
-
-                            if (!HasResponseStarted)
-                            {
-                                await ProduceEnd();
                             }
                         }
                         else if (!HasResponseStarted)

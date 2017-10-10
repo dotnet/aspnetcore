@@ -7,9 +7,12 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
@@ -66,12 +69,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task RequestTimesOutWhenNotDrainedWithinDrainTimeoutPeriod()
         {
+            var sink = new TestSink();
+            var logger = new TestLogger("TestLogger", sink, enabled: true);
+
             // This test requires a real clock since we can't control when the drain timeout is set
             var systemClock = new SystemClock();
             var serviceContext = new TestServiceContext
             {
                 SystemClock = systemClock,
-                DateHeaderValueManager = new DateHeaderValueManager(systemClock)
+                DateHeaderValueManager = new DateHeaderValueManager(systemClock),
+                Log = new KestrelTrace(logger)
             };
 
             var appRunningEvent = new ManualResetEventSlim();
@@ -96,17 +103,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                     Assert.True(appRunningEvent.Wait(TimeSpan.FromSeconds(10)));
 
                     await connection.Receive(
-                        "HTTP/1.1 408 Request Timeout",
-                        "Connection: close",
+                        "HTTP/1.1 200 OK",
                         "");
                     await connection.ReceiveStartsWith(
                         "Date: ");
+                    // Disconnected due to the timeout
                     await connection.ReceiveForcedEnd(
                         "Content-Length: 0",
                         "",
                         "");
                 }
             }
+
+            Assert.Contains(sink.Writes, w => w.EventId.Id == 17 && w.LogLevel == LogLevel.Information && w.Exception is BadHttpRequestException
+                && ((BadHttpRequestException)w.Exception).StatusCode == StatusCodes.Status408RequestTimeout);
         }
 
         [Fact]

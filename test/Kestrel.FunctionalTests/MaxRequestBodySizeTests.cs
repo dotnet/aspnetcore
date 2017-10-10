@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http.Features;
@@ -140,7 +141,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task DoesNotRejectBodylessGetRequestWithZeroMaxRequestBodySize()
         {
-            using (var server = new TestServer(context => Task.CompletedTask,
+            using (var server = new TestServer(context => context.Request.Body.CopyToAsync(Stream.Null),
                 new TestServiceContext { ServerOptions = { Limits = { MaxRequestBodySize = 0 } } }))
             {
                 using (var connection = server.CreateConnection())
