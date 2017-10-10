@@ -6,8 +6,8 @@
 export interface Observer<T> {
     closed?: boolean;
     next: (value: T) => void;
-    error: (err: any) => void;
-    complete: () => void;
+    error?: (err: any) => void;
+    complete?: () => void;
 }
 
 export interface Observable<T> {
@@ -30,13 +30,17 @@ export class Subject<T> implements Observable<T> {
 
     public error(err: any): void {
         for (let observer of this.observers) {
-            observer.error(err);
+            if (observer.error) {
+                observer.error(err);
+            }
         }
     }
 
     public complete(): void {
         for (let observer of this.observers) {
-            observer.complete();
+            if (observer.complete) {
+                observer.complete();
+            }
         }
     }
 

@@ -390,6 +390,32 @@ describe("HubConnection", () => {
             connection.receive({ type: 3, invocationId: connection.lastInvocationId });
             expect(await observer.completed).toEqual([1, 2, 3]);
         });
+
+        it("does not require error function registered", async () => {
+            let connection = new TestConnection();
+
+            let hubConnection = new HubConnection(connection);
+            let observer = hubConnection.stream("testMethod").subscribe({
+                next: val => { }
+            });
+
+            // Typically this would be called by the transport
+            // triggers observer.error()
+            connection.onclose(new Error("Connection lost"));
+        });
+
+        it("does not require complete function registered", async () => {
+            let connection = new TestConnection();
+
+            let hubConnection = new HubConnection(connection);
+            let observer = hubConnection.stream("testMethod").subscribe({
+                next: val => { }
+            });
+
+            // Send completion to trigger observer.complete()
+            // Expectation is connection.receive will not to throw
+            connection.receive({ type: 3, invocationId: connection.lastInvocationId });
+        });
     });
 
     describe("onClose", () => {

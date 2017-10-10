@@ -7,7 +7,10 @@ export function asyncit(expectation: string, assertion?: () => Promise<any>, tim
         testFunction = done => {
             assertion()
                 .then(() => done())
-                .catch(() => fail());
+                .catch((err) => {
+                    fail(err);
+                    done();
+                });
         };
     }
 
