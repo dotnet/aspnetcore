@@ -92,7 +92,7 @@
   <Target Name="BuildRuntimeStore" DependsOnTargets="_ResolveRuntimeStoreRID;_PrepareRuntimeStoreBuildAssets;_ResolveCurrentSharedFrameworkVersion">
     <ItemGroup>
       <_RuntimeStoreRestoreSources Include="$(_DependencyBuildDirectory)" Condition="Exists($(_DependencyBuildDirectory))" />
-      <_RuntimeStoreRestoreSources Include="$(BuildDir)" />
+      <_RuntimeStoreRestoreSources Include="$(BuildDir)" Condition="Exists($(BuildDir))" />
     </ItemGroup>
 
     <RepoTasks.GenerateRestoreSourcesPropsFile
