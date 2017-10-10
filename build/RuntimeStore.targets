@@ -1,6 +1,12 @@
 <Project>
   <Import Project="common.props" />
 
+  <PropertyGroup Condition=" '$(Version)' == '' ">
+    <VersionPrefix Condition=" '$(VersionPrefix)' == '' ">1.0.0</VersionPrefix>
+    <Version Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix)</Version>
+    <Version Condition=" '$(Version)' == '' ">$(VersionPrefix)</Version>
+  </PropertyGroup>
+
   <PropertyGroup>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
     <_DependencyMirrorDirectory>$(RepositoryRoot).deps\mirror\</_DependencyMirrorDirectory>
@@ -84,16 +90,38 @@
   </Target>
 
   <Target Name="BuildRuntimeStore" DependsOnTargets="_ResolveRuntimeStoreRID;_PrepareRuntimeStoreBuildAssets;_ResolveCurrentSharedFrameworkVersion">
+    <ItemGroup>
+      <_RuntimeStoreRestoreSources Include="$(_DependencyBuildDirectory)" Condition="Exists($(_DependencyBuildDirectory))" />
+      <_RuntimeStoreRestoreSources Include="$(BuildDir)" />
+    </ItemGroup>
+
+    <RepoTasks.GenerateRestoreSourcesPropsFile
+      Sources="@(_RuntimeStoreRestoreSources)"
+      OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
+
+    <PropertyGroup>
+      <__ComposeStoreProps />
+      <_ComposeStoreProps Condition="Exists($(_DependencyBuildDirectory))">$(_ComposeStoreProps);AspNetUniverseBuildOffline=true</_ComposeStoreProps>
+      <_ComposeStoreProps>$(_ComposeStoreProps);RuntimeIdentifier=$(RuntimeStoreRID)</_ComposeStoreProps>
+      <_ComposeStoreProps>$(_ComposeStoreProps);ComposeDir=$(_RuntimeStoreOutputDirectory)</_ComposeStoreProps>
+      <_ComposeStoreProps>$(_ComposeStoreProps);RuntimeFrameworkVersion=$(SharedFrameworkVersion)</_ComposeStoreProps>
+      <_ComposeStoreProps>$(_ComposeStoreProps);ComposeWorkingDir=$(_RuntimeStoreWorkDirectory)</_ComposeStoreProps>
+      <_ComposeStoreProps>$(_ComposeStoreProps);MicrosoftAspNetCoreAllPackageVersion=$(Version)</_ComposeStoreProps>
+      <_ComposeStoreProps>$(_ComposeStoreProps);DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath)</_ComposeStoreProps>
+    </PropertyGroup>
+
     <!-- Build runtime store -->
-    <Exec Command="dotnet store -m $(_WorkRoot)RS.Manifest.csproj -f netcoreapp2.0 -r $(RuntimeStoreRID) -o $(_RuntimeStoreOutputDirectory) --framework-version $(SharedFrameworkVersion) -w $(_RuntimeStoreWorkDirectory) $(RUNTIMESTORE_ADDITIONAL_ARGS)" />
+    <MSBuild Projects="$(_WorkRoot)RS.Manifest.csproj"
+             Targets="ComposeStore"
+             Properties="$(_ComposeStoreProps)" />
   </Target>
 
   <Target Name="_ResolveCurrentSharedFrameworkVersion">
     <!-- Parse framework version -->
-    <Exec Command="powershell.exe $(_BuildScriptsDirectory)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true" Condition="'$(OS)' == 'Windows_NT'">
+    <Exec Command="powershell.exe $(_BuildScriptsDirectory)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true" StandardOutputImportance="Normal" Condition="'$(OS)' == 'Windows_NT'">
       <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
     </Exec>
-    <Exec Command="bash $(_BuildScriptsDirectory)GetSharedFrameworkVersion.sh" ConsoleToMSBuild="true" Condition="'$(OS)' != 'Windows_NT'">
+    <Exec Command="bash $(_BuildScriptsDirectory)GetSharedFrameworkVersion.sh" ConsoleToMSBuild="true" StandardOutputImportance="Normal" Condition="'$(OS)' != 'Windows_NT'">
       <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
     </Exec>
   </Target>
@@ -118,8 +146,8 @@
 
   <Target Name="PackRuntimeStore" DependsOnTargets="_ResolveRuntimeStoreRID">
     <PropertyGroup>
-      <OutputZip>$(ArtifactsDir)aspnetcore-store-$(VersionPrefix)-$(VersionSuffix)-$(RuntimeStoreRID).zip</OutputZip>
-      <OutputSymbolZip>$(ArtifactsDir)aspnetcore-symbols-$(VersionPrefix)-$(VersionSuffix)-$(RuntimeStoreRID).zip</OutputSymbolZip>
+      <OutputZip>$(ArtifactsDir)aspnetcore-store-$(Version)-$(RuntimeStoreRID).zip</OutputZip>
+      <OutputSymbolZip>$(ArtifactsDir)aspnetcore-symbols-$(Version)-$(RuntimeStoreRID).zip</OutputSymbolZip>
     </PropertyGroup>
 
     <ItemGroup>
@@ -136,7 +164,7 @@
       NewManifests="@(RuntimeStoreManifestFiles)"
       RuntimeStoreFiles="@(RuntimeStoreFiles)"
       RuntimeStoreSymbolFiles="@(RuntimeStoreSymbolFiles)"
-      ManifestDestination="$(ArtifactsDir)aspnetcore-store-$(VersionPrefix)-$(VersionSuffix)-$(RuntimeStoreRID).xml"
+      ManifestDestination="$(ArtifactsDir)aspnetcore-store-$(Version)-$(RuntimeStoreRID).xml"
       StoreDestination="$(_StoreZipDirectory)store\"
       SymbolsDestination="$(_SymbolsZipDirectory)"/>
 
@@ -155,7 +183,7 @@
 
   <Target Name="CreateCommonManifest" DependsOnTargets="_PrepareRuntimeStoreBuildAssets">
     <PropertyGroup>
-      <CommonManifestFileName>aspnetcore-store-$(VersionPrefix)-$(VersionSuffix)-common.xml</CommonManifestFileName>
+      <CommonManifestFileName>aspnetcore-store-$(Version)-common.xml</CommonManifestFileName>
     </PropertyGroup>
 
     <!-- Trim packages guaranteed to be in the runtime but isn't included in our runtime store -->
@@ -182,7 +210,7 @@
     <!-- Create a consolidated manifest and place in metapackage -->
     <RepoTasks.ConsolidateManifests
       Manifests="@(ManifestFiles)"
-      ManifestDestination="$(_WorkRoot)\build\aspnetcore-store-$(VersionPrefix)-$(VersionSuffix).xml"/>
+      ManifestDestination="$(_WorkRoot)\build\aspnetcore-store-$(Version).xml"/>
 
     <ItemGroup>
       <ArchiveFiles Include="$(_WorkRoot)**\*" />
