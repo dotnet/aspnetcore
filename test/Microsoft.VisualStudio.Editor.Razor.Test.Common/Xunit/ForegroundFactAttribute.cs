@@ -8,7 +8,7 @@ namespace Xunit
 {
     // Similar to WpfFactAttribute https://github.com/xunit/samples.xunit/blob/969d9f7e887836f01a6c525324bf3db55658c28f/STAExamples/WpfFactAttribute.cs
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    [XunitTestCaseDiscoverer("Xunit.ForegroundFactDiscoverer", "Microsoft.VisualStudio.LanguageServices.Razor.Test")]
+    [XunitTestCaseDiscoverer("Xunit." + nameof(ForegroundFactDiscoverer), "Microsoft.VisualStudio.Editor.Razor.Test.Common")]
     internal class ForegroundFactAttribute : FactAttribute
     {
     }
