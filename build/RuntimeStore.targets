@@ -63,20 +63,7 @@
     <RemoveDir Directories="$(_WorkRoot)" />
 
     <!-- Copy and update build assets -->
-    <Copy SourceFiles="$(RepositoryRoot)NuGet.config" DestinationFiles="$(_WorkRoot)NuGet.config" />
     <Copy SourceFiles="$(_TemplatesDirectory)RS.Manifest\RS.Manifest.csproj" DestinationFiles="$(_WorkRoot)RS.Manifest.csproj" />
-
-    <!-- Update NuGet.config -->
-    <UpdatePackageSource
-      NuGetConfigPath="$(_WorkRoot)NuGet.config"
-      SourceName="Dependencies"
-      SourceUri="$(_DependencyBuildDirectory)"
-      Condition="Exists('$(_DependencyBuildDirectory)')" />
-    <UpdatePackageSource
-      NuGetConfigPath="$(_WorkRoot)NuGet.config"
-      SourceName="Mirror"
-      SourceUri="$(_DependencyMirrorDirectory)"
-      Condition="Exists('$(_DependencyMirrorDirectory)')" />
   </Target>
 
   <Target Name="_ResolveRuntimeStoreRID">
@@ -92,6 +79,7 @@
   <Target Name="BuildRuntimeStore" DependsOnTargets="_ResolveRuntimeStoreRID;_PrepareRuntimeStoreBuildAssets;_ResolveCurrentSharedFrameworkVersion">
     <ItemGroup>
       <_RuntimeStoreRestoreSources Include="$(_DependencyBuildDirectory)" Condition="Exists($(_DependencyBuildDirectory))" />
+      <_RuntimeStoreRestoreSources Include="$(_DependencyMirrorDirectory)" Condition="Exists($(_DependencyMirrorDirectory))" />
       <_RuntimeStoreRestoreSources Include="$(BuildDir)" Condition="Exists($(BuildDir))" />
     </ItemGroup>
 
