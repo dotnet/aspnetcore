@@ -166,5 +166,35 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             // Assert
             Assert.Equal("/Home/CannotBeRouted", response.Headers.Location.ToString());
         }
+
+        [Theory]
+        [InlineData("Products", "Products View")]
+        [InlineData("Services", "Services View")]
+        [InlineData("Manage", "Manage View")]
+        public async Task ApplicationModel_CanDuplicateController_InMultipleAreas(string areaName, string expectedContent)
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync(areaName + "/MultipleAreas/Index");
+            var content = await response.Content.ReadAsStringAsync();
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            Assert.Contains(expectedContent, content);
+        }
+
+        [Theory]
+        [InlineData("Help", "This is the help page")]        
+        [InlineData("MoreHelp", "This is the more help page")]        
+        public async Task ControllerModel_CanDuplicateActions_RoutesToDifferentNames(string actionName, string expectedContent)
+        {
+            // Arrange & Act
+            var response = await Client.GetAsync("ActionModel/" + actionName);
+
+            // Assert
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.Contains(expectedContent, body);
+        }
     }
 }

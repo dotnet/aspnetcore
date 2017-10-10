@@ -17,6 +17,12 @@ namespace ApplicationModelWebSite
             return ControllerContext.ActionDescriptor.ActionName;
         }
 
+        [CloneAction("MoreHelp")]
+        public IActionResult Help()
+        {
+            return View();
+        }
+
         private class ActionName2Attribute : Attribute, IActionModelConvention
         {
             private readonly string _actionName;
