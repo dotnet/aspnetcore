@@ -64,6 +64,21 @@
 
     <!-- Copy and update build assets -->
     <Copy SourceFiles="$(_TemplatesDirectory)RS.Manifest\RS.Manifest.csproj" DestinationFiles="$(_WorkRoot)RS.Manifest.csproj" />
+
+    <ItemGroup>
+      <_RuntimeStoreRestoreSources Include="$(_DependencyBuildDirectory)" Condition="Exists($(_DependencyBuildDirectory))" />
+      <_RuntimeStoreRestoreSources Include="$(_DependencyMirrorDirectory)" Condition="Exists($(_DependencyMirrorDirectory))" />
+      <_RuntimeStoreRestoreSources Include="$(BuildDir)" Condition="Exists($(BuildDir))" />
+    </ItemGroup>
+
+    <RepoTasks.GenerateRestoreSourcesPropsFile
+      Sources="@(_RuntimeStoreRestoreSources)"
+      OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
+
+    <PropertyGroup>
+      <_RsManifestProps>MicrosoftAspNetCoreAllPackageVersion=$(Version)</_RsManifestProps>
+      <_RsManifestProps>$(_RsManifestProps);DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath)</_RsManifestProps>
+    </PropertyGroup>
   </Target>
 
   <Target Name="_ResolveRuntimeStoreRID">
@@ -77,25 +92,13 @@
   </Target>
 
   <Target Name="BuildRuntimeStore" DependsOnTargets="_ResolveRuntimeStoreRID;_PrepareRuntimeStoreBuildAssets;_ResolveCurrentSharedFrameworkVersion">
-    <ItemGroup>
-      <_RuntimeStoreRestoreSources Include="$(_DependencyBuildDirectory)" Condition="Exists($(_DependencyBuildDirectory))" />
-      <_RuntimeStoreRestoreSources Include="$(_DependencyMirrorDirectory)" Condition="Exists($(_DependencyMirrorDirectory))" />
-      <_RuntimeStoreRestoreSources Include="$(BuildDir)" Condition="Exists($(BuildDir))" />
-    </ItemGroup>
-
-    <RepoTasks.GenerateRestoreSourcesPropsFile
-      Sources="@(_RuntimeStoreRestoreSources)"
-      OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
-
     <PropertyGroup>
       <__ComposeStoreProps />
-      <_ComposeStoreProps Condition="Exists($(_DependencyBuildDirectory))">$(_ComposeStoreProps);AspNetUniverseBuildOffline=true</_ComposeStoreProps>
-      <_ComposeStoreProps>$(_ComposeStoreProps);RuntimeIdentifier=$(RuntimeStoreRID)</_ComposeStoreProps>
+      <_ComposeStoreProps>$(_ComposeStoreProps);$(_RsManifestProps)</_ComposeStoreProps>
       <_ComposeStoreProps>$(_ComposeStoreProps);ComposeDir=$(_RuntimeStoreOutputDirectory)</_ComposeStoreProps>
-      <_ComposeStoreProps>$(_ComposeStoreProps);RuntimeFrameworkVersion=$(SharedFrameworkVersion)</_ComposeStoreProps>
       <_ComposeStoreProps>$(_ComposeStoreProps);ComposeWorkingDir=$(_RuntimeStoreWorkDirectory)</_ComposeStoreProps>
-      <_ComposeStoreProps>$(_ComposeStoreProps);MicrosoftAspNetCoreAllPackageVersion=$(Version)</_ComposeStoreProps>
-      <_ComposeStoreProps>$(_ComposeStoreProps);DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath)</_ComposeStoreProps>
+      <_ComposeStoreProps>$(_ComposeStoreProps);RuntimeIdentifier=$(RuntimeStoreRID)</_ComposeStoreProps>
+      <_ComposeStoreProps>$(_ComposeStoreProps);RuntimeFrameworkVersion=$(SharedFrameworkVersion)</_ComposeStoreProps>
     </PropertyGroup>
 
     <!-- Build runtime store -->
@@ -123,7 +126,9 @@
     </RepoTasks.ResolveHostingStartupPackages>
 
     <!--- MSBuild caches things if you run inproc so have to use Exec -->
-    <Exec Command="dotnet msbuild /t:&quot;Restore;Rebuild;CollectDeps&quot; $(_TemplatesDirectory)HostingStartup/HostingStartup.csproj /p:&quot;DepsOutputPath=$(_DepsOutputDirectory);HostingStartupPackageName=%(HostingStartupArtifacts.PackageId);HostingStartupPackageVersion=%(HostingStartupArtifacts.Version);RuntimeFrameworkVersion=$(SharedFrameworkVersion)&quot;"/>
+    <MSBuild Projects="$(_TemplatesDirectory)HostingStartup/HostingStartup.csproj"
+             Targets="Restore;Rebuild;CollectDeps"
+             Properties="DepsOutputPath=$(_DepsOutputDirectory);HostingStartupPackageName=%(HostingStartupArtifacts.PackageId);HostingStartupPackageVersion=%(HostingStartupArtifacts.Version);RuntimeFrameworkVersion=$(SharedFrameworkVersion)" />
 
     <ItemGroup>
       <DepsFiles Include="$(_DepsOutputDirectory)**\*.deps.json" />
@@ -179,7 +184,9 @@
       <PackagesToTrim Include="runtime.win-arm64.runtime.native.system.data.sqlclient.sni" />
     </ItemGroup>
 
-    <MSBuild Projects="$(_WorkRoot)RS.Manifest.csproj" Targets="Restore;GetPackageDefinitions" >
+    <MSBuild Projects="$(_WorkRoot)RS.Manifest.csproj"
+             Targets="Restore;GetPackageDefinitions"
+             Properties="$(_RsManifestProps)" >
       <Output TaskParameter="TargetOutputs" ItemName="_PackageDefinitions" />
     </MSBuild>
 
