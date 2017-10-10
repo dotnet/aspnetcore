@@ -42,7 +42,8 @@
     <RepoTasks.AddMetapackageReferences
       ReferencePackagePath="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj"
       BuildArtifacts="@(ArtifactInfo)"
-      PackageArtifacts="@(PackageArtifact)" />
+      PackageArtifacts="@(PackageArtifact)"
+      ExternalDependencies="@(ExternalDependency)" />
 
     <!-- Restore and pack-->
     <MSBuild Projects="$(MetapackageWorkDirectory)Microsoft.AspNetCore.All.csproj"

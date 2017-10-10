@@ -21,10 +21,14 @@ namespace RepoTasks
         [Required]
         public ITaskItem[] PackageArtifacts { get; set; }
 
+        [Required]
+        public ITaskItem[] ExternalDependencies { get; set; }
+
         public override bool Execute()
         {
             // Parse input
             var metapackageArtifacts = PackageArtifacts.Where(p => p.GetMetadata("Metapackage") != "false");
+            var externalArtifacts = ExternalDependencies.Where(p => p.GetMetadata("Metapackage") != "false");
             var buildArtifacts = BuildArtifacts.Select(ArtifactInfo.Parse)
                 .OfType<ArtifactInfo.Package>()
                 .Where(p => !p.IsSymbolsArtifact);
@@ -37,14 +41,15 @@ namespace RepoTasks
 
             // Items
             var itemGroupElement = xmlDoc.CreateElement("ItemGroup");
-            Log.LogMessage(MessageImportance.Normal, $"Runtime store will include the following packages");
+            Log.LogMessage(MessageImportance.High, $"Runtime store will include the following packages");
+
             foreach (var package in metapackageArtifacts)
             {
-                var packageName = package.GetMetadata("Identity");
+                var packageName = package.ItemSpec;
                 var packageVersion = buildArtifacts
                     .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
                     .PackageInfo.Version.ToString();
-                Log.LogMessage(MessageImportance.Normal, $" - Package: {packageName} Version: {packageVersion}");
+                Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersion}");
 
                 var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
                 packageReferenceElement.SetAttribute("Include", packageName);
@@ -52,6 +57,20 @@ namespace RepoTasks
 
                 itemGroupElement.AppendChild(packageReferenceElement);
             }
+
+            foreach (var package in externalArtifacts)
+            {
+                var packageName = package.ItemSpec;
+                var packageVersion = package.GetMetadata("Version");
+                Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersion}");
+
+                var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
+                packageReferenceElement.SetAttribute("Include", packageName);
+                packageReferenceElement.SetAttribute("Version", packageVersion);
+
+                itemGroupElement.AppendChild(packageReferenceElement);
+            }
+
             projectElement.AppendChild(itemGroupElement);
 
             // Save updated file

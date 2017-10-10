@@ -1,6 +1,7 @@
 <Project>
   <Import Project="RepositoryBuild.targets" />
   <Import Project="RuntimeStore.targets" />
+  <Import Project="PackageArchive.targets" />
   <Import Project="push.targets" />
 
   <PropertyGroup>
