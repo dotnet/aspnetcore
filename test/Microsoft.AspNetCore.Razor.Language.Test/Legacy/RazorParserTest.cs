@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System.IO;
+using System.Linq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Razor.Language.Legacy
@@ -21,9 +22,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseMethodCallsParseDocumentOnMarkupParserAndReturnsResults()
         {
-            var factory = new SpanFactory();
-
             // Arrange
+            var factory = new SpanFactory();
             var parser = new RazorParser();
 
             // Act/Assert
@@ -41,9 +41,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
         [Fact]
         public void ParseMethodUsesProvidedParserListenerIfSpecified()
         {
-            var factory = new SpanFactory();
-
             // Arrange
+            var factory = new SpanFactory();
             var parser = new RazorParser();
 
             // Act
@@ -59,6 +58,29 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
                                .AsImplicitExpression(CSharpCodeParser.DefaultKeywords)
                                .Accepts(AcceptedCharactersInternal.NonWhiteSpace)),
                     factory.Markup(" baz")));
+        }
+
+        [Fact]
+        public void Parse_SyntaxTreeSpansAreLinked()
+        {
+            // Arrange
+            var factory = new SpanFactory();
+            var parser = new RazorParser();
+
+            // Act
+            var results = parser.Parse(TestRazorSourceDocument.Create("foo @bar baz"));
+
+            // Assert
+            var spans = results.Root.Flatten().ToArray();
+            for (var i = 0; i < spans.Length - 1; i++)
+            {
+                Assert.Same(spans[i + 1], spans[i].Next);
+            }
+
+            for (var i = spans.Length - 1; i > 0; i--)
+            {
+                Assert.Same(spans[i - 1], spans[i].Previous);
+            }
         }
     }
 }

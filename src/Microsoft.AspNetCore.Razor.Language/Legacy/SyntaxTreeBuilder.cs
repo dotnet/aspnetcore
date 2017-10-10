@@ -88,6 +88,8 @@ namespace Microsoft.AspNetCore.Razor.Language.Legacy
             var rootBuilder = _blockStack.Pop();
             var root = rootBuilder.Build();
 
+            root.LinkNodes();
+
             return root;
         }
     }
