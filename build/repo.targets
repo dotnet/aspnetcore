@@ -1,6 +1,4 @@
 <Project>
-  <Import Project="FixPackageOutputDirs.targets" />
-
   <UsingTask
     TaskName="PullRequestSubmitter.PullRequestTask"
     AssemblyFile="$(MSBuildThisFileDirectory)..\tools\PullRequestSubmitter\bin\Release\netcoreapp2.0\PullRequestSubmitter.dll" />
@@ -30,5 +28,4 @@
       FileToUpdate="build/DependencyVersions.props"
       PropertyUpdates="@(PropertyUpdate)" />
   </Target>
-
 </Project>

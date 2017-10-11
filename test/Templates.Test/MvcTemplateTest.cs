@@ -1,4 +1,8 @@
-﻿using Xunit;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore.Testing.xunit;
+using Xunit;
 using Xunit.Abstractions;
 
 namespace Templates.Test
@@ -9,12 +13,20 @@ namespace Templates.Test
         {
         }
 
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        [InlineData(null)]
+        [InlineData("F#")]
+        public void MvcTemplate_NoAuth_Works_NetFramework(string languageOverride)
+            => MvcTemplate_NoAuthImpl("net461", languageOverride);
+
         [Theory]
-        [InlineData(/* netcoreapp */ null, /* C# */ null)]
-        [InlineData("net461", /* C# */ null)]
-        [InlineData(/* netcoreapp */ null, "F#")]
-        [InlineData("net461", "F#")]
-        public void MvcTemplate_NoAuth_Works(string targetFrameworkOverride, string languageOverride)
+        [InlineData(null)]
+        [InlineData("F#")]
+        public void MvcTemplate_NoAuth_Works_NetCore(string languageOverride)
+            => MvcTemplate_NoAuthImpl(null, languageOverride);
+
+        private void MvcTemplate_NoAuthImpl(string targetFrameworkOverride, string languageOverride)
         {
             RunDotNetNew("mvc", targetFrameworkOverride, language: languageOverride);
 
@@ -42,13 +54,19 @@ namespace Templates.Test
             }
         }
 
-        [Theory]
-        [InlineData(null)]
-        [InlineData("net461")]
-        public void MvcTemplate_IndividualAuth_Works(string targetFrameworkOverride)
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
+        public void MvcTemplate_IndividualAuth_Works_NetFramework()
+            => MvcTemplate_IndividualAuthImpl("net461");
+
+        [Fact]
+        public void MvcTemplate_IndividualAuth_Works_NetCore()
+            => MvcTemplate_IndividualAuthImpl(null);
+
+        private void MvcTemplate_IndividualAuthImpl(string targetFrameworkOverride)
         {
             RunDotNetNew("mvc", targetFrameworkOverride, auth: "Individual");
-            
+
             AssertDirectoryExists("Extensions", true);
             AssertFileExists("urlRewrite.config", false);
             AssertFileExists("Controllers/AccountController.cs", true);

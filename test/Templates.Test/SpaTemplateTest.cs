@@ -1,4 +1,8 @@
-﻿using OpenQA.Selenium;
+﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
+
+using Microsoft.AspNetCore.Testing.xunit;
+using OpenQA.Selenium;
 using Templates.Test.Helpers;
 using Xunit;
 using Xunit.Abstractions;
@@ -11,17 +15,25 @@ namespace Templates.Test
         {
         }
 
-        [Theory]
-        [InlineData(null, "angular")]
-        [InlineData(null, "react")]
-        [InlineData(null, "reactredux")]
-        [InlineData(null, "aurelia")]
-        [InlineData(null, "knockout")]
-        [InlineData(null, "vue")]
+        [ConditionalTheory]
+        [OSSkipCondition(OperatingSystems.Linux | OperatingSystems.MacOSX)]
         // Just use 'angular' as representative for .NET 4.6.1 coverage, as
         // the client-side code isn't affected by the .NET runtime choice
-        [InlineData("net461", "angular")]
-        public void SpaTemplate_Works(string targetFrameworkOverride, string template)
+        [InlineData("angular")]
+        public void SpaTemplate_Works_NetFramework(string template)
+            => SpaTemplateImpl("net461", template);
+
+        [Theory]
+        [InlineData("angular")]
+        [InlineData("react")]
+        [InlineData("reactredux")]
+        [InlineData("aurelia")]
+        [InlineData("knockout")]
+        [InlineData("vue")]
+        public void SpaTemplate_Works_NetCore(string template)
+            => SpaTemplateImpl(null, template);
+
+        private void SpaTemplateImpl(string targetFrameworkOverride, string template)
         {
             RunDotNetNew(template, targetFrameworkOverride);
             RunNpmInstall();

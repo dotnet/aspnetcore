@@ -1,0 +1,8 @@
+{
+  "files.associations": {
+    "*.json.in": "json"
+  },
+  "[json]": {
+    "editor.tabSize": 2
+  }
+}

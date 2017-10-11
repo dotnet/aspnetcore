@@ -1,26 +1,5 @@
 <Project>
   <Import Project="..\Directory.Build.targets" />
-
-  <!--
-    Once we've written each template .nupkg file, we modify the ASP.NET references
-    in its .csproj content files, injecting whatever version number exists in
-    the curent build context.
-  -->
-
-  <UsingTask
-    TaskName="DependencyUpdater.SubstituteProjectFileVariables"
-    AssemblyFile="$(MSBuildProjectDirectory)\$(OutputPath)DependencyUpdater.dll" />
-
-  <Target Name="InjectVersionsIntoProjectFilesInPackage" AfterTargets="Pack">
-    <ItemGroup>
-      <Substitution Include="TemplateDep_Coherence_2_0" Value="$(TemplateDep_Coherence_2_0)" />
-      <Substitution Include="TemplateDep_Coherence_2_1" Value="$(TemplateDep_Coherence_2_1)" />
-      <Substitution Include="TemplateDep_RuntimeFramework_2_1" Value="$(TemplateDep_RuntimeFramework_2_1)" />
-    </ItemGroup>
-    <SubstituteProjectFileVariables
-        NupkgFile="$(PackageOutputPath)$(MSBuildProjectName).$(PackageVersion).nupkg"
-        Substitutions="@(Substitution)"
-        OutDir="$(PackageOutputPath)..\" />
-  </Target>
-
+  <Import Project="GenerateContent.targets" />
+  <Import Project="SetPackageProperties.targets" />
 </Project>

@@ -1,0 +1,8 @@
+<Project>
+  <Target Name="GenerateTestProps" BeforeTargets="CoreCompile">
+    <Sdk_GenerateFileFromTemplate
+      TemplateFile="$(MSBuildThisFileDirectory)TemplateTests.props.in"
+      Properties="RestoreSources=$([MSBuild]::Escape($(RestoreSources)));RuntimeFrameworkVersion=$(RuntimeFrameworkVersion)"
+      OutputPath="$(OutputPath)TemplateTests.props" />
+  </Target>
+</Project>

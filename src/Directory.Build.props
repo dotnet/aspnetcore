@@ -2,31 +2,26 @@
   <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
+    <EnableApiCheck>false</EnableApiCheck>
     <EnableDefaultItems>False</EnableDefaultItems>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <IncludeBuildOutput>False</IncludeBuildOutput>
     <IncludeSource>False</IncludeSource>
     <NoWarn>2008;8021</NoWarn>
-    <PackageVersion Condition="'$(VersionSuffix)' == ''">$(VersionPrefix)</PackageVersion>
-    <PackageVersion Condition="'$(VersionSuffix)' != ''">$(VersionPrefix)-$(VersionSuffix)</PackageVersion>
-    <PackageOutputPath Condition="'$(PackageOutputPath)' == ''">$(MSBuildThisFileDirectory)..\artifacts\build\unversioned\</PackageOutputPath>
-    <NuspecProperties>version=$(PackageVersion)</NuspecProperties>
+  </PropertyGroup>
 
-    <!--
-        These are not regular projects. They are just wrappers for the .nuspec files in each
-        of the template directories. The project files just provide a convenient way to package
-        the template .nupkgs from MSBuild.
-
-        As such, the projects don't have any dependencies and don't even produce any
-        .NET assemblies on build. So it's not relevant to participate in KoreBuild's lineup
-        system. The following line bypasses lineup verification.
-    -->
-    <KoreBuildRestoreTargetsImported>true</KoreBuildRestoreTargetsImported>
+  <PropertyGroup Condition="'$(BuildingInsideVisualStudio)' == 'true'">
+    <!-- So you can make changes and re-run tests within VS without command-line builds -->
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageOutputPath>$(MSBuildThisFileDirectory)..\artifacts\build\</PackageOutputPath>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="$(MSBuildThisFileDirectory)../tools/DependencyUpdater/DependencyUpdater.csproj" />
     <None Include="Content/**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

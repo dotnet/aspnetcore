@@ -103,11 +103,11 @@ function Get-KoreBuild {
             }
         }
         catch {
-            remove-item -Recurse -Force $korebuildPath -ErrorAction Ignore
+            Remove-Item -Recurse -Force $korebuildPath -ErrorAction Ignore
             throw
         }
         finally {
-            remove-item $tmpfile -ErrorAction Ignore
+            Remove-Item $tmpfile -ErrorAction Ignore
         }
     }
 

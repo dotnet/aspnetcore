@@ -1,7 +1,11 @@
 {
   "$schema": "http://json.schemastore.org/template",
   "author": "Microsoft",
-  "classifications": [ "Web", "MVC", "Razor Pages" ],
+  "classifications": [
+    "Web",
+    "MVC",
+    "Razor Pages"
+  ],
   "name": "ASP.NET Core Web App",
   "generatorVersions": "[1.0.0.0-*)",
   "description": "A project template for creating an ASP.NET Core application with example ASP.NET Razor Pages content",
@@ -33,7 +37,9 @@
         },
         {
           "condition": "(!IndividualLocalAuth || UseLocalDB)",
-          "exclude": [ "app.db" ]
+          "exclude": [
+            "app.db"
+          ]
         },
         {
           "condition": "(!IndividualLocalAuth)",
@@ -345,16 +351,184 @@
       "type": "parameter",
       "datatype": "bool",
       "defaultValue": "false"
+    },
+    "MicrosoftAspNetCoreStaticFilesPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.AspNetCore.StaticFiles",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftAspNetCoreStaticFilesPackageVersion}"
+      },
+      "replaces": "$(MicrosoftAspNetCoreStaticFilesPackageVersion)"
+    },
+    "MicrosoftAspNetCoreAuthenticationCookiesPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.AspNetCore.Authentication.Cookies",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftAspNetCoreAuthenticationCookiesPackageVersion}"
+      },
+      "replaces": "$(MicrosoftAspNetCoreAuthenticationCookiesPackageVersion)"
+    },
+    "MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.VisualStudio.Web.CodeGeneration.Tools",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion}"
+      },
+      "replaces": "$(MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion)"
+    },
+    "MicrosoftEntityFrameworkCoreSqlitePackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.EntityFrameworkCore.Sqlite",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftEntityFrameworkCoreSqlitePackageVersion}"
+      },
+      "replaces": "$(MicrosoftEntityFrameworkCoreSqlitePackageVersion)"
+    },
+    "MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion}"
+      },
+      "replaces": "$(MicrosoftAspNetCoreDiagnosticsEntityFrameworkCorePackageVersion)"
+    },
+    "MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.AspNetCore.Identity.EntityFrameworkCore",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion}"
+      },
+      "replaces": "$(MicrosoftAspNetCoreIdentityEntityFrameworkCorePackageVersion)"
+    },
+    "MicrosoftEntityFrameworkCoreSqlServerPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.EntityFrameworkCore.SqlServer",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftEntityFrameworkCoreSqlServerPackageVersion}"
+      },
+      "replaces": "$(MicrosoftEntityFrameworkCoreSqlServerPackageVersion)"
+    },
+    "MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.AspNetCore.Authentication.OpenIdConnect",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion}"
+      },
+      "replaces": "$(MicrosoftAspNetCoreAuthenticationOpenIdConnectPackageVersion)"
+    },
+    "MicrosoftAspNetCoreAllPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.AspNetCore.All",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftAspNetCoreAllPackageVersion}"
+      },
+      "replaces": "$(MicrosoftAspNetCoreAllPackageVersion)"
+    },
+    "MicrosoftVisualStudioWebBrowserLinkPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.VisualStudio.Web.BrowserLink",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftVisualStudioWebBrowserLinkPackageVersion}"
+      },
+      "replaces": "$(MicrosoftVisualStudioWebBrowserLinkPackageVersion)"
+    },
+    "MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.VisualStudio.Web.CodeGeneration.Design",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion}"
+      },
+      "replaces": "$(MicrosoftVisualStudioWebCodeGenerationDesignPackageVersion)"
+    },
+    "MicrosoftEntityFrameworkCoreDesignPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.EntityFrameworkCore.Design",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftEntityFrameworkCoreDesignPackageVersion}"
+      },
+      "replaces": "$(MicrosoftEntityFrameworkCoreDesignPackageVersion)"
+    },
+    "MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.AspNetCore.Mvc.Razor.ViewCompilation",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion}"
+      },
+      "replaces": "$(MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion)"
+    },
+    "MicrosoftEntityFrameworkCoreToolsPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.EntityFrameworkCore.Tools",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftEntityFrameworkCoreToolsPackageVersion}"
+      },
+      "replaces": "$(MicrosoftEntityFrameworkCoreToolsPackageVersion)"
+    },
+    "MicrosoftAspNetCoreMvcPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.AspNetCore.Mvc",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftAspNetCoreMvcPackageVersion}"
+      },
+      "replaces": "$(MicrosoftAspNetCoreMvcPackageVersion)"
+    },
+    "MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.EntityFrameworkCore.Tools.DotNet",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion}"
+      },
+      "replaces": "$(MicrosoftEntityFrameworkCoreToolsDotNetPackageVersion)"
+    },
+    "MicrosoftExtensionsSecretManagerToolsPackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.Extensions.SecretManager.Tools",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftExtensionsSecretManagerToolsPackageVersion}"
+      },
+      "replaces": "$(MicrosoftExtensionsSecretManagerToolsPackageVersion)"
+    },
+    "MicrosoftAspNetCorePackageVersion": {
+      "type": "generated",
+      "description": "The package version for Microsoft.AspNetCore",
+      "generator": "constant",
+      "parameters": {
+        "value": "${MicrosoftAspNetCorePackageVersion}"
+      },
+      "replaces": "$(MicrosoftAspNetCorePackageVersion)"
     }
   },
-  "primaryOutputs": [ { "path": "Company.WebApplication1.csproj" } ],
+  "primaryOutputs": [
+    {
+      "path": "Company.WebApplication1.csproj"
+    }
+  ],
   "defaultName": "WebApplication1",
   "postActions": [
     {
       "condition": "(!skipRestore)",
       "description": "Restore NuGet packages required by this project.",
       "manualInstructions": [
-        { "text": "Run 'dotnet restore'" }
+        {
+          "text": "Run 'dotnet restore'"
+        }
       ],
       "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
       "continueOnError": true

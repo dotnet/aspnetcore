@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using Microsoft.Extensions.CommandLineUtils;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -30,7 +31,7 @@ namespace Templates.Test.Helpers
             {
                 output.WriteLine("Publishing ASP.NET application...");
                 ProcessEx
-                    .Run(output, workingDirectory, "dotnet", "publish -c Release")
+                    .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), "publish -c Release")
                     .WaitForExit(assertSuccess: true);
                 workingDirectory = Path.Combine(workingDirectory, "bin", "Release", framework, "publish");
             }
@@ -38,7 +39,7 @@ namespace Templates.Test.Helpers
             {
                 output.WriteLine("Building ASP.NET application...");
                 ProcessEx
-                    .Run(output, workingDirectory, "dotnet", "build --no-restore -c Debug")
+                    .Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), "build --no-restore -c Debug")
                     .WaitForExit(assertSuccess: true);
             }
 
@@ -56,7 +57,7 @@ namespace Templates.Test.Helpers
             if (framework.StartsWith("netcore"))
             {
                 var dllPath = publish ? $"{projectName}.dll" : $"bin/Debug/{framework}/{projectName}.dll";
-                _process = ProcessEx.Run(output, workingDirectory, "dotnet", $"exec {dllPath}", envVars: envVars);
+                _process = ProcessEx.Run(output, workingDirectory, DotNetMuxer.MuxerPathOrDefault(), $"exec {dllPath}", envVars: envVars);
             }
             else
             {
@@ -74,7 +75,7 @@ namespace Templates.Test.Helpers
                 .FirstOrDefault(line => line.StartsWith(ListeningMessagePrefix, StringComparison.Ordinal));
             Assert.True(!string.IsNullOrEmpty(listeningMessage), $"ASP.NET process exited without listening for requests.\nOutput: { _process.Output }\nError: { _process.Error }");
 
-            // Verify we have a valid URL to make requests to            
+            // Verify we have a valid URL to make requests to
             var listeningUrlString = listeningMessage.Substring(ListeningMessagePrefix.Length);
             _listeningUri = new Uri(listeningUrlString, UriKind.Absolute);
             output.WriteLine($"Detected that ASP.NET application is accepting connections on: {listeningUrlString}");

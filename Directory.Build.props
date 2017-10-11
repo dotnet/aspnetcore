@@ -1,4 +1,3 @@
 <Project>
   <Import Project="version.props" />
-  <Import Project="TemplateDependencies.props" />
 </Project>

@@ -1,4 +1,5 @@
 ﻿<Project>
   <Import Project="build\sources.props" />
+  <!-- This is imported at the bottom of the file so properties such as RuntimeFrameworkVersion can be set based on TargetFramework -->
   <Import Project="build\dependencies.props" />
 </Project>
