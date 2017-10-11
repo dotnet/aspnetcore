@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             // get path
             var pathToCheck = deserialized.Operations.First().path;
-            Assert.Equal("/anothername", pathToCheck);
+            Assert.Equal("/AnotherName", pathToCheck);
         }
 
         [Fact]
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             // Assert
             var pathToCheck = deserialized.Operations.First().path;
-            Assert.Equal("/stringproperty", pathToCheck);
+            Assert.Equal("/StringProperty", pathToCheck);
         }
 
         [Fact]
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             // Assert
             var pathToCheck = deserialized.Operations.First().path;
-            Assert.Equal("/arrayproperty/-", pathToCheck);
+            Assert.Equal("/ArrayProperty/-", pathToCheck);
         }
 
         [Fact]
@@ -209,7 +209,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             // get path
             var pathToCheck = deserialized.Operations.First().path;
-            Assert.Equal("/anothername", pathToCheck);
+            Assert.Equal("/AnotherName", pathToCheck);
         }
 
         [Fact]
@@ -249,9 +249,9 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             // Assert
             var fromPath = deserialized.Operations.First().from;
-            Assert.Equal("/stringproperty", fromPath);
+            Assert.Equal("/StringProperty", fromPath);
             var toPath = deserialized.Operations.First().path;
-            Assert.Equal("/stringproperty2", toPath);
+            Assert.Equal("/StringProperty2", toPath);
         }
 
         [Fact]
@@ -269,7 +269,7 @@ namespace Microsoft.AspNetCore.JsonPatch
 
             // Assert
             var path = deserialized.Operations.First().path;
-            Assert.Equal("/socialsecuritynumber", path);
+            Assert.Equal("/SocialSecurityNumber", path);
         }
 
         private class JsonPropertyWithNoPropertyName

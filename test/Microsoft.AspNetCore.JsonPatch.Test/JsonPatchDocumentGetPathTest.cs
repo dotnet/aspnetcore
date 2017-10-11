@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             var path = patchDocument.GetPath(p => p.SimpleObject.IntegerList, "-");
 
             // Assert
-            Assert.Equal("/simpleobject/integerlist/-", path);
+            Assert.Equal("/SimpleObject/IntegerList/-", path);
         }
 
         [Fact]
@@ -84,7 +84,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             var path = patchDocument.GetPath(p => (BaseClass)p.DerivedObject, null);
 
             // Assert
-            Assert.Equal("/derivedobject", path);
+            Assert.Equal("/DerivedObject", path);
         }
 
         [Fact]

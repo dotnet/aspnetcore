@@ -691,12 +691,13 @@ namespace Microsoft.AspNetCore.JsonPatch
             {
                 foreach (var op in Operations)
                 {
-                    var untypedOp = new Operation();
-
-                    untypedOp.op = op.op;
-                    untypedOp.value = op.value;
-                    untypedOp.path = op.path;
-                    untypedOp.from = op.from;
+                    var untypedOp = new Operation
+                    {
+                        op = op.op,
+                        value = op.value,
+                        path = op.path,
+                        from = op.from
+                    };
 
                     allOps.Add(untypedOp);
                 }
@@ -715,11 +716,11 @@ namespace Microsoft.AspNetCore.JsonPatch
                 path += "/" + position;
                 if (segments.Count == 0)
                 {
-                    return path.ToLowerInvariant();
+                    return path;
                 }
             }
 
-            return "/" + path.ToLowerInvariant();
+            return "/" + path;
         }
 
         private List<string> GetPathSegments(Expression expr)
