@@ -258,7 +258,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             TaskCompletionSource<object> startReadingRequestBody,
             TaskCompletionSource<object> clientFinishedSendingRequestBody)
         {
-            var host = new WebHostBuilder()
+            var host = TransportSelector.GetWebHostBuilder()
                 .ConfigureLogging(_configureLoggingDelegate)
                 .UseKestrel(options =>
                 {

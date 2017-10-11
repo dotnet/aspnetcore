@@ -1,0 +1,35 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <AssemblyName>Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.FunctionalTests</AssemblyName>
+    <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.FunctionalTests</RootNamespace>
+    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
+    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
+    <DefineConstants Condition="$([MSBuild]::IsOSPlatform('OSX'))">$(DefineConstants);MACOS</DefineConstants>
+    <ServerGarbageCollection>true</ServerGarbageCollection>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\shared\**\*.cs" />
+    <Compile Include="..\Kestrel.FunctionalTests\**\*.cs" />
+    <Content Include="..\shared\TestCertificates\*.pfx" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp2.0'">
+    <ProjectReference Include="..\..\tools\CodeGenerator\CodeGenerator.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\Kestrel\Kestrel.csproj" />
+    <ProjectReference Include="..\..\src\Kestrel.Transport.Libuv\Kestrel.Transport.Libuv.csproj" />
+    <ProjectReference Include="..\..\src\Kestrel.Https\Kestrel.Https.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Http.Abstractions" />
+    <PackageReference Include="Microsoft.AspNetCore.Testing" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Testing" />
+    <PackageReference Include="Newtonsoft.Json" />
+  </ItemGroup>
+
+</Project>

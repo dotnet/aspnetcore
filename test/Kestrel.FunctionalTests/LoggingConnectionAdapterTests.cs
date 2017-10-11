@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task LoggingConnectionAdapterCanBeAddedBeforeAndAfterHttpsAdapter()
         {
-            var host = new WebHostBuilder()
+            var host = TransportSelector.GetWebHostBuilder()
                 .ConfigureLogging(builder =>
                 {
                     builder.SetMinimumLevel(LogLevel.Trace);

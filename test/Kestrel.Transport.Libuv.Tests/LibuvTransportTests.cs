@@ -1,7 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Collections.Generic;
+using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +13,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests.TestHelpers;
 using Microsoft.AspNetCore.Testing;
+using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
@@ -24,6 +28,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 ConnectionAdapters = { new PassThroughConnectionAdapter() }
             }
         };
+
+        public static IEnumerable<object[]> OneToTen => Enumerable.Range(1, 10).Select(i => new object[] { i });
 
         [Fact]
         public async Task TransportCanBindAndStop()
@@ -74,6 +80,50 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Tests
                 while (read < data.Length)
                 {
                     read += socket.Receive(buffer, read, buffer.Length - read, SocketFlags.None);
+                }
+            }
+
+            await transport.UnbindAsync();
+            await transport.StopAsync();
+        }
+
+        [ConditionalTheory]
+        [MemberData(nameof(OneToTen))]
+        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Tests fail on OS X due to low file descriptor limit.")]
+        public async Task OneToTenThreads(int threadCount)
+        {
+            var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+            var serviceContext = new TestServiceContext();
+            var testApplication = new DummyApplication(context =>
+            {
+                return context.Response.WriteAsync("Hello World");
+            });
+
+            listenOptions.UseHttpServer(listenOptions.ConnectionAdapters, serviceContext, testApplication, HttpProtocols.Http1);
+
+            var transportContext = new TestLibuvTransportContext()
+            {
+                ConnectionHandler = new ConnectionHandler(serviceContext, listenOptions.Build()),
+                Options = new LibuvTransportOptions { ThreadCount = threadCount }
+            };
+
+            var transport = new LibuvTransport(transportContext, listenOptions);
+
+            await transport.BindAsync();
+
+            using (var client = new HttpClient())
+            {
+                // Send 20 requests just to make sure we don't get any failures
+                var requestTasks = new List<Task<string>>();
+                for (int i = 0; i < 20; i++)
+                {
+                    var requestTask = client.GetStringAsync($"http://127.0.0.1:{listenOptions.IPEndPoint.Port}/");
+                    requestTasks.Add(requestTask);
+                }
+
+                foreach (var result in await Task.WhenAll(requestTasks))
+                {
+                    Assert.Equal("Hello World", result);
                 }
             }
 

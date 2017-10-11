@@ -5,7 +5,10 @@ using System;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Microsoft.AspNetCore.Hosting
@@ -23,10 +26,11 @@ namespace Microsoft.AspNetCore.Hosting
         /// </returns>
         public static IWebHostBuilder UseKestrel(this IWebHostBuilder hostBuilder)
         {
-            hostBuilder.UseLibuv();
-
             return hostBuilder.ConfigureServices(services =>
             {
+                // Don't override an already-configured transport
+                services.TryAddSingleton<ITransportFactory, SocketTransportFactory>();
+
                 services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
                 services.AddSingleton<IServer, KestrelServer>();
             });

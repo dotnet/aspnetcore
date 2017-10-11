@@ -48,7 +48,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             _listenOptions = listenOptions;
             Context = context;
 
-            _host = new WebHostBuilder()
+            _host = TransportSelector.GetWebHostBuilder()
                      .UseKestrel(o =>
                      {
                          o.ListenOptions.Add(_listenOptions);

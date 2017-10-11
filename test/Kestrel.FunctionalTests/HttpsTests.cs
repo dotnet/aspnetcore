@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
 
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
@@ -65,7 +65,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
 
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task DoesNotThrowObjectDisposedExceptionOnConnectionAbort()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
@@ -153,7 +153,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var tcs = new TaskCompletionSource<object>();
             var loggerProvider = new HandshakeErrorLoggerProvider();
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
@@ -202,7 +202,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task DoesNotThrowObjectDisposedExceptionOnEmptyConnection()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
@@ -236,7 +236,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
 
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>
@@ -265,7 +265,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         public async Task HandshakeTimesOutAndIsLoggedAsInformation()
         {
             var loggerProvider = new HandshakeErrorLoggerProvider();
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(new IPEndPoint(IPAddress.Loopback, 0), listenOptions =>

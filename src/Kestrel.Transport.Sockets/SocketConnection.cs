@@ -5,30 +5,36 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using System.IO.Pipelines;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Protocols;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
+using Microsoft.Extensions.Logging;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     internal sealed class SocketConnection : TransportConnection
     {
-        private readonly Socket _socket;
-        private readonly SocketTransport _transport;
-
-        private IList<ArraySegment<byte>> _sendBufferList;
         private const int MinAllocBufferSize = 2048;
 
-        internal SocketConnection(Socket socket, SocketTransport transport)
+        private readonly Socket _socket;
+        private readonly ISocketsTrace _trace;
+
+        private IList<ArraySegment<byte>> _sendBufferList;
+        private volatile bool _aborted;
+
+        internal SocketConnection(Socket socket, PipeFactory pipeFactory, ISocketsTrace trace)
         {
             Debug.Assert(socket != null);
-            Debug.Assert(transport != null);
+            Debug.Assert(pipeFactory != null);
+            Debug.Assert(trace != null);
 
             _socket = socket;
-            _transport = transport;
+            PipeFactory = pipeFactory;
+            _trace = trace;
 
             var localEndPoint = (IPEndPoint)_socket.LocalEndPoint;
             var remoteEndPoint = (IPEndPoint)_socket.RemoteEndPoint;
@@ -39,6 +45,10 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             RemoteAddress = remoteEndPoint.Address;
             RemotePort = remoteEndPoint.Port;
         }
+
+        public override PipeFactory PipeFactory { get; }
+        public override IScheduler InputWriterScheduler => InlineScheduler.Default;
+        public override IScheduler OutputReaderScheduler => TaskRunScheduler.Default;
 
         public async Task StartAsync(IConnectionHandler connectionHandler)
         {
@@ -66,9 +76,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 // Dispose the socket(should noop if already called)
                 _socket.Dispose();
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                // TODO: Log
+                _trace.LogError(0, ex, $"Unexpected exception in {nameof(SocketConnection)}.{nameof(StartAsync)}.");
             }
         }
 
@@ -90,6 +100,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         if (bytesReceived == 0)
                         {
                             // FIN
+                            _trace.ConnectionReadFin(ConnectionId);
                             break;
                         }
 
@@ -100,7 +111,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         buffer.Commit();
                     }
 
-                    var result = await buffer.FlushAsync();
+                    var flushTask = buffer.FlushAsync();
+
+                    if (!flushTask.IsCompleted)
+                    {
+                        _trace.ConnectionPause(ConnectionId);
+
+                        await flushTask;
+
+                        _trace.ConnectionResume(ConnectionId);
+                    }
+
+                    var result = flushTask.GetAwaiter().GetResult();
                     if (result.IsCompleted)
                     {
                         // Pipe consumer is shut down, do we stop writing
@@ -111,25 +133,36 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
             {
                 error = new ConnectionResetException(ex.Message, ex);
+                _trace.ConnectionReset(ConnectionId);
             }
-            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted)
+            catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted ||
+                                             ex.SocketErrorCode == SocketError.Interrupted)
             {
                 error = new ConnectionAbortedException();
+                _trace.ConnectionError(ConnectionId, error);
             }
             catch (ObjectDisposedException)
             {
                 error = new ConnectionAbortedException();
+                _trace.ConnectionError(ConnectionId, error);
             }
             catch (IOException ex)
             {
                 error = ex;
+                _trace.ConnectionError(ConnectionId, error);
             }
             catch (Exception ex)
             {
                 error = new IOException(ex.Message, ex);
+                _trace.ConnectionError(ConnectionId, error);
             }
             finally
             {
+                if (_aborted)
+                {
+                    error = error ?? new ConnectionAbortedException();
+                }
+
                 Input.Complete(error);
             }
         }
@@ -202,8 +235,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                         Output.Advance(buffer.End);
                     }
                 }
-
-                _socket.Shutdown(SocketShutdown.Send);
             }
             catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted)
             {
@@ -224,6 +255,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             finally
             {
                 Output.Complete(error);
+
+                // Make sure to close the connection only after the _aborted flag is set.
+                // Without this, the RequestsCanBeAbortedMidRead test will sometimes fail when
+                // a BadHttpRequestException is thrown instead of a TaskCanceledException.
+                _aborted = true;
+                _trace.ConnectionWriteFin(ConnectionId);
+                _socket.Shutdown(SocketShutdown.Both);
             }
         }
 
@@ -237,8 +275,5 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             return segment;
         }
 
-        public override PipeFactory PipeFactory => _transport.TransportFactory.PipeFactory;
-        public override IScheduler InputWriterScheduler => InlineScheduler.Default;
-        public override IScheduler OutputReaderScheduler => TaskRunScheduler.Default;
     }
 }

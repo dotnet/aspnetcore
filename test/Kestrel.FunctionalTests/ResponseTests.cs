@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task LargeDownload()
         {
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://127.0.0.1:0/")
                 .Configure(app =>
@@ -101,7 +101,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Theory, MemberData(nameof(NullHeaderData))]
         public async Task IgnoreNullHeaderValues(string headerName, StringValues headerValue, string expectedValue)
         {
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://127.0.0.1:0/")
                 .Configure(app =>
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             var onStartingCalled = false;
             var onCompletedCalled = false;
 
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://127.0.0.1:0/")
                 .Configure(app =>
@@ -179,7 +179,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         {
             InvalidOperationException ex = null;
 
-            var hostBuilder = new WebHostBuilder()
+            var hostBuilder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel()
                 .UseUrls("http://127.0.0.1:0/")
                 .Configure(app =>
@@ -2506,6 +2506,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                             totalReceived += received;
                         } while (received > 0 && totalReceived < responseSize);
                     }
+                    catch (SocketException) { }
                     catch (IOException)
                     {
                         // Socket.Receive could throw, and that is fine

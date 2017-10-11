@@ -83,6 +83,10 @@
             {
               "Name": "options",
               "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions>"
+            },
+            {
+              "Name": "loggerFactory",
+              "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
             }
           ],
           "Visibility": "Public",

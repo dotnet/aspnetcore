@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
         private async Task TestSuccess(HttpProtocols serverProtocols, string request, string expectedResponse)
         {
-            var builder = new WebHostBuilder()
+            var builder = TransportSelector.GetWebHostBuilder()
                 .UseKestrel(options =>
                 {
                     options.Listen(IPAddress.Loopback, 0, listenOptions => listenOptions.Protocols = serverProtocols);
@@ -73,7 +73,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 .Setup(provider => provider.CreateLogger(It.IsAny<string>()))
                 .Returns(logger);
 
-            var builder = new WebHostBuilder()
+            var builder = TransportSelector.GetWebHostBuilder()
                 .ConfigureLogging(loggingBuilder => loggingBuilder.AddProvider(loggerProvider.Object))
                 .UseKestrel(options => options.Listen(IPAddress.Loopback, 0, listenOptions => listenOptions.Protocols = serverProtocols))
                 .Configure(app => app.Run(context => Task.CompletedTask));
