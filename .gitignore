@@ -18,7 +18,6 @@ node_modules
 *.snk
 .build
 .nuget
-.r
 .w
 .deps
 global.json

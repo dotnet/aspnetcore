@@ -1,0 +1,53 @@
+<Project>
+  <ItemGroup>
+    <!-- Repos being patched -->
+    <Repository Include="Antiforgery" />
+    <Repository Include="AzureIntegration" />
+    <Repository Include="BasicMiddleware" />
+    <Repository Include="BrowserLink" />
+    <Repository Include="CORS" />
+    <Repository Include="DataProtection" />
+    <Repository Include="Diagnostics" />
+    <Repository Include="EntityFrameworkCore" />
+    <Repository Include="Hosting" />
+    <Repository Include="HttpAbstractions" />
+    <Repository Include="HttpSysServer" />
+    <Repository Include="Identity" />
+    <Repository Include="IISIntegration" />
+    <Repository Include="JavaScriptServices" />
+    <Repository Include="KestrelHttpServer" />
+    <Repository Include="Localization" />
+    <Repository Include="MetaPackages" />
+    <Repository Include="Mvc" />
+    <Repository Include="MvcPrecompilation" />
+    <Repository Include="Proxy" />
+    <Repository Include="Razor" />
+    <Repository Include="ResponseCaching" />
+    <Repository Include="Routing" />
+    <Repository Include="Scaffolding" />
+    <Repository Include="Security" />
+    <Repository Include="ServerTests" />
+    <Repository Include="Session" />
+    <Repository Include="StaticFiles" />
+    <Repository Include="WebSockets" />
+
+    <!--
+    Repos not building this patch.
+    Build tools will *verify* that these repos will be unaffected
+    by the patch update and do not need updating.
+    -->
+    <ShippedRepository Include="Caching" />
+    <ShippedRepository Include="Common" />
+    <ShippedRepository Include="Configuration" />
+    <ShippedRepository Include="DependencyInjection" />
+    <ShippedRepository Include="DotNetTools" />
+    <ShippedRepository Include="EventNotification" />
+    <ShippedRepository Include="FileSystem" />
+    <ShippedRepository Include="HtmlAbstractions" />
+    <ShippedRepository Include="JsonPatch" />
+    <ShippedRepository Include="Logging" />
+    <ShippedRepository Include="Microsoft.Data.Sqlite" />
+    <ShippedRepository Include="Options" />
+    <ShippedRepository Include="Testing" />
+  </ItemGroup>
+</Project>

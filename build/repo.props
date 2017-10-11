@@ -5,4 +5,5 @@
   </PropertyGroup>
 
   <Import Project="artifacts.props" />
+  <Import Project="submodules.props" />
 </Project>

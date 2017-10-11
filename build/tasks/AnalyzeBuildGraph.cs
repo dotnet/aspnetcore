@@ -225,7 +225,7 @@ namespace RepoTasks
                 var order = TopologicalSort.GetOrder(graphNodeRepository);
                 var repositoryTaskItem = new TaskItem(repository.Name);
                 repositoryTaskItem.SetMetadata("Order", order.ToString());
-                repositoryTaskItem.SetMetadata("RepositoryPath", repository.RootDir);
+                repositoryTaskItem.SetMetadata("RootPath", repository.RootDir);
                 repositoriesWithOrder.Add((repositoryTaskItem, order));
             }
 

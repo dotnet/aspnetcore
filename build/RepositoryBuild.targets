@@ -6,8 +6,7 @@
         <Repository>%(RepositoryBuildOrder.Identity)</Repository>
         <AdditionalProperties>
           RepositoryToBuild=%(RepositoryBuildOrder.Identity);
-          BuildRepositoryRoot=%(RepositoryBuildOrder.RepositoryPath)\;
-          CommitHash=%(RepositoryBuildOrder.Commit)
+          BuildRepositoryRoot=$([MSBuild]::NormalizeDirectory(%(RepositoryBuildOrder.RootPath)))
         </AdditionalProperties>
       </BatchedRepository>
     </ItemGroup>
@@ -24,7 +23,7 @@
     <!-- If we are building a sub-graph, we need to re-examine the list of artifacts that will actual build. -->
     <MSBuild Projects="$(MSBuildProjectFullPath)"
              Targets="GetArtifactInfo"
-             Properties="RepositoryRoot=$(_CloneRepositoryRoot)%(RepositoryBuildOrder.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
+             Properties="RepositoryRoot=$(SubmoduleRoot)%(RepositoryBuildOrder.Identity)\;Configuration=$(Configuration);BuildNumber=$(BuildNumber)"
              Condition="'$(BuildGraphOf)' != ''">
       <Output TaskParameter="TargetOutputs" ItemName="PinnedArtifactInfo" />
     </MSBuild>
@@ -44,7 +43,7 @@
       <!-- If there are duplicate properties, the properties which are defined later in the order would override the earlier ones -->
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetRestoreSourcePropsPath=$(GeneratedRestoreSourcesPropsPath)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)</RepositoryBuildArguments>
-      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration) /p:CommitHash=$(CommitHash)</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration)</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /noconsolelogger '/l:RepoTasks.FlowLogger,$(MSBuildThisFileDirectory)tasks\bin\publish\RepoTasks.dll;Summary;FlowId=$(RepositoryToBuild)'</RepositoryBuildArguments>
 
       <BuildArguments>$(_RepositoryBuildTargets) $(RepositoryBuildArguments)</BuildArguments>
