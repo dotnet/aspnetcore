@@ -56,7 +56,7 @@ namespace RepoTasks
                     .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
                     .PackageInfo.Version.ToString();
 
-                if (string.Equals(RemoveTimestamp, "true", StringComparison.OrdinalIgnoreCase))
+                if (RemoveTimestamp)
                 {
                     var version = new NuGetVersion(packageVersion);
                     var updatedVersion = new NuGetVersion(version.Version, VersionUtilities.GetNoTimestampReleaseLabel(version.Release));
@@ -92,7 +92,7 @@ namespace RepoTasks
                     .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
                     .PackageInfo.Version.ToString();
 
-                if (string.Equals(RemoveTimestamp, "true", StringComparison.OrdinalIgnoreCase))
+                if (RemoveTimestamp)
                 {
                     var version = new NuGetVersion(packageVersion);
                     var updatedVersion = new NuGetVersion(version.Version, VersionUtilities.GetNoTimestampReleaseLabel(version.Release));
