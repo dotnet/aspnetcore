@@ -32,6 +32,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
         private const string NonceProperty = "N";
         private const string UriSchemeDelimiter = "://";
 
+        private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
         private const string InputTagFormat = @"<input type=""hidden"" name=""{0}"" value=""{1}"" />";
         private const string HtmlFormFormat = @"<!doctype html>
 <html>
@@ -261,7 +262,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 // Emit Cache-Control=no-cache to prevent client caching.
                 Response.Headers[HeaderNames.CacheControl] = "no-cache";
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
-                Response.Headers[HeaderNames.Expires] = "-1";
+                Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
                 await Response.Body.WriteAsync(buffer, 0, buffer.Length);
             }
@@ -442,7 +443,7 @@ namespace Microsoft.AspNetCore.Authentication.OpenIdConnect
                 // Emit Cache-Control=no-cache to prevent client caching.
                 Response.Headers[HeaderNames.CacheControl] = "no-cache";
                 Response.Headers[HeaderNames.Pragma] = "no-cache";
-                Response.Headers[HeaderNames.Expires] = "-1";
+                Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
                 await Response.Body.WriteAsync(buffer, 0, buffer.Length);
                 return;

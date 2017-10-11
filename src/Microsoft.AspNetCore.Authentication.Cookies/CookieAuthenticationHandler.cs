@@ -20,7 +20,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         IAuthenticationSignOutHandler
     {
         private const string HeaderValueNoCache = "no-cache";
-        private const string HeaderValueMinusOne = "-1";
+        private const string HeaderValueEpocDate = "Thu, 01 Jan 1970 00:00:00 GMT";
         private const string SessionIdClaim = "Microsoft.AspNetCore.Authentication.Cookies-SessionId";
 
         private bool _shouldRefresh;
@@ -359,7 +359,7 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         {
             Response.Headers[HeaderNames.CacheControl] = HeaderValueNoCache;
             Response.Headers[HeaderNames.Pragma] = HeaderValueNoCache;
-            Response.Headers[HeaderNames.Expires] = HeaderValueMinusOne;
+            Response.Headers[HeaderNames.Expires] = HeaderValueEpocDate;
 
             if (shouldRedirectToReturnUrl && Response.StatusCode == 200)
             {
