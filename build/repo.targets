@@ -5,13 +5,6 @@
     TaskName="PullRequestSubmitter.PullRequestTask"
     AssemblyFile="$(MSBuildThisFileDirectory)..\tools\PullRequestSubmitter\bin\Release\netcoreapp2.0\PullRequestSubmitter.dll" />
 
-  <Target Name="PushNuGetPackages">
-    <ItemGroup>
-      <PackagesToPublish Include="$(BuildDir)*.nupkg" />
-    </ItemGroup>
-    <PushNuGetPackages Packages="@(PackagesToPublish)" Feed="$(NuGetPublishFeed)" ApiKey="$(ApiKey)" />
-  </Target>
-
   <Target Name="SendPullRequestToCliRepo">
     <PropertyGroup>
       <!-- Read the ASP.NET Core package version from a .deps.json file, because

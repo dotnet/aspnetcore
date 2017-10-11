@@ -8,10 +8,11 @@ set -euo pipefail
 
 RESET="\033[0m"
 RED="\033[0;31m"
+YELLOW="\033[0;33m"
 MAGENTA="\033[0;95m"
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 [ -z "${DOTNET_HOME:-}" ] && DOTNET_HOME="$HOME/.dotnet"
-config_file="$DIR/version.xml"
+config_file="$DIR/korebuild.json"
 verbose=false
 update=false
 repo_path="$DIR"
@@ -30,7 +31,7 @@ __usage() {
     echo "Options:"
     echo "    --verbose                Show verbose output."
     echo "    -c|--channel <CHANNEL>   The channel of KoreBuild to download. Overrides the value from the config file.."
-    echo "    --config-file <FILE>     TThe path to the configuration file that stores values. Defaults to version.xml."
+    echo "    --config-file <FILE>     The path to the configuration file that stores values. Defaults to korebuild.json."
     echo "    -d|--dotnet-home <DIR>   The directory where .NET Core tools will be stored. Defaults to '\$DOTNET_HOME' or '\$HOME/.dotnet."
     echo "    --path <PATH>            The directory to build. Defaults to the directory containing the script."
     echo "    -s|--tools-source <URL>  The base url where build tools can be downloaded. Overrides the value from the config file."
@@ -82,7 +83,11 @@ get_korebuild() {
 }
 
 __error() {
-    echo -e "${RED}$*${RESET}" 1>&2
+    echo -e "${RED}error: $*${RESET}" 1>&2
+}
+
+__warn() {
+    echo -e "${YELLOW}warning: $*${RESET}"
 }
 
 __machine_has() {
@@ -117,8 +122,6 @@ __get_remote_file() {
     fi
 }
 
-__read_dom () { local IFS=\> ; read -r -d \< ENTITY CONTENT ;}
-
 #
 # main
 #
@@ -138,6 +141,10 @@ while [[ $# -gt 0 ]]; do
             shift
             config_file="${1:-}"
             [ -z "$config_file" ] && __usage
+            if [ ! -f "$config_file" ]; then
+                __error "Invalid value for --config-file. $config_file does not exist."
+                exit 1
+            fi
             ;;
         -d|--dotnet-home|-DotNetHome)
             shift
@@ -181,14 +188,28 @@ if ! __machine_has curl && ! __machine_has wget; then
     exit 1
 fi
 
+[ -z "${config_file:-}" ] && config_file="$repo_path/korebuild.json"
 if [ -f "$config_file" ]; then
-    comment=false
-    while __read_dom; do
-        if [ "$comment" = true ]; then [[ $CONTENT == *'-->'* ]] && comment=false ; continue; fi
-        if [[ $ENTITY == '!--'* ]]; then comment=true; continue; fi
-        if [ -z "$channel" ] && [[ $ENTITY == "KoreBuildChannel" ]]; then channel=$CONTENT; fi
-        if [ -z "$tools_source" ] && [[ $ENTITY == "KoreBuildToolsSource" ]]; then tools_source=$CONTENT; fi
-    done < "$config_file"
+    if __machine_has jq ; then
+        if jq '.' "$config_file" >/dev/null ; then
+            config_channel="$(jq -r 'select(.channel!=null) | .channel' "$config_file")"
+            config_tools_source="$(jq -r 'select(.toolsSource!=null) | .toolsSource' "$config_file")"
+        else
+            __warn "$config_file is invalid JSON. Its settings will be ignored."
+        fi
+    elif __machine_has python ; then
+        if python -c "import json,codecs;obj=json.load(codecs.open('$config_file', 'r', 'utf-8-sig'))" >/dev/null ; then
+            config_channel="$(python -c "import json,codecs;obj=json.load(codecs.open('$config_file', 'r', 'utf-8-sig'));print(obj['channel'] if 'channel' in obj else '')")"
+            config_tools_source="$(python -c "import json,codecs;obj=json.load(codecs.open('$config_file', 'r', 'utf-8-sig'));print(obj['toolsSource'] if 'toolsSource' in obj else '')")"
+        else
+            __warn "$config_file is invalid JSON. Its settings will be ignored."
+        fi
+    else
+        __warn 'Missing required command: jq or pyton. Could not parse the JSON file. Its settings will be ignored.'
+    fi
+
+    [ ! -z "${config_channel:-}" ] && channel="$config_channel"
+    [ ! -z "${config_tools_source:-}" ] && tools_source="$config_tools_source"
 fi
 
 [ -z "$channel" ] && channel='dev'

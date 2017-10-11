@@ -2,22 +2,19 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
-
-    <!-- Workaround for https://github.com/aspnet/BuildTools/issues/392 -->
-    <DisablePackageReferenceVersionRestrictions>true</DisablePackageReferenceVersionRestrictions>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Security.Permissions" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" />
-    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" />
-    <PackageReference Include="Selenium.Firefox.WebDriver" Version="0.18.0" NoWarn="KRB4002" />
-    <PackageReference Include="Selenium.Support" Version="3.4.0" NoWarn="NU1701" />
-    <PackageReference Include="Selenium.WebDriver" Version="3.4.0" NoWarn="NU1701" />
-    <PackageReference Include="Selenium.WebDriver.MicrosoftDriver" Version="15.15063.0" NoWarn="KRB4002" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.analyzers" />
-    <PackageReference Include="xunit.runner.visualstudio" />
+    <PackageReference Include="System.Security.Permissions" Version="$(SystemSecurityPermissionsPackageVersion)" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftNETTestSdkPackageVersion)" />
+    <PackageReference Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" PrivateAssets="All" />
+    <PackageReference Include="Selenium.Firefox.WebDriver" Version="$(SeleniumFirefoxWebDriverPackageVersion)" />
+    <PackageReference Include="Selenium.Support" Version="$(SeleniumSupportPackageVersion)" NoWarn="NU1701" />
+    <PackageReference Include="Selenium.WebDriver" Version="$(SeleniumWebDriverPackageVersion)" NoWarn="NU1701" />
+    <PackageReference Include="Selenium.WebDriver.MicrosoftDriver" Version="$(SeleniumWebDriverMicrosoftDriverPackageVersion)" />
+    <PackageReference Include="xunit" Version="$(XunitPackageVersion)" />
+    <PackageReference Include="xunit.analyzers" Version="$(XunitAnalyzersPackageVersion)" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="$(XunitRunnerVisualStudioPackageVersion)" />
   </ItemGroup>
 
 </Project>
