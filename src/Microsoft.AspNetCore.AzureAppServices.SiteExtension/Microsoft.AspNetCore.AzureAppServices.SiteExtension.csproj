@@ -9,10 +9,6 @@
     <PackageType>AzureSiteExtension</PackageType>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <ContentTargetFolders>content</ContentTargetFolders>
-    <!-- These need to be set manually because this is not marked as a shipping (to nuget.org) package. https://github.com/aspnet/AzureIntegration/issues/38 -->
-    <PackageLicenseUrl>https://github.com/aspnet/AzureIntegration/blob/rel/2.0.0-preview1/LICENSE.txt</PackageLicenseUrl>
-    <PackageIconUrl>https://go.microsoft.com/fwlink/?LinkID=288859</PackageIconUrl>
-    <PackageProjectUrl>https://www.asp.net/</PackageProjectUrl>
   </PropertyGroup>
 
   <ItemGroup>
