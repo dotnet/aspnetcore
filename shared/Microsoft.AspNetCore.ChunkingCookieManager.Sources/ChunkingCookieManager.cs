@@ -44,7 +44,6 @@ namespace Microsoft.AspNetCore.Internal
             // See http://browsercookielimits.x64.me/.
             // Leave at least 40 in case CookiePolicy tries to add 'secure', 'samesite=strict' and/or 'httponly'.
             ChunkSize = DefaultChunkSize;
-            ThrowForPartialCookies = true;
         }
 
         /// <summary>

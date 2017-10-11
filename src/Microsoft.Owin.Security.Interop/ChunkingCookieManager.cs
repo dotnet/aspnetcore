@@ -25,7 +25,6 @@ namespace Microsoft.Owin.Security.Interop
             // See http://browsercookielimits.x64.me/.
             // Leave at least 20 in case CookiePolicy tries to add 'secure' and/or 'httponly'.
             ChunkSize = 4070;
-            ThrowForPartialCookies = true;
         }
 
         /// <summary>
