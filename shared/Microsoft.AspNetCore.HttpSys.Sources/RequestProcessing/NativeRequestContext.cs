@@ -259,7 +259,7 @@ namespace Microsoft.AspNetCore.HttpSys.Internal
             HttpApiTypes.HTTP_KNOWN_HEADER* pKnownHeader = (&request->Headers.KnownHeaders) + headerIndex;
             // For known headers, when header value is empty, RawValueLength will be 0 and
             // pRawValue will point to empty string ("\0")
-            if (pKnownHeader->pRawValue != null)
+            if (pKnownHeader->RawValueLength > 0)
             {
                 value = HeaderEncoding.GetString(pKnownHeader->pRawValue + fixup, pKnownHeader->RawValueLength);
             }
