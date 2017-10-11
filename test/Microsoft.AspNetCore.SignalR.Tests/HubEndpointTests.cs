@@ -274,7 +274,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [Fact]
         public async Task NegotiateTimesOut()
         {
-            var serviceProvider = CreateServiceProvider();
+            var serviceProvider = CreateServiceProvider(services =>
+            {
+                services.Configure<HubOptions>(hubOptions =>
+                {
+                    hubOptions.NegotiateTimeout = TimeSpan.FromMilliseconds(5);
+                });
+            });
             var endPoint = serviceProvider.GetService<HubEndPoint<SimpleHub>>();
 
             using (var client = new TestClient())
@@ -282,7 +288,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 // TestClient automatically writes negotiate, for this test we want to assume negotiate never gets sent
                 client.Connection.Transport.In.TryRead(out var item);
 
-                await endPoint.OnConnectedAsync(client.Connection).OrTimeout(TimeSpan.FromSeconds(10));
+                await endPoint.OnConnectedAsync(client.Connection).OrTimeout();
             }
         }
 
