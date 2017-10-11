@@ -11,28 +11,28 @@ namespace Microsoft.AspNetCore.Hosting.WebHostBuilderFactory
         public static readonly string CreateWebHostBuilder = nameof(CreateWebHostBuilder);
         public static readonly string BuildWebHost = nameof(BuildWebHost);
 
-        public static FactoryResolutionResult ResolveWebHostBuilderFactory(Assembly assembly)
+        public static FactoryResolutionResult<TWebhost,TWebhostBuilder> ResolveWebHostBuilderFactory<TWebhost, TWebhostBuilder>(Assembly assembly)
         {
             var programType = assembly?.EntryPoint?.DeclaringType;
             if (programType == null)
             {
-                return FactoryResolutionResult.NoEntryPoint();
+                return FactoryResolutionResult<TWebhost, TWebhostBuilder>.NoEntryPoint();
             }
 
             var factory = programType?.GetTypeInfo().GetDeclaredMethod(CreateWebHostBuilder);
             if (factory == null)
             {
-                return FactoryResolutionResult.NoCreateWebHostBuilder(programType);
+                return FactoryResolutionResult<TWebhost, TWebhostBuilder>.NoCreateWebHostBuilder(programType);
             }
 
-            return FactoryResolutionResult.Succeded(args => (IWebHostBuilder)factory.Invoke(null, new object[] { args }), programType);
+            return FactoryResolutionResult<TWebhost, TWebhostBuilder>.Succeded(args => (TWebhostBuilder)factory.Invoke(null, new object[] { args }), programType);
         }
 
-        public static FactoryResolutionResult ResolveWebHostFactory(Assembly assembly)
+        public static FactoryResolutionResult<TWebhost, TWebhostBuilder> ResolveWebHostFactory<TWebhost, TWebhostBuilder>(Assembly assembly)
         {
             // We want to give priority to BuildWebHost over CreateWebHostBuilder for backwards
             // compatibility with existing projects that follow the old pattern.
-            var findResult = ResolveWebHostBuilderFactory(assembly);
+            var findResult = ResolveWebHostBuilderFactory<TWebhost, TWebhostBuilder>(assembly);
             switch (findResult.ResultKind)
             {
                 case FactoryResolutionResultKind.NoEntryPoint:
@@ -47,11 +47,11 @@ namespace Microsoft.AspNetCore.Hosting.WebHostBuilderFactory
                             return findResult;
                         }
 
-                        return FactoryResolutionResult.NoBuildWebHost(findResult.ProgramType);
+                        return FactoryResolutionResult<TWebhost, TWebhostBuilder>.NoBuildWebHost(findResult.ProgramType);
                     }
                     else
                     {
-                        return FactoryResolutionResult.Succeded(args => (IWebHost)buildWebHostMethod.Invoke(null, new object[] { args }), findResult.ProgramType);
+                        return FactoryResolutionResult<TWebhost, TWebhostBuilder>.Succeded(args => (TWebhost)buildWebHostMethod.Invoke(null, new object[] { args }), findResult.ProgramType);
                     }
                 case FactoryResolutionResultKind.NoBuildWebHost:
                 default:

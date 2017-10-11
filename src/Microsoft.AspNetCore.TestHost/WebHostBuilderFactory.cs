@@ -11,7 +11,7 @@ namespace Microsoft.AspNetCore.TestHost
     {
         public static IWebHostBuilder CreateFromAssemblyEntryPoint(Assembly assembly, string [] args)
         {
-            var result = WebHostFactoryResolver.ResolveWebHostBuilderFactory(assembly);
+            var result = WebHostFactoryResolver.ResolveWebHostBuilderFactory<IWebHost,IWebHostBuilder>(assembly);
             if (result.ResultKind != FactoryResolutionResultKind.Success)
             {
                 return null;

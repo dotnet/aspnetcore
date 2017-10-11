@@ -12,7 +12,7 @@ namespace Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Tests
         public void CanFindWebHostBuilder_CreateWebHostBuilderPattern()
         {
             // Arrange & Act
-            var resolverResult = WebHostFactoryResolver.ResolveWebHostBuilderFactory(typeof(IStartupInjectionAssemblyName.Startup).Assembly);
+            var resolverResult = WebHostFactoryResolver.ResolveWebHostBuilderFactory<IWebHost,IWebHostBuilder>(typeof(IStartupInjectionAssemblyName.Startup).Assembly);
 
             // Assert
             Assert.Equal(FactoryResolutionResultKind.Success, resolverResult.ResultKind);
@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Tests
         public void CanFindWebHost_CreateWebHostBuilderPattern()
         {
             // Arrange & Act
-            var resolverResult = WebHostFactoryResolver.ResolveWebHostFactory(typeof(IStartupInjectionAssemblyName.Startup).Assembly);
+            var resolverResult = WebHostFactoryResolver.ResolveWebHostFactory<IWebHost, IWebHostBuilder>(typeof(IStartupInjectionAssemblyName.Startup).Assembly);
 
             // Assert
             Assert.Equal(FactoryResolutionResultKind.Success, resolverResult.ResultKind);
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Tests
         public void CanNotFindWebHostBuilder_BuildWebHostPattern()
         {
             // Arrange & Act
-            var resolverResult = WebHostFactoryResolver.ResolveWebHostBuilderFactory(typeof(BuildWebHostPatternTestSite.Startup).Assembly);
+            var resolverResult = WebHostFactoryResolver.ResolveWebHostBuilderFactory<IWebHost, IWebHostBuilder>(typeof(BuildWebHostPatternTestSite.Startup).Assembly);
 
             // Assert
             Assert.Equal(FactoryResolutionResultKind.NoCreateWebHostBuilder, resolverResult.ResultKind);
@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Hosting.WebHostBuilderFactory.Tests
         public void CanFindWebHost_BuildWebHostPattern()
         {
             // Arrange & Act
-            var resolverResult = WebHostFactoryResolver.ResolveWebHostFactory(typeof(BuildWebHostPatternTestSite.Startup).Assembly);
+            var resolverResult = WebHostFactoryResolver.ResolveWebHostFactory<IWebHost, IWebHostBuilder>(typeof(BuildWebHostPatternTestSite.Startup).Assembly);
 
             // Assert
             Assert.Equal(FactoryResolutionResultKind.Success, resolverResult.ResultKind);
