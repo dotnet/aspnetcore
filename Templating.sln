@@ -1,4 +1,4 @@
-﻿
+
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26730.16
@@ -20,8 +20,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Spa.ProjectTemplates", "src\Microsoft.DotNet.Web.Spa.ProjectTemplates\Microsoft.DotNet.Web.Spa.ProjectTemplates.csproj", "{402E62D1-7FD0-4E07-812C-0E385D98D6D9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.Client.ItemTemplates", "src\Microsoft.DotNet.Web.Client.ItemTemplates\Microsoft.DotNet.Web.Client.ItemTemplates.csproj", "{1731F6D9-1DFC-49D6-8F28-471194B1962C}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.DotNet.Web.ProjectTemplates.2.1", "src\Microsoft.DotNet.Web.ProjectTemplates.2.1\Microsoft.DotNet.Web.ProjectTemplates.2.1.csproj", "{260EBA09-DEF5-429C-99BF-90CA1456A576}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{973DC5B6-710B-4FC8-AF20-E94B93859DE8}"
 EndProject
@@ -65,10 +63,6 @@ Global
 		{1731F6D9-1DFC-49D6-8F28-471194B1962C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1731F6D9-1DFC-49D6-8F28-471194B1962C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1731F6D9-1DFC-49D6-8F28-471194B1962C}.Release|Any CPU.Build.0 = Release|Any CPU
-		{260EBA09-DEF5-429C-99BF-90CA1456A576}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{260EBA09-DEF5-429C-99BF-90CA1456A576}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{260EBA09-DEF5-429C-99BF-90CA1456A576}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{260EBA09-DEF5-429C-99BF-90CA1456A576}.Release|Any CPU.Build.0 = Release|Any CPU
 		{AFF8B079-5BA1-4DA8-9EAF-BEC8414F889A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{AFF8B079-5BA1-4DA8-9EAF-BEC8414F889A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AFF8B079-5BA1-4DA8-9EAF-BEC8414F889A}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -85,7 +79,6 @@ Global
 		{01E12D5E-8540-4BC8-9A54-41EDD55E762E} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
 		{402E62D1-7FD0-4E07-812C-0E385D98D6D9} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
 		{1731F6D9-1DFC-49D6-8F28-471194B1962C} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
-		{260EBA09-DEF5-429C-99BF-90CA1456A576} = {0AD6E692-E423-408C-B523-DAFB19412E4B}
 		{AFF8B079-5BA1-4DA8-9EAF-BEC8414F889A} = {973DC5B6-710B-4FC8-AF20-E94B93859DE8}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
