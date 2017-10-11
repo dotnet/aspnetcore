@@ -182,6 +182,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
 
+            // If the connection is local we can skip sending the message through the bus since we require sticky connections.
+            // This also saves serializing and deserializing the message!
+            var connection = _connections[connectionId];
+            if (connection != null)
+            {
+                return WriteAsync(connection, message);
+            }
+
             return PublishAsync(_channelNamePrefix + "." + connectionId, message);
         }
 
