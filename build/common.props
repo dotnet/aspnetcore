@@ -4,7 +4,7 @@
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
-    <RepositoryUrl>https://github.com/aspnet/MetaPackages</RepositoryUrl>
+    <RepositoryUrl>https://github.com/aspnet/Universe</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <GenerateUserSecretsAttribute>false</GenerateUserSecretsAttribute>
     <AssemblyOriginatorKeyFile>..\..\build\Key.snk</AssemblyOriginatorKeyFile>

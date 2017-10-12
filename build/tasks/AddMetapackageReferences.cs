@@ -54,6 +54,7 @@ namespace RepoTasks
                 var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
                 packageReferenceElement.SetAttribute("Include", packageName);
                 packageReferenceElement.SetAttribute("Version", packageVersion);
+                packageReferenceElement.SetAttribute("PrivateAssets", "None");
 
                 itemGroupElement.AppendChild(packageReferenceElement);
             }
@@ -67,6 +68,7 @@ namespace RepoTasks
                 var packageReferenceElement = xmlDoc.CreateElement("PackageReference");
                 packageReferenceElement.SetAttribute("Include", packageName);
                 packageReferenceElement.SetAttribute("Version", packageVersion);
+                packageReferenceElement.SetAttribute("PrivateAssets", "None");
 
                 itemGroupElement.AppendChild(packageReferenceElement);
             }

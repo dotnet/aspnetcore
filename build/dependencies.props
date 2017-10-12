@@ -303,12 +303,15 @@ not building again in this patch.
     <ExternalDependency Include="Microsoft.Extensions.Caching.SqlServer" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Configuration" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.AzureKeyVault" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Ini" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Configuration.Binder" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Configuration.CommandLine" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Configuration.FileExtensions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Configuration.Json" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Configuration.UserSecrets" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
+    <ExternalDependency Include="Microsoft.Extensions.Configuration.Xml" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.DiagnosticAdapter" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
@@ -323,16 +326,16 @@ not building again in this patch.
     <ExternalDependency Include="Microsoft.Extensions.Logging.Configuration" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.Console" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Logging.Debug" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.EventSource" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
+    <ExternalDependency Include="Microsoft.Extensions.Logging.TraceSource" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.ObjectPool" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Options" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Options.ConfigurationExtensions" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.Primitives" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.Extensions.WebEncoders" Version="2.0.0" Source="$(DefaultNuGetFeed)" Metapackage="true" />
     <ExternalDependency Include="Microsoft.DotNet.Watcher.Tools" Version="2.0.0" Source="$(DefaultNuGetFeed)" LZMATools="true" />
-    <ExternalDependency Include="Microsoft.EntityFrameworkCore.Tools.DotNet" Version="2.0.0" Source="$(DefaultNuGetFeed)" LZMATools="true" />
     <ExternalDependency Include="Microsoft.Extensions.Caching.SqlConfig.Tools" Version="2.0.0" Source="$(DefaultNuGetFeed)" LZMATools="true" />
     <ExternalDependency Include="Microsoft.Extensions.SecretManager.Tools" Version="2.0.0" Source="$(DefaultNuGetFeed)" LZMATools="true" />
-    <ExternalDependency Include="Microsoft.VisualStudio.Web.CodeGeneration.Tools" Version="2.0.0" Source="$(DefaultNuGetFeed)" LZMATools="true" />
   </ItemGroup>
 
   <!-- Non-shipped dependencies from previous builds -->
