@@ -1,0 +1,69 @@
+<Project>
+  <PropertyGroup>
+    <TemplatingProjectRoot>$(MSBuildThisFileDirectory)..\modules\Templating\</TemplatingProjectRoot>
+  </PropertyGroup>
+
+  <Target Name="BuildTemplates" DependsOnTargets="GeneratePropsFiles">
+    <PropertyGroup>
+      <GeneratedNoTimestampPackageVersionPropsPath>$(IntermediateDir)dependencies.notimestamp.props</GeneratedNoTimestampPackageVersionPropsPath>
+      <TemplateProjCommmonProperties>
+        RepositoryRoot=$(TemplatingProjectRoot);
+        DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath);
+        BuildNumber=$(BuildNumber);
+        Configuration=$(Configuration);
+      </TemplateProjCommmonProperties>
+      <TemplateProjProperties>
+        $(TemplateProjCommmonProperties);
+        DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath);
+        VersionMetadata=timestamped;
+      </TemplateProjProperties>
+      <TemplateProjNoTimestampProperties>
+        $(TemplateProjCommmonProperties);
+        DotNetPackageVersionPropsPath=$(GeneratedNoTimestampPackageVersionPropsPath);
+        BuildNumber=$(BuildNumber)-final;
+        VersionMetadata=notimestamp;
+      </TemplateProjNoTimestampProperties>
+    </PropertyGroup>
+
+    <!-- Produce regular, timestamped templates for pre-release builds -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Restore;Compile;Package"
+             Properties="$(TemplateProjProperties)" />
+
+    <ItemGroup>
+      <TemplateArtifacts Include="$(TemplatingProjectRoot)artifacts\build\*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(TemplateArtifacts)" DestinationFolder="$(BuildDir)" />
+
+    <!-- Gather artifact info as if this were a final build -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="GetArtifactInfo"
+             Properties="RepositoryRoot=%(Repository.RootPath);Configuration=$(Configuration);BuildNumber=$(BuildNumber);IsFinalBuild=true"
+             ContinueOnError="WarnAndContinue">
+      <Output TaskParameter="TargetOutputs" ItemName="FinalBuildArtifactInfo" />
+    </MSBuild>
+
+    <ItemGroup>
+      <_NoTimestampPackages Include="@(ExternalDependency)" />
+      <_NoTimestampPackages Include="%(FinalBuildArtifactInfo.PackageId)" Version="%(FinalBuildArtifactInfo.Version)" Condition=" '%(FinalBuildArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
+      <_NoTimestampPackages Include="Microsoft.AspNetCore.All" Version="$(PackageVersionNoTimestamp)" />
+    </ItemGroup>
+
+    <RepoTasks.GeneratePackageVersionPropsFile
+      Packages="@(_NoTimestampPackages)"
+      OutputPath="$(GeneratedNoTimestampPackageVersionPropsPath)" />
+
+    <!-- Rebuild the templates without restoring. (The non-timestamped packages don't exist yet.) -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)"
+             Targets="Prepare;Compile;Package"
+             Properties="$(TemplateProjNoTimestampProperties);NoRestore=true" />
+
+    <ItemGroup>
+      <TemplateNoTimestampArtifacts Include="$(TemplatingProjectRoot)artifacts\build\*" />
+    </ItemGroup>
+
+    <Copy SourceFiles="@(TemplateNoTimestampArtifacts)" DestinationFolder="$(ArtifactsDir)notimestamp\" />
+  </Target>
+
+</Project>

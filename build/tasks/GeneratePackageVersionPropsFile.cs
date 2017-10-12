@@ -32,6 +32,8 @@ namespace RepoTasks
             var root = new XElement("Project", props);
             var doc = new XDocument(root);
 
+            props.Add(new XElement("MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"));
+
             var varNames = new HashSet<string>();
             var versionElements = new List<XElement>();
             foreach (var pkg in Packages)

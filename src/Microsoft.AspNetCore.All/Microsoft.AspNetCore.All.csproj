@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <Import Project="..\..\build\common.props" />
   <Import Project="$(DotNetRestoreSourcePropsPath)" Condition="'$(DotNetRestoreSourcePropsPath)' != ''"/>
 
   <PropertyGroup>
@@ -15,6 +14,7 @@
     </RestoreSources>
 
     <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <PackageTags>aspnetcore</PackageTags>
     <Description>Microsoft.AspNetCore.All</Description>

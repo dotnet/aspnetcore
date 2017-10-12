@@ -26,7 +26,10 @@ namespace RepoTasks
             Directory.CreateDirectory(Path.GetDirectoryName(OutputPath));
 
             var sources = new XElement("DotNetRestoreSources");
-            var doc = new XDocument(new XElement("Project", new XElement("PropertyGroup", sources)));
+            var propertyGroup = new XElement("PropertyGroup", sources);
+            var doc = new XDocument(new XElement("Project", propertyGroup));
+
+            propertyGroup.Add(new XElement("MSBuildAllProjects", "$(MSBuildAllProjects);$(MSBuildThisFileFullPath)"));
 
             var sb = new StringBuilder();
 

@@ -123,7 +123,7 @@
   <!-- ASP.NET Core Tools feed -->
   <PropertyGroup>
     <AspNetCoreToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json</AspNetCoreToolsFeed>
-    <InternalAspNetCoreSdkPackageVersion>2.0.2-beta-15522</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.0.2-rc1-15526</InternalAspNetCoreSdkPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -270,7 +270,7 @@
       <NoWarn>KRB2004</NoWarn>
     </ExternalDependency>
     <ExternalDependency Include="xunit.extensibility.core" Version="2.2.0" Source="$(DefaultNuGetFeed)" />
-    <ExternalDependency Include="xunit.runner.visualstudio" Version="2.3.0-beta2-build1317" Source="$(DefaultNuGetFeed)" Private="true">
+    <ExternalDependency Include="xunit.runner.visualstudio" Version="2.3.0" Source="$(DefaultNuGetFeed)" Private="true">
       <VariableName>XunitRunnerVisualStudioPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="xunit" Version="2.2.0" Source="$(DefaultNuGetFeed)">

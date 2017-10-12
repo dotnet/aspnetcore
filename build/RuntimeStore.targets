@@ -1,12 +1,6 @@
 <Project>
   <Import Project="common.props" />
 
-  <PropertyGroup Condition=" '$(Version)' == '' ">
-    <VersionPrefix Condition=" '$(VersionPrefix)' == '' ">1.0.0</VersionPrefix>
-    <Version Condition=" '$(VersionSuffix)' != '' ">$(VersionPrefix)-$(VersionSuffix)</Version>
-    <Version Condition=" '$(Version)' == '' ">$(VersionPrefix)</Version>
-  </PropertyGroup>
-
   <PropertyGroup>
     <_DependencyBuildDirectory>$(RepositoryRoot).deps\build\</_DependencyBuildDirectory>
     <_DependencyMirrorDirectory>$(RepositoryRoot).deps\mirror\</_DependencyMirrorDirectory>
@@ -37,6 +31,7 @@
     </ItemGroup>
 
     <Copy SourceFiles="@(AllMetapackageFiles)" DestinationFolder="$(MetapackageWorkDirectory)\%(RecursiveDir)" />
+    <Copy SourceFiles="$(_SrcDirectory)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
 
     <!-- Generate RS.Reference project -->
     <RepoTasks.AddMetapackageReferences
@@ -81,7 +76,7 @@
       OutputPath="$(GeneratedRestoreSourcesPropsPath)" />
 
     <PropertyGroup>
-      <_RsManifestProps>MicrosoftAspNetCoreAllPackageVersion=$(Version)</_RsManifestProps>
+      <_RsManifestProps>MicrosoftAspNetCoreAllPackageVersion=$(PackageVersion)</_RsManifestProps>
       <_RsManifestProps>$(_RsManifestProps);DotNetRestoreSourcesPropsPath=$(GeneratedRestoreSourcesPropsPath)</_RsManifestProps>
     </PropertyGroup>
   </Target>
@@ -144,8 +139,8 @@
 
   <Target Name="PackRuntimeStore" DependsOnTargets="_ResolveRuntimeStoreRID">
     <PropertyGroup>
-      <OutputZip>$(ArtifactsDir)aspnetcore-store-$(Version)-$(RuntimeStoreRID).zip</OutputZip>
-      <OutputSymbolZip>$(ArtifactsDir)aspnetcore-symbols-$(Version)-$(RuntimeStoreRID).zip</OutputSymbolZip>
+      <OutputZip>$(ArtifactsDir)aspnetcore-store-$(PackageVersion)-$(RuntimeStoreRID).zip</OutputZip>
+      <OutputSymbolZip>$(ArtifactsDir)aspnetcore-symbols-$(PackageVersion)-$(RuntimeStoreRID).zip</OutputSymbolZip>
     </PropertyGroup>
 
     <ItemGroup>
@@ -162,7 +157,7 @@
       NewManifests="@(RuntimeStoreManifestFiles)"
       RuntimeStoreFiles="@(RuntimeStoreFiles)"
       RuntimeStoreSymbolFiles="@(RuntimeStoreSymbolFiles)"
-      ManifestDestination="$(ArtifactsDir)aspnetcore-store-$(Version)-$(RuntimeStoreRID).xml"
+      ManifestDestination="$(ArtifactsDir)aspnetcore-store-$(PackageVersion)-$(RuntimeStoreRID).xml"
       StoreDestination="$(_StoreZipDirectory)store\"
       SymbolsDestination="$(_SymbolsZipDirectory)"/>
 
@@ -181,7 +176,7 @@
 
   <Target Name="CreateCommonManifest" DependsOnTargets="_PrepareRuntimeStoreBuildAssets">
     <PropertyGroup>
-      <CommonManifestFileName>aspnetcore-store-$(Version)-common.xml</CommonManifestFileName>
+      <CommonManifestFileName>aspnetcore-store-$(PackageVersion)-common.xml</CommonManifestFileName>
     </PropertyGroup>
 
     <!-- Trim packages guaranteed to be in the runtime but isn't included in our runtime store -->
@@ -210,7 +205,7 @@
     <!-- Create a consolidated manifest and place in metapackage -->
     <RepoTasks.ConsolidateManifests
       Manifests="@(ManifestFiles)"
-      ManifestDestination="$(_WorkRoot)\build\aspnetcore-store-$(Version).xml"/>
+      ManifestDestination="$(_WorkRoot)\build\aspnetcore-store-$(PackageVersion).xml"/>
 
     <ItemGroup>
       <ArchiveFiles Include="$(_WorkRoot)**\*" />

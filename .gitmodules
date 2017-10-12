@@ -166,3 +166,7 @@
 	path = modules/Testing
 	url = https://github.com/aspnet/Testing.git
 	branch = patch/2.0.1
+[submodule "modules/Templating"]
+	path = modules/Templating
+	url = https://github.com/aspnet/Templating.git
+	branch = rel/2.0.3

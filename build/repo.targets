@@ -2,6 +2,7 @@
   <Import Project="RepositoryBuild.targets" />
   <Import Project="RuntimeStore.targets" />
   <Import Project="PackageArchive.targets" />
+  <Import Project="Templating.targets" />
   <Import Project="push.targets" />
 
   <PropertyGroup>
@@ -22,7 +23,7 @@
     <CleanDependsOn>$(CleanDependsOn);CleanArtifacts;CleanUniverseArtifacts</CleanDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);RestoreExternalDependencies</RestoreDependsOn>
     <CompileDependsOn>$(CompileDependsOn);BuildRepositories</CompileDependsOn>
-    <PackageDependsOn>$(PackageDependsOn);BuildAllMetapackage;SplitPackages</PackageDependsOn>
+    <PackageDependsOn>$(PackageDependsOn);BuildAllMetapackage;BuildTemplates;SplitPackages</PackageDependsOn>
     <VerifyDependsOn>$(VerifyDependsOn);VerifyCoherentVersions</VerifyDependsOn>
   </PropertyGroup>
 
@@ -44,6 +45,7 @@
     <ItemGroup>
       <_LineupPackages Include="@(ExternalDependency)" />
       <_LineupPackages Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition=" '%(ArtifactInfo.ArtifactType)' == 'NuGetPackage' " />
+      <_LineupPackages Include="Microsoft.AspNetCore.All" Version="$(PackageVersion)" />
 
       <_LineupSources Include="$(_DependencyPackagesDirectory)" Condition="'$(_DependencyPackagesDirectory)' != '' AND Exists('$(_DependencyPackagesDirectory)')" />
       <_LineupSources Include="$(BuildDir)" />
