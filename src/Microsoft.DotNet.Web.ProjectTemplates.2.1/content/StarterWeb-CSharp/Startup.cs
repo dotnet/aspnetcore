@@ -22,9 +22,9 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
 #endif
 #if (IndividualLocalAuth)
-using Company.WebApplication1.Data;
-using Company.WebApplication1.Models;
-using Company.WebApplication1.Services;
+using Company.WebApplication1.Identity.Data;
+using Company.WebApplication1.Identity.Models;
+using Company.WebApplication1.Identity.Services;
 #endif
 
 namespace Company.WebApplication1
@@ -52,6 +52,12 @@ namespace Company.WebApplication1
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
+
+            services.ConfigureApplicationCookie(options => {
+                options.LoginPath = "/tfp/Identity/Account/Login";
+                options.LogoutPath = "/tfp/Identity/Account/Logout";
+                options.AccessDeniedPath = "/tfp/Identity/Account/AccessDenied";
+            });
 
             // Add application services.
             services.AddTransient<IEmailSender, EmailSender>();

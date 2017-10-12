@@ -38,26 +38,7 @@
         {
           "condition": "(!IndividualLocalAuth)",
           "exclude": [
-            "Controllers/ManageController.cs",
-            "Views/Account/ConfirmEmail.cshtml",
-            "Views/Account/ExternalLogin.cshtml",
-            "Views/Account/ForgotPassword.cshtml",
-            "Views/Account/ForgotPasswordConfirmation.cshtml",
-            "Views/Account/Lockout.cshtml",
-            "Views/Account/Login.cshtml",
-            "Views/Account/LoginWith2fa.cshtml",
-            "Views/Account/LoginWithRecoveryCode.cshtml",
-            "Views/Account/Register.cshtml",
-            "Views/Account/ResetPassword.cshtml",
-            "Views/Account/ResetPasswordConfirmation.cshtml",
-            "Views/Manage/**",
-            "Services/**",
-            "Data/**",
-            "Models/AccountViewModels/**",
-            "Models/ManageViewModels/**",
-            "Models/ApplicationUser.cs",
-            "Extensions/EmailSenderExtensions.cs",
-            "Extensions/UrlHelperExtensions.cs"
+            "Areas/Identity/**"
           ]
         },
         {

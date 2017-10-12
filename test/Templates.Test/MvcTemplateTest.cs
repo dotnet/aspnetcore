@@ -49,7 +49,7 @@ namespace Templates.Test
         {
             RunDotNetNew("mvc", targetFrameworkOverride, auth: "Individual");
             
-            AssertDirectoryExists("Extensions", true);
+            AssertDirectoryExists("Extensions", false);
             AssertFileExists("urlRewrite.config", false);
             AssertFileExists("Controllers/AccountController.cs", true);
 
