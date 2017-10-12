@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2.HPack;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.Extensions.Logging;
 
@@ -65,6 +67,15 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
         private static readonly Action<ILogger, string, string, Exception> _responseMinimumDataRateNotSatisfied =
             LoggerMessage.Define<string, string>(LogLevel.Information, 28, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed becuase the response was not read by the client at the specified minimum data rate.");
+
+        private static readonly Action<ILogger, string, Exception> _http2ConnectionError =
+            LoggerMessage.Define<string>(LogLevel.Information, 29, @"Connection id ""{ConnectionId}"": HTTP/2 connection error.");
+
+        private static readonly Action<ILogger, string, Exception> _http2StreamError =
+            LoggerMessage.Define<string>(LogLevel.Information, 30, @"Connection id ""{ConnectionId}"": HTTP/2 stream error.");
+
+        private static readonly Action<ILogger, string, int, Exception> _hpackDecodingError =
+            LoggerMessage.Define<string, int>(LogLevel.Information, 31, @"Connection id ""{ConnectionId}"": HPACK decoding error while decoding headers for stream ID {StreamId}.");
 
         protected readonly ILogger _logger;
 
@@ -166,6 +177,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         public void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier)
         {
             _responseMinimumDataRateNotSatisfied(_logger, connectionId, traceIdentifier, null);
+        }
+
+        public void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex)
+        {
+            _http2ConnectionError(_logger, connectionId, ex);
+        }
+
+        public void Http2StreamError(string connectionId, Http2StreamErrorException ex)
+        {
+            _http2StreamError(_logger, connectionId, ex);
+        }
+
+        public void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
+        {
+            _hpackDecodingError(_logger, connectionId, streamId, ex);
         }
 
         public virtual void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter)

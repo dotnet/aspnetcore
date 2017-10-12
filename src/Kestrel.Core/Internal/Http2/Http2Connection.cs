@@ -166,28 +166,33 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     }
                 }
             }
-            catch (ConnectionAbortedException ex)
+            catch (ConnectionResetException ex)
             {
-                // TODO: log
+                // Don't log ECONNRESET errors when there are no active streams on the connection. Browsers like IE will reset connections regularly.
+                if (_streams.Count > 0)
+                {
+                    Log.RequestProcessingError(ConnectionId, ex);
+                }
+
                 error = ex;
             }
             catch (Http2ConnectionErrorException ex)
             {
-                // TODO: log
+                Log.Http2ConnectionError(ConnectionId, ex);
                 error = ex;
                 errorCode = ex.ErrorCode;
             }
             catch (HPackDecodingException ex)
             {
-                // TODO: log
+                Log.HPackDecodingError(ConnectionId, _currentHeadersStream.StreamId, ex);
                 error = ex;
                 errorCode = Http2ErrorCode.COMPRESSION_ERROR;
             }
             catch (Exception ex)
             {
-                // TODO: log
                 error = ex;
                 errorCode = Http2ErrorCode.INTERNAL_ERROR;
+                throw;
             }
             finally
             {
@@ -242,7 +247,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // a connection error (Section 5.4.1) of type PROTOCOL_ERROR.
             if (_incomingFrame.StreamId != 0 && (_incomingFrame.StreamId & 1) == 0)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdEven(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             switch (_incomingFrame.Type)
@@ -258,7 +263,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 case Http2FrameType.SETTINGS:
                     return ProcessSettingsFrameAsync();
                 case Http2FrameType.PUSH_PROMISE:
-                    throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorPushPromiseReceived, Http2ErrorCode.PROTOCOL_ERROR);
                 case Http2FrameType.PING:
                     return ProcessPingFrameAsync();
                 case Http2FrameType.GOAWAY:
@@ -276,35 +281,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_currentHeadersStream != null)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.StreamId == 0)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.DataHasPadding && _incomingFrame.DataPadLength >= _incomingFrame.Length)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorPaddingTooLong(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             ThrowIfIncomingFrameSentToIdleStream();
 
-            if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream) && !stream.EndStreamReceived)
+            if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
             {
+                if (stream.EndStreamReceived)
+                {
+                    // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1
+                    //
+                    // ...an endpoint that receives any frames after receiving a frame with the
+                    // END_STREAM flag set MUST treat that as a connection error (Section 5.4.1)
+                    // of type STREAM_CLOSED, unless the frame is permitted as described below.
+                    //
+                    // (The allowed frame types for this situation are WINDOW_UPDATE, RST_STREAM and PRIORITY)
+                    throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
+                }
+
                 return stream.OnDataAsync(_incomingFrame.DataPayload,
                     endStream: (_incomingFrame.DataFlags & Http2DataFrameFlags.END_STREAM) == Http2DataFrameFlags.END_STREAM);
             }
 
-            // http://httpwg.org/specs/rfc7540.html#rfc.section.5.1
-            //
-            // ...an endpoint that receives any frames after receiving a frame with the
-            // END_STREAM flag set MUST treat that as a connection error (Section 5.4.1)
-            // of type STREAM_CLOSED, unless the frame is permitted as described below.
-            //
-            // (The allowed frame types for this situation are WINDOW_UPDATE, RST_STREAM and PRIORITY)
-            //
             // If we couldn't find the stream, it was either alive previously but closed with
             // END_STREAM or RST_STREAM, or it was implicitly closed when the client opened
             // a new stream with a higher ID. Per the spec, we should send RST_STREAM if
@@ -316,29 +325,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             //
             // We choose to do that here so we don't have to keep state to track implicitly closed
             // streams vs. streams closed with END_STREAM or RST_STREAM.
-            throw new Http2ConnectionErrorException(Http2ErrorCode.STREAM_CLOSED);
+            throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamClosed(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.STREAM_CLOSED);
         }
 
         private async Task ProcessHeadersFrameAsync<TContext>(IHttpApplication<TContext> application)
         {
             if (_currentHeadersStream != null)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.StreamId == 0)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.HeadersHasPadding && _incomingFrame.HeadersPadLength >= _incomingFrame.Length)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorPaddingTooLong(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.HeadersHasPriority && _incomingFrame.HeadersStreamDependency == _incomingFrame.StreamId)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamSelfDependency(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_streams.TryGetValue(_incomingFrame.StreamId, out var stream))
@@ -352,7 +361,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // (The allowed frame types for this situation are WINDOW_UPDATE, RST_STREAM and PRIORITY)
                 if (stream.EndStreamReceived)
                 {
-                    throw new Http2ConnectionErrorException(Http2ErrorCode.STREAM_CLOSED);
+                    throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
                 }
 
                 // TODO: trailers
@@ -366,7 +375,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 //
                 // If we couldn't find the stream, it was previously closed (either implicitly or with
                 // END_STREAM or RST_STREAM).
-                throw new Http2ConnectionErrorException(Http2ErrorCode.STREAM_CLOSED);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamClosed(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.STREAM_CLOSED);
             }
             else
             {
@@ -400,22 +409,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_currentHeadersStream != null)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.StreamId == 0)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.PriorityStreamDependency == _incomingFrame.StreamId)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamSelfDependency(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.Length != 5)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.FRAME_SIZE_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, 5), Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
             return Task.CompletedTask;
@@ -425,17 +434,17 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_currentHeadersStream != null)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.StreamId == 0)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.Length != 4)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.FRAME_SIZE_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, 4), Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
             ThrowIfIncomingFrameSentToIdleStream();
@@ -452,22 +461,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_currentHeadersStream != null)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.StreamId != 0)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdNotZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if ((_incomingFrame.SettingsFlags & Http2SettingsFrameFlags.ACK) == Http2SettingsFrameFlags.ACK && _incomingFrame.Length != 0)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.FRAME_SIZE_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorSettingsAckLengthNotZero, Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
             if (_incomingFrame.Length % 6 != 0)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.FRAME_SIZE_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorSettingsLengthNotMultipleOfSix, Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
             try
@@ -477,7 +486,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             catch (Http2SettingsParameterOutOfRangeException ex)
             {
-                throw new Http2ConnectionErrorException(ex.Parameter == Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorSettingsParameterOutOfRange(ex.Parameter), ex.Parameter == Http2SettingsParameter.SETTINGS_INITIAL_WINDOW_SIZE
                     ? Http2ErrorCode.FLOW_CONTROL_ERROR
                     : Http2ErrorCode.PROTOCOL_ERROR);
             }
@@ -487,21 +496,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_currentHeadersStream != null)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.StreamId != 0)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdNotZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.Length != 8)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.FRAME_SIZE_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, 8), Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
             if ((_incomingFrame.PingFlags & Http2PingFrameFlags.ACK) == Http2PingFrameFlags.ACK)
             {
+                // TODO: verify that payload is equal to the outgoing PING frame
                 return Task.CompletedTask;
             }
 
@@ -512,12 +522,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_currentHeadersStream != null)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.StreamId != 0)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdNotZero(_incomingFrame.Type), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             Stop();
@@ -528,26 +538,34 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_currentHeadersStream != null)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             if (_incomingFrame.Length != 4)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.FRAME_SIZE_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorUnexpectedFrameLength(_incomingFrame.Type, 4), Http2ErrorCode.FRAME_SIZE_ERROR);
             }
 
             ThrowIfIncomingFrameSentToIdleStream();
 
             if (_incomingFrame.WindowUpdateSizeIncrement == 0)
             {
-                if (_incomingFrame.StreamId == 0)
-                {
-                    throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
-                }
-                else
-                {
-                    return _frameWriter.WriteRstStreamAsync(_incomingFrame.StreamId, Http2ErrorCode.PROTOCOL_ERROR);
-                }
+                // http://httpwg.org/specs/rfc7540.html#rfc.section.6.9
+                // A receiver MUST treat the receipt of a WINDOW_UPDATE
+                // frame with an flow-control window increment of 0 as a
+                // stream error (Section 5.4.2) of type PROTOCOL_ERROR;
+                // errors on the connection flow-control window MUST be
+                // treated as a connection error (Section 5.4.1).
+                //
+                // http://httpwg.org/specs/rfc7540.html#rfc.section.5.4.1
+                // An endpoint can end a connection at any time. In
+                // particular, an endpoint MAY choose to treat a stream
+                // error as a connection error.
+                //
+                // Since server initiated stream resets are not yet properly
+                // implemented and tested, we treat all zero length window
+                // increments as connection errors for now.
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorWindowUpdateIncrementZero, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             return Task.CompletedTask;
@@ -555,9 +573,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         private Task ProcessContinuationFrameAsync<TContext>(IHttpApplication<TContext> application)
         {
-            if (_currentHeadersStream == null || _incomingFrame.StreamId != _currentHeadersStream.StreamId)
+            if (_currentHeadersStream == null)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorContinuationWithNoHeaders, Http2ErrorCode.PROTOCOL_ERROR);
+            }
+
+            if (_incomingFrame.StreamId != _currentHeadersStream.StreamId)
+            {
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             var endHeaders = (_incomingFrame.ContinuationFlags & Http2ContinuationFrameFlags.END_HEADERS) == Http2ContinuationFrameFlags.END_HEADERS;
@@ -569,7 +592,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         {
             if (_currentHeadersStream != null)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorHeadersInterleaved(_incomingFrame.Type, _incomingFrame.StreamId, _currentHeadersStream.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             return Task.CompletedTask;
@@ -589,6 +612,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             }
             catch (Http2StreamErrorException ex)
             {
+                Log.Http2StreamError(ConnectionId, ex);
                 ResetRequestHeaderParsingState();
                 return _frameWriter.WriteRstStreamAsync(ex.StreamId, ex.ErrorCode);
             }
@@ -603,7 +627,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header
                 // fields, unless it is a CONNECT request (Section 8.3). An HTTP request that omits mandatory pseudo-header
                 // fields is malformed (Section 8.1.2.6).
-                throw new Http2StreamErrorException(_currentHeadersStream.StreamId, Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorMissingMandatoryPseudoHeaderFields, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             _streams[_incomingFrame.StreamId] = _currentHeadersStream;
@@ -638,7 +662,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // initial state for all streams.
             if (_incomingFrame.StreamId > _highestOpenedStreamId)
             {
-                throw new Http2ConnectionErrorException(Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamIdle(_incomingFrame.Type, _incomingFrame.StreamId), Http2ErrorCode.PROTOCOL_ERROR);
             }
         }
 
@@ -666,7 +690,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                     // All pseudo-header fields MUST appear in the header block before regular header fields.
                     // Any request or response that contains a pseudo-header field that appears in a header
                     // block after a regular header field MUST be treated as malformed (Section 8.1.2.6).
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorPseudoHeaderFieldAfterRegularHeaders, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 _requestHeaderParsingState = RequestHeaderParsingState.PseudoHeaderFields;
@@ -675,21 +699,21 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 {
                     // Endpoints MUST treat a request or response that contains undefined or invalid pseudo-header
                     // fields as malformed (Section 8.1.2.6).
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorUnknownPseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (headerField == PseudoHeaderFields.Status)
                 {
                     // Pseudo-header fields defined for requests MUST NOT appear in responses; pseudo-header fields
                     // defined for responses MUST NOT appear in requests.
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorResponsePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if ((_parsedPseudoHeaderFields & headerField) == headerField)
                 {
                     // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.3
                     // All HTTP/2 requests MUST include exactly one valid value for the :method, :scheme, and :path pseudo-header fields
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorDuplicatePseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 if (headerField == PseudoHeaderFields.Method)
@@ -706,7 +730,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             if (IsConnectionSpecificHeaderField(name, value))
             {
-                throw new Http2StreamErrorException(_currentHeadersStream.StreamId, Http2ErrorCode.PROTOCOL_ERROR);
+                throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorConnectionSpecificHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
             }
 
             // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2
@@ -715,7 +739,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 if (name[i] >= 65 && name[i] <= 90)
                 {
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, Http2ErrorCode.PROTOCOL_ERROR);
+                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorHeaderNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
                 }
             }
         }

@@ -7,8 +7,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     public class Http2ConnectionErrorException : Exception
     {
-        public Http2ConnectionErrorException(Http2ErrorCode errorCode)
-            : base($"HTTP/2 connection error: {errorCode}")
+        public Http2ConnectionErrorException(string message, Http2ErrorCode errorCode)
+            : base($"HTTP/2 connection error ({errorCode}): {message}")
         {
             ErrorCode = errorCode;
         }

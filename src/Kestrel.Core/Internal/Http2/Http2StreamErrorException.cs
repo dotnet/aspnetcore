@@ -7,8 +7,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     public class Http2StreamErrorException : Exception
     {
-        public Http2StreamErrorException(int streamId, Http2ErrorCode errorCode)
-            : base($"HTTP/2 stream ID {streamId} error: {errorCode}")
+        public Http2StreamErrorException(int streamId, string message, Http2ErrorCode errorCode)
+            : base($"HTTP/2 stream ID {streamId} error ({errorCode}): {message}")
         {
             StreamId = streamId;
             ErrorCode = errorCode;

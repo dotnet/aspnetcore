@@ -1256,6 +1256,370 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHPackErrorIncompleteHeaderBlock()
             => GetString("HPackErrorIncompleteHeaderBlock");
 
+        /// <summary>
+        /// The client sent a {frameType} frame with even stream ID {streamId}.
+        /// </summary>
+        internal static string Http2ErrorStreamIdEven
+        {
+            get => GetString("Http2ErrorStreamIdEven");
+        }
+
+        /// <summary>
+        /// The client sent a {frameType} frame with even stream ID {streamId}.
+        /// </summary>
+        internal static string FormatHttp2ErrorStreamIdEven(object frameType, object streamId)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamIdEven", "frameType", "streamId"), frameType, streamId);
+
+        /// <summary>
+        /// The client sent a A PUSH_PROMISE frame.
+        /// </summary>
+        internal static string Http2ErrorPushPromiseReceived
+        {
+            get => GetString("Http2ErrorPushPromiseReceived");
+        }
+
+        /// <summary>
+        /// The client sent a A PUSH_PROMISE frame.
+        /// </summary>
+        internal static string FormatHttp2ErrorPushPromiseReceived()
+            => GetString("Http2ErrorPushPromiseReceived");
+
+        /// <summary>
+        /// The client sent a {frameType} frame to stream ID {streamId} before signaling of the header block for stream ID {headersStreamId}.
+        /// </summary>
+        internal static string Http2ErrorHeadersInterleaved
+        {
+            get => GetString("Http2ErrorHeadersInterleaved");
+        }
+
+        /// <summary>
+        /// The client sent a {frameType} frame to stream ID {streamId} before signaling of the header block for stream ID {headersStreamId}.
+        /// </summary>
+        internal static string FormatHttp2ErrorHeadersInterleaved(object frameType, object streamId, object headersStreamId)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorHeadersInterleaved", "frameType", "streamId", "headersStreamId"), frameType, streamId, headersStreamId);
+
+        /// <summary>
+        /// The client sent a {frameType} frame with stream ID 0.
+        /// </summary>
+        internal static string Http2ErrorStreamIdZero
+        {
+            get => GetString("Http2ErrorStreamIdZero");
+        }
+
+        /// <summary>
+        /// The client sent a {frameType} frame with stream ID 0.
+        /// </summary>
+        internal static string FormatHttp2ErrorStreamIdZero(object frameType)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamIdZero", "frameType"), frameType);
+
+        /// <summary>
+        /// The client sent a {frameType} frame with stream ID different than 0.
+        /// </summary>
+        internal static string Http2ErrorStreamIdNotZero
+        {
+            get => GetString("Http2ErrorStreamIdNotZero");
+        }
+
+        /// <summary>
+        /// The client sent a {frameType} frame with stream ID different than 0.
+        /// </summary>
+        internal static string FormatHttp2ErrorStreamIdNotZero(object frameType)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamIdNotZero", "frameType"), frameType);
+
+        /// <summary>
+        /// The client sent a {frameType} frame with padding longer than or with the same length as the sent data.
+        /// </summary>
+        internal static string Http2ErrorPaddingTooLong
+        {
+            get => GetString("Http2ErrorPaddingTooLong");
+        }
+
+        /// <summary>
+        /// The client sent a {frameType} frame with padding longer than or with the same length as the sent data.
+        /// </summary>
+        internal static string FormatHttp2ErrorPaddingTooLong(object frameType)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorPaddingTooLong", "frameType"), frameType);
+
+        /// <summary>
+        /// The client sent a {frameType} frame to closed stream ID {streamId}.
+        /// </summary>
+        internal static string Http2ErrorStreamClosed
+        {
+            get => GetString("Http2ErrorStreamClosed");
+        }
+
+        /// <summary>
+        /// The client sent a {frameType} frame to closed stream ID {streamId}.
+        /// </summary>
+        internal static string FormatHttp2ErrorStreamClosed(object frameType, object streamId)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamClosed", "frameType", "streamId"), frameType, streamId);
+
+        /// <summary>
+        /// The client sent a {frameType} frame to stream ID {streamId} which is in the "half-closed (remote) state".
+        /// </summary>
+        internal static string Http2ErrorStreamHalfClosedRemote
+        {
+            get => GetString("Http2ErrorStreamHalfClosedRemote");
+        }
+
+        /// <summary>
+        /// The client sent a {frameType} frame to stream ID {streamId} which is in the "half-closed (remote) state".
+        /// </summary>
+        internal static string FormatHttp2ErrorStreamHalfClosedRemote(object frameType, object streamId)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamHalfClosedRemote", "frameType", "streamId"), frameType, streamId);
+
+        /// <summary>
+        /// The client sent a {frameType} frame with dependency information that would cause stream ID {streamId} to depend on itself.
+        /// </summary>
+        internal static string Http2ErrorStreamSelfDependency
+        {
+            get => GetString("Http2ErrorStreamSelfDependency");
+        }
+
+        /// <summary>
+        /// The client sent a {frameType} frame with dependency information that would cause stream ID {streamId} to depend on itself.
+        /// </summary>
+        internal static string FormatHttp2ErrorStreamSelfDependency(object frameType, object streamId)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamSelfDependency", "frameType", "streamId"), frameType, streamId);
+
+        /// <summary>
+        /// The client sent a {frameType} frame with length different than {expectedLength}.
+        /// </summary>
+        internal static string Http2ErrorUnexpectedFrameLength
+        {
+            get => GetString("Http2ErrorUnexpectedFrameLength");
+        }
+
+        /// <summary>
+        /// The client sent a {frameType} frame with length different than {expectedLength}.
+        /// </summary>
+        internal static string FormatHttp2ErrorUnexpectedFrameLength(object frameType, object expectedLength)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorUnexpectedFrameLength", "frameType", "expectedLength"), frameType, expectedLength);
+
+        /// <summary>
+        /// The client sent a SETTINGS frame with a length that is not a multiple of 6.
+        /// </summary>
+        internal static string Http2ErrorSettingsLengthNotMultipleOfSix
+        {
+            get => GetString("Http2ErrorSettingsLengthNotMultipleOfSix");
+        }
+
+        /// <summary>
+        /// The client sent a SETTINGS frame with a length that is not a multiple of 6.
+        /// </summary>
+        internal static string FormatHttp2ErrorSettingsLengthNotMultipleOfSix()
+            => GetString("Http2ErrorSettingsLengthNotMultipleOfSix");
+
+        /// <summary>
+        /// The client sent a SETTINGS frame with ACK set and length different than 0.
+        /// </summary>
+        internal static string Http2ErrorSettingsAckLengthNotZero
+        {
+            get => GetString("Http2ErrorSettingsAckLengthNotZero");
+        }
+
+        /// <summary>
+        /// The client sent a SETTINGS frame with ACK set and length different than 0.
+        /// </summary>
+        internal static string FormatHttp2ErrorSettingsAckLengthNotZero()
+            => GetString("Http2ErrorSettingsAckLengthNotZero");
+
+        /// <summary>
+        /// The client sent a SETTINGS frame with a value for parameter {parameter} that is out of range.
+        /// </summary>
+        internal static string Http2ErrorSettingsParameterOutOfRange
+        {
+            get => GetString("Http2ErrorSettingsParameterOutOfRange");
+        }
+
+        /// <summary>
+        /// The client sent a SETTINGS frame with a value for parameter {parameter} that is out of range.
+        /// </summary>
+        internal static string FormatHttp2ErrorSettingsParameterOutOfRange(object parameter)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorSettingsParameterOutOfRange", "parameter"), parameter);
+
+        /// <summary>
+        /// The client sent a WINDOW_UPDATE frame with a window size increment of 0.
+        /// </summary>
+        internal static string Http2ErrorWindowUpdateIncrementZero
+        {
+            get => GetString("Http2ErrorWindowUpdateIncrementZero");
+        }
+
+        /// <summary>
+        /// The client sent a WINDOW_UPDATE frame with a window size increment of 0.
+        /// </summary>
+        internal static string FormatHttp2ErrorWindowUpdateIncrementZero()
+            => GetString("Http2ErrorWindowUpdateIncrementZero");
+
+        /// <summary>
+        /// The client sent a CONTINUATION frame not preceded by a HEADERS frame.
+        /// </summary>
+        internal static string Http2ErrorContinuationWithNoHeaders
+        {
+            get => GetString("Http2ErrorContinuationWithNoHeaders");
+        }
+
+        /// <summary>
+        /// The client sent a CONTINUATION frame not preceded by a HEADERS frame.
+        /// </summary>
+        internal static string FormatHttp2ErrorContinuationWithNoHeaders()
+            => GetString("Http2ErrorContinuationWithNoHeaders");
+
+        /// <summary>
+        /// The client sent a {frameType} frame to idle stream ID {streamId}.
+        /// </summary>
+        internal static string Http2ErrorStreamIdle
+        {
+            get => GetString("Http2ErrorStreamIdle");
+        }
+
+        /// <summary>
+        /// The client sent a {frameType} frame to idle stream ID {streamId}.
+        /// </summary>
+        internal static string FormatHttp2ErrorStreamIdle(object frameType, object streamId)
+            => string.Format(CultureInfo.CurrentCulture, GetString("Http2ErrorStreamIdle", "frameType", "streamId"), frameType, streamId);
+
+        /// <summary>
+        /// The client sent trailers containing one or more pseudo-header fields.
+        /// </summary>
+        internal static string Http2ErrorTrailersContainPseudoHeaderField
+        {
+            get => GetString("Http2ErrorTrailersContainPseudoHeaderField");
+        }
+
+        /// <summary>
+        /// The client sent trailers containing one or more pseudo-header fields.
+        /// </summary>
+        internal static string FormatHttp2ErrorTrailersContainPseudoHeaderField()
+            => GetString("Http2ErrorTrailersContainPseudoHeaderField");
+
+        /// <summary>
+        /// The client sent a header with uppercase characters in its name.
+        /// </summary>
+        internal static string Http2ErrorHeaderNameUppercase
+        {
+            get => GetString("Http2ErrorHeaderNameUppercase");
+        }
+
+        /// <summary>
+        /// The client sent a header with uppercase characters in its name.
+        /// </summary>
+        internal static string FormatHttp2ErrorHeaderNameUppercase()
+            => GetString("Http2ErrorHeaderNameUppercase");
+
+        /// <summary>
+        /// The client sent a trailer with uppercase characters in its name.
+        /// </summary>
+        internal static string Http2ErrorTrailerNameUppercase
+        {
+            get => GetString("Http2ErrorTrailerNameUppercase");
+        }
+
+        /// <summary>
+        /// The client sent a trailer with uppercase characters in its name.
+        /// </summary>
+        internal static string FormatHttp2ErrorTrailerNameUppercase()
+            => GetString("Http2ErrorTrailerNameUppercase");
+
+        /// <summary>
+        /// The client sent a HEADERS frame containing trailers without setting the END_STREAM flag.
+        /// </summary>
+        internal static string Http2ErrorHeadersWithTrailersNoEndStream
+        {
+            get => GetString("Http2ErrorHeadersWithTrailersNoEndStream");
+        }
+
+        /// <summary>
+        /// The client sent a HEADERS frame containing trailers without setting the END_STREAM flag.
+        /// </summary>
+        internal static string FormatHttp2ErrorHeadersWithTrailersNoEndStream()
+            => GetString("Http2ErrorHeadersWithTrailersNoEndStream");
+
+        /// <summary>
+        /// Request headers missing one or more mandatory pseudo-header fields.
+        /// </summary>
+        internal static string Http2ErrorMissingMandatoryPseudoHeaderFields
+        {
+            get => GetString("Http2ErrorMissingMandatoryPseudoHeaderFields");
+        }
+
+        /// <summary>
+        /// Request headers missing one or more mandatory pseudo-header fields.
+        /// </summary>
+        internal static string FormatHttp2ErrorMissingMandatoryPseudoHeaderFields()
+            => GetString("Http2ErrorMissingMandatoryPseudoHeaderFields");
+
+        /// <summary>
+        /// Pseudo-header field found in request headers after regular header fields.
+        /// </summary>
+        internal static string Http2ErrorPseudoHeaderFieldAfterRegularHeaders
+        {
+            get => GetString("Http2ErrorPseudoHeaderFieldAfterRegularHeaders");
+        }
+
+        /// <summary>
+        /// Pseudo-header field found in request headers after regular header fields.
+        /// </summary>
+        internal static string FormatHttp2ErrorPseudoHeaderFieldAfterRegularHeaders()
+            => GetString("Http2ErrorPseudoHeaderFieldAfterRegularHeaders");
+
+        /// <summary>
+        /// Request headers contain unknown pseudo-header field.
+        /// </summary>
+        internal static string Http2ErrorUnknownPseudoHeaderField
+        {
+            get => GetString("Http2ErrorUnknownPseudoHeaderField");
+        }
+
+        /// <summary>
+        /// Request headers contain unknown pseudo-header field.
+        /// </summary>
+        internal static string FormatHttp2ErrorUnknownPseudoHeaderField()
+            => GetString("Http2ErrorUnknownPseudoHeaderField");
+
+        /// <summary>
+        /// Request headers contain response-specific pseudo-header field.
+        /// </summary>
+        internal static string Http2ErrorResponsePseudoHeaderField
+        {
+            get => GetString("Http2ErrorResponsePseudoHeaderField");
+        }
+
+        /// <summary>
+        /// Request headers contain response-specific pseudo-header field.
+        /// </summary>
+        internal static string FormatHttp2ErrorResponsePseudoHeaderField()
+            => GetString("Http2ErrorResponsePseudoHeaderField");
+
+        /// <summary>
+        /// Request headers contain duplicate pseudo-header field.
+        /// </summary>
+        internal static string Http2ErrorDuplicatePseudoHeaderField
+        {
+            get => GetString("Http2ErrorDuplicatePseudoHeaderField");
+        }
+
+        /// <summary>
+        /// Request headers contain duplicate pseudo-header field.
+        /// </summary>
+        internal static string FormatHttp2ErrorDuplicatePseudoHeaderField()
+            => GetString("Http2ErrorDuplicatePseudoHeaderField");
+
+        /// <summary>
+        /// Request headers contain connection-specific header field.
+        /// </summary>
+        internal static string Http2ErrorConnectionSpecificHeaderField
+        {
+            get => GetString("Http2ErrorConnectionSpecificHeaderField");
+        }
+
+        /// <summary>
+        /// Request headers contain connection-specific header field.
+        /// </summary>
+        internal static string FormatHttp2ErrorConnectionSpecificHeaderField()
+            => GetString("Http2ErrorConnectionSpecificHeaderField");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
