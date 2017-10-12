@@ -5,6 +5,7 @@
     <EnableApiCheck>false</EnableApiCheck>
     <DotnetCliToolTargetFramework>netcoreapp2.0</DotnetCliToolTargetFramework>
     <RestoreSources>$(DotNetRestoreSources)</RestoreSources>
+    <RestoreSources>$(RestoreSources);https://dotnet.myget.org/F/dotnet-core/api/v3/index.json;</RestoreSources>
     <RestoreSources Condition="'$(DotNetBuildOffline)' != 'true' AND '$(AspNetUniverseBuildOffline)' != 'true' ">
       $(RestoreSources);
       https://dotnet.myget.org/F/aspnet-2-0-2-october2017-patch/api/v3/index.json;

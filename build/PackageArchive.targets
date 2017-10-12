@@ -4,7 +4,7 @@
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
   </PropertyGroup>
 
-  <Target Name="_BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo">
+  <Target Name="_BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo;_ResolveCurrentSharedFrameworkVersion">
     <Error Text="DotNetRestoreSources must be specified" Condition=" '$(DotNetRestoreSources)' == '' " />
     <Error Text="OutputPackageName must be specified" Condition=" '$(OutputPackageName)' == '' " />
     <Error Text="ArchiverPath must be specified" Condition=" '$(ArchiverPath)' == '' " />
@@ -37,7 +37,7 @@
     <MSBuild
       Projects="$(_WorkRoot)Archive.csproj"
       Targets="Restore"
-      Properties="RestorePackagesPath=$(FallbackStagingDir);DotNetRestoreSources=$(DotNetRestoreSources);AspNetUniverseBuildOffline=true" />
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(SharedFrameworkVersion);DotNetRestoreSources=$(DotNetRestoreSources);AspNetUniverseBuildOffline=true" />
 
     <!-- Create the archive -->
     <Exec Command="$(ArchiverPath) -a $(FallbackOutputArchive) $(FallbackStagingDir)" />
