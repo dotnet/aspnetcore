@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.Net.Http.Headers;
 
 namespace Microsoft.AspNetCore.Http.Headers
@@ -258,6 +259,23 @@ namespace Microsoft.AspNetCore.Http.Headers
             set
             {
                 Headers.Set(HeaderNames.Range, value);
+            }
+        }
+
+        public Uri Referer
+        {
+            get
+            {
+                Uri uri;
+                if (Uri.TryCreate(Headers[HeaderNames.Referer], UriKind.RelativeOrAbsolute, out uri))
+                {
+                    return uri;
+                }
+                return null;
+            }
+            set
+            {
+                Headers.Set(HeaderNames.Referer, value == null ? null : UriHelper.Encode(value));
             }
         }
 
