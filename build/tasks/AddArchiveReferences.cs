@@ -17,6 +17,9 @@ namespace RepoTasks
         public string ReferencePackagePath { get; set; }
 
         [Required]
+        public string MetaPackageVersion { get; set; }
+
+        [Required]
         public bool RemoveTimestamp { get; set; }
 
         [Required]
@@ -52,9 +55,11 @@ namespace RepoTasks
             foreach (var package in archiveArtifacts)
             {
                 var packageName = package.ItemSpec;
-                var packageVersion = buildArtifacts
-                    .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
-                    .PackageInfo.Version.ToString();
+                var packageVersion = string.Equals(packageName, "Microsoft.AspNetCore.All", StringComparison.OrdinalIgnoreCase) ?
+                    MetaPackageVersion :
+                    buildArtifacts
+                        .Single(p => string.Equals(p.PackageInfo.Id, packageName, StringComparison.OrdinalIgnoreCase))
+                        .PackageInfo.Version.ToString();
 
                 if (RemoveTimestamp)
                 {

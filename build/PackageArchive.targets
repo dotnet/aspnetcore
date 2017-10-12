@@ -22,7 +22,8 @@
       BuildArtifacts="@(ArtifactInfo)"
       PackageArtifacts="@(PackageArtifact)"
       ExternalDependencies="@(ExternalDependency)"
-      RemoveTimestamp="$(RemoveTimestamp)" />
+      RemoveTimestamp="$(RemoveTimestamp)"
+      MetapackageVersion="$(MetapackageVersion)" />
 
     <PropertyGroup>
       <FallbackStagingDir>$(_WorkRoot)obj\$(OutputPackageName)</FallbackStagingDir>
@@ -69,10 +70,10 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_BuildFallbackArchive"
-      Properties="DotNetRestoreSources=$(TimestampSource);OutputPackageName=$(TimestampOutputPackageName);RemoveTimestamp=false" />
+      Properties="DotNetRestoreSources=$(TimestampSource);OutputPackageName=$(TimestampOutputPackageName);RemoveTimestamp=false;MetapackageVersion=$(TimeStampVersion)" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_BuildFallbackArchive"
-      Properties="DotNetRestoreSources=$(TimestampFreeSource);OutputPackageName=$(TimestampFreeOutputPackageName);RemoveTimestamp=true" />
+      Properties="DotNetRestoreSources=$(TimestampFreeSource);OutputPackageName=$(TimestampFreeOutputPackageName);RemoveTimestamp=true;MetapackageVersion=$(TimeStampFreeVersion)" />
   </Target>
 </Project>
