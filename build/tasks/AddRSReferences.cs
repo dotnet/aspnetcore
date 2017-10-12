@@ -10,7 +10,7 @@ using RepoTasks.Utilities;
 
 namespace RepoTasks
 {
-    public class AddMetapackageReferences : Task
+    public class AddRSReferences : Task
     {
         [Required]
         public string ReferencePackagePath { get; set; }
@@ -27,8 +27,8 @@ namespace RepoTasks
         public override bool Execute()
         {
             // Parse input
-            var metapackageArtifacts = PackageArtifacts.Where(p => p.GetMetadata("Metapackage") == "true");
-            var externalArtifacts = ExternalDependencies.Where(p => p.GetMetadata("Metapackage") == "true");
+            var runtimeStoreArtifacts = PackageArtifacts.Where(p => p.GetMetadata("RuntimeStore") == "true");
+            var externalArtifacts = ExternalDependencies.Where(p => p.GetMetadata("RuntimeStore") == "true");
             var buildArtifacts = BuildArtifacts.Select(ArtifactInfo.Parse)
                 .OfType<ArtifactInfo.Package>()
                 .Where(p => !p.IsSymbolsArtifact);
@@ -41,9 +41,9 @@ namespace RepoTasks
 
             // Items
             var itemGroupElement = xmlDoc.CreateElement("ItemGroup");
-            Log.LogMessage(MessageImportance.High, $"Metapackage will include the following packages");
+            Log.LogMessage(MessageImportance.High, $"Runtime store will include the following packages");
 
-            foreach (var package in metapackageArtifacts)
+            foreach (var package in runtimeStoreArtifacts)
             {
                 var packageName = package.ItemSpec;
                 var packageVersion = buildArtifacts

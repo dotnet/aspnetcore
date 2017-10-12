@@ -21,7 +21,7 @@ namespace RepoTasks
         public override bool Execute()
         {
             // Parse input
-            var hostingStartupArtifacts = PackageArtifacts.Where(p => p.GetMetadata("Metapackage") == "hostingstartup");
+            var hostingStartupArtifacts = PackageArtifacts.Where(p => p.GetMetadata("HostingStartup") == "true");
             HostingStartupArtifacts = BuildArtifacts.Where(p => hostingStartupArtifacts.Any(h => h.GetMetadata("Identity") == p.GetMetadata("PackageId"))).ToArray();
 
             return true;

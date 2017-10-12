@@ -19,7 +19,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-   <PackageReference Include="Microsoft.AspNetCore.All" Version="$(MicrosoftAspNetCoreAllPackageVersion)" />
+   <PackageReference Include="RS.References" Version="$(PackageVersion)" />
   </ItemGroup>
 
   <Target Name="GetPackageDefinitions" Returns="@(_PackageDefinitions)">
