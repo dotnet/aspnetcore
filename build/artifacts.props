@@ -122,7 +122,7 @@
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Https" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv" Category="ship" Metapackage="true" />
-    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Category="noship" />
+    <PackageArtifact Include="Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Session" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR" Category="noship" />
     <PackageArtifact Include="Microsoft.AspNetCore.SignalR.Client" Category="noship" />
