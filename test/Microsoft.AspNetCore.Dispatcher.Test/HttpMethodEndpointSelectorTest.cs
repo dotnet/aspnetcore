@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Dispatcher
@@ -82,8 +83,13 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         private (EndpointSelectorContext, EndpointSelector) CreateContextAndSelector(string httpMethod, List<Endpoint> endpoints)
         {
+            // Add services to the collection
+            var serviceCollection = new ServiceCollection();
+            serviceCollection.AddLogging();
+
             var httpContext = new DefaultHttpContext();
             httpContext.Request.Method = httpMethod;
+            httpContext.RequestServices = serviceCollection.BuildServiceProvider();
 
             var selector = new HttpMethodEndpointSelector();
             var selectors = new List<EndpointSelector>()

@@ -25,7 +25,6 @@ namespace Microsoft.AspNetCore.Dispatcher
         private bool _selectorsInitialized;
         private readonly Func<object> _selectorInitializer;
 
-
         public MatcherBase()
         {
             _lock = new object();
@@ -137,6 +136,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             if (selectorContext.ShortCircuit != null)
             {
                 context.ShortCircuit = selectorContext.ShortCircuit;
+                Logger.RequestShortCircuitedMatcherBase(context);
                 return;
             }
 
@@ -149,7 +149,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 case 1:
                     context.Endpoint = selectorContext.Endpoints[0];
 
-                    Logger.EndpointMatched(context.Endpoint);
+                    Logger.EndpointMatchedMatcherBase(context.Endpoint);
                     return;
 
                 default:

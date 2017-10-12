@@ -42,14 +42,15 @@ namespace Microsoft.AspNetCore.Dispatcher
             var feature = httpContext.Features.Get<IDispatcherFeature>();
             if (feature.Handler != null)
             {
-                _logger.LogInformation("Executing endpoint {Endpoint}", feature.Endpoint.DisplayName);
+                _logger.ExecutingEndpoint(feature.Endpoint);
+
                 try
                 {
                     await feature.Handler(_next)(httpContext);
                 }
                 finally
                 {
-                    _logger.LogInformation("Executed endpoint {Endpoint}", feature.Endpoint.DisplayName);
+                    _logger.ExecutedEndpoint(feature.Endpoint);
                 }
 
                 return;

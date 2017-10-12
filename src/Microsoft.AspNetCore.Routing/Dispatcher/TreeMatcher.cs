@@ -76,6 +76,7 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
                         await SelectEndpointAsync(context, (Endpoint[])entry.Tag);
                         if (context.ShortCircuit != null)
                         {
+                            Logger.RequestShortCircuited(context);
                             return;
                         }
 
