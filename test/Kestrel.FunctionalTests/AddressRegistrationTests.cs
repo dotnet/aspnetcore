@@ -526,10 +526,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        // https://github.com/dotnet/corefx/issues/24562
-        [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Sockets transport fails to rebind on macOS.")]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Sockets transport fails to rebind on Linux.")]
+        [Fact]
         public async Task CanRebindToEndPoint()
         {
             var port = GetNextPort();
@@ -566,10 +563,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
             }
         }
 
-        // https://github.com/dotnet/corefx/issues/24562
         [ConditionalFact]
-        [OSSkipCondition(OperatingSystems.MacOSX, SkipReason = "Sockets transport fails to rebind on macOS.")]
-        [OSSkipCondition(OperatingSystems.Linux, SkipReason = "Sockets transport fails to rebind on Linux.")]
+        [IPv6SupportedCondition]
         public async Task CanRebindToMultipleEndPoints()
         {
             var port = GetNextPort();
@@ -892,12 +887,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 
             private bool CanBindToPort()
             {
-#if MACOS && SOCKETS
-                // Binding to a port with a Socket, disposing the Socket, and rebinding often fails with
-                // SocketError.AddressAlreadyInUse on macOS. This isn't an issue if binding with libuv second.
-                // https://github.com/dotnet/corefx/issues/24562
-                return false;
-#else
                 try
                 {
                     using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
@@ -910,7 +899,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 {
                     return false;
                 }
-#endif
             }
         }
     }
