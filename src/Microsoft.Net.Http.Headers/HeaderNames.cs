@@ -30,6 +30,8 @@ namespace Microsoft.Net.Http.Headers
         public const string ContentLocation = "Content-Location";
         public const string ContentMD5 = "Content-MD5";
         public const string ContentRange = "Content-Range";
+        public const string ContentSecurityPolicy = "Content-Security-Policy";
+        public const string ContentSecurityPolicyReportOnly = "Content-Security-Policy-Report-Only";
         public const string ContentType = "Content-Type";
         public const string Cookie = "Cookie";
         public const string Date = "Date";
