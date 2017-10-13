@@ -58,7 +58,7 @@
     <Copy SourceFiles="@(AllMetapackageNupkgFile)" DestinationFolder="$(BuildDir)" />
   </Target>
 
-  <Target Name="BuildRSReferencesPackage" DependsOnTargets="ResolveRepoInfo">
+  <Target Name="BuildRSReferencesPackage" DependsOnTargets="ResolveRepoInfo;_PrepareRuntimeStoreBuildAssets">
     <!-- Clear working directory -->
     <RemoveDir Directories="$(_WorkRoot)" />
 
@@ -92,7 +92,7 @@
       <RSReferenceNupkgFile Include="$(RSReferencesWorkDirectory)**\*.nupkg" />
     </ItemGroup>
 
-    <Copy SourceFiles="@(RSReferenceNupkgFile)" DestinationFolder="$(BuildDir)" />
+    <Copy SourceFiles="@(RSReferenceNupkgFile)" DestinationFolder="$(_DependencyBuildDirectory)" />
   </Target>
 
   <Target Name="_PrepareRuntimeStoreBuildAssets">
@@ -124,7 +124,8 @@
 
   <Target Name="BuildRuntimeStore" DependsOnTargets="_ResolveCurrentSharedFrameworkVersion;_ResolveRuntimeStoreRID;_PrepareRuntimeStoreBuildAssets;BuildRSReferencesPackage">
     <!-- Copy and update build assets -->
-    <Copy SourceFiles="$(_TemplatesDirectory)RS.Manifest\RS.Manifest.csproj" DestinationFiles="$(_WorkRoot)RS.Manifest.csproj" />
+    <Copy SourceFiles="$(_TemplatesDirectory)RS.Manifest\RS.Manifest.csproj" DestinationFiles="$(_WorkRoot)RS.Manifest\RS.Manifest.csproj" />
+    <Copy SourceFiles="$(_SrcDirectory)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
 
     <PropertyGroup>
       <__ComposeStoreProps />
@@ -136,7 +137,7 @@
     </PropertyGroup>
 
     <!-- Build runtime store -->
-    <MSBuild Projects="$(_WorkRoot)RS.Manifest.csproj"
+    <MSBuild Projects="$(_WorkRoot)RS.Manifest\RS.Manifest.csproj"
              Targets="ComposeStore"
              Properties="$(_ComposeStoreProps)" />
   </Target>
@@ -218,7 +219,7 @@
       <PackagesToTrim Include="runtime.win-arm64.runtime.native.system.data.sqlclient.sni" />
     </ItemGroup>
 
-    <MSBuild Projects="$(_WorkRoot)RS.Manifest.csproj"
+    <MSBuild Projects="$(_WorkRoot)RS.Manifest\RS.Manifest.csproj"
              Targets="Restore;GetPackageDefinitions"
              Properties="$(_RsManifestProps)" >
       <Output TaskParameter="TargetOutputs" ItemName="_PackageDefinitions" />
