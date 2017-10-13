@@ -12,8 +12,8 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.0.0" Condition="'$(IncludeApplicationInsights)' == 'True'" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="1.0.6" Condition="'$(Framework)' != 'netcoreapp1.1'" />
-    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.3" Condition="'$(Framework)' == 'netcoreapp1.1'" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="1.0.7" Condition="'$(Framework)' != 'netcoreapp1.1'" />
+    <PackageReference Include="Microsoft.AspNetCore" Version="1.1.4" Condition="'$(Framework)' == 'netcoreapp1.1'" />
   </ItemGroup>
 
 </Project>
