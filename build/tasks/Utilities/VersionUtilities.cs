@@ -2,12 +2,20 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using NuGet.Versioning;
 
 namespace RepoTasks.Utilities
 {
     public class VersionUtilities
     {
-        public static string GetNoTimestampReleaseLabel(string releaseLabel)
+        public static string GetTimestampFreeVersion(string packageVersion)
+        {
+            var version = new NuGetVersion(packageVersion);
+            var updatedVersion = new NuGetVersion(version.Version, GetTimestampFreeReleaseLabel(version.Release));
+            return  updatedVersion.ToNormalizedString();
+        }
+
+        public static string GetTimestampFreeReleaseLabel(string releaseLabel)
         {
             if (releaseLabel.StartsWith("rtm-", StringComparison.OrdinalIgnoreCase))
             {

@@ -63,9 +63,7 @@ namespace RepoTasks
 
                 if (RemoveTimestamp)
                 {
-                    var version = new NuGetVersion(packageVersion);
-                    var updatedVersion = new NuGetVersion(version.Version, VersionUtilities.GetNoTimestampReleaseLabel(version.Release));
-                    packageVersion = updatedVersion.ToNormalizedString();
+                    packageVersion = VersionUtilities.GetTimestampFreeVersion(packageVersion);
                 }
 
                 Log.LogMessage(MessageImportance.High, $" - Package: {packageName} Version: {packageVersion}");
@@ -99,9 +97,7 @@ namespace RepoTasks
 
                 if (RemoveTimestamp)
                 {
-                    var version = new NuGetVersion(packageVersion);
-                    var updatedVersion = new NuGetVersion(version.Version, VersionUtilities.GetNoTimestampReleaseLabel(version.Release));
-                    packageVersion = updatedVersion.ToNormalizedString();
+                    packageVersion = VersionUtilities.GetTimestampFreeVersion(packageVersion);
                 }
 
                 Log.LogMessage(MessageImportance.High, $" - Tool: {packageName} Version: {packageVersion}");

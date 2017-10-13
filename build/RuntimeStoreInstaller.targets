@@ -1,0 +1,417 @@
+<Project>
+  <PropertyGroup>
+    <_TemplatesDirectory>$(MSBuildThisFileDirectory)tools\templates\</_TemplatesDirectory>
+    <_DockerDir>$(MSBuildThisFileDirectory)tools\docker\</_DockerDir>
+    <_PackagingDir>$(MSBuildThisFileDirectory)tools\packaging\</_PackagingDir>
+    <_DebToolDir>$(MSBuildThisFileDirectory)tools\dotnet-deb-tool-consumer\</_DebToolDir>
+    <_TimestampRSSource>$(RepositoryRoot).deps\Signed\Store\</_TimestampRSSource>
+    <_TimestampFreeRSSource>$(RepositoryRoot).deps\Signed\Store-TimestampFree\</_TimestampFreeRSSource>
+    <_CoreInstallerSource>$(RepositoryRoot).deps\CoreInstallers\</_CoreInstallerSource>
+    <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
+    <_WorkLayoutDir>$(_WorkRoot).l\</_WorkLayoutDir>
+    <_WorkOutputDir>$(_WorkRoot).o\</_WorkOutputDir>
+    <_DockerRootDirectory>/opt/code/</_DockerRootDirectory>
+
+    <RSInstallerName>aspnetcore-store</RSInstallerName>
+    <HostingInstallerName>dotnet-hosting</HostingInstallerName>
+    <RSDebConfigFile>$(_PackagingDir)store_debian_config.json</RSDebConfigFile>
+    <HostingDebConfigFile>$(_PackagingDir)hosting_debian_config.json</HostingDebConfigFile>
+  </PropertyGroup>
+
+  <Target Name="BuildInstallers" DependsOnTargets="GenerateTargzs;GenerateRpms;GenerateDebs" />
+
+  <Target Name="_EnsureInstallerPrerequisites" DependsOnTargets="_ResolveCurrentSharedFrameworkVersion">
+    <!-- Check Docker server OS -->
+    <Exec Command="docker version -f &quot;{{.Server.Os}}&quot;" ConsoleToMSBuild="true">
+      <Output TaskParameter="ConsoleOutput" PropertyName="DockerHostOS" />
+    </Exec>
+
+    <Error Text="Docker host must be using Linux containers." Condition="'$(DockerHostOS)' != 'linux'"/>
+
+    <!-- Generate timestamp free version -->
+    <RepoTasks.GetTimestampFreeVersion
+      TimestampVersion="$(Version)">
+      <Output TaskParameter="TimestampFreeVersion" ItemName="_TimestampFreeVersion" />
+    </RepoTasks.GetTimestampFreeVersion>
+
+    <PropertyGroup>
+      <!-- Temporary override -->
+      <SharedFrameworkVersion>2.0.3-servicing-25808-01</SharedFrameworkVersion>
+      <CoreFeedPrefix Condition="'CoreFeedPrefix'==''">http://dotnetcli.azureedge.net</CoreFeedPrefix>
+      <RuntimeTargzLink>$(CoreFeedPrefix)/dotnet/Runtime/$(SharedFrameworkVersion)/dotnet-runtime-$(SharedFrameworkVersion)-linux-x64.tar.gz</RuntimeTargzLink>
+    </PropertyGroup>
+    
+    <!-- Save properties for future use -->
+    <PropertyGroup>
+      <TimestampFreeVersion>@(_TimestampFreeVersion)</TimestampFreeVersion>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <_TimestampRSArchive Include="$(_TimestampRSSource)aspnetcore-store-$(Version)-linux-x64.tar.gz"/>
+      <_TimestampFreeRSArchive Include="$(_TimestampFreeRSSource)aspnetcore-store-$(TimestampFreeVersion)-linux-x64.tar.gz"/>
+    </ItemGroup>
+
+    <Error 
+      Text="@(_TimestampRSArchive->Count()) timestamp linux archives found." 
+      Condition="'@(_TimestampRSArchive->Count())' != 1 Or !Exists('@(_TimestampRSArchive)')" />
+    <Error 
+      Text="@(_TimestampFreeRSArchive->Count()) no timestamp linux archives found." 
+      Condition="'@(_TimestampFreeRSArchive->Count())' != 1 Or !Exists('@(_TimestampRSArchive)')" />
+
+    <!-- Save properties for future use -->
+    <PropertyGroup>
+      <TimestampRSArchive>@(_TimestampRSArchive)</TimestampRSArchive>
+      <TimestampFreeRSArchive>@(_TimestampFreeRSArchive)</TimestampFreeRSArchive>
+    </PropertyGroup>
+
+    <!-- Download dotnet installers -->
+    <MakeDir Directories="$(_CoreInstallerSource)" />
+    <Exec Command="curl &quot;$(RuntimeTargzLink)$(CoreFeedSuffix)&quot; -o $(_CoreInstallerSource)dotnet-runtime-$(SharedFrameworkVersion)-linux-x64.tar.gz" />
+  </Target>
+
+  <Target Name="_GenerateTargz">
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+    <MakeDir Directories="$(_WorkRoot)" />
+
+    <!-- Create layout: Aspnet Hosting Bundle -->
+    <Exec Command="tar -xzf $(RSArchive) -C $(_WorkRoot)" />
+    <Exec Command="tar -xzf $(RuntimeArchive) -C $(_WorkRoot)" />
+
+    <!-- Create Aspnet Hosting Bundle tar.gz -->
+    <Exec Command="tar -czvf $(ArtifactsDir)$(HostingArchiveName) ." WorkingDirectory="$(_WorkRoot)"/>
+  </Target>
+
+  <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites">
+    <ItemGroup>
+      <_RuntimeArchive Include="$(_CoreInstallerSource)dotnet-runtime-$(SharedFrameworkVersion)-linux-x64.tar.gz" />
+    </ItemGroup>
+
+    <PropertyGroup>
+      <RuntimeArchive>@(_RuntimeArchive)</RuntimeArchive>
+      <HostingArchiveName>$(HostingInstallerName)-$(Version)-linux-x64.tar.gz</HostingArchiveName>
+      <TimestampFreeHostingArchiveName>$(HostingInstallerName)-$(TimestampFreeVersion)-linux-x64.tar.gz</TimestampFreeHostingArchiveName>
+    </PropertyGroup>
+
+    <!-- Timestamp hosting bundle -->
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GenerateTargz"
+      Properties="RuntimeArchive=$(RuntimeArchive);RSArchive=$(TimestampRSArchive);HostingArchiveName=$(HostingArchiveName)" />
+    <!-- Timestamp free hosting bundle -->
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GenerateTargz"
+      Properties="RuntimeArchive=$(RuntimeArchive);RSArchive=$(TimestampFreeRSArchive);HostingArchiveName=$(TimestampFreeHostingArchiveName)" />
+  </Target>
+
+  <Target Name="_BuildDockerImage">
+    <Exec
+      Command="docker build --build-arg USER_ID=%24(id -u) -t docker-image-$(Image) $(Image)"
+      WorkingDirectory="$(_DockerDir)" />
+  </Target>
+
+  <Target Name="_RemoveDockerImage">
+    <Exec Command="docker rmi docker-image-$(Image)" />
+  </Target>
+
+  <Target Name="_GenerateRpm">
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+    <MakeDir Directories="$(_WorkRoot)" />
+
+    <!-- Create layout: Extract archive if given -->
+    <MakeDir Directories="$(_WorkRoot)package_root\" />
+    <Exec Command="tar -xzf $(RSArchive) -C $(_WorkRoot)package_root\" Condition="'$(RSArchive)'!=''" />
+
+    <!-- Create layout: Place changelog -->
+    <Copy
+      SourceFiles="$(_PackagingDir)changelog"
+      DestinationFiles="$(_WorkRoot)templates/changelog"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <ItemGroup>
+      <ChangelogItems Include="DATE" Replacement="$([System.DateTime]::UtcNow.ToString(ddd MMM dd yyyy))" />
+      <ChangelogItems Include="MAINTAINER_NAME" Replacement="$(MaintainerName)" />
+      <ChangelogItems Include="MAINTAINER_EMAIL" Replacement="$(MaintainerEmail)" />
+      <ChangelogItems Include="PACKAGE_VERSION" Replacement="$(RPMVersion)" />
+      <ChangelogItems Include="PACKAGE_REVISION" Replacement="$(RPMRevision)" />
+    </ItemGroup>
+
+    <!-- Update Date, Maintainer, Version, Revision and Changelog Message -->
+    <RepoTasks.ReplaceInFile Filename="$(_WorkRoot)templates/changelog" Items="@(ChangelogItems)" />
+
+    <PropertyGroup>
+      <RPMMaintainer>$(MaintainerName) &lt;$(MaintainerEmail)&gt;</RPMMaintainer>
+    </PropertyGroup>
+
+    <!-- Run RPM -->
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(_DockerRootDirectory)
+      docker-image-$(Image)
+      fpm
+        --verbose
+        -s dir
+        -t rpm
+        -n $(RPMInstallerPrefix)-$(RPMVersion)
+        -p $(_DockerRootDirectory)artifacts/$(RPMInstallerPrefix)-$(RPMVersion)-$(RPMFileSuffix)
+        -v $(RPMVersion)
+        --iteration $(RPMRevision)
+        -a amd64
+        $(RPMArguments)
+        --rpm-changelog $(_DockerRootDirectory).w/templates/changelog
+        --rpm-summary &quot;$(RPMSummary)&quot;
+        --description &quot;$(RPMDescription)&quot;
+        --maintainer &quot;$(RPMMaintainer)&quot;
+        --vendor &quot;$(RPMVendor)&quot;
+        --license &quot;$(RPMLicense)&quot;
+        --url &quot;$(RPMHomepage)&quot;
+        $(_DockerRootDirectory).w/package_root/=&quot;$(RPMInstallRoot)&quot;" />
+  </Target>
+
+  <Target Name="GenerateRpms" DependsOnTargets="_EnsureInstallerPrerequisites">
+     <PropertyGroup>
+      <Image>rhel.7</Image>
+      <RPMVendor>.NET Foundation</RPMVendor>
+      <RHInstallerInstallRoot>/opt/rh/rh-dotnet20/root/usr/lib64/dotnet/</RHInstallerInstallRoot>
+      <GenericInstallerInstallRoot>/usr/share/dotnet/</GenericInstallerInstallRoot>
+    </PropertyGroup>
+    
+    <!-- Build Docker Image -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
+
+    <!-- Common installer parameters -->
+    <JsonPeek Query="$.short_description" JsonInputPath="$(RSDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_RSInstallerSummary" />
+    </JsonPeek>
+    <JsonPeek Query="$.long_description" JsonInputPath="$(RSDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_RSDescription" />
+    </JsonPeek>
+    <JsonPeek Query="$.license.type" JsonInputPath="$(RSDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_RSLicense" />
+    </JsonPeek>
+    <JsonPeek Query="$.release.package_revision" JsonInputPath="$(RSDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_RSPackageRevision" />
+    </JsonPeek>
+    <JsonPeek Query="$.homepage" JsonInputPath="$(RSDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_RSHomepage" />
+    </JsonPeek>
+    <JsonPeek Query="$.maintainer_name" JsonInputPath="$(RSDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_RSMaintainerName" />
+    </JsonPeek>
+    <JsonPeek Query="$.maintainer_email" JsonInputPath="$(RSDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_RSMaintainerEmail" />
+    </JsonPeek>
+    <JsonPeek Query="$.short_description" JsonInputPath="$(HostingDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_HostingSummary" />
+    </JsonPeek>
+    <JsonPeek Query="$.long_description" JsonInputPath="$(HostingDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_HostingDescription" />
+    </JsonPeek>
+    <JsonPeek Query="$.license.type" JsonInputPath="$(HostingDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_HostingLicense" />
+    </JsonPeek>
+    <JsonPeek Query="$.release.package_revision" JsonInputPath="$(HostingDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_HostingRevision" />
+    </JsonPeek>
+    <JsonPeek Query="$.homepage" JsonInputPath="$(HostingDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_HostingHomepage" />
+    </JsonPeek>
+    <JsonPeek Query="$.maintainer_name" JsonInputPath="$(HostingDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_HostingMaintainerName" />
+    </JsonPeek>
+    <JsonPeek Query="$.maintainer_email" JsonInputPath="$(HostingDebConfigFile)">
+      <Output TaskParameter="Result" ItemName="_HostingMaintainerEmail" />
+    </JsonPeek>
+
+    <ItemGroup>
+      <RHStoreDirectories Include="$(RHInstallerInstallRoot)additionalDeps" />
+      <RHStoreDirectories Include="$(RHInstallerInstallRoot)store" />
+      <GenericStoreDirectories Include="$(GenericInstallerInstallRoot)additionalDeps" />
+      <GenericStoreDirectories Include="$(GenericInstallerInstallRoot)store" />
+      <HostingBundleDependencies Include="$(RSInstallerName)-$(Version)">
+        <Version>$(Version)</Version>
+      </HostingBundleDependencies>
+      <HostingBundleDependencies Include="dotnet-runtime-$(SharedFrameworkVersion)">
+        <Version>$(SharedFrameworkVersion)</Version>
+      </HostingBundleDependencies>
+      <TimestampFreeHostingDependencies Include="$(RSInstallerName)-$(TimestampFreeVersion)">
+        <Version>$(TimestampFreeVersion)</Version>
+      </TimestampFreeHostingDependencies>
+      <TimestampFreeHostingDependencies Include="dotnet-runtime-$(SharedFrameworkVersion)">
+        <Version>$(SharedFrameworkVersion)</Version>
+      </TimestampFreeHostingDependencies>
+    </ItemGroup>
+
+    <PropertyGroup>
+      <HostingArguments>@(HostingBundleDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</HostingArguments>
+      <TimestampFreeHostingArguments>@(TimestampFreeHostingDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</TimestampFreeHostingArguments>
+      <RHRSArguments>@(RHStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RHRSArguments>
+      <GenericRSArguments>@(GenericStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</GenericRSArguments>
+    
+      <CommonArguments>Image=$(Image);RPMVendor=$(RPMVendor)</CommonArguments>
+      <CommonGenericArguments>RPMFileSuffix=rhel.7-x64.rpm;RPMInstallRoot=$(GenericInstallerInstallRoot)</CommonGenericArguments>
+      <CommonRHArguments>RPMFileSuffix=rhel.rh.7-x64.rpm;RPMInstallRoot=$(RHInstallerInstallRoot)</CommonRHArguments>
+
+      <CommonRSArguments>MaintainerName=@(_RSMaintainerName);MaintainerEmail=@(_RSMaintainerEmail)</CommonRSArguments>
+      <CommonRSArguments>$(CommonRSArguments);RPMInstallerPrefix=$(RSInstallerName);RPMRevision=@(_RSPackageRevision)</CommonRSArguments>
+      <CommonRSArguments>$(CommonRSArguments);RPMSummary=@(_RSInstallerSummary);RPMDescription=@(_RSDescription)</CommonRSArguments>
+      <CommonRSArguments>$(CommonRSArguments);RPMLicense=@(_RSLicense);RPMHomepage=@(_RSHomepage)</CommonRSArguments>
+      
+      <CommonHostingArguments>$(CommonArguments);MaintainerName=@(_HostingMaintainerName);MaintainerEmail=@(_HostingMaintainerEmail)</CommonHostingArguments>
+      <CommonHostingArguments>$(CommonHostingArguments);RPMInstallerPrefix=$(HostingInstallerName);RPMRevision=@(_HostingRevision)</CommonHostingArguments>
+      <CommonHostingArguments>$(CommonHostingArguments);RPMSummary=@(_HostingSummary);RPMDescription=@(_HostingDescription)</CommonHostingArguments>
+      <CommonHostingArguments>$(CommonHostingArguments);RPMLicense=@(_HostingLicense);RPMHomepage=@(_HostingHomepage)</CommonHostingArguments>
+
+      <TimestampRSArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonRSArguments)</TimestampRSArguments>
+      <TimestampRSArguments>$(TimestampRSArguments);RSArchive=$(TimestampRSArchive);RPMVersion=$(Version);RPMArguments=$(GenericRSArguments)</TimestampRSArguments>
+      
+      <TimestampFreeRSArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonRSArguments)</TimestampFreeRSArguments>
+      <TimestampFreeRSArguments>$(TimestampFreeRSArguments);RSArchive=$(TimestampFreeRSArchive);RPMVersion=$(TimestampFreeVersion);RPMArguments=$(GenericRSArguments)</TimestampFreeRSArguments>
+      
+      <TimestampHostingArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonHostingArguments)</TimestampHostingArguments>
+      <TimestampHostingArguments>$(TimestampHostingArguments);RPMVersion=$(Version);RPMArguments=$(HostingArguments)</TimestampHostingArguments>
+      
+      <TimestampFreeHostingArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonHostingArguments)</TimestampFreeHostingArguments>
+      <TimestampFreeHostingArguments>$(TimestampFreeHostingArguments);RPMVersion=$(TimestampFreeVersion);RPMArguments=$(TimestampFreeHostingArguments)</TimestampFreeHostingArguments>
+
+      <RHTimestampRSArguments>$(CommonArguments);$(CommonRHArguments);$(CommonRSArguments)</RHTimestampRSArguments>
+      <RHTimestampRSArguments>$(RHTimestampRSArguments);RSArchive=$(TimestampRSArchive);RPMVersion=$(Version);RPMArguments=$(RHRSArguments)</RHTimestampRSArguments>
+      
+      <RHTimestampFreeRSArguments>$(CommonArguments);$(CommonRHArguments);$(CommonRSArguments)</RHTimestampFreeRSArguments>
+      <RHTimestampFreeRSArguments>$(RHTimestampFreeRSArguments);RSArchive=$(TimestampFreeRSArchive);RPMVersion=$(TimestampFreeVersion);RPMArguments=$(RHRSArguments)</RHTimestampFreeRSArguments>
+      
+      <RHTimestampHostingArguments>$(CommonArguments);$(CommonRHArguments);$(CommonHostingArguments)</RHTimestampHostingArguments>
+      <RHTimestampHostingArguments>$(RHTimestampHostingArguments);RPMVersion=$(Version);RPMArguments=$(HostingArguments)</RHTimestampHostingArguments>
+      
+      <RHTimestampFreeHostingArguments>$(CommonArguments);$(CommonRHArguments);$(CommonHostingArguments)</RHTimestampFreeHostingArguments>
+      <RHTimestampFreeHostingArguments>$(RHTimestampFreeHostingArguments);RPMVersion=$(TimestampFreeVersion);RPMArguments=$(TimestampFreeHostingArguments)</RHTimestampFreeHostingArguments>
+    </PropertyGroup>
+
+    <!-- General Timestamp runtime store -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampRSArguments)" />
+    <!-- General Timestamp free runtime store -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampFreeRSArguments)" />
+    <!-- General Timestamp hosting bundle -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampHostingArguments)" />
+    <!-- General Timestamp free hosting bundle -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(TimestampFreeHostingArguments)" />
+    
+    <!-- RH Timestamp runtime store -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampRSArguments)" />
+    <!-- RH Timestamp free runtime store -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampFreeRSArguments)" />
+    <!-- RH Timestamp hosting bundle -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampHostingArguments)" />
+    <!-- RH Timestamp free hosting bundle -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateRpm" Properties="$(RHTimestampFreeHostingArguments)" />
+
+    <!-- Remove Docker Image to save disk space -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_RemoveDockerImage" Properties="Image=$(Image)" />
+  </Target>
+
+  <Target Name="_GenerateDeb">
+    <!-- Create layout: Clear work directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+    <MakeDir Directories="$(_WorkRoot)" />
+
+    <!-- Create layout: Extract archive if given -->
+    <MakeDir Directories="$(_WorkLayoutDir)package_root\" />
+    <Exec Command="tar -xzf $(RSArchive) -C $(_WorkLayoutDir)package_root\" Condition="'$(RSArchive)'!=''" />
+
+    <!-- Create layout: Generate and Place debian_config.json -->
+    <Copy
+      SourceFiles="$(DebConfig)"
+      DestinationFiles="$(_WorkLayoutDir)debian_config.json"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <ItemGroup>
+      <DebConfigItems Include="DOTNET_VERSION" Replacement="$(DotnetVersion)" />
+      <DebConfigItems Include="DEB_VERSION" Replacement="$(DebVersion)" />
+    </ItemGroup>
+
+    <!-- Update versions -->
+    <RepoTasks.ReplaceInFile Filename="$(_WorkLayoutDir)debian_config.json" Items="@(DebConfigItems)" />
+
+    <!-- Build Runtime Store and Hosting Bundle Deb package -->
+    <Exec Command="docker run
+      --rm
+      -v $(RepositoryRoot):$(_DockerRootDirectory)
+      -e DOTNET_SKIP_FIRST_TIME_EXPERIENCE=true
+      -e INSTALLER_NAME=$(DebPrefix)-$(DebVersion)
+      -e INSTALLER_VERSION=$(DebVersion)
+      docker-image-$(Image)
+      ./build.sh /t:RunDebTool"
+      ContinueOnError="WarnAndContinue" />
+
+    <!-- Copy Runtime Store and Hosting Bundle packages to output -->
+    <ItemGroup>
+      <GeneratedDebFiles Include="$(_WorkOutputDir)/*.deb" />
+    </ItemGroup>
+    
+    <Error Text="@(GeneratedDebFiles->Count()) deb installer files generated." Condition="'@(GeneratedDebFiles->Count())' != 1" />
+    
+    <Copy
+      DestinationFiles="$(ArtifactsDir)$(DebPrefix)-$(DebVersion)-$(Image)-x64.deb"
+      SourceFiles="@(GeneratedDebFiles)"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+  </Target>
+
+  <Target Name="_GenerateDebOnPlatform">
+    <PropertyGroup>
+      <CommonRSArguments>Image=$(Image);DebConfig=$(RSDebConfigFile);DebPrefix=$(RSInstallerName)</CommonRSArguments>
+      <CommonHostingArguments>Image=$(Image);DebConfig=$(HostingDebConfigFile);DotnetVersion=$(SharedFrameworkVersion);DebPrefix=$(HostingInstallerName)</CommonHostingArguments>
+    </PropertyGroup>
+  
+    <!-- Build Docker Image -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_BuildDockerImage" Properties="Image=$(Image)" />
+
+    <MSBuild 
+      Projects="$(MSBuildProjectFullPath)" 
+      Targets="_GenerateDeb" 
+      Properties="$(CommonRSArguments);RSArchive=$(TimestampRSArchive);DebVersion=$(Version)" />
+    <MSBuild 
+      Projects="$(MSBuildProjectFullPath)" 
+      Targets="_GenerateDeb" 
+      Properties="$(CommonRSArguments);RSArchive=$(TimestampFreeRSArchive);DebVersion=$(TimestampFreeVersion)" />
+    <MSBuild 
+      Projects="$(MSBuildProjectFullPath)" 
+      Targets="_GenerateDeb" 
+      Properties="$(CommonHostingArguments);DebVersion=$(Version)" />
+    <MSBuild 
+      Projects="$(MSBuildProjectFullPath)" 
+      Targets="_GenerateDeb" 
+      Properties="$(CommonHostingArguments);DebVersion=$(TimestampFreeVersion)" />
+  
+    <!-- Remove Docker Image to save disk space -->
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_RemoveDockerImage" Properties="Image=$(Image)" />
+  </Target>
+
+  <Target Name="GenerateDebs" DependsOnTargets="_EnsureInstallerPrerequisites">
+    <PropertyGroup>
+      <CommonArguments>Version=$(Version);TimestampFreeVersion=$(TimestampFreeVersion)</CommonArguments>
+    </PropertyGroup>
+
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=debian.8" />  
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=ubuntu.14.04" />  
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=ubuntu.16.04" />  
+    <MSBuild Projects="$(MSBuildProjectFullPath)" Targets="_GenerateDebOnPlatform" Properties="$(CommonArguments);Image=ubuntu.16.10" />  
+  </Target>
+
+  <Target Name="RunDebTool">
+    <!-- Install dotnet-deb tool -->
+    <MSBuild Projects="$(_DebToolDir)dotnet-deb-tool-consumer.csproj" Targets="Restore" />
+
+    <!-- Build deb package -->
+    <Exec 
+      Command="dotnet deb-tool -i $(_WorkLayoutDir) -o $(_WorkOutputDir) -n $(INSTALLER_NAME) -v $(INSTALLER_VERSION)"
+      WorkingDirectory="$(_DebToolDir)" />
+  </Target>
+</Project>
