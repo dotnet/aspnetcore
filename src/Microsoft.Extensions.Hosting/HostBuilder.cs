@@ -113,7 +113,7 @@ namespace Microsoft.Extensions.Hosting
             BuildAppConfiguration();
             CreateServiceProvider();
 
-            return new Host(_appServices);
+            return _appServices.GetRequiredService<IHost>();
         }
 
         private void BuildHostConfiguration()
@@ -179,6 +179,7 @@ namespace Microsoft.Extensions.Hosting
             services.AddSingleton(_appConfiguration);
             services.AddSingleton<IApplicationLifetime, ApplicationLifetime>();
             services.AddSingleton<IHostLifetime, ProcessLifetime>();
+            services.AddSingleton<IHost, Host>();
             services.AddOptions();
             services.AddLogging();
             

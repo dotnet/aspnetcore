@@ -500,7 +500,68 @@ namespace Microsoft.Extensions.Hosting
                 var task = host.StopAsync(cts.Token);
                 cts.Cancel();
 
-                Assert.Equal(task, await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(8))));
+                Assert.Equal(task, await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(5))));
+            }
+        }
+
+        [Fact]
+        public async Task HostStopAsyncUsesDefaultTimeoutIfGivenTokenDoesNotFire()
+        {
+            var service = new Mock<IHostedService>();
+            service.Setup(s => s.StopAsync(It.IsAny<CancellationToken>()))
+                .Returns<CancellationToken>(token =>
+                {
+                    return Task.Run(() =>
+                    {
+                        token.WaitHandle.WaitOne();
+                    });
+                });
+
+            using (var host = CreateBuilder()
+                .ConfigureServices((services) =>
+                {
+                    services.Configure<HostOptions>(options => options.ShutdownTimeout = TimeSpan.FromSeconds(0.5));
+                    services.AddSingleton(service.Object);
+                })
+                .Build())
+            {
+                await host.StartAsync();
+
+                var cts = new CancellationTokenSource();
+
+                // Purposefully don't trigger cts
+                var task = host.StopAsync(cts.Token);
+
+                Assert.Equal(task, await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(10))));
+            }
+        }
+
+        [Fact]
+        public async Task WebHostStopAsyncUsesDefaultTimeoutIfNoTokenProvided()
+        {
+            var service = new Mock<IHostedService>();
+            service.Setup(s => s.StopAsync(It.IsAny<CancellationToken>()))
+                .Returns<CancellationToken>(token =>
+                {
+                    return Task.Run(() =>
+                    {
+                        token.WaitHandle.WaitOne();
+                    });
+                });
+
+            using (var host = CreateBuilder()
+                .ConfigureServices((services) =>
+                {
+                    services.Configure<HostOptions>(options => options.ShutdownTimeout = TimeSpan.FromSeconds(0.5));
+                    services.AddSingleton(service.Object);
+                })
+                .Build())
+            {
+                await host.StartAsync();
+
+                var task = host.StopAsync();
+
+                Assert.Equal(task, await Task.WhenAny(task, Task.Delay(TimeSpan.FromSeconds(10))));
             }
         }
 
