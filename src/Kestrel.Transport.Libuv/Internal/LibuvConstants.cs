@@ -1,6 +1,7 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
@@ -13,6 +14,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
         public static readonly int? ECONNRESET = GetECONNRESET();
         public static readonly int? EADDRINUSE = GetEADDRINUSE();
         public static readonly int? ENOTSUP = GetENOTSUP();
+        public static readonly int? EPIPE = GetEPIPE();
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static bool IsConnectionReset(int errno)
+        {
+            return errno == ECONNRESET || errno == EPIPE;
+        }
 
         private static int? GetECONNRESET()
         {
@@ -28,6 +36,16 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             {
                 return -54;
             }
+            return null;
+        }
+
+        private static int? GetEPIPE()
+        {
+            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
+            {
+                return -32;
+            }
+
             return null;
         }
 

@@ -118,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
             else
             {
                 // Log connection resets at a lower (Debug) level.
-                if (status == LibuvConstants.ECONNRESET)
+                if (LibuvConstants.IsConnectionReset(status))
                 {
                     _log.ConnectionReset(_connectionId);
                 }

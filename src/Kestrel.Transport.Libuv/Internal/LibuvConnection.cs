@@ -162,7 +162,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Libuv.Internal
                     handle.Libuv.Check(status, out var uvError);
 
                     // Log connection resets at a lower (Debug) level.
-                    if (status == LibuvConstants.ECONNRESET)
+                    if (LibuvConstants.IsConnectionReset(status))
                     {
                         Log.ConnectionReset(ConnectionId);
                         error = new ConnectionResetException(uvError.Message, uvError);
