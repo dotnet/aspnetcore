@@ -358,13 +358,24 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 // END_STREAM flag set MUST treat that as a connection error (Section 5.4.1)
                 // of type STREAM_CLOSED, unless the frame is permitted as described below.
                 //
-                // (The allowed frame types for this situation are WINDOW_UPDATE, RST_STREAM and PRIORITY)
+                // (The allowed frame types after END_STREAM are WINDOW_UPDATE, RST_STREAM and PRIORITY)
                 if (stream.EndStreamReceived)
                 {
                     throw new Http2ConnectionErrorException(CoreStrings.FormatHttp2ErrorStreamHalfClosedRemote(_incomingFrame.Type, stream.StreamId), Http2ErrorCode.STREAM_CLOSED);
                 }
 
-                // TODO: trailers
+                // This is the last chance for the client to send END_STREAM
+                if ((_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_STREAM) == 0)
+                {
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorHeadersWithTrailersNoEndStream, Http2ErrorCode.PROTOCOL_ERROR);
+                }
+
+                // Since we found an active stream, this HEADERS frame contains trailers
+                _currentHeadersStream = stream;
+                _requestHeaderParsingState = RequestHeaderParsingState.Trailers;
+
+                var endHeaders = (_incomingFrame.HeadersFlags & Http2HeadersFrameFlags.END_HEADERS) == Http2HeadersFrameFlags.END_HEADERS;
+                await DecodeTrailersAsync(endHeaders, _incomingFrame.HeadersPayload);
             }
             else if (_incomingFrame.StreamId <= _highestOpenedStreamId)
             {
@@ -585,7 +596,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             var endHeaders = (_incomingFrame.ContinuationFlags & Http2ContinuationFrameFlags.END_HEADERS) == Http2ContinuationFrameFlags.END_HEADERS;
 
-            return DecodeHeadersAsync(endHeaders, _incomingFrame.Payload);
+            if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+            {
+                return DecodeTrailersAsync(endHeaders, _incomingFrame.Payload);
+            }
+            else
+            {
+                return DecodeHeadersAsync(endHeaders, _incomingFrame.Payload);
+            }
         }
 
         private Task ProcessUnknownFrameAsync()
@@ -615,6 +633,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                 Log.Http2StreamError(ConnectionId, ex);
                 ResetRequestHeaderParsingState();
                 return _frameWriter.WriteRstStreamAsync(ex.StreamId, ex.ErrorCode);
+            }
+
+            return Task.CompletedTask;
+        }
+
+        private Task DecodeTrailersAsync(bool endHeaders, Span<byte> payload)
+        {
+            _hpackDecoder.Decode(payload, endHeaders, handler: this);
+
+            if (endHeaders)
+            {
+                var endStreamTask = _currentHeadersStream.OnDataAsync(Constants.EmptyData, endStream: true);
+                ResetRequestHeaderParsingState();
+                return endStreamTask;
             }
 
             return Task.CompletedTask;
@@ -682,15 +714,18 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             // http://httpwg.org/specs/rfc7540.html#rfc.section.8.1.2.1
             if (IsPseudoHeaderField(name, out var headerField))
             {
-                if (_requestHeaderParsingState == RequestHeaderParsingState.Headers ||
-                    _requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+                if (_requestHeaderParsingState == RequestHeaderParsingState.Headers)
                 {
-                    // Pseudo-header fields MUST NOT appear in trailers.
-                    // ...
                     // All pseudo-header fields MUST appear in the header block before regular header fields.
                     // Any request or response that contains a pseudo-header field that appears in a header
                     // block after a regular header field MUST be treated as malformed (Section 8.1.2.6).
                     throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorPseudoHeaderFieldAfterRegularHeaders, Http2ErrorCode.PROTOCOL_ERROR);
+                }
+
+                if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+                {
+                    // Pseudo-header fields MUST NOT appear in trailers.
+                    throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorTrailersContainPseudoHeaderField, Http2ErrorCode.PROTOCOL_ERROR);
                 }
 
                 _requestHeaderParsingState = RequestHeaderParsingState.PseudoHeaderFields;
@@ -739,7 +774,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
             {
                 if (name[i] >= 65 && name[i] <= 90)
                 {
-                    throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorHeaderNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
+                    if (_requestHeaderParsingState == RequestHeaderParsingState.Trailers)
+                    {
+                        throw new Http2ConnectionErrorException(CoreStrings.Http2ErrorTrailerNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
+                    }
+                    else
+                    {
+                        throw new Http2StreamErrorException(_currentHeadersStream.StreamId, CoreStrings.Http2ErrorHeaderNameUppercase, Http2ErrorCode.PROTOCOL_ERROR);
+                    }
                 }
             }
         }
