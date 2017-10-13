@@ -29,15 +29,19 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         private readonly ForegroundDispatcher _dispatcher;
         private readonly ITextBuffer _textBuffer;
-        private readonly VisualStudioDocumentTrackerFactory _documentTrackerFactory;
+        private readonly VisualStudioDocumentTracker _documentTracker;
         private readonly IEditorOperationsFactoryService _editorOperationsFactory;
         private readonly StringBuilder _indentBuilder = new StringBuilder();
         private BraceIndentationContext _context;
 
+        // Internal for testing
+        internal BraceSmartIndenter()
+        {
+        }
+
         public BraceSmartIndenter(
             ForegroundDispatcher dispatcher,
-            ITextBuffer textBuffer,
-            VisualStudioDocumentTrackerFactory documentTrackerFactory,
+            VisualStudioDocumentTracker documentTracker,
             IEditorOperationsFactoryService editorOperationsFactory)
         {
             if (dispatcher == null)
@@ -45,14 +49,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(dispatcher));
             }
 
-            if (textBuffer == null)
+            if (documentTracker == null)
             {
-                throw new ArgumentNullException(nameof(textBuffer));
-            }
-
-            if (documentTrackerFactory == null)
-            {
-                throw new ArgumentNullException(nameof(documentTrackerFactory));
+                throw new ArgumentNullException(nameof(documentTracker));
             }
 
             if (editorOperationsFactory == null)
@@ -61,9 +60,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
 
             _dispatcher = dispatcher;
-            _textBuffer = textBuffer;
-            _documentTrackerFactory = documentTrackerFactory;
+            _documentTracker = documentTracker;
             _editorOperationsFactory = editorOperationsFactory;
+            _textBuffer = _documentTracker.TextBuffer;
             _textBuffer.Changed += TextBuffer_OnChanged;
             _textBuffer.PostChanged += TextBuffer_OnPostChanged;
         }
@@ -95,16 +94,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return;
             }
 
-            var documentTracker = _documentTrackerFactory.GetTracker(_textBuffer);
-
-            // Extra hardening, this should never be null.
-            if (documentTracker == null)
-            {
-                return;
-            }
-
             var newText = changeInformation.newText;
-            if (TryCreateIndentationContext(changeInformation.firstChange.NewPosition, newText.Length, newText, documentTracker, out var context))
+            if (TryCreateIndentationContext(changeInformation.firstChange.NewPosition, newText.Length, newText, _documentTracker, out var context))
             {
                 _context = context;
             }

@@ -5,7 +5,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Razor.Extensions;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
@@ -14,63 +16,32 @@ using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Test;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
-using Microsoft.VisualStudio.Text.Operations;
 using Moq;
 using Xunit;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
-    public class VisualStudioRazorParserTest : ForegroundDispatcherTestBase
+    public class DefaultVisualStudioRazorParserIntegrationTest : ForegroundDispatcherTestBase
     {
         private const string TestLinePragmaFileName = "C:\\This\\Path\\Is\\Just\\For\\Line\\Pragmas.cshtml";
+        private const string TestProjectPath = "C:\\This\\Path\\Is\\Just\\For\\Project.csproj";
 
-        [Fact]
-        public void ConstructorRequiresNonNullPhysicalPath()
-        {
-            Assert.Throws<ArgumentException>("filePath", 
-                () => new VisualStudioRazorParser(
-                    Dispatcher, 
-                    new TestTextBuffer(null), 
-                    CreateTemplateEngine(), 
-                    null,
-                    new DefaultErrorReporter(),
-                    new TestCompletionBroker(), 
-                    new Mock<VisualStudioDocumentTrackerFactory>().Object,
-                    new Mock<IEditorOperationsFactoryService>().Object));
-        }
-
-        [Fact]
-        public void ConstructorRequiresNonEmptyPhysicalPath()
-        {
-            Assert.Throws<ArgumentException>("filePath", 
-                () => new VisualStudioRazorParser(
-                    Dispatcher, 
-                    new TestTextBuffer(null), 
-                    CreateTemplateEngine(), 
-                    string.Empty, 
-                    new DefaultErrorReporter(),
-                    new TestCompletionBroker(),
-                    new Mock<VisualStudioDocumentTrackerFactory>().Object,
-                    new Mock<IEditorOperationsFactoryService>().Object));
-        }
-
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void BufferChangeStartsFullReparseIfChangeOverlapsMultipleSpans()
+        [ForegroundFact]
+        public void BufferChangeStartsFullReparseIfChangeOverlapsMultipleSpans()
         {
             // Arrange
             var original = new StringTextSnapshot("Foo @bar Baz");
             var testBuffer = new TestTextBuffer(original);
-            using (var parser = new VisualStudioRazorParser(
-                Dispatcher, 
-                testBuffer, 
-                CreateTemplateEngine(), 
-                TestLinePragmaFileName, 
+            var documentTracker = CreateDocumentTracker(testBuffer);
+            using (var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                documentTracker,
+                CreateTemplateEngineFactory(),
                 new DefaultErrorReporter(),
                 new TestCompletionBroker(),
-                new Mock<VisualStudioDocumentTrackerFactory>().Object,
-                new Mock<IEditorOperationsFactoryService>().Object))
+                Enumerable.Empty<IContextChangedListener>()))
             {
-                parser.IdleDelay = TimeSpan.FromMilliseconds(100);
+                parser.DocumentTracker_ContextChanged(null, null);
                 var changed = new StringTextSnapshot("Foo @bap Daz");
                 var edit = new TestEdit(7, 3, original, 3, changed, "p D");
                 var parseComplete = new ManualResetEventSlim();
@@ -98,8 +69,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void AwaitPeriodInsertionAcceptedProvisionally()
+        [ForegroundFact]
+        public async Task AwaitPeriodInsertionAcceptedProvisionally()
         {
             // Arrange
             var original = new StringTextSnapshot("foo @await Html baz");
@@ -111,7 +82,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 manager.InitializeWithDocument(edit.OldSnapshot);
 
                 // Act
-                manager.ApplyEditAndWaitForReparse(edit);
+                await manager.ApplyEditAndWaitForReparseAsync(edit);
 
                 // Assert
                 Assert.Equal(2, manager.ParseCount);
@@ -124,8 +95,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionAcceptsDotlessCommitInsertionsInStatementBlockAfterIdentifiers()
+        [ForegroundFact]
+        public void ImplicitExpressionAcceptsDotlessCommitInsertionsInStatementBlockAfterIdentifiers()
         {
             var factory = new SpanFactory();
             var changed = new StringTextSnapshot("@{" + Environment.NewLine
@@ -183,8 +154,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionAcceptsDotlessCommitInsertionsInStatementBlock()
+        [ForegroundFact]
+        public void ImplicitExpressionAcceptsDotlessCommitInsertionsInStatementBlock()
         {
             var factory = new SpanFactory();
             var changed = new StringTextSnapshot("@{" + Environment.NewLine
@@ -234,8 +205,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionProvisionallyAcceptsDotlessCommitInsertions()
+        [ForegroundFact]
+        public async Task ImplicitExpressionProvisionallyAcceptsDotlessCommitInsertions()
         {
             var factory = new SpanFactory();
             var changed = new StringTextSnapshot("foo @DateT. baz");
@@ -268,7 +239,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 ApplyAndVerifyPartialChange(edit, "DateTime.");
 
                 // Verify the reparse finally comes
-                manager.WaitForReparse();
+                await manager.WaitForReparseAsync();
 
                 Assert.Equal(2, manager.ParseCount);
                 ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
@@ -280,8 +251,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionProvisionallyAcceptsDotlessCommitInsertionsAfterIdentifiers()
+        [ForegroundFact]
+        public async Task ImplicitExpressionProvisionallyAcceptsDotlessCommitInsertionsAfterIdentifiers()
         {
             var factory = new SpanFactory();
             var changed = new StringTextSnapshot("foo @DateTime. baz");
@@ -320,7 +291,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 ApplyAndVerifyPartialChange(edit, "DateTime.Now.");
 
                 // Verify the reparse eventually happens
-                manager.WaitForReparse();
+                await manager.WaitForReparseAsync();
 
                 Assert.Equal(2, manager.ParseCount);
                 ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
@@ -332,8 +303,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionProvisionallyAcceptsCaseInsensitiveDotlessCommitInsertions_NewRoslynIntegration()
+        [ForegroundFact]
+        public async Task ImplicitExpressionProvisionallyAcceptsCaseInsensitiveDotlessCommitInsertions_NewRoslynIntegration()
         {
             var factory = new SpanFactory();
             var original = new StringTextSnapshot("foo @date baz");
@@ -383,7 +354,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 ApplyAndVerifyPartialChange(() => manager.ApplyEdit(edit), "DateTime.");
 
                 // Verify the reparse eventually happens
-                manager.WaitForReparse();
+                await manager.WaitForReparseAsync();
 
                 Assert.Equal(2, manager.ParseCount);
                 ParserTestBase.EvaluateParseTree(manager.CurrentSyntaxTree.Root, new MarkupBlock(
@@ -395,8 +366,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionRejectsChangeWhichWouldHaveBeenAcceptedIfLastChangeWasProvisionallyAcceptedOnDifferentSpan()
+        [ForegroundFact]
+        public async Task ImplicitExpressionRejectsChangeWhichWouldHaveBeenAcceptedIfLastChangeWasProvisionallyAcceptedOnDifferentSpan()
         {
             // Arrange
             var factory = new SpanFactory();
@@ -407,7 +378,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 manager.InitializeWithDocument(dotTyped.OldSnapshot);
 
                 // Apply the dot change
-                manager.ApplyEditAndWaitForReparse(dotTyped);
+                await manager.ApplyEditAndWaitForReparseAsync(dotTyped);
 
                 // Act (apply the identifier start char change)
                 manager.ApplyEditAndWaitForParse(charTyped);
@@ -432,8 +403,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionAcceptsIdentifierTypedAfterDotIfLastChangeWasProvisionalAcceptanceOfDot()
+        [ForegroundFact]
+        public void ImplicitExpressionAcceptsIdentifierTypedAfterDotIfLastChangeWasProvisionalAcceptanceOfDot()
         {
             // Arrange
             var factory = new SpanFactory();
@@ -463,106 +434,115 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfIfKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfIfKeywordTyped()
         {
             RunTypeKeywordTest("if");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfDoKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfDoKeywordTyped()
         {
             RunTypeKeywordTest("do");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfTryKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfTryKeywordTyped()
         {
             RunTypeKeywordTest("try");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfForKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfForKeywordTyped()
         {
             RunTypeKeywordTest("for");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfForEachKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfForEachKeywordTyped()
         {
             RunTypeKeywordTest("foreach");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfWhileKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfWhileKeywordTyped()
         {
             RunTypeKeywordTest("while");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfSwitchKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfSwitchKeywordTyped()
         {
             RunTypeKeywordTest("switch");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfLockKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfLockKeywordTyped()
         {
             RunTypeKeywordTest("lock");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfUsingKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfUsingKeywordTyped()
         {
             RunTypeKeywordTest("using");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfSectionKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfSectionKeywordTyped()
         {
             RunTypeKeywordTest("section");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfInheritsKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfInheritsKeywordTyped()
         {
             RunTypeKeywordTest("inherits");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfFunctionsKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfFunctionsKeywordTyped()
         {
             RunTypeKeywordTest("functions");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfNamespaceKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfNamespaceKeywordTyped()
         {
             RunTypeKeywordTest("namespace");
         }
 
-        // [Fact] Silent skip to avoid warnings. Skipping until we can control the parser more directly.
-        private void ImplicitExpressionCorrectlyTriggersReparseIfClassKeywordTyped()
+        [ForegroundFact]
+        public void ImplicitExpressionCorrectlyTriggersReparseIfClassKeywordTyped()
         {
             RunTypeKeywordTest("class");
         }
 
-        private TestParserManager CreateParserManager(ITextSnapshot originalSnapshot, int idleDelay = 50)
+        private TestParserManager CreateParserManager(ITextSnapshot originalSnapshot)
         {
-            var parser = new VisualStudioRazorParser(
-                Dispatcher, 
-                new TestTextBuffer(originalSnapshot), 
-                CreateTemplateEngine(), 
-                TestLinePragmaFileName,
+            var textBuffer = new TestTextBuffer(originalSnapshot);
+            var documentTracker = CreateDocumentTracker(textBuffer);
+            var templateEngineFactory = CreateTemplateEngineFactory();
+            var parser = new DefaultVisualStudioRazorParser(
+                Dispatcher,
+                documentTracker,
+                templateEngineFactory,
                 new DefaultErrorReporter(),
-                new TestCompletionBroker(), 
-                new Mock<VisualStudioDocumentTrackerFactory>().Object,                
-                new Mock<IEditorOperationsFactoryService>().Object);
+                new TestCompletionBroker(),
+                Enumerable.Empty<IContextChangedListener>())
+            {
+                // We block idle work with the below reset events. Therefore, make tests fast and have the idle timer fire as soon as possible.
+                IdleDelay = TimeSpan.FromMilliseconds(1),
+                NotifyForegroundIdleStart = new ManualResetEventSlim(),
+                BlockBackgroundIdleWork = new ManualResetEventSlim(),
+            };
+
+            parser.StartParser();
 
             return new TestParserManager(parser);
         }
 
-        private static RazorTemplateEngine CreateTemplateEngine(
+        private static RazorTemplateEngineFactoryService CreateTemplateEngineFactory(
             string path = TestLinePragmaFileName,
             IEnumerable<TagHelperDescriptor> tagHelpers = null)
         {
@@ -585,7 +565,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
             var templateEngine = new RazorTemplateEngine(engine, project);
             templateEngine.Options.DefaultImports = RazorSourceDocument.Create("@addTagHelper *, Test", "_TestImports.cshtml");
-            return templateEngine;
+
+            var templateEngineFactory = Mock.Of<RazorTemplateEngineFactoryService>(
+                service => service.Create(It.IsAny<string>(), It.IsAny<Action<IRazorEngineBuilder>>()) == templateEngine);
+
+            return templateEngineFactory;
         }
 
         private void RunTypeKeywordTest(string keyword)
@@ -619,10 +603,24 @@ namespace Microsoft.VisualStudio.Editor.Razor
             else
             {
 #endif
-                Assert.True(withTimeout((int)TimeSpan.FromSeconds(1).TotalMilliseconds), "Timeout expired!");
+                Assert.True(withTimeout((int)TimeSpan.FromSeconds(5).TotalMilliseconds), "Timeout expired!");
 #if DEBUG
             }
 #endif
+        }
+
+        private static VisualStudioDocumentTracker CreateDocumentTracker(Text.ITextBuffer textBuffer)
+        {
+            var focusedTextView = Mock.Of<ITextView>(textView => textView.HasAggregateFocus == true);
+            var documentTracker = Mock.Of<VisualStudioDocumentTracker>(tracker =>
+                tracker.TextBuffer == textBuffer &&
+                tracker.TextViews == new[] { focusedTextView } &&
+                tracker.FilePath == TestLinePragmaFileName &&
+                tracker.ProjectPath == TestProjectPath &&
+                tracker.IsSupportedProject == true);
+            textBuffer.Properties.AddProperty(typeof(VisualStudioDocumentTracker), documentTracker);
+
+            return documentTracker;
         }
 
         private class TestParserManager : IDisposable
@@ -632,22 +630,22 @@ namespace Microsoft.VisualStudio.Editor.Razor
             private readonly ManualResetEventSlim _parserComplete;
             private readonly ManualResetEventSlim _reparseComplete;
             private readonly TestTextBuffer _testBuffer;
-            private readonly VisualStudioRazorParser _parser;
+            private readonly DefaultVisualStudioRazorParser _parser;
 
-            public TestParserManager(VisualStudioRazorParser parser)
+            public TestParserManager(DefaultVisualStudioRazorParser parser)
             {
                 _parserComplete = new ManualResetEventSlim();
                 _reparseComplete = new ManualResetEventSlim();
-                _testBuffer = (TestTextBuffer)parser._textBuffer;
+
+                _testBuffer = (TestTextBuffer)parser.TextBuffer;
                 ParseCount = 0;
 
-                // Change idle delay to be huge in order to enable us to take control of when idle methods fire.
-                parser.IdleDelay = TimeSpan.FromMinutes(2);
                 _parser = parser;
                 parser.DocumentStructureChanged += (sender, args) =>
                 {
+                    CurrentSyntaxTree = args.CodeDocument.GetSyntaxTree();
+
                     Interlocked.Increment(ref ParseCount);
-                    _parserComplete.Set();
 
                     if (args.SourceChange == null)
                     {
@@ -655,7 +653,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                         _reparseComplete.Set();
                     }
 
-                    CurrentSyntaxTree = args.CodeDocument.GetSyntaxTree();
+                    _parserComplete.Set();
                 };
             }
 
@@ -680,10 +678,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 WaitForParse();
             }
 
-            public void ApplyEditAndWaitForReparse(TestEdit edit)
+            public async Task ApplyEditAndWaitForReparseAsync(TestEdit edit)
             {
                 ApplyEdit(edit);
-                WaitForReparse();
+                await WaitForReparseAsync();
             }
 
             public void WaitForParse()
@@ -692,17 +690,26 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 _parserComplete.Reset();
             }
 
-            public void WaitForReparse()
+            public async Task WaitForReparseAsync()
             {
-                Assert.True(_parser._idleTimer != null, "Expected the parser to be waiting for an idle invocation but it was not.");
+                Assert.True(_parser._idleTimer != null);
 
-                _parser.StopIdleTimer();
-                _parser.IdleDelay = TimeSpan.FromMilliseconds(50);
-                _parser.StartIdleTimer();
-                DoWithTimeoutIfNotDebugging(_reparseComplete.Wait);
-                _reparseComplete.Reset();
+                // Allow background idle work to continue
+                _parser.BlockBackgroundIdleWork.Set();
+
+                // Get off of the foreground thread so we can wait for the idle timer to fire
+                await Task.Run(() =>
+                {
+                    DoWithTimeoutIfNotDebugging(_parser.NotifyForegroundIdleStart.Wait);
+                });
+
                 Assert.Null(_parser._idleTimer);
-                _parser.IdleDelay = TimeSpan.FromMinutes(2);
+
+                DoWithTimeoutIfNotDebugging(_reparseComplete.Wait);
+
+                _reparseComplete.Reset();
+                _parser.BlockBackgroundIdleWork.Reset();
+                _parser.NotifyForegroundIdleStart.Reset();
             }
 
             public void Dispose()

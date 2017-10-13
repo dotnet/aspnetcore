@@ -17,7 +17,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         {
             // Arrange
             var expectedCodeDocument = TestRazorCodeDocument.Create("Hello World");
-            var parser = new VisualStudioRazorParser(expectedCodeDocument);
+            var parser = new DefaultVisualStudioRazorParser(expectedCodeDocument);
             var properties = new PropertyCollection();
             properties.AddProperty(typeof(VisualStudioRazorParser), parser);
             var textBuffer = new Mock<ITextBuffer>();
@@ -60,7 +60,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             // Arrange
             var properties = new PropertyCollection();
             var expectedCodeDocument = TestRazorCodeDocument.Create("Hello World");
-            var parser = new VisualStudioRazorParser(expectedCodeDocument);
+            var parser = new DefaultVisualStudioRazorParser(expectedCodeDocument);
             properties.AddProperty(typeof(VisualStudioRazorParser), parser);
             var unexpectedCodeDocument = TestRazorCodeDocument.Create("Unexpected");
             var legacyParser = new RazorEditorParser(unexpectedCodeDocument);

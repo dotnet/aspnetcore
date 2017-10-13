@@ -3,10 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
@@ -19,12 +15,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 {
     internal class DefaultVisualStudioDocumentTracker : VisualStudioDocumentTracker
     {
+        private readonly string _filePath;
         private readonly ProjectSnapshotManager _projectManager;
         private readonly TextBufferProjectService _projectService;
         private readonly ITextBuffer _textBuffer;
         private readonly List<ITextView> _textViews;
         private readonly Workspace _workspace;
-
         private bool _isSupportedProject;
         private ProjectSnapshot _project;
         private string _projectPath;
@@ -32,11 +28,17 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public override event EventHandler ContextChanged;
 
         public DefaultVisualStudioDocumentTracker(
+            string filePath,
             ProjectSnapshotManager projectManager,
             TextBufferProjectService projectService,
             Workspace workspace,
             ITextBuffer textBuffer)
         {
+            if (string.IsNullOrEmpty(filePath))
+            {
+                throw new ArgumentException(Resources.ArgumentCannotBeNullOrEmpty, nameof(filePath));
+            }
+
             if (projectManager == null)
             {
                 throw new ArgumentNullException(nameof(projectManager));
@@ -57,6 +59,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(textBuffer));
             }
 
+            _filePath = filePath;
             _projectManager = projectManager;
             _projectService = projectService;
             _textBuffer = textBuffer;
@@ -75,9 +78,47 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
 
         public override IReadOnlyList<ITextView> TextViews => _textViews;
 
-        public IList<ITextView> TextViewsInternal => _textViews;
-
         public override Workspace Workspace => _workspace;
+
+        public override string FilePath => _filePath;
+
+        public override string ProjectPath => _projectPath;
+
+        internal void AddTextView(ITextView textView)
+        {
+            if (textView == null)
+            {
+                throw new ArgumentNullException(nameof(textView));
+            }
+
+            if (!_textViews.Contains(textView))
+            {
+                _textViews.Add(textView);
+
+                if (_textViews.Count == 1)
+                {
+                    Subscribe();
+                }
+            }
+        }
+
+        internal void RemoveTextView(ITextView textView)
+        {
+            if (textView == null)
+            {
+                throw new ArgumentNullException(nameof(textView));
+            }
+
+            if (_textViews.Contains(textView))
+            {
+                _textViews.Remove(textView);
+
+                if (_textViews.Count == 0)
+                {
+                    Unsubscribe();
+                }
+            }
+        }
 
         public override ITextView GetFocusedTextView()
         {
@@ -92,7 +133,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             return null;
         }
 
-        public void Subscribe()
+        private void Subscribe()
         {
             // Fundamentally we have a Razor half of the world as as soon as the document is open - and then later 
             // the C# half of the world will be initialized. This code is in general pretty tolerant of 
@@ -126,60 +167,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             OnContextChanged(_project);
         }
 
-        public void Unsubscribe()
+        private void Unsubscribe()
         {
             _projectManager.Changed -= ProjectManager_Changed;
+
+            // Detached from project.
+            _isSupportedProject = false;
+            _project = null;
+            OnContextChanged(project: null);
         }
 
         private void OnContextChanged(ProjectSnapshot project)
         {
             _project = project;
-
-            // Hack: When the context changes we want to replace the template engine held by the parser.
-            // This code isn't super well factored now - it's intended to be limited to one spot until
-            // we have time to a proper redesign.
-
-            if (TextBuffer.Properties.TryGetProperty(typeof(RazorEditorParser), out RazorEditorParser legacyParser) &&
-                legacyParser.TemplateEngine != null &&
-                _projectPath != null)
-            {
-                var factory = _workspace.Services.GetLanguageServices(RazorLanguage.Name).GetRequiredService<CodeAnalysis.Razor.RazorTemplateEngineFactoryService>();
-
-                var existingEngine = legacyParser.TemplateEngine;
-                var projectDirectory = Path.GetDirectoryName(_projectPath);
-                var templateEngine = factory.Create(projectDirectory, builder =>
-                {
-                    var existingVSParserOptions = existingEngine.Engine.Features.FirstOrDefault(
-                        feature => string.Equals(
-                            feature.GetType().Name,
-                            "VisualStudioParserOptionsFeature",
-                            StringComparison.Ordinal));
-
-                    if (existingVSParserOptions == null)
-                    {
-                        Debug.Fail("The VS Parser options should have been set.");
-                    }
-                    else
-                    {
-                        builder.Features.Add(existingVSParserOptions);
-                    }
-
-                    var existingTagHelperFeature = existingEngine.Engine.Features
-                        .OfType<ITagHelperFeature>()
-                        .FirstOrDefault();
-
-                    if (existingTagHelperFeature == null)
-                    {
-                        Debug.Fail("The VS TagHelperFeature should have been set.");
-                    }
-                    else
-                    {
-                        builder.Features.Add(existingTagHelperFeature);
-                    }
-                });
-
-                legacyParser.TemplateEngine = templateEngine;
-            }
 
             var handler = ContextChanged;
             if (handler != null)

@@ -26,7 +26,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var documentTracker = CreateDocumentTracker(() => textBuffer, focusedTextView);
             textBuffer = CreateTextBuffer(initialSnapshot, documentTracker);
             var editorOperationsFactory = CreateOperationsFactoryService();
-            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, textBuffer, CreateDocumentTrackerFactory(() => textBuffer, documentTracker), editorOperationsFactory);
+            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, editorOperationsFactory);
 
             // Act
             textBuffer.ApplyEdit(edit);
@@ -51,7 +51,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var documentTracker = CreateDocumentTracker(() => textBuffer, focusedTextView);
             textBuffer = CreateTextBuffer(initialSnapshot, documentTracker);
             var editorOperationsFactory = CreateOperationsFactoryService();
-            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, textBuffer, CreateDocumentTrackerFactory(() => textBuffer, documentTracker), editorOperationsFactory);
+            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, editorOperationsFactory);
 
             // Act
             textBuffer.ApplyEdit(edit);
@@ -76,7 +76,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var documentTracker = CreateDocumentTracker(() => textBuffer, focusedTextView);
             textBuffer = CreateTextBuffer(initialSnapshot, documentTracker);
             var editorOperationsFactory = CreateOperationsFactoryService();
-            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, textBuffer, CreateDocumentTrackerFactory(() => textBuffer, documentTracker), editorOperationsFactory);
+            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, editorOperationsFactory);
 
             // Act
             textBuffer.ApplyEdit(edit);

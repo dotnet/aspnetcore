@@ -3,7 +3,6 @@
 
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.Text;
-using Microsoft.VisualStudio.Utilities;
 using Moq;
 using Xunit;
 
@@ -12,20 +11,17 @@ namespace Microsoft.VisualStudio.Editor.Razor
     public class DefaultTextBufferCodeDocumentProviderTest
     {
         [Fact]
-        public void TryGetFromBuffer_UsesVisualStudioRazorParserIfAvailable()
+        public void TryGetFromBuffer_SucceedsIfParserFromProviderHasCodeDocument()
         {
             // Arrange
             var expectedCodeDocument = TestRazorCodeDocument.Create("Hello World");
-            var parser = new VisualStudioRazorParser(expectedCodeDocument);
-            var properties = new PropertyCollection();
-            properties.AddProperty(typeof(VisualStudioRazorParser), parser);
-            var textBuffer = new Mock<ITextBuffer>();
-            textBuffer.Setup(buffer => buffer.Properties)
-                .Returns(properties);
-            var provider = new DefaultTextBufferCodeDocumentProvider();
+            VisualStudioRazorParser parser = new DefaultVisualStudioRazorParser(expectedCodeDocument);
+            var parserProvider = Mock.Of<RazorEditorFactoryService>(p => p.TryGetParser(It.IsAny<ITextBuffer>(), out parser) == true);
+            var textBuffer = Mock.Of<ITextBuffer>();
+            var provider = new DefaultTextBufferCodeDocumentProvider(parserProvider);
 
             // Act
-            var result = provider.TryGetFromBuffer(textBuffer.Object, out var codeDocument);
+            var result = provider.TryGetFromBuffer(textBuffer, out var codeDocument);
 
             // Assert
             Assert.True(result);
@@ -33,17 +29,33 @@ namespace Microsoft.VisualStudio.Editor.Razor
         }
 
         [Fact]
+        public void TryGetFromBuffer_FailsIfParserFromProviderMissingCodeDocument()
+        {
+            // Arrange
+            VisualStudioRazorParser parser = new DefaultVisualStudioRazorParser(codeDocument: null);
+            var parserProvider = Mock.Of<RazorEditorFactoryService>(p => p.TryGetParser(It.IsAny<ITextBuffer>(), out parser) == true);
+            var textBuffer = Mock.Of<ITextBuffer>();
+            var provider = new DefaultTextBufferCodeDocumentProvider(parserProvider);
+
+            // Act
+            var result = provider.TryGetFromBuffer(textBuffer, out var codeDocument);
+
+            // Assert
+            Assert.False(result);
+            Assert.Null(codeDocument);
+        }
+
+        [Fact]
         public void TryGetFromBuffer_FailsIfNoParserIsAvailable()
         {
             // Arrange
-            var properties = new PropertyCollection();
-            var textBuffer = new Mock<ITextBuffer>();
-            textBuffer.Setup(buffer => buffer.Properties)
-                .Returns(properties);
-            var provider = new DefaultTextBufferCodeDocumentProvider();
+            VisualStudioRazorParser parser = null;
+            var parserProvider = Mock.Of<RazorEditorFactoryService>(p => p.TryGetParser(It.IsAny<ITextBuffer>(), out parser) == false);
+            var textBuffer = Mock.Of<ITextBuffer>();
+            var provider = new DefaultTextBufferCodeDocumentProvider(parserProvider);
 
             // Act
-            var result = provider.TryGetFromBuffer(textBuffer.Object, out var codeDocument);
+            var result = provider.TryGetFromBuffer(textBuffer, out var codeDocument);
 
             // Assert
             Assert.False(result);

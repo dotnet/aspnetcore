@@ -11,10 +11,13 @@ namespace Microsoft.VisualStudio.Test
     public class TestTextBuffer : ITextBuffer
     {
         private ITextSnapshot _currentSnapshot;
+        private List<EventHandler<TextContentChangedEventArgs>> _attachedChangedEvents;
 
         public TestTextBuffer(ITextSnapshot initialSnapshot)
         {
             _currentSnapshot = initialSnapshot;
+            _attachedChangedEvents = new List<EventHandler<TextContentChangedEventArgs>>();
+
             ReadOnlyRegionsChanged += (sender, args) => { };
             ChangedLowPriority += (sender, args) => { };
             ChangedHighPriority += (sender, args) => { };
@@ -39,7 +42,11 @@ namespace Microsoft.VisualStudio.Test
 
             _currentSnapshot = edits[edits.Length - 1].NewSnapshot;
 
-            Changed?.Invoke(this, args);
+            foreach (var changedEvent in AttachedChangedEvents)
+            {
+                changedEvent.Invoke(this, args);
+            }
+
             PostChanged?.Invoke(null, null);
 
             ReadOnlyRegionsChanged?.Invoke(null, null);
@@ -49,12 +56,27 @@ namespace Microsoft.VisualStudio.Test
             ContentTypeChanged?.Invoke(null, null);
         }
 
+        public IReadOnlyList<EventHandler<TextContentChangedEventArgs>> AttachedChangedEvents => _attachedChangedEvents;
+
         public ITextSnapshot CurrentSnapshot => _currentSnapshot;
 
         public PropertyCollection Properties { get; }
 
         public event EventHandler<SnapshotSpanEventArgs> ReadOnlyRegionsChanged;
-        public event EventHandler<TextContentChangedEventArgs> Changed;
+
+        public event EventHandler<TextContentChangedEventArgs> Changed
+        {
+            add
+            {
+                _attachedChangedEvents.Add(value);
+            }
+            remove
+            {
+                _attachedChangedEvents.Remove(value);
+            }
+        }
+            
+
         public event EventHandler<TextContentChangedEventArgs> ChangedLowPriority;
         public event EventHandler<TextContentChangedEventArgs> ChangedHighPriority;
         public event EventHandler<TextContentChangingEventArgs> Changing;

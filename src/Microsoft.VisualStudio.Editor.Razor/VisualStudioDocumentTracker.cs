@@ -18,6 +18,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         public abstract bool IsSupportedProject { get; }
 
+        public abstract string FilePath { get; }
+
+        public abstract string ProjectPath { get; }
+
         public abstract Project Project { get; }
 
         public abstract Workspace Workspace { get; }

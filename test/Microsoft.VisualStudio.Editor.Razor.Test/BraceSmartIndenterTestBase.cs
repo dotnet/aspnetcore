@@ -24,15 +24,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             return tracker.Object;
         }
 
-        protected static VisualStudioDocumentTrackerFactory CreateDocumentTrackerFactory(Func<ITextBuffer> bufferAccessor, VisualStudioDocumentTracker documentTracker)
-        {
-            var trackerFactory = new Mock<VisualStudioDocumentTrackerFactory>();
-            trackerFactory.Setup(factory => factory.GetTracker(It.IsAny<ITextBuffer>()))
-                .Returns(documentTracker);
-
-            return trackerFactory.Object;
-        }
-
         protected static ITextView CreateFocusedTextView(Func<ITextBuffer> textBufferAccessor = null, ITextCaret caret = null)
         {
             var focusedTextView = new Mock<ITextView>();

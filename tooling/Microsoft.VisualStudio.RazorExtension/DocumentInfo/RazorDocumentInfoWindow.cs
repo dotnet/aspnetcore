@@ -4,6 +4,8 @@
 #if RAZOR_EXTENSION_DEVELOPER_MODE
 
 using System;
+using System.Diagnostics;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows;
 using Microsoft.VisualStudio.ComponentModelHost;
@@ -11,6 +13,7 @@ using Microsoft.VisualStudio.Editor;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Shell.Interop;
+using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using Microsoft.VisualStudio.TextManager.Interop;
 
@@ -20,15 +23,15 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
     internal class RazorDocumentInfoWindow : ToolWindowPane
     {
         private IVsEditorAdaptersFactoryService _adapterFactory;
-        private VisualStudioDocumentTrackerFactory _documentTrackerService;
+        private RazorEditorFactoryService _editorFactoryService;
         private IVsTextManager _textManager;
         private IVsRunningDocumentTable _rdt;
-        
+
         private uint _cookie;
         private ITextView _textView;
         private VisualStudioDocumentTracker _documentTracker;
 
-        public RazorDocumentInfoWindow() 
+        public RazorDocumentInfoWindow()
             : base(null)
         {
             Caption = "Razor Document Info";
@@ -42,11 +45,11 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
 
             var component = (IComponentModel)GetService(typeof(SComponentModel));
             _adapterFactory = component.GetService<IVsEditorAdaptersFactoryService>();
-            _documentTrackerService = component.GetService<VisualStudioDocumentTrackerFactory>();
-            
+            _editorFactoryService = component.GetService<RazorEditorFactoryService>();
+
             _textManager = (IVsTextManager)GetService(typeof(SVsTextManager));
             _rdt = (IVsRunningDocumentTable)GetService(typeof(SVsRunningDocumentTable));
-            
+
             var hr = _rdt.AdviseRunningDocTableEvents(new RdtEvents(this), out uint _cookie);
             ErrorHandler.ThrowOnFailure(hr);
         }
@@ -77,7 +80,13 @@ namespace Microsoft.VisualStudio.RazorExtension.DocumentInfo
                     _documentTracker.ContextChanged -= DocumentTracker_ContextChanged;
                 }
 
-                _documentTracker = _documentTrackerService.GetTracker(textView);
+                var textBuffer = textView.BufferGraph.GetRazorBuffers().FirstOrDefault();
+
+                if (!_editorFactoryService.TryGetDocumentTracker(textBuffer, out _documentTracker))
+                {
+                    return;
+                }
+
                 _documentTracker.ContextChanged += DocumentTracker_ContextChanged;
 
                 ((FrameworkElement)Content).DataContext = new RazorDocumentInfoViewModel(_documentTracker);

@@ -65,9 +65,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var editorOperations = new Mock<IEditorOperations>();
             editorOperations.Setup(operations => operations.MoveToEndOfLine(false));
             var editorOperationsFactory = new Mock<IEditorOperationsFactoryService>();
+            var documentTracker = CreateDocumentTracker(() => Mock.Of<ITextBuffer>(), textView);
             editorOperationsFactory.Setup(factory => factory.GetEditorOperations(textView))
                 .Returns(editorOperations.Object);
-            var smartIndenter = new BraceSmartIndenter(Dispatcher, new Mock<ITextBuffer>().Object, new Mock<VisualStudioDocumentTrackerFactory>().Object, editorOperationsFactory.Object);
+            var smartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, editorOperationsFactory.Object);
 
             // Act
             smartIndenter.TriggerSmartIndent(textView);
@@ -136,12 +137,11 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public void TextBuffer_OnChanged_NoopsIfNoChanges()
         {
             // Arrange
-            var textBuffer = new Mock<ITextBuffer>();
             var editorOperationsFactory = new Mock<IEditorOperationsFactoryService>();
             var changeCollection = new TestTextChangeCollection();
             var textContentChangeArgs = new TestTextContentChangedEventArgs(changeCollection);
-            var documentTrackerFactory = new Mock<VisualStudioDocumentTrackerFactory>();
-            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, textBuffer.Object, documentTrackerFactory.Object, editorOperationsFactory.Object);
+            var documentTracker = CreateDocumentTracker(() => Mock.Of<ITextBuffer>(), Mock.Of<ITextView>());
+            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, editorOperationsFactory.Object);
 
             // Act & Assert
             braceSmartIndenter.TextBuffer_OnChanged(null, textContentChangeArgs);
@@ -155,8 +155,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
             var textBuffer = new TestTextBuffer(initialSnapshot);
             var edit = new TestEdit(0, 0, initialSnapshot, 0, initialSnapshot, string.Empty);
             var editorOperationsFactory = new Mock<IEditorOperationsFactoryService>();
-            var documentTrackerFactory = new Mock<VisualStudioDocumentTrackerFactory>();
-            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, textBuffer, documentTrackerFactory.Object, editorOperationsFactory.Object);
+            var documentTracker = CreateDocumentTracker(() => textBuffer, Mock.Of<ITextView>());
+            var braceSmartIndenter = new BraceSmartIndenter(Dispatcher, documentTracker, editorOperationsFactory.Object);
 
             // Act & Assert
             textBuffer.ApplyEdits(edit, edit);

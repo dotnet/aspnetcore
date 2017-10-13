@@ -1,19 +1,16 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
+using System;
 using System.Linq;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Host;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
+using Moq;
 using Xunit;
 using Mvc1_X = Microsoft.AspNetCore.Mvc.Razor.Extensions.Version1_X;
 using MvcLatest = Microsoft.AspNetCore.Mvc.Razor.Extensions;
-using Microsoft.CodeAnalysis.Razor.ProjectSystem;
-using System.Collections.Generic;
-using Moq;
-using System;
 
 namespace Microsoft.VisualStudio.Editor.Razor
 {
@@ -197,12 +194,12 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private class TestProjectSnapshotManager : DefaultProjectSnapshotManager
         {
-            public TestProjectSnapshotManager(Workspace workspace) 
+            public TestProjectSnapshotManager(Workspace workspace)
                 : base(
-                      Mock.Of<ForegroundDispatcher>(), 
-                      Mock.Of<ErrorReporter>(), 
-                      Mock.Of<ProjectSnapshotWorker>(), 
-                      Enumerable.Empty<ProjectSnapshotChangeTrigger>(), 
+                      Mock.Of<ForegroundDispatcher>(),
+                      Mock.Of<ErrorReporter>(),
+                      Mock.Of<ProjectSnapshotWorker>(),
+                      Enumerable.Empty<ProjectSnapshotChangeTrigger>(),
                       workspace)
             {
             }
