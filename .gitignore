@@ -30,4 +30,3 @@ project.lock.json
 .testPublish/
 global.json
 *.g.targets
-korebuild-lock.txt
