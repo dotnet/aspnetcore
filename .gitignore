@@ -30,7 +30,6 @@ npm-debug.log
 /.build/
 global.json
 *.g.targets
-korebuild-lock.txt
 
 # The templates can't contain their own .gitignore files, because Yeoman has strange default handling for
 # files with that name (https://github.com/npm/npm/issues/1862). So, each template instead has a template_gitignore
