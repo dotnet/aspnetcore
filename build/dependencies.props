@@ -4,7 +4,7 @@
   </PropertyGroup>
 
   <PropertyGroup Label="PackageVersions">
-    <InternalAspNetCoreSdkPackageVersion>2.0.2-beta-15522</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.0.2-rc1-15526</InternalAspNetCoreSdkPackageVersion>
     <MicrosoftAspNetCoreAllPackageVersion>2.0.3-rtm-101</MicrosoftAspNetCoreAllPackageVersion>
     <MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>2.0.1-rtm-101</MicrosoftAspNetCoreAuthenticationCookiesPackageVersion>
     <MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>2.0.1-rtm-101</MicrosoftAspNetCoreAuthenticationJwtBearerPackageVersion>
