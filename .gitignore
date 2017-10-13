@@ -40,4 +40,3 @@ node_modules
 global.json
 BenchmarkDotNet.Artifacts/
 *.g.targets
-korebuild-lock.txt
