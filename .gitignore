@@ -31,6 +31,5 @@ project.lock.json
 samples/**/temp-keys/
 global.json
 
-korebuild-lock.txt
 *.g.targets
 

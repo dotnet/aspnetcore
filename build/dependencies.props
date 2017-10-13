@@ -1,8 +1,8 @@
 ﻿<Project>
   <PropertyGroup>
-    <InternalAspNetCoreSdkPackageVersion>2.0.2-beta-15522</InternalAspNetCoreSdkPackageVersion>
-    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.0.1-rtm-83</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
-    <MicrosoftAspNetCoreHostingPackageVersion>2.0.1-rtm-83</MicrosoftAspNetCoreHostingPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.0.2-rc1-15526</InternalAspNetCoreSdkPackageVersion>
+    <MicrosoftAspNetCoreHostingAbstractionsPackageVersion>2.0.1-rtm-105</MicrosoftAspNetCoreHostingAbstractionsPackageVersion>
+    <MicrosoftAspNetCoreHostingPackageVersion>2.0.1-rtm-105</MicrosoftAspNetCoreHostingPackageVersion>
     <MicrosoftAspNetCoreTestingPackageVersion>2.0.0</MicrosoftAspNetCoreTestingPackageVersion>
     <MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>2.0.0</MicrosoftExtensionsDependencyInjectionAbstractionsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.0.0</MicrosoftExtensionsDependencyInjectionPackageVersion>
