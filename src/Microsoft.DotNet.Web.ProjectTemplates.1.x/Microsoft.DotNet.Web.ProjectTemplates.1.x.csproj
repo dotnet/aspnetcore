@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-  	<!-- Disable producing this package from the rel/2.0.x branch -->
-  	<IsPackable>false</IsPackable>
+    <!-- Disable producing this package from the rel/2.0.x branch -->
+    <IsPackable>false</IsPackable>
 
     <TargetFramework>netcoreapp2.0</TargetFramework>
     <NuspecFile>Microsoft.DotNet.Web.ProjectTemplates.1.x.nuspec</NuspecFile>
