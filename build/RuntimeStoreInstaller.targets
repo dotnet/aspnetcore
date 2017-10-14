@@ -35,8 +35,6 @@
     </RepoTasks.GetTimestampFreeVersion>
 
     <PropertyGroup>
-      <!-- Temporary override -->
-      <SharedFrameworkVersion>2.0.3-servicing-25808-01</SharedFrameworkVersion>
       <CoreFeedPrefix Condition="'CoreFeedPrefix'==''">http://dotnetcli.azureedge.net</CoreFeedPrefix>
       <RuntimeTargzLink>$(CoreFeedPrefix)/dotnet/Runtime/$(SharedFrameworkVersion)/dotnet-runtime-$(SharedFrameworkVersion)-linux-x64.tar.gz</RuntimeTargzLink>
     </PropertyGroup>
