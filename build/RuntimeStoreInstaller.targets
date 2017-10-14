@@ -61,7 +61,9 @@
       <TimestampRSArchive>@(_TimestampRSArchive)</TimestampRSArchive>
       <TimestampFreeRSArchive>@(_TimestampFreeRSArchive)</TimestampFreeRSArchive>
     </PropertyGroup>
+  </Target>
 
+  <Target Name="_DownloadCoreInstallers">
     <!-- Download dotnet installers -->
     <MakeDir Directories="$(_CoreInstallerSource)" />
     <Exec Command="curl &quot;$(RuntimeTargzLink)$(CoreFeedSuffix)&quot; -o $(_CoreInstallerSource)dotnet-runtime-$(SharedFrameworkVersion)-linux-x64.tar.gz" />
@@ -80,7 +82,7 @@
     <Exec Command="tar -czvf $(ArtifactsDir)$(HostingArchiveName) ." WorkingDirectory="$(_WorkRoot)"/>
   </Target>
 
-  <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites">
+  <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadCoreInstallers">
     <ItemGroup>
       <_RuntimeArchive Include="$(_CoreInstallerSource)dotnet-runtime-$(SharedFrameworkVersion)-linux-x64.tar.gz" />
     </ItemGroup>
