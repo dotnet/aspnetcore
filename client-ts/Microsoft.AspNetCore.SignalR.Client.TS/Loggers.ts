@@ -17,7 +17,20 @@ export class ConsoleLogger implements ILogger {
 
     log(logLevel: LogLevel, message: string): void {
         if (logLevel >= this.minimumLogLevel) {
-            console.log(`${LogLevel[logLevel]}: ${message}`);
+            switch (logLevel) {
+                case LogLevel.Error:
+                    console.error(`${LogLevel[logLevel]}: ${message}`);
+                    break;
+                case LogLevel.Warning:
+                    console.warn(`${LogLevel[logLevel]}: ${message}`);
+                    break;
+                case LogLevel.Information:
+                    console.info(`${LogLevel[logLevel]}: ${message}`);
+                    break;
+                default:
+                    console.log(`${LogLevel[logLevel]}: ${message}`);
+                    break;
+            }
         }
     }
 }
