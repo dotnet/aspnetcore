@@ -127,7 +127,7 @@
   <!-- ASP.NET Core Tools feed -->
   <PropertyGroup>
     <AspNetCoreToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json</AspNetCoreToolsFeed>
-    <InternalAspNetCoreSdkPackageVersion>2.0.2-rc1-15526</InternalAspNetCoreSdkPackageVersion>
+    <InternalAspNetCoreSdkPackageVersion>2.0.2-rc1-16001</InternalAspNetCoreSdkPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
