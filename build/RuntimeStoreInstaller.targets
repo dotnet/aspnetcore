@@ -230,12 +230,12 @@
       <RHStoreDirectories Include="$(RHInstallerInstallRoot)store" />
       <GenericStoreDirectories Include="$(GenericInstallerInstallRoot)additionalDeps" />
       <GenericStoreDirectories Include="$(GenericInstallerInstallRoot)store" />
-      <HostingBundleDependencies Include="$(RSInstallerName)-$(Version)">
+      <HostingDependencies Include="$(RSInstallerName)-$(Version)">
         <Version>$(Version)</Version>
-      </HostingBundleDependencies>
-      <HostingBundleDependencies Include="dotnet-runtime-$(SharedFrameworkVersion)">
+      </HostingDependencies>
+      <HostingDependencies Include="dotnet-runtime-$(SharedFrameworkVersion)">
         <Version>$(SharedFrameworkVersion)</Version>
-      </HostingBundleDependencies>
+      </HostingDependencies>
       <TimestampFreeHostingDependencies Include="$(RSInstallerName)-$(TimestampFreeVersion)">
         <Version>$(TimestampFreeVersion)</Version>
       </TimestampFreeHostingDependencies>
@@ -245,8 +245,8 @@
     </ItemGroup>
 
     <PropertyGroup>
-      <HostingArguments>@(HostingBundleDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</HostingArguments>
-      <TimestampFreeHostingArguments>@(TimestampFreeHostingDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</TimestampFreeHostingArguments>
+      <HostingFPMArguments>@(HostingDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</HostingFPMArguments>
+      <TimestampFreeHostingFPMArguments>@(TimestampFreeHostingDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</TimestampFreeHostingFPMArguments>
       <RHRSArguments>@(RHStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RHRSArguments>
       <GenericRSArguments>@(GenericStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</GenericRSArguments>
     
@@ -274,7 +274,7 @@
       <TimestampHostingArguments>$(TimestampHostingArguments);RPMVersion=$(Version);RPMArguments=$(HostingArguments)</TimestampHostingArguments>
       
       <TimestampFreeHostingArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonHostingArguments)</TimestampFreeHostingArguments>
-      <TimestampFreeHostingArguments>$(TimestampFreeHostingArguments);RPMVersion=$(TimestampFreeVersion);RPMArguments=$(TimestampFreeHostingArguments)</TimestampFreeHostingArguments>
+      <TimestampFreeHostingArguments>$(TimestampFreeHostingArguments);RPMVersion=$(TimestampFreeVersion);RPMArguments=$(TimestampFreeHostingFPMArguments)</TimestampFreeHostingArguments>
 
       <RHTimestampRSArguments>$(CommonArguments);$(CommonRHArguments);$(CommonRSArguments)</RHTimestampRSArguments>
       <RHTimestampRSArguments>$(RHTimestampRSArguments);RSArchive=$(TimestampRSArchive);RPMVersion=$(Version);RPMArguments=$(RHRSArguments)</RHTimestampRSArguments>
@@ -286,7 +286,7 @@
       <RHTimestampHostingArguments>$(RHTimestampHostingArguments);RPMVersion=$(Version);RPMArguments=$(HostingArguments)</RHTimestampHostingArguments>
       
       <RHTimestampFreeHostingArguments>$(CommonArguments);$(CommonRHArguments);$(CommonHostingArguments)</RHTimestampFreeHostingArguments>
-      <RHTimestampFreeHostingArguments>$(RHTimestampFreeHostingArguments);RPMVersion=$(TimestampFreeVersion);RPMArguments=$(TimestampFreeHostingArguments)</RHTimestampFreeHostingArguments>
+      <RHTimestampFreeHostingArguments>$(RHTimestampFreeHostingArguments);RPMVersion=$(TimestampFreeVersion);RPMArguments=$(TimestampFreeHostingFPMArguments)</RHTimestampFreeHostingArguments>
     </PropertyGroup>
 
     <!-- General Timestamp runtime store -->
