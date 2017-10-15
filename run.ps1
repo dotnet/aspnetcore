@@ -3,10 +3,13 @@
 
 <#
 .SYNOPSIS
-Build this repository
+Executes KoreBuild commands.
 
 .DESCRIPTION
-Downloads korebuild if required. Then builds the repository.
+Downloads korebuild if required. Then executes the KoreBuild command. To see available commands, execute with `-Command help`.
+
+.PARAMETER Command
+The KoreBuild command to run.
 
 .PARAMETER Path
 The folder to build. Defaults to the folder containing this script.
@@ -24,31 +27,32 @@ The base url where build tools can be downloaded. Overrides the value from the c
 Updates KoreBuild to the latest version even if a lock file is present.
 
 .PARAMETER ConfigFile
-The path to the configuration file that stores values. Defaults to version.xml.
+The path to the configuration file that stores values. Defaults to korebuild.json.
 
-.PARAMETER MSBuildArgs
-Arguments to be passed to MSBuild
+.PARAMETER Arguments
+Arguments to be passed to the command
 
 .NOTES
 This function will create a file $PSScriptRoot/korebuild-lock.txt. This lock file can be committed to source, but does not have to be.
 When the lockfile is not present, KoreBuild will create one using latest available version from $Channel.
 
-The $ConfigFile is expected to be an XML file. It is optional, and the configuration values in it are optional as well.
+The $ConfigFile is expected to be an JSON file. It is optional, and the configuration values in it are optional as well. Any options set
+in the file are overridden by command line parameters.
 
 .EXAMPLE
 Example config file:
-```xml
-<!-- version.xml -->
-<Project>
-  <PropertyGroup>
-    <KoreBuildChannel>dev</KoreBuildChannel>
-    <KoreBuildToolsSource>https://aspnetcore.blob.core.windows.net/buildtools</KoreBuildToolsSource>
-  </PropertyGroup>
-</Project>
+```json
+{
+  "$schema": "https://raw.githubusercontent.com/aspnet/BuildTools/dev/tools/korebuild.schema.json",
+  "channel": "dev",
+  "toolsSource": "https://aspnetcore.blob.core.windows.net/buildtools"
+}
 ```
 #>
 [CmdletBinding(PositionalBinding = $false)]
 param(
+    [Parameter(Mandatory=$true, Position = 0)]
+    [string]$Command,
     [string]$Path = $PSScriptRoot,
     [Alias('c')]
     [string]$Channel,
@@ -58,9 +62,9 @@ param(
     [string]$ToolsSource,
     [Alias('u')]
     [switch]$Update,
-    [string]$ConfigFile = (Join-Path $PSScriptRoot 'version.xml'),
+    [string]$ConfigFile,
     [Parameter(ValueFromRemainingArguments = $true)]
-    [string[]]$MSBuildArgs
+    [string[]]$Arguments
 )
 
 Set-StrictMode -Version 2
@@ -147,10 +151,20 @@ function Get-RemoteFile([string]$RemotePath, [string]$LocalPath) {
 
 # Load configuration or set defaults
 
+$Path = Resolve-Path $Path
+if (!$ConfigFile) { $ConfigFile = Join-Path $Path 'korebuild.json' }
+
 if (Test-Path $ConfigFile) {
-    [xml] $config = Get-Content $ConfigFile
-    if (!($Channel)) { [string] $Channel = Select-Xml -Xml $config -XPath '/Project/PropertyGroup/KoreBuildChannel' }
-    if (!($ToolsSource)) { [string] $ToolsSource = Select-Xml -Xml $config -XPath '/Project/PropertyGroup/KoreBuildToolsSource' }
+    try {
+        $config = Get-Content -Raw -Encoding UTF8 -Path $ConfigFile | ConvertFrom-Json
+        if ($config) {
+            if (!($Channel) -and (Get-Member -Name 'channel' -InputObject $config)) { [string] $Channel = $config.channel }
+            if (!($ToolsSource) -and (Get-Member -Name 'toolsSource' -InputObject $config)) { [string] $ToolsSource = $config.toolsSource}
+        }
+    } catch {
+        Write-Warning "$ConfigFile could not be read. Its settings will be ignored."
+        Write-Warning $Error[0]
+    }
 }
 
 if (!$DotNetHome) {
@@ -169,8 +183,8 @@ $korebuildPath = Get-KoreBuild
 Import-Module -Force -Scope Local (Join-Path $korebuildPath 'KoreBuild.psd1')
 
 try {
-    Install-Tools $ToolsSource $DotNetHome
-    Invoke-RepositoryBuild $Path @MSBuildArgs
+    Set-KoreBuildSettings -ToolsSource $ToolsSource -DotNetHome $DotNetHome -RepoPath $Path -ConfigFile $ConfigFile
+    Invoke-KoreBuildCommand $Command @Arguments
 }
 finally {
     Remove-Module 'KoreBuild' -ErrorAction Ignore
