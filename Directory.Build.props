@@ -1,9 +1,10 @@
-﻿<Project>
+<Project>
   <Import Project="version.xml" />
 
   <PropertyGroup>
     <RepositoryUrl>https://github.com/aspnet/Localization</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
