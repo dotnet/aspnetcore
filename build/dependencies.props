@@ -144,15 +144,6 @@
     <ExternalDependency Include="Microsoft.AspNetCore.AspNetCoreModule" Version="1.0.0-pre-10057" Source="$(AspNetCoreModuleFeed)" Private="true" Mirror="true" />
   </ItemGroup>
 
-  <!-- ASP.NET Core (non-Universe builds) -->
-  <PropertyGroup>
-    <AspNetCoreFeed>https://dotnet.myget.org/F/aspnetcore-release/api/v3/index.json</AspNetCoreFeed>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <ExternalDependency Include="Microsoft.AspNetCore.Internal.CoreFxLab.Sources" Version="2.0.0-rtm-21470" Source="$(AspNetCoreFeed)" Private="true" Mirror="true" />
-  </ItemGroup>
-
   <!-- nuget.org -->
   <PropertyGroup>
     <DefaultNuGetFeed>https://api.nuget.org/v3/index.json</DefaultNuGetFeed>
