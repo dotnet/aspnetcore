@@ -1,9 +1,5 @@
 <Project>
   <PropertyGroup>
-    <PublishFeed>https://dotnet.myget.org/F/aspnetcore-dev/</PublishFeed>
-  </PropertyGroup>
-
-  <PropertyGroup>
     <DepsDirectory>$(RepositoryRoot).deps\</DepsDirectory>
     <ToolsPath>$(RepositoryRoot)tools\</ToolsPath>
     <ZipExePath>$(ToolsPath)7Za.exe</ZipExePath>
