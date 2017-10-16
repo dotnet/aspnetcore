@@ -117,9 +117,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SystemdActivation", "System
 		test\SystemdActivation\Dockerfile = test\SystemdActivation\Dockerfile
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Transport.Libuv.FunctionalTests", "test\Kestrel.Transport.Libuv.FunctionalTests\Kestrel.Trasnport.Libuv.FunctionalTests.csproj", "{74032D79-8EA7-4483-BD82-C38370420FFF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Transport.Libuv.FunctionalTests", "test\Kestrel.Transport.Libuv.FunctionalTests\Kestrel.Transport.Libuv.FunctionalTests.csproj", "{74032D79-8EA7-4483-BD82-C38370420FFF}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Transport.Sockets.FunctionalTests", "test\Kestrel.Transport.Sockets.FunctionalTests\Kestrel.Trasnport.Sockets.FunctionalTests.csproj", "{9C7B6B5F-088A-436E-834B-6373EA36DEEE}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kestrel.Transport.Sockets.FunctionalTests", "test\Kestrel.Transport.Sockets.FunctionalTests\Kestrel.Transport.Sockets.FunctionalTests.csproj", "{9C7B6B5F-088A-436E-834B-6373EA36DEEE}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
