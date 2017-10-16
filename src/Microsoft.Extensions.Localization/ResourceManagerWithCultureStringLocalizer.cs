@@ -17,6 +17,7 @@ namespace Microsoft.Extensions.Localization
     /// </summary>
     public class ResourceManagerWithCultureStringLocalizer : ResourceManagerStringLocalizer
     {
+        private readonly string _resourceBaseName;
         private readonly CultureInfo _culture;
 
         /// <summary>
@@ -62,6 +63,12 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(culture));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            _resourceBaseName = baseName;
             _culture = culture;
         }
 
@@ -108,6 +115,12 @@ namespace Microsoft.Extensions.Localization
                 throw new ArgumentNullException(nameof(culture));
             }
 
+            if (logger == null)
+            {
+                throw new ArgumentNullException(nameof(logger));
+            }
+
+            _resourceBaseName = baseName;
             _culture = culture;
         }
 
@@ -123,7 +136,7 @@ namespace Microsoft.Extensions.Localization
 
                 var value = GetStringSafely(name, _culture);
 
-                return new LocalizedString(name, value ?? name);
+                return new LocalizedString(name, value ?? name, resourceNotFound: value == null, searchedLocation: _resourceBaseName);
             }
         }
 
@@ -140,7 +153,7 @@ namespace Microsoft.Extensions.Localization
                 var format = GetStringSafely(name, _culture);
                 var value = string.Format(_culture, format ?? name, arguments);
 
-                return new LocalizedString(name, value ?? name, resourceNotFound: format == null);
+                return new LocalizedString(name, value, resourceNotFound: format == null, searchedLocation: _resourceBaseName);
             }
         }
 
