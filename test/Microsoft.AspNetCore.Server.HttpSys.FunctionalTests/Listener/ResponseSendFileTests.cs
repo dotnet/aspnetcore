@@ -510,7 +510,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalFact(Skip = "Tests hanging: https://github.com/aspnet/HttpSysServer/issues/270")]
+        [ConditionalFact]
         public async Task ResponseSendFileExceptions_ClientDisconnectsBeforeSecondSend_SendThrows()
         {
             string address;
@@ -524,10 +524,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                     context = await server.AcceptAsync(Utilities.DefaultTimeout);
                     // First write sends headers
-                    await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
+                    var sendFileTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
 
                     var response = await responseTask;
                     response.EnsureSuccessStatusCode();
+                    // Drain data from the connection so that SendFileAsync can complete.
+                    var bufferTask = response.Content.LoadIntoBufferAsync();
+
+                    await sendFileTask;
                     response.Dispose();
                 }
 
@@ -544,7 +548,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
             }
         }
 
-        [ConditionalFact(Skip = "Tests hanging: https://github.com/aspnet/WebListener/issues/270")]
+        [ConditionalFact]
         public async Task ResponseSendFile_ClientDisconnectsBeforeSecondSend_SendCompletesSilently()
         {
             string address;
@@ -557,10 +561,14 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                     context = await server.AcceptAsync(Utilities.DefaultTimeout);
                     // First write sends headers
-                    await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
+                    var sendFileTask = context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
 
                     var response = await responseTask;
                     response.EnsureSuccessStatusCode();
+                    // Drain data from the connection so that SendFileAsync can complete.
+                    var bufferTask = response.Content.LoadIntoBufferAsync();
+
+                    await sendFileTask;
                     response.Dispose();
                 }
 
