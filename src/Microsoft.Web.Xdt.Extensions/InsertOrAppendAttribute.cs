@@ -107,10 +107,12 @@ namespace Microsoft.Web.Xdt.Extensions
 
                 foreach (XmlNode targetNode in TargetChildNodes)
                 {
+                    var foundAttribute = false;
                     foreach (XmlAttribute att in targetNode.Attributes)
                     {
                         if (string.Equals(att.Name, AttributeName, StringComparison.OrdinalIgnoreCase))
                         {
+                            foundAttribute = true;
                             if (string.IsNullOrEmpty(att.Value))
                             {
                                 att.Value = transformAtt.Value;
@@ -127,6 +129,13 @@ namespace Microsoft.Web.Xdt.Extensions
                                 att.Value = $"{att.Value};{transformAtt.Value}";
                             }
                         }
+                    }
+
+                    if (!foundAttribute)
+                    {
+                        var attribute = targetNode.OwnerDocument.CreateAttribute(AttributeName);
+                        attribute.Value = transformAtt.Value;
+                        targetNode.Attributes.Append(attribute);
                     }
                 }
             }
