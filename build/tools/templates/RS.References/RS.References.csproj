@@ -13,6 +13,9 @@
       https://api.nuget.org/v3/index.json;
     </RestoreSources>
     <TargetFramework>netcoreapp2.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeSymbols>false</IncludeSymbols>
+    <EnableApiCheck>false</EnableApiCheck>
   </PropertyGroup>
 
 </Project>
