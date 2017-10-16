@@ -5,6 +5,7 @@
     <Product>Microsoft ASP.NET Core MVC</Product>
     <RepositoryUrl>https://github.com/aspnet/Mvc</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
