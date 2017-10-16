@@ -105,6 +105,7 @@
     <ExternalDependency Include="Microsoft.CodeAnalysis" Version="2.3.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.CSharp" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="2.0.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.Extensions.PlatformAbstractions" Version="1.1.0" Source="$(DefaultNuGetFeed)" />
     <ExternalDependency Include="Microsoft.IdentityModel.Clients.ActiveDirectory" Version="3.14.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="5.2.0-preview1-408290725" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.NET.Test.Sdk" Version="15.3.0" Source="$(DefaultNuGetFeed)" Private="true"/>
@@ -130,6 +131,7 @@
     <ExternalDependency Include="Microsoft.VisualStudio.Shell.Interop" Version="7.10.6071" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Text.Data" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="Microsoft.VisualStudio.Text.UI" Version="15.0.26606" Source="$(DefaultNuGetFeed)" Private="true" />
+    <ExternalDependency Include="Microsoft.Web.Administration" Version="7.0.0" Source="$(DefaultNuGetFeed)">
     <ExternalDependency Include="Microsoft.Web.Xdt" Version="1.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Win32.Registry" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Mono.Addins" Version="1.3.7" Source="$(DefaultNuGetFeed)" Private="true" />
@@ -165,6 +167,7 @@
     <ExternalDependency Include="System.IO.Pipes.AccessControl" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.IO.Ports" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Json" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="System.Management.Automation" Version="6.1.7601.17515" Source="$(DefaultNuGetFeed)">
     <ExternalDependency Include="System.Net.Http.WinHttpHandler" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Net.Http" Version="4.3.2" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="System.Numerics.Vectors" Version="4.4.0" Source="$(DefaultNuGetFeed)"/>
