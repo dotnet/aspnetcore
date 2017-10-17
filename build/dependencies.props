@@ -30,6 +30,7 @@
     <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</DotNetCoreFeed>
     <CoreSetupPackageVersion>2.0.2-servicing-25728-02</CoreSetupPackageVersion>
     <MicrosoftNETCorePlatformsPackageVersion>2.0.0</MicrosoftNETCorePlatformsPackageVersion>
+    <MicrosoftNETCoreApp20PackageVersion>$(CoreSetupPackageVersion)</MicrosoftNETCoreApp20PackageVersion>
   </PropertyGroup>
 
   <ItemGroup>

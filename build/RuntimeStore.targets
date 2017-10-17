@@ -122,7 +122,7 @@
     </PropertyGroup>
   </Target>
 
-  <Target Name="BuildRuntimeStore" DependsOnTargets="_ResolveCurrentSharedFrameworkVersion;_ResolveRuntimeStoreRID;_PrepareRuntimeStoreBuildAssets;BuildRSReferencesPackage">
+  <Target Name="BuildRuntimeStore" DependsOnTargets="_ResolveRuntimeStoreRID;_PrepareRuntimeStoreBuildAssets;BuildRSReferencesPackage">
     <!-- Copy and update build assets -->
     <Copy SourceFiles="$(_TemplatesDirectory)RS.Manifest\RS.Manifest.csproj" DestinationFiles="$(_WorkRoot)RS.Manifest\RS.Manifest.csproj" />
     <Copy SourceFiles="$(_SrcDirectory)Directory.Build.props" DestinationFolder="$(_WorkRoot)" />
@@ -133,7 +133,7 @@
       <_ComposeStoreProps>$(_ComposeStoreProps);ComposeDir=$(_RuntimeStoreOutputDirectory)</_ComposeStoreProps>
       <_ComposeStoreProps>$(_ComposeStoreProps);ComposeWorkingDir=$(_RuntimeStoreWorkDirectory)</_ComposeStoreProps>
       <_ComposeStoreProps>$(_ComposeStoreProps);RuntimeIdentifier=$(RuntimeStoreRID)</_ComposeStoreProps>
-      <_ComposeStoreProps>$(_ComposeStoreProps);RuntimeFrameworkVersion=$(SharedFrameworkVersion)</_ComposeStoreProps>
+      <_ComposeStoreProps>$(_ComposeStoreProps);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion)</_ComposeStoreProps>
     </PropertyGroup>
 
     <!-- Build runtime store -->
@@ -142,17 +142,7 @@
              Properties="$(_ComposeStoreProps)" />
   </Target>
 
-  <Target Name="_ResolveCurrentSharedFrameworkVersion">
-    <!-- Parse framework version -->
-    <Exec Command="powershell.exe $(_BuildScriptsDirectory)GetSharedFrameworkVersion.ps1" ConsoleToMSBuild="true" StandardOutputImportance="Normal" Condition="'$(OS)' == 'Windows_NT'">
-      <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
-    </Exec>
-    <Exec Command="bash $(_BuildScriptsDirectory)GetSharedFrameworkVersion.sh" ConsoleToMSBuild="true" StandardOutputImportance="Normal" Condition="'$(OS)' != 'Windows_NT'">
-      <Output TaskParameter="ConsoleOutput" PropertyName="SharedFrameworkVersion" />
-    </Exec>
-  </Target>
-
-  <Target Name="BuildHostingDeps" DependsOnTargets="ResolveRepoInfo;_ResolveCurrentSharedFrameworkVersion">
+  <Target Name="BuildHostingDeps" DependsOnTargets="ResolveRepoInfo">
     <!-- Generate RS.Reference project -->
     <RepoTasks.ResolveHostingStartupPackages
       BuildArtifacts="@(ArtifactInfo)"
@@ -163,7 +153,7 @@
     <!--- MSBuild caches things if you run inproc so have to use Exec -->
     <MSBuild Projects="$(_TemplatesDirectory)HostingStartup/HostingStartup.csproj"
              Targets="Restore;Rebuild;CollectDeps"
-             Properties="DepsOutputPath=$(_DepsOutputDirectory);HostingStartupPackageName=%(HostingStartupArtifacts.PackageId);HostingStartupPackageVersion=%(HostingStartupArtifacts.Version);RuntimeFrameworkVersion=$(SharedFrameworkVersion)" />
+             Properties="DepsOutputPath=$(_DepsOutputDirectory);HostingStartupPackageName=%(HostingStartupArtifacts.PackageId);HostingStartupPackageVersion=%(HostingStartupArtifacts.Version);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion)" />
 
     <ItemGroup>
       <DepsFiles Include="$(_DepsOutputDirectory)**\*.deps.json" />

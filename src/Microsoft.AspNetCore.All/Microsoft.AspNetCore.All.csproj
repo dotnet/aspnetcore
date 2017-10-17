@@ -19,7 +19,7 @@
     <PackageTags>aspnetcore</PackageTags>
     <Description>Microsoft.AspNetCore.All</Description>
     <EnableApiCheck>false</EnableApiCheck>
-    <RuntimeFrameworkVersion>$(CoreSetupPackageVersion)</RuntimeFrameworkVersion>
+    <RuntimeFrameworkVersion>$(MicrosoftNETCoreApp20PackageVersion)</RuntimeFrameworkVersion>
   </PropertyGroup>
 
   <ItemGroup>
