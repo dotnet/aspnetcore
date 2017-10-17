@@ -24,7 +24,6 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Twitter" />
     <PackageReference Include="Microsoft.AspNetCore.Authorization" />
     <PackageReference Include="Microsoft.AspNetCore.Certificates.Configuration.Sources" />
-    <PackageReference Include="Microsoft.AspNetCore.CertificateGeneration.Task" />
     <PackageReference Include="Microsoft.AspNetCore.DataProtection.Extensions" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" />
