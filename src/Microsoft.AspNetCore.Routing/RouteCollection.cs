@@ -12,6 +12,7 @@ namespace Microsoft.AspNetCore.Routing
 {
     public class RouteCollection : IRouteCollection
     {
+        private readonly static char[] UrlQueryDelimiters = new char[] { '?', '#' };
         private readonly List<IRouter> _routes = new List<IRouter>();
         private readonly List<IRouter> _unnamedRoutes = new List<IRouter>();
         private readonly Dictionary<string, INamedRouter> _namedRoutes =
@@ -140,7 +141,7 @@ namespace Microsoft.AspNetCore.Routing
 
             if (!string.IsNullOrEmpty(url) && (_options.LowercaseUrls || _options.AppendTrailingSlash))
             {
-                var indexOfSeparator = url.IndexOfAny(new char[] { '?', '#' });
+                var indexOfSeparator = url.IndexOfAny(UrlQueryDelimiters);
                 var urlWithoutQueryString = url;
                 var queryString = string.Empty;
 
