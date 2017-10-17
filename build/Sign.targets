@@ -267,6 +267,7 @@
 
     <RepoTasks.CreateTimestampFreePackages
       PackagesWithTimeStamp="@(OOBPackagesWithTimeStamp)"
+      PackagesAlreadyTimestampFree="@(PackagesAlreadyTimestampFree)"
       OutputDirectory="$(OOBPackagesNoTimestampDir)" />
   </Target>
 
