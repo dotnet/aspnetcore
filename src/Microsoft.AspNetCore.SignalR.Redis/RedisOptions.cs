@@ -12,10 +12,10 @@ namespace Microsoft.AspNetCore.SignalR.Redis
     {
         public ConfigurationOptions Options { get; set; } = new ConfigurationOptions();
 
-        public Func<TextWriter, ConnectionMultiplexer> Factory { get; set; }
+        public Func<TextWriter, IConnectionMultiplexer> Factory { get; set; }
 
         // TODO: Async
-        internal ConnectionMultiplexer Connect(TextWriter log)
+        internal IConnectionMultiplexer Connect(TextWriter log)
         {
             if (Factory == null)
             {

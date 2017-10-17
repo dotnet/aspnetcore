@@ -28,7 +28,7 @@ namespace ChatSample
         private const int ScanInterval = 5; //seconds
         private const int ServerInactivityTimeout = 30; // seconds
 
-        private readonly ConnectionMultiplexer _redisConnection;
+        private readonly IConnectionMultiplexer _redisConnection;
         private readonly IDatabase _redisDatabase;
         private readonly ISubscriber _redisSubscriber;
 
@@ -88,7 +88,7 @@ namespace ChatSample
             });
         }
 
-        private (ConnectionMultiplexer, IDatabase) StartRedisConnection(RedisOptions options)
+        private (IConnectionMultiplexer, IDatabase) StartRedisConnection(RedisOptions options)
         {
             // TODO: handle connection failures
             var redisConnection = ConnectToRedis(options, _logger);
@@ -101,7 +101,7 @@ namespace ChatSample
             return (redisConnection, redisDatabase);
         }
 
-        private static ConnectionMultiplexer ConnectToRedis(RedisOptions options, ILogger logger)
+        private static IConnectionMultiplexer ConnectToRedis(RedisOptions options, ILogger logger)
         {
             var loggerTextWriter = new LoggerTextWriter(logger);
             if (options.Factory != null)
