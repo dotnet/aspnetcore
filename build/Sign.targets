@@ -22,6 +22,13 @@
         $(UnsignedPackagesPath)**\*.psm1;
         $(UnsignedPackagesPath)**\*.ps1;" />
 
+      <NoTimestampPackageBinaries Include="
+        $(UnsignedNoTimestampPackagesPath)**\*.dll;
+        $(UnsignedNoTimestampPackagesPath)**\*.exe;
+        $(UnsignedNoTimestampPackagesPath)**\*.psd1;
+        $(UnsignedNoTimestampPackagesPath)**\*.psm1;
+        $(UnsignedNoTimestampPackagesPath)**\*.ps1;" />
+
       <OobPackageBinaries Include="
         $(UnsignedOobPackagesPath)**\*.dll;
         $(UnsignedOobPackagesPath)**\*.exe;
@@ -53,6 +60,7 @@
     <ItemGroup>
       <AspNetCoreBinaries Include="
         @(PackageBinaries);
+        @(NoTimestampPackageBinaries);
         @(OobPackageBinaries);
         @(VSIXBinaries)" />
 
@@ -95,6 +103,7 @@
 
     <ItemGroup>
       <NuSpec Include="$(UnsignedPackagesPath)**\*.nuspec" />
+      <NuSpecNoTimestamp Include="$(UnsignedNoTimestampPackagesPath)**\*.nuspec" />
       <NuSpecOob Include="$(UnsignedOobPackagesPath)**\*.nuspec" />
       <SymbolsNuSpec Include="$(UnsignedSymbolPackagesPath)**\*.nuspec" />
     </ItemGroup>
@@ -104,6 +113,11 @@
       Targets="ZipFile"
       Properties="ZipRoot=%(NuSpec.RootDir)%(NuSpec.Directory);OutputDir=$(PackagesOutputPath);Extension=.nupkg"
       Condition="'@(NuSpec)'!=''" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="ZipFile"
+      Properties="ZipRoot=%(NuSpecNoTimestamp.RootDir)%(NuSpecNoTimestamp.Directory);OutputDir=$(IntermediatePackagesNoTimestampOutputPath);Extension=.nupkg"
+      Condition="'@(NuSpecNoTimestamp)'!=''" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="ZipFile"
@@ -239,6 +253,7 @@
     </PropertyGroup>
 
     <ItemGroup>
+      <PackagesAlreadyTimestampFree Include="$(IntermediatePackagesNoTimestampOutputPath)*.nupkg" />
       <PackagesWithTimeStamp Include="$(PackagesDir)*.nupkg" />
       <OOBPackagesWithTimeStamp Include="$(OOBPackagesDir)*.nupkg" />
     </ItemGroup>
@@ -247,6 +262,7 @@
 
     <RepoTasks.CreateTimestampFreePackages
       PackagesWithTimeStamp="@(PackagesWithTimeStamp)"
+      PackagesAlreadyTimestampFree="@(PackagesAlreadyTimestampFree)"
       OutputDirectory="$(PackagesNoTimestampDir)" />
 
     <RepoTasks.CreateTimestampFreePackages

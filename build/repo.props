@@ -19,7 +19,10 @@
     <SymbolsOutputPath>$(ArtifactsDir)Signed\Symbols\</SymbolsOutputPath>
     <SignedVSIXPath>$(ArtifactsDir)Signed\VSIX\</SignedVSIXPath>
 
+    <IntermediatePackagesNoTimestampOutputPath>$(IntermediateDir)NoTimestampPackages\</IntermediatePackagesNoTimestampOutputPath>
+
     <UnsignedPackagesPath>$(IntermediateOutputPath)UnsignedPackages\</UnsignedPackagesPath>
+    <UnsignedNoTimestampPackagesPath>$(IntermediateOutputPath)UnsignedNoTimestampPackages\</UnsignedNoTimestampPackagesPath>
     <UnsignedOobPackagesPath>$(IntermediateOutputPath)UnsignedOobPackages\</UnsignedOobPackagesPath>
     <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedPackages\</UnsignedSymbolPackagesPath>
     <UnsignedSymbolPackagesPath>$(IntermediateOutputPath)symbols\UnsignedOobPackages\</UnsignedSymbolPackagesPath>

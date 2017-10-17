@@ -6,6 +6,12 @@
   <Target Name="ExtractInputs">
     <ItemGroup>
       <UnsignedPackages Include="$(DepsDirectory)ship\*.nupkg" />
+      <!--
+        Packages that were already produced in the no-teimstamp configuration, such as aspnet/Templating packages.
+        When present, they should prevent the CreateNotTimestamp target from producing a new nupkg.
+        Instead, we just do simple signing and repackage.
+       -->
+      <UnsignedNoTimestampPackages Include="$(DepsDirectory)notimestamp\*.nupkg" />
       <UnsignedOobPackages Include="$(DepsDirectory)shipoob\*.nupkg" />
       <UnsignedSymbolPackages Include="$(DepsDirectory)symbols\Microsoft.Data.Sqlite*.nupkg" />
       <UnsignedVSIX Include="$(DepsDirectory)vsix\*.vsix" />
@@ -14,6 +20,7 @@
       <UpdatedMetapackageNupkg Include="$(DepsDirectory)store\Microsoft.AspNetCore.All.*.nupkg" />
 
       <_UnzipFiles Include="@(UnsignedPackages)" Destination="$(UnsignedPackagesPath)" />
+      <_UnzipFiles Include="@(UnsignedNoTimestampPackages)" Destination="$(UnsignedNoTimestampPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedOobPackages)" Destination="$(UnsignedOobPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedSymbolPackages)" Destination="$(UnsignedSymbolPackagesPath)" />
       <_UnzipFiles Include="@(UnsignedVSIX)" Destination="$(UnsignedVSIXPath)" />
