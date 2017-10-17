@@ -32,8 +32,7 @@
     <Error Text="Docker host must be using Linux containers." Condition="'$(DockerHostOS)' != 'linux'"/>
 
     <PropertyGroup>
-      <RuntimeTargzLink>$(CoreFeedPrefix)/dotnet/Runtime/$(MicrosoftNETCoreApp20PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz</RuntimeTargzLink>
-      <RuntimeTargzLink Condition="'$(KOREBUILD_DOTNET_FEED_CREDENTIAL)' != ''">$(RuntimeTargzLink)$(KOREBUILD_DOTNET_FEED_CREDENTIAL)</RuntimeTargzLink>
+      <RuntimeTargzLink>$(CoreFeedPrefix)/Runtime/$(MicrosoftNETCoreApp20PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz</RuntimeTargzLink>
     </PropertyGroup>
 
     <PropertyGroup>
@@ -52,7 +51,12 @@
   <Target Name="_DownloadCoreInstallers">
     <!-- Download dotnet installers -->
     <MakeDir Directories="$(_CoreInstallerSource)" />
-    <Exec Command="curl &quot;$(RuntimeTargzLink)&quot; -o $(_CoreInstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz" />
+    <!--
+      Note: KOREBUILD_DOTNET_FEED_CREDENTIAL is intentionally NOT an MSBuild variable.
+      MSBuild doesn't to the substitution correctly because the string contains %,
+      so we'll let bash do it instead.
+    -->
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeTargzLink)$KOREBUILD_DOTNET_FEED_CREDENTIAL&quot; -o $(_CoreInstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz" />
   </Target>
 
   <Target Name="_GenerateTargz">
@@ -133,11 +137,6 @@
     <Exec Command="docker run
       --rm
       -v $(RepositoryRoot):$(_DockerRootDirectory)
-      -e 'KOREBUILD_DOTNET_VERSION=$(KOREBUILD_DOTNET_VERSION)'
-      -e 'KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION=$(KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION)'
-      -e 'KOREBUILD_DOTNET_FEED_CDN=$(KOREBUILD_DOTNET_FEED_CDN)'
-      -e 'KOREBUILD_DOTNET_FEED_UNCACHED=$(KOREBUILD_DOTNET_FEED_UNCACHED)'
-      -e 'KOREBUILD_DOTNET_FEED_CREDENTIAL=$(KOREBUILD_DOTNET_FEED_CREDENTIAL)'
       docker-image-$(Image)
       fpm
         --verbose
@@ -326,6 +325,13 @@
     <RepoTasks.ReplaceInFile Filename="$(_WorkLayoutDir)debian_config.json" Items="@(DebConfigItems)" />
 
     <!-- Build Runtime Store and Hosting Bundle Deb package -->
+
+    <!--
+      Note: KOREBUILD_DOTNET_FEED_CREDENTIAL is intentionally NOT an MSBuild variable.
+      MSBuild doesn't to the substitution correctly because the string contains %,
+      so we'll let bash do it instead.
+    -->
+
     <Exec Command="docker run
       --rm
       -v $(RepositoryRoot):$(_DockerRootDirectory)
@@ -336,7 +342,7 @@
       -e 'KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION=$(KOREBUILD_DOTNET_SHARED_RUNTIME_VERSION)'
       -e 'KOREBUILD_DOTNET_FEED_CDN=$(KOREBUILD_DOTNET_FEED_CDN)'
       -e 'KOREBUILD_DOTNET_FEED_UNCACHED=$(KOREBUILD_DOTNET_FEED_UNCACHED)'
-      -e 'KOREBUILD_DOTNET_FEED_CREDENTIAL=$(KOREBUILD_DOTNET_FEED_CREDENTIAL)'
+      -e &quot;KOREBUILD_DOTNET_FEED_CREDENTIAL=$KOREBUILD_DOTNET_FEED_CREDENTIAL&quot;
       docker-image-$(Image)
       ./build.sh /t:RunDebTool"
       ContinueOnError="WarnAndContinue" />
