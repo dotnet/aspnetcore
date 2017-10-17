@@ -1042,6 +1042,15 @@ SERVER_PROCESS::StartProcess(
                 apsz,
                 NULL);
         }
+
+        // FREB log
+        if (ANCMEvents::ANCM_START_APPLICATION_SUCCESS::IsEnabled(context->GetTraceContext()))
+        {
+            ANCMEvents::ANCM_START_APPLICATION_SUCCESS::RaiseEvent(
+                context->GetTraceContext(),
+                NULL,
+                apsz[0]);
+        }
     }
 
 Finished:
@@ -1096,6 +1105,15 @@ Finished:
                 0,
                 apsz,
                 NULL);
+        }
+
+        // FREB log
+        if (ANCMEvents::ANCM_START_APPLICATION_FAIL::IsEnabled(context->GetTraceContext()))
+        {
+            ANCMEvents::ANCM_START_APPLICATION_FAIL::RaiseEvent(
+                context->GetTraceContext(),
+                NULL,
+                strEventMsg.QueryStr());
         }
     }
 

@@ -3,6 +3,7 @@
 
 #include "precomp.hxx"
 #include <dbgutil.h>
+#include <comdef.h>
 
 
 // Just to be aware of the FORWARDING_HANDLER object size.
@@ -1151,8 +1152,26 @@ FORWARDING_HANDLER::OnExecuteRequestHandler(
         hr = ((IN_PROCESS_APPLICATION*)m_pApplication)->LoadManagedApplication();
         if (FAILED(hr))
         {
+            _com_error err(hr);
+            if (ANCMEvents::ANCM_START_APPLICATION_FAIL::IsEnabled(m_pW3Context->GetTraceContext()))
+            {
+                ANCMEvents::ANCM_START_APPLICATION_FAIL::RaiseEvent(
+                    m_pW3Context->GetTraceContext(),
+                    NULL,
+                    err.ErrorMessage());
+            }
+
             fInternalError = TRUE;
             goto Failure;
+        }
+
+        // FREB log
+        if (ANCMEvents::ANCM_START_APPLICATION_SUCCESS::IsEnabled(m_pW3Context->GetTraceContext()))
+        {
+            ANCMEvents::ANCM_START_APPLICATION_SUCCESS::RaiseEvent(
+                m_pW3Context->GetTraceContext(),
+                NULL,
+                L"InProcess Application");
         }
         return  m_pApplication->ExecuteRequest(m_pW3Context);
     }
@@ -1301,6 +1320,15 @@ FORWARDING_HANDLER::OnExecuteRequestHandler(
         // async completion.
         //
         ReferenceForwardingHandler();
+
+        //FREB log
+        if (ANCMEvents::ANCM_REQUEST_FORWARD_START::IsEnabled(m_pW3Context->GetTraceContext()))
+        {
+            ANCMEvents::ANCM_REQUEST_FORWARD_START::RaiseEvent(
+                m_pW3Context->GetTraceContext(),
+                NULL);
+        }
+
         if (!WinHttpSendRequest(m_hRequest,
             m_pszHeaders,
             m_cchHeaders,
@@ -1312,6 +1340,14 @@ FORWARDING_HANDLER::OnExecuteRequestHandler(
             hr = HRESULT_FROM_WIN32(GetLastError());
             DebugPrintf(ASPNETCORE_DEBUG_FLAG_INFO,
                 "FORWARDING_HANDLER::OnExecuteRequestHandler, Send request failed");
+            if (ANCMEvents::ANCM_REQUEST_FORWARD_FAIL::IsEnabled(m_pW3Context->GetTraceContext()))
+            {
+                ANCMEvents::ANCM_REQUEST_FORWARD_FAIL::RaiseEvent(
+                    m_pW3Context->GetTraceContext(),
+                    NULL,
+                    hr);
+            }
+
             DereferenceForwardingHandler();
             goto Failure;
         }
@@ -2078,6 +2114,14 @@ None
             NULL);
     }
 
+    //FREB log
+    if (ANCMEvents::ANCM_WINHTTP_CALLBACK::IsEnabled(m_pW3Context->GetTraceContext()))
+    {
+        ANCMEvents::ANCM_WINHTTP_CALLBACK::RaiseEvent(
+            m_pW3Context->GetTraceContext(),
+            NULL,
+            dwInternetStatus);
+    }
     //
     // ReadLock on the winhttp handle to protect from a client disconnect/
     // server stop closing the handle while we are using it.
@@ -2339,6 +2383,15 @@ Failure:
                     FALSE);
             }
         }
+    }
+
+    // FREB log
+    if (ANCMEvents::ANCM_REQUEST_FORWARD_FAIL::IsEnabled(m_pW3Context->GetTraceContext()))
+    {
+        ANCMEvents::ANCM_REQUEST_FORWARD_FAIL::RaiseEvent(
+            m_pW3Context->GetTraceContext(),
+            NULL,
+            hr);
     }
 
 Finished:

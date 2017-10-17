@@ -194,8 +194,10 @@ http_flush_response_bytes(
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 
-IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION(): 
-    m_fManagedAppLoaded ( FALSE ), m_fLoadManagedAppError ( FALSE )
+IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION():
+    m_ProcessExitCode ( 0 ),
+    m_fManagedAppLoaded ( FALSE ),
+    m_fLoadManagedAppError ( FALSE )
 {
 }
 
@@ -545,6 +547,12 @@ IN_PROCESS_APPLICATION::ExecuteRequest(
     //
     // return error as the application did not register callback
     //
+    if (ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::IsEnabled(pHttpContext->GetTraceContext()))
+    {
+        ANCMEvents::ANCM_EXECUTE_REQUEST_FAIL::RaiseEvent(pHttpContext->GetTraceContext(),
+            NULL,
+            E_APPLICATION_ACTIVATION_EXEC_FAILURE);
+    }
     pHttpContext->GetResponse()->SetStatus(500, "Internal Server Error", 0, E_APPLICATION_ACTIVATION_EXEC_FAILURE);
     return RQ_NOTIFICATION_FINISH_REQUEST;
 }
@@ -739,11 +747,51 @@ IN_PROCESS_APPLICATION::ExecuteApplication(
     m_ProcessExitCode = pProc(2, argv);
     if (m_ProcessExitCode != 0)
     {
-        // TODO error
+        
     }
 
 Finished:
-    // TODO log any errors
+    //
+    // this method is called by the background thread and should never exit unless shutdown
+    //
+    if (!g_fRecycleProcessCalled)
+    {
+        STRU                    strEventMsg;
+        LPCWSTR                 apsz[1];
+        if (SUCCEEDED(strEventMsg.SafeSnwprintf(
+            ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT_MSG,
+            m_pConfiguration->QueryApplicationPath()->QueryStr(),
+            m_pConfiguration->QueryApplicationFullPath()->QueryStr(),
+            m_ProcessExitCode
+        )))
+        {
+            apsz[0] = strEventMsg.QueryStr();
+
+            //
+            // not checking return code because if ReportEvent
+            // fails, we cannot do anything.
+            //
+            if (FORWARDING_HANDLER::QueryEventLog() != NULL)
+            {
+                ReportEventW(FORWARDING_HANDLER::QueryEventLog(),
+                    EVENTLOG_ERROR_TYPE,
+                    0,
+                    ASPNETCORE_EVENT_INPROCESS_THREAD_EXIT,
+                    NULL,
+                    1,
+                    0,
+                    apsz,
+                    NULL);
+            }
+            // error. the thread exits after application started
+            // Question: should we shutdown current worker process or keep the application in failure state?
+            // for now, we reccylce to keep the same behavior as that of out-of-process
+            if (m_fManagedAppLoaded)
+            {
+                Recycle();
+            }
+        }
+    }
     return hr;
 }
 

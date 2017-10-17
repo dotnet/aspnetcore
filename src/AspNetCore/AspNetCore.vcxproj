@@ -154,6 +154,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Inc\aspnetcore_event.h" />
     <ClInclude Include="Inc\resource.h" />
     <ClInclude Include="Inc\application.h" />
     <ClInclude Include="Inc\applicationmanager.h" />
