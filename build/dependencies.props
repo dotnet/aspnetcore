@@ -29,10 +29,12 @@
   <PropertyGroup>
     <DotNetCoreFeed>https://dotnet.myget.org/F/dotnet-core/api/v3/index.json</DotNetCoreFeed>
     <CoreSetupPackageVersion>2.0.2-servicing-25728-02</CoreSetupPackageVersion>
+    <MicrosoftNETCorePlatformsPackageVersion>2.0.0</MicrosoftNETCorePlatformsPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
     <ExternalDependency Include="System.Memory" Version="4.4.0-preview3-25519-03" Source="$(DotNetCoreFeed)" Mirror="true" />
+    <ExternalDependency Include="Microsoft.NETCore.Platforms" Version="$(MicrosoftNETCorePlatformsPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.DotNet.PlatformAbstractions" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.Extensions.DependencyModel" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" />
     <ExternalDependency Include="Microsoft.NETCore.App" Version="$(CoreSetupPackageVersion)" Source="$(DotNetCoreFeed)" Mirror="true" >
