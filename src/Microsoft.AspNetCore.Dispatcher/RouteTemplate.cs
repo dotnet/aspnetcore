@@ -6,31 +6,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Routing.Template
+namespace Microsoft.AspNetCore.Dispatcher
 {
     [DebuggerDisplay("{DebuggerToString()}")]
     public class RouteTemplate
     {
         private const string SeparatorString = "/";
-
-        public RouteTemplate(AspNetCore.Dispatcher.RouteTemplate routeTemplate)
-        {
-            TemplateText = routeTemplate.TemplateText;
-            Segments = new List<TemplateSegment>(routeTemplate.Segments.Select(p => new TemplateSegment(p)));
-            Parameters = new List<TemplatePart>();
-            for (var i = 0; i < Segments.Count; i++)
-            {
-                var segment = Segments[i];
-                for (var j = 0; j < segment.Parts.Count; j++)
-                {
-                    var part = segment.Parts[j];
-                    if (part.IsParameter)
-                    {
-                        Parameters.Add(part);
-                    }
-                }
-            }
-        }
 
         public RouteTemplate(string template, List<TemplateSegment> segments)
         {

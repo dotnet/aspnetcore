@@ -1,15 +1,10 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Template;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Routing.Tests
+namespace Microsoft.AspNetCore.Dispatcher
 {
     public class InlineRouteParameterParserTests
     {
@@ -947,45 +942,13 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
         private TemplatePart ParseParameter(string routeParameter)
         {
-            var _constraintResolver = GetConstraintResolver();
             var templatePart = InlineRouteParameterParser.ParseRouteParameter(routeParameter);
             return templatePart;
         }
 
         private static RouteTemplate ParseRouteTemplate(string template)
         {
-            var _constraintResolver = GetConstraintResolver();
             return TemplateParser.Parse(template);
-        }
-
-        private static IInlineConstraintResolver GetConstraintResolver()
-        {
-            var services = new ServiceCollection().AddOptions();
-            services.Configure<RouteOptions>(options =>
-                                options
-                                .ConstraintMap
-                                .Add("test", typeof(TestRouteConstraint)));
-            var serviceProvider = services.BuildServiceProvider();
-            var accessor = serviceProvider.GetRequiredService<IOptions<RouteOptions>>();
-            return new DefaultInlineConstraintResolver(accessor);
-        }
-
-        private class TestRouteConstraint : IRouteConstraint
-        {
-            public TestRouteConstraint(string pattern)
-            {
-                Pattern = pattern;
-            }
-
-            public string Pattern { get; private set; }
-            public bool Match(HttpContext httpContext,
-                              IRouter route,
-                              string routeKey,
-                              RouteValueDictionary values,
-                              RouteDirection routeDirection)
-            {
-                throw new NotImplementedException();
-            }
         }
     }
 }

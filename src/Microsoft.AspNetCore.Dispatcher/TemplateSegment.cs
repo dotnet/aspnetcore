@@ -5,20 +5,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Routing.Template
+namespace Microsoft.AspNetCore.Dispatcher
 {
     [DebuggerDisplay("{DebuggerToString()}")]
     public class TemplateSegment
     {
-        public TemplateSegment()
-        {
-        }
-
-        public TemplateSegment(AspNetCore.Dispatcher.TemplateSegment templateSegment)
-        {
-            Parts = new List<TemplatePart>(templateSegment.Parts.Select(s => new TemplatePart(s)));
-        }
-
         public bool IsSimple => Parts.Count == 1;
 
         public List<TemplatePart> Parts { get; } = new List<TemplatePart>();

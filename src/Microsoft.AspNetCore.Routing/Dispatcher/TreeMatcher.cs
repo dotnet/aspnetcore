@@ -146,7 +146,7 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
             var entries = new List<InboundRouteEntry>();
             foreach (var group in groups)
             {
-                var template = TemplateParser.Parse(group.Key.RouteTemplate);
+                var template = Template.TemplateParser.Parse(group.Key.RouteTemplate);
 
                 var defaults = new RouteValueDictionary();
                 for (var i = 0; i < template.Parameters.Count; i++)

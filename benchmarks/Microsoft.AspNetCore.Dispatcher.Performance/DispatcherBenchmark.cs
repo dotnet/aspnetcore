@@ -9,7 +9,6 @@ using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.AspNetCore.Routing.Internal;
-using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -35,11 +34,11 @@ namespace Microsoft.AspNetCore.Dispatcher.Performance
                 new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(UrlEncoder.Default)),
                 new DefaultInlineConstraintResolver(new OptionsManager<RouteOptions>(new OptionsFactory<RouteOptions>(Enumerable.Empty<IConfigureOptions<RouteOptions>>(), Enumerable.Empty<IPostConfigureOptions<RouteOptions>>()))));
 
-            treeBuilder.MapInbound(handler, TemplateParser.Parse("api/Widgets"), "default", 0);
-            treeBuilder.MapInbound(handler, TemplateParser.Parse("api/Widgets/{id}"), "default", 0);
-            treeBuilder.MapInbound(handler, TemplateParser.Parse("api/Widgets/search/{term}"), "default", 0);
-            treeBuilder.MapInbound(handler, TemplateParser.Parse("admin/users/{id}"), "default", 0);
-            treeBuilder.MapInbound(handler, TemplateParser.Parse("admin/users/{id}/manage"), "default", 0);
+            treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("api/Widgets"), "default", 0);
+            treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("api/Widgets/{id}"), "default", 0);
+            treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("api/Widgets/search/{term}"), "default", 0);
+            treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("admin/users/{id}"), "default", 0);
+            treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("admin/users/{id}/manage"), "default", 0);
 
             _treeRouter = treeBuilder.Build();
 

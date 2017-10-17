@@ -1,9 +1,9 @@
-// Copyright (c) .NET Foundation. All rights reserved.
+﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
 
-namespace Microsoft.AspNetCore.Routing.Template
+namespace Microsoft.AspNetCore.Dispatcher
 {
     /// <summary>
     /// The parsed representation of an inline constraint in a route parameter.
@@ -22,16 +22,6 @@ namespace Microsoft.AspNetCore.Routing.Template
             }
 
             Constraint = constraint;
-        }
-
-        public InlineConstraint(AspNetCore.Dispatcher.InlineConstraint constraint)
-        {
-            if (constraint == null)
-            {
-                throw new ArgumentNullException(nameof(constraint));
-            }
-
-            Constraint = constraint.Constraint;
         }
 
         /// <summary>

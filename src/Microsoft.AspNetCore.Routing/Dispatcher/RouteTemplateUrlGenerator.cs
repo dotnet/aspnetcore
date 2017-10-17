@@ -43,7 +43,7 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
                 throw new InvalidOperationException("Can't find address");
             }
 
-            var binder = new TemplateBinder(_urlEncoder, _pool, TemplateParser.Parse(address.Template), new RouteValueDictionary());
+            var binder = new TemplateBinder(_urlEncoder, _pool, Template.TemplateParser.Parse(address.Template), new RouteValueDictionary());
 
             var feature = httpContext.Features.Get<IDispatcherFeature>();
             var result = binder.GetValues(feature.Values.AsRouteValueDictionary(), new RouteValueDictionary(values));

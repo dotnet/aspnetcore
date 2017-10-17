@@ -6,28 +6,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
-namespace Microsoft.AspNetCore.Routing.Template
+namespace Microsoft.AspNetCore.Dispatcher
 {
     [DebuggerDisplay("{DebuggerToString()}")]
     public class TemplatePart
     {
-        public TemplatePart()
-        {
-        }
-
-        public TemplatePart(AspNetCore.Dispatcher.TemplatePart templatePart)
-        {
-            IsCatchAll = templatePart.IsCatchAll;
-            IsLiteral = templatePart.IsLiteral;
-            IsOptional = templatePart.IsOptional;
-            IsOptionalSeperator = templatePart.IsOptionalSeperator;
-            IsParameter = templatePart.IsParameter;
-            Name = templatePart.Name;
-            Text = templatePart.Text;
-            DefaultValue = templatePart.DefaultValue;
-            InlineConstraints = templatePart.InlineConstraints?.Select(p => new InlineConstraint(p));
-        }
-
         public static TemplatePart CreateLiteral(string text)
         {
             return new TemplatePart()
