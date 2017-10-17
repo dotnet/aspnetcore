@@ -6,6 +6,7 @@
 typedef void(*request_handler_cb) (int error, IHttpContext* pHttpContext, void* pvCompletionContext);
 typedef REQUEST_NOTIFICATION_STATUS(*PFN_REQUEST_HANDLER) (IHttpContext* pHttpContext, void* pvRequstHandlerContext);
 typedef BOOL(*PFN_SHUTDOWN_HANDLER) (void* pvShutdownHandlerContext);
+typedef REQUEST_NOTIFICATION_STATUS(*PFN_MANAGED_CONTEXT_HANDLER)(void *pvManagedHttpContext, HRESULT hrCompletionStatus, DWORD cbCompletion);
 
 #include "application.h"
 
@@ -39,6 +40,7 @@ public:
     SetCallbackHandles(
         _In_ PFN_REQUEST_HANDLER request_callback,
         _In_ PFN_SHUTDOWN_HANDLER shutdown_callback,
+        _In_ PFN_MANAGED_CONTEXT_HANDLER managed_context_callback,
         _In_ VOID* pvRequstHandlerContext,
         _In_ VOID* pvShutdownHandlerContext
     );
@@ -53,6 +55,13 @@ public:
     LoadManagedApplication(
             VOID
         );
+
+    REQUEST_NOTIFICATION_STATUS
+    OnAsyncCompletion(
+        IHttpContext*           pHttpContext,
+        DWORD                   cbCompletion,
+        HRESULT                 hrCompletionStatus
+    );
 
     static
     IN_PROCESS_APPLICATION*
@@ -76,6 +85,8 @@ private:
     PFN_SHUTDOWN_HANDLER            m_ShutdownHandler;
     VOID*                           m_ShutdownHandlerContext;
 
+    PFN_MANAGED_CONTEXT_HANDLER     m_AsyncCompletionHandler;
+
     // The event that gets triggered when managed initialization is complete
     HANDLE                          m_pInitalizeEvent;
 
@@ -84,6 +95,7 @@ private:
 
     BOOL                            m_fManagedAppLoaded;
     BOOL                            m_fLoadManagedAppError;
+    BOOL                            m_fIsWebSocketsConnection;
 
     static IN_PROCESS_APPLICATION*   s_Application;
 

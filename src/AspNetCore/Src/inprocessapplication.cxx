@@ -14,6 +14,7 @@ VOID
 register_callbacks(
     _In_ PFN_REQUEST_HANDLER request_handler,
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
+    _In_ PFN_MANAGED_CONTEXT_HANDLER async_completion_handler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
 )
@@ -21,6 +22,7 @@ register_callbacks(
     IN_PROCESS_APPLICATION::GetInstance()->SetCallbackHandles(
         request_handler,
         shutdown_handler,
+        async_completion_handler,
         pvRequstHandlerContext,
         pvShutdownHandlerContext
     );
@@ -56,10 +58,34 @@ EXTERN_C __MIDL_DECLSPEC_DLLEXPORT VOID http_set_response_status_code(
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 HRESULT
 http_post_completion(
-    _In_ IHttpContext* pHttpContext
+    _In_ IHttpContext* pHttpContext,
+    DWORD cbBytes
 )
 {
-    return pHttpContext->PostCompletion(0);
+    return pHttpContext->PostCompletion(cbBytes);
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_set_managed_context(
+    _In_ IHttpContext* pHttpContext,
+    _In_ PVOID pvManagedContext
+)
+{
+    HRESULT hr;
+    IN_PROCESS_STORED_CONTEXT* pInProcessStoredContext = new IN_PROCESS_STORED_CONTEXT(pHttpContext, pvManagedContext);
+    if (pInProcessStoredContext == NULL)
+    {
+        return E_OUTOFMEMORY;
+    }
+
+    hr = IN_PROCESS_STORED_CONTEXT::SetInProcessStoredContext(pHttpContext, pInProcessStoredContext);
+    if (hr == HRESULT_FROM_WIN32(ERROR_ALREADY_ASSIGNED))
+    {
+        hr = S_OK;
+    }
+
+    return hr;
 }
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
@@ -105,6 +131,92 @@ EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 HRESULT
 http_read_request_bytes(
     _In_ IHttpContext* pHttpContext,
+    _Out_ CHAR* pvBuffer,
+    _In_ DWORD dwCbBuffer,
+    _Out_ DWORD* pdwBytesReceived,
+    _Out_ BOOL* pfCompletionPending
+)
+{
+    HRESULT hr;
+
+    if (pHttpContext == NULL)
+    {
+        return E_FAIL;
+    }
+    if (dwCbBuffer == 0)
+    {
+        return E_FAIL;
+    }
+    IHttpRequest *pHttpRequest = (IHttpRequest*)pHttpContext->GetRequest();
+
+    BOOL fAsync = TRUE;
+
+    hr = pHttpRequest->ReadEntityBody(
+        pvBuffer,
+        dwCbBuffer,
+        fAsync,
+        pdwBytesReceived,
+        pfCompletionPending);
+
+    if (hr == HRESULT_FROM_WIN32(ERROR_HANDLE_EOF))
+    {
+        // We reached the end of the data
+        hr = S_OK;
+    }
+
+    return hr;
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_write_response_bytes(
+    _In_ IHttpContext* pHttpContext,
+    _In_ HTTP_DATA_CHUNK* pDataChunks,
+    _In_ DWORD dwChunks,
+    _In_ BOOL* pfCompletionExpected
+)
+{
+    IHttpResponse *pHttpResponse = (IHttpResponse*)pHttpContext->GetResponse();
+    BOOL fAsync = TRUE;
+    BOOL fMoreData = TRUE;
+    DWORD dwBytesSent = 0;
+
+    HRESULT hr = pHttpResponse->WriteEntityChunks(
+        pDataChunks,
+        dwChunks,
+        fAsync,
+        fMoreData,
+        &dwBytesSent,
+        pfCompletionExpected);
+
+    return hr;
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_flush_response_bytes(
+    _In_ IHttpContext* pHttpContext,
+    _Out_ BOOL* pfCompletionExpected
+)
+{
+    IHttpResponse *pHttpResponse = (IHttpResponse*)pHttpContext->GetResponse();
+
+    BOOL fAsync = TRUE;
+    BOOL fMoreData = TRUE;
+    DWORD dwBytesSent = 0;
+
+    HRESULT hr = pHttpResponse->Flush(
+        fAsync,
+        fMoreData,
+        &dwBytesSent,
+        pfCompletionExpected);
+    return hr;
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_websockets_read_bytes(
+    _In_ IHttpContext* pHttpContext,
     _In_ CHAR* pvBuffer,
     _In_ DWORD cbBuffer,
     _In_ PFN_ASYNC_COMPLETION pfnCompletionCallback,
@@ -137,10 +249,10 @@ http_read_request_bytes(
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 HRESULT
-http_write_response_bytes(
+http_websockets_write_bytes(
     _In_ IHttpContext* pHttpContext,
     _In_ HTTP_DATA_CHUNK* pDataChunks,
-    _In_ DWORD nChunks,
+    _In_ DWORD dwChunks,
     _In_ PFN_ASYNC_COMPLETION pfnCompletionCallback,
     _In_ VOID* pvCompletionContext,
     _In_ BOOL* pfCompletionExpected
@@ -154,7 +266,7 @@ http_write_response_bytes(
 
     HRESULT hr = pHttpResponse->WriteEntityChunks(
         pDataChunks,
-        nChunks,
+        dwChunks,
         fAsync,
         fMoreData,
         pfnCompletionCallback,
@@ -167,7 +279,7 @@ http_write_response_bytes(
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 HRESULT
-http_flush_response_bytes(
+http_websockets_flush_bytes(
     _In_ IHttpContext* pHttpContext,
     _In_ PFN_ASYNC_COMPLETION pfnCompletionCallback,
     _In_ VOID* pvCompletionContext,
@@ -189,22 +301,69 @@ http_flush_response_bytes(
         pfCompletionExpected);
     return hr;
 }
-// End of export 
 
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_enable_websockets(
+    _In_ IHttpContext* pHttpContext
+)
+{
+    if (!g_fWebSocketSupported)
+    {
+        return E_FAIL;
+    }
+
+    ((IHttpContext3*)pHttpContext)->EnableFullDuplex();
+    ((IHttpResponse2*)pHttpContext->GetResponse())->DisableBuffering();
+
+    return S_OK;
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
+http_cancel_io(
+    _In_ IHttpContext* pHttpContext
+)
+{
+    return pHttpContext->CancelIo();
+}
+
+// End of export
 
 IN_PROCESS_APPLICATION*  IN_PROCESS_APPLICATION::s_Application = NULL;
 
-IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION():
+IN_PROCESS_APPLICATION::IN_PROCESS_APPLICATION() :
     m_ProcessExitCode ( 0 ),
     m_fManagedAppLoaded ( FALSE ),
     m_fLoadManagedAppError ( FALSE )
 {
 }
 
-
 IN_PROCESS_APPLICATION::~IN_PROCESS_APPLICATION()
 {
     Recycle();
+}
+
+REQUEST_NOTIFICATION_STATUS
+IN_PROCESS_APPLICATION::OnAsyncCompletion(
+    IHttpContext*           pHttpContext,
+    DWORD                   cbCompletion,
+    HRESULT                 hrCompletionStatus
+)
+{
+    HRESULT hr;
+    IN_PROCESS_STORED_CONTEXT* pInProcessStoredContext = NULL;
+
+    hr = IN_PROCESS_STORED_CONTEXT::GetInProcessStoredContext(pHttpContext, &pInProcessStoredContext);
+    if (FAILED(hr))
+    {
+        // Finish the request as we couldn't get the callback
+        pHttpContext->GetResponse()->SetStatus(500, "Internal Server Error", 19, hr);
+        return RQ_NOTIFICATION_FINISH_REQUEST;
+    }
+
+    // Call the managed handler for async completion.
+    return m_AsyncCompletionHandler(pInProcessStoredContext->QueryManagedHttpContext(), hrCompletionStatus, cbCompletion);
 }
 
 BOOL
@@ -289,6 +448,7 @@ VOID
 IN_PROCESS_APPLICATION::SetCallbackHandles(
     _In_ PFN_REQUEST_HANDLER request_handler,
     _In_ PFN_SHUTDOWN_HANDLER shutdown_handler,
+    _In_ PFN_MANAGED_CONTEXT_HANDLER async_completion_handler,
     _In_ VOID* pvRequstHandlerContext,
     _In_ VOID* pvShutdownHandlerContext
 )
@@ -297,6 +457,7 @@ IN_PROCESS_APPLICATION::SetCallbackHandles(
     m_RequstHandlerContext = pvRequstHandlerContext;
     m_ShutdownHandler = shutdown_handler;
     m_ShutdownHandlerContext = pvShutdownHandlerContext;
+    m_AsyncCompletionHandler = async_completion_handler;
 
     // Initialization complete
     SetEvent(m_pInitalizeEvent);

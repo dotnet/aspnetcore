@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26815.1
+VisualStudioVersion = 15.0.26815.3
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "AspNetCore", "src\AspNetCore\AspNetCore.vcxproj", "{439824F9-1455-4CC4-BD79-B44FA0A16552}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -101,5 +101,8 @@ Global
 		{4DDA7560-AA29-4161-A5EA-A7E8F3997321} = {02F461DC-5166-4E88-AAD5-CF110016A647}
 		{030225D8-4EE8-47E5-B692-2A96B3B51A38} = {02F461DC-5166-4E88-AAD5-CF110016A647}
 		{4062EA94-75F5-4691-86DC-C8594BA896DE} = {02F461DC-5166-4E88-AAD5-CF110016A647}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0967E9B4-FEE7-40D7-860A-23E340E65840}
 	EndGlobalSection
 EndGlobal

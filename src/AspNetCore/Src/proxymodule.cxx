@@ -122,9 +122,9 @@ Failed:
 __override
 REQUEST_NOTIFICATION_STATUS
 CProxyModule::OnAsyncCompletion(
-    IHttpContext * pHttpContext,
-    DWORD                   dwNotification,
-    BOOL                    fPostNotification,
+    IHttpContext *,
+    DWORD,
+    BOOL,
     IHttpEventProvider *,
     IHttpCompletionInfo *   pCompletionInfo
 )

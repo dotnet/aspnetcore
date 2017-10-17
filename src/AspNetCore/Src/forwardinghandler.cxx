@@ -1143,11 +1143,6 @@ FORWARDING_HANDLER::OnExecuteRequestHandler(
     {
     case HOSTING_IN_PROCESS:
     {
-        // Allow reading and writing to simultaneously
-        ((IHttpContext3*)m_pW3Context)->EnableFullDuplex();
-
-        // Disable response buffering by default, we'll do a write behind buffering in managed code
-        ((IHttpResponse2*)m_pW3Context->GetResponse())->DisableBuffering();
 
         hr = ((IN_PROCESS_APPLICATION*)m_pApplication)->LoadManagedApplication();
         if (FAILED(hr))
@@ -1570,7 +1565,28 @@ REQUEST_NOTIFICATION_STATUS
             reinterpret_cast<PVOID>(static_cast<DWORD_PTR>(hrCompletionStatus)));
     }
 
-    if (m_pApplication->QueryConfig()->QueryHostingModel() == HOSTING_OUT_PROCESS)
+    if (m_pApplication->QueryConfig()->QueryHostingModel() == HOSTING_IN_PROCESS)
+    {
+        if (FAILED(hrCompletionStatus))
+        {
+            return RQ_NOTIFICATION_FINISH_REQUEST;
+        }
+        else
+        {
+            // For now we are assuming we are in our own self contained box. 
+            // TODO refactor Finished and Failure sections to handle in process and out of process failure.
+            // TODO verify that websocket's OnAsyncCompletion is not calling this.
+            IN_PROCESS_APPLICATION* application = (IN_PROCESS_APPLICATION*)m_pApplication;
+            if (application == NULL)
+            {
+                hr = E_FAIL;
+                return RQ_NOTIFICATION_FINISH_REQUEST;
+            }
+
+            return application->OnAsyncCompletion(m_pW3Context, cbCompletion, hrCompletionStatus);
+        }
+    }
+    else if (m_pApplication->QueryConfig()->QueryHostingModel() == HOSTING_OUT_PROCESS)
     {
         //
         // Take a reference so that object does not go away as a result of
