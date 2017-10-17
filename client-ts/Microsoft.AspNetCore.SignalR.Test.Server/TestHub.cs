@@ -42,6 +42,16 @@ namespace Microsoft.AspNetCore.SignalR.Test.Server
             return new string[] { "a", "b", "c" }.ToObservable();
         }
 
+        public IObservable<int> EmptyStream()
+        {
+            return Array.Empty<int>().ToObservable();
+        }
+
+        public IObservable<string> StreamThrowException(string message)
+        {
+            throw new InvalidOperationException(message);
+        }
+
         public ComplexObject EchoComplexObject(ComplexObject complexObject)
         {
             return complexObject;

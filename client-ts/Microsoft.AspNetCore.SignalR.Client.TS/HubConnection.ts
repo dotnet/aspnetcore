@@ -6,7 +6,7 @@ import { IConnection } from "./IConnection"
 import { HttpConnection} from "./HttpConnection"
 import { TransportType, TransferMode } from "./Transports"
 import { Subject, Observable } from "./Observable"
-import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, NegotiationMessage } from "./IHubProtocol";
+import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, StreamCompletionMessage, ResultMessage, InvocationMessage, NegotiationMessage } from "./IHubProtocol";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { TextMessageFormat } from "./Formatters"
 import { Base64EncodedHubProtocol } from "./Base64EncodedHubProtocol"
@@ -24,7 +24,7 @@ export class HubConnection {
     private readonly connection: IConnection;
     private readonly logger: ILogger;
     private protocol: IHubProtocol;
-    private callbacks: Map<string, (invocationUpdate: CompletionMessage | ResultMessage) => void>;
+    private callbacks: Map<string, (invocationEvent: HubMessage, error?: Error) => void>;
     private methods: Map<string, ((...args: any[]) => void)[]>;
     private id: number;
     private closedCallbacks: ConnectionClosed[];
@@ -44,7 +44,7 @@ export class HubConnection {
         this.connection.onreceive = (data: any) => this.processIncomingData(data);
         this.connection.onclose = (error?: Error) => this.connectionClosed(error);
 
-        this.callbacks = new Map<string, (invocationEvent: CompletionMessage | ResultMessage) => void>();
+        this.callbacks = new Map<string, (invocationEvent: HubMessage, error?: Error) => void>();
         this.methods = new Map<string, ((...args: any[]) => void)[]>();
         this.closedCallbacks = [];
         this.id = 0;
@@ -63,9 +63,10 @@ export class HubConnection {
                     break;
                 case MessageType.Result:
                 case MessageType.Completion:
+                case MessageType.StreamCompletion:
                     let callback = this.callbacks.get(message.invocationId);
                     if (callback != null) {
-                        if (message.type == MessageType.Completion) {
+                        if (message.type == MessageType.Completion || message.type == MessageType.StreamCompletion) {
                             this.callbacks.delete(message.invocationId);
                         }
                         callback(message);
@@ -92,14 +93,8 @@ export class HubConnection {
     }
 
     private connectionClosed(error?: Error) {
-        let errorCompletionMessage = <CompletionMessage>{
-            type: MessageType.Completion,
-            invocationId: "-1",
-            error: error ? error.message : "Invocation cancelled due to connection being closed.",
-        };
-
         this.callbacks.forEach(callback => {
-            callback(errorCompletionMessage);
+            callback(undefined, error ? error : new Error("Invocation canceled due to connection being closed."));
         });
         this.callbacks.clear();
 
@@ -136,22 +131,28 @@ export class HubConnection {
 
         let subject = new Subject<T>();
 
-        this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: CompletionMessage | ResultMessage) => {
-            if (invocationEvent.type === MessageType.Completion) {
-                let completionMessage = <CompletionMessage>invocationEvent;
-                if (completionMessage.error) {
-                    subject.error(new Error(completionMessage.error));
-                }
-                else if (completionMessage.result) {
-                    subject.error(new Error("Server provided a result in a completion response to a streamed invocation."));
-                }
-                else {
-                    // TODO: Log a warning if there's a payload?
-                    subject.complete();
-                }
+        this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: HubMessage, error?: Error) => {
+            if (error) {
+                subject.error(error);
+                return;
             }
-            else {
-                subject.next(<T>(<ResultMessage>invocationEvent).item);
+
+            switch (invocationEvent.type) {
+                case MessageType.StreamCompletion:
+                    let completionMessage = <StreamCompletionMessage>invocationEvent;
+                    if (completionMessage.error) {
+                        subject.error(new Error(completionMessage.error));
+                    }
+                    else {
+                        subject.complete();
+                    }
+                    break;
+                case MessageType.Result:
+                    subject.next(<T>(<ResultMessage>invocationEvent).item);
+                    break;
+                default:
+                    subject.error(new Error("Hub methods must be invoked using the 'HubConnection.invoke()' method."));
+                    break;
             }
         });
 
@@ -178,7 +179,11 @@ export class HubConnection {
         let invocationDescriptor = this.createInvocation(methodName, args, false);
 
         let p = new Promise<any>((resolve, reject) => {
-            this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: CompletionMessage | ResultMessage) => {
+            this.callbacks.set(invocationDescriptor.invocationId, (invocationEvent: HubMessage, error?: Error) => {
+                if (error) {
+                    reject(error);
+                    return;
+                }
                 if (invocationEvent.type === MessageType.Completion) {
                     let completionMessage = <CompletionMessage>invocationEvent;
                     if (completionMessage.error) {
@@ -189,7 +194,7 @@ export class HubConnection {
                     }
                 }
                 else {
-                    reject(new Error("Streaming methods must be invoked using HubConnection.stream"))
+                    reject(new Error("Streaming methods must be invoked using the 'HubConnection.stream()' method."));
                 }
             });
 

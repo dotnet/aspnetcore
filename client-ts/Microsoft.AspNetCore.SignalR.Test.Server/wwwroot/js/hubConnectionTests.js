@@ -10,7 +10,7 @@ describe('hubConnection', function () {
         describe(protocol.name + ' over ' + signalR.TransportType[transportType] + ' transport', function () {
 
             it('can invoke server method and receive result', function (done) {
-                var message = "你好，世界！";
+                var message = '你好，世界！';
 
                 var options = {
                     transport: transportType,
@@ -57,7 +57,7 @@ describe('hubConnection', function () {
                 });
 
                 hubConnection.start().then(function () {
-                    hubConnection.send('SendCustomObject', { Name: "test", Value: 42});
+                    hubConnection.send('SendCustomObject', { Name: 'test', Value: 42});
                 }).catch(function (e) {
                     fail(e);
                     done();
@@ -89,7 +89,7 @@ describe('hubConnection', function () {
                             hubConnection.stop();
                         },
                         complete: function complete() {
-                            expect(received).toEqual(["a", "b", "c"]);
+                            expect(received).toEqual(['a', 'b', 'c']);
                             hubConnection.stop();
                         }
                     });
@@ -100,7 +100,7 @@ describe('hubConnection', function () {
             });
 
             it('rethrows an exception from the server when invoking', function (done) {
-                var errorMessage = "An error occurred.";
+                var errorMessage = 'An error occurred.';
                 var options = {
                     transport: transportType,
                     protocol: protocol,
@@ -125,8 +125,7 @@ describe('hubConnection', function () {
                 });
             });
 
-            it('rethrows an exception from the server when streaming', function (done) {
-                var errorMessage = "An error occurred.";
+            it('throws an exception when invoking streaming method with invoke', function (done) {
                 var options = {
                     transport: transportType,
                     protocol: protocol,
@@ -135,12 +134,90 @@ describe('hubConnection', function () {
                 var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
 
                 hubConnection.start().then(function () {
-                    hubConnection.stream('ThrowException', errorMessage).subscribe({
+                    hubConnection.invoke('EmptyStream').then(function () {
+                        // exception expected but none thrown
+                        fail();
+                    }).catch(function (e) {
+                        expect(e.message).toBe('Streaming methods must be invoked using the \'HubConnection.stream()\' method.');
+                    }).then(function () {
+                        return hubConnection.stop();
+                    }).then(function () {
+                        done();
+                    });
+                }).catch(function (e) {
+                    fail(e);
+                    done();
+                });
+            });
+
+            it('throws an exception when receiving a streaming result for method called with invoke', function (done) {
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
+
+                hubConnection.start().then(function () {
+                    hubConnection.invoke('Stream').then(function () {
+                        // exception expected but none thrown
+                        fail();
+                    }).catch(function (e) {
+                        expect(e.message).toBe('Streaming methods must be invoked using the \'HubConnection.stream()\' method.');
+                    }).then(function () {
+                        return hubConnection.stop();
+                    }).then(function () {
+                        done();
+                    });
+                }).catch(function (e) {
+                    fail(e);
+                    done();
+                });
+            });
+
+            it('rethrows an exception from the server when streaming', function (done) {
+                var errorMessage = 'An error occurred.';
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
+
+                hubConnection.start().then(function () {
+                    hubConnection.stream('StreamThrowException', errorMessage).subscribe({
                         next: function next(item) {
                             fail();
                         },
                         error: function error(err) {
-                            expect(err.message).toEqual("An error occurred.");
+                            expect(err.message).toEqual('An error occurred.');
+                            done();
+                        },
+                        complete: function complete() {
+                            fail();
+                        }
+                    });
+                }).catch(function (e) {
+                    fail(e);
+                    done();
+                });
+            });
+
+            it('throws an exception when invoking hub method with stream', function (done) {
+                var options = {
+                    transport: transportType,
+                    protocol: protocol,
+                    logging: signalR.LogLevel.Trace
+                };
+                var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
+
+                hubConnection.start().then(function () {
+                    hubConnection.stream('Echo', '42').subscribe({
+                        next: function next(item) {
+                            fail();
+                        },
+                        error: function error(err) {
+                            expect(err.message).toEqual('Hub methods must be invoked using the \'HubConnection.invoke()\' method.');
                             done();
                         },
                         complete: function complete() {
@@ -161,7 +238,7 @@ describe('hubConnection', function () {
                 };
                 var hubConnection = new signalR.HubConnection(TESTHUBENDPOINT_URL, options);
 
-                var message = "你好 SignalR！";
+                var message = '你好 SignalR！';
 
                 // client side method names are case insensitive
                 var methodName = 'message';
@@ -187,9 +264,9 @@ describe('hubConnection', function () {
 
             it('closed with error if hub cannot be created', function (done) {
                 var errorRegex = {
-                    WebSockets: "1011|1005", // Message is browser specific (e.g. 'Websocket closed with status code: 1011'), Edge and IE report 1005 even though the server sent 1011
-                    LongPolling: "Internal Server Error",
-                    ServerSentEvents: "Error occurred"
+                    WebSockets: '1011|1005', // Message is browser specific (e.g. 'Websocket closed with status code: 1011'), Edge and IE report 1005 even though the server sent 1011
+                    LongPolling: 'Internal Server Error',
+                    ServerSentEvents: 'Error occurred'
                 };
 
                 var options = {

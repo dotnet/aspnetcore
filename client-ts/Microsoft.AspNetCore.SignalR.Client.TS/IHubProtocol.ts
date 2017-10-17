@@ -4,7 +4,8 @@
 export const enum MessageType {
     Invocation = 1,
     Result,
-    Completion
+    Completion,
+    StreamCompletion
 }
 
 export interface HubMessage {
@@ -20,6 +21,10 @@ export interface InvocationMessage extends HubMessage {
 
 export interface ResultMessage extends HubMessage {
     readonly item?: any;
+}
+
+export interface StreamCompletionMessage extends HubMessage {
+    readonly error?: string;
 }
 
 export interface CompletionMessage extends HubMessage {
