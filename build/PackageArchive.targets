@@ -2,10 +2,28 @@
   <PropertyGroup>
     <_TemplatesDirectory>$(MSBuildThisFileDirectory)tools\templates\</_TemplatesDirectory>
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
+    <TimestampSource>$(RepositoryRoot).deps\Signed\Packages\</TimestampSource>
+    <TimestampFreeSource>$(RepositoryRoot).deps\Signed\Packages-NoTimeStamp\</TimestampFreeSource>
+    <TimestampOutputPackageName>nuGetPackagesArchive-$(PackageVersion)</TimestampOutputPackageName>
+    <TimestampFreeOutputPackageName>nuGetPackagesArchive-$(PackageVersionNoTimestamp)</TimestampFreeOutputPackageName>
   </PropertyGroup>
 
+  <Target Name="BuildFallbackArchive">
+    <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
+    <!-- Here, we're re-invoking KoreBuild, but limiting it to a specific target. -->
+    <!-- This won't rerun the whole build, but it ensures that the necessary MSBuild Tasks and Properties are initialized -->
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_BuildFallbackArchive"
+      Properties="MetapackageRestoreSource=$(TimestampSource);OutputPackageName=$(TimestampOutputPackageName);RemoveTimestamp=false;MetapackageVersion=$(PackageVersion)" />
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_BuildFallbackArchive"
+      Properties="MetapackageRestoreSource=$(TimestampFreeSource);OutputPackageName=$(TimestampFreeOutputPackageName);RemoveTimestamp=true;MetapackageVersion=$(PackageVersionNoTimestamp)" />
+  </Target>
+
   <Target Name="_BuildFallbackArchive" DependsOnTargets="ResolveRepoInfo">
-    <Error Text="DotNetRestoreSources must be specified" Condition=" '$(DotNetRestoreSources)' == '' " />
+    <Error Text="MetapackageRestoreSource must be specified" Condition=" '$(MetapackageRestoreSource)' == '' " />
     <Error Text="OutputPackageName must be specified" Condition=" '$(OutputPackageName)' == '' " />
     <Error Text="ArchiverPath must be specified" Condition=" '$(ArchiverPath)' == '' " />
     <Error Text="Archiver not found at $(ArchiverPath)" Condition="!Exists('$(ArchiverPath)')" />
@@ -28,7 +46,17 @@
     <PropertyGroup>
       <FallbackStagingDir>$(_WorkRoot)obj\$(OutputPackageName)</FallbackStagingDir>
       <FallbackOutputArchive>$(RepositoryRoot)artifacts\$(OutputPackageName).lzma</FallbackOutputArchive>
+      <GeneratedFallbackRestoreSourcesPropsPath>$(_WorkRoot)restoresources.$(OutputPackageName).props</GeneratedFallbackRestoreSourcesPropsPath>
     </PropertyGroup>
+
+    <ItemGroup>
+      <_FallbackArchiveRestoreSources Include="$(MetapackageRestoreSource)" Condition="Exists($(MetapackageRestoreSource))" />
+      <_FallbackArchiveRestoreSources Include="$(_DependencyMirrorDirectory)" Condition="Exists($(_DependencyMirrorDirectory))" />
+    </ItemGroup>
+
+    <RepoTasks.GenerateRestoreSourcesPropsFile
+      Sources="@(_FallbackArchiveRestoreSources)"
+      OutputPath="$(GeneratedFallbackRestoreSourcesPropsPath)" />
 
     <!-- Create the Staging Dir -->
     <MakeDir Directories="$(FallbackStagingDir)" />
@@ -37,43 +65,9 @@
     <MSBuild
       Projects="$(_WorkRoot)Archive.csproj"
       Targets="Restore"
-      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion);DotNetRestoreSources=$(DotNetRestoreSources);AspNetUniverseBuildOffline=true" />
+      Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true" />
 
     <!-- Create the archive -->
     <Exec Command="$(ArchiverPath) -a $(FallbackOutputArchive) $(FallbackStagingDir)" />
-  </Target>
-
-  <Target Name="BuildFallbackArchive">
-    <!-- Determine ASP.NET Package Version -->
-    <PropertyGroup>
-      <TimestampSource>$(RepositoryRoot).deps\Signed\Packages\</TimestampSource>
-      <TimestampFreeSource>$(RepositoryRoot).deps\Signed\Packages-NoTimeStamp\</TimestampFreeSource>
-    </PropertyGroup>
-
-    <ItemGroup>
-      <TimestampMetapackageVersion Include="$(TimestampSource)Microsoft.AspNetCore.All.*.nupkg" />
-      <TimestampFreeMetapackageVersion Include="$(TimestampSource)Microsoft.AspNetCore.All.*.nupkg" />
-    </ItemGroup>
-
-    <PropertyGroup>
-      <TimeStampVersion>@(TimestampMetapackageVersion->Metadata('Filename'))</TimeStampVersion>
-      <TimeStampVersion>$(TimeStampVersion.TrimStart('Microsoft.AspNetCore.All'))</TimeStampVersion>
-      <TimeStampFreeVersion>@(TimestampFreeMetapackageVersion->Metadata('Filename'))</TimeStampFreeVersion>
-      <TimeStampFreeVersion>$(TimeStampFreeVersion.TrimStart('Microsoft.AspNetCore.All'))</TimeStampFreeVersion>
-      <TimestampOutputPackageName>nuGetPackagesArchive-$(TimestampVersion)</TimestampOutputPackageName>
-      <TimestampFreeOutputPackageName>nuGetPackagesArchive-$(TimestampFreeVersion)</TimestampFreeOutputPackageName>
-    </PropertyGroup>
-
-    <!-- Run the actual target twice, once for timestamped packages, once for non-timestamped packages -->
-    <!-- Here, we're re-invoking KoreBuild, but limiting it to a specific target. -->
-    <!-- This won't rerun the whole build, but it ensures that the necessary MSBuild Tasks and Properties are initialized -->
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="_BuildFallbackArchive"
-      Properties="DotNetRestoreSources=$(TimestampSource);OutputPackageName=$(TimestampOutputPackageName);RemoveTimestamp=false;MetapackageVersion=$(TimeStampVersion)" />
-    <MSBuild
-      Projects="$(MSBuildProjectFullPath)"
-      Targets="_BuildFallbackArchive"
-      Properties="DotNetRestoreSources=$(TimestampFreeSource);OutputPackageName=$(TimestampFreeOutputPackageName);RemoveTimestamp=true;MetapackageVersion=$(TimeStampFreeVersion)" />
   </Target>
 </Project>
