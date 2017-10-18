@@ -11,6 +11,7 @@
     <_WorkLayoutDir>$(_WorkRoot).l\</_WorkLayoutDir>
     <_WorkOutputDir>$(_WorkRoot).o\</_WorkOutputDir>
     <_DockerRootDirectory>/opt/code/</_DockerRootDirectory>
+    <InstallersOutputDir>$(ArtifactsDir)installers\</InstallersOutputDir>
 
     <RSInstallerName>aspnetcore-store</RSInstallerName>
     <HostingInstallerName>dotnet-hosting</HostingInstallerName>
@@ -69,7 +70,7 @@
     <Exec Command="tar -xzf $(RuntimeArchive) -C $(_WorkRoot)" />
 
     <!-- Create Aspnet Hosting Bundle tar.gz -->
-    <Exec Command="tar -czvf $(ArtifactsDir)$(HostingArchiveName) ." WorkingDirectory="$(_WorkRoot)"/>
+    <Exec Command="tar -czvf $(InstallersOutputDir)$(HostingArchiveName) ." WorkingDirectory="$(_WorkRoot)"/>
   </Target>
 
   <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadCoreInstallers">
@@ -143,7 +144,7 @@
         -s dir
         -t rpm
         -n $(RPMInstallerPrefix)-$(RPMVersion)
-        -p $(_DockerRootDirectory)artifacts/$(RPMInstallerPrefix)-$(RPMVersion)-$(RPMFileSuffix)
+        -p $(_DockerRootDirectory)artifacts/installers/$(RPMInstallerPrefix)-$(RPMVersion)-$(RPMFileSuffix)
         -v $(RPMVersion)
         --iteration $(RPMRevision)
         -a amd64
@@ -355,7 +356,7 @@
     <Error Text="@(GeneratedDebFiles->Count()) deb installer files generated." Condition="'@(GeneratedDebFiles->Count())' != 1" />
 
     <Copy
-      DestinationFiles="$(ArtifactsDir)$(DebPrefix)-$(DebVersion)-$(Image)-x64.deb"
+      DestinationFiles="$(InstallersOutputDir)$(DebPrefix)-$(DebVersion)-$(Image)-x64.deb"
       SourceFiles="@(GeneratedDebFiles)"
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"

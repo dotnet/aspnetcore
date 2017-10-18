@@ -45,7 +45,8 @@
 
     <PropertyGroup>
       <FallbackStagingDir>$(_WorkRoot)obj\$(OutputPackageName)</FallbackStagingDir>
-      <FallbackOutputArchive>$(RepositoryRoot)artifacts\$(OutputPackageName).lzma</FallbackOutputArchive>
+      <FallbackOutputDir>$(ArtifactsDir)lzma\</FallbackOutputDir>
+      <FallbackOutputPath>$(FallbackOutputDir)$(OutputPackageName).lzma</FallbackOutputPath>
       <GeneratedFallbackRestoreSourcesPropsPath>$(_WorkRoot)restoresources.$(OutputPackageName).props</GeneratedFallbackRestoreSourcesPropsPath>
     </PropertyGroup>
 
@@ -59,7 +60,7 @@
       OutputPath="$(GeneratedFallbackRestoreSourcesPropsPath)" />
 
     <!-- Create the Staging Dir -->
-    <MakeDir Directories="$(FallbackStagingDir)" />
+    <MakeDir Directories="$(FallbackStagingDir);$(FallbackOutputDir)" />
 
     <!-- Restore the target project -->
     <MSBuild
@@ -68,6 +69,6 @@
       Properties="RestorePackagesPath=$(FallbackStagingDir);RuntimeFrameworkVersion=$(MicrosoftNETCoreApp20PackageVersion);DotNetRestoreSourcePropsPath=$(GeneratedFallbackRestoreSourcesPropsPath);AspNetUniverseBuildOffline=true" />
 
     <!-- Create the archive -->
-    <Exec Command="$(ArchiverPath) -a $(FallbackOutputArchive) $(FallbackStagingDir)" />
+    <Exec Command="$(ArchiverPath) -a $(FallbackOutputPath) $(FallbackStagingDir)" />
   </Target>
 </Project>
