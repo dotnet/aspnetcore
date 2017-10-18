@@ -14,7 +14,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
     {
         private readonly Http1Connection _context;
 
-        private bool _send100Continue = true;
         private volatile bool _canceled;
         private Task _pumpTask;
 
@@ -147,15 +146,6 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
             finally
             {
                 _context.TimeoutControl.CancelTimeout();
-            }
-        }
-
-        private void TryProduceContinue()
-        {
-            if (_send100Continue)
-            {
-                _context.HttpResponseControl.ProduceContinue();
-                _send100Continue = false;
             }
         }
 

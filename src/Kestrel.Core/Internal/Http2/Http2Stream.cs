@@ -24,6 +24,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public int StreamId => _context.StreamId;
 
+        public bool RequestBodyStarted { get; private set; }
         public bool EndStreamReceived { get; private set; }
 
         protected IHttp2StreamLifetimeHandler StreamLifetimeHandler => _context.StreamLifetimeHandler;
@@ -84,6 +85,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
                         writableBuffer.Commit();
                     }
 
+                    RequestBodyStarted = true;
                     await writableBuffer.FlushAsync();
                 }
 

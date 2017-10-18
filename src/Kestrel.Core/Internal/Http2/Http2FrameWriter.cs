@@ -14,6 +14,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 {
     public class Http2FrameWriter : IHttp2FrameWriter
     {
+        // Literal Header Field without Indexing - Indexed Name (Index 8 - :status)
+        private static readonly byte[] _continueBytes = new byte[] { 0x08, 0x03, (byte)'1', (byte)'0', (byte)'0' };
+
         private readonly Http2Frame _outgoingFrame = new Http2Frame();
         private readonly object _writeLock = new object();
         private readonly HPackEncoder _hpackEncoder = new HPackEncoder();
@@ -50,7 +53,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
         public Task Write100ContinueAsync(int streamId)
         {
-            return Task.CompletedTask;
+            lock (_writeLock)
+            {
+                _outgoingFrame.PrepareHeaders(Http2HeadersFrameFlags.END_HEADERS, streamId);
+                _outgoingFrame.Length = _continueBytes.Length;
+                _continueBytes.CopyTo(_outgoingFrame.HeadersPayload);
+
+                return WriteAsync(_outgoingFrame.Raw);
+            }
         }
 
         public void WriteResponseHeaders(int streamId, int statusCode, IHeaderDictionary headers)
