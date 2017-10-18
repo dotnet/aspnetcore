@@ -230,7 +230,7 @@ namespace Microsoft.AspNetCore.SignalR
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogTrace(0, ex, "Abort callback failed");
+                    _logger.AbortFailed(ex);
                 }
 
                 using (var scope = _serviceScopeFactory.CreateScope())

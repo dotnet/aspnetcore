@@ -51,11 +51,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             _ackHandler = new AckHandler();
 
             var writer = new LoggerTextWriter(logger);
-            _logger.LogInformation("Connecting to redis endpoints: {endpoints}", string.Join(", ", options.Value.Options.EndPoints.Select(e => EndPointCollection.ToString(e))));
+            _logger.ConnectingToEndpoints(string.Join(", ", options.Value.Options.EndPoints.Select(e => EndPointCollection.ToString(e))));
             _redisServerConnection = _options.Connect(writer);
             if (_redisServerConnection.IsConnected)
             {
-                _logger.LogInformation("Connected to redis");
+                _logger.Connected();
             }
             else
             {
@@ -67,12 +67,12 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             var previousBroadcastTask = Task.CompletedTask;
 
             var channelName = _channelNamePrefix;
-            _logger.LogInformation("Subscribing to channel: {channel}", channelName);
+            _logger.Subscribing(channelName);
             _bus.Subscribe(channelName, async (c, data) =>
             {
                 await previousBroadcastTask;
 
-                _logger.LogTrace("Received message from redis channel {channel}", channelName);
+                _logger.ReceivedFromChannel(channelName);
 
                 var message = DeserializeMessage<HubMessage>(data);
 
@@ -89,12 +89,12 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             var allExceptTask = Task.CompletedTask;
             channelName = _channelNamePrefix + ".AllExcept";
-            _logger.LogInformation("Subscribing to channel: {channel}", channelName);
+            _logger.Subscribing(channelName);
             _bus.Subscribe(channelName, async (c, data) =>
             {
                 await allExceptTask;
 
-                _logger.LogTrace("Received message from redis channel {channel}", channelName);
+                _logger.ReceivedFromChannel(channelName);
 
                 var message = DeserializeMessage<RedisExcludeClientsMessage>(data);
                 var excludedIds = message.ExcludedIds;
@@ -222,7 +222,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 payload = stream.ToArray();
             }
 
-            _logger.LogTrace("Publishing message to redis channel {channel}", channel);
+            _logger.PublishToChannel(channel);
             await _bus.PublishAsync(channel, payload);
         }
 
@@ -242,7 +242,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             var previousConnectionTask = Task.CompletedTask;
 
-            _logger.LogInformation("Subscribing to connection channel: {channel}", connectionChannel);
+            _logger.Subscribing(connectionChannel);
             connectionTask = _bus.SubscribeAsync(connectionChannel, async (c, data) =>
             {
                 await previousConnectionTask;
@@ -286,7 +286,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             {
                 foreach (var subscription in redisSubscriptions)
                 {
-                    _logger.LogInformation("Unsubscribing from channel: {channel}", subscription);
+                    _logger.Unsubscribe(subscription);
                     tasks.Add(_bus.UnsubscribeAsync(subscription));
                 }
             }
@@ -357,7 +357,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
                 var previousTask = Task.CompletedTask;
 
-                _logger.LogInformation("Subscribing to group channel: {channel}", groupChannel);
+                _logger.Subscribing(groupChannel);
                 await _bus.SubscribeAsync(groupChannel, async (c, data) =>
                 {
                     // Since this callback is async, we await the previous task then
@@ -439,7 +439,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
                     if (group.Connections.Count == 0)
                     {
-                        _logger.LogInformation("Unsubscribing from group channel: {channel}", groupChannel);
+                        _logger.Unsubscribe(groupChannel);
                         await _bus.UnsubscribeAsync(groupChannel);
                     }
                 }

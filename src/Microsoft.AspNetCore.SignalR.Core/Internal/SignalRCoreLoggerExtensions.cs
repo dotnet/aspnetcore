@@ -55,6 +55,9 @@ namespace Microsoft.AspNetCore.SignalR.Core.Internal
         private static readonly Action<ILogger, Exception> _unexpectedCancel =
             LoggerMessage.Define(LogLevel.Debug, new EventId(14, nameof(UnexpectedCancel)), "CancelInvocationMessage received unexpectedly.");
 
+        private static readonly Action<ILogger, Exception> _abortFailed =
+            LoggerMessage.Define(LogLevel.Trace, new EventId(15, nameof(AbortFailed)), "Abort callback failed.");
+
         public static void UsingHubProtocol(this ILogger logger, string hubProtocol)
         {
             _usingHubProtocol(logger, hubProtocol, null);
@@ -128,6 +131,11 @@ namespace Microsoft.AspNetCore.SignalR.Core.Internal
         public static void UnexpectedCancel(this ILogger logger)
         {
             _unexpectedCancel(logger, null);
+        }
+
+        public static void AbortFailed(this ILogger logger, Exception exception)
+        {
+            _abortFailed(logger, exception);
         }
     }
 }
