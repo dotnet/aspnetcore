@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Other = Microsoft.AspNetCore.Dispatcher.Patterns.RoutePatternPart;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -15,17 +16,34 @@ namespace Microsoft.AspNetCore.Routing.Template
         {
         }
 
-        public TemplatePart(AspNetCore.Dispatcher.TemplatePart templatePart)
+        public TemplatePart(Other other)
         {
-            IsCatchAll = templatePart.IsCatchAll;
-            IsLiteral = templatePart.IsLiteral;
-            IsOptional = templatePart.IsOptional;
-            IsOptionalSeperator = templatePart.IsOptionalSeperator;
-            IsParameter = templatePart.IsParameter;
-            Name = templatePart.Name;
-            Text = templatePart.Text;
-            DefaultValue = templatePart.DefaultValue;
-            InlineConstraints = templatePart.InlineConstraints?.Select(p => new InlineConstraint(p));
+            IsLiteral = other.IsLiteral || other.IsSeparator;
+            IsParameter = other.IsParameter;
+
+            if (other.IsLiteral && other is Microsoft.AspNetCore.Dispatcher.Patterns.RoutePatternLiteral literal)
+            {
+                Text = literal.Content;
+            }
+            else if (other.IsParameter && other is Microsoft.AspNetCore.Dispatcher.Patterns.RoutePatternParameter parameter)
+            {
+                // Text is unused by TemplatePart and assumed to be null when the part is a parameter.
+                Name = parameter.Name;
+                IsCatchAll = parameter.IsCatchAll;
+                IsOptional = parameter.IsOptional;
+                DefaultValue = parameter.DefaultValue;
+                InlineConstraints = parameter.Constraints?.Select(p => new InlineConstraint(p));
+            }
+            else if (other.IsSeparator && other is Microsoft.AspNetCore.Dispatcher.Patterns.RoutePatternSeparator separator)
+            {
+                Text = separator.Content;
+                IsOptionalSeperator = true;
+            }
+            else
+            {
+                // Unreachable
+                throw new NotSupportedException();
+            }
         }
 
         public static TemplatePart CreateLiteral(string text)

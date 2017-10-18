@@ -335,7 +335,7 @@ namespace Microsoft.AspNetCore.Routing.Template
                 }
                 else
                 {
-                    Debug.Assert(part.IsLiteral);
+                    Debug.Assert(part.IsLiteral || part.IsOptionalSeperator);
                     lastLiteral = part;
 
                     var startIndex = lastIndex - 1;

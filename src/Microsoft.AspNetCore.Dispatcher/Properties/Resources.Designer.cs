@@ -25,6 +25,20 @@ namespace Microsoft.AspNetCore.Dispatcher
             => string.Format(CultureInfo.CurrentCulture, GetString("AmbiguousEndpoints"), p0, p1);
 
         /// <summary>
+        /// Value cannot be null or empty.
+        /// </summary>
+        internal static string Argument_NullOrEmpty
+        {
+            get => GetString("Argument_NullOrEmpty");
+        }
+
+        /// <summary>
+        /// Value cannot be null or empty.
+        /// </summary>
+        internal static string FormatArgument_NullOrEmpty()
+            => GetString("Argument_NullOrEmpty");
+
+        /// <summary>
         /// A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.
         /// </summary>
         internal static string TemplateRoute_CannotHaveCatchAllInMultiSegment

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Other = Microsoft.AspNetCore.Dispatcher.Patterns.RoutePattern;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -13,10 +14,10 @@ namespace Microsoft.AspNetCore.Routing.Template
     {
         private const string SeparatorString = "/";
 
-        public RouteTemplate(AspNetCore.Dispatcher.RouteTemplate routeTemplate)
+        public RouteTemplate(Other other)
         {
-            TemplateText = routeTemplate.TemplateText;
-            Segments = new List<TemplateSegment>(routeTemplate.Segments.Select(p => new TemplateSegment(p)));
+            TemplateText = other.RawText;
+            Segments = new List<TemplateSegment>(other.PathSegments.Select(p => new TemplateSegment(p)));
             Parameters = new List<TemplatePart>();
             for (var i = 0; i < Segments.Count; i++)
             {

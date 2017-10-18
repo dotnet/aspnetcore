@@ -121,6 +121,9 @@
     <value>Multiple endpoints matched. The following endpoints matched the request:{0}{0}{1}</value>
     <comment>0 is the newline - 1 is a newline separate list of action display names</comment>
   </data>
+  <data name="Argument_NullOrEmpty" xml:space="preserve">
+    <value>Value cannot be null or empty.</value>
+  </data>
   <data name="TemplateRoute_CannotHaveCatchAllInMultiSegment" xml:space="preserve">
     <value>A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.</value>
   </data>

@@ -4,11 +4,10 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
 
-namespace Microsoft.AspNetCore.Dispatcher
+namespace Microsoft.AspNetCore.Dispatcher.Patterns
 {
-    public static class TemplateParser
+    internal static class RoutePatternParser
     {
         private const char Separator = '/';
         private const char OpenBrace = '{';
@@ -18,61 +17,85 @@ namespace Microsoft.AspNetCore.Dispatcher
         private const char Asterisk = '*';
         private const string PeriodString = ".";
 
-        public static RouteTemplate Parse(string routeTemplate)
+        internal static readonly char[] InvalidParameterNameChars = new char[]
         {
-            if (routeTemplate == null)
+            Separator,
+            OpenBrace,
+            CloseBrace,
+            QuestionMark,
+            Asterisk
+        };
+
+        public static RoutePattern Parse(string pattern)
+        {
+            if (pattern == null)
             {
-                routeTemplate = String.Empty;
+                throw new ArgumentNullException(nameof(pattern));
             }
 
-            if (IsInvalidRouteTemplate(routeTemplate))
+            if (IsInvalidPattern(pattern))
             {
-                throw new ArgumentException(Resources.TemplateRoute_InvalidRouteTemplate, nameof(routeTemplate));
+                throw new RoutePatternException(pattern, Resources.TemplateRoute_InvalidRouteTemplate);
             }
 
-            var context = new TemplateParserContext(routeTemplate);
-            var segments = new List<TemplateSegment>();
+            var context = new TemplateParserContext(pattern);
+            var builder = RoutePatternBuilder.Create(pattern);
+            var segments = new List<RoutePatternPathSegment>();
 
-            while (context.Next())
+            while (context.MoveNext())
             {
+                var i = context.Index;
+
                 if (context.Current == Separator)
                 {
                     // If we get here is means that there's a consecutive '/' character.
                     // Templates don't start with a '/' and parsing a segment consumes the separator.
-                    throw new ArgumentException(Resources.TemplateRoute_CannotHaveConsecutiveSeparators,
-                                                nameof(routeTemplate));
+                    throw new RoutePatternException(pattern, Resources.TemplateRoute_CannotHaveConsecutiveSeparators);
                 }
-                else
+
+                if (!ParseSegment(context, segments))
                 {
-                    if (!ParseSegment(context, segments))
-                    {
-                        throw new ArgumentException(context.Error, nameof(routeTemplate));
-                    }
+                    throw new RoutePatternException(pattern, context.Error);
+                }
+
+                // A successful parse should always result in us being at the end or at a separator.
+                Debug.Assert(context.AtEnd() || context.Current == Separator);
+
+                if (context.Index <= i)
+                {
+                    throw new InvalidProgramException("Infinite loop in the parser. This is a bug.");
                 }
             }
 
             if (IsAllValid(context, segments))
             {
-                return new RouteTemplate(routeTemplate, segments);
+                for (var i = 0; i < segments.Count; i++)
+                {
+                    builder.PathSegments.Add(segments[i]);
+                }
+
+                return builder.Build();
             }
             else
             {
-                throw new ArgumentException(context.Error, nameof(routeTemplate));
+                throw new RoutePatternException(pattern, context.Error);
             }
         }
 
-        private static bool ParseSegment(TemplateParserContext context, List<TemplateSegment> segments)
+        private static bool ParseSegment(TemplateParserContext context, List<RoutePatternPathSegment> segments)
         {
             Debug.Assert(context != null);
             Debug.Assert(segments != null);
 
-            var segment = new TemplateSegment();
+            var parts = new List<RoutePatternPart>();
 
             while (true)
             {
+                var i = context.Index;
+
                 if (context.Current == OpenBrace)
                 {
-                    if (!context.Next())
+                    if (!context.MoveNext())
                     {
                         // This is a dangling open-brace, which is not allowed
                         context.Error = Resources.TemplateRoute_MismatchedParameter;
@@ -83,43 +106,44 @@ namespace Microsoft.AspNetCore.Dispatcher
                     {
                         // This is an 'escaped' brace in a literal, like "{{foo"
                         context.Back();
-                        if (!ParseLiteral(context, segment))
+                        if (!ParseLiteral(context, parts))
                         {
                             return false;
                         }
                     }
                     else
                     {
-                        // This is the inside of a parameter
-                        if (!ParseParameter(context, segment))
+                        // This is a parameter
+                        context.Back();
+                        if (!ParseParameter(context, parts))
                         {
                             return false;
                         }
                     }
                 }
-                else if (context.Current == Separator)
-                {
-                    // We've reached the end of the segment
-                    break;
-                }
                 else
                 {
-                    if (!ParseLiteral(context, segment))
+                    if (!ParseLiteral(context, parts))
                     {
                         return false;
                     }
                 }
 
-                if (!context.Next())
+                if (context.Current == Separator || context.AtEnd())
                 {
-                    // We've reached the end of the string
+                    // We've reached the end of the segment
                     break;
+                }
+
+                if (context.Index <= i)
+                {
+                    throw new InvalidProgramException("Infinite loop in the parser. This is a bug.");
                 }
             }
 
-            if (IsSegmentValid(context, segment))
+            if (IsSegmentValid(context, parts))
             {
-                segments.Add(segment);
+                segments.Add(new RoutePatternPathSegment(null, parts.ToArray()));
                 return true;
             }
             else
@@ -128,16 +152,19 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
         }
 
-        private static bool ParseParameter(TemplateParserContext context, TemplateSegment segment)
+        private static bool ParseParameter(TemplateParserContext context, List<RoutePatternPart> parts)
         {
+            Debug.Assert(context.Current == OpenBrace);
             context.Mark();
+
+            context.MoveNext();
 
             while (true)
             {
                 if (context.Current == OpenBrace)
                 {
                     // This is an open brace inside of a parameter, it has to be escaped
-                    if (context.Next())
+                    if (context.MoveNext())
                     {
                         if (context.Current != OpenBrace)
                         {
@@ -159,10 +186,9 @@ namespace Microsoft.AspNetCore.Dispatcher
                     // When we encounter Closed brace here, it either means end of the parameter or it is a closed 
                     // brace in the parameter, in that case it needs to be escaped.
                     // Example: {p1:regex(([}}])\w+}. First pair is escaped one and last marks end of the parameter
-                    if (!context.Next())
+                    if (!context.MoveNext())
                     {
                         // This is the end of the string -and we have a valid parameter
-                        context.Back();
                         break;
                     }
 
@@ -173,12 +199,11 @@ namespace Microsoft.AspNetCore.Dispatcher
                     else
                     {
                         // This is the end of the parameter
-                        context.Back();
                         break;
                     }
                 }
 
-                if (!context.Next())
+                if (!context.MoveNext())
                 {
                     // This is a dangling open-brace, which is not allowed
                     context.Error = Resources.TemplateRoute_MismatchedParameter;
@@ -186,14 +211,22 @@ namespace Microsoft.AspNetCore.Dispatcher
                 }
             }
 
-            var rawParameter = context.Capture();
-            var decoded = rawParameter.Replace("}}", "}").Replace("{{", "{");
+            var text = context.Capture();
+            if (text == "{}")
+            {
+                context.Error = Resources.FormatTemplateRoute_InvalidParameterName(string.Empty);
+                return false;
+            }
+
+            var inside = text.Substring(1, text.Length - 2);
+            var decoded = inside.Replace("}}", "}").Replace("{{", "{");
 
             // At this point, we need to parse the raw name for inline constraint,
             // default values and optional parameters.
-            var templatePart = InlineRouteParameterParser.ParseRouteParameter(decoded);
+            var templatePart = InlineRouteParameterParser.ParseRouteParameter(text, decoded);
 
-            if (templatePart.IsCatchAll && templatePart.IsOptional)
+            // See #475 - this is here because InlineRouteParameterParser can't return errors
+            if (decoded.StartsWith("*") && decoded.EndsWith("?"))
             {
                 context.Error = Resources.TemplateRoute_CatchAllCannotBeOptional;
                 return false;
@@ -212,7 +245,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             var parameterName = templatePart.Name;
             if (IsValidParameterName(context, parameterName))
             {
-                segment.Parts.Add(templatePart);
+                parts.Add(templatePart);
                 return true;
             }
             else
@@ -221,22 +254,20 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
         }
 
-        private static bool ParseLiteral(TemplateParserContext context, TemplateSegment segment)
+        private static bool ParseLiteral(TemplateParserContext context, List<RoutePatternPart> parts)
         {
             context.Mark();
-
-            string encoded;
+            
             while (true)
             {
                 if (context.Current == Separator)
                 {
-                    encoded = context.Capture();
-                    context.Back();
+                    // End of the segment
                     break;
                 }
                 else if (context.Current == OpenBrace)
                 {
-                    if (!context.Next())
+                    if (!context.MoveNext())
                     {
                         // This is a dangling open-brace, which is not allowed
                         context.Error = Resources.TemplateRoute_MismatchedParameter;
@@ -249,16 +280,14 @@ namespace Microsoft.AspNetCore.Dispatcher
                     }
                     else
                     {
-                        // We've just seen the start of a parameter, so back up and return
-                        context.Back();
-                        encoded = context.Capture();
+                        // We've just seen the start of a parameter, so back up.
                         context.Back();
                         break;
                     }
                 }
                 else if (context.Current == CloseBrace)
                 {
-                    if (!context.Next())
+                    if (!context.MoveNext())
                     {
                         // This is a dangling close-brace, which is not allowed
                         context.Error = Resources.TemplateRoute_MismatchedParameter;
@@ -277,17 +306,17 @@ namespace Microsoft.AspNetCore.Dispatcher
                     }
                 }
 
-                if (!context.Next())
+                if (!context.MoveNext())
                 {
-                    encoded = context.Capture();
                     break;
                 }
             }
 
+            var encoded = context.Capture();
             var decoded = encoded.Replace("}}", "}").Replace("{{", "{");
             if (IsValidLiteral(context, decoded))
             {
-                segment.Parts.Add(TemplatePart.CreateLiteral(decoded));
+                parts.Add(RoutePatternPart.CreateLiteralFromText(encoded, decoded));
                 return true;
             }
             else
@@ -296,7 +325,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
         }
 
-        private static bool IsAllValid(TemplateParserContext context, List<TemplateSegment> segments)
+        private static bool IsAllValid(TemplateParserContext context, List<RoutePatternPathSegment> segments)
         {
             // A catch-all parameter must be the last part of the last segment
             for (var i = 0; i < segments.Count; i++)
@@ -306,7 +335,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 {
                     var part = segment.Parts[j];
                     if (part.IsParameter &&
-                        part.IsCatchAll &&
+                        ((RoutePatternParameter)part).IsCatchAll &&
                         (i != segments.Count - 1 || j != segment.Parts.Count - 1))
                     {
                         context.Error = Resources.TemplateRoute_CatchAllMustBeLast;
@@ -318,13 +347,13 @@ namespace Microsoft.AspNetCore.Dispatcher
             return true;
         }
 
-        private static bool IsSegmentValid(TemplateParserContext context, TemplateSegment segment)
+        private static bool IsSegmentValid(TemplateParserContext context, List<RoutePatternPart> parts)
         {
             // If a segment has multiple parts, then it can't contain a catch all.
-            for (var i = 0; i < segment.Parts.Count; i++)
+            for (var i = 0; i < parts.Count; i++)
             {
-                var part = segment.Parts[i];
-                if (part.IsParameter && part.IsCatchAll && segment.Parts.Count > 1)
+                var part = parts[i];
+                if (part.IsParameter && ((RoutePatternParameter)part).IsCatchAll && parts.Count > 1)
                 {
                     context.Error = Resources.TemplateRoute_CannotHaveCatchAllInMultiSegment;
                     return false;
@@ -333,30 +362,32 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             // if a segment has multiple parts, then only the last one parameter can be optional 
             // if it is following a optional seperator. 
-            for (var i = 0; i < segment.Parts.Count; i++)
+            for (var i = 0; i < parts.Count; i++)
             {
-                var part = segment.Parts[i];
+                var part = parts[i];
 
-                if (part.IsParameter && part.IsOptional && segment.Parts.Count > 1)
+                if (part.IsParameter && ((RoutePatternParameter)part).IsOptional && parts.Count > 1)
                 {
                     // This optional parameter is the last part in the segment
-                    if (i == segment.Parts.Count - 1)
+                    if (i == parts.Count - 1)
                     {
-                        if (!segment.Parts[i - 1].IsLiteral)
+                        var previousPart = parts[i - 1];
+
+                        if (!previousPart.IsLiteral && !previousPart.IsSeparator)
                         {
-                            // The optional parameter is preceded by something that is not a literal.
+                            // The optional parameter is preceded by something that is not a literal or separator
                             // Example of error message:
                             // "In the segment '{RouteValue}{param?}', the optional parameter 'param' is preceded
                             // by an invalid segment '{RouteValue}'. Only a period (.) can precede an optional parameter.
                             context.Error = string.Format(
                                 Resources.TemplateRoute_OptionalParameterCanbBePrecededByPeriod,
-                                segment.DebuggerToString(),
-                                part.Name,
-                                segment.Parts[i - 1].DebuggerToString());
+                                RoutePatternPathSegment.DebuggerToString(parts),
+                                ((RoutePatternParameter)part).Name,
+                                parts[i - 1].DebuggerToString());
 
                             return false;
                         }
-                        else if (segment.Parts[i - 1].Text != PeriodString)
+                        else if (previousPart is RoutePatternLiteral literal && literal.Content != PeriodString)
                         {
                             // The optional parameter is preceded by a literal other than period.
                             // Example of error message:
@@ -364,29 +395,26 @@ namespace Microsoft.AspNetCore.Dispatcher
                             // by an invalid segment '-'. Only a period (.) can precede an optional parameter.
                             context.Error = string.Format(
                                 Resources.TemplateRoute_OptionalParameterCanbBePrecededByPeriod,
-                                segment.DebuggerToString(),
-                                part.Name,
-                                segment.Parts[i - 1].Text);
+                                RoutePatternPathSegment.DebuggerToString(parts),
+                                ((RoutePatternParameter)part).Name,
+                                parts[i - 1].DebuggerToString());
 
                             return false;
                         }
 
-                        segment.Parts[i - 1].IsOptionalSeperator = true;
+                        parts[i - 1] = RoutePatternPart.CreateSeparatorFromText(previousPart.RawText, ((RoutePatternLiteral)previousPart).Content);
                     }
                     else
                     {
                         // This optional parameter is not the last one in the segment
                         // Example:
-                        // An optional parameter must be at the end of the segment.In the segment '{RouteValue?})', 
+                        // An optional parameter must be at the end of the segment. In the segment '{RouteValue?})', 
                         // optional parameter 'RouteValue' is followed by ')'
-                        var nextPart = segment.Parts[i + 1];
-                        var invalidPartText = nextPart.IsParameter ? nextPart.Name : nextPart.Text;
-
                         context.Error = string.Format(
                             Resources.TemplateRoute_OptionalParameterHasTobeTheLast,
-                            segment.DebuggerToString(),
-                            segment.Parts[i].Name,
-                            invalidPartText);
+                            RoutePatternPathSegment.DebuggerToString(parts),
+                            ((RoutePatternParameter)part).Name,
+                            parts[i + 1].DebuggerToString());
 
                         return false;
                     }
@@ -395,9 +423,9 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             // A segment cannot contain two consecutive parameters
             var isLastSegmentParameter = false;
-            for (var i = 0; i < segment.Parts.Count; i++)
+            for (var i = 0; i < parts.Count; i++)
             {
-                var part = segment.Parts[i];
+                var part = parts[i];
                 if (part.IsParameter && isLastSegmentParameter)
                 {
                     context.Error = Resources.TemplateRoute_CannotHaveConsecutiveParameters;
@@ -412,28 +440,15 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         private static bool IsValidParameterName(TemplateParserContext context, string parameterName)
         {
-            if (parameterName.Length == 0)
+            if (parameterName.Length == 0 || parameterName.IndexOfAny(InvalidParameterNameChars) >= 0)
             {
-                context.Error = String.Format(CultureInfo.CurrentCulture,
-                                              Resources.TemplateRoute_InvalidParameterName, parameterName);
+                context.Error = Resources.FormatTemplateRoute_InvalidParameterName(parameterName);
                 return false;
-            }
-
-            for (var i = 0; i < parameterName.Length; i++)
-            {
-                var c = parameterName[i];
-                if (c == Separator || c == OpenBrace || c == CloseBrace || c == QuestionMark || c == Asterisk)
-                {
-                    context.Error = String.Format(CultureInfo.CurrentCulture,
-                                                  Resources.TemplateRoute_InvalidParameterName, parameterName);
-                    return false;
-                }
             }
 
             if (!context.ParameterNames.Add(parameterName))
             {
-                context.Error = String.Format(CultureInfo.CurrentCulture,
-                                              Resources.TemplateRoute_RepeatedParameter, parameterName);
+                context.Error = Resources.FormatTemplateRoute_RepeatedParameter(parameterName);
                 return false;
             }
 
@@ -447,20 +462,20 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             if (literal.IndexOf(QuestionMark) != -1)
             {
-                context.Error = String.Format(CultureInfo.CurrentCulture,
-                                              Resources.TemplateRoute_InvalidLiteral, literal);
+                context.Error = Resources.FormatTemplateRoute_InvalidLiteral(literal);
                 return false;
             }
 
             return true;
         }
 
-        private static bool IsInvalidRouteTemplate(string routeTemplate)
+        private static bool IsInvalidPattern(string routeTemplate)
         {
             return routeTemplate.StartsWith("~", StringComparison.Ordinal) ||
                    routeTemplate.StartsWith("/", StringComparison.Ordinal);
         }
 
+        [DebuggerDisplay("{DebuggerToString()}")]
         private class TemplateParserContext
         {
             private readonly string _template;
@@ -482,6 +497,8 @@ namespace Microsoft.AspNetCore.Dispatcher
                 get { return (_index < _template.Length && _index >= 0) ? _template[_index] : (char)0; }
             }
 
+            public int Index => _index;
+
             public string Error
             {
                 get;
@@ -498,13 +515,21 @@ namespace Microsoft.AspNetCore.Dispatcher
                 return --_index >= 0;
             }
 
-            public bool Next()
+            public bool AtEnd()
+            {
+                return _index >= _template.Length;
+            }
+
+            public bool MoveNext()
             {
                 return ++_index < _template.Length;
             }
 
             public void Mark()
             {
+                Debug.Assert(_index >= 0);
+
+                // Index is always the index of the character *past* Current - we want to 'mark' Current.
                 _mark = _index;
             }
 
@@ -519,6 +544,26 @@ namespace Microsoft.AspNetCore.Dispatcher
                 else
                 {
                     return null;
+                }
+            }
+
+            private string DebuggerToString()
+            {
+                if (_index == -1)
+                {
+                    return _template;
+                }
+                else if (_mark.HasValue)
+                {
+                    return _template.Substring(0, _mark.Value) + 
+                        "|" + 
+                        _template.Substring(_mark.Value, _index - _mark.Value) +
+                        "|" +
+                        _template.Substring(_index);
+                }
+                else
+                {
+                    return _template.Substring(0, _index) + "|" + _template.Substring(_index);
                 }
             }
         }

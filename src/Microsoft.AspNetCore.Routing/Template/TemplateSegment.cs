@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using Other = Microsoft.AspNetCore.Dispatcher.Patterns.RoutePatternPathSegment;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -14,9 +15,9 @@ namespace Microsoft.AspNetCore.Routing.Template
         {
         }
 
-        public TemplateSegment(AspNetCore.Dispatcher.TemplateSegment templateSegment)
+        public TemplateSegment(Other other)
         {
-            Parts = new List<TemplatePart>(templateSegment.Parts.Select(s => new TemplatePart(s)));
+            Parts = new List<TemplatePart>(other.Parts.Select(s => new TemplatePart(s)));
         }
 
         public bool IsSimple => Parts.Count == 1;

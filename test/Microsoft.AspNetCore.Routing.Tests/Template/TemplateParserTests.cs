@@ -525,8 +525,8 @@ namespace Microsoft.AspNetCore.Routing.Template.Tests
 
         [Theory]
         [InlineData("{p1}.{p2?}.{p3}", "p2", ".")]
-        [InlineData("{p1?}{p2}", "p1", "p2")]
-        [InlineData("{p1?}{p2?}", "p1", "p2")]
+        [InlineData("{p1?}{p2}", "p1", "{p2}")]
+        [InlineData("{p1?}{p2?}", "p1", "{p2?}")]
         [InlineData("{p1}.{p2?})", "p2", ")")]
         [InlineData("{foorb?}-bar-{z}", "foorb", "-bar-")]
         public void Parse_ComplexSegment_OptionalParameter_NotTheLastPart(

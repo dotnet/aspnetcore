@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Other = Microsoft.AspNetCore.Dispatcher.Patterns.ConstraintReference;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -24,14 +25,14 @@ namespace Microsoft.AspNetCore.Routing.Template
             Constraint = constraint;
         }
 
-        public InlineConstraint(AspNetCore.Dispatcher.InlineConstraint constraint)
+        public InlineConstraint(Other other)
         {
-            if (constraint == null)
+            if (other == null)
             {
-                throw new ArgumentNullException(nameof(constraint));
+                throw new ArgumentNullException(nameof(other));
             }
 
-            Constraint = constraint.Constraint;
+            Constraint = other.Content;
         }
 
         /// <summary>

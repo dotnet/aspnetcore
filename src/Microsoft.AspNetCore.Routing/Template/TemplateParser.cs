@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Dispatcher.Patterns;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -14,8 +15,15 @@ namespace Microsoft.AspNetCore.Routing.Template
                 throw new ArgumentNullException(routeTemplate);
             }
 
-            var inner = AspNetCore.Dispatcher.TemplateParser.Parse(routeTemplate);
-            return new RouteTemplate(inner);
+            try
+            {
+                var inner = Microsoft.AspNetCore.Dispatcher.Patterns.RoutePattern.Parse(routeTemplate);
+                return new RouteTemplate(inner);
+            }
+            catch (ArgumentException ex) when (ex.InnerException is RoutePatternException)
+            {
+                throw new ArgumentException(ex.InnerException.Message, nameof(routeTemplate), ex.InnerException);
+            }
         }
     }
 }

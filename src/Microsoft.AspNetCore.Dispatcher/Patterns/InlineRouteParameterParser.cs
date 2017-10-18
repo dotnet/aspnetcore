@@ -3,43 +3,37 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
-namespace Microsoft.AspNetCore.Dispatcher
+namespace Microsoft.AspNetCore.Dispatcher.Patterns
 {
     public static class InlineRouteParameterParser
     {
-        public static TemplatePart ParseRouteParameter(string routeParameter)
+        public static RoutePatternParameter ParseRouteParameter(string text, string parameter)
         {
-            if (routeParameter == null)
+            if (parameter == null)
             {
-                throw new ArgumentNullException(nameof(routeParameter));
+                throw new ArgumentNullException(nameof(parameter));
             }
 
-            if (routeParameter.Length == 0)
+            if (parameter.Length == 0)
             {
-                return TemplatePart.CreateParameter(
-                    name: string.Empty,
-                    isCatchAll: false,
-                    isOptional: false,
-                    defaultValue: null,
-                    inlineConstraints: null);
+                return new RoutePatternParameter(null, string.Empty, null, RoutePatternParameterKind.Standard, Array.Empty<ConstraintReference>());
             }
 
             var startIndex = 0;
-            var endIndex = routeParameter.Length - 1;
+            var endIndex = parameter.Length - 1;
 
-            var isCatchAll = false;
-            var isOptional = false;
-
-            if (routeParameter[0] == '*')
+            var parameterKind = RoutePatternParameterKind.Standard;
+            if (parameter[0] == '*')
             {
-                isCatchAll = true;
+                parameterKind = RoutePatternParameterKind.CatchAll;
                 startIndex++;
             }
 
-            if (routeParameter[endIndex] == '?')
+            if (parameter[endIndex] == '?')
             {
-                isOptional = true;
+                parameterKind = RoutePatternParameterKind.Optional;
                 endIndex--;
             }
 
@@ -50,14 +44,14 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             while (currentIndex <= endIndex)
             {
-                var currentChar = routeParameter[currentIndex];
+                var currentChar = parameter[currentIndex];
 
                 if ((currentChar == ':' || currentChar == '=') && startIndex != currentIndex)
                 {
                     // Parameter names are allowed to start with delimiters used to denote constraints or default values.
                     // i.e. "=foo" or ":bar" would be treated as parameter names rather than default value or constraint
                     // specifications.
-                    parameterName = routeParameter.Substring(startIndex, currentIndex - startIndex);
+                    parameterName = parameter.Substring(startIndex, currentIndex - startIndex);
 
                     // Roll the index back and move to the constraint parsing stage.
                     currentIndex--;
@@ -65,40 +59,36 @@ namespace Microsoft.AspNetCore.Dispatcher
                 }
                 else if (currentIndex == endIndex)
                 {
-                    parameterName = routeParameter.Substring(startIndex, currentIndex - startIndex + 1);
+                    parameterName = parameter.Substring(startIndex, currentIndex - startIndex + 1);
                 }
 
                 currentIndex++;
             }
 
-            var parseResults = ParseConstraints(routeParameter, currentIndex, endIndex);
+            var parseResults = ParseConstraints(parameter, currentIndex, endIndex);
             currentIndex = parseResults.CurrentIndex;
 
             string defaultValue = null;
             if (currentIndex <= endIndex &&
-                routeParameter[currentIndex] == '=')
+                parameter[currentIndex] == '=')
             {
-                defaultValue = routeParameter.Substring(currentIndex + 1, endIndex - currentIndex);
+                defaultValue = parameter.Substring(currentIndex + 1, endIndex - currentIndex);
             }
 
-            return TemplatePart.CreateParameter(parameterName,
-                                                isCatchAll,
-                                                isOptional,
-                                                defaultValue,
-                                                parseResults.Constraints);
+            return new RoutePatternParameter(text, parameterName, defaultValue, parameterKind, parseResults.Constraints.ToArray());
         }
 
         private static ConstraintParseResults ParseConstraints(
-            string routeParameter,
+            string parameter,
             int currentIndex,
             int endIndex)
         {
-            var inlineConstraints = new List<InlineConstraint>();
+            var constraints = new List<ConstraintReference>();
             var state = ParseState.Start;
             var startIndex = currentIndex;
             do
             {
-                var currentChar = currentIndex > endIndex ? null : (char?)routeParameter[currentIndex];
+                var currentChar = currentIndex > endIndex ? null : (char?)parameter[currentIndex];
                 switch (state)
                 {
                     case ParseState.Start:
@@ -125,8 +115,8 @@ namespace Microsoft.AspNetCore.Dispatcher
                         {
                             case null:
                                 state = ParseState.End;
-                                var constraintText = routeParameter.Substring(startIndex, currentIndex - startIndex);
-                                inlineConstraints.Add(new InlineConstraint(constraintText));
+                                var constraintText = parameter.Substring(startIndex, currentIndex - startIndex);
+                                constraints.Add(ConstraintReference.CreateFromText(constraintText, constraintText));
                                 break;
                             case ')':
                                 // Only consume a ')' token if
@@ -134,24 +124,24 @@ namespace Microsoft.AspNetCore.Dispatcher
                                 // (b) the next character is the start of the new constraint ':'
                                 // (c) the next character is the start of the default value.
 
-                                var nextChar = currentIndex + 1 > endIndex ? null : (char?)routeParameter[currentIndex + 1];
+                                var nextChar = currentIndex + 1 > endIndex ? null : (char?)parameter[currentIndex + 1];
                                 switch (nextChar)
                                 {
                                     case null:
                                         state = ParseState.End;
-                                        constraintText = routeParameter.Substring(startIndex, currentIndex - startIndex + 1);
-                                        inlineConstraints.Add(new InlineConstraint(constraintText));
+                                        constraintText = parameter.Substring(startIndex, currentIndex - startIndex + 1);
+                                        constraints.Add(ConstraintReference.CreateFromText(constraintText, constraintText));
                                         break;
                                     case ':':
                                         state = ParseState.Start;
-                                        constraintText = routeParameter.Substring(startIndex, currentIndex - startIndex + 1);
-                                        inlineConstraints.Add(new InlineConstraint(constraintText));
+                                        constraintText = parameter.Substring(startIndex, currentIndex - startIndex + 1);
+                                        constraints.Add(ConstraintReference.CreateFromText(constraintText, constraintText));
                                         startIndex = currentIndex + 1;
                                         break;
                                     case '=':
                                         state = ParseState.End;
-                                        constraintText = routeParameter.Substring(startIndex, currentIndex - startIndex + 1);
-                                        inlineConstraints.Add(new InlineConstraint(constraintText));
+                                        constraintText = parameter.Substring(startIndex, currentIndex - startIndex + 1);
+                                        constraints.Add(ConstraintReference.CreateFromText(constraintText, constraintText));
                                         break;
                                 }
                                 break;
@@ -162,11 +152,11 @@ namespace Microsoft.AspNetCore.Dispatcher
                                 // Simply verifying that the parantheses will eventually be closed should suffice to
                                 // determine if the terminator needs to be consumed as part of the current constraint
                                 // specification.
-                                var indexOfClosingParantheses = routeParameter.IndexOf(')', currentIndex + 1);
+                                var indexOfClosingParantheses = parameter.IndexOf(')', currentIndex + 1);
                                 if (indexOfClosingParantheses == -1)
                                 {
-                                    constraintText = routeParameter.Substring(startIndex, currentIndex - startIndex);
-                                    inlineConstraints.Add(new InlineConstraint(constraintText));
+                                    constraintText = parameter.Substring(startIndex, currentIndex - startIndex);
+                                    constraints.Add(ConstraintReference.CreateFromText(constraintText, constraintText));
 
                                     if (currentChar == ':')
                                     {
@@ -192,12 +182,12 @@ namespace Microsoft.AspNetCore.Dispatcher
                         {
                             case null:
                                 state = ParseState.End;
-                                var constraintText = routeParameter.Substring(startIndex, currentIndex - startIndex);
-                                inlineConstraints.Add(new InlineConstraint(constraintText));
+                                var constraintText = parameter.Substring(startIndex, currentIndex - startIndex);
+                                constraints.Add(ConstraintReference.CreateFromText(constraintText, constraintText));
                                 break;
                             case ':':
-                                constraintText = routeParameter.Substring(startIndex, currentIndex - startIndex);
-                                inlineConstraints.Add(new InlineConstraint(constraintText));
+                                constraintText = parameter.Substring(startIndex, currentIndex - startIndex);
+                                constraints.Add(ConstraintReference.CreateFromText(constraintText, constraintText));
                                 startIndex = currentIndex + 1;
                                 break;
                             case '(':
@@ -205,8 +195,8 @@ namespace Microsoft.AspNetCore.Dispatcher
                                 break;
                             case '=':
                                 state = ParseState.End;
-                                constraintText = routeParameter.Substring(startIndex, currentIndex - startIndex);
-                                inlineConstraints.Add(new InlineConstraint(constraintText));
+                                constraintText = parameter.Substring(startIndex, currentIndex - startIndex);
+                                constraints.Add(ConstraintReference.CreateFromText(constraintText, constraintText));
                                 currentIndex--;
                                 break;
                         }
@@ -220,7 +210,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             return new ConstraintParseResults
             {
                 CurrentIndex = currentIndex,
-                Constraints = inlineConstraints
+                Constraints = constraints
             };
         }
 
@@ -236,7 +226,7 @@ namespace Microsoft.AspNetCore.Dispatcher
         {
             public int CurrentIndex;
 
-            public IEnumerable<InlineConstraint> Constraints;
+            public IEnumerable<ConstraintReference> Constraints;
         }
     }
 }

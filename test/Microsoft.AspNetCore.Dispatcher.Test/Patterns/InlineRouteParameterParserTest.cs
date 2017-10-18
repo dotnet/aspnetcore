@@ -4,9 +4,9 @@
 using System.Linq;
 using Xunit;
 
-namespace Microsoft.AspNetCore.Dispatcher
+namespace Microsoft.AspNetCore.Dispatcher.Patterns
 {
-    public class InlineRouteParameterParserTests
+    public class InlineRouteParameterParserTest
     {
         [Theory]
         [InlineData("=")]
@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal(parameterName, templatePart.Name);
             Assert.Null(templatePart.DefaultValue);
-            Assert.Empty(templatePart.InlineConstraints);
+            Assert.Empty(templatePart.Constraints);
         }
 
         [Fact]
@@ -31,7 +31,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("", templatePart.DefaultValue);
-            Assert.Empty(templatePart.InlineConstraints);
+            Assert.Empty(templatePart.Constraints);
         }
 
         [Fact]
@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
             Assert.Null(templatePart.DefaultValue);
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Empty(constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Empty(constraint.Content);
         }
 
         [Fact]
@@ -56,8 +56,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("", templatePart.DefaultValue);
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Empty(constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Empty(constraint.Content);
         }
 
         [Fact]
@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
             Assert.Equal(":", templatePart.DefaultValue);
-            Assert.Empty(templatePart.InlineConstraints);
+            Assert.Empty(templatePart.Constraints);
         }
 
         [Fact]
@@ -82,8 +82,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("111111", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("int", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("int", constraint.Content);
         }
 
         [Fact]
@@ -96,8 +96,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("111111", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\d+)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\d+)", constraint.Content);
         }
 
         [Fact]
@@ -110,8 +110,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("param", templatePart.Name);
             Assert.True(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("int", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("int", constraint.Content);
         }
 
         [Fact]
@@ -125,8 +125,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("12", templatePart.DefaultValue);
             Assert.True(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("int", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("int", constraint.Content);
         }
 
         [Fact]
@@ -140,8 +140,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("12?", templatePart.DefaultValue);
             Assert.True(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("int", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("int", constraint.Content);
         }
 
         [Fact]
@@ -154,8 +154,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("param", templatePart.Name);
             Assert.True(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\d+)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\d+)", constraint.Content);
         }
 
         [Fact]
@@ -170,8 +170,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.Equal("abc", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\d+)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\d+)", constraint.Content);
         }
 
         [Fact]
@@ -183,9 +183,9 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Collection(templatePart.InlineConstraints,
-                constraint => Assert.Equal(@"test(d+)", constraint.Constraint),
-                constraint => Assert.Equal(@"test(w+)", constraint.Constraint));
+            Assert.Collection(templatePart.Constraints,
+                constraint => Assert.Equal(@"test(d+)", constraint.Content),
+                constraint => Assert.Equal(@"test(w+)", constraint.Content));
         }
 
         [Fact]
@@ -197,11 +197,11 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Collection(templatePart.InlineConstraints,
-                constraint => Assert.Empty(constraint.Constraint),
-                constraint => Assert.Equal(@"test(d+)", constraint.Constraint),
-                constraint => Assert.Empty(constraint.Constraint),
-                constraint => Assert.Equal(@"test(w+)", constraint.Constraint));
+            Assert.Collection(templatePart.Constraints,
+                constraint => Assert.Empty(constraint.Content),
+                constraint => Assert.Equal(@"test(d+)", constraint.Content),
+                constraint => Assert.Empty(constraint.Content),
+                constraint => Assert.Equal(@"test(w+)", constraint.Content));
         }
 
         [Fact]
@@ -213,9 +213,9 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Collection(templatePart.InlineConstraints,
-                constraint => Assert.Equal(@"test(\d+)", constraint.Constraint),
-                constraint => Assert.Equal(@"test(\w:+)", constraint.Constraint));
+            Assert.Collection(templatePart.Constraints,
+                constraint => Assert.Equal(@"test(\d+)", constraint.Content),
+                constraint => Assert.Equal(@"test(\w:+)", constraint.Content));
         }
 
         [Fact]
@@ -229,9 +229,9 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.Equal("qwer", templatePart.DefaultValue);
 
-            Assert.Collection(templatePart.InlineConstraints,
-                constraint => Assert.Equal(@"test(\d+)", constraint.Constraint),
-                constraint => Assert.Equal(@"test(\w+)", constraint.Constraint));
+            Assert.Collection(templatePart.Constraints,
+                constraint => Assert.Equal(@"test(\d+)", constraint.Content),
+                constraint => Assert.Equal(@"test(\w+)", constraint.Content));
         }
 
         [Fact]
@@ -245,10 +245,10 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.Equal("=qwer", templatePart.DefaultValue);
 
-            Assert.Collection(templatePart.InlineConstraints,
-                constraint => Assert.Equal(@"test(\d+)", constraint.Constraint),
-                constraint => Assert.Empty(constraint.Constraint),
-                constraint => Assert.Equal(@"test(\w+)", constraint.Constraint));
+            Assert.Collection(templatePart.Constraints,
+                constraint => Assert.Equal(@"test(\d+)", constraint.Content),
+                constraint => Assert.Empty(constraint.Content),
+                constraint => Assert.Equal(@"test(\w+)", constraint.Content));
         }
 
         [Theory]
@@ -264,27 +264,27 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("comparison-operator", templatePart.Name);
             Assert.Equal(defaultValue, templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("length(6)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("length(6)", constraint.Content);
         }
 
         [Fact]
         public void ParseRouteTemplate_ConstraintsDefaultsAndOptionalsInMultipleSections_ParsedCorrectly()
         {
             // Arrange & Act
-            var template = ParseRouteTemplate(@"some/url-{p1:int:test(3)=hello}/{p2=abc}/{p3?}");
+            var routePattern = RoutePattern.Parse(@"some/url-{p1:int:test(3)=hello}/{p2=abc}/{p3?}");
 
             // Assert
-            var parameters = template.Parameters.ToArray();
+            var parameters = routePattern.Parameters.ToArray();
 
             var param1 = parameters[0];
             Assert.Equal("p1", param1.Name);
             Assert.Equal("hello", param1.DefaultValue);
             Assert.False(param1.IsOptional);
 
-            Assert.Collection(param1.InlineConstraints,
-                constraint => Assert.Equal("int", constraint.Constraint),
-                constraint => Assert.Equal("test(3)", constraint.Constraint)
+            Assert.Collection(param1.Constraints,
+                constraint => Assert.Equal("int", constraint.Content),
+                constraint => Assert.Equal("test(3)", constraint.Content)
             );
 
             var param2 = parameters[1];
@@ -327,8 +327,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\})", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\})", constraint.Content);
         }
 
         [Fact]
@@ -342,8 +342,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.Equal("wer", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\})", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\})", constraint.Content);
         }
 
         [Fact]
@@ -355,8 +355,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\))", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\))", constraint.Content);
         }
 
         [Fact]
@@ -370,8 +370,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.Equal("fsd", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\))", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\))", constraint.Content);
         }
 
         [Fact]
@@ -383,8 +383,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(:)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(:)", constraint.Content);
         }
 
         [Fact]
@@ -398,8 +398,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.Equal("mnf", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(:)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(:)", constraint.Content);
         }
 
         [Fact]
@@ -411,8 +411,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(a:b:c)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(a:b:c)", constraint.Content);
         }
 
         [Fact]
@@ -426,8 +426,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.Equal("12", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("test", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("test", constraint.Content);
         }
 
         [Fact]
@@ -441,9 +441,9 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.Equal("12", templatePart.DefaultValue);
 
-            Assert.Collection(templatePart.InlineConstraints,
-                constraint => Assert.Empty(constraint.Constraint),
-                constraint => Assert.Equal("test", constraint.Constraint));
+            Assert.Collection(templatePart.Constraints,
+                constraint => Assert.Empty(constraint.Content),
+                constraint => Assert.Equal("test", constraint.Content));
         }
 
         [Fact]
@@ -455,9 +455,9 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal(":param", templatePart.Name);
 
-            Assert.Collection(templatePart.InlineConstraints,
-                constraint => Assert.Equal("test", constraint.Constraint),
-                constraint => Assert.Empty(constraint.Constraint));
+            Assert.Collection(templatePart.Constraints,
+                constraint => Assert.Equal("test", constraint.Content),
+                constraint => Assert.Empty(constraint.Content));
         }
 
         [Fact]
@@ -469,8 +469,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\w,\w)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\w,\w)", constraint.Content);
         }
 
         [Fact]
@@ -482,8 +482,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("par,am", templatePart.Name);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\w)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\w)", constraint.Content);
         }
 
         [Fact]
@@ -497,8 +497,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.Equal("jsd", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\w,\w)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\w,\w)", constraint.Content);
         }
 
         [Fact]
@@ -513,8 +513,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.True(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("int", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("int", constraint.Content);
         }
 
         [Fact]
@@ -527,8 +527,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("param", templatePart.Name);
             Assert.Null(templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("test(=)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("test(=)", constraint.Content);
         }
 
         [Fact]
@@ -552,8 +552,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("param", templatePart.Name);
             Assert.Null(templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("test(a==b)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("test(a==b)", constraint.Content);
         }
 
         [Fact]
@@ -566,8 +566,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("dvds", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("test(a==b)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("test(a==b)", constraint.Content);
         }
 
         [Fact]
@@ -624,8 +624,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("sds", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("test(=)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("test(=)", constraint.Content);
         }
 
         [Fact]
@@ -637,8 +637,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\{)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\{)", constraint.Content);
         }
 
         [Fact]
@@ -650,8 +650,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("par{am", templatePart.Name);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\sd)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\sd)", constraint.Content);
         }
 
         [Fact]
@@ -665,8 +665,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.Equal("xvc", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\{)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\{)", constraint.Content);
         }
 
         [Fact]
@@ -678,8 +678,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("par(am", templatePart.Name);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\()", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\()", constraint.Content);
         }
 
         [Fact]
@@ -691,8 +691,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\()", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\()", constraint.Content);
         }
 
         [Fact]
@@ -704,8 +704,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal("test(#$%", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal("test(#$%", constraint.Content);
         }
 
         [Fact]
@@ -717,9 +717,9 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Assert
             Assert.Equal("param", templatePart.Name);
 
-            Assert.Collection(templatePart.InlineConstraints,
-                constraint => Assert.Equal(@"test(#", constraint.Constraint),
-                constraint => Assert.Equal(@"test1", constraint.Constraint));
+            Assert.Collection(templatePart.Constraints,
+                constraint => Assert.Equal(@"test(#", constraint.Content),
+                constraint => Assert.Equal(@"test1", constraint.Content));
         }
 
         [Fact]
@@ -732,10 +732,10 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("default-value", templatePart.DefaultValue);
 
-            Assert.Collection(templatePart.InlineConstraints,
-                constraint => Assert.Equal(@"test(abc:somevalue)", constraint.Constraint),
-                constraint => Assert.Equal(@"name(test1", constraint.Constraint),
-                constraint => Assert.Equal(@"differentname", constraint.Constraint));
+            Assert.Collection(templatePart.Constraints,
+                constraint => Assert.Equal(@"test(abc:somevalue)", constraint.Content),
+                constraint => Assert.Equal(@"name(test1", constraint.Content),
+                constraint => Assert.Equal(@"differentname", constraint.Content));
         }
 
         [Fact]
@@ -748,8 +748,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("param", templatePart.Name);
             Assert.Equal("test1", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(constraintvalue", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(constraintvalue", constraint.Content);
         }
 
         [Fact]
@@ -763,8 +763,8 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             Assert.Equal("djk", templatePart.DefaultValue);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\()", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\()", constraint.Content);
         }
 
         [Fact]
@@ -778,8 +778,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\?)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\?)", constraint.Content);
         }
 
         [Fact]
@@ -793,8 +793,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Null(templatePart.DefaultValue);
             Assert.True(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\?)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\?)", constraint.Content);
         }
 
         [Fact]
@@ -808,8 +808,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("sdf", templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\?)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\?)", constraint.Content);
         }
 
         [Fact]
@@ -823,8 +823,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("sdf", templatePart.DefaultValue);
             Assert.True(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\?)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\?)", constraint.Content);
         }
 
         [Fact]
@@ -838,8 +838,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(\?)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(\?)", constraint.Content);
         }
 
         [Fact]
@@ -853,9 +853,9 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            Assert.Collection(templatePart.InlineConstraints,
-                constraint => Assert.Equal(@"test(#)", constraint.Constraint),
-                constraint => Assert.Equal(@"$)", constraint.Constraint));
+            Assert.Collection(templatePart.Constraints,
+                constraint => Assert.Equal(@"test(#)", constraint.Content),
+                constraint => Assert.Equal(@"$)", constraint.Content));
         }
 
         [Fact]
@@ -869,8 +869,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"test(#:)$)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"test(#:)$)", constraint.Content);
         }
 
         [Fact]
@@ -884,8 +884,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"regex(\\(\\(\\(\\()", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"regex(\\(\\(\\(\\()", constraint.Content);
         }
 
         [Fact]
@@ -899,8 +899,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Null(templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"regex(^\d{{3}}-\d{{3}}-\d{{4}}$)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"regex(^\d{{3}}-\d{{3}}-\d{{4}}$)", constraint.Content);
         }
 
         [Fact]
@@ -914,8 +914,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             Assert.Equal("123-456-7890", templatePart.DefaultValue);
             Assert.False(templatePart.IsOptional);
 
-            var constraint = Assert.Single(templatePart.InlineConstraints);
-            Assert.Equal(@"regex(^\d{{3}}-\d{{3}}-\d{{4}}$)", constraint.Constraint);
+            var constraint = Assert.Single(templatePart.Constraints);
+            Assert.Equal(@"regex(^\d{{3}}-\d{{3}}-\d{{4}}$)", constraint.Content);
         }
 
         [Theory]
@@ -935,20 +935,16 @@ namespace Microsoft.AspNetCore.Dispatcher
 
             // Assert
             Assert.Equal(expectedParameterName, templatePart.Name);
-            Assert.Empty(templatePart.InlineConstraints);
+            Assert.Empty(templatePart.Constraints);
             Assert.Null(templatePart.DefaultValue);
         }
 
 
-        private TemplatePart ParseParameter(string routeParameter)
+        private RoutePatternParameter ParseParameter( string routeParameter)
         {
-            var templatePart = InlineRouteParameterParser.ParseRouteParameter(routeParameter);
+            // See: #475 - these tests don't pass the 'whole' text.
+            var templatePart = InlineRouteParameterParser.ParseRouteParameter(string.Empty, routeParameter);
             return templatePart;
-        }
-
-        private static RouteTemplate ParseRouteTemplate(string template)
-        {
-            return TemplateParser.Parse(template);
         }
     }
 }

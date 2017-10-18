@@ -948,7 +948,9 @@ namespace Microsoft.AspNetCore.Routing.Tests
         private TemplatePart ParseParameter(string routeParameter)
         {
             var _constraintResolver = GetConstraintResolver();
+#pragma warning disable CS0618 // Type or member is obsolete
             var templatePart = InlineRouteParameterParser.ParseRouteParameter(routeParameter);
+#pragma warning restore CS0618 // Type or member is obsolete
             return templatePart;
         }
 
