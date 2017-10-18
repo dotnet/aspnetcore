@@ -11,7 +11,7 @@
     <_WorkLayoutDir>$(_WorkRoot).l\</_WorkLayoutDir>
     <_WorkOutputDir>$(_WorkRoot).o\</_WorkOutputDir>
     <_DockerRootDirectory>/opt/code/</_DockerRootDirectory>
-    <InstallersOutputDir>$(ArtifactsDir)installers\</InstallersOutputDir>
+    <_InstallersOutputDir>$(ArtifactsDir)installers\</_InstallersOutputDir>
 
     <RSInstallerName>aspnetcore-store</RSInstallerName>
     <HostingInstallerName>dotnet-hosting</HostingInstallerName>
@@ -26,10 +26,10 @@
     <TimestampFreeRSArchive>$(_TimestampFreeRSSource)aspnetcore-store-$(PackageVersionNoTimestamp)-linux-x64.tar.gz</TimestampFreeRSArchive>
   </PropertyGroup>
 
-  <Target Name="BuildInstallers" DependsOnTargets="GenerateTargzs;GenerateRpms;GenerateDebs" />
+  <Target Name="BuildInstallers" DependsOnTargets="GenerateTargzs;GenerateRpms;GenerateDebs;GenerateRelabledInstallers" />
 
   <Target Name="_EnsureInstallerPrerequisites">
-    <MakeDir Directories="$(InstallersOutputDir)" />
+    <MakeDir Directories="$(_InstallersOutputDir)" />
 
     <!-- Check Docker server OS -->
     <Exec Command="docker version -f &quot;{{.Server.Os}}&quot;" StandardOutputImportance="Normal" ConsoleToMSBuild="true">
@@ -67,7 +67,7 @@
     <Exec Command="tar -xzf $(RuntimeArchive) -C $(_WorkRoot)" />
 
     <!-- Create Aspnet Hosting Bundle tar.gz -->
-    <Exec Command="tar -czvf $(InstallersOutputDir)$(HostingArchiveName) ." WorkingDirectory="$(_WorkRoot)"/>
+    <Exec Command="tar -czvf $(_InstallersOutputDir)$(HostingArchiveName) ." WorkingDirectory="$(_WorkRoot)"/>
   </Target>
 
   <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadCoreInstallers">
@@ -127,8 +127,10 @@
     <!-- Update Date, Maintainer, Version, Revision and Changelog Message -->
     <RepoTasks.ReplaceInFile Filename="$(_WorkRoot)templates/changelog" Items="@(ChangelogItems)" />
 
+    <!-- Update Maintainer and Summary -->
     <PropertyGroup>
       <RPMMaintainer>$(MaintainerName) &lt;$(MaintainerEmail)&gt;</RPMMaintainer>
+      <RPMSummary>$(RPMSummary.Replace('DEB_VERSION','$(RPMVersion)'))</RPMSummary>
     </PropertyGroup>
 
     <!-- Run RPM -->
@@ -353,7 +355,7 @@
     <Error Text="@(GeneratedDebFiles->Count()) deb installer files generated." Condition="'@(GeneratedDebFiles->Count())' != 1" />
 
     <Copy
-      DestinationFiles="$(InstallersOutputDir)$(DebPrefix)-$(DebVersion)-$(Image)-x64.deb"
+      DestinationFiles="$(_InstallersOutputDir)$(DebPrefix)-$(DebVersion)-$(Image)-x64.deb"
       SourceFiles="@(GeneratedDebFiles)"
       OverwriteReadOnlyFiles="True"
       SkipUnchangedFiles="False"
@@ -409,5 +411,28 @@
     <Exec
       Command="dotnet deb-tool -i $(_WorkLayoutDir) -o $(_WorkOutputDir) -n $(INSTALLER_NAME) -v $(INSTALLER_VERSION)"
       WorkingDirectory="$(_DebToolDir)" />
+  </Target>
+
+  <Target Name="GenerateRelabledInstallers">
+    <ItemGroup>
+      <Debian8Installers Include="$(_InstallersOutputDir)*debian.8*" />
+      <Ubuntu1604Installers Include="$(_InstallersOutputDir)*ubuntu.16.04*" />
+    </ItemGroup>
+
+    <!-- Create debian.9 installers by renaming debian.8 installers -->
+    <Copy
+      SourceFiles="%(Debian8Installers.FullPath)"
+      DestinationFiles="$([System.String]::Copy('%(Debian8Installers.FullPath)').Replace('debian.8','debian.9'))"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
+
+    <!-- Create ubuntu.17.04 installers by renaming ubuntu.16.04 installers -->
+    <Copy
+      SourceFiles="%(Ubuntu1604Installers.FullPath)"
+      DestinationFiles="$([System.String]::Copy('%(Ubuntu1604Installers.FullPath)').Replace('ubuntu.16.04','ubuntu.17.04'))"
+      OverwriteReadOnlyFiles="True"
+      SkipUnchangedFiles="False"
+      UseHardlinksIfPossible="False" />
   </Target>
 </Project>

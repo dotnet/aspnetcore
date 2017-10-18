@@ -6,7 +6,7 @@
     "install_root": "/usr/share/dotnet",
 
     "short_description": "Microsoft .NET Core DEB_VERSION Linux Server Hosting",
-    "long_description": "Microsoft .NET Core DEB_VERSION Linux Server Hosting enables hosting of ASP.NET Core applications and contains the ASP.NET Core Runtime Package Store and .NET Core Runtime. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub (https://github.com/aspnet/home). We happily accept issues and PRs.",
+    "long_description": "Microsoft .NET Core Linux Server Hosting enables hosting of ASP.NET Core applications and contains the ASP.NET Core Runtime Package Store and .NET Core Runtime. It is open source, cross-platform and is supported by Microsoft. We hope you enjoy using it! If you do, please consider joining the active community of developers that are contributing to the project on GitHub (https://github.com/aspnet/home). We happily accept issues and PRs.",
     "homepage": "https://www.asp.net/",
 
     "release":{
