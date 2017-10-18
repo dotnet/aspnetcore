@@ -136,8 +136,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 _trace.ConnectionReset(ConnectionId);
             }
             catch (SocketException ex) when (ex.SocketErrorCode == SocketError.OperationAborted ||
-                                             ex.SocketErrorCode == SocketError.Interrupted)
+                                             ex.SocketErrorCode == SocketError.ConnectionAborted ||
+                                             ex.SocketErrorCode == SocketError.Interrupted ||
+                                             ex.SocketErrorCode == SocketError.InvalidArgument)
             {
+                // Calling Dispose after ReceiveAsync can cause an "InvalidArgument" error on *nix.
                 error = new ConnectionAbortedException();
                 _trace.ConnectionError(ConnectionId, error);
             }
