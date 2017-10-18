@@ -29,6 +29,8 @@
   <Target Name="BuildInstallers" DependsOnTargets="GenerateTargzs;GenerateRpms;GenerateDebs" />
 
   <Target Name="_EnsureInstallerPrerequisites">
+    <MakeDir Directories="$(InstallersOutputDir)" />
+
     <!-- Check Docker server OS -->
     <Exec Command="docker version -f &quot;{{.Server.Os}}&quot;" StandardOutputImportance="Normal" ConsoleToMSBuild="true">
       <Output TaskParameter="ConsoleOutput" PropertyName="DockerHostOS" />
