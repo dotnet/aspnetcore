@@ -142,7 +142,7 @@
     <value>The path segment '{0}' is invalid for an array index.</value>
   </data>
   <data name="InvalidJsonPatchDocument" xml:space="preserve">
-    <value>The type '{0}' was malformed and could not be parsed.</value>
+    <value>The JSON patch document was malformed and could not be parsed.</value>
   </data>
   <data name="InvalidJsonPatchOperation" xml:space="preserve">
     <value>Invalid JsonPatch operation '{0}'.</value>

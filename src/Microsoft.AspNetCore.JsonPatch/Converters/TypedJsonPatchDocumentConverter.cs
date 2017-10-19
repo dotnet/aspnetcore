@@ -4,7 +4,6 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
-using Microsoft.AspNetCore.JsonPatch.Exceptions;
 using Microsoft.AspNetCore.JsonPatch.Operations;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -58,7 +57,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
             }
             catch (Exception ex)
             {
-                throw new JsonPatchException(Resources.FormatInvalidJsonPatchDocument(objectType.Name), ex);
+                throw new JsonSerializationException(Resources.InvalidJsonPatchDocument, ex);
             }
         }
     }

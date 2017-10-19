@@ -123,7 +123,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             => string.Format(CultureInfo.CurrentCulture, GetString("InvalidIndexValue"), p0);
 
         /// <summary>
-        /// The type '{0}' was malformed and could not be parsed.
+        /// The JSON patch document was malformed and could not be parsed.
         /// </summary>
         internal static string InvalidJsonPatchDocument
         {
@@ -131,10 +131,10 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
-        /// The type '{0}' was malformed and could not be parsed.
+        /// The JSON patch document was malformed and could not be parsed.
         /// </summary>
-        internal static string FormatInvalidJsonPatchDocument(object p0)
-            => string.Format(CultureInfo.CurrentCulture, GetString("InvalidJsonPatchDocument"), p0);
+        internal static string FormatInvalidJsonPatchDocument()
+            => GetString("InvalidJsonPatchDocument");
 
         /// <summary>
         /// Invalid JsonPatch operation '{0}'.

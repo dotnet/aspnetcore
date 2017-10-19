@@ -57,7 +57,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Converters
             }
             catch (Exception ex)
             {
-                throw new JsonPatchException(Resources.FormatInvalidJsonPatchDocument(objectType.Name), ex);
+                throw new JsonSerializationException(Resources.InvalidJsonPatchDocument, ex);
             }
         }
 
