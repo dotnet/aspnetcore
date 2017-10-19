@@ -14,8 +14,8 @@
       Condition="'$(AntaresTests)' == ''"
       Include="$(FunctionalTestsProject)" />
 
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests\*.csproj" Condition="'$(TRAVIS)' == 'true'" />
-    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.Web.Xdt.Extensions.Tests\*.csproj" Condition="'$(TRAVIS)' == 'true'" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.AspNetCore.AzureAppServices.SiteExtension.Tests\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
+    <ExcludeFromTest Include="$(RepositoryRoot)test\Microsoft.Web.Xdt.Extensions.Tests\*.csproj" Condition="'$(OS)' != 'Windows_NT'" />
 
     <PackageLineup Include="Internal.AspNetCore.Universe.Lineup" Version="2.1.0-*" />
     <PackageLineup Include="Internal.AspNetCore.Partners.Lineup" Version="2.1.0-*" />
