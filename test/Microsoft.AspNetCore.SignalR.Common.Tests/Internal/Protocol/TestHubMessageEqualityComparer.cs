@@ -22,7 +22,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 return false;
             }
 
-            return InvocationMessagesEqual(x, y) || StreamItemMessagesEqual(x, y) || CompletionMessagesEqual(x, y);
+            return InvocationMessagesEqual(x, y) || StreamItemMessagesEqual(x, y) || CompletionMessagesEqual(x, y) || CancelInvocationMessagesEqual(x, y);
         }
 
         private bool CompletionMessagesEqual(HubMessage x, HubMessage y)
@@ -45,6 +45,11 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
                 string.Equals(left.Target, right.Target, StringComparison.Ordinal) &&
                 ArgumentListsEqual(left.Arguments, right.Arguments) &&
                 left.NonBlocking == right.NonBlocking;
+        }
+
+        private bool CancelInvocationMessagesEqual(HubMessage x, HubMessage y)
+        {
+            return x is CancelInvocationMessage && y is CancelInvocationMessage;
         }
 
         private bool ArgumentListsEqual(object[] left, object[] right)
