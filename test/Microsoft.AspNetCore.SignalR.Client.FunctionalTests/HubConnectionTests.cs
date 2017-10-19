@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.Sockets;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
-using Newtonsoft.Json;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -156,6 +155,41 @@ namespace Microsoft.AspNetCore.SignalR.Client.FunctionalTests
                 {
                     loggerFactory.CreateLogger<HubConnectionTests>().LogError(ex, "Exception from test");
                     throw;
+                }
+                finally
+                {
+                    await connection.DisposeAsync().OrTimeout();
+                }
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HubProtocolsAndTransportsAndHubPaths))]
+        public async Task InvokeNonExistantClientMethodFromServer(IHubProtocol protocol, TransportType transportType, string path)
+        {
+            using (StartLog(out var loggerFactory))
+            {
+                var httpConnection = new HttpConnection(new Uri(_serverFixture.BaseUrl + path), transportType, loggerFactory);
+                var connection = new HubConnection(httpConnection, protocol, loggerFactory);
+                try
+                {
+                    await connection.StartAsync().OrTimeout();
+                    var closeTcs = new TaskCompletionSource<object>();
+                    connection.Closed += ex =>
+                    {
+                        if (ex != null)
+                        {
+                            closeTcs.SetException(ex);
+                        }
+                        else
+                        {
+                            closeTcs.SetResult(null);
+                        }
+                        return Task.CompletedTask;
+                    };
+                    await connection.InvokeAsync("CallHandlerThatDoesntExist").OrTimeout();
+                    await connection.DisposeAsync().OrTimeout();
+                    await closeTcs.Task.OrTimeout();
                 }
                 finally
                 {

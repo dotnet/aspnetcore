@@ -14,7 +14,8 @@ namespace Microsoft.AspNetCore.Sockets.Client
         Task SendAsync(byte[] data, CancellationToken cancellationToken);
         Task DisposeAsync();
 
-        event Func<byte[], Task> Received;
+        IDisposable OnReceived(Func<byte[], object, Task> callback, object state);
+
         event Func<Exception, Task> Closed;
 
         IFeatureCollection Features { get; }

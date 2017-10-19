@@ -150,8 +150,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
         private static readonly Action<ILogger, DateTime, string, Exception> _stoppingClient =
             LoggerMessage.Define<DateTime, string>(LogLevel.Information, new EventId(18, nameof(StoppingClient)), "{time}: Connection Id {connectionId}: Stopping client.");
 
-        private static readonly Action<ILogger, DateTime, string, string, Exception> _exceptionThrownFromHandler =
-            LoggerMessage.Define<DateTime, string, string>(LogLevel.Error, new EventId(19, nameof(ExceptionThrownFromHandler)), "{time}: Connection Id {connectionId}: An exception was thrown from the '{eventHandlerName}' event handler.");
+        private static readonly Action<ILogger, DateTime, string, string, Exception> _exceptionThrownFromCallback =
+            LoggerMessage.Define<DateTime, string, string>(LogLevel.Error, new EventId(19, nameof(ExceptionThrownFromCallback)), "{time}: Connection Id {connectionId}: An exception was thrown from the '{callback}' callback");
 
 
         public static void StartTransport(this ILogger logger, string connectionId, TransferMode transferMode)
@@ -514,11 +514,11 @@ namespace Microsoft.AspNetCore.Sockets.Client.Internal
             }
         }
 
-        public static void ExceptionThrownFromHandler(this ILogger logger, string connectionId, string eventHandlerName, Exception exception)
+        public static void ExceptionThrownFromCallback(this ILogger logger, string connectionId, string callbackName, Exception exception)
         {
             if (logger.IsEnabled(LogLevel.Error))
             {
-                _exceptionThrownFromHandler(logger, DateTime.Now, connectionId, eventHandlerName, exception);
+                _exceptionThrownFromCallback(logger, DateTime.Now, connectionId, callbackName, exception);
             }
         }
     }

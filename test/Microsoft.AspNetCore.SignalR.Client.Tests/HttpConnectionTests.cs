@@ -255,7 +255,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
         }
 
         [Fact]
-        public async Task ReceivedEventNotRaisedAfterConnectionIsDisposed()
+        public async Task ReceivedCallbackNotRaisedAfterConnectionIsDisposed()
         {
             var mockHttpHandler = new Mock<HttpMessageHandler>();
             mockHttpHandler.Protected()
@@ -289,16 +289,16 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             var connection = new HttpConnection(new Uri("http://fakeuri.org/"), new TestTransportFactory(mockTransport.Object), loggerFactory: null, httpMessageHandler: mockHttpHandler.Object);
 
-            var receivedInvoked = false;
-            connection.Received += m =>
+            var onReceivedInvoked = false;
+            connection.OnReceived( _ =>
             {
-                receivedInvoked = true;
+                onReceivedInvoked = true;
                 return Task.CompletedTask;
-            };
+            });
 
             await connection.StartAsync();
             await connection.DisposeAsync();
-            Assert.False(receivedInvoked);
+            Assert.False(onReceivedInvoked);
         }
 
         [Fact]
@@ -336,12 +336,11 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
             var connection = new HttpConnection(new Uri("http://fakeuri.org/"), new TestTransportFactory(mockTransport.Object), loggerFactory: null, httpMessageHandler: mockHttpHandler.Object);
 
-            connection.Received +=
-                async m =>
+            connection.OnReceived(_ =>
                 {
                     callbackInvokedTcs.SetResult(null);
-                    await closedTcs.Task;
-                };
+                    return closedTcs.Task;
+                });
 
             await connection.StartAsync();
             channel.Out.TryWrite(Array.Empty<byte>());
@@ -392,11 +391,8 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             var closedTcs = new TaskCompletionSource<object>();
 
             var connection = new HttpConnection(new Uri("http://fakeuri.org/"), new TestTransportFactory(mockTransport.Object), loggerFactory: null, httpMessageHandler: mockHttpHandler.Object);
-            connection.Received +=
-                async m =>
-                {
-                    await blockReceiveCallbackTcs.Task;
-                };
+            connection.OnReceived(_ => blockReceiveCallbackTcs.Task);
+
             connection.Closed += _ => {
                 closedTcs.SetResult(null);
                 return Task.CompletedTask;
@@ -445,11 +441,10 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             var closedTcs = new TaskCompletionSource<object>();
 
             var connection = new HttpConnection(new Uri("http://fakeuri.org/"), new TestTransportFactory(mockTransport.Object), loggerFactory: null, httpMessageHandler: mockHttpHandler.Object);
-            connection.Received +=
-                m =>
+            connection.OnReceived( _ =>
                 {
                     throw new OperationCanceledException();
-                };
+                });
 
             await connection.StartAsync();
             channel.Out.TryWrite(Array.Empty<byte>());
@@ -642,11 +637,12 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
             try
             {
                 var receiveTcs = new TaskCompletionSource<string>();
-                connection.Received += data =>
+                connection.OnReceived((data, state) =>
                 {
-                    receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
+                    var tcs = ((TaskCompletionSource<string>)state);
+                    tcs.TrySetResult(Encoding.UTF8.GetString(data));
                     return Task.CompletedTask;
-                };
+                }, receiveTcs);
 
                 connection.Closed += e =>
                     {
@@ -699,7 +695,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 var receiveTcs = new TaskCompletionSource<string>();
 
                 var receivedRaised = false;
-                connection.Received += data =>
+                connection.OnReceived(data =>
                 {
                     if (!receivedRaised)
                     {
@@ -709,7 +705,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
                     receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
                     return Task.CompletedTask;
-                };
+                });
 
                 connection.Closed += e =>
                 {
@@ -762,7 +758,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
                 var receiveTcs = new TaskCompletionSource<string>();
 
                 var receivedRaised = false;
-                connection.Received += data =>
+                connection.OnReceived((data) =>
                 {
                     if (!receivedRaised)
                     {
@@ -772,7 +768,7 @@ namespace Microsoft.AspNetCore.Sockets.Client.Tests
 
                     receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
                     return Task.CompletedTask;
-                };
+                });
 
                 connection.Closed += e =>
                 {

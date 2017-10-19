@@ -12,7 +12,6 @@ using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets.Client;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace Microsoft.AspNetCore.SignalR.Client.Tests
@@ -118,23 +117,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
             var thrown = await Assert.ThrowsAsync(exception.GetType(), async () => await invokeTask);
             Assert.Same(exception, thrown);
-        }
-
-        [Fact]
-        public async Task DoesNotThrowWhenClientMethodCalledButNoInvocationHandlerHasBeenSetUp()
-        {
-            var mockConnection = new Mock<IConnection>();
-            mockConnection.SetupGet(p => p.Features).Returns(new FeatureCollection());
-
-            var invocation = new InvocationMessage(Guid.NewGuid().ToString(), nonBlocking: true, target: "NonExistingMethod123", arguments: new object[] { true, "arg2", 123 });
-
-            var mockProtocol = MockHubProtocol.ReturnOnParse(invocation);
-
-            var hubConnection = new HubConnection(mockConnection.Object, mockProtocol, null);
-            await hubConnection.StartAsync();
-
-            mockConnection.Raise(c => c.Received += null, new object[] { new byte[] { } });
-            Assert.Equal(1, mockProtocol.ParseCalls);
         }
 
         // Moq really doesn't handle out parameters well, so to make these tests work I added a manual mock -anurse

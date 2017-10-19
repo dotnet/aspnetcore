@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
@@ -37,15 +39,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private readonly ITransportFactory _transportFactory;
         private string _connectionId;
         private readonly TimeSpan _eventQueueDrainTimeout = TimeSpan.FromSeconds(5);
-
         private ReadableChannel<byte[]> Input => _transportChannel.In;
         private WritableChannel<SendMessage> Output => _transportChannel.Out;
+        private readonly List<ReceiveCallback> _callbacks = new List<ReceiveCallback>();
 
         public Uri Url { get; }
 
         public IFeatureCollection Features { get; } = new FeatureCollection();
 
-        public event Func<byte[], Task> Received;
         public event Func<Exception, Task> Closed;
 
         public HttpConnection(Uri url)
@@ -186,7 +187,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         }
                         catch (Exception ex)
                         {
-                            _logger.ExceptionThrownFromHandler(_connectionId, nameof(Closed), ex);
+                            _logger.ExceptionThrownFromCallback(_connectionId, nameof(Closed), ex);
                         }
                     }
                 });
@@ -338,16 +339,23 @@ namespace Microsoft.AspNetCore.Sockets.Client
                         {
                             _logger.RaiseReceiveEvent(_connectionId);
 
-                            var receivedHandler = Received;
-                            if (receivedHandler != null)
+                            // Copying the callbacks to avoid concurrency issues
+                            ReceiveCallback[] callbackCopies;
+                            lock (_callbacks)
+                            {
+                                callbackCopies = new ReceiveCallback[_callbacks.Count];
+                                _callbacks.CopyTo(callbackCopies);
+                            }
+
+                            foreach (var callbackObject in callbackCopies)
                             {
                                 try
                                 {
-                                    await receivedHandler(buffer);
+                                    await callbackObject.InvokeAsync(buffer);
                                 }
                                 catch (Exception ex)
                                 {
-                                    _logger.ExceptionThrownFromHandler(_connectionId, nameof(Received), ex);
+                                    _logger.ExceptionThrownFromCallback(_connectionId, nameof(OnReceived), ex);
                                 }
                             }
                         });
@@ -442,6 +450,52 @@ namespace Microsoft.AspNetCore.Sockets.Client
             }
 
             _httpClient.Dispose();
+        }
+
+        public IDisposable OnReceived(Func<byte[], object, Task> callback, object state)
+        {
+            var receiveCallback = new ReceiveCallback(callback, state);
+            lock (_callbacks)
+            {
+                _callbacks.Add(receiveCallback);
+            }
+            return new Subscription(receiveCallback, _callbacks);
+        }
+
+        private class ReceiveCallback
+        {
+            private readonly Func<byte[], object, Task> _callback;
+            private readonly object _state;
+
+            public ReceiveCallback(Func<byte[], object, Task> callback, object state)
+            {
+                _callback = callback;
+                _state = state;
+            }
+
+            public Task InvokeAsync(byte[] data)
+            {
+                return _callback(data, _state);
+            }
+        }
+
+        private class Subscription : IDisposable
+        {
+            private readonly ReceiveCallback _receiveCallback;
+            private readonly List<ReceiveCallback> _callbacks;
+            public Subscription(ReceiveCallback callback, List<ReceiveCallback> callbacks)
+            {
+                _receiveCallback = callback;
+                _callbacks = callbacks;
+            }
+
+            public void Dispose()
+            {
+                lock (_callbacks)
+                {
+                    _callbacks.Remove(_receiveCallback);
+                }
+            }
         }
 
         private class ConnectionState

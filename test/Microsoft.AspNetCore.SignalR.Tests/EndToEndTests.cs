@@ -116,7 +116,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 {
                     var receiveTcs = new TaskCompletionSource<string>();
                     var closeTcs = new TaskCompletionSource<object>();
-                    connection.Received += data =>
+                    connection.OnReceived((data, state) =>
                     {
                         logger.LogInformation("Received {length} byte message", data.Length);
 
@@ -124,10 +124,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         {
                             data = Convert.FromBase64String(Encoding.UTF8.GetString(data));
                         }
-
-                        receiveTcs.TrySetResult(Encoding.UTF8.GetString(data));
+                        var tcs = (TaskCompletionSource<string>)state;
+                        tcs.TrySetResult(Encoding.UTF8.GetString(data));
                         return Task.CompletedTask;
-                    };
+                    }, receiveTcs);
+
                     connection.Closed += e =>
                     {
                         logger.LogInformation("Connection closed");
@@ -224,12 +225,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 try
                 {
                     var receiveTcs = new TaskCompletionSource<byte[]>();
-                    connection.Received += data =>
+                    connection.OnReceived((data, state) =>
                     {
                         logger.LogInformation("Received {length} byte message", data.Length);
-                        receiveTcs.TrySetResult(data);
+                        var tcs = (TaskCompletionSource<byte[]>)state;
+                        tcs.TrySetResult(data);
                         return Task.CompletedTask;
-                    };
+                    }, receiveTcs);
 
                     logger.LogInformation("Starting connection to {url}", url);
                     await connection.StartAsync().OrTimeout();

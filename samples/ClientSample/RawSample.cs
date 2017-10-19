@@ -40,7 +40,7 @@ namespace ClientSample
             try
             {
                 var cts = new CancellationTokenSource();
-                connection.Received += data => Console.Out.WriteLineAsync($"{Encoding.UTF8.GetString(data)}");
+                connection.OnReceived(data => Console.Out.WriteLineAsync($"{Encoding.UTF8.GetString(data)}"));
                 connection.Closed += e =>
                 {
                     cts.Cancel();
