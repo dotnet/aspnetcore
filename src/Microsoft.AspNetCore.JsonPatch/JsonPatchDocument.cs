@@ -100,6 +100,24 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
+        /// Test value.  Will result in, for example,
+        /// { "op": "test", "path": "/a/b/c", "value": 42 }
+        /// </summary>
+        /// <param name="path">target location</param>
+        /// <param name="value">value</param>
+        /// <returns></returns>
+        public JsonPatchDocument Test(string path, object value)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            Operations.Add(new Operation("test", PathHelpers.NormalizePath(path), null, value));
+            return this;
+        }
+
+        /// <summary>
         /// Removes value at specified location and add it to the target location.  Will result in, for example:
         /// { "op": "move", "from": "/a/b/c", "path": "/a/b/d" }
         /// </summary>

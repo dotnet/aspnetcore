@@ -58,7 +58,15 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations
                     adapter.Copy(this, objectToApplyTo);
                     break;
                 case OperationType.Test:
-                    throw new NotSupportedException(Resources.TestOperationNotSupported);
+                    if (adapter is IObjectAdapterWithTest adapterWithTest)
+                    {
+                        adapterWithTest.Test(this, objectToApplyTo);
+                        break;
+                    }
+                    else
+                    {
+                        throw new NotSupportedException(Resources.TestOperationNotSupported);
+                    }
                 default:
                     break;
             }

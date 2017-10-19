@@ -459,5 +459,55 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
             Assert.Equal(expected, targetObject);
         }
+
+        [Fact]
+        public void Test_DoesNotThrowException_IfTestIsSuccessful()
+        {
+            // Arrange
+            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
+            var targetObject = new List<int>() { 10, 20 };
+            var listAdapter = new ListAdapter();
+
+            // Act
+            var testStatus = listAdapter.TryTest(targetObject, "0", resolver.Object, "10", out var message);
+
+            //Assert
+            Assert.True(testStatus);
+            Assert.True(string.IsNullOrEmpty(message), "Expected no error message");
+        }
+
+        [Fact]
+        public void Test_ThrowsJsonPatchException_IfTestFails()
+        {
+            // Arrange
+            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
+            var targetObject = new List<int>() { 10, 20 };
+            var listAdapter = new ListAdapter();
+            var expectedErrorMessage = "The current value '20' at position '1' is not equal to the test value '10'.";
+
+            // Act
+            var testStatus = listAdapter.TryTest(targetObject, "1", resolver.Object, "10", out var errorMessage);
+
+            //Assert
+            Assert.False(testStatus);
+            Assert.Equal(expectedErrorMessage, errorMessage);
+        }
+
+        [Fact]
+        public void Test_ThrowsJsonPatchException_IfListPositionOutOfBounds()
+        {
+            // Arrange
+            var resolver = new Mock<IContractResolver>(MockBehavior.Strict);
+            var targetObject = new List<int>() { 10, 20 };
+            var listAdapter = new ListAdapter();
+            var expectedErrorMessage = "The index value provided by path segment '2' is out of bounds of the array size.";
+
+            // Act
+            var testStatus = listAdapter.TryTest(targetObject, "2", resolver.Object, "10", out var errorMessage);
+
+            //Assert
+            Assert.False(testStatus);
+            Assert.Equal(expectedErrorMessage, errorMessage);
+        }
     }
 }

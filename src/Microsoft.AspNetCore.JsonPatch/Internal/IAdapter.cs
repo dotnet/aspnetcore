@@ -40,5 +40,12 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             IContractResolver contractResolver,
             object value,
             out string errorMessage);
+
+        bool TryTest(
+            object target,
+            string segment,
+            IContractResolver contractResolver,
+            object value,
+            out string errorMessage);
     }
 }

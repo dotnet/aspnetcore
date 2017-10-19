@@ -4,6 +4,8 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
@@ -127,6 +129,43 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             }
 
             jsonProperty.ValueProvider.SetValue(target, convertedValue);
+
+            errorMessage = null;
+            return true;
+        }
+
+        public bool TryTest(
+            object target,
+            string segment,
+            IContractResolver
+            contractResolver,
+            object value,
+            out string errorMessage)
+        {
+            if (!TryGetJsonProperty(target, contractResolver, segment, out var jsonProperty))
+            {
+                errorMessage = Resources.FormatTargetLocationAtPathSegmentNotFound(segment);
+                return false;
+            }
+
+            if (!jsonProperty.Readable)
+            {
+                errorMessage = Resources.FormatCannotReadProperty(segment);
+                return false;
+            }
+
+            if (!TryConvertValue(value, jsonProperty.PropertyType, out var convertedValue))
+            {
+                errorMessage = Resources.FormatInvalidValueForProperty(value);
+                return false;
+            }
+
+            var currentValue = jsonProperty.ValueProvider.GetValue(target);
+            if (!JToken.DeepEquals(JsonConvert.SerializeObject(currentValue), JsonConvert.SerializeObject(convertedValue)))
+            {
+                errorMessage = Resources.FormatValueNotEqualToTestValue(currentValue, value, segment);
+                return false;
+            }
 
             errorMessage = null;
             return true;

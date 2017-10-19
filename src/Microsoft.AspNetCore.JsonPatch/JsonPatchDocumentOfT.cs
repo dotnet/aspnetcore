@@ -248,6 +248,77 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
+        /// Test value.  Will result in, for example,
+        /// { "op": "test", "path": "/a/b/c", "value": 42 }
+        /// </summary>
+        /// <param name="path">target location</param>
+        /// <param name="value">value</param>
+        /// <returns></returns>
+        public JsonPatchDocument<TModel> Test<TProp>(Expression<Func<TModel, TProp>> path, TProp value)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            Operations.Add(new Operation<TModel>(
+                "test",
+                GetPath(path, null),
+                from: null,
+                value: value));
+
+            return this;
+        }
+
+        /// <summary>
+        /// Test value in a list at given position
+        /// </summary>
+        /// <typeparam name="TProp">value type</typeparam>
+        /// <param name="path">target location</param>
+        /// <param name="value">value</param>
+        /// <param name="position">position</param>
+        /// <returns></returns>
+        public JsonPatchDocument<TModel> Test<TProp>(Expression<Func<TModel, IList<TProp>>> path,
+            TProp value, int position)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            Operations.Add(new Operation<TModel>(
+                "test",
+                GetPath(path, position.ToString()),
+                from: null,
+                value: value));
+
+            return this;
+        }
+
+        /// <summary>
+        /// Test value at end of a list
+        /// </summary>
+        /// <typeparam name="TProp">value type</typeparam>
+        /// <param name="path">target location</param>
+        /// <param name="value">value</param>
+        /// <returns></returns>
+        public JsonPatchDocument<TModel> Test<TProp>(Expression<Func<TModel, IList<TProp>>> path, TProp value)
+        {
+            if (path == null)
+            {
+                throw new ArgumentNullException(nameof(path));
+            }
+
+            Operations.Add(new Operation<TModel>(
+                "test",
+                GetPath(path, "-"),
+                from: null,
+                value: value));
+
+            return this;
+        }
+
+        /// <summary>
         /// Removes value at specified location and add it to the target location.  Will result in, for example:
         /// { "op": "move", "from": "/a/b/c", "path": "/a/b/d" }
         /// </summary>

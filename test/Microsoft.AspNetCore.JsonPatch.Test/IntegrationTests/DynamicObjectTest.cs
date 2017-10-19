@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
-    public class DynamicObjectIntegrationTests
+    public class DynamicObjectTest
     {
         [Fact]
         public void AddResults_ShouldReplaceExistingPropertyValue_InNestedDynamicObject()
@@ -258,6 +258,46 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.Equal(new List<int>() { 4, 5, 6 }, dynamicTestObject.IntegerList);
+        }
+
+        [Fact]
+        public void TestPropertyValue_FromListToNonList_InNestedTypedObject_InDynamicObject()
+        {
+            // Arrange
+            dynamic dynamicTestObject = new DynamicTestObject();
+            dynamicTestObject.Nested = new SimpleObject()
+            {
+                IntegerList = new List<int>() { 1, 2, 3 }
+            };
+
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Test("Nested/IntegerList/1", 2);
+
+            // Act & Assert
+            patchDoc.ApplyTo(dynamicTestObject);
+        }
+
+        [Fact]
+        public void TestPropertyValue_FromListToNonList_InNestedTypedObject_InDynamicObject_ThrowsJsonPatchException_IfTestFails()
+        {
+            // Arrange
+            dynamic dynamicTestObject = new DynamicTestObject();
+            dynamicTestObject.Nested = new SimpleObject()
+            {
+                IntegerList = new List<int>() { 1, 2, 3 }
+            };
+
+            var patchDoc = new JsonPatchDocument();
+            patchDoc.Test("Nested/IntegerList/0", 2);
+
+            // Act
+            var exception = Assert.Throws<JsonPatchException>(() =>
+            {
+                patchDoc.ApplyTo(dynamicTestObject);
+            });
+
+            // Assert
+            Assert.Equal("The current value '1' at position '0' is not equal to the test value '2'.", exception.Message);
         }
     }
 }

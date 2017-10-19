@@ -10,42 +10,6 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
     public class JsonPatchDocumentTest
     {
         [Fact]
-        public void TestOperation_ThrowsException_CallsIntoLogErrorAction()
-        {
-            // Arrange
-            var serialized = "[{\"value\":\"John\",\"path\":\"/Name\",\"op\":\"test\"}]";
-            var jsonPatchDocument = JsonConvert.DeserializeObject<JsonPatchDocument<Customer>>(serialized);
-            var model = new Customer();
-            var expectedErrorMessage = "The test operation is not supported.";
-            string actualErrorMessage = null;
-
-            // Act
-            jsonPatchDocument.ApplyTo(model, (jsonPatchError) =>
-            {
-                actualErrorMessage = jsonPatchError.ErrorMessage;
-            });
-
-            // Assert
-            Assert.Equal(expectedErrorMessage, actualErrorMessage);
-        }
-
-        [Fact]
-        public void TestOperation_NoLogErrorAction_ThrowsJsonPatchException()
-        {
-            // Arrange
-            var serialized = "[{\"value\":\"John\",\"path\":\"/Name\",\"op\":\"test\"}]";
-            var jsonPatchDocument = JsonConvert.DeserializeObject<JsonPatchDocument<Customer>>(serialized);
-            var model = new Customer();
-            var expectedErrorMessage = "The test operation is not supported.";
-
-            // Act
-            var jsonPatchException = Assert.Throws<JsonPatchException>(() => jsonPatchDocument.ApplyTo(model));
-
-            // Assert
-            Assert.Equal(expectedErrorMessage, jsonPatchException.Message);
-        }
-
-        [Fact]
         public void InvalidOperation_ThrowsException_CallsIntoLogErrorAction()
         {
             // Arrange

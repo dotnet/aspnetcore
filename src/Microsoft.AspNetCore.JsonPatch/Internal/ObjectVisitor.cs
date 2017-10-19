@@ -3,9 +3,6 @@
 
 using System;
 using System.Collections;
-using System.Collections.Generic;
-using System.Dynamic;
-using Microsoft.AspNetCore.JsonPatch.Adapters;
 using Newtonsoft.Json.Serialization;
 
 namespace Microsoft.AspNetCore.JsonPatch.Internal
@@ -30,7 +27,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 return false;
             }
 
-            adapter = SelectAdapater(target);
+            adapter = SelectAdapter(target);
 
             // Traverse until the penultimate segment to get the target object and adapter
             for (var i = 0; i < _path.Segments.Count - 1; i++)
@@ -42,14 +39,14 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
                 }
 
                 target = next;
-                adapter = SelectAdapater(target);
+                adapter = SelectAdapter(target);
             }
 
             errorMessage = null;
             return true;
         }
 
-        private IAdapter SelectAdapater(object targetObject)
+        private IAdapter SelectAdapter(object targetObject)
         {
             var jsonContract = _contractResolver.ResolveContract(targetObject.GetType());
 

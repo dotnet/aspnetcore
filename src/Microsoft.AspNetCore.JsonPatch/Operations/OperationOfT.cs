@@ -74,7 +74,15 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations
                     adapter.Copy(this, objectToApplyTo);
                     break;
                 case OperationType.Test:
-                    throw new JsonPatchException(new JsonPatchError(objectToApplyTo, this, Resources.TestOperationNotSupported));
+                    if (adapter is IObjectAdapterWithTest adapterWithTest)
+                    {
+                        adapterWithTest.Test(this, objectToApplyTo);
+                        break;
+                    }
+                    else
+                    {
+                        throw new JsonPatchException(new JsonPatchError(objectToApplyTo, this, Resources.TestOperationNotSupported));
+                    }
                 case OperationType.Invalid:
                     throw new JsonPatchException(
                         Resources.FormatInvalidJsonPatchOperation(op), innerException: null);
@@ -82,6 +90,5 @@ namespace Microsoft.AspNetCore.JsonPatch.Operations
                     break;
             }
         }
-
     }
 }

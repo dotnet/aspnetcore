@@ -81,7 +81,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             => string.Format(CultureInfo.CurrentCulture, GetString("CannotUpdateProperty"), p0);
 
         /// <summary>
-        /// The expression '{0}' is not supported.
+        /// The expression '{0}' is not supported. Supported expressions include member access and indexer expressions.
         /// </summary>
         internal static string ExpressionTypeNotSupported
         {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.JsonPatch
         }
 
         /// <summary>
-        /// The expression '{0}' is not supported.
+        /// The expression '{0}' is not supported. Supported expressions include member access and indexer expressions.
         /// </summary>
         internal static string FormatExpressionTypeNotSupported(object p0)
             => string.Format(CultureInfo.CurrentCulture, GetString("ExpressionTypeNotSupported"), p0);
@@ -275,6 +275,48 @@ namespace Microsoft.AspNetCore.JsonPatch
         /// </summary>
         internal static string FormatTestOperationNotSupported()
             => GetString("TestOperationNotSupported");
+
+        /// <summary>
+        /// The current value '{0}' at position '{2}' is not equal to the test value '{1}'.
+        /// </summary>
+        internal static string ValueAtListPositionNotEqualToTestValue
+        {
+            get => GetString("ValueAtListPositionNotEqualToTestValue");
+        }
+
+        /// <summary>
+        /// The current value '{0}' at position '{2}' is not equal to the test value '{1}'.
+        /// </summary>
+        internal static string FormatValueAtListPositionNotEqualToTestValue(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValueAtListPositionNotEqualToTestValue"), p0, p1, p2);
+
+        /// <summary>
+        /// The value at '{0}' cannot be null or empty to perform the test operation.
+        /// </summary>
+        internal static string ValueForTargetSegmentCannotBeNullOrEmpty
+        {
+            get => GetString("ValueForTargetSegmentCannotBeNullOrEmpty");
+        }
+
+        /// <summary>
+        /// The value at '{0}' cannot be null or empty to perform the test operation.
+        /// </summary>
+        internal static string FormatValueForTargetSegmentCannotBeNullOrEmpty(object p0)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValueForTargetSegmentCannotBeNullOrEmpty"), p0);
+
+        /// <summary>
+        /// The current value '{0}' at path '{2}' is not equal to the test value '{1}'.
+        /// </summary>
+        internal static string ValueNotEqualToTestValue
+        {
+            get => GetString("ValueNotEqualToTestValue");
+        }
+
+        /// <summary>
+        /// The current value '{0}' at path '{2}' is not equal to the test value '{1}'.
+        /// </summary>
+        internal static string FormatValueNotEqualToTestValue(object p0, object p1, object p2)
+            => string.Format(CultureInfo.CurrentCulture, GetString("ValueNotEqualToTestValue"), p0, p1, p2);
 
         private static string GetString(string name, params string[] formatterNames)
         {

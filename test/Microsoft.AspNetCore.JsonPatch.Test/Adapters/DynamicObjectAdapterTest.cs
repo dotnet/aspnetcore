@@ -227,5 +227,42 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.False(removeStatus);
             Assert.Equal($"The target location specified by path segment '{segment}' was not found.", removeErrorMessage);
         }
+
+        [Fact]
+        public void TryTest_DoesNotThrowException_IfTestSuccessful()
+        {
+            var adapter = new DynamicObjectAdapter();
+            dynamic target = new DynamicTestObject();
+            target.NewProperty = "Joana";
+            var segment = "NewProperty";
+            var resolver = new DefaultContractResolver();
+
+            // Act
+            var testStatus = adapter.TryTest(target, segment, resolver, "Joana", out string errorMessage);
+
+            // Assert
+            Assert.Equal("Joana", target.NewProperty);
+            Assert.True(testStatus);
+            Assert.True(string.IsNullOrEmpty(errorMessage), "Expected no error message");
+        }
+
+        [Fact]
+        public void TryTest_ThrowsJsonPatchException_IfTestFails()
+        {
+            // Arrange            
+            var adapter = new DynamicObjectAdapter();
+            dynamic target = new DynamicTestObject();
+            target.NewProperty = "Joana";
+            var segment = "NewProperty";
+            var resolver = new DefaultContractResolver();
+            var expectedErrorMessage = $"The current value 'Joana' at path '{segment}' is not equal to the test value 'John'.";
+
+            // Act
+            var testStatus = adapter.TryTest(target, segment, resolver, "John", out string errorMessage);
+
+            // Assert
+            Assert.False(testStatus);
+            Assert.Equal(expectedErrorMessage, errorMessage);
+        }
     }
 }
