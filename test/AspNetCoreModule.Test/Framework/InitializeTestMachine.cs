@@ -18,6 +18,8 @@ namespace AspNetCoreModule.Test.Framework
         public const string UseFullIIS = "UseFullIIS";
         public const string RunAsAdministrator = "RunAsAdministrator";
         public const string MakeCertExeAvailable = "MakeCertExeAvailable";
+        public const string WebSocketModuleAvailable = "WebSocketModuleAvailable";
+        public const string UrlRewriteModuleAvailable = "UrlRewriteModuleAvailable";
         public const string X86Platform = "X86Platform";
         public const string Wow64BitMode = "Wow64BitMode";
         public const string RequireRunAsAdministrator = "RequireRunAsAdministrator";
@@ -65,7 +67,7 @@ namespace AspNetCoreModule.Test.Framework
                     }
                     catch
                     {
-                        _makeCertExeAvailable = false;
+                        // ignore exception
                     }
                 }
                 return (_makeCertExeAvailable == true);
@@ -87,9 +89,8 @@ namespace AspNetCoreModule.Test.Framework
             {
                 if (_globalTestFlags == null)
                 {
-                    bool isElevated;
                     WindowsPrincipal principal = new WindowsPrincipal(WindowsIdentity.GetCurrent());
-                    isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
+                    bool isElevated = principal.IsInRole(WindowsBuiltInRole.Administrator);
 
                     // check if this test process is started with the Run As Administrator start option
                     _globalTestFlags = Environment.ExpandEnvironmentVariables(ANCMTestFlagsEnvironmentVariable);
@@ -190,6 +191,26 @@ namespace AspNetCoreModule.Test.Framework
                         }
                     }
 
+                    if (File.Exists(Path.Combine(IISConfigUtility.Strings.IIS64BitPath, "iiswsock.dll")))
+                    {
+                        // Add WebSocketModuleAvailable
+                        if (!_globalTestFlags.Contains(TestFlags.WebSocketModuleAvailable.ToLower()))
+                        {
+                            TestUtility.LogInformation("Added test context of " + TestFlags.WebSocketModuleAvailable);
+                            _globalTestFlags += ";" + TestFlags.WebSocketModuleAvailable;
+                        }
+                    }
+
+                    if (File.Exists(Path.Combine(IISConfigUtility.Strings.IIS64BitPath, "rewrite.dll")))
+                    {
+                        // Add UrlRewriteModuleAvailable
+                        if (!_globalTestFlags.Contains(TestFlags.UrlRewriteModuleAvailable.ToLower()))
+                        {
+                            TestUtility.LogInformation("Added test context of " + TestFlags.UrlRewriteModuleAvailable);
+                            _globalTestFlags += ";" + TestFlags.UrlRewriteModuleAvailable;
+                        }
+                    }
+
                     _globalTestFlags = _globalTestFlags.ToLower();
                 }
 
@@ -213,17 +234,7 @@ namespace AspNetCoreModule.Test.Framework
             
             if (!isIISInstalled)
             {
-                throw new System.ApplicationException("IIS server is not installed");
-            }
-
-            // Check websocket is installed
-            if (File.Exists(Path.Combine(IISConfigUtility.Strings.IIS64BitPath, "iiswsock.dll")))
-            {
-                TestUtility.LogInformation("Websocket is installed");
-            }
-            else
-            {
-                throw new System.ApplicationException("websocket module is not installed");
+                throw new ApplicationException("IIS server is not installed");
             }
 
             // Clean up IIS worker process
@@ -241,22 +252,12 @@ namespace AspNetCoreModule.Test.Framework
             }
             else
             {
-                throw new System.ApplicationException("WWW service can't start");
-            }
-
-            // check URLRewrite module exists
-            if (File.Exists(Path.Combine(IISConfigUtility.Strings.IIS64BitPath, "rewrite.dll")))
-            {
-                TestUtility.LogInformation("Verified URL Rewrite module installed for IIS server");
-            }
-            else
-            {
-                throw new System.ApplicationException("URL Rewrite module is not installed");
+                throw new ApplicationException("WWW service can't start");
             }
 
             if (IISConfigUtility.ApppHostTemporaryBackupFileExtention == null)
             {
-                throw new System.ApplicationException("Failed to backup applicationhost.config");
+                throw new ApplicationException("Failed to backup applicationhost.config");
             }
         }
 
@@ -355,7 +356,7 @@ namespace AspNetCoreModule.Test.Framework
             }
             if (!_InitializeTestMachineCompleted)
             {
-                throw new System.ApplicationException("InitializeTestMachine failed");
+                throw new ApplicationException("InitializeTestMachine failed");
             }
         }
 
@@ -476,7 +477,7 @@ namespace AspNetCoreModule.Test.Framework
                 }
                 if (!updateSuccess)
                 {
-                    throw new System.ApplicationException("Failed to update aspnetcore.dll");
+                    throw new ApplicationException("Failed to update aspnetcore.dll");
                 }
 
                 // update applicationhost.config for IIS server with the new private ASPNET Core file name

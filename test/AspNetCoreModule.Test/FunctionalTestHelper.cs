@@ -695,7 +695,7 @@ namespace AspNetCoreModule.Test
                     }
                     else
                     {
-                        throw new System.ApplicationException("wrong data");
+                        throw new ApplicationException("wrong data");
                     }
                 }
                 testSite.AspNetCoreApp.RestoreFile("web.config");

@@ -419,7 +419,7 @@ namespace AspNetCoreModule.Test.Framework
                 cmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "syswow64", "appverif.exe");
                 if (!File.Exists(cmdline))
                 {
-                    throw new System.ApplicationException("Not found :" + cmdline + "; this test requires appverif.exe.");
+                    throw new ApplicationException("Not found :" + cmdline + "; this test requires appverif.exe.");
                 }
             }
             else
@@ -427,7 +427,7 @@ namespace AspNetCoreModule.Test.Framework
                 cmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "appverif.exe");
                 if (!File.Exists(cmdline))
                 {
-                    throw new System.ApplicationException("Not found :" + cmdline + "; this test requires appverif.exe.");
+                    throw new ApplicationException("Not found :" + cmdline + "; this test requires appverif.exe.");
                 }
             }
 
@@ -438,7 +438,7 @@ namespace AspNetCoreModule.Test.Framework
             }
             catch
             {
-                throw new System.ApplicationException("Failed to configure Appverifier");
+                throw new ApplicationException("Failed to configure Appverifier");
             }
         }
 
@@ -456,7 +456,7 @@ namespace AspNetCoreModule.Test.Framework
                 debuggerCmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Debugging Tools for Windows (x64)", "wow64", "windbg.exe");
                 if (!File.Exists(debuggerCmdline))
                 {
-                    throw new System.ApplicationException("Not found :" + debuggerCmdline + "; this test requires windbg.exe.");
+                    throw new ApplicationException("Not found :" + debuggerCmdline + "; this test requires windbg.exe.");
                 }
             }
             else
@@ -464,7 +464,7 @@ namespace AspNetCoreModule.Test.Framework
                 debuggerCmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Debugging Tools for Windows (x64)", "windbg.exe");
                 if (!File.Exists(debuggerCmdline))
                 {
-                    throw new System.ApplicationException("Not found :" + debuggerCmdline + "; this test requires windbg.exe.");
+                    throw new ApplicationException("Not found :" + debuggerCmdline + "; this test requires windbg.exe.");
                 }
             }
             
@@ -475,7 +475,7 @@ namespace AspNetCoreModule.Test.Framework
             }
             catch
             {
-                throw new System.ApplicationException("Failed to attach debuger");
+                throw new ApplicationException("Failed to attach debuger");
             }
         }
 
@@ -497,12 +497,12 @@ namespace AspNetCoreModule.Test.Framework
                     cmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "syswow64", "appverif.exe");
                     if (!File.Exists(cmdline))
                     {
-                        throw new System.ApplicationException("Not found :" + cmdline);
+                        throw new ApplicationException("Not found :" + cmdline);
                     }
                     debuggerCmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Debugging Tools for Windows (x64)", "wow64", "windbg.exe");
                     if (!File.Exists(debuggerCmdline))
                     {
-                        throw new System.ApplicationException("Not found :" + debuggerCmdline);
+                        throw new ApplicationException("Not found :" + debuggerCmdline);
                     }
                 }
                 else
@@ -510,12 +510,12 @@ namespace AspNetCoreModule.Test.Framework
                     cmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%windir%"), "system32", "appverif.exe");
                     if (!File.Exists(cmdline))
                     {
-                        throw new System.ApplicationException("Not found :" + cmdline);
+                        throw new ApplicationException("Not found :" + cmdline);
                     }
                     debuggerCmdline = Path.Combine(Environment.ExpandEnvironmentVariables("%ProgramFiles%"), "Debugging Tools for Windows (x64)", "windbg.exe");
                     if (!File.Exists(debuggerCmdline))
                     {
-                        throw new System.ApplicationException("Not found :" + debuggerCmdline);
+                        throw new ApplicationException("Not found :" + debuggerCmdline);
                     }
                 }
                 TestUtility.RunCommand(cmdline, argument, true, false);

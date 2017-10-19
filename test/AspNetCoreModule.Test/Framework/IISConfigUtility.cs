@@ -208,7 +208,7 @@ namespace AspNetCoreModule.Test.Framework
 
             if (!File.Exists(fromfile))
             {
-                throw new System.ApplicationException("Failed to backup " + tofile);
+                throw new ApplicationException("Failed to backup " + tofile);
             }
 
             // try restoring applicationhost.config again after the ininial clean up for better reliability
@@ -232,7 +232,7 @@ namespace AspNetCoreModule.Test.Framework
             // verify restoration is done successfully
             if (File.ReadAllBytes(fromfile).Length != File.ReadAllBytes(tofile).Length)
             {
-                throw new System.ApplicationException("Failed to restore applicationhost.config from " + fromfile + " to " + tofile);
+                throw new ApplicationException("Failed to restore applicationhost.config from " + fromfile + " to " + tofile);
             }
         }
 
@@ -465,7 +465,7 @@ namespace AspNetCoreModule.Test.Framework
                         var element = FindElement(environmentVariablesCollection, "add", "name", value);
                         if (element != null)
                         {
-                            throw new System.ApplicationException("duplicated collection item");
+                            throw new ApplicationException("duplicated collection item");
                         }
                         environmentVariablesCollection.Add(environmentVariableElement);
                     }
@@ -1116,7 +1116,7 @@ namespace AspNetCoreModule.Test.Framework
             string output = TestUtility.RunPowershellScript(powershellScript);
             if (output.Length != 40)
             {
-                throw new System.ApplicationException("Failed to create a certificate, output: " + output);
+                throw new ApplicationException("Failed to create a certificate, output: " + output);
             }
             return output;
         }
@@ -1131,7 +1131,7 @@ namespace AspNetCoreModule.Test.Framework
             string output = TestUtility.RunPowershellScript(powershellScript);
             if (output.Length != 40)
             {
-                throw new System.ApplicationException("Failed to create a certificate, output: " + output);
+                throw new ApplicationException("Failed to create a certificate, output: " + output);
             }
             return output;
         }
@@ -1153,7 +1153,7 @@ namespace AspNetCoreModule.Test.Framework
             string output = TestUtility.RunPowershellScript(powershellScript);
             if (output != string.Empty)
             {
-                throw new System.ApplicationException("Failed to export a certificate to RootCA, output: " + output);
+                throw new ApplicationException("Failed to export a certificate to RootCA, output: " + output);
             }
             return output;
         }
@@ -1169,7 +1169,7 @@ namespace AspNetCoreModule.Test.Framework
             string output = TestUtility.RunPowershellScript(powershellScript);
             if (output.Length < 500)
             {
-                throw new System.ApplicationException("Failed to get certificate public key, output: " + output);
+                throw new ApplicationException("Failed to get certificate public key, output: " + output);
             }
             return output;
         }
@@ -1185,7 +1185,7 @@ namespace AspNetCoreModule.Test.Framework
             string output = TestUtility.RunPowershellScript(powershellScript);
             if (output != string.Empty)
             {
-                throw new System.ApplicationException("Failed to delete a certificate (thumbprint: " + thumbPrint + ", output: " + output);
+                throw new ApplicationException("Failed to delete a certificate (thumbprint: " + thumbPrint + ", output: " + output);
             }
             return output;
         }
@@ -1207,7 +1207,7 @@ namespace AspNetCoreModule.Test.Framework
             string output = TestUtility.RunPowershellScript(powershellScript);
             if (output != string.Empty)
             {
-                throw new System.ApplicationException("Failed to configure certificate, output: " + output);
+                throw new ApplicationException("Failed to configure certificate, output: " + output);
             }
         }
 
@@ -1227,7 +1227,7 @@ namespace AspNetCoreModule.Test.Framework
                 output = TestUtility.RunPowershellScript(powershellScript);
                 if (output != string.Empty)
                 {
-                    throw new System.ApplicationException("Failed to delete certificate, output: " + output);
+                    throw new ApplicationException("Failed to delete certificate, output: " + output);
                 }
             }
         }
