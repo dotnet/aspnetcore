@@ -242,9 +242,8 @@ namespace Microsoft.AspNetCore.Routing
         {
             if (_binder == null)
             {
-                var urlEncoder = context.RequestServices.GetRequiredService<UrlEncoder>();
-                var pool = context.RequestServices.GetRequiredService<ObjectPool<UriBuildingContext>>();
-                _binder = new TemplateBinder(urlEncoder, pool, ParsedTemplate, Defaults);
+                var binderFactory = context.RequestServices.GetRequiredService<RoutePatternBinderFactory>();
+                _binder = new TemplateBinder(binderFactory.Create(ParsedTemplate.ToRoutePattern(), Defaults));
             }
         }
 

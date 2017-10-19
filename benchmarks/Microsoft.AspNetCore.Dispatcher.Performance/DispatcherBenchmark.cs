@@ -2,13 +2,11 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.ObjectPool;
@@ -30,8 +28,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Performance
 
             var treeBuilder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
-                UrlEncoder.Default,
-                new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
+                new RoutePatternBinderFactory(UrlEncoder.Default, new DefaultObjectPoolProvider()),
                 new DefaultInlineConstraintResolver(Options.Create(new RouteOptions())));
 
             treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("api/Widgets"), "default", 0);

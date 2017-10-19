@@ -27,7 +27,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             }
 
             Template = template;
-            Values = new DispatcherValueCollection(values);
+            Defaults = new DispatcherValueCollection(values);
             DisplayName = displayName;
             Metadata = metadata.ToArray();
         }
@@ -38,6 +38,6 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         public string Template { get; }
 
-        public DispatcherValueCollection Values { get; }
+        public DispatcherValueCollection Defaults { get; }
     }
 }

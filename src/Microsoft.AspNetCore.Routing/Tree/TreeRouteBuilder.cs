@@ -20,21 +20,12 @@ namespace Microsoft.AspNetCore.Routing.Tree
     {
         private readonly ILogger _logger;
         private readonly ILogger _constraintLogger;
-        private readonly UrlEncoder _urlEncoder;
-        private readonly ObjectPool<UriBuildingContext> _objectPool;
+        private readonly RoutePatternBinderFactory _binderFactory;
         private readonly IInlineConstraintResolver _constraintResolver;
 
-        /// <summary>
-        /// Initializes a new instance of <see cref="TreeRouteBuilder"/>.
-        /// </summary>
-        /// <param name="loggerFactory">The <see cref="ILoggerFactory"/>.</param>
-        /// <param name="urlEncoder">The <see cref="UrlEncoder"/>.</param>
-        /// <param name="objectPool">The <see cref="ObjectPool{UrlBuildingContext}"/>.</param>
-        /// <param name="constraintResolver">The <see cref="IInlineConstraintResolver"/>.</param>
         public TreeRouteBuilder(
             ILoggerFactory loggerFactory,
-            UrlEncoder urlEncoder,
-            ObjectPool<UriBuildingContext> objectPool,
+            RoutePatternBinderFactory binderFactory,
             IInlineConstraintResolver constraintResolver)
         {
             if (loggerFactory == null)
@@ -42,14 +33,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
-            if (urlEncoder == null)
+            if (binderFactory == null)
             {
-                throw new ArgumentNullException(nameof(urlEncoder));
-            }
-
-            if (objectPool == null)
-            {
-                throw new ArgumentNullException(nameof(objectPool));
+                throw new ArgumentNullException(nameof(binderFactory));
             }
 
             if (constraintResolver == null)
@@ -57,8 +43,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 throw new ArgumentNullException(nameof(constraintResolver));
             }
 
-            _urlEncoder = urlEncoder;
-            _objectPool = objectPool;
+            _binderFactory = binderFactory;
             _constraintResolver = constraintResolver;
 
             _logger = loggerFactory.CreateLogger<TreeRouter>();
@@ -251,8 +236,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
             return new TreeRouter(
                 trees.Values.OrderBy(tree => tree.Order).ToArray(),
                 OutboundEntries,
-                _urlEncoder,
-                _objectPool,
+                _binderFactory,
                 _logger,
                 _constraintLogger,
                 version);

@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
 using Microsoft.AspNetCore.Routing.Constraints;
 using Xunit;
 
@@ -10,18 +9,6 @@ namespace Microsoft.AspNetCore.Routing.Tests
 {
     public class DateTimeRouteConstraintTests
     {
-        public static IEnumerable<object[]> GetDateTimeObject
-        {
-            get
-            {
-                yield return new object[]
-                {
-                    DateTime.Now,
-                    true
-                };
-            }
-        }
-
         [Theory]
         [InlineData("12/25/2009", true)]
         [InlineData("25/12/2009 11:45:00 PM", false)]
@@ -36,9 +23,7 @@ namespace Microsoft.AspNetCore.Routing.Tests
         [InlineData("12/25/2009 11:45:00 PM", true)]
         [InlineData("2009-05-12T11:45:00Z", true)]
         [InlineData("not-parseable-as-date", false)]
-        [InlineData(false, false)]
-        [MemberData(nameof(GetDateTimeObject))]
-        public void DateTimeRouteConstraint(object parameterValue, bool expected)
+        public void DateTimeRouteConstraint_ParsesStrings(string parameterValue, bool expected)
         {
             // Arrange
             var constraint = new DateTimeRouteConstraint();
@@ -48,6 +33,32 @@ namespace Microsoft.AspNetCore.Routing.Tests
 
             // Assert
             Assert.Equal(expected, actual);
+        }
+
+        [Fact]
+        public void DateTimeRouteConstraint_AcceptsDateTimeObjects_ReturnsTrue()
+        {
+            // Arrange
+            var constraint = new DateTimeRouteConstraint();
+
+            // Act
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, DateTime.Now);
+
+            // Assert
+            Assert.True(actual);
+        }
+
+        [Fact]
+        public void DateTimeRouteConstraint_IgnoresOtherTypes_ReturnsFalse()
+        {
+            // Arrange
+            var constraint = new DateTimeRouteConstraint();
+
+            // Act
+            var actual = ConstraintsTestHelper.TestConstraint(constraint, false);
+
+            // Assert
+            Assert.False(actual);
         }
     }
 }

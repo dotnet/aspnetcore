@@ -20,7 +20,6 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
 
             // This is a temporary layering issue, don't worry about it :)
             services.AddRouting();
-            services.AddSingleton<RouteTemplateUrlGenerator>();
             services.AddSingleton<IDefaultMatcherFactory, TreeMatcherFactory>();
 
             services.Configure<DispatcherOptions>(ConfigureDispatcher);

@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.Dispatcher
     // used a value for {p1}, we have to output the entire segment up to the next "/".
     // Otherwise we could end up with the partial segment "v1" instead of the entire
     // segment "v1-v2.xml".
-    public enum SegmentState
+    internal enum SegmentState
     {
         Beginning,
         Inside,

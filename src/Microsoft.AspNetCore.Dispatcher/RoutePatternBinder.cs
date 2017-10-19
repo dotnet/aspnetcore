@@ -20,10 +20,10 @@ namespace Microsoft.AspNetCore.Dispatcher
         private readonly DispatcherValueCollection _filters;
         private readonly RoutePattern _pattern;
 
-        public RoutePatternBinder(
+        internal RoutePatternBinder(
             UrlEncoder urlEncoder,
             ObjectPool<UriBuildingContext> pool,
-            RoutePattern template,
+            RoutePattern pattern,
             DispatcherValueCollection defaults)
         {
             if (urlEncoder == null)
@@ -36,14 +36,14 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(pool));
             }
 
-            if (template == null)
+            if (pattern == null)
             {
-                throw new ArgumentNullException(nameof(template));
+                throw new ArgumentNullException(nameof(pattern));
             }
 
             _urlEncoder = urlEncoder;
             _pool = pool;
-            _pattern = template;
+            _pattern = pattern;
             _defaults = defaults;
 
             // Any default that doesn't have a corresponding parameter is a 'filter' and if a value

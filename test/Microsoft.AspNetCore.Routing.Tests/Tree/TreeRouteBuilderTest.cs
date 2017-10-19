@@ -243,15 +243,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
         private static TreeRouteBuilder CreateBuilder()
         {
-            var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPolicy = new UriBuilderContextPooledObjectPolicy();
-            var objectPool = objectPoolProvider.Create(objectPolicy);
-
             var constraintResolver = GetInlineConstraintResolver();
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
-                UrlEncoder.Default,
-                objectPool,
+                new RoutePatternBinderFactory(UrlEncoder.Default, new DefaultObjectPoolProvider()),
                 constraintResolver);
             return builder;
         }

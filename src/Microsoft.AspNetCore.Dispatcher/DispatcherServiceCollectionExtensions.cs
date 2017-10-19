@@ -25,17 +25,18 @@ namespace Microsoft.Extensions.DependencyInjection
             // Adds a default dispatcher which will collect all data sources and endpoint selectors from DI.
             services.TryAddEnumerable(ServiceDescriptor.Transient<IConfigureOptions<DispatcherOptions>, DefaultDispatcherConfigureOptions>());
 
-            services.AddSingleton<AddressTable, DefaultAddressTable>();
-            services.AddSingleton<TemplateAddressSelector>();
+            //
+            // Addresses + Templates
+            //
+            services.TryAddSingleton<AddressTable, DefaultAddressTable>();
+            services.TryAddSingleton<TemplateFactory, DefaultTemplateFactory>();
+            services.TryAddSingleton<ITemplateFactoryComponent, RoutePatternTemplateFactory>();
+            services.TryAddSingleton<TemplateAddressSelector>();
 
             //
-            // Infrastructure
+            // Misc Infrastructure
             //
-            services.AddSingleton<ObjectPool<UriBuildingContext>>(s =>
-            {
-                var provider = s.GetRequiredService<ObjectPoolProvider>();
-                return provider.Create<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy());
-            });
+            services.TryAddSingleton<RoutePatternBinderFactory>();
 
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHandlerFactory, TemplateEndpointHandlerFactory>());
 

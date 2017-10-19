@@ -21,7 +21,6 @@ namespace DispatcherSample
 
             // This is a temporary layering issue, don't worry about :)
             services.AddRouting();
-            services.AddSingleton<RouteTemplateUrlGenerator>();
             services.AddSingleton<IDefaultMatcherFactory, TreeMatcherFactory>();
 
             // Imagine this was done by MVC or another framework.
@@ -86,15 +85,16 @@ namespace DispatcherSample
 
         public static Task Home_Index(HttpContext httpContext)
         {
-            var url = httpContext.RequestServices.GetService<RouteTemplateUrlGenerator>();
+            var templateFactory = httpContext.RequestServices.GetRequiredService<TemplateFactory>();
+
             return httpContext.Response.WriteAsync(
                 $"<html>" +
                 $"<body>" +
                 $"<h1>Some links you can visit</h1>" +
-                $"<p><a href=\"{url.GenerateUrl(httpContext, new { controller = "Home", action = "Index", })}\">Home:Index()</a></p>" +
-                $"<p><a href=\"{url.GenerateUrl(httpContext, new { controller = "Home", action = "About", })}\">Home:About()</a></p>" +
-                $"<p><a href=\"{url.GenerateUrl(httpContext, new { controller = "Admin", action = "Index", })}\">Admin:Index()</a></p>" +
-                $"<p><a href=\"{url.GenerateUrl(httpContext, new { controller = "Admin", action = "Users", })}\">Admin:GetUsers()/Admin:EditUsers()</a></p>" +
+                $"<p><a href=\"{templateFactory.GetTemplate(new { controller = "Home", action = "Index", }).GetUrl(httpContext)}\">Home:Index()</a></p>" +
+                $"<p><a href=\"{templateFactory.GetTemplate(new { controller = "Home", action = "About", }).GetUrl(httpContext)}\">Home:About()</a></p>" +
+                $"<p><a href=\"{templateFactory.GetTemplate(new { controller = "Admin", action = "Index", }).GetUrl(httpContext)}\">Admin:Index()</a></p>" +
+                $"<p><a href=\"{templateFactory.GetTemplate(new { controller = "Admin", action = "Users", }).GetUrl(httpContext)}\">Admin:GetUsers()/Admin:EditUsers()</a></p>" +
                 $"</body>" +
                 $"</html>");
         }

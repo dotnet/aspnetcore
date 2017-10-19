@@ -10,7 +10,7 @@ using System.Text.Encodings.Web;
 namespace Microsoft.AspNetCore.Dispatcher
 {
     [DebuggerDisplay("{DebuggerToString(),nq}")]
-    public class UriBuildingContext
+    internal class UriBuildingContext
     {
         // Holds the 'accepted' parts of the uri.
         private readonly StringBuilder _uri;

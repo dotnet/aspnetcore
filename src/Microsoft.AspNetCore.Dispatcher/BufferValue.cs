@@ -3,7 +3,7 @@
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public struct BufferValue
+    internal struct BufferValue
     {
         public BufferValue(string value, bool requiresEncoding)
         {

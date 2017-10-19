@@ -3,10 +3,8 @@
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public interface ITemplateAddress
+    public abstract class TemplateFactory<TKey> : ITemplateFactoryComponent
     {
-        string Template { get; }
-
-        DispatcherValueCollection Defaults { get; }
+        public abstract Template GetTemplate(TKey key);
     }
 }

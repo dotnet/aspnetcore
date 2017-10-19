@@ -33,22 +33,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private readonly ILogger _logger;
         private readonly ILogger _constraintLogger;
 
-        /// <summary>
-        /// Creates a new <see cref="TreeRouter"/>.
-        /// </summary>
-        /// <param name="trees">The list of <see cref="UrlMatchingTree"/> that contains the route entries.</param>
-        /// <param name="linkGenerationEntries">The set of <see cref="OutboundRouteEntry"/>.</param>
-        /// <param name="urlEncoder">The <see cref="UrlEncoder"/>.</param>
-        /// <param name="objectPool">The <see cref="ObjectPool{T}"/>.</param>
-        /// <param name="routeLogger">The <see cref="ILogger"/> instance.</param>
-        /// <param name="constraintLogger">The <see cref="ILogger"/> instance used
-        /// in <see cref="RouteConstraintMatcher"/>.</param>
-        /// <param name="version">The version of this route.</param>
         public TreeRouter(
             UrlMatchingTree[] trees,
             IEnumerable<OutboundRouteEntry> linkGenerationEntries,
-            UrlEncoder urlEncoder,
-            ObjectPool<UriBuildingContext> objectPool,
+            RoutePatternBinderFactory binderFactory,
             ILogger routeLogger,
             ILogger constraintLogger,
             int version)
@@ -63,14 +51,9 @@ namespace Microsoft.AspNetCore.Routing.Tree
                 throw new ArgumentNullException(nameof(linkGenerationEntries));
             }
 
-            if (urlEncoder == null)
+            if (binderFactory == null)
             {
-                throw new ArgumentNullException(nameof(urlEncoder));
-            }
-
-            if (objectPool == null)
-            {
-                throw new ArgumentNullException(nameof(objectPool));
+                throw new ArgumentNullException(nameof(binderFactory));
             }
 
             if (routeLogger == null)
@@ -93,8 +76,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
             foreach (var entry in linkGenerationEntries)
             {
-
-                var binder = new TemplateBinder(urlEncoder, objectPool, entry.RouteTemplate, entry.Defaults);
+                var binder = new TemplateBinder(binderFactory.Create(entry.RouteTemplate.ToRoutePattern(), entry.Defaults));
                 var outboundMatch = new OutboundMatch() { Entry = entry, TemplateBinder = binder };
                 outboundMatches.Add(outboundMatch);
 

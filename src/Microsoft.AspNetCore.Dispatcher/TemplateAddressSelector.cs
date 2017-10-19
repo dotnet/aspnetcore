@@ -21,6 +21,11 @@ namespace Microsoft.AspNetCore.Dispatcher
             _addressTable = addressTable;
         }
 
+        public Address SelectAddress(object values)
+        {
+            return SelectAddress(new DispatcherValueCollection(values));
+        }
+
         public Address SelectAddress(DispatcherValueCollection values)
         {
             if (values == null)
@@ -69,7 +74,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         private bool IsMatch(ITemplateAddress address, DispatcherValueCollection values)
         {
-            foreach (var kvp in address.Values)
+            foreach (var kvp in address.Defaults)
             {
                 values.TryGetValue(kvp.Key, out var value);
 

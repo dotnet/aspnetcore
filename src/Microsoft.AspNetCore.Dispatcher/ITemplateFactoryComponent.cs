@@ -3,10 +3,7 @@
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public interface ITemplateAddress
+    public interface ITemplateFactoryComponent
     {
-        string Template { get; }
-
-        DispatcherValueCollection Defaults { get; }
     }
 }

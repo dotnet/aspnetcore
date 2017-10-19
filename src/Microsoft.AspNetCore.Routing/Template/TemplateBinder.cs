@@ -2,9 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Dispatcher;
-using Microsoft.Extensions.ObjectPool;
 
 namespace Microsoft.AspNetCore.Routing.Template
 {
@@ -12,28 +10,14 @@ namespace Microsoft.AspNetCore.Routing.Template
     {
         private readonly RoutePatternBinder _binder;
 
-        public TemplateBinder(
-            UrlEncoder urlEncoder,
-            ObjectPool<UriBuildingContext> pool,
-            RouteTemplate template,
-            RouteValueDictionary defaults)
+        public TemplateBinder(RoutePatternBinder binder)
         {
-            if (urlEncoder == null)
+            if (binder == null)
             {
-                throw new ArgumentNullException(nameof(urlEncoder));
+                throw new ArgumentNullException(nameof(binder));
             }
 
-            if (pool == null)
-            {
-                throw new ArgumentNullException(nameof(pool));
-            }
-
-            if (template == null)
-            {
-                throw new ArgumentNullException(nameof(template));
-            }
-
-            _binder = new RoutePatternBinder(urlEncoder, pool, template.ToRoutePattern(), defaults);
+            _binder = binder;
         }
 
         // Step 1: Get the list of values we're going to try to use to match and generate this URI

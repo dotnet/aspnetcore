@@ -23,8 +23,12 @@ namespace Microsoft.AspNetCore.Routing.Tree
     {
         private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
 
-        private static UrlEncoder Encoder = UrlTestEncoder.Default;
-        private static ObjectPool<UriBuildingContext> Pool = new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy());
+        public TreeRouterTest()
+        {
+            BinderFactory = new RoutePatternBinderFactory(new UrlTestEncoder(), new DefaultObjectPoolProvider());
+        }
+
+        public RoutePatternBinderFactory BinderFactory { get; }
 
         [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
@@ -1988,15 +1992,10 @@ namespace Microsoft.AspNetCore.Routing.Tree
 
         private static TreeRouteBuilder CreateBuilder()
         {
-            var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPolicy = new UriBuilderContextPooledObjectPolicy();
-            var objectPool = objectPoolProvider.Create<UriBuildingContext>(objectPolicy);
-
             var constraintResolver = CreateConstraintResolver();
             var builder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
-                UrlEncoder.Default,
-                objectPool,
+                new RoutePatternBinderFactory(UrlTestEncoder.Default, new DefaultObjectPoolProvider()),
                 constraintResolver);
             return builder;
         }

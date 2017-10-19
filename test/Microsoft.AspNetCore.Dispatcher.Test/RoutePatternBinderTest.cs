@@ -6,16 +6,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using Microsoft.AspNetCore.Dispatcher.Patterns;
-using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.ObjectPool;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.WebEncoders.Testing;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class RoutePatternBinderTests
+    public class RoutePatternBinderTest
     {
+        public RoutePatternBinderTest()
+        {
+            BinderFactory = new RoutePatternBinderFactory(new UrlTestEncoder(), new DefaultObjectPoolProvider());
+        }
+
+        public RoutePatternBinderFactory BinderFactory { get; }
+
         public static TheoryData EmptyAndNullDefaultValues =>
             new TheoryData<string, DispatcherValueCollection, DispatcherValueCollection, string>
             {
@@ -114,12 +119,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             string expected)
         {
             // Arrange
-            var encoder = new UrlTestEncoder();
-            var binder = new RoutePatternBinder(
-                encoder,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
-                RoutePattern.Parse(pattern),
-                defaults);
+            var binder = BinderFactory.Create(pattern, defaults);
 
             // Act & Assert
             (var acceptedValues, var combinedValues) = binder.GetValues(ambientValues: null, values: values);
@@ -264,12 +264,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             string expected)
         {
             // Arrange
-            var encoder = new UrlTestEncoder();
-            var binder = new RoutePatternBinder(
-                encoder,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
-                RoutePattern.Parse(pattern),
-                defaults);
+            var binder = BinderFactory.Create(pattern, defaults);
 
             // Act & Assert
             (var acceptedValues, var combinedValues) = binder.GetValues(ambientValues: ambientValues, values: values);
@@ -695,11 +690,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Arrange
             var pattern = "{area?}/{controller=Home}/{action=Index}/{id?}";
             var encoder = new UrlTestEncoder();
-            var binder = new RoutePatternBinder(
-                new UrlTestEncoder(),
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
-                RoutePattern.Parse(pattern),
-                defaults: null);
+            var binder = BinderFactory.Create(pattern);
             var ambientValues = new DispatcherValueCollection();
             var routeValues = new DispatcherValueCollection(new { controller = "Test", action = "Index" });
 
@@ -1116,7 +1107,41 @@ namespace Microsoft.AspNetCore.Dispatcher
 
 #endif
 
-        private static void RunTest(
+        [Theory]
+        [InlineData(null, null, true)]
+        [InlineData("blog", null, false)]
+        [InlineData(null, "store", false)]
+        [InlineData("Cool", "cool", true)]
+        [InlineData("Co0l", "cool", false)]
+        public void RoutePartsEqualTest(object left, object right, bool expected)
+        {
+            // Arrange & Act & Assert
+            if (expected)
+            {
+                Assert.True(RoutePatternBinder.RoutePartsEqual(left, right));
+            }
+            else
+            {
+                Assert.False(RoutePatternBinder.RoutePartsEqual(left, right));
+            }
+        }
+
+        private void RunTest(
+            string pattern,
+            object defaults,
+            object ambientValues,
+            object values,
+            string expected)
+        {
+            RunTest(
+                pattern,
+                new DispatcherValueCollection(defaults),
+                new DispatcherValueCollection(ambientValues),
+                new DispatcherValueCollection(values),
+                expected);
+        }
+
+        private void RunTest(
             string pattern,
             DispatcherValueCollection defaults,
             DispatcherValueCollection ambientValues,
@@ -1125,16 +1150,11 @@ namespace Microsoft.AspNetCore.Dispatcher
             UrlEncoder encoder = null)
         {
             // Arrange
-            encoder = encoder ?? new UrlTestEncoder();
-
-            var binder = new RoutePatternBinder(
-                encoder,
-                new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy()),
-                RoutePattern.Parse(pattern),
-                defaults);
+            var binderFactory = encoder == null ? BinderFactory : new RoutePatternBinderFactory(encoder, new DefaultObjectPoolProvider());
+            var binder = binderFactory.Create(pattern, defaults ?? new DispatcherValueCollection());
 
             // Act & Assert
-            (var acceptedValues, var combinedValues)  = binder.GetValues(ambientValues, values);
+            (var acceptedValues, var combinedValues) = binder.GetValues(ambientValues, values);
             if (acceptedValues == null)
             {
                 if (expected == null)
@@ -1177,40 +1197,6 @@ namespace Microsoft.AspNetCore.Dispatcher
                         Assert.Equal(kvp.Value, value);
                     }
                 }
-            }
-        }
-
-        private static void RunTest(
-            string pattern,
-            object defaults,
-            object ambientValues,
-            object values,
-            string expected)
-        {
-            RunTest(
-                pattern,
-                new DispatcherValueCollection(defaults),
-                new DispatcherValueCollection(ambientValues),
-                new DispatcherValueCollection(values),
-                expected);
-        }
-
-        [Theory]
-        [InlineData(null, null, true)]
-        [InlineData("blog", null, false)]
-        [InlineData(null, "store", false)]
-        [InlineData("Cool", "cool", true)]
-        [InlineData("Co0l", "cool", false)]
-        public void RoutePartsEqualTest(object left, object right, bool expected)
-        {
-            // Arrange & Act & Assert
-            if (expected)
-            {
-                Assert.True(RoutePatternBinder.RoutePartsEqual(left, right));
-            }
-            else
-            {
-                Assert.False(RoutePatternBinder.RoutePartsEqual(left, right));
             }
         }
 

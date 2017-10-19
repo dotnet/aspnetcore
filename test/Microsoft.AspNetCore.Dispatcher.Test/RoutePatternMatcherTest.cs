@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class RoutePatternMatcherTests
+    public class RoutePatternMatcherTest
     {
         [Fact]
         public void TryMatch_Success()
