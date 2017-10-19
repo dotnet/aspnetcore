@@ -80,11 +80,10 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         public bool SlidingExpiration { get; set; }
 
         /// <summary>
-        /// The LoginPath property informs the handler that it should change an outgoing 401 Unauthorized status
-        /// code into a 302 redirection onto the given login path. The current url which generated the 401 is added
-        /// to the LoginPath as a query string parameter named by the ReturnUrlParameter. Once a request to the
-        /// LoginPath grants a new SignIn identity, the ReturnUrlParameter value is used to redirect the browser back
-        /// to the url which caused the original unauthorized status code.
+        /// The LoginPath property is used by the handler for the redirection target when handling ChallengeAsync.
+        /// The current url which is added to the LoginPath as a query string parameter named by the ReturnUrlParameter. 
+        /// Once a request to the LoginPath grants a new SignIn identity, the ReturnUrlParameter value is used to redirect 
+        /// the browser back to the original url.
         /// </summary>
         public PathString LoginPath { get; set; }
 
@@ -94,16 +93,14 @@ namespace Microsoft.AspNetCore.Authentication.Cookies
         public PathString LogoutPath { get; set; }
 
         /// <summary>
-        /// The AccessDeniedPath property informs the handler that it should change an outgoing 403 Forbidden status
-        /// code into a 302 redirection onto the given path.
+        /// The AccessDeniedPath property is used by the handler for the redirection target when handling ForbidAsync.
         /// </summary>
         public PathString AccessDeniedPath { get; set; }
 
         /// <summary>
         /// The ReturnUrlParameter determines the name of the query string parameter which is appended by the handler
-        /// when a 401 Unauthorized status code is changed to a 302 redirect onto the login path. This is also the query
-        /// string parameter looked for when a request arrives on the login path or logout path, in order to return to the
-        /// original url after the action is performed.
+        /// when during a Challenge. This is also the query string parameter looked for when a request arrives on the 
+        /// login path or logout path, in order to return to the original url after the action is performed.
         /// </summary>
         public string ReturnUrlParameter { get; set; }
 
