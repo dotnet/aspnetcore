@@ -14,7 +14,7 @@
     <Outputs Include="@(Inputs -> '$(SignalRClientDistFolder)src\%(FileName).d.ts')" />
     <Outputs Include="@(Inputs -> '$(SignalRClientDistFolder)src\%(FileName).js')" />
     <Outputs Include="$(SignalRClientDistFolder)browser\signalr-client.js" />
-    <Outputs Include="$(SignalRClientDistFolder)\third-party-notices.txt" />
+    <Outputs Include="$(SignalRClientDistFolder)browser\third-party-notices.txt" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,7 +23,7 @@
 
   <!-- this target relies on npm packages being restored manually or when running full build -->
   <Target Name="BuildTSClient" Inputs="@(Inputs)" Outputs="@(Outputs)" BeforeTargets="Build">
-    <Exec Command='npm run gulp -- --gulpfile "$(MSBuildThisFileDirectory)gulpfile.js" build-ts-client' />
+    <Exec Command="npm run gulp -- --gulpfile &quot;$(MSBuildThisFileDirectory)gulpfile.js&quot; build-ts-client" />
   </Target>
 
   <Target Name="CleanTSClient" AfterTargets="Clean">
@@ -45,12 +45,8 @@
     </PropertyGroup>
     <Exec Command="npm version $(ModuleVersion)" WorkingDirectory="$(MSBuildThisFileDirectory).." Condition="'$(VersionSuffix)' != ''" />
     <Exec Command="npm pack" WorkingDirectory="$(MSBuildThisFileDirectory).." />
-    <Exec
-      Command='git checkout HEAD -- "$(MSBuildThisFileDirectory)../package.json"'
-      Condition="$(IsGitRepository) AND '$(VersionSuffix)' != ''" />
-    <Exec
-      Command='git checkout HEAD -- "$(MSBuildThisFileDirectory)../package-lock.json"'
-      Condition="$(IsGitRepository) AND '$(VersionSuffix)' != ''" />
+    <Exec Command="git checkout HEAD -- &quot;$(MSBuildThisFileDirectory)../package.json&quot;" Condition="$(IsGitRepository) AND '$(VersionSuffix)' != ''" />
+    <Exec Command="git checkout HEAD -- &quot;$(MSBuildThisFileDirectory)../package-lock.json&quot;" Condition="$(IsGitRepository) AND '$(VersionSuffix)' != ''" />
     <ItemGroup>
       <TSClient Include="$(MSBuildThisFileDirectory)../aspnet-signalr-client*.tgz" />
     </ItemGroup>
