@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
             }
             catch (Exception ex)
             {
-                _logger.LogError(0, ex, "Exception while sending '{method} {url}'", request.Method, request.RequestUri, request.RequestUri);
+                _logger.LogError(0, ex, "Exception while sending '{method} {url}' : {exception}", request.Method, request.RequestUri, ex);
                 throw;
             }
         }
