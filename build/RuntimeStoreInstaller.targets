@@ -6,7 +6,7 @@
     <_DebToolDir>$(MSBuildThisFileDirectory)tools\dotnet-deb-tool-consumer\</_DebToolDir>
     <_TimestampRSSource>$(RepositoryRoot).deps\Signed\Store\</_TimestampRSSource>
     <_TimestampFreeRSSource>$(RepositoryRoot).deps\Signed\Store-TimestampFree\</_TimestampFreeRSSource>
-    <_CoreInstallerSource>$(RepositoryRoot).deps\CoreInstallers\</_CoreInstallerSource>
+    <_InstallerSource>$(RepositoryRoot).deps\Installers\</_InstallerSource>
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
     <_WorkLayoutDir>$(_WorkRoot).l\</_WorkLayoutDir>
     <_WorkOutputDir>$(_WorkRoot).o\</_WorkOutputDir>
@@ -18,9 +18,11 @@
     <RSDebConfigFile>$(_PackagingDir)store_debian_config.json</RSDebConfigFile>
     <HostingDebConfigFile>$(_PackagingDir)hosting_debian_config.json</HostingDebConfigFile>
 
+    <PublicCoreFeedPrefix>https://dotnetcli.blob.core.windows.net/dotnet</PublicCoreFeedPrefix>
     <CoreFeedPrefix Condition="'$(KOREBUILD_DOTNET_FEED_UNCACHED)'!=''">$(KOREBUILD_DOTNET_FEED_UNCACHED)</CoreFeedPrefix>
-    <CoreFeedPrefix Condition="'$(CoreFeedPrefix)'==''">https://dotnetcli.blob.core.windows.net/dotnet</CoreFeedPrefix>
+    <CoreFeedPrefix Condition="'$(CoreFeedPrefix)'==''">$(PublicCoreFeedPrefix)</CoreFeedPrefix>
 
+    <RuntimeStore200TargzLink>$(PublicCoreFeedPrefix)/aspnetcore/store/2.0.0-26452/Build.RS.linux.tar.gz</RuntimeStore200TargzLink>
     <RuntimeTargzLink>$(CoreFeedPrefix)/Runtime/$(MicrosoftNETCoreApp20PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz</RuntimeTargzLink>
     <TimestampRSArchive>$(_TimestampRSSource)aspnetcore-store-$(PackageVersion)-linux-x64.tar.gz</TimestampRSArchive>
     <TimestampFreeRSArchive>$(_TimestampFreeRSSource)aspnetcore-store-$(PackageVersionNoTimestamp)-linux-x64.tar.gz</TimestampFreeRSArchive>
@@ -46,15 +48,16 @@
       Condition="!Exists('$(TimestampFreeRSArchive)')" />
   </Target>
 
-  <Target Name="_DownloadCoreInstallers">
+  <Target Name="_DownloadInstallers">
     <!-- Download dotnet installers -->
-    <MakeDir Directories="$(_CoreInstallerSource)" />
+    <MakeDir Directories="$(_InstallerSource)" />
     <!--
       Note: KOREBUILD_DOTNET_FEED_CREDENTIAL is intentionally NOT an MSBuild variable.
       MSBuild doesn't to the substitution correctly because the string contains %,
       so we'll let bash do it instead.
     -->
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeTargzLink)$KOREBUILD_DOTNET_FEED_CREDENTIAL&quot; -o $(_CoreInstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeTargzLink)$KOREBUILD_DOTNET_FEED_CREDENTIAL&quot; -o $(_InstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200TargzLink)&quot; -o $(_InstallerSource)Build.RS.linux.tar.gz" />
   </Target>
 
   <Target Name="_GenerateTargz">
@@ -64,15 +67,25 @@
 
     <!-- Create layout: Aspnet Hosting Bundle -->
     <Exec Command="tar -xzf $(RSArchive) -C $(_WorkRoot)" />
-    <Exec Command="tar -xzf $(RuntimeArchive) -C $(_WorkRoot)" />
+
+    <ItemGroup>
+      <Archives Include="$(DependentArchives)" />
+    </ItemGroup>
+
+    <Exec Command="tar -xzf %(Archives.Identity) -C $(_WorkRoot)" />
 
     <!-- Create Aspnet Hosting Bundle tar.gz -->
     <Exec Command="tar -czvf $(_InstallersOutputDir)$(HostingArchiveName) ." WorkingDirectory="$(_WorkRoot)"/>
   </Target>
 
-  <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadCoreInstallers">
+  <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadInstallers">
+    <ItemGroup>
+      <_DependentArchives Include="$(_InstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz" />
+      <_DependentArchives Include="$(_InstallerSource)Build.RS.linux.tar.gz" />
+    </ItemGroup>
+
     <PropertyGroup>
-      <RuntimeArchive>$(_CoreInstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz</RuntimeArchive>
+      <DependentArchives>@(_DependentArchives)</DependentArchives>
       <HostingArchiveName>$(HostingInstallerName)-$(Version)-linux-x64.tar.gz</HostingArchiveName>
       <TimestampFreeHostingArchiveName>$(HostingInstallerName)-$(PackageVersionNoTimestamp)-linux-x64.tar.gz</TimestampFreeHostingArchiveName>
     </PropertyGroup>
@@ -81,12 +94,12 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateTargz"
-      Properties="RuntimeArchive=$(RuntimeArchive);RSArchive=$(TimestampRSArchive);HostingArchiveName=$(HostingArchiveName)" />
+      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampRSArchive);HostingArchiveName=$(HostingArchiveName)" />
     <!-- Timestamp free hosting bundle -->
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateTargz"
-      Properties="RuntimeArchive=$(RuntimeArchive);RSArchive=$(TimestampFreeRSArchive);HostingArchiveName=$(TimestampFreeHostingArchiveName)" />
+      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampFreeRSArchive);HostingArchiveName=$(TimestampFreeHostingArchiveName)" />
   </Target>
 
   <Target Name="_BuildDockerImage">
@@ -218,6 +231,9 @@
       <RHStoreDirectories Include="$(RHInstallerInstallRoot)store" />
       <GenericStoreDirectories Include="$(GenericInstallerInstallRoot)additionalDeps" />
       <GenericStoreDirectories Include="$(GenericInstallerInstallRoot)store" />
+      <RSDependencies Include="$(RSInstallerName)-2.0.0">
+        <Version>2.0.0</Version>
+      </RSDependencies>
       <HostingDependencies Include="$(RSInstallerName)-$(PackageVersion)">
         <Version>$(PackageVersion)</Version>
       </HostingDependencies>
@@ -235,12 +251,13 @@
     <PropertyGroup>
       <HostingFPMArguments>@(HostingDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</HostingFPMArguments>
       <TimestampFreeHostingFPMArguments>@(TimestampFreeHostingDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</TimestampFreeHostingFPMArguments>
-      <RHRSArguments>@(RHStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RHRSArguments>
-      <GenericRSArguments>@(GenericStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</GenericRSArguments>
+      <RSDependencyArguments>@(RSDependencies->' -d &quot;%(Identity) &gt;= %(Version)&quot;', ' ')</RSDependencyArguments>
+      <RHRSArguments>$(RSDependencyArguments) @(RHStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</RHRSArguments>
+      <GenericRSArguments>$(RSDependencyArguments) @(GenericStoreDirectories->' --directories &quot;%(FullPath)&quot;', ' ')</GenericRSArguments>
 
       <CommonArguments>Image=$(Image);RPMVendor=$(RPMVendor)</CommonArguments>
       <CommonGenericArguments>RPMFileSuffix=rhel.7-x64.rpm;RPMInstallRoot=$(GenericInstallerInstallRoot)</CommonGenericArguments>
-      <CommonRHArguments>RPMFileSuffix=rhel.rh.7-x64.rpm;RPMInstallRoot=$(RHInstallerInstallRoot)</CommonRHArguments>
+      <CommonRHArguments>RPMFileSuffix=rh.rhel.7-x64.rpm;RPMInstallRoot=$(RHInstallerInstallRoot)</CommonRHArguments>
 
       <CommonRSArguments>MaintainerName=@(_RSMaintainerName);MaintainerEmail=@(_RSMaintainerEmail)</CommonRSArguments>
       <CommonRSArguments>$(CommonRSArguments);RPMInstallerPrefix=$(RSInstallerName);RPMRevision=@(_RSPackageRevision)</CommonRSArguments>
@@ -259,7 +276,7 @@
       <TimestampFreeRSArguments>$(TimestampFreeRSArguments);RSArchive=$(TimestampFreeRSArchive);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(GenericRSArguments)</TimestampFreeRSArguments>
 
       <TimestampHostingArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonHostingArguments)</TimestampHostingArguments>
-      <TimestampHostingArguments>$(TimestampHostingArguments);RPMVersion=$(PackageVersion);RPMArguments=$(HostingArguments)</TimestampHostingArguments>
+      <TimestampHostingArguments>$(TimestampHostingArguments);RPMVersion=$(PackageVersion);RPMArguments=$(HostingFPMArguments)</TimestampHostingArguments>
 
       <TimestampFreeHostingArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonHostingArguments)</TimestampFreeHostingArguments>
       <TimestampFreeHostingArguments>$(TimestampFreeHostingArguments);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(TimestampFreeHostingFPMArguments)</TimestampFreeHostingArguments>
@@ -271,7 +288,7 @@
       <RHTimestampFreeRSArguments>$(RHTimestampFreeRSArguments);RSArchive=$(TimestampFreeRSArchive);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(RHRSArguments)</RHTimestampFreeRSArguments>
 
       <RHTimestampHostingArguments>$(CommonArguments);$(CommonRHArguments);$(CommonHostingArguments)</RHTimestampHostingArguments>
-      <RHTimestampHostingArguments>$(RHTimestampHostingArguments);RPMVersion=$(PackageVersion);RPMArguments=$(HostingArguments)</RHTimestampHostingArguments>
+      <RHTimestampHostingArguments>$(RHTimestampHostingArguments);RPMVersion=$(PackageVersion);RPMArguments=$(HostingFPMArguments)</RHTimestampHostingArguments>
 
       <RHTimestampFreeHostingArguments>$(CommonArguments);$(CommonRHArguments);$(CommonHostingArguments)</RHTimestampFreeHostingArguments>
       <RHTimestampFreeHostingArguments>$(RHTimestampFreeHostingArguments);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(TimestampFreeHostingFPMArguments)</RHTimestampFreeHostingArguments>
