@@ -65,8 +65,8 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             // We're looking for a name ending with Id, but preceded by a lower case letter. This should match
             // the normal PascalCase naming conventions.
-            if (parameter.Name.Length >= 3 && 
-                parameter.Name.EndsWith("Id", StringComparison.Ordinal) && 
+            if (parameter.Name.Length >= 3 &&
+                parameter.Name.EndsWith("Id", StringComparison.Ordinal) &&
                 char.IsLower(parameter.Name, parameter.Name.Length - 3))
             {
                 return true;
@@ -90,7 +90,7 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             yield return CreateProblemResponse(statusCode: 0, isDefaultResponse: true);
         }
-        
+
         private ApiResponseType CreateProblemResponse(int statusCode, bool isDefaultResponse = false)
         {
             return new ApiResponseType

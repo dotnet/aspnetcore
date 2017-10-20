@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Microsoft.AspNetCore.Mvc
@@ -39,10 +40,17 @@ namespace Microsoft.AspNetCore.Mvc
         /// <para>
         /// When enabled, the following sources are inferred:
         /// Parameters that appear as route values, are assumed to be bound from the path (<see cref="BindingSource.Path"/>).
+        /// Parameters of type <see cref="IFormFile"/> and <see cref="IFormFileCollection"/> are assumed to be bound from form.
         /// Parameters that are complex (<see cref="ModelMetadata.IsComplexType"/>) are assumed to be bound from the body (<see cref="BindingSource.Body"/>).
         /// All other parameters are assumed to be bound from the query.
         /// </para>
         /// </summary>
         public bool SuppressInferBindingSourcesForParameters { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value that determines if an <c>multipart/form-data</c> consumes action constraint is added to parameters
+        /// that are bound from form data.
+        /// </summary>
+        public bool SuppressConsumesConstraintForFormFileParameters { get; set; }
     }
 }

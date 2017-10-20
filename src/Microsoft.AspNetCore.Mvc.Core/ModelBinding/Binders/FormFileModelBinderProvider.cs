@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Reflection;
 using Microsoft.AspNetCore.Http;
 
 namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
@@ -22,10 +21,11 @@ namespace Microsoft.AspNetCore.Mvc.ModelBinding.Binders
                 throw new ArgumentNullException(nameof(context));
             }
 
+            // Note: This condition needs to be kept in sync with ApiBehaviorApplicationModelProvider.
             var modelType = context.Metadata.ModelType;
             if (modelType == typeof(IFormFile) ||
                 modelType == typeof(IFormFileCollection) ||
-                typeof(IEnumerable<IFormFile>).GetTypeInfo().IsAssignableFrom(modelType.GetTypeInfo()))
+                typeof(IEnumerable<IFormFile>).IsAssignableFrom(modelType))
             {
                 return new FormFileModelBinder();
             }

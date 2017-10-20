@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -45,13 +46,74 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             builder.OnProvidersExecuting(context);
 
             // Assert
-            var model = Assert.Single(context.Result.Controllers);
-            Assert.Equal(2, model.ControllerProperties.Count);
-            Assert.Equal("Bound", model.ControllerProperties[0].PropertyName);
-            Assert.Equal(BindingSource.Query, model.ControllerProperties[0].BindingInfo.BindingSource);
-            Assert.NotNull(model.ControllerProperties[0].Controller);
-            var attribute = Assert.Single(model.ControllerProperties[0].Attributes);
-            Assert.IsType<FromQueryAttribute>(attribute);
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            Assert.Collection(
+                controllerModel.ControllerProperties.OrderBy(p => p.PropertyName),
+                property =>
+                {
+                    Assert.Equal(nameof(ModelBinderController.Bound), property.PropertyName);
+                    Assert.Equal(BindingSource.Query, property.BindingInfo.BindingSource);
+                    Assert.Same(controllerModel, property.Controller);
+
+                    var attribute = Assert.Single(property.Attributes);
+                    Assert.IsType<FromQueryAttribute>(attribute);
+                },
+                property =>
+                {
+                    Assert.Equal(nameof(ModelBinderController.FormFile), property.PropertyName);
+                    Assert.Equal(BindingSource.FormFile, property.BindingInfo.BindingSource);
+                    Assert.Same(controllerModel, property.Controller);
+
+                    Assert.Empty(property.Attributes);
+                },
+                property =>
+                {
+                    Assert.Equal(nameof(ModelBinderController.Unbound), property.PropertyName);
+                    Assert.Null(property.BindingInfo);
+                    Assert.Same(controllerModel, property.Controller);
+                });
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_AddsBindingSources_ForActionParameters()
+        {
+            // Arrange
+            var builder = new TestApplicationModelProvider();
+            var typeInfo = typeof(ModelBinderController).GetTypeInfo();
+
+            var context = new ApplicationModelProviderContext(new[] { typeInfo });
+
+            // Act
+            builder.OnProvidersExecuting(context);
+
+            // Assert
+            var controllerModel = Assert.Single(context.Result.Controllers);
+            var action = Assert.Single(controllerModel.Actions);
+            Assert.Collection(
+                action.Parameters,
+                parameter =>
+                {
+                    Assert.Equal("fromQuery", parameter.ParameterName);
+                    Assert.Equal(BindingSource.Query, parameter.BindingInfo.BindingSource);
+                    Assert.Same(action, parameter.Action);
+
+                    var attribute = Assert.Single(parameter.Attributes);
+                    Assert.IsType<FromQueryAttribute>(attribute);
+                },
+                parameter =>
+                {
+                    Assert.Equal("formFileCollection", parameter.ParameterName);
+                    Assert.Equal(BindingSource.FormFile, parameter.BindingInfo.BindingSource);
+                    Assert.Same(action, parameter.Action);
+
+                    Assert.Empty(parameter.Attributes);
+                },
+                parameter =>
+                {
+                    Assert.Equal("unbound", parameter.ParameterName);
+                    Assert.Null(parameter.BindingInfo);
+                    Assert.Same(action, parameter.Action);
+                });
         }
 
         // This class has a filter attribute, but doesn't implement any filter interfaces,
@@ -1297,6 +1359,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             public string Bound { get; set; }
 
             public string Unbound { get; set; }
+
+            public IFormFile FormFile { get; set; }
+
+            public IActionResult PostAction([FromQuery] string fromQuery, IFormFileCollection formFileCollection, string unbound) => null;
         }
 
         public class SomeFiltersController : IAsyncActionFilter, IResultFilter

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Http;
 
 namespace ApiExplorerWebSite
 {
@@ -20,6 +21,10 @@ namespace ApiExplorerWebSite
         }
 
         public void ActionWithIdSuffixParameter(int personId, string personName)
+        {
+        }
+
+        public void ActionWithFormFileCollectionParameter(IFormFileCollection formFile)
         {
         }
     }

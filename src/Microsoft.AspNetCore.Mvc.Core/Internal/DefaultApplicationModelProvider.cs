@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
@@ -217,8 +218,18 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var attributes = propertyInfo.GetCustomAttributes(inherit: true);
             var propertyModel = new PropertyModel(propertyInfo, attributes);
             var bindingInfo = BindingInfo.GetBindingInfo(attributes);
+            if (bindingInfo != null)
+            {
+                propertyModel.BindingInfo = bindingInfo;
+            }
+            else if (IsFormFileType(propertyInfo.PropertyType))
+            {
+                propertyModel.BindingInfo = new BindingInfo
+                {
+                    BindingSource = BindingSource.FormFile,
+                };
+            }
 
-            propertyModel.BindingInfo = bindingInfo;
             propertyModel.PropertyName = propertyInfo.Name;
 
             return propertyModel;
@@ -429,7 +440,17 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             var parameterModel = new ParameterModel(parameterInfo, attributes);
 
             var bindingInfo = BindingInfo.GetBindingInfo(attributes);
-            parameterModel.BindingInfo = bindingInfo;
+            if (bindingInfo != null)
+            {
+                parameterModel.BindingInfo = bindingInfo;
+            }
+            else if (IsFormFileType(parameterInfo.ParameterType))
+            {
+                parameterModel.BindingInfo = new BindingInfo
+                {
+                    BindingSource = BindingSource.FormFile,
+                };
+            }
 
             parameterModel.ParameterName = parameterInfo.Name;
 
@@ -649,6 +670,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             {
                 list.Add(item);
             }
+        }
+
+        private static bool IsFormFileType(Type parameterType)
+        {
+            return parameterType == typeof(IFormFile) ||
+                parameterType == typeof(IFormFileCollection) ||
+                typeof(IEnumerable<IFormFile>).IsAssignableFrom(parameterType);
         }
     }
 }

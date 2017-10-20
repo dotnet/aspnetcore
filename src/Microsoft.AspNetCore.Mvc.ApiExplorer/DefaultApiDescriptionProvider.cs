@@ -122,12 +122,32 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
 
             // It would be possible here to configure an action with multiple body parameters, in which case you
             // could end up with duplicate data.
-            foreach (var parameter in apiDescription.ParameterDescriptions.Where(p => p.Source == BindingSource.Body))
+            if (apiDescription.ParameterDescriptions.Count > 0)
             {
-                var requestFormats = GetRequestFormats(requestMetadataAttributes, parameter.Type);
-                foreach (var format in requestFormats)
+                var contentTypes = GetDeclaredContentTypes(requestMetadataAttributes);
+                foreach (var parameter in apiDescription.ParameterDescriptions)
                 {
-                    apiDescription.SupportedRequestFormats.Add(format);
+                    if (parameter.Source == BindingSource.Body)
+                    {
+                        // For request body bound parameters, determine the content types supported
+                        // by input formatters.
+                        var requestFormats = GetSupportedFormats(contentTypes, parameter.Type);
+                        foreach (var format in requestFormats)
+                        {
+                            apiDescription.SupportedRequestFormats.Add(format);
+                        }
+                    }
+                    else if (parameter.Source == BindingSource.FormFile)
+                    {
+                        // Add all declared media types since FormFiles do not get processed by formatters.
+                        foreach (var contentType in contentTypes)
+                        {
+                            apiDescription.SupportedRequestFormats.Add(new ApiRequestFormat
+                            {
+                                MediaType = contentType,
+                            });
+                        }
+                    }
                 }
             }
 
@@ -295,28 +315,17 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             return string.Join("/", segments);
         }
 
-        private IReadOnlyList<ApiRequestFormat> GetRequestFormats(
-            IApiRequestMetadataProvider[] requestMetadataAttributes,
-            Type type)
+        private IReadOnlyList<ApiRequestFormat> GetSupportedFormats(MediaTypeCollection contentTypes, Type type)
         {
-            var results = new List<ApiRequestFormat>();
-
-            // Walk through all 'filter' attributes in order, and allow each one to see or override
-            // the results of the previous ones. This is similar to the execution path for content-negotiation.
-            var contentTypes = new MediaTypeCollection();
-            if (requestMetadataAttributes != null)
-            {
-                foreach (var metadataAttribute in requestMetadataAttributes)
-                {
-                    metadataAttribute.SetContentTypes(contentTypes);
-                }
-            }
-
             if (contentTypes.Count == 0)
             {
-                contentTypes.Add((string)null);
+                contentTypes = new MediaTypeCollection
+                {
+                    (string)null,
+                };
             }
 
+            var results = new List<ApiRequestFormat>();
             foreach (var contentType in contentTypes)
             {
                 foreach (var formatter in _inputFormatters)
@@ -341,6 +350,22 @@ namespace Microsoft.AspNetCore.Mvc.ApiExplorer
             }
 
             return results;
+        }
+
+        private static MediaTypeCollection GetDeclaredContentTypes(IApiRequestMetadataProvider[] requestMetadataAttributes)
+        {
+            // Walk through all 'filter' attributes in order, and allow each one to see or override
+            // the results of the previous ones. This is similar to the execution path for content-negotiation.
+            var contentTypes = new MediaTypeCollection();
+            if (requestMetadataAttributes != null)
+            {
+                foreach (var metadataAttribute in requestMetadataAttributes)
+                {
+                    metadataAttribute.SetContentTypes(contentTypes);
+                }
+            }
+
+            return contentTypes;
         }
 
         private IReadOnlyList<ApiResponseType> GetApiResponseTypes(

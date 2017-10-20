@@ -5,6 +5,7 @@ using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ApplicationModels;
 using Microsoft.AspNetCore.Mvc.Infrastructure;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -36,10 +37,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var context = GetContext(typeof(TestApiController));
-            var options = Options.Create(new ApiBehaviorOptions
+            var options = new ApiBehaviorOptions
             {
                 SuppressModelStateInvalidFilter = true,
-            });
+            };
 
             var provider = GetProvider(options);
 
@@ -79,10 +80,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var context = GetContext(typeof(SimpleController));
-            var options = Options.Create(new ApiBehaviorOptions
+            var options = new ApiBehaviorOptions
             {
                 SuppressModelStateInvalidFilter = true,
-            });
+            };
 
             var provider = GetProvider(options);
 
@@ -107,10 +108,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         {
             // Arrange
             var context = GetContext(typeof(TestApiController));
-            var options = Options.Create(new ApiBehaviorOptions
+            var options = new ApiBehaviorOptions
             {
                 SuppressModelStateInvalidFilter = true,
-            });
+            };
 
             var provider = GetProvider(options);
 
@@ -128,10 +129,10 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             // Arrange
             var context = GetContext(typeof(TestApiController));
             context.Result.Controllers[0].ApiExplorer.IsVisible = false;
-            var options = Options.Create(new ApiBehaviorOptions
+            var options = new ApiBehaviorOptions
             {
                 SuppressModelStateInvalidFilter = true,
-            });
+            };
 
             var provider = GetProvider(options);
 
@@ -397,18 +398,82 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             Assert.Same(BindingSource.Query, result);
         }
 
+        [Fact]
+        public void AddMultipartFormDataConsumesAttribute_NoOpsIfBehaviorIsDisabled()
+        {
+            // Arrange
+            var actionName = nameof(ParameterBindingController.FromFormParameter);
+            var action = GetActionModel(typeof(ParameterBindingController), actionName);
+            var options = new ApiBehaviorOptions
+            {
+                SuppressConsumesConstraintForFormFileParameters = true,
+                InvalidModelStateResponseFactory = _ => null,
+            };
+            var provider = GetProvider(options);
+
+            // Act
+            provider.AddMultipartFormDataConsumesAttribute(action);
+
+            // Assert
+            Assert.Empty(action.Filters);
+        }
+
+        [Fact]
+        public void AddMultipartFormDataConsumesAttribute_NoOpsIfConsumesConstraintIsAlreadyPresent()
+        {
+            // Arrange
+            var actionName = nameof(ParameterBindingController.ActionWithConsumesAttribute);
+            var action = GetActionModel(typeof(ParameterBindingController), actionName);
+            var options = new ApiBehaviorOptions
+            {
+                SuppressConsumesConstraintForFormFileParameters = true,
+                InvalidModelStateResponseFactory = _ => null,
+            };
+            var provider = GetProvider(options);
+
+            // Act
+            provider.AddMultipartFormDataConsumesAttribute(action);
+
+            // Assert
+            var attribute = Assert.Single(action.Filters);
+            var consumesAttribute = Assert.IsType<ConsumesAttribute>(attribute);
+            Assert.Equal("application/json", Assert.Single(consumesAttribute.ContentTypes));
+        }
+
+        [Fact]
+        public void AddMultipartFormDataConsumesAttribute_AddsConsumesAttribute_WhenActionHasFromFormFileParameter()
+        {
+            // Arrange
+            var actionName = nameof(ParameterBindingController.FormFileParameter);
+            var action = GetActionModel(typeof(ParameterBindingController), actionName);
+            action.Parameters[0].BindingInfo = new BindingInfo
+            {
+                BindingSource = BindingSource.FormFile,
+            };
+            var provider = GetProvider();
+
+            // Act
+            provider.AddMultipartFormDataConsumesAttribute(action);
+
+            // Assert
+            var attribute = Assert.Single(action.Filters);
+            var consumesAttribute = Assert.IsType<ConsumesAttribute>(attribute);
+            Assert.Equal("multipart/form-data", Assert.Single(consumesAttribute.ContentTypes));
+        }
+
         private static ApiBehaviorApplicationModelProvider GetProvider(
-            IOptions<ApiBehaviorOptions> options = null,
+            ApiBehaviorOptions options = null,
             IModelMetadataProvider modelMetadataProvider = null)
         {
-            options = options ?? Options.Create(new ApiBehaviorOptions
+            options = options ?? new ApiBehaviorOptions
             {
                 InvalidModelStateResponseFactory = _ => null,
-            });
+            };
+            var optionsProvider = Options.Create(options);
             modelMetadataProvider = modelMetadataProvider ?? new TestModelMetadataProvider();
             var loggerFactory = NullLoggerFactory.Instance;
 
-            return new ApiBehaviorApplicationModelProvider(options, modelMetadataProvider, loggerFactory);
+            return new ApiBehaviorApplicationModelProvider(optionsProvider, modelMetadataProvider, loggerFactory);
         }
 
         private static ApplicationModelProviderContext GetContext(Type type)
@@ -418,11 +483,16 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             return context;
         }
 
-        private static ParameterModel GetParameterModel(Type controllerType, string actionName)
+        private static ActionModel GetActionModel(Type controllerType, string actionName)
         {
             var context = GetContext(controllerType);
             var controller = Assert.Single(context.Result.Controllers);
-            var action = Assert.Single(controller.Actions, m => m.ActionName == actionName);
+            return Assert.Single(controller.Actions, m => m.ActionName == actionName);
+        }
+
+        private static ParameterModel GetParameterModel(Type controllerType, string actionName)
+        {
+            var action = GetActionModel(controllerType, actionName);
             return Assert.Single(action.Parameters);
         }
 
@@ -487,6 +557,22 @@ namespace Microsoft.AspNetCore.Mvc.Internal
 
             [HttpPut("put-action/{id}")]
             public IActionResult SimpleTypeModel(ConvertibleFromString model) => null;
+
+            [HttpPost("form-file")]
+            public IActionResult FormFileParameter(IFormFile formFile) => null;
+
+            [HttpPost("form-file-collection")]
+            public IActionResult FormFileCollectionParameter(IFormFileCollection formFiles) => null;
+
+            [HttpPost("form-file-sequence")]
+            public IActionResult FormFileSequenceParameter(IFormFile[] formFiles) => null;
+
+            [HttpPost]
+            public IActionResult FromFormParameter([FromForm] string parameter) => null;
+
+            [HttpPost]
+            [Consumes("application/json")]
+            public IActionResult ActionWithConsumesAttribute([FromForm] string parameter) => null;
         }
 
         [ApiController]

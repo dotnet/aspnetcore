@@ -8,6 +8,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ActionConstraints;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -991,6 +992,31 @@ namespace Microsoft.AspNetCore.Mvc.Description
         }
 
         [Fact]
+        public void GetApiDescription_ParameterDescription_SourceFromFormFile()
+        {
+            // Arrange
+            var action = CreateActionDescriptor(nameof(AcceptsFormFile));
+            action.FilterDescriptors = new[]
+            {
+                new FilterDescriptor(new ConsumesAttribute("multipart/form-data"), FilterScope.Action),
+            };
+
+            // Act
+            var descriptions = GetApiDescriptions(action);
+
+            // Assert
+            var description = Assert.Single(descriptions);
+
+            var parameters = description.ParameterDescriptions;
+            var parameter = Assert.Single(parameters);
+            Assert.Same(BindingSource.FormFile, parameter.Source);
+
+            var requestFormat = Assert.Single(description.SupportedRequestFormats);
+            Assert.Equal("multipart/form-data", requestFormat.MediaType);
+            Assert.Null(requestFormat.Formatter);
+        }
+
+        [Fact]
         public void GetApiDescription_ParameterDescription_SourceFromHeader()
         {
             // Arrange
@@ -1534,6 +1560,10 @@ namespace Microsoft.AspNetCore.Mvc.Description
         {
         }
 
+        private void AcceptsFormFile([FromFormFile] IFormFile formFile)
+        {
+        }
+
         // This will show up as source = model binding
         private void AcceptsProduct_Default([ModelBinder] Product product)
         {
@@ -1855,6 +1885,11 @@ namespace Microsoft.AspNetCore.Mvc.Description
         private interface ITestService
         {
 
+        }
+
+        private class FromFormFileAttribute : Attribute, IBindingSourceMetadata
+        {
+            public BindingSource BindingSource => BindingSource.FormFile;
         }
     }
 }

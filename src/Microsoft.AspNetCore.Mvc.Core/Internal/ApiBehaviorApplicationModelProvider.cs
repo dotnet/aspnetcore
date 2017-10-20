@@ -78,6 +78,33 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                     AddInvalidModelStateFilter(actionModel);
 
                     InferParameterBindingSources(actionModel);
+
+                    AddMultipartFormDataConsumesAttribute(actionModel);
+                }
+            }
+        }
+
+        // Internal for unit testing
+        internal void AddMultipartFormDataConsumesAttribute(ActionModel actionModel)
+        {
+            if (_apiBehaviorOptions.SuppressConsumesConstraintForFormFileParameters)
+            {
+                return;
+            }
+
+            // Add a ConsumesAttribute if the request does not explicitly specify one.
+            if (actionModel.Filters.OfType<IConsumesActionConstraint>().Any())
+            {
+                return;
+            }
+
+            foreach (var parameter in actionModel.Parameters)
+            {
+                var bindingSource = parameter.BindingInfo?.BindingSource;
+                if (bindingSource == BindingSource.FormFile)
+                {
+                    // If an action accepts files, it must accept multipart/form-data.
+                    actionModel.Filters.Add(new ConsumesAttribute("multipart/form-data"));
                 }
             }
         }
@@ -152,6 +179,7 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         // Internal for unit testing.
         internal BindingSource InferBindingSourceForParameter(ParameterModel parameter)
         {
+            var parameterType = parameter.ParameterInfo.ParameterType;
             if (ParameterExistsInAllRoutes(parameter.Action, parameter.ParameterName))
             {
                 return BindingSource.Path;

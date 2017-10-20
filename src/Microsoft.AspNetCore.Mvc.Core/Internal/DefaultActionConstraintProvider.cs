@@ -46,16 +46,14 @@ namespace Microsoft.AspNetCore.Mvc.Internal
                 return;
             }
 
-            var constraint = item.Metadata as IActionConstraint;
-            if (constraint != null)
+            if (item.Metadata is IActionConstraint constraint)
             {
                 item.Constraint = constraint;
                 item.IsReusable = true;
                 return;
             }
 
-            var factory = item.Metadata as IActionConstraintFactory;
-            if (factory != null)
+            if (item.Metadata is IActionConstraintFactory factory)
             {
                 item.Constraint = factory.CreateInstance(services);
                 item.IsReusable = factory.IsReusable;

@@ -1144,6 +1144,19 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
                 });
         }
 
+        [Fact]
+        public async Task ApiBehavior_AddsMultipartFormDataConsumesConstraint_ForActionsWithFormFileParameters()
+        {
+            // Act
+            var body = await Client.GetStringAsync("ApiExplorerApiController/ActionWithFormFileCollectionParameter");
+            var result = JsonConvert.DeserializeObject<List<ApiExplorerData>>(body);
+
+            // Assert
+            var description = Assert.Single(result);
+            var requestFormat = Assert.Single(description.SupportedRequestFormats);
+            Assert.Equal("multipart/form-data", requestFormat.MediaType);
+        }
+
         private void AssertProblemDetails(ApiExplorerResponseType response)
         {
             Assert.Equal("Microsoft.AspNetCore.Mvc.ProblemDetails", response.ResponseType);
@@ -1172,6 +1185,8 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
             public string RelativePath { get; set; }
 
             public List<ApiExplorerResponseType> SupportedResponseTypes { get; } = new List<ApiExplorerResponseType>();
+
+            public List<ApiExplorerRequestFormat> SupportedRequestFormats { get; } = new List<ApiExplorerRequestFormat>();
         }
 
         // Used to serialize data between client and server
@@ -1210,6 +1225,13 @@ namespace Microsoft.AspNetCore.Mvc.FunctionalTests
         }
 
         private class ApiExplorerResponseFormat
+        {
+            public string MediaType { get; set; }
+
+            public string FormatterType { get; set; }
+        }
+
+        private class ApiExplorerRequestFormat
         {
             public string MediaType { get; set; }
 
