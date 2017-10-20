@@ -24,6 +24,7 @@
     <IntermediateMirrorPackageDir>$(IntermediateDir)mirror\</IntermediateMirrorPackageDir>
     <!-- For external packages that come from feeds we don't mirror. -->
     <IntermediateExternalPackageDir>$(IntermediateDir)ext\</IntermediateExternalPackageDir>
+    <GeneratedPackageVersionPropsPath>$(IntermediateDir)dependencies.props</GeneratedPackageVersionPropsPath>
 
     <PrepareDependsOn>$(PrepareDependsOn);VerifyPackageArtifactConfig;CleanArtifacts;CleanUniverseArtifacts</PrepareDependsOn>
     <RestoreDependsOn>$(RestoreDependsOn);RestoreExternalDependencies</RestoreDependsOn>
@@ -77,9 +78,15 @@
       <PackageArtifactInfo Include="%(ArtifactInfo.PackageId)" Version="%(ArtifactInfo.Version)" Condition="'%(ArtifactInfo.ArtifactType)' == 'NuGetPackage'" />
     </ItemGroup>
 
+    <GeneratePackageVersionPropsFile
+      Packages="@(ExternalDependency);@(PackageArtifactInfo)"
+      OutputPath="$(GeneratedPackageVersionPropsPath)" />
+
+    <Copy SourceFiles="$(GeneratedPackageVersionPropsPath)" DestinationFolder="$(ArtifactsDir)" />
+
     <PackNuSpec NuSpecPath="$(MSBuildThisFileDirectory)lineups\Internal.AspNetCore.Universe.Lineup.nuspec"
                 DestinationFolder="$(LineupBuildDir)"
-                Properties="version=$(Version)"
+                Properties="version=$(Version);dependenciesPropsFile=$(GeneratedPackageVersionPropsPath)"
                 Dependencies="@(PackageArtifactInfo)">
       <Output TaskParameter="Packages" ItemName="LineupPackage" />
     </PackNuSpec>

@@ -32,6 +32,7 @@
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_LineupBuildDir=$(LineupBuildDir)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_AdditionalRestoreSources=$(IntermediateMirrorPackageDir)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:Universe_IntermediateDir=$(IntermediateDir)'</RepositoryBuildArguments>
+      <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:DotNetPackageVersionPropsPath=$(GeneratedPackageVersionPropsPath)'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:CustomBeforeKoreBuildProps=$(MSBuildThisFileDirectory)repobuild\BeforeKoreBuild.props'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) '/p:CustomAfterKoreBuildTargets=$(MSBuildThisFileDirectory)repobuild\AfterKoreBuild.targets'</RepositoryBuildArguments>
       <RepositoryBuildArguments>$(RepositoryBuildArguments) /p:BuildNumber=$(BuildNumber) /p:Configuration=$(Configuration) /p:CommitHash=$(CommitHash)</RepositoryBuildArguments>

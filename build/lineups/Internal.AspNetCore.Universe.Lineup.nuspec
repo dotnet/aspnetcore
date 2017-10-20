@@ -14,4 +14,7 @@
       -->
     </dependencies>
   </metadata>
+  <files>
+    <file src="$dependenciesPropsFile$" target="build/dependencies.props" />
+  </files>
 </package>
