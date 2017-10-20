@@ -124,6 +124,9 @@
   <data name="Argument_NullOrEmpty" xml:space="preserve">
     <value>Value cannot be null or empty.</value>
   </data>
+  <data name="RoutePatternBuilder_CollectionCannotBeEmpty" xml:space="preserve">
+    <value>The collection cannot be empty.</value>
+  </data>
   <data name="TemplateRoute_CannotHaveCatchAllInMultiSegment" xml:space="preserve">
     <value>A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.</value>
   </data>

@@ -39,6 +39,20 @@ namespace Microsoft.AspNetCore.Dispatcher
             => GetString("Argument_NullOrEmpty");
 
         /// <summary>
+        /// The collection cannot be empty.
+        /// </summary>
+        internal static string RoutePatternBuilder_CollectionCannotBeEmpty
+        {
+            get => GetString("RoutePatternBuilder_CollectionCannotBeEmpty");
+        }
+
+        /// <summary>
+        /// The collection cannot be empty.
+        /// </summary>
+        internal static string FormatRoutePatternBuilder_CollectionCannotBeEmpty()
+            => GetString("RoutePatternBuilder_CollectionCannotBeEmpty");
+
+        /// <summary>
         /// A path segment that contains more than one section, such as a literal section or a parameter, cannot contain a catch-all parameter.
         /// </summary>
         internal static string TemplateRoute_CannotHaveCatchAllInMultiSegment

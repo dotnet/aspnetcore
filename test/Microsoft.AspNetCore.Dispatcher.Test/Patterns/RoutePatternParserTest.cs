@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "cool";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment("cool", RoutePatternPart.CreateLiteralFromText("cool", "cool"));
+            builder.AddPathSegmentFromText("cool", RoutePatternPart.CreateLiteralFromText("cool", "cool"));
 
             var expected = builder.Build();
 
@@ -37,7 +37,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment("{p}", RoutePatternPart.CreateParameterFromText("{p}", "p"));
+            builder.AddPathSegmentFromText("{p}", RoutePatternPart.CreateParameterFromText("{p}", "p"));
 
             var expected = builder.Build();
 
@@ -55,7 +55,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p?}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment("{p?}", RoutePatternPart.CreateParameterFromText("{p?}", "p", null, RoutePatternParameterKind.Optional));
+            builder.AddPathSegmentFromText("{p?}", RoutePatternPart.CreateParameterFromText("{p?}", "p", null, RoutePatternParameterKind.Optional));
 
             var expected = builder.Build();
 
@@ -73,9 +73,9 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "cool/awesome/super";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment("cool", RoutePatternPart.CreateLiteralFromText("cool", "cool"));
-            builder.AddPathSegment("awesome", RoutePatternPart.CreateLiteralFromText("awesome", "awesome"));
-            builder.AddPathSegment("super", RoutePatternPart.CreateLiteralFromText("super", "super"));
+            builder.AddPathSegmentFromText("cool", RoutePatternPart.CreateLiteralFromText("cool", "cool"));
+            builder.AddPathSegmentFromText("awesome", RoutePatternPart.CreateLiteralFromText("awesome", "awesome"));
+            builder.AddPathSegmentFromText("super", RoutePatternPart.CreateLiteralFromText("super", "super"));
 
             var expected = builder.Build();
 
@@ -93,9 +93,9 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p1}/{p2}/{*p3}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment("{p1}", RoutePatternPart.CreateParameterFromText("{p1}", "p1"));
-            builder.AddPathSegment("{p2}", RoutePatternPart.CreateParameterFromText("{p2}", "p2"));
-            builder.AddPathSegment("{*p3}", RoutePatternPart.CreateParameterFromText("{*p3}", "p3", null, RoutePatternParameterKind.CatchAll));
+            builder.AddPathSegmentFromText("{p1}", RoutePatternPart.CreateParameterFromText("{p1}", "p1"));
+            builder.AddPathSegmentFromText("{p2}", RoutePatternPart.CreateParameterFromText("{p2}", "p2"));
+            builder.AddPathSegmentFromText("{*p3}", RoutePatternPart.CreateParameterFromText("{*p3}", "p3", null, RoutePatternParameterKind.CatchAll));
 
             var expected = builder.Build();
 
@@ -113,7 +113,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "cool-{p1}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment(
+            builder.AddPathSegmentFromText(
                 "cool-{p1}", 
                 RoutePatternPart.CreateLiteralFromText("cool-", "cool-"),
                 RoutePatternPart.CreateParameterFromText("{p1}", "p1"));
@@ -134,7 +134,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p1}-cool";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment(
+            builder.AddPathSegmentFromText(
                 "{p1}-cool",
                 RoutePatternPart.CreateParameterFromText("{p1}", "p1"),
                 RoutePatternPart.CreateLiteralFromText("-cool", "-cool"));
@@ -155,7 +155,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p1}-cool-{p2}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment(
+            builder.AddPathSegmentFromText(
                 "{p1}-cool",
                 RoutePatternPart.CreateParameterFromText("{p1}", "p1"),
                 RoutePatternPart.CreateLiteralFromText("-cool-", "-cool-"),
@@ -177,7 +177,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "cool-{p1}-awesome";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment(
+            builder.AddPathSegmentFromText(
                 template,
                 RoutePatternPart.CreateLiteralFromText("cool-", "cool-"),
                 RoutePatternPart.CreateParameterFromText("{p1}", "p1"),
@@ -199,7 +199,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p1}.{p2?}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment(
+            builder.AddPathSegmentFromText(
                 "{p1}.{p2?}",
                 RoutePatternPart.CreateParameterFromText("{p1}", "p1"),
                 RoutePatternPart.CreateSeparatorFromText(".", "."),
@@ -221,7 +221,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p1}.{p2}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment(
+            builder.AddPathSegmentFromText(
                 "{p1}.{p2}",
                 RoutePatternPart.CreateParameterFromText("{p1}", "p1"),
                 RoutePatternPart.CreateLiteralFromText(".", "."),
@@ -243,7 +243,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p1}.{p2}.{p3?}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment(
+            builder.AddPathSegmentFromText(
                 "{p1}.{p2}.{p3?}",
                 RoutePatternPart.CreateParameterFromText("{p1}", "p1"),
                 RoutePatternPart.CreateLiteralFromText(".", "."),
@@ -267,7 +267,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p1}.{p2}.{p3}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment(
+            builder.AddPathSegmentFromText(
                 "{p1}.{p2}.{p3}",
                 RoutePatternPart.CreateParameterFromText("{p1}", "p1"),
                 RoutePatternPart.CreateLiteralFromText(".", "."),
@@ -291,12 +291,12 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p1}.{p2?}/{p3}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment(
+            builder.AddPathSegmentFromText(
                 "{p1}.{p2?}",
                 RoutePatternPart.CreateParameterFromText("{p1}", "p1"),
                 RoutePatternPart.CreateSeparatorFromText(".", "."),
                 RoutePatternPart.CreateParameterFromText("{p2?}", "p2", null, RoutePatternParameterKind.Optional));
-            builder.AddPathSegment("{p3}", RoutePatternPart.CreateParameterFromText("{p3}", "p3"));
+            builder.AddPathSegmentFromText("{p3}", RoutePatternPart.CreateParameterFromText("{p3}", "p3"));
 
             var expected = builder.Build();
 
@@ -314,8 +314,8 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p1}/{p2}.{p3?}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment("{p1}", RoutePatternPart.CreateParameterFromText("{p1}", "p1"));
-            builder.AddPathSegment("{p2}.{p3?}",
+            builder.AddPathSegmentFromText("{p1}", RoutePatternPart.CreateParameterFromText("{p1}", "p1"));
+            builder.AddPathSegmentFromText("{p2}.{p3?}",
                 RoutePatternPart.CreateParameterFromText("{p2}", "p2"),
                 RoutePatternPart.CreateSeparatorFromText(".", "."),
                 RoutePatternPart.CreateParameterFromText("{p3?}", "p3", null, RoutePatternParameterKind.Optional));
@@ -336,8 +336,8 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
             var template = "{p2}/.{p3?}";
 
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment("{p2}", RoutePatternPart.CreateParameterFromText("{p2}", "p2"));
-            builder.AddPathSegment(".{p3?}",
+            builder.AddPathSegmentFromText("{p2}", RoutePatternPart.CreateParameterFromText("{p2}", "p2"));
+            builder.AddPathSegmentFromText(".{p3?}",
                 RoutePatternPart.CreateSeparatorFromText(".", "."),
                 RoutePatternPart.CreateParameterFromText("{p3?}", "p3", null, RoutePatternParameterKind.Optional));
 
@@ -360,7 +360,7 @@ namespace Microsoft.AspNetCore.Dispatcher.Patterns
         {
             // Arrange
             var builder = RoutePatternBuilder.Create(template);
-            builder.AddPathSegment(
+            builder.AddPathSegmentFromText(
                 template, 
                 RoutePatternPart.CreateParameterFromText(
                     template, 
