@@ -338,7 +338,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
             lock (groupNames)
             {
-                groupNames.Add(groupName);
+                // Connection already in group
+                if (!groupNames.Add(groupName))
+                {
+                    return;
+                }
             }
 
             var groupChannel = _channelNamePrefix + ".group." + groupName;
