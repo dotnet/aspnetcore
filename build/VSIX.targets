@@ -1,7 +1,8 @@
 <Project>
   <PropertyGroup>
-    <RestoreDependsOn Condition="'$(OS)'=='Windows_NT'">$(RestoreDependsOn);RestoreVSIX</RestoreDependsOn>
-    <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);PackageVSIX</PackageDependsOn>
+    <BuildVSIX Condition="'$(BuildVSIX)' ==''">true</BuildVSIX>
+    <RestoreDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(RestoreDependsOn);RestoreVSIX</RestoreDependsOn>
+    <PackageDependsOn Condition="'$(OS)'=='Windows_NT' AND '$(BuildVSIX)' == 'true'">$(PackageDependsOn);PackageVSIX</PackageDependsOn>
     <VSIXName>Microsoft.VisualStudio.RazorExtension</VSIXName>
     <VSIXProject>$(RepositoryRoot)tooling\$(VSIXName)\$(VSIXName).csproj</VSIXProject>
   </PropertyGroup>
