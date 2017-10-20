@@ -8,7 +8,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 
-namespace Microsoft.AspNetCore.Routing.Internal
+namespace Microsoft.AspNetCore.Dispatcher.Internal
 {
     public struct PathTokenizer : IReadOnlyList<StringSegment>
     {
