@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -24,6 +25,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             s => s.GetHierarchy(It.IsAny<ITextBuffer>()) == Mock.Of<IVsHierarchy>() &&
             s.IsSupportedProject(It.IsAny<IVsHierarchy>()) == true &&
                 s.GetProjectPath(It.IsAny<IVsHierarchy>()) == "C:/Some/Path/TestProject.csproj");
+
+        private EditorSettingsManager EditorSettingsManager => new DefaultEditorSettingsManager();
 
         private Workspace Workspace { get; } = new AdhocWorkspace();
 
@@ -56,12 +59,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             {
                 Mock.Of<ITextBuffer>(b => b.ContentType == RazorContentType && b.Properties == new PropertyCollection()),
             };
-            VisualStudioDocumentTracker documentTracker = new DefaultVisualStudioDocumentTracker("AFile", ProjectManager, ProjectService, Workspace, buffers[0]);
+            VisualStudioDocumentTracker documentTracker = new DefaultVisualStudioDocumentTracker("AFile", ProjectManager, ProjectService, EditorSettingsManager, Workspace, buffers[0]);
             var editorFactoryService = Mock.Of<RazorEditorFactoryService>(factoryService => factoryService.TryGetDocumentTracker(It.IsAny<ITextBuffer>(), out documentTracker) == true);
-            var factory = new RazorTextViewConnectionListener(Dispatcher, editorFactoryService, Workspace);
+            var textViewListener = new RazorTextViewConnectionListener(Dispatcher, editorFactoryService, Workspace);
 
             // Act
-            factory.SubjectBuffersConnected(textView, ConnectionReason.BufferGraphChange, buffers);
+            textViewListener.SubjectBuffersConnected(textView, ConnectionReason.BufferGraphChange, buffers);
 
             // Assert
             Assert.Collection(documentTracker.TextViews, v => Assert.Same(v, textView));
@@ -81,19 +84,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             };
 
             // Preload the buffer's properties with a tracker, so it's like we've already tracked this one.
-            var tracker = new DefaultVisualStudioDocumentTracker("C:/File/Path/To/Tracker1.cshtml", ProjectManager, ProjectService, Workspace, buffers[0]);
+            var tracker = new DefaultVisualStudioDocumentTracker("C:/File/Path/To/Tracker1.cshtml", ProjectManager, ProjectService, EditorSettingsManager, Workspace, buffers[0]);
             tracker.AddTextView(textView1);
             tracker.AddTextView(textView2);
             buffers[0].Properties.AddProperty(typeof(VisualStudioDocumentTracker), tracker);
 
-            tracker = new DefaultVisualStudioDocumentTracker("C:/File/Path/To/Tracker1.cshtml", ProjectManager, ProjectService, Workspace, buffers[1]);
+            tracker = new DefaultVisualStudioDocumentTracker("C:/File/Path/To/Tracker1.cshtml", ProjectManager, ProjectService, EditorSettingsManager, Workspace, buffers[1]);
             tracker.AddTextView(textView1);
             tracker.AddTextView(textView2);
             buffers[1].Properties.AddProperty(typeof(VisualStudioDocumentTracker), tracker);
-            var factory = new RazorTextViewConnectionListener(Dispatcher, Mock.Of<RazorEditorFactoryService>(), Workspace);
+            var textViewListener = new RazorTextViewConnectionListener(Dispatcher, Mock.Of<RazorEditorFactoryService>(), Workspace);
 
             // Act
-            factory.SubjectBuffersDisconnected(textView2, ConnectionReason.BufferGraphChange, buffers);
+            textViewListener.SubjectBuffersDisconnected(textView2, ConnectionReason.BufferGraphChange, buffers);
 
             // Assert
             tracker = buffers[0].Properties.GetProperty<DefaultVisualStudioDocumentTracker>(typeof(VisualStudioDocumentTracker));
@@ -107,7 +110,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void SubjectBuffersDisconnected_ForAnyTextBufferWithoutTracker_DoesNothing()
         {
             // Arrange
-            var factory = new RazorTextViewConnectionListener(Dispatcher, Mock.Of<RazorEditorFactoryService>(), Workspace);
+            var textViewListener = new RazorTextViewConnectionListener(Dispatcher, Mock.Of<RazorEditorFactoryService>(), Workspace);
 
             var textView = Mock.Of<IWpfTextView>();
 
@@ -117,7 +120,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             };
 
             // Act
-            factory.SubjectBuffersDisconnected(textView, ConnectionReason.BufferGraphChange, buffers);
+            textViewListener.SubjectBuffersDisconnected(textView, ConnectionReason.BufferGraphChange, buffers);
 
             // Assert
             Assert.False(buffers[0].Properties.ContainsProperty(typeof(VisualStudioDocumentTracker)));

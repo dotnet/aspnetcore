@@ -4,6 +4,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Shell.Interop;
 using Microsoft.VisualStudio.Text;
@@ -29,13 +30,33 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 s.IsSupportedProject(It.IsAny<IVsHierarchy>()) == true &&
                 s.GetProjectPath(It.IsAny<IVsHierarchy>()) == "C:/Some/Path/TestProject.csproj");
 
+        private EditorSettingsManager EditorSettingsManager => new DefaultEditorSettingsManager();
+
         private Workspace Workspace => new AdhocWorkspace();
+
+        [Fact]
+        public void EditorSettingsManager_Changed_TriggersContextChanged()
+        {
+            // Arrange
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, EditorSettingsManager, Workspace, TextBuffer);
+            var called = false;
+            documentTracker.ContextChanged += (sender, args) =>
+            {
+                called = true;
+            };
+
+            // Act
+            documentTracker.EditorSettingsManager_Changed(null, null);
+
+            // Assert
+            Assert.True(called);
+        }
 
         [Fact]
         public void AddTextView_AddsToTextViewCollection()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, EditorSettingsManager, Workspace, TextBuffer);
             var textView = Mock.Of<ITextView>();
 
             // Act
@@ -49,7 +70,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void AddTextView_SubscribesAfterFirstTextViewAdded()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, EditorSettingsManager, Workspace, TextBuffer);
             var textView = Mock.Of<ITextView>();
 
             // Assert - 1
@@ -66,7 +87,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void AddTextView_DoesNotAddDuplicateTextViews()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, EditorSettingsManager, Workspace, TextBuffer);
             var textView = Mock.Of<ITextView>();
 
             // Act
@@ -81,7 +102,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void AddTextView_AddsMultipleTextViewsToCollection()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, EditorSettingsManager, Workspace, TextBuffer);
             var textView1 = Mock.Of<ITextView>();
             var textView2 = Mock.Of<ITextView>();
 
@@ -100,7 +121,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void RemoveTextView_RemovesTextViewFromCollection_SingleItem()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, EditorSettingsManager, Workspace, TextBuffer);
             var textView = Mock.Of<ITextView>();
             documentTracker.AddTextView(textView);
 
@@ -115,7 +136,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void RemoveTextView_RemovesTextViewFromCollection_MultipleItems()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, EditorSettingsManager, Workspace, TextBuffer);
             var textView1 = Mock.Of<ITextView>();
             var textView2 = Mock.Of<ITextView>();
             var textView3 = Mock.Of<ITextView>();
@@ -137,7 +158,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void RemoveTextView_NoopsWhenRemovingTextViewNotInCollection()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, EditorSettingsManager, Workspace, TextBuffer);
             var textView1 = Mock.Of<ITextView>();
             documentTracker.AddTextView(textView1);
             var textView2 = Mock.Of<ITextView>();
@@ -153,7 +174,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         public void RemoveTextView_UnsubscribesAfterLastTextViewRemoved()
         {
             // Arrange
-            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, Workspace, TextBuffer);
+            var documentTracker = new DefaultVisualStudioDocumentTracker(FilePath, ProjectManager, ProjectService, EditorSettingsManager, Workspace, TextBuffer);
             var textView1 = Mock.Of<ITextView>();
             var textView2 = Mock.Of<ITextView>();
             documentTracker.AddTextView(textView1);

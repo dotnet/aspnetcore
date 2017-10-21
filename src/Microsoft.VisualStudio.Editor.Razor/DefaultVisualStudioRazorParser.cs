@@ -10,6 +10,8 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.AspNetCore.Razor.Language.Legacy;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Editor;
+using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Language.Intellisense;
 using Microsoft.VisualStudio.Text;
 using ITextBuffer = Microsoft.VisualStudio.Text.ITextBuffer;
@@ -376,21 +378,25 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private void ConfigureTemplateEngine(IRazorEngineBuilder builder)
         {
-            builder.Features.Add(new VisualStudioParserOptionsFeature());
+            builder.Features.Add(new VisualStudioParserOptionsFeature(_documentTracker.EditorSettings));
             builder.Features.Add(new VisualStudioTagHelperFeature(TextBuffer));
         }
 
-        /// <summary>
-        /// This class will cease to be useful once we harvest/monitor settings from the editor.
-        /// </summary>
         private class VisualStudioParserOptionsFeature : RazorEngineFeatureBase, IConfigureRazorCodeGenerationOptionsFeature
         {
+            private readonly EditorSettings _settings;
+
+            public VisualStudioParserOptionsFeature(EditorSettings settings)
+            {
+                _settings = settings;
+            }
+
             public int Order { get; set; }
 
             public void Configure(RazorCodeGenerationOptionsBuilder options)
             {
-                options.IndentSize = 4;
-                options.IndentWithTabs = false;
+                options.IndentSize = _settings.IndentSize;
+                options.IndentWithTabs = _settings.IndentWithTabs;
             }
         }
 

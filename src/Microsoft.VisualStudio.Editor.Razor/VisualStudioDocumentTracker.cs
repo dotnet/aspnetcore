@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
@@ -15,6 +16,8 @@ namespace Microsoft.VisualStudio.Editor.Razor
         public abstract event EventHandler ContextChanged;
 
         internal abstract ProjectExtensibilityConfiguration Configuration { get; }
+
+        public abstract EditorSettings EditorSettings { get; }
 
         public abstract bool IsSupportedProject { get; }
 

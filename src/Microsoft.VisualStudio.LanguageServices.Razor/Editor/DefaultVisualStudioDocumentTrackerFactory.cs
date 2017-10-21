@@ -6,6 +6,7 @@ using System.ComponentModel.Composition;
 using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Text;
@@ -21,6 +22,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private readonly Workspace _workspace;
         private readonly ForegroundDispatcher _foregroundDispatcher;
         private readonly ProjectSnapshotManager _projectManager;
+        private readonly EditorSettingsManager _editorSettingsManager;
 
         [ImportingConstructor]
         public DefaultVisualStudioDocumentTrackerFactory(
@@ -48,7 +50,9 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             _workspace = workspace;
 
             _foregroundDispatcher = workspace.Services.GetRequiredService<ForegroundDispatcher>();
-            _projectManager = workspace.Services.GetLanguageServices(RazorLanguage.Name).GetRequiredService<ProjectSnapshotManager>();
+            var razorLanguageServices = workspace.Services.GetLanguageServices(RazorLanguage.Name);
+            _projectManager = razorLanguageServices.GetRequiredService<ProjectSnapshotManager>();
+            _editorSettingsManager = razorLanguageServices.GetRequiredService<EditorSettingsManager>();
         }
 
         public override VisualStudioDocumentTracker Create(ITextBuffer textBuffer)
@@ -65,7 +69,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             }
 
             var filePath = textDocument.FilePath;
-            var tracker = new DefaultVisualStudioDocumentTracker(filePath, _projectManager, _projectService, _workspace, textBuffer);
+            var tracker = new DefaultVisualStudioDocumentTracker(filePath, _projectManager, _projectService, _editorSettingsManager, _workspace, textBuffer);
 
             return tracker;
         }

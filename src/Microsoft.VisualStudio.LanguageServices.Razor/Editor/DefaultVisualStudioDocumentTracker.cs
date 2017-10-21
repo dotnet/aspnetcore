@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Razor;
+using Microsoft.CodeAnalysis.Razor.Editor;
 using Microsoft.CodeAnalysis.Razor.ProjectSystem;
 using Microsoft.VisualStudio.Editor.Razor;
 using Microsoft.VisualStudio.Shell.Interop;
@@ -17,6 +18,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
     {
         private readonly string _filePath;
         private readonly ProjectSnapshotManager _projectManager;
+        private readonly EditorSettingsManager _editorSettingsManager;
         private readonly TextBufferProjectService _projectService;
         private readonly ITextBuffer _textBuffer;
         private readonly List<ITextView> _textViews;
@@ -31,6 +33,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             string filePath,
             ProjectSnapshotManager projectManager,
             TextBufferProjectService projectService,
+            EditorSettingsManager editorSettingsManager,
             Workspace workspace,
             ITextBuffer textBuffer)
         {
@@ -49,6 +52,11 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 throw new ArgumentNullException(nameof(projectService));
             }
 
+            if (editorSettingsManager == null)
+            {
+                throw new ArgumentNullException(nameof(editorSettingsManager));
+            }
+
             if (workspace == null)
             {
                 throw new ArgumentNullException(nameof(workspace));
@@ -62,6 +70,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             _filePath = filePath;
             _projectManager = projectManager;
             _projectService = projectService;
+            _editorSettingsManager = editorSettingsManager;
             _textBuffer = textBuffer;
             _workspace = workspace; // For now we assume that the workspace is the always default VS workspace.
 
@@ -69,6 +78,8 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         }
 
         internal override ProjectExtensibilityConfiguration Configuration => _project.Configuration;
+
+        public override EditorSettings EditorSettings => _editorSettingsManager.Current;
 
         public override bool IsSupportedProject => _isSupportedProject;
 
@@ -163,6 +174,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             _projectPath = projectPath;
             _project = _projectManager.GetProjectWithFilePath(projectPath);
             _projectManager.Changed += ProjectManager_Changed;
+            _editorSettingsManager.Changed += EditorSettingsManager_Changed;
 
             OnContextChanged(_project);
         }
@@ -170,6 +182,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private void Unsubscribe()
         {
             _projectManager.Changed -= ProjectManager_Changed;
+            _editorSettingsManager.Changed -= EditorSettingsManager_Changed;
 
             // Detached from project.
             _isSupportedProject = false;
@@ -195,6 +208,12 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             {
                 OnContextChanged(e.Project);
             }
+        }
+
+        // Internal for testing
+        internal void EditorSettingsManager_Changed(object sender, EditorSettingsChangedEventArgs args)
+        {
+            OnContextChanged(_project);
         }
     }
 }
