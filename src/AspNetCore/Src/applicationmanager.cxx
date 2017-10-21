@@ -221,6 +221,10 @@ APPLICATION_MANAGER::RecycleApplication(
     }
     AcquireSRWLockExclusive(&m_srwLock);
     m_pApplicationHash->DeleteKey(&key);
+    if (m_pApplicationHash->Count() == 0)
+    {
+        m_hostingModel = HOSTING_UNKNOWN;
+    }
     ReleaseSRWLockExclusive(&m_srwLock);
 
 Finished:

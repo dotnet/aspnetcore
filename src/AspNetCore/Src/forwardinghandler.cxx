@@ -1043,7 +1043,6 @@ FORWARDING_HANDLER::OnExecuteRequestHandler(
     IHttpRequest               *pRequest = m_pW3Context->GetRequest();
     IHttpResponse              *pResponse = m_pW3Context->GetResponse();
     PROTOCOL_CONFIG            *pProtocol = &sm_ProtocolConfig;
-    APPLICATION_MANAGER        *pApplicationManager = NULL;
     SERVER_PROCESS             *pServerProcess = NULL;
     USHORT                      cchHostName = 0;
     BOOL                        fSecure = FALSE;
@@ -1427,7 +1426,7 @@ Failure:
         }
         else
         {
-            if (SUCCEEDED(pApplicationManager->Get502ErrorPage(&pDataChunk)))
+            if (SUCCEEDED(APPLICATION_MANAGER::GetInstance()->Get502ErrorPage(&pDataChunk)))
             {
                 if (FAILED(hr = pResponse->WriteEntityChunkByReference(pDataChunk)))
                 {

@@ -3,7 +3,7 @@
    <PropertyGroup> 
      <AspNetCoreModuleVersionMajor>7</AspNetCoreModuleVersionMajor> 
      <AspNetCoreModuleVersionMinor>1</AspNetCoreModuleVersionMinor> 
-     <AspNetCoreModuleVersionPatch>1968</AspNetCoreModuleVersionPatch> 
+     <AspNetCoreModuleVersionPatch>1987</AspNetCoreModuleVersionPatch> 
      <AspNetCoreModuleVersionSuffix>-RTM</AspNetCoreModuleVersionSuffix> 
    </PropertyGroup> 
  </Project> 

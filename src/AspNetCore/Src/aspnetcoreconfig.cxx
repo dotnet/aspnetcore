@@ -5,16 +5,25 @@
 
 ASPNETCORE_CONFIG::~ASPNETCORE_CONFIG()
 {
-    if (QueryHostingModel() == HOSTING_IN_PROCESS && 
-        !g_fRecycleProcessCalled && 
-        !g_pHttpServer->IsCommandLineLaunch())
+    if (QueryHostingModel() == HOSTING_IN_PROCESS &&
+        !g_fRecycleProcessCalled &&
+        (g_pHttpServer->GetAdminManager() != NULL))
     {
+        // There is a bug in IHttpServer::RecycleProcess. It will hit AV when worker process
+        // has already been in recycling state.
+        // To workaround, do null check on GetAdminManager(). If it is NULL, worker process is in recycling
+        // Do not call RecycleProcess again
+
         // RecycleProcess can olny be called once
         // In case of configuration change for in-process app
         // We want notify IIS first to let new request routed to new worker process
-        g_fRecycleProcessCalled = TRUE;
+
         g_pHttpServer->RecycleProcess(L"AspNetCore Recycle Process on Configuration Change");
     }
+
+    // It's safe for us to set this g_fRecycleProcessCalled
+    // as in_process scenario will always recycle the worker process for configuration change
+    g_fRecycleProcessCalled = TRUE;
 
     m_struApplicationFullPath.Reset();
     if (m_pEnvironmentVariables != NULL)

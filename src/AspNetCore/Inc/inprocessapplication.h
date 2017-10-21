@@ -95,6 +95,7 @@ private:
 
     BOOL                            m_fManagedAppLoaded;
     BOOL                            m_fLoadManagedAppError;
+    BOOL                            m_fInitialized;
     BOOL                            m_fIsWebSocketsConnection;
 
     static IN_PROCESS_APPLICATION*   s_Application;
