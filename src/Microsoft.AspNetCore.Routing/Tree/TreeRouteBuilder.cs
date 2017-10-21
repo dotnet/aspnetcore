@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Text.Encodings.Web;
-using Microsoft.AspNetCore.Routing.Internal;
+using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.ObjectPool;

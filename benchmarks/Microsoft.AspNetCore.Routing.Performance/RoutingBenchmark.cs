@@ -6,8 +6,8 @@ using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
 using BenchmarkDotNet.Attributes;
+using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -31,8 +31,8 @@ namespace Microsoft.AspNetCore.Routing.Performance
             var treeBuilder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
                 UrlEncoder.Default,
-                new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(UrlEncoder.Default)),
-                new DefaultInlineConstraintResolver(new OptionsManager<RouteOptions>(new OptionsFactory<RouteOptions>(Enumerable.Empty<IConfigureOptions<RouteOptions>>(), Enumerable.Empty<IPostConfigureOptions<RouteOptions>>()))));
+                new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
+                new DefaultInlineConstraintResolver(Options.Create(new RouteOptions())));
 
             treeBuilder.MapInbound(handler, TemplateParser.Parse("api/Widgets"), "default", 0);
             treeBuilder.MapInbound(handler, TemplateParser.Parse("api/Widgets/{id}"), "default", 0);

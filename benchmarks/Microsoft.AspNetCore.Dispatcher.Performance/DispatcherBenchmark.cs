@@ -31,8 +31,8 @@ namespace Microsoft.AspNetCore.Dispatcher.Performance
             var treeBuilder = new TreeRouteBuilder(
                 NullLoggerFactory.Instance,
                 UrlEncoder.Default,
-                new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(UrlEncoder.Default)),
-                new DefaultInlineConstraintResolver(new OptionsManager<RouteOptions>(new OptionsFactory<RouteOptions>(Enumerable.Empty<IConfigureOptions<RouteOptions>>(), Enumerable.Empty<IPostConfigureOptions<RouteOptions>>()))));
+                new DefaultObjectPool<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy()),
+                new DefaultInlineConstraintResolver(Options.Create(new RouteOptions())));
 
             treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("api/Widgets"), "default", 0);
             treeBuilder.MapInbound(handler, Routing.Template.TemplateParser.Parse("api/Widgets/{id}"), "default", 0);

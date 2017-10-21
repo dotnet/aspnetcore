@@ -6,8 +6,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Encodings.Web;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Template;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -24,8 +24,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private static readonly RequestDelegate NullHandler = (c) => Task.FromResult(0);
 
         private static UrlEncoder Encoder = UrlTestEncoder.Default;
-        private static ObjectPool<UriBuildingContext> Pool = new DefaultObjectPoolProvider().Create(
-            new UriBuilderContextPooledObjectPolicy(Encoder));
+        private static ObjectPool<UriBuildingContext> Pool = new DefaultObjectPoolProvider().Create(new UriBuilderContextPooledObjectPolicy());
 
         [Theory]
         [InlineData("template/5", "template/{parameter:int}")]
@@ -1990,7 +1989,7 @@ namespace Microsoft.AspNetCore.Routing.Tree
         private static TreeRouteBuilder CreateBuilder()
         {
             var objectPoolProvider = new DefaultObjectPoolProvider();
-            var objectPolicy = new UriBuilderContextPooledObjectPolicy(UrlEncoder.Default);
+            var objectPolicy = new UriBuilderContextPooledObjectPolicy();
             var objectPool = objectPoolProvider.Create<UriBuildingContext>(objectPolicy);
 
             var constraintResolver = CreateConstraintResolver();

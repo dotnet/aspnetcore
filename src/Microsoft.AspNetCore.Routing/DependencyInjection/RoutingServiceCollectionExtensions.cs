@@ -28,14 +28,11 @@ namespace Microsoft.Extensions.DependencyInjection
                 throw new ArgumentNullException(nameof(services));
             }
 
+            // Routing shares lots of infrastructure with the dispatcher.
+            services.AddDispatcher();
+
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
             services.TryAddSingleton(UrlEncoder.Default);
-            services.TryAddSingleton<ObjectPool<UriBuildingContext>>(s =>
-            {
-                var provider = s.GetRequiredService<ObjectPoolProvider>();
-                var encoder = s.GetRequiredService<UrlEncoder>();
-                return provider.Create<UriBuildingContext>(new UriBuilderContextPooledObjectPolicy(encoder));
-            });
 
             // The TreeRouteBuilder is a builder for creating routes, it should stay transient because it's
             // stateful.

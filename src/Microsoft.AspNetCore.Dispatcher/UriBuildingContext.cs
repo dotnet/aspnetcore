@@ -7,7 +7,7 @@ using System.IO;
 using System.Text;
 using System.Text.Encodings.Web;
 
-namespace Microsoft.AspNetCore.Routing.Internal
+namespace Microsoft.AspNetCore.Dispatcher
 {
     [DebuggerDisplay("{DebuggerToString(),nq}")]
     public class UriBuildingContext
@@ -19,14 +19,12 @@ namespace Microsoft.AspNetCore.Routing.Internal
         // segment is in the middle of the uri. We don't know if we need to write it out - if it's
         // followed by other optional segments than we will just throw it away.
         private readonly List<BufferValue> _buffer;
-        private readonly UrlEncoder _urlEncoder;
 
         private bool _hasEmptySegment;
         private int _lastValueOffset;
 
-        public UriBuildingContext(UrlEncoder urlEncoder)
+        public UriBuildingContext()
         {
-            _urlEncoder = urlEncoder;
             _uri = new StringBuilder();
             _buffer = new List<BufferValue>();
             Writer = new StringWriter(_uri);
@@ -42,7 +40,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
 
         public TextWriter Writer { get; }
 
-        public bool Accept(string value)
+        public bool Accept(UrlEncoder encoder, string value)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -67,7 +65,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             {
                 if (_buffer[i].RequiresEncoding)
                 {
-                    _urlEncoder.Encode(Writer, _buffer[i].Value);
+                    encoder.Encode(Writer, _buffer[i].Value);
                 }
                 else
                 {
@@ -93,11 +91,11 @@ namespace Microsoft.AspNetCore.Routing.Internal
             if (_uri.Length == 0 && value.Length > 0 && value[0] == '/')
             {
                 _uri.Append("/");
-                _urlEncoder.Encode(Writer, value, 1, value.Length - 1);
+                encoder.Encode(Writer, value, 1, value.Length - 1);
             }
             else
             {
-                _urlEncoder.Encode(Writer, value);
+                encoder.Encode(Writer, value);
             }
 
             return true;
@@ -110,7 +108,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             _lastValueOffset = -1;
         }
 
-        public bool Buffer(string value)
+        public bool Buffer(UrlEncoder encoder, string value)
         {
             if (string.IsNullOrEmpty(value))
             {
@@ -135,7 +133,7 @@ namespace Microsoft.AspNetCore.Routing.Internal
             {
                 // We've already written part of this segment so there's no point in buffering, we need to
                 // write out the rest or give up.
-                var result = Accept(value);
+                var result = Accept(encoder, value);
 
                 // We've already checked the conditions that could result in a rejected part, so this should
                 // always be true.

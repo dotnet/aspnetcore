@@ -1,0 +1,17 @@
+[
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Tree.TreeRouter : Microsoft.AspNetCore.Routing.IRouter",
+      "MemberId": "public .ctor(Microsoft.AspNetCore.Routing.Tree.UrlMatchingTree[] trees, System.Collections.Generic.IEnumerable<Microsoft.AspNetCore.Routing.Tree.OutboundRouteEntry> linkGenerationEntries, System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> objectPool, Microsoft.Extensions.Logging.ILogger routeLogger, Microsoft.Extensions.Logging.ILogger constraintLogger, System.Int32 version)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Tree.TreeRouteBuilder",
+      "MemberId": "public .ctor(Microsoft.Extensions.Logging.ILoggerFactory loggerFactory, System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> objectPool, Microsoft.AspNetCore.Routing.IInlineConstraintResolver constraintResolver)",
+      "Kind": "Removal"
+    },
+    {
+      "TypeId": "public class Microsoft.AspNetCore.Routing.Template.TemplateBinder",
+      "MemberId": "public .ctor(System.Text.Encodings.Web.UrlEncoder urlEncoder, Microsoft.Extensions.ObjectPool.ObjectPool<Microsoft.AspNetCore.Routing.Internal.UriBuildingContext> pool, Microsoft.AspNetCore.Routing.Template.RouteTemplate template, Microsoft.AspNetCore.Routing.RouteValueDictionary defaults)",
+      "Kind": "Removal"
+    }
+]
