@@ -1538,10 +1538,10 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 return Clients.Client(connectionId).Send(message);
             }
-            public Task DelayedSend(string connectionId, string message)
+            public async Task DelayedSend(string connectionId, string message)
             {
-                Task.Delay(100);
-                return Clients.Client(connectionId).Send(message);
+                await Task.Delay(100);
+                await Clients.Client(connectionId).Send(message);
             }
             public Task GroupAddMethod(string groupName)
             {
