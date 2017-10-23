@@ -182,6 +182,7 @@
   <ItemGroup>
     <ClCompile Include="Src\inprocessstoredcontext.cxx" />
     <ClCompile Include="Src\inprocessapplication.cxx" />
+    <ClCompile Include="Src\managedexports.cxx" />
     <ClCompile Include="Src\outprocessapplication.cxx" />
     <ClCompile Include="Src\application.cxx" />
     <ClCompile Include="Src\applicationmanager.cxx" />
