@@ -413,67 +413,81 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http
         protected override MessageBody CreateMessageBody()
             => Http1MessageBody.For(_httpVersion, HttpRequestHeaders, this);
 
-        protected override async Task<bool> ParseRequestAsync()
+        protected override void BeginRequestProcessing()
         {
+            // Reset the features and timeout.
             Reset();
             TimeoutControl.SetTimeout(_keepAliveTicks, TimeoutAction.StopProcessingNextRequest);
+        }
 
-            while (_requestProcessingStatus != RequestProcessingStatus.AppStarted)
+        protected override bool BeginRead(out ReadableBufferAwaitable awaitable)
+        {
+            awaitable = Input.ReadAsync();
+            return true;
+        }
+
+        protected override bool TryParseRequest(ReadResult result, out bool endConnection)
+        {
+            var examined = result.Buffer.End;
+            var consumed = result.Buffer.End;
+
+            try
             {
-                var result = await Input.ReadAsync();
-
-                var examined = result.Buffer.End;
-                var consumed = result.Buffer.End;
-
-                try
+                ParseRequest(result.Buffer, out consumed, out examined);
+            }
+            catch (InvalidOperationException)
+            {
+                if (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
                 {
-                    ParseRequest(result.Buffer, out consumed, out examined);
+                    throw BadHttpRequestException.GetException(RequestRejectionReason
+                        .MalformedRequestInvalidHeaders);
                 }
-                catch (InvalidOperationException)
-                {
-                    if (_requestProcessingStatus == RequestProcessingStatus.ParsingHeaders)
-                    {
-                        throw BadHttpRequestException.GetException(RequestRejectionReason
-                            .MalformedRequestInvalidHeaders);
-                    }
-                    throw;
-                }
-                finally
-                {
-                    Input.Advance(consumed, examined);
-                }
-
-                if (result.IsCompleted)
-                {
-                    switch (_requestProcessingStatus)
-                    {
-                        case RequestProcessingStatus.RequestPending:
-                            return false;
-                        case RequestProcessingStatus.ParsingRequestLine:
-                            throw BadHttpRequestException.GetException(
-                                RequestRejectionReason.InvalidRequestLine);
-                        case RequestProcessingStatus.ParsingHeaders:
-                            throw BadHttpRequestException.GetException(
-                                RequestRejectionReason.MalformedRequestInvalidHeaders);
-                    }
-                }
-                else if (!_keepAlive && _requestProcessingStatus == RequestProcessingStatus.RequestPending)
-                {
-                    // Stop the request processing loop if the server is shutting down or there was a keep-alive timeout
-                    // and there is no ongoing request.
-                    return false;
-                }
-                else if (RequestTimedOut)
-                {
-                    // In this case, there is an ongoing request but the start line/header parsing has timed out, so send
-                    // a 408 response.
-                    throw BadHttpRequestException.GetException(RequestRejectionReason.RequestTimeout);
-                }
+                throw;
+            }
+            finally
+            {
+                Input.Advance(consumed, examined);
             }
 
-            EnsureHostHeaderExists();
+            if (result.IsCompleted)
+            {
+                switch (_requestProcessingStatus)
+                {
+                    case RequestProcessingStatus.RequestPending:
+                        endConnection = true;
+                        return true;
+                    case RequestProcessingStatus.ParsingRequestLine:
+                        throw BadHttpRequestException.GetException(
+                            RequestRejectionReason.InvalidRequestLine);
+                    case RequestProcessingStatus.ParsingHeaders:
+                        throw BadHttpRequestException.GetException(
+                            RequestRejectionReason.MalformedRequestInvalidHeaders);
+                }
+            }
+            else if (!_keepAlive && _requestProcessingStatus == RequestProcessingStatus.RequestPending)
+            {
+                // Stop the request processing loop if the server is shutting down or there was a keep-alive timeout
+                // and there is no ongoing request.
+                endConnection = true;
+                return true;
+            }
+            else if (RequestTimedOut)
+            {
+                // In this case, there is an ongoing request but the start line/header parsing has timed out, so send
+                // a 408 response.
+                throw BadHttpRequestException.GetException(RequestRejectionReason.RequestTimeout);
+            }
 
-            return true;
+            endConnection = false;
+            if (_requestProcessingStatus == RequestProcessingStatus.AppStarted)
+            {
+                EnsureHostHeaderExists();
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

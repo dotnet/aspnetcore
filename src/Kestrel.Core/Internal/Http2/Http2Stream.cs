@@ -47,8 +47,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
         protected override MessageBody CreateMessageBody()
             => Http2MessageBody.For(HttpRequestHeaders, this);
 
-        protected override Task<bool> ParseRequestAsync()
+        protected override bool TryParseRequest(ReadResult result, out bool endConnection)
         {
+            // We don't need any of the parameters because we don't implement BeginRead to actually
+            // do the reading from a pipeline, nor do we use endConnection to report connection-level errors.
+
             Method = RequestHeaders[":method"];
             Scheme = RequestHeaders[":scheme"];
             _httpVersion = Http.HttpVersion.Http2;
@@ -62,7 +65,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http2
 
             RequestHeaders["Host"] = RequestHeaders[":authority"];
 
-            return Task.FromResult(true);
+            endConnection = false;
+            return true;
         }
 
         public async Task OnDataAsync(ArraySegment<byte> data, bool endStream)
