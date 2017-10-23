@@ -1,6 +1,6 @@
 # Transport Protocols
 
-This document describes the protocols used by the three ASP.NET Endpoint Transports: WebSockets, Server-Sent Events, Long Polling and HTTP Post
+This document describes the protocols used by the three ASP.NET Endpoint Transports: WebSockets, Server-Sent Events and Long Polling
 
 ## Transport Requirements
 
@@ -14,11 +14,11 @@ The only transport which fully implements the duplex requirement is WebSockets, 
 
 Throughout this document, the term `[endpoint-base]` is used to refer to the route assigned to a particular end point. The term `[connection-id]` is used to refer to the connection ID provided by the `OPTIONS [endpoint-base]` request.
 
-**NOTE on errors:** In all error cases, by default, the detailed exception message is **never** provided; a short description string may be provided. However, an application developer may elect to allow detailed exception messages to be emitted, which should only be used in the `Development` environment. Unexpected errors are communicated by HTTP `500 Server Error` status codes or WebSockets `1008 Policy Violation` close frames; in these cases the connection should be considered to be terminated.
+**NOTE on errors:** In all error cases, by default, the detailed exception message is **never** provided; a short description string may be provided. However, an application developer may elect to allow detailed exception messages to be emitted, which should only be used in the `Development` environment. Unexpected errors are communicated by HTTP `500 Server Error` status codes or WebSockets non-`1000 Normal Closure` close frames; in these cases the connection should be considered to be terminated.
 
 ## `OPTIONS [endpoint-base]` request
 
-The `OPTIONS [endpoint-base]` request is used to establish connection between the client and the server. The response to the `OPTIONS [endpoint-base]` request contains the `connectionId` which will be used to identify the connection on the server and the list of the transports supported by the server. The content type of the response is `application/json`. The following is a sample response to the `OPTIONS [endpoint-base]` request 
+The `OPTIONS [endpoint-base]` request is used to establish connection between the client and the server. The response to the `OPTIONS [endpoint-base]` request contains the `connectionId` which will be used to identify the connection on the server and the list of the transports supported by the server. The content type of the response is `application/json`. The following is a sample response to the `OPTIONS [endpoint-base]` request
 
 ```
 {
@@ -35,21 +35,17 @@ The WebSocket transport is activated by making a WebSocket connection to `[endpo
 
 Establishing a second WebSocket connection when there is already a WebSocket connection associated with the Endpoints connection is not permitted and will fail with a `409 Conflict` status code.
 
-Errors while establishing the connection are handled by returning a `500 Server Error` status code as the response to the upgrade request. This includes errors initializing EndPoint types. Unhandled application errors trigger a WebSocket `Close` frame with reason code that matches the error as per the spec (for errors like messages being too large, or invalid UTF-8). For other unexpected errors during the connection, the `1008 Policy Violation` status code is used. 
+Errors while establishing the connection are handled by returning a `500 Server Error` status code as the response to the upgrade request. This includes errors initializing EndPoint types. Unhandled application errors trigger a WebSocket `Close` frame with reason code that matches the error as per the spec (for errors like messages being too large, or invalid UTF-8). For other unexpected errors during the connection, a  non-`1000 Normal Closure` status code is used.
 
 ## HTTP Post (Client-to-Server only)
 
-HTTP Post is a half-transport, it is only able to send messages from the Client to the Server, as such it is always used with one of the other half-transports which can send from Server to Client (Server Sent Events and Long Polling).
+HTTP Post is a half-transport, it is only able to send messages from the Client to the Server, as such it is **always** used with one of the other half-transports which can send from Server to Client (Server Sent Events and Long Polling).
 
 This transport requires that a connection be established using the `OPTIONS [endpoint-base]` request.
 
-The HTTP POST request is made to the URL `[endpoint-base]`. The **mandatory** `connectionId` query string value is used to identify the connection to send to. If there is no `connectionId` query string value, a `400 Bad Request` response is returned. The content consists of frames in the same format as the Long Polling transport. It is up to the client which of the Text or Binary protocol they use, and the server is able to detect which they use either via the `Content-Type` (see the Long Polling transport section) or via the first byte (`T` for the Text-based protocol, `B` for the binary protocol). Upon receipt of the **entire** request, the server will process and deliver all the messages, responding with `202 Accepted` if all the messages are successfully processed. If a client makes another request to `/` while an existing one is outstanding, the new request is immediately terminated by the server with the `409 Conflict` status code.
+The HTTP POST request is made to the URL `[endpoint-base]`. The **mandatory** `connectionId` query string value is used to identify the connection to send to. If there is no `connectionId` query string value, a `400 Bad Request` response is returned. Upon receipt of the **entire** payload, the server will process the payload and responds with `200 OK` if the payload was successfully processed. If a client makes another request to `/` while an existing request is outstanding, the new request is immediately terminated by the server with the `409 Conflict` status code.
 
-If the client transmits a `Close` or `Error` frame, the server will ignore and discard any frames following that frame and immediately return `202 Accepted`. Any further attempts to send to that connection will receive a `404 Not Found` response, as the connection will have been terminated.
-
-If a client receives either a `202 Accepted` or `409 Conflict` request, the connection remains open. Any other response indicates that the connection has been terminated due to an error.
-
-This transport will always produce single-frame messages, since the Long-Polling protocol below does not support encoding an end-of-message flag.
+If a client receives a `409 Conflict` request, the connection remains open. Any other response indicates that the connection has been terminated due to an error.
 
 If the relevant connection has been terminated, a `404 Not Found` status code is returned. If there is an error instantiating an EndPoint or dispatching the message, a `500 Server Error` status code is returned.
 
@@ -74,8 +70,6 @@ foo: boz
 In the first event, the value of `baz` would be `boz\nbiz\nflarg`, due to the concatenation behavior above. Full details can be found in the spec linked above.
 
 In this transport, the client establishes an SSE connection to `[endpoint-base]` with an `Accept` header of `text/event-stream`, and the server responds with an HTTP response with a `Content-Type` of `text/event-stream`. The **mandatory** `connectionId` query string value is used to identify the connection to send to. If there is no `connectionId` query string value, a `400 Bad Request` response is returned, if there is no connection with the specified ID, a `404 Not Found` response is returned. Each SSE event represents a single frame from client to server. The transport uses unnamed events, which means only the `data` field is available. Thus we use the first line of the `data` field for frame metadata.
-
-TBD: Keep Alive - Should it be done at this level?
 
 ## Long Polling (Server-to-Client only)
 
