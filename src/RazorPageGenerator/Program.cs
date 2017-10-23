@@ -14,17 +14,25 @@ namespace RazorPageGenerator
     {
         public static int Main(string[] args)
         {
-            if (args == null || args.Length != 1)
+            if (args == null || args.Length < 1)
             {
                 Console.WriteLine("Invalid argument(s).");
-                Console.WriteLine("Usage:   dotnet razorpagegenerator <root-namespace-of-views>");
-                Console.WriteLine("Example: dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews");
+                Console.WriteLine(@"Usage:   
+    dotnet razorpagegenerator <root-namespace-of-views> [path]
+Examples: 
+    dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews
+        - processes all views in ""Views"" subfolders of the current directory
+    dotnet razorpagegenerator Microsoft.AspNetCore.Diagnostics.RazorViews c:\project
+        - processes all views in ""Views"" subfolders of c:\project directory
+");
+
                 return 1;
             }
 
             var rootNamespace = args[0];
-            var targetProjectDirectory = Directory.GetCurrentDirectory();
-            var results = MainCore(rootNamespace, targetProjectDirectory);
+            var targetProjectDirectory = args.Length > 1 ? args[1] : Directory.GetCurrentDirectory();
+            var razorEngine = CreateRazorEngine(rootNamespace);
+            var results = MainCore(razorEngine, targetProjectDirectory);
 
             foreach (var result in results)
             {
@@ -37,7 +45,7 @@ namespace RazorPageGenerator
             return 0;
         }
 
-        public static IList<RazorPageGeneratorResult> MainCore(string rootNamespace, string targetProjectDirectory)
+        public static RazorEngine CreateRazorEngine(string rootNamespace, Action<IRazorEngineBuilder> configure = null)
         {
             var razorEngine = RazorEngine.Create(builder =>
             {
@@ -52,8 +60,16 @@ namespace RazorPageGenerator
                     });
 
                 builder.Features.Add(new SuppressChecksumOptionsFeature());
+                if (configure != null)
+                {
+                    configure(builder);
+                }
             });
+            return razorEngine;
+        }
 
+        public static IList<RazorPageGeneratorResult> MainCore(RazorEngine razorEngine, string targetProjectDirectory)
+        {
             var viewDirectories = Directory.EnumerateDirectories(targetProjectDirectory, "Views", SearchOption.AllDirectories);
             var razorProject = RazorProject.Create(targetProjectDirectory);
             var templateEngine = new RazorTemplateEngine(razorEngine, razorProject);
