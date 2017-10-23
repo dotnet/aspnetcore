@@ -316,6 +316,7 @@ private:
     APP_OFFLINE_HTM                    *m_pAppOfflineHtm;
     APPLICATION                        *m_pApplication;
 
+    bool                                m_fWebSocketEnabled;
     bool                                m_fHandleClosedDueToClient;
     bool                                m_fResponseHeadersReceivedAndSet;
     BOOL                                m_fDoReverseRewriteHeaders;
@@ -325,19 +326,16 @@ private:
     BOOL                                m_fClientDisconnected;
     BOOL                                m_fHasError;
     DWORD                               m_msStartTime;
-        
     DWORD                               m_BytesToReceive;
     DWORD                               m_BytesToSend;
-
-    BYTE *                              m_pEntityBuffer;
     DWORD                               m_cchLastSend;
-
-    static const SIZE_T                 INLINE_ENTITY_BUFFERS = 8;
     DWORD                               m_cEntityBuffers;
-    BUFFER_T<BYTE*,INLINE_ENTITY_BUFFERS> m_buffEntityBuffers;
-
     DWORD                               m_cBytesBuffered;
     DWORD                               m_cMinBufferLimit;
+
+    BYTE *                              m_pEntityBuffer;
+    static const SIZE_T                 INLINE_ENTITY_BUFFERS = 8;
+    BUFFER_T<BYTE*,INLINE_ENTITY_BUFFERS> m_buffEntityBuffers;
 
     PCSTR                               m_pszOriginalHostHeader;
 
@@ -347,8 +345,6 @@ private:
 
     PCWSTR                              m_pszHeaders;
     DWORD                               m_cchHeaders;
-
-    bool                                m_fWebSocketEnabled;
 
     STRU                                m_strFullUri;
 

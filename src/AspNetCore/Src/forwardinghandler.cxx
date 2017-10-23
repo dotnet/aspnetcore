@@ -2286,6 +2286,12 @@ None
         break;
 
     case WINHTTP_CALLBACK_STATUS_HANDLE_CLOSING:
+        if (ANCMEvents::ANCM_REQUEST_FORWARD_END::IsEnabled(m_pW3Context->GetTraceContext()))
+        {
+            ANCMEvents::ANCM_REQUEST_FORWARD_END::RaiseEvent(
+                m_pW3Context->GetTraceContext(),
+                NULL);
+        }
         if (m_RequestStatus != FORWARDER_DONE)
         {
             hr = ERROR_CONNECTION_ABORTED;
