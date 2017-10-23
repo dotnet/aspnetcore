@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    [Config(typeof(CoreConfig))]
+    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class RequestParsingBenchmark
     {
         public IPipe Pipe { get; set; }
@@ -23,23 +23,31 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [IterationSetup]
         public void Setup()
         {
-            PipeFactory = new PipeFactory();
-            Pipe = PipeFactory.Create();
+            var pipeFactory = new PipeFactory();
+            var pair = pipeFactory.CreateConnectionPair();
 
             var serviceContext = new ServiceContext
             {
-                HttpParserFactory = f => new HttpParser<Http1ParsingHandler>(),
+                DateHeaderValueManager = new DateHeaderValueManager(),
                 ServerOptions = new KestrelServerOptions(),
+                Log = new MockTrace(),
+                HttpParserFactory = f => new HttpParser<Http1ParsingHandler>()
             };
-            var http1ConnectionContext = new Http1ConnectionContext
+
+            var http1Connection = new Http1Connection<object>(application: null, context: new Http1ConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                PipeFactory = PipeFactory,
+                PipeFactory = pipeFactory,
+                Application = pair.Application,
+                Transport = pair.Transport,
                 TimeoutControl = new MockTimeoutControl()
-            };
+            });
 
-            Http1Connection = new Http1Connection<object>(application: null, context: http1ConnectionContext);
+            http1Connection.Reset();
+
+            Http1Connection = http1Connection;
+            Pipe = pipeFactory.Create();
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = RequestParsingData.InnerLoopCount)]

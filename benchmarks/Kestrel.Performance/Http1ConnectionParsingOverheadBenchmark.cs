@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Performance.Mocks;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    [Config(typeof(CoreConfig))]
+    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class Http1ConnectionParsingOverheadBenchmark
     {
         private const int InnerLoopCount = 512;
@@ -22,20 +22,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [IterationSetup]
         public void Setup()
         {
+            var pipeFactory = new PipeFactory();
+            var pair = pipeFactory.CreateConnectionPair();
+
             var serviceContext = new ServiceContext
             {
-                HttpParserFactory = _ => NullParser<Http1ParsingHandler>.Instance,
-                ServerOptions = new KestrelServerOptions()
+                ServerOptions = new KestrelServerOptions(),
+                HttpParserFactory = f => NullParser<Http1ParsingHandler>.Instance
             };
-            var http1ConnectionContext = new Http1ConnectionContext
+
+            var http1Connection = new Http1Connection<object>(application: null, context: new Http1ConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                PipeFactory = new PipeFactory(),
-                TimeoutControl = new MockTimeoutControl()
-            };
+                PipeFactory = pipeFactory,
+                TimeoutControl = new MockTimeoutControl(),
+                Application = pair.Application,
+                Transport = pair.Transport
+            });
 
-            _http1Connection = new Http1Connection<object>(application: null, context: http1ConnectionContext);
+            http1Connection.Reset();
+
+            _http1Connection = http1Connection;
         }
 
         [Benchmark(Baseline = true, OperationsPerInvoke = InnerLoopCount)]

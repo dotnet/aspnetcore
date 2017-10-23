@@ -4,8 +4,7 @@
     <!-- Using shorter assembly name instead of Microsoft.AspNetCore.Server.Kestrel.Performance because https://github.com/dotnet/BenchmarkDotNet/issues/498 -->
     <AssemblyName>Kestrel.Performance</AssemblyName>
     <RootNamespace>Microsoft.AspNetCore.Server.Kestrel.Performance</RootNamespace>
-    <TargetFrameworks>netcoreapp2.0;net461</TargetFrameworks>
-    <TargetFrameworks Condition=" '$(OS)' != 'Windows_NT' ">netcoreapp2.0</TargetFrameworks>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
     <OutputType>Exe</OutputType>
     <ServerGarbageCollection>true</ServerGarbageCollection>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
@@ -24,6 +23,7 @@
 
   <ItemGroup>
     <PackageReference Include="BenchmarkDotNet" Version="0.10.9" NoWarn="KRB4002" />
+    <PackageReference Include="Microsoft.AspNetCore.BenchmarkRunner.Sources" PrivateAssets="All" />
   </ItemGroup>
 
 </Project>

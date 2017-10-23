@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    [Config(typeof(CoreConfig))]
+    [ParameterizedJobConfig(typeof(CoreConfig))]
 
     public class HttpParserBenchmark : IHttpRequestLineHandler, IHttpHeadersHandler
     {

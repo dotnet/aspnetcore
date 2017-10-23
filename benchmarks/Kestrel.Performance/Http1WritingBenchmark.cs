@@ -15,7 +15,7 @@ using Microsoft.AspNetCore.Testing;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    [Config(typeof(CoreConfig))]
+    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class Http1WritingBenchmark
     {
         // Standard completed task

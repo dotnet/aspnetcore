@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
+    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class KnownStringsBenchmark
     {
         static byte[] _methodConnect = Encoding.ASCII.GetBytes("CONNECT ");

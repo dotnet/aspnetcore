@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    [Config(typeof(CoreConfig))]
+    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class ResponseHeaderCollectionBenchmark
     {
         private const int InnerLoopCount = 512;
@@ -170,21 +170,28 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
         [IterationSetup]
         public void Setup()
         {
+            var pipeFactory = new PipeFactory();
+            var pair = pipeFactory.CreateConnectionPair();
+
             var serviceContext = new ServiceContext
             {
-                HttpParserFactory = f => new HttpParser<Http1ParsingHandler>(),
-                ServerOptions = new KestrelServerOptions()
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerOptions = new KestrelServerOptions(),
+                Log = new MockTrace(),
+                HttpParserFactory = f => new HttpParser<Http1ParsingHandler>()
             };
-            var http1ConnectionContext = new Http1ConnectionContext
+
+            var http1Connection = new Http1Connection<object>(application: null, context: new Http1ConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                PipeFactory = new PipeFactory()
-            };
-
-            var http1Connection = new Http1Connection<object>(application: null, context: http1ConnectionContext);
+                PipeFactory = pipeFactory,
+                Application = pair.Application,
+                Transport = pair.Transport
+            });
 
             http1Connection.Reset();
+
             _responseHeadersDirect = (HttpResponseHeaders)http1Connection.ResponseHeaders;
             var context = new DefaultHttpContext(http1Connection);
             _response = new DefaultHttpResponse(context);

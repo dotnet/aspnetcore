@@ -12,20 +12,25 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
     public class CoreConfig : ManualConfig
     {
-        public CoreConfig()
-        {
-            Add(JitOptimizationsValidator.FailOnError);
-            Add(MemoryDiagnoser.Default);
-            Add(StatisticColumn.OperationsPerSecond);
-
-            Add(Job.Default
-                .With(BenchmarkDotNet.Environments.Runtime.Core)
+        public CoreConfig() : this(Job.Core
                 .WithRemoveOutliers(false)
                 .With(new GcMode() { Server = true })
                 .With(RunStrategy.Throughput)
                 .WithLaunchCount(3)
                 .WithWarmupCount(5)
-                .WithTargetCount(10));
+                .WithTargetCount(10))
+        {
+            Add(JitOptimizationsValidator.FailOnError);
+        }
+
+        public CoreConfig(Job job)
+        {
+            Add(DefaultConfig.Instance);
+
+            Add(MemoryDiagnoser.Default);
+            Add(StatisticColumn.OperationsPerSecond);
+
+            Add(job);
         }
     }
 }

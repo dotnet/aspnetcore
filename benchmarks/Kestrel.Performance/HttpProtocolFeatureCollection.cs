@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 {
-    [Config(typeof(CoreConfig))]
+    [ParameterizedJobConfig(typeof(CoreConfig))]
     public class HttpProtocolFeatureCollection
     {
         private readonly Http1Connection<object> _http1Connection;
@@ -77,19 +77,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Performance
 
         public HttpProtocolFeatureCollection()
         {
+            var pipeFactory = new PipeFactory();
+            var pair = pipeFactory.CreateConnectionPair();
+
             var serviceContext = new ServiceContext
             {
-                HttpParserFactory = _ => NullParser<Http1ParsingHandler>.Instance,
-                ServerOptions = new KestrelServerOptions()
+                DateHeaderValueManager = new DateHeaderValueManager(),
+                ServerOptions = new KestrelServerOptions(),
+                Log = new MockTrace(),
+                HttpParserFactory = f => new HttpParser<Http1ParsingHandler>()
             };
-            var http1ConnectionContext = new Http1ConnectionContext
+
+            var http1Connection = new Http1Connection<object>(application: null, context: new Http1ConnectionContext
             {
                 ServiceContext = serviceContext,
                 ConnectionFeatures = new FeatureCollection(),
-                PipeFactory = new PipeFactory()
-            };
+                PipeFactory = pipeFactory,
+                Application = pair.Application,
+                Transport = pair.Transport
+            });
 
-            _http1Connection = new Http1Connection<object>(application: null, context: http1ConnectionContext);
+            http1Connection.Reset();
+
+            _http1Connection = http1Connection;
         }
 
         [IterationSetup]
