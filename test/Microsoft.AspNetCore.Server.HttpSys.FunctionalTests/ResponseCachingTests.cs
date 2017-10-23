@@ -49,7 +49,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.FunctionalTests
             }
         }
 
-        [ConditionalFact(Skip = "https://github.com/aspnet/HttpSysServer/issues/263")]
+        [ConditionalFact]
         public async Task Caching_MaxAge_Cached()
         {
             var requestCount = 1;

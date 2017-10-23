@@ -474,7 +474,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     // It can take several tries before Send notices the disconnect.
-                    for (int i = 0; i < 1000; i++)
+                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                     {
                         await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                     }
@@ -502,7 +502,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 await Assert.ThrowsAsync<TaskCanceledException>(() => responseTask);
                 Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
                 // It can take several tries before Send notices the disconnect.
-                for (int i = 0; i < 100; i++)
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 }
@@ -539,7 +539,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
                 await Assert.ThrowsAsync<IOException>(async () =>
                 {
                     // It can take several tries before Write notices the disconnect.
-                    for (int i = 0; i < 100; i++)
+                    for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                     {
                         await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                     }
@@ -574,7 +574,7 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 
                 Assert.True(context.DisconnectToken.WaitHandle.WaitOne(TimeSpan.FromSeconds(5)));
                 // It can take several tries before Write notices the disconnect.
-                for (int i = 0; i < 10; i++)
+                for (int i = 0; i < Utilities.WriteRetryLimit; i++)
                 {
                     await context.Response.SendFileAsync(AbsoluteFilePath, 0, null, CancellationToken.None);
                 }

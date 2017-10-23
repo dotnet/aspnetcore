@@ -10,6 +10,8 @@ namespace Microsoft.AspNetCore.Server.HttpSys.Listener
 {
     internal static class Utilities
     {
+        internal static readonly int WriteRetryLimit = 1000;
+
         // When tests projects are run in parallel, overlapping port ranges can cause a race condition when looking for free
         // ports during dynamic port allocation.
         private const int BasePort = 8001;
