@@ -145,6 +145,7 @@
     <ExternalDependency Include="Serilog.Extensions.Logging" Version="1.4.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Serilog.Sinks.File" Version="3.2.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="SQLitePCLRaw.bundle_green" Version="1.1.8" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="SQLitePCLRaw.bundle_sqlcipher" Version="1.1.8" Source="$(DefaultNuGetFeed)" Private="true" />
     <ExternalDependency Include="SQLitePCLRaw.core" Version="1.1.8" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="StackExchange.Redis.StrongName" Version="1.2.4" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="StreamJsonRpc" Version="1.1.92" Source="$(DefaultNuGetFeed)"/>
