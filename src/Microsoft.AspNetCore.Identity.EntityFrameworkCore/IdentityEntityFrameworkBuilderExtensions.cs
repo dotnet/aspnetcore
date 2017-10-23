@@ -83,7 +83,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 }
                 else
                 {
-                    userStoreType = typeof(UserOnlyStore<,,,,,>).MakeGenericType(userType, roleType, contextType,
+                    userStoreType = typeof(UserOnlyStore<,,,,,>).MakeGenericType(userType, contextType,
                         identityContext.GenericTypeArguments[1],
                         identityContext.GenericTypeArguments[2],
                         identityContext.GenericTypeArguments[3],
