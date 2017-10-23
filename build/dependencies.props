@@ -13,6 +13,7 @@
     <MicrosoftAspNetCoreServerIISIntegrationPackageVersion>2.1.0-preview1-27478</MicrosoftAspNetCoreServerIISIntegrationPackageVersion>
     <MicrosoftAspNetCoreServerKestrelPackageVersion>2.1.0-preview1-27478</MicrosoftAspNetCoreServerKestrelPackageVersion>
     <MicrosoftAspNetCoreStaticFilesPackageVersion>2.1.0-preview1-27478</MicrosoftAspNetCoreStaticFilesPackageVersion>
+    <MicrosoftAspNetCoreWebSocketsPackageVersion>2.1.0-preview1-27478</MicrosoftAspNetCoreWebSocketsPackageVersion>
     <MicrosoftExtensionsDependencyInjectionPackageVersion>2.1.0-preview1-27478</MicrosoftExtensionsDependencyInjectionPackageVersion>
     <MicrosoftExtensionsLoggingConsolePackageVersion>2.1.0-preview1-27478</MicrosoftExtensionsLoggingConsolePackageVersion>
     <MicrosoftExtensionsLoggingDebugPackageVersion>2.1.0-preview1-27478</MicrosoftExtensionsLoggingDebugPackageVersion>

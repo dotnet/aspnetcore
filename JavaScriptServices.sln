@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26730.0
+VisualStudioVersion = 15.0.26730.16
 MinimumVisualStudioVersion = 15.0.26730.03
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{27304DDE-AFB2-4F8B-B765-E3E2F11E886C}"
 	ProjectSection(SolutionItems) = preProject
@@ -37,6 +37,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.targets = Directory.Build.targets
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Microsoft.AspNetCore.SpaServices.Extensions", "src\Microsoft.AspNetCore.SpaServices.Extensions\Microsoft.AspNetCore.SpaServices.Extensions.csproj", "{D40BD1C4-6A6F-4213-8535-1057F3EB3400}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -67,6 +69,10 @@ Global
 		{93EFCC5F-C6EE-4623-894F-A42B22C0B6FE}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{93EFCC5F-C6EE-4623-894F-A42B22C0B6FE}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{93EFCC5F-C6EE-4623-894F-A42B22C0B6FE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D40BD1C4-6A6F-4213-8535-1057F3EB3400}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D40BD1C4-6A6F-4213-8535-1057F3EB3400}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D40BD1C4-6A6F-4213-8535-1057F3EB3400}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D40BD1C4-6A6F-4213-8535-1057F3EB3400}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -79,6 +85,7 @@ Global
 		{1931B19A-EC42-4D56-B2D0-FB06D17244DA} = {E6A161EA-646C-4033-9090-95BE809AB8D9}
 		{DE479DC3-1461-4EAD-A188-4AF7AA4AE344} = {E6A161EA-646C-4033-9090-95BE809AB8D9}
 		{93EFCC5F-C6EE-4623-894F-A42B22C0B6FE} = {E6A161EA-646C-4033-9090-95BE809AB8D9}
+		{D40BD1C4-6A6F-4213-8535-1057F3EB3400} = {27304DDE-AFB2-4F8B-B765-E3E2F11E886C}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {DDF59B0D-2DEC-45D6-8667-DCB767487101}
