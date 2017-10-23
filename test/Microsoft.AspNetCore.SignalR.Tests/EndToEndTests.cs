@@ -11,11 +11,13 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR.Client;
 using Microsoft.AspNetCore.SignalR.Tests.Common;
 using Microsoft.AspNetCore.Sockets;
-using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.AspNetCore.Sockets.Client;
+using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Testing;
+using Moq;
+using Moq.Protected;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -93,6 +95,54 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     logger.LogInformation("Closing socket");
                     await ws.CloseAsync(WebSocketCloseStatus.Empty, "", CancellationToken.None).OrTimeout();
                     logger.LogInformation("Closed socket");
+                }
+            }
+        }
+
+        [ConditionalFact]
+        [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
+        public async Task HTTPRequestsNotSentWhenWebSocketsTransportRequested()
+        {
+            using (StartLog(out var loggerFactory, testName: nameof(HTTPRequestsNotSentWhenWebSocketsTransportRequested)))
+            {
+                var logger = loggerFactory.CreateLogger<EndToEndTests>();
+                var url = _serverFixture.BaseUrl + "/echo";
+
+                var mockHttpHandler = new Mock<HttpMessageHandler>();
+                mockHttpHandler.Protected()
+                    .Setup<Task<HttpResponseMessage>>("SendAsync", ItExpr.IsAny<HttpRequestMessage>(), ItExpr.IsAny<CancellationToken>())
+                    .Returns<HttpRequestMessage, CancellationToken>(
+                        (request, cancellationToken) => Task.FromException<HttpResponseMessage>(new InvalidOperationException("HTTP requests should not be sent.")));
+
+                var connection = new HttpConnection(new Uri(url), TransportType.WebSockets, loggerFactory, mockHttpHandler.Object);
+
+                try
+                {
+                    var receiveTcs = new TaskCompletionSource<byte[]>();
+                    connection.OnReceived((data, state) =>
+                    {
+                        var tcs = (TaskCompletionSource<byte[]>)state;
+                        tcs.TrySetResult(data);
+                        return Task.CompletedTask;
+                    }, receiveTcs);
+
+                    var message = new byte[] { 42 };
+                    await connection.StartAsync().OrTimeout();
+                    await connection.SendAsync(message).OrTimeout();
+
+                    var receivedData = await receiveTcs.Task.OrTimeout();
+                    Assert.Equal(message, receivedData);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogInformation(ex, "Test threw exception");
+                    throw;
+                }
+                finally
+                {
+                    logger.LogInformation("Disposing Connection");
+                    await connection.DisposeAsync().OrTimeout();
+                    logger.LogInformation("Disposed Connection");
                 }
             }
         }

@@ -23,13 +23,24 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 () => new DefaultTransportFactory(transportType, new LoggerFactory(), new HttpClient()));
         }
 
-        [Fact]
-        public void DefaultTransportFactoryCannotBeCreatedWithoutHttpClient()
+        [Theory]
+        [InlineData(TransportType.All)]
+        [InlineData(TransportType.LongPolling)]
+        [InlineData(TransportType.ServerSentEvents)]
+        [InlineData(TransportType.LongPolling | TransportType.WebSockets)]
+        [InlineData(TransportType.ServerSentEvents | TransportType.WebSockets)]
+        public void DefaultTransportFactoryCannotBeCreatedWithoutHttpClient(TransportType transportType)
         {
             var exception = Assert.Throws<ArgumentNullException>(
-                () => new DefaultTransportFactory(TransportType.All, new LoggerFactory(), httpClient: null));
+                () => new DefaultTransportFactory(transportType, new LoggerFactory(), httpClient: null));
 
             Assert.Equal("httpClient", exception.ParamName);
+        }
+
+        [Fact]
+        public void DefaultTransportFactoryCanBeCreatedWithoutHttpClientIfWebSocketsTransportRequestedExplicitly()
+        {
+            new DefaultTransportFactory(TransportType.WebSockets, new LoggerFactory(), httpClient: null);
         }
 
         [ConditionalTheory]

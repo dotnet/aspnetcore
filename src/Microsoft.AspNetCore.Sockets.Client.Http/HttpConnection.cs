@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -42,6 +41,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
         private ReadableChannel<byte[]> Input => _transportChannel.In;
         private WritableChannel<SendMessage> Output => _transportChannel.Out;
         private readonly List<ReceiveCallback> _callbacks = new List<ReceiveCallback>();
+        private readonly TransportType _requestedTransportType = TransportType.All;
 
         public Uri Url { get; }
 
@@ -78,8 +78,14 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             _loggerFactory = loggerFactory ?? NullLoggerFactory.Instance;
             _logger = _loggerFactory.CreateLogger<HttpConnection>();
-            _httpClient = httpMessageHandler == null ? new HttpClient() : new HttpClient(httpMessageHandler);
-            _httpClient.Timeout = HttpClientTimeout;
+
+            _requestedTransportType = transportType;
+            if (_requestedTransportType != TransportType.WebSockets)
+            {
+                _httpClient = httpMessageHandler == null ? new HttpClient() : new HttpClient(httpMessageHandler);
+                _httpClient.Timeout = HttpClientTimeout;
+            }
+
             _transportFactory = new DefaultTransportFactory(transportType, _loggerFactory, _httpClient);
         }
 
@@ -130,19 +136,27 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
             try
             {
-                var negotiationResponse = await Negotiate(Url, _httpClient, _logger);
-                _connectionId = negotiationResponse.ConnectionId;
-
-                // Connection is being stopped while start was in progress
-                if (_connectionState == ConnectionState.Disconnected)
+                var connectUrl = Url;
+                if (_requestedTransportType == TransportType.WebSockets)
                 {
-                    _logger.HttpConnectionClosed(_connectionId);
-                    return;
+                    _transport = _transportFactory.CreateTransport(TransportType.WebSockets);
+                }
+                else
+                {
+                    var negotiationResponse = await Negotiate(Url, _httpClient, _logger);
+                    _connectionId = negotiationResponse.ConnectionId;
+
+                    // Connection is being stopped while start was in progress
+                    if (_connectionState == ConnectionState.Disconnected)
+                    {
+                        _logger.HttpConnectionClosed(_connectionId);
+                        return;
+                    }
+
+                    _transport = _transportFactory.CreateTransport(GetAvailableServerTransports(negotiationResponse));
+                    connectUrl = CreateConnectUrl(Url, negotiationResponse);
                 }
 
-                _transport = _transportFactory.CreateTransport(GetAvailableServerTransports(negotiationResponse));
-
-                var connectUrl = CreateConnectUrl(Url, negotiationResponse);
                 _logger.StartingTransport(_connectionId, _transport.GetType().Name, connectUrl);
                 await StartTransport(connectUrl);
             }
@@ -174,7 +188,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     await _eventQueue.Drain();
 
                     await Task.WhenAny(_eventQueue.Drain().NoThrow(), Task.Delay(_eventQueueDrainTimeout));
-                    _httpClient.Dispose();
+                    _httpClient?.Dispose();
 
                     _logger.RaiseClosed(_connectionId);
 
@@ -449,7 +463,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 await _receiveLoopTask;
             }
 
-            _httpClient.Dispose();
+            _httpClient?.Dispose();
         }
 
         public IDisposable OnReceived(Func<byte[], object, Task> callback, object state)

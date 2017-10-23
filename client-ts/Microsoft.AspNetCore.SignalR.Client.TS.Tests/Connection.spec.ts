@@ -192,6 +192,10 @@ describe("Connection", () => {
     });
 
     eachTransport((requestedTransport: TransportType) => {
+        // OPTIONS is not sent when WebSockets transport is explicitly requested
+        if (requestedTransport === TransportType.WebSockets) {
+            return;
+        }
         it(`cannot be started if requested ${TransportType[requestedTransport]} transport not available on server`, async done => {
             let options: IHttpConnectionOptions = {
                 httpClient: <IHttpClient>{
@@ -240,6 +244,34 @@ describe("Connection", () => {
         }
         catch (e) {
             expect(e.message).toBe("No available transports found.");
+            done();
+        }
+    });
+
+    it('does not send OPTIONS request if WebSockets transport requested explicitly', async done => {
+        let options: IHttpConnectionOptions = {
+            httpClient: <IHttpClient>{
+                options(url: string): Promise<string> {
+                    return Promise.reject("Should not be called");
+                },
+                get(url: string): Promise<string> {
+                    return Promise.reject("Should not be called");
+                }
+            },
+            transport: TransportType.WebSockets,
+            logging: null
+        } as IHttpConnectionOptions;
+
+        let connection = new HttpConnection("http://tempuri.org", options);
+        try {
+            await connection.start();
+            fail();
+            done();
+        }
+        catch (e) {
+            // WebSocket is created when the transport is connecting which happens after
+            // OPTIONS request would be sent. No better/easier way to test this.
+            expect(e.message).toBe("WebSocket is not defined");
             done();
         }
     });

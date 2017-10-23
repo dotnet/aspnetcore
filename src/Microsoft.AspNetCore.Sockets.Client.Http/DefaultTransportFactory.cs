@@ -21,7 +21,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                 throw new ArgumentOutOfRangeException(nameof(requestedTransportType));
             }
 
-            if (httpClient == null)
+            if (httpClient == null && requestedTransportType != TransportType.WebSockets)
             {
                 throw new ArgumentNullException(nameof(httpClient));
             }
