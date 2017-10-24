@@ -74,7 +74,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(securityToken));
             }
 
-            // Allow a variance of no greater than 90 seconds in either direction
+            // Allow a variance of no greater than 9 minutes in either direction
             var currentTimeStep = GetCurrentTimeStepNumber();
             using (var hashAlgorithm = new HMACSHA1(securityToken))
             {
@@ -89,7 +89,7 @@ namespace Microsoft.AspNetCore.Identity
                 throw new ArgumentNullException(nameof(securityToken));
             }
 
-            // Allow a variance of no greater than 90 seconds in either direction
+            // Allow a variance of no greater than 9 minutes in either direction
             var currentTimeStep = GetCurrentTimeStepNumber();
             using (var hashAlgorithm = new HMACSHA1(securityToken))
             {
