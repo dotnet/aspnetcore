@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 var pipe = pipeFactory.Create();
 
                 byte[] message = null;
-                ReadCursor consumed = default(ReadCursor), examined = default(ReadCursor);
+                ReadCursor consumed = default, examined = default;
 
                 for (var i = 0; i < messageParts.Length; i++)
                 {

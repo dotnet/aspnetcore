@@ -9,7 +9,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Formatters
     {
         public static bool TryParseMessage(ref ReadOnlyBuffer<byte> buffer, out ReadOnlyBuffer<byte> payload)
         {
-            payload = default(ReadOnlyBuffer<byte>);
+            payload = default;
 
             var index = buffer.Span.IndexOf(TextMessageFormatter.RecordSeparator);
             if (index == -1)

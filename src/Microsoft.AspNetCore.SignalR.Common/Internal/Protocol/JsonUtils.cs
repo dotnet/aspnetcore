@@ -8,7 +8,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
     public static class JsonUtils
     {
-        public static T GetOptionalProperty<T>(JObject json, string property, JTokenType expectedType = JTokenType.None, T defaultValue = default(T))
+        public static T GetOptionalProperty<T>(JObject json, string property, JTokenType expectedType = JTokenType.None, T defaultValue = default)
         {
             var prop = json[property];
 

@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         public bool TryGetSetting<T>(string name, out T value)
         {
-            value = default(T);
+            value = default;
             if (!_settings.TryGetValue(new KeyValuePair<string, Type>(name, typeof(T)), out var setting))
             {
                 return false;

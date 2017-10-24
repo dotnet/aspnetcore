@@ -16,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
         /// </summary>
         public static bool TryParseMessage(ref ReadOnlyBuffer<byte> buffer, out ReadOnlyBuffer<byte> payload)
         {
-            payload = default(ReadOnlyBuffer<byte>);
+            payload = default;
             var span = buffer.Span;
 
             if (!TryReadLength(span, out var index, out var length))
@@ -96,7 +96,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
             if (text.Length < 1)
             {
                 bytesConsumed = 0;
-                value = default(int);
+                value = default;
                 return false;
             }
 
@@ -119,7 +119,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
             if (firstDigit < 0 || firstDigit > 9)
             {
                 bytesConsumed = 0;
-                value = default(int);
+                value = default;
                 return false;
             }
             int parsedValue = firstDigit;
@@ -170,7 +170,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Encoders
                     if (parsedValue > int.MaxValue / 10 || parsedValue == int.MaxValue / 10 && nextDigitTooLarge)
                     {
                         bytesConsumed = 0;
-                        value = default(int);
+                        value = default;
                         return false;
                     }
                     parsedValue = parsedValue * 10 + nextDigit;
