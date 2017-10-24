@@ -51,16 +51,40 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             _ackHandler = new AckHandler();
 
             var writer = new LoggerTextWriter(logger);
-            _logger.ConnectingToEndpoints(string.Join(", ", options.Value.Options.EndPoints.Select(e => EndPointCollection.ToString(e))));
+            _logger.ConnectingToEndpoints(options.Value.Options.EndPoints);
             _redisServerConnection = _options.Connect(writer);
+
+            _redisServerConnection.ConnectionRestored += (_, e) =>
+            {
+                // We use the subscription connection type
+                // Ignore messages from the interactive connection (avoids duplicates)
+                if (e.ConnectionType == ConnectionType.Interactive)
+                {
+                    return;
+                }
+
+                _logger.ConnectionRestored();
+            };
+
+            _redisServerConnection.ConnectionFailed += (_, e) =>
+            {
+                // We use the subscription connection type
+                // Ignore messages from the interactive connection (avoids duplicates)
+                if (e.ConnectionType == ConnectionType.Interactive)
+                {
+                    return;
+                }
+
+                _logger.ConnectionFailed(e.Exception);
+            };
+
             if (_redisServerConnection.IsConnected)
             {
                 _logger.Connected();
             }
             else
             {
-                // TODO: We could support reconnecting, like old SignalR does.
-                throw new InvalidOperationException("Connection to redis failed.");
+                _logger.NotConnected();
             }
             _bus = _redisServerConnection.GetSubscriber();
 

@@ -2,7 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
+using System.Linq;
 using Microsoft.Extensions.Logging;
+using StackExchange.Redis;
 
 namespace Microsoft.AspNetCore.SignalR.Redis.Internal
 {
@@ -27,9 +29,24 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
         private static readonly Action<ILogger, string, Exception> _unsubscribe =
             LoggerMessage.Define<string>(LogLevel.Trace, new EventId(5, nameof(Unsubscribe)), "Unsubscribing from channel: {channel}.");
 
-        public static void ConnectingToEndpoints(this ILogger logger, string endpoints)
+        private static readonly Action<ILogger, Exception> _notConnected =
+            LoggerMessage.Define(LogLevel.Warning, new EventId(6, nameof(Connected)), "Not connected to Redis.");
+
+        private static readonly Action<ILogger, Exception> _connectionRestored =
+            LoggerMessage.Define(LogLevel.Information, new EventId(7, nameof(ConnectionRestored)), "Connection to Redis restored.");
+
+        private static readonly Action<ILogger, Exception> _connectionFailed =
+            LoggerMessage.Define(LogLevel.Warning, new EventId(8, nameof(ConnectionFailed)), "Connection to Redis failed.");
+
+        public static void ConnectingToEndpoints(this ILogger logger, EndPointCollection endpoints)
         {
-            _connectingToEndpoints(logger, endpoints, null);
+            if (logger.IsEnabled(LogLevel.Information))
+            {
+                if (endpoints.Count > 0)
+                {
+                    _connectingToEndpoints(logger, string.Join(", ", endpoints.Select(e => EndPointCollection.ToString(e))), null);
+                }
+            }
         }
 
         public static void Connected(this ILogger logger)
@@ -55,6 +72,21 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Internal
         public static void Unsubscribe(this ILogger logger, string channelName)
         {
             _unsubscribe(logger, channelName, null);
+        }
+
+        public static void NotConnected(this ILogger logger)
+        {
+            _notConnected(logger, null);
+        }
+
+        public static void ConnectionRestored(this ILogger logger)
+        {
+            _connectionRestored(logger, null);
+        }
+
+        public static void ConnectionFailed(this ILogger logger, Exception exception)
+        {
+            _connectionFailed(logger, exception);
         }
     }
 }

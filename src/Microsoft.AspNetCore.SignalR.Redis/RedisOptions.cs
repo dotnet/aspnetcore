@@ -10,7 +10,11 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 {
     public class RedisOptions
     {
-        public ConfigurationOptions Options { get; set; } = new ConfigurationOptions();
+        public ConfigurationOptions Options { get; set; } = new ConfigurationOptions
+        {
+            // Enable reconnecting by default
+            AbortOnConnectFail = false
+        };
 
         public Func<TextWriter, IConnectionMultiplexer> Factory { get; set; }
 
@@ -25,6 +29,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                     Options.EndPoints.Add(IPAddress.Loopback, 0);
                     Options.SetDefaultPorts();
                 }
+
                 return ConnectionMultiplexer.Connect(Options, log);
             }
 
