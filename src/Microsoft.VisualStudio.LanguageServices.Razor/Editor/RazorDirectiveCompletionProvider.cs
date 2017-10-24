@@ -147,12 +147,19 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             return completionItems;
         }
 
-        private bool AtDirectiveCompletionPoint(RazorSyntaxTree syntaxTree, CompletionContext context)
+        // Internal for testing
+        internal bool AtDirectiveCompletionPoint(RazorSyntaxTree syntaxTree, CompletionContext context)
         {
             if (TryGetRazorSnapshotPoint(context, out var razorSnapshotPoint))
             {
                 var change = new SourceChange(razorSnapshotPoint.Position, 0, string.Empty);
                 var owner = syntaxTree.Root.LocateOwner(change);
+
+                if (owner == null)
+                {
+                    return false;
+                }
+
                 if (owner.ChunkGenerator is ExpressionChunkGenerator &&
                     owner.Symbols.All(IsDirectiveCompletableSymbol) &&
                     // Do not provide IntelliSense for explicit expressions. Explicit expressions will usually look like:

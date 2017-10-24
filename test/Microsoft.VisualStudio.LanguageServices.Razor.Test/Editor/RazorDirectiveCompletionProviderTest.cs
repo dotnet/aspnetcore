@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
+using System.ComponentModel.Composition;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -28,6 +29,24 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             CSharpCodeParser.RemoveTagHelperDirectiveDescriptor,
             CSharpCodeParser.TagHelperPrefixDirectiveDescriptor,
         };
+
+        [Fact]
+        public void AtDirectiveCompletionPoint_ReturnsFalseIfChangeHasNoOwner()
+        {
+            // Arrange
+            var codeDocumentProvider = CreateCodeDocumentProvider("@", Enumerable.Empty<DirectiveDescriptor>());
+            var completionProvider = new FailOnGetCompletionsProvider(codeDocumentProvider);
+            var document = CreateDocument();
+            codeDocumentProvider.Value.TryGetFromDocument(document, out var codeDocument);
+            var syntaxTree = codeDocument.GetSyntaxTree();
+            var completionContext = CreateContext(2, completionProvider, document);
+
+            // Act
+            var result = completionProvider.AtDirectiveCompletionPoint(syntaxTree, completionContext);
+
+            // Assert
+            Assert.False(result);
+        }
 
         [Fact]
         public async Task GetDescriptionAsync_AddsDirectiveDescriptionIfPropertyExists()
