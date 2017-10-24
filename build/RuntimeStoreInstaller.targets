@@ -22,10 +22,11 @@
     <CoreFeedPrefix Condition="'$(KOREBUILD_DOTNET_FEED_UNCACHED)'!=''">$(KOREBUILD_DOTNET_FEED_UNCACHED)</CoreFeedPrefix>
     <CoreFeedPrefix Condition="'$(CoreFeedPrefix)'==''">$(PublicCoreFeedPrefix)</CoreFeedPrefix>
 
-    <RuntimeStore200TargzLink>$(PublicCoreFeedPrefix)/aspnetcore/store/2.0.0-26452/Build.RS.linux.tar.gz</RuntimeStore200TargzLink>
+    <RuntimeStore200LinkPrefix>$(PublicCoreFeedPrefix)/aspnetcore/store/2.0.0-26452/Build.RS.</RuntimeStore200LinkPrefix>
     <RuntimeTargzLink>$(CoreFeedPrefix)/Runtime/$(MicrosoftNETCoreApp20PackageVersion)/dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz</RuntimeTargzLink>
     <TimestampRSArchive>$(_TimestampRSSource)aspnetcore-store-$(PackageVersion)-linux-x64.tar.gz</TimestampRSArchive>
-    <TimestampFreeRSArchive>$(_TimestampFreeRSSource)aspnetcore-store-$(PackageVersionNoTimestamp)-linux-x64.tar.gz</TimestampFreeRSArchive>
+    <TimestampFreeRSArchivePrefix>$(_TimestampFreeRSSource)aspnetcore-store-$(PackageVersionNoTimestamp)-</TimestampFreeRSArchivePrefix>
+    <TimestampFreeLinuxRSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</TimestampFreeLinuxRSArchive>
   </PropertyGroup>
 
   <Target Name="BuildInstallers" DependsOnTargets="GenerateTargzs;GenerateRpms;GenerateDebs;GenerateRelabledInstallers" />
@@ -44,11 +45,25 @@
       Text="Timestamp linux archive not found. Expected it to exist in $(TimestampRSArchive)."
       Condition="!Exists('$(TimestampRSArchive)')" />
     <Error
-      Text="Non-timestamp linux archive not found. Expected it to exist in $(TimestampFreeRSArchive)."
-      Condition="!Exists('$(TimestampFreeRSArchive)')" />
+      Text="Non-timestamp linux archive not found. Expected it to exist in $(TimestampFreeLinuxRSArchive)."
+      Condition="!Exists('$(TimestampFreeLinuxRSArchive)')" />
+    <Error
+      Text="Non-timestamp osx archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)osx-x64.tar.gz."
+      Condition="!Exists('$(TimestampFreeRSArchivePrefix)osx-x64.tar.gz')" />
+    <Error
+      Text="Non-timestamp winx64 archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)win7-x64.zip."
+      Condition="!Exists('$(TimestampFreeRSArchivePrefix)win7-x64.zip')" />
+    <Error
+      Text="Non-timestamp winx86 archive not found. Expected it to exist in $(TimestampFreeRSArchivePrefix)win7-x86.zip."
+      Condition="!Exists('$(TimestampFreeRSArchivePrefix)win7-x86.zip')" />
   </Target>
 
-  <Target Name="_DownloadInstallers">
+  <Target Name="_EnsureInstallerDirectory" >
+    <!-- Download dotnet installers -->
+    <MakeDir Directories="$(_InstallerSource)" />
+  </Target>
+
+  <Target Name="_DownloadInstallers" DependsOnTargets="_EnsureInstallerDirectory">
     <!-- Download dotnet installers -->
     <MakeDir Directories="$(_InstallerSource)" />
     <!--
@@ -57,7 +72,7 @@
       so we'll let bash do it instead.
     -->
     <Exec Command="curl --fail -sSL &quot;$(RuntimeTargzLink)$KOREBUILD_DOTNET_FEED_CREDENTIAL&quot; -o $(_InstallerSource)dotnet-runtime-$(MicrosoftNETCoreApp20PackageVersion)-linux-x64.tar.gz" />
-    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200TargzLink)&quot; -o $(_InstallerSource)Build.RS.linux.tar.gz" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)linux.tar.gz&quot; -o $(_InstallerSource)Build.RS.linux.tar.gz" />
   </Target>
 
   <Target Name="_GenerateTargz">
@@ -76,6 +91,28 @@
 
     <!-- Create Aspnet Hosting Bundle tar.gz -->
     <Exec Command="tar -czvf $(_InstallersOutputDir)$(HostingArchiveName) ." WorkingDirectory="$(_WorkRoot)"/>
+  </Target>
+
+  <Target Name="_GenerateZip">
+    <!-- Clear working directory -->
+    <RemoveDir Directories="$(_WorkRoot)" />
+    <MakeDir Directories="$(_WorkRoot)" />
+
+    <!-- Create layout -->
+    <UnzipArchive File="$(RSArchive)" Destination="$(_WorkRoot)" />
+
+    <ItemGroup>
+      <Archives Include="$(DependentArchives)" />
+    </ItemGroup>
+
+    <UnzipArchive File="%(Archives.Identity)" Destination="$(_WorkRoot)" />
+
+    <ItemGroup>
+      <ArchiveFiles Include="$(_WorkRoot)**\*" />
+    </ItemGroup>
+
+    <!-- Create Zip -->
+    <ZipArchive File="$(_InstallersOutputDir)$(HostingArchiveName)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="$(_WorkRoot)" Overwrite="true" />
   </Target>
 
   <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadInstallers">
@@ -99,7 +136,43 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateTargz"
-      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampFreeRSArchive);HostingArchiveName=$(TimestampFreeHostingArchiveName)" />
+      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampFreeLinuxRSArchive);HostingArchiveName=$(TimestampFreeHostingArchiveName)" />
+  </Target>
+
+  <Target Name="_DownloadAdditionalRSZips" DependsOnTargets="_EnsureInstallerDirectory">
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)osx.tar.gz&quot; -o $(_InstallerSource)Build.RS.osx.tar.gz" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)winx64.zip&quot; -o $(_InstallerSource)Build.RS.winx64.zip" />
+    <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)winx86.zip&quot; -o $(_InstallerSource)Build.RS.winx86.zip" />
+  </Target>
+
+  <Target Name="GenerateCumulativeArchives" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadAdditionalRSZips">
+    <!-- Temporary: Generate time stamp free cumulative zips with old naming scheme -->
+
+    <ItemGroup>
+      <TargzArchives Include="Build.RS.linux.tar.gz">
+        <RSArchive>$(TimestampFreeRSArchivePrefix)linux-x64.tar.gz</RSArchive>
+      </TargzArchives>
+      <TargzArchives Include="Build.RS.osx.tar.gz">
+        <RSArchive>$(TimestampFreeRSArchivePrefix)osx-x64.tar.gz</RSArchive>
+      </TargzArchives>
+      <ZipArchives Include="Build.RS.winx64.zip">
+        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x64.zip</RSArchive>
+      </ZipArchives>
+      <ZipArchives Include="Build.RS.winx86.zip">
+        <RSArchive>$(TimestampFreeRSArchivePrefix)win7-x86.zip</RSArchive>
+      </ZipArchives>
+    </ItemGroup>
+
+    <!-- Targz -->
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GenerateTargz"
+      Properties="DependentArchives=$(_InstallerSource)%(TargzArchives.Identity);RSArchive=%(TargzArchives.RSArchive);HostingArchiveName=%(TargzArchives.Identity)" />
+    <!-- Targz -->
+    <MSBuild
+      Projects="$(MSBuildProjectFullPath)"
+      Targets="_GenerateZip"
+      Properties="DependentArchives=$(_InstallerSource)%(ZipArchives.Identity);RSArchive=%(ZipArchives.RSArchive);HostingArchiveName=%(ZipArchives.Identity)" />
   </Target>
 
   <Target Name="_BuildDockerImage">
@@ -273,7 +346,7 @@
       <TimestampRSArguments>$(TimestampRSArguments);RSArchive=$(TimestampRSArchive);RPMVersion=$(PackageVersion);RPMArguments=$(GenericRSArguments)</TimestampRSArguments>
 
       <TimestampFreeRSArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonRSArguments)</TimestampFreeRSArguments>
-      <TimestampFreeRSArguments>$(TimestampFreeRSArguments);RSArchive=$(TimestampFreeRSArchive);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(GenericRSArguments)</TimestampFreeRSArguments>
+      <TimestampFreeRSArguments>$(TimestampFreeRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(GenericRSArguments)</TimestampFreeRSArguments>
 
       <TimestampHostingArguments>$(CommonArguments);$(CommonGenericArguments);$(CommonHostingArguments)</TimestampHostingArguments>
       <TimestampHostingArguments>$(TimestampHostingArguments);RPMVersion=$(PackageVersion);RPMArguments=$(HostingFPMArguments)</TimestampHostingArguments>
@@ -285,7 +358,7 @@
       <RHTimestampRSArguments>$(RHTimestampRSArguments);RSArchive=$(TimestampRSArchive);RPMVersion=$(PackageVersion);RPMArguments=$(RHRSArguments)</RHTimestampRSArguments>
 
       <RHTimestampFreeRSArguments>$(CommonArguments);$(CommonRHArguments);$(CommonRSArguments)</RHTimestampFreeRSArguments>
-      <RHTimestampFreeRSArguments>$(RHTimestampFreeRSArguments);RSArchive=$(TimestampFreeRSArchive);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(RHRSArguments)</RHTimestampFreeRSArguments>
+      <RHTimestampFreeRSArguments>$(RHTimestampFreeRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);RPMVersion=$(PackageVersionNoTimestamp);RPMArguments=$(RHRSArguments)</RHTimestampFreeRSArguments>
 
       <RHTimestampHostingArguments>$(CommonArguments);$(CommonRHArguments);$(CommonHostingArguments)</RHTimestampHostingArguments>
       <RHTimestampHostingArguments>$(RHTimestampHostingArguments);RPMVersion=$(PackageVersion);RPMArguments=$(HostingFPMArguments)</RHTimestampHostingArguments>
@@ -395,7 +468,7 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"
-      Properties="$(CommonRSArguments);RSArchive=$(TimestampFreeRSArchive);DebVersion=$(PackageVersionNoTimestamp)" />
+      Properties="$(CommonRSArguments);RSArchive=$(TimestampFreeLinuxRSArchive);DebVersion=$(PackageVersionNoTimestamp)" />
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateDeb"
