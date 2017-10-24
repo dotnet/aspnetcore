@@ -90,7 +90,7 @@
     <Exec Command="tar -xzf %(Archives.Identity) -C $(_WorkRoot)" />
 
     <!-- Create Aspnet Hosting Bundle tar.gz -->
-    <Exec Command="tar -czvf $(_InstallersOutputDir)$(HostingArchiveName) ." WorkingDirectory="$(_WorkRoot)"/>
+    <Exec Command="tar -czvf $(_InstallersOutputDir)$(OutputArchiveName) ." WorkingDirectory="$(_WorkRoot)"/>
   </Target>
 
   <Target Name="_GenerateZip">
@@ -112,7 +112,7 @@
     </ItemGroup>
 
     <!-- Create Zip -->
-    <ZipArchive File="$(_InstallersOutputDir)$(HostingArchiveName)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="$(_WorkRoot)" Overwrite="true" />
+    <ZipArchive File="$(_InstallersOutputDir)$(OutputArchiveName)" SourceFiles="@(ArchiveFiles)" WorkingDirectory="$(_WorkRoot)" Overwrite="true" />
   </Target>
 
   <Target Name="GenerateTargzs" DependsOnTargets="_EnsureInstallerPrerequisites;_DownloadInstallers">
@@ -131,15 +131,15 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateTargz"
-      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampRSArchive);HostingArchiveName=$(HostingArchiveName)" />
+      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampRSArchive);OutputArchiveName=$(HostingArchiveName)" />
     <!-- Timestamp free hosting bundle -->
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateTargz"
-      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampFreeLinuxRSArchive);HostingArchiveName=$(TimestampFreeHostingArchiveName)" />
+      Properties="DependentArchives=$(DependentArchives);RSArchive=$(TimestampFreeLinuxRSArchive);OutputArchiveName=$(TimestampFreeHostingArchiveName)" />
   </Target>
 
-  <Target Name="_DownloadAdditionalRSZips" DependsOnTargets="_EnsureInstallerDirectory">
+  <Target Name="_DownloadAdditionalRSZips" DependsOnTargets="_EnsureInstallerDirectory;_DownloadInstallers">
     <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)osx.tar.gz&quot; -o $(_InstallerSource)Build.RS.osx.tar.gz" />
     <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)winx64.zip&quot; -o $(_InstallerSource)Build.RS.winx64.zip" />
     <Exec Command="curl --fail -sSL &quot;$(RuntimeStore200LinkPrefix)winx86.zip&quot; -o $(_InstallerSource)Build.RS.winx86.zip" />
@@ -167,12 +167,12 @@
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateTargz"
-      Properties="DependentArchives=$(_InstallerSource)%(TargzArchives.Identity);RSArchive=%(TargzArchives.RSArchive);HostingArchiveName=%(TargzArchives.Identity)" />
+      Properties="DependentArchives=$(_InstallerSource)%(TargzArchives.Identity);RSArchive=%(TargzArchives.RSArchive);OutputArchiveName=%(TargzArchives.Identity)" />
     <!-- Targz -->
     <MSBuild
       Projects="$(MSBuildProjectFullPath)"
       Targets="_GenerateZip"
-      Properties="DependentArchives=$(_InstallerSource)%(ZipArchives.Identity);RSArchive=%(ZipArchives.RSArchive);HostingArchiveName=%(ZipArchives.Identity)" />
+      Properties="DependentArchives=$(_InstallerSource)%(ZipArchives.Identity);RSArchive=%(ZipArchives.RSArchive);OutputArchiveName=%(ZipArchives.Identity)" />
   </Target>
 
   <Target Name="_BuildDockerImage">
