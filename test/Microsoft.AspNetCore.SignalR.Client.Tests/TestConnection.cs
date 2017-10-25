@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
         private TransferMode? _transferMode;
 
-        public event Func<Task> Connected;
         public event Func<Exception, Task> Closed;
 
         public Task Started => _started.Task;
@@ -87,7 +86,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
             }
 
             _started.TrySetResult(null);
-            Connected?.Invoke();
             return Task.CompletedTask;
         }
 
