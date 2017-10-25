@@ -140,14 +140,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                                              ex.SocketErrorCode == SocketError.Interrupted ||
                                              ex.SocketErrorCode == SocketError.InvalidArgument)
             {
-                // Calling Dispose after ReceiveAsync can cause an "InvalidArgument" error on *nix.
-                error = new ConnectionAbortedException();
-                _trace.ConnectionError(ConnectionId, error);
+                if (!_aborted)
+                {
+                    // Calling Dispose after ReceiveAsync can cause an "InvalidArgument" error on *nix.
+                    error = new ConnectionAbortedException();
+                    _trace.ConnectionError(ConnectionId, error);
+                }
             }
             catch (ObjectDisposedException)
             {
-                error = new ConnectionAbortedException();
-                _trace.ConnectionError(ConnectionId, error);
+                if (!_aborted)
+                {
+                    error = new ConnectionAbortedException();
+                    _trace.ConnectionError(ConnectionId, error);
+                }
             }
             catch (IOException ex)
             {

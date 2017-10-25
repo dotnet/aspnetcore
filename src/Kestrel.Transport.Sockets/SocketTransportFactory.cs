@@ -6,26 +6,34 @@ using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Hosting;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 {
     public sealed class SocketTransportFactory : ITransportFactory
     {
         private readonly SocketsTrace _trace;
+        private readonly IApplicationLifetime _appLifetime;
 
         public SocketTransportFactory(
             IOptions<SocketTransportOptions> options,
+            IApplicationLifetime applicationLifetime,
             ILoggerFactory loggerFactory)
         {
             if (options == null)
             {
                 throw new ArgumentNullException(nameof(options));
             }
+            if (applicationLifetime == null)
+            {
+                throw new ArgumentNullException(nameof(applicationLifetime));
+            }
             if (loggerFactory == null)
             {
                 throw new ArgumentNullException(nameof(loggerFactory));
             }
 
+            _appLifetime = applicationLifetime;
             var logger  = loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets");
             _trace = new SocketsTrace(logger);
         }
@@ -47,7 +55,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 throw new ArgumentNullException(nameof(handler));
             }
 
-            return new SocketTransport(endPointInformation, handler, _trace);
+            return new SocketTransport(endPointInformation, handler, _appLifetime, _trace);
         }
     }
 }

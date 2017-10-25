@@ -85,6 +85,10 @@
               "Type": "Microsoft.Extensions.Options.IOptions<Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.SocketTransportOptions>"
             },
             {
+              "Name": "applicationLifetime",
+              "Type": "Microsoft.AspNetCore.Hosting.IApplicationLifetime"
+            },
+            {
               "Name": "loggerFactory",
               "Type": "Microsoft.Extensions.Logging.ILoggerFactory"
             }

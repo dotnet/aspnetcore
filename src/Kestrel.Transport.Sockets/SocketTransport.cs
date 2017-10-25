@@ -6,8 +6,10 @@ using System.Diagnostics;
 using System.IO.Pipelines;
 using System.Net;
 using System.Net.Sockets;
+using System.Runtime.ExceptionServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets.Internal;
@@ -20,26 +22,29 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         private readonly PipeFactory _pipeFactory = new PipeFactory();
         private readonly IEndPointInformation _endPointInformation;
         private readonly IConnectionHandler _handler;
+        private readonly IApplicationLifetime _appLifetime;
         private readonly ISocketsTrace _trace;
         private Socket _listenSocket;
         private Task _listenTask;
+        private Exception _listenException;
+        private volatile bool _unbinding;
 
         internal SocketTransport(
             IEndPointInformation endPointInformation,
             IConnectionHandler handler,
+            IApplicationLifetime applicationLifetime,
             ISocketsTrace trace)
         {
             Debug.Assert(endPointInformation != null);
             Debug.Assert(endPointInformation.Type == ListenType.IPEndPoint);
             Debug.Assert(handler != null);
+            Debug.Assert(applicationLifetime != null);
             Debug.Assert(trace != null);
 
             _endPointInformation = endPointInformation;
             _handler = handler;
+            _appLifetime = applicationLifetime;
             _trace = trace;
-
-            _listenSocket = null;
-            _listenTask = null;
         }
 
         public Task BindAsync()
@@ -89,14 +94,22 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         {
             if (_listenSocket != null)
             {
-                var listenSocket = _listenSocket;
-                _listenSocket = null;
-
-                listenSocket.Dispose();
+                _unbinding = true;
+                _listenSocket.Dispose();
 
                 Debug.Assert(_listenTask != null);
                 await _listenTask.ConfigureAwait(false);
+
+                _unbinding = false;
+                _listenSocket = null;
                 _listenTask = null;
+
+                if (_listenException != null)
+                {
+                    var exInfo = ExceptionDispatchInfo.Capture(_listenException);
+                    _listenException = null;
+                    exInfo.Throw();
+                }
             }
         }
 
@@ -112,23 +125,39 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
             {
                 while (true)
                 {
-                    var acceptSocket = await _listenSocket.AcceptAsync();
+                    try
+                    {
+                        var acceptSocket = await _listenSocket.AcceptAsync();
+                        acceptSocket.NoDelay = _endPointInformation.NoDelay;
 
-                    acceptSocket.NoDelay = _endPointInformation.NoDelay;
-
-                    var connection = new SocketConnection(acceptSocket, _pipeFactory, _trace);
-                    _ = connection.StartAsync(_handler);
+                        var connection = new SocketConnection(acceptSocket, _pipeFactory, _trace);
+                        _ = connection.StartAsync(_handler);
+                    }
+                    catch (SocketException ex) when (ex.SocketErrorCode == SocketError.ConnectionReset)
+                    {
+                        // REVIEW: Should there be a seperate log message for a connection reset this early?
+                        _trace.ConnectionReset(connectionId: "(null)");
+                    }
+                    catch (SocketException ex) when (!_unbinding)
+                    {
+                        _trace.ConnectionError(connectionId: "(null)", ex);
+                    }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                if (_listenSocket == null)
+                if (_unbinding)
                 {
-                    // Means we must be unbinding.  Eat the exception.
+                    // Means we must be unbinding. Eat the exception.
                 }
                 else
                 {
-                    throw;
+                    _trace.LogCritical($"Unexpected exeption in {nameof(SocketTransport)}.{nameof(RunAcceptLoopAsync)}.");
+                    _listenException = ex;
+                    
+                    // Request shutdown so we can rethrow this exception
+                    // in Stop which should be observable.
+                    _appLifetime.StopApplication();
                 }
             }
         }
