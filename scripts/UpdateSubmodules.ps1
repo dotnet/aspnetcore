@@ -65,14 +65,25 @@ try {
         }
     }
 
-    Write-Verbose "git submodule update --remote"
-    Invoke-Block { & git submodule update --remote }
-
     $changes = $submodules `
     | % {
         Push-Location $_.path
         try {
-            $newCommit = $(git rev-parse HEAD)
+            $vcs_name = "BUILD_VCS_NUMBER_" + $_.module
+            $newCommit = [environment]::GetEnvironmentVariable($vcs_name)
+
+            if($newCommit -eq $null)
+            {
+                Write-Warning "TeamCity env variable '$vcs_name' not found."
+                Write-Warning "git submodule update --remote"
+                Invoke-Block { & git submodule update --remote }
+                $newCommit = $(git rev-parse HEAD)
+            }
+            else
+            {
+                Invoke-Block { & git checkout $newCommit }
+            }
+
             $_.newCommit = $newCommit
             if ($newCommit -ne $_.commit) {
                 $_.changed = $true
