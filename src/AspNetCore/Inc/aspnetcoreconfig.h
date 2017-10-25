@@ -140,6 +140,14 @@ public:
     }
 
     STRU*
+    QueryApplicationVirtualPath(
+        VOID
+    )
+    {
+        return &m_struApplicationVirtualPath;
+    }
+
+    STRU*
     QueryProcessPath(
         VOID
     )
@@ -233,6 +241,7 @@ private:
     STRU                   m_struStdoutLogFile;
     STRU                   m_struApplicationFullPath;
     STRU                   m_strHostingModel;
+    STRU                   m_struApplicationVirtualPath;
     BOOL                   m_fStdoutLogEnabled;
     BOOL                   m_fForwardWindowsAuthToken;
     BOOL                   m_fDisableStartUpErrorPage;

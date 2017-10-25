@@ -136,16 +136,22 @@ http_get_completion_info(
 // the signature should be changed. application's based address should be passed in
 //
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
-BSTR // TODO probably should make this a wide string
-http_get_application_full_path()
+HRESULT // TODO probably should make this a wide string
+http_get_application_paths(
+    _Out_ BSTR* pwzFullPath,
+    _Out_ BSTR* pwzVirtualPath
+)
 {
-    LPWSTR pwzPath = NULL;
     IN_PROCESS_APPLICATION* pApplication = IN_PROCESS_APPLICATION::GetInstance();
-    if (pApplication != NULL)
+
+    if (pApplication == NULL)
     {
-        pwzPath = pApplication->QueryConfig()->QueryApplicationFullPath()->QueryStr();
+        return E_FAIL;
     }
-    return SysAllocString(pwzPath);
+    // These should be provided to the in process application as arguments?
+    *pwzFullPath = SysAllocString(pApplication->QueryConfig()->QueryApplicationFullPath()->QueryStr());
+    *pwzVirtualPath = SysAllocString(pApplication->QueryConfig()->QueryApplicationVirtualPath()->QueryStr());
+    return S_OK;
 }
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT

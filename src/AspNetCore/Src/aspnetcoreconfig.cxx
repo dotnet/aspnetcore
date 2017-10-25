@@ -157,6 +157,9 @@ ASPNETCORE_CONFIG::Populate(
     ULONGLONG                       ullRawTimeSpan = 0;
     ENUM_INDEX                      index;
     ENVIRONMENT_VAR_ENTRY*          pEntry = NULL;
+    DWORD                           dwCounter = 0;
+    DWORD                           dwPosition = 0;
+    WCHAR*                          pszPath = NULL;
 
     m_pEnvironmentVariables = new ENVIRONMENT_VAR_HASH();
     if (m_pEnvironmentVariables == NULL)
@@ -179,6 +182,33 @@ ASPNETCORE_CONFIG::Populate(
     }
 
     hr = m_struApplicationFullPath.Copy(pHttpContext->GetApplication()->GetApplicationPhysicalPath());
+    if (FAILED(hr))
+    {
+        goto Finished;
+    }
+
+    pszPath = strSiteConfigPath.QueryStr();
+    while (pszPath[dwPosition] != NULL)
+    {
+        if (pszPath[dwPosition] == '/')
+        {
+            dwCounter++;
+            if (dwCounter == 4)
+                break;
+        }
+        dwPosition++;
+    }
+
+    if (dwCounter == 4)
+    {
+        hr = m_struApplicationVirtualPath.Copy(pszPath + dwPosition);
+    }
+    else
+    {
+        hr = m_struApplicationVirtualPath.Copy(L"/");
+    }
+
+    // Will setup the application virtual path.
     if (FAILED(hr))
     {
         goto Finished;
