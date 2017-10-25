@@ -35,8 +35,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>(),
-                Enumerable.Empty<IContextChangedListener>())
+                Mock.Of<ICompletionBroker>())
             {
                 BlockBackgroundIdleWork = new ManualResetEventSlim(),
                 IdleDelay = TimeSpan.FromSeconds(5)
@@ -66,8 +65,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>(),
-                Enumerable.Empty<IContextChangedListener>())
+                Mock.Of<ICompletionBroker>())
             {
                 BlockBackgroundIdleWork = new ManualResetEventSlim(),
                 IdleDelay = TimeSpan.FromSeconds(5)
@@ -96,8 +94,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>(),
-                Enumerable.Empty<IContextChangedListener>()))
+                Mock.Of<ICompletionBroker>()))
             {
                 parser.StartParser();
 
@@ -121,8 +118,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>(),
-                Enumerable.Empty<IContextChangedListener>()))
+                Mock.Of<ICompletionBroker>()))
             {
                 // Act
                 parser.StartParser();
@@ -130,31 +126,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 // Assert
                 Assert.Equal(1, textBuffer.AttachedChangedEvents.Count);
                 Assert.NotNull(parser._parser);
-            }
-        }
-
-        [ForegroundFact]
-        public void NotifyParserContextChanged_NotifiesListeners()
-        {
-            // Arrange
-            var listener1 = new Mock<IContextChangedListener>();
-            listener1.Setup(l => l.OnContextChanged(It.IsAny<VisualStudioRazorParser>()));
-            var listener2 = new Mock<IContextChangedListener>();
-            listener2.Setup(l => l.OnContextChanged(It.IsAny<VisualStudioRazorParser>()));
-            using (var parser = new DefaultVisualStudioRazorParser(
-                Dispatcher,
-                CreateDocumentTracker(),
-                Mock.Of<RazorTemplateEngineFactoryService>(),
-                new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>(),
-                new[] { listener1.Object, listener2.Object }))
-            {
-                // Act
-                parser.NotifyParserContextChanged();
-
-                // Assert
-                listener1.Verify();
-                listener2.Verify();
             }
         }
 
@@ -167,8 +138,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(isSupportedProject: true),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>(),
-                Enumerable.Empty<IContextChangedListener>()))
+                Mock.Of<ICompletionBroker>()))
             {
                 // Act
                 var result = parser.TryReinitializeParser();
@@ -187,8 +157,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 CreateDocumentTracker(isSupportedProject: false),
                 Mock.Of<RazorTemplateEngineFactoryService>(),
                 new DefaultErrorReporter(),
-                Mock.Of<ICompletionBroker>(),
-                Enumerable.Empty<IContextChangedListener>()))
+                Mock.Of<ICompletionBroker>()))
             {
                 // Act
                 var result = parser.TryReinitializeParser();

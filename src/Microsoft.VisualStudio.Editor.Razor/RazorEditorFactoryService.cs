@@ -9,7 +9,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
     {
         public abstract bool TryGetDocumentTracker(ITextBuffer textBuffer, out VisualStudioDocumentTracker documentTracker);
 
-        internal abstract bool TryGetParser(ITextBuffer textBuffer, out VisualStudioRazorParser parser);
+        public abstract bool TryGetParser(ITextBuffer textBuffer, out VisualStudioRazorParser parser);
 
         internal abstract bool TryGetSmartIndenter(ITextBuffer textBuffer, out BraceSmartIndenter braceSmartIndenter);
     }

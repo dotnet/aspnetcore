@@ -69,7 +69,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             return true;
         }
 
-        internal override bool TryGetParser(ITextBuffer textBuffer, out VisualStudioRazorParser parser)
+        public override bool TryGetParser(ITextBuffer textBuffer, out VisualStudioRazorParser parser)
         {
             if (textBuffer == null)
             {

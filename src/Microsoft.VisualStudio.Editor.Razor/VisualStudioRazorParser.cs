@@ -2,7 +2,6 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Razor.Language;
 using Microsoft.VisualStudio.Text;
 
@@ -22,6 +21,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         public abstract ITextBuffer TextBuffer { get; }
 
-        public abstract Task ReparseAsync();
+        public abstract void QueueReparse();
     }
 }

@@ -30,7 +30,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
 
         private readonly object IdleLock = new object();
         private readonly ICompletionBroker _completionBroker;
-        private readonly IEnumerable<IContextChangedListener> _contextChangedListeners;
         private readonly VisualStudioDocumentTracker _documentTracker;
         private readonly ForegroundDispatcher _dispatcher;
         private readonly RazorTemplateEngineFactoryService _templateEngineFactory;
@@ -51,8 +50,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             VisualStudioDocumentTracker documentTracker,
             RazorTemplateEngineFactoryService templateEngineFactory,
             ErrorReporter errorReporter,
-            ICompletionBroker completionBroker,
-            IEnumerable<IContextChangedListener> contextChangedListeners)
+            ICompletionBroker completionBroker)
         {
             if (dispatcher == null)
             {
@@ -79,16 +77,10 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 throw new ArgumentNullException(nameof(completionBroker));
             }
 
-            if (contextChangedListeners == null)
-            {
-                throw new ArgumentNullException(nameof(contextChangedListeners));
-            }
-
             _dispatcher = dispatcher;
             _templateEngineFactory = templateEngineFactory;
             _errorReporter = errorReporter;
             _completionBroker = completionBroker;
-            _contextChangedListeners = contextChangedListeners;
             _documentTracker = documentTracker;
 
             _documentTracker.ContextChanged += DocumentTracker_ContextChanged;
@@ -110,7 +102,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
         // Used in unit tests to ensure we can block background idle work.
         internal ManualResetEventSlim BlockBackgroundIdleWork { get; set; }
 
-        public override async Task ReparseAsync()
+        public override void QueueReparse()
         {
             // Can be called from any thread
 
@@ -120,7 +112,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
             }
             else
             {
-                await Task.Factory.StartNew(ReparseOnForeground, null, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
+                Task.Factory.StartNew(ReparseOnForeground, null, CancellationToken.None, TaskCreationOptions.None, _dispatcher.ForegroundScheduler);
             }
         }
 
@@ -145,11 +137,9 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 return;
             }
 
-            NotifyParserContextChanged();
-
             // We have a new parser, force a reparse to generate new document information. Note that this
             // only blocks until the reparse change has been queued.
-            ReparseAsync().GetAwaiter().GetResult();
+            QueueReparse();
         }
 
         // Internal for testing
@@ -169,21 +159,6 @@ namespace Microsoft.VisualStudio.Editor.Razor
             StartParser();
 
             return true;
-        }
-
-        // Internal for testing
-        internal void NotifyParserContextChanged()
-        {
-            _dispatcher.AssertForegroundThread();
-
-            // This is temporary until we own the TagHelper resolution system. At that point the parser will push out updates
-            // via DocumentStructureChangedEvents when contexts change. For now, listeners need to know more information about
-            // the parser. In the case that the tracker does not belong to a supported project the editor will tear down its
-            // attachment to the parser when it recognizes the document closing.
-            foreach (var contextChangeListener in _contextChangedListeners)
-            {
-                contextChangeListener.OnContextChanged(this);
-            }
         }
 
         // Internal for testing
@@ -303,8 +278,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 }
             }
 
-            // This only blocks until the reparse change has been queued.
-            ReparseAsync().GetAwaiter().GetResult();
+            QueueReparse();
         }
 
         private void ReparseOnForeground(object state)

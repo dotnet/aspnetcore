@@ -19,23 +19,16 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
         private readonly ForegroundDispatcher _dispatcher;
         private readonly TemplateEngineFactoryService _templateEngineFactoryService;
         private readonly ICompletionBroker _completionBroker;
-        private readonly IEnumerable<IContextChangedListener> _parserContextChangedListeners;
         private readonly ErrorReporter _errorReporter;
 
         [ImportingConstructor]
         public DefaultVisualStudioRazorParserFactory(
             ICompletionBroker completionBroker,
-            [ImportMany(typeof(IContextChangedListener))] IEnumerable<IContextChangedListener> parserContextChangedListeners,
             [Import(typeof(VisualStudioWorkspace))] Workspace workspace)
         {
             if (completionBroker == null)
             {
                 throw new ArgumentNullException(nameof(completionBroker));
-            }
-
-            if (parserContextChangedListeners == null)
-            {
-                throw new ArgumentNullException(nameof(parserContextChangedListeners));
             }
 
             if (workspace == null)
@@ -44,7 +37,6 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
             }
 
             _completionBroker = completionBroker;
-            _parserContextChangedListeners = parserContextChangedListeners;
             _dispatcher = workspace.Services.GetRequiredService<ForegroundDispatcher>();
             _errorReporter = workspace.Services.GetRequiredService<ErrorReporter>();
             var razorLanguageServices = workspace.Services.GetLanguageServices(RazorLanguage.Name);
@@ -65,8 +57,7 @@ namespace Microsoft.VisualStudio.LanguageServices.Razor.Editor
                 documentTracker,
                 _templateEngineFactoryService,
                 _errorReporter,
-                _completionBroker,
-                _parserContextChangedListeners);
+                _completionBroker);
             return parser;
         }
     }

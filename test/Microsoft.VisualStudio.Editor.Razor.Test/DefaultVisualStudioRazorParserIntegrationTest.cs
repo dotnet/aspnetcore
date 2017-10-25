@@ -38,8 +38,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 CreateTemplateEngineFactory(),
                 new DefaultErrorReporter(),
-                new TestCompletionBroker(),
-                Enumerable.Empty<IContextChangedListener>()))
+                new TestCompletionBroker()))
             {
                 parser.DocumentTracker_ContextChanged(null, null);
                 var changed = new StringTextSnapshot("Foo @bap Daz");
@@ -528,8 +527,7 @@ namespace Microsoft.VisualStudio.Editor.Razor
                 documentTracker,
                 templateEngineFactory,
                 new DefaultErrorReporter(),
-                new TestCompletionBroker(),
-                Enumerable.Empty<IContextChangedListener>())
+                new TestCompletionBroker())
             {
                 // We block idle work with the below reset events. Therefore, make tests fast and have the idle timer fire as soon as possible.
                 IdleDelay = TimeSpan.FromMilliseconds(1),
