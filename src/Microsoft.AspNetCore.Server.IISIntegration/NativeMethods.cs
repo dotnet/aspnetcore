@@ -75,8 +75,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
         public unsafe static extern bool http_set_managed_context(IntPtr pHttpContext, IntPtr pvManagedContext);
 
         [DllImport(AspNetCoreModuleDll)]
-        [return: MarshalAs(UnmanagedType.BStr)]
-        public unsafe static extern string http_get_application_full_path();
+        public unsafe static extern int http_get_application_paths([MarshalAs(UnmanagedType.BStr)] out string fullPath, [MarshalAs(UnmanagedType.BStr)] out string virtualPath);
 
         [DllImport(AspNetCoreModuleDll)]
         public unsafe static extern bool http_shutdown();

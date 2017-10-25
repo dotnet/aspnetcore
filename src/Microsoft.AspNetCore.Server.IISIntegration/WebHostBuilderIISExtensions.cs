@@ -45,11 +45,19 @@ namespace Microsoft.AspNetCore.Hosting
                 hostBuilder.UseSetting(nameof(UseIISIntegration), "true");
                 hostBuilder.CaptureStartupErrors(true);
 
-                var applicationPath = NativeMethods.http_get_application_full_path();
-                hostBuilder.UseContentRoot(applicationPath);
+                // TODO consider adding a configuration load where all variables needed are loaded from ANCM in one call.
+                var hResult = NativeMethods.http_get_application_paths(out var fullPath, out var virtualPath);
+                var exception = Marshal.GetExceptionForHR(hResult);
+                if (exception != null)
+                {
+                    throw exception;
+                }
+
+                hostBuilder.UseContentRoot(fullPath);
                 return hostBuilder.ConfigureServices(services =>
                 {
                     services.AddSingleton<IServer, IISHttpServer>();
+                    services.AddSingleton<IStartupFilter>(new IISServerSetupFilter(virtualPath));
                     services.AddAuthenticationCore();
                 });
             }

@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
@@ -38,7 +37,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _iisContextFactory = new IISContextFactory<TContext>(_pipeFactory, application);
 
             // Start the server by registering the callback
-            // TODO the context may change here for shutdown.
             NativeMethods.register_callbacks(_requestHandler, _shutdownHandler, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
 
             return Task.CompletedTask;

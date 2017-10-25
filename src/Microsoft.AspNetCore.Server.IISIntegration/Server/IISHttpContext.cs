@@ -67,7 +67,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             _pipeFactory = pipeFactory;
             _pHttpContext = pHttpContext;
 
-            NativeMethods.http_set_managed_context(pHttpContext, (IntPtr)_thisHandle);
+            NativeMethods.http_set_managed_context(_pHttpContext, (IntPtr)_thisHandle);
             unsafe
             {
                 Method = GetVerb();
@@ -80,27 +80,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
                 var originalPath = RequestUriBuilder.DecodeAndUnescapePath(GetRawUrlInBytes());
 
-                // TODO: Read this from IIS config
-                // See https://github.com/aspnet/IISIntegration/issues/427
-                var prefix = "/";
                 if (KnownMethod == HttpApiTypes.HTTP_VERB.HttpVerbOPTIONS && string.Equals(RawTarget, "*", StringComparison.Ordinal))
                 {
                     PathBase = string.Empty;
                     Path = string.Empty;
                 }
-                // These paths are both unescaped already.
-                else if (originalPath.Length == prefix.Length - 1)
-                {
-                    // They matched exactly except for the trailing slash.
-                    PathBase = originalPath;
-                    Path = string.Empty;
-                }
                 else
                 {
-                    // url: /base/path, prefix: /base/, base: /base, path: /path
-                    // url: /, prefix: /, base: , path: /
-                    PathBase = originalPath.Substring(0, prefix.Length - 1);
-                    Path = originalPath.Substring(prefix.Length - 1);
+                    // Path and pathbase are unescaped by RequestUriBuilder
+                    // The UsePathBase middleware will modify the pathbase and path correctly
+                    PathBase = string.Empty;
+                    Path = originalPath;
                 }
 
                 var cookedUrl = GetCookedUrl();
