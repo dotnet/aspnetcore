@@ -209,10 +209,23 @@ namespace Microsoft.AspNetCore.Dispatcher
             if (pathSegment.IsSimple && !pathSegment.Parts[0].IsParameter)
             {
                 // This is a literal segment, so we need to match the text, or the route isn't a match.
-                var part = pathSegment.Parts[0];
-                if (!stringSegment.Equals(part.RawText, StringComparison.OrdinalIgnoreCase))
+                if (pathSegment.Parts[0].IsLiteral)
                 {
-                    return false;
+                    var part = (RoutePatternLiteral)pathSegment.Parts[0];
+
+                    if (!stringSegment.Equals(part.Content, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
+                }
+                else
+                {
+                    var part = (RoutePatternSeparator)pathSegment.Parts[0];
+
+                    if (!stringSegment.Equals(part.Content, StringComparison.OrdinalIgnoreCase))
+                    {
+                        return false;
+                    }
                 }
             }
             else if (pathSegment.IsSimple && pathSegment.Parts[0].IsParameter)
@@ -301,12 +314,11 @@ namespace Microsoft.AspNetCore.Dispatcher
                 }
                 else
                 {
+                    var separator = (RoutePatternSeparator)routeSegment.Parts[indexOfLastSegment - 1];
                     if (requestSegment.EndsWith(
-                        routeSegment.Parts[indexOfLastSegment - 1].RawText,
-                        StringComparison.OrdinalIgnoreCase))
-                    {
+                    separator.Content,
+                    StringComparison.OrdinalIgnoreCase))
                         return false;
-                    }
 
                     return MatchComplexSegmentCore(
                         routeSegment,
@@ -367,10 +379,24 @@ namespace Microsoft.AspNetCore.Dispatcher
                         return false;
                     }
 
-                    var indexOfLiteral = requestSegment.LastIndexOf(
-                        part.RawText,
+                    int indexOfLiteral;
+                    if (part.IsLiteral)
+                    {
+                        var literal = (RoutePatternLiteral)part;
+                        indexOfLiteral = requestSegment.LastIndexOf(
+                        literal.Content,
                         startIndex,
                         StringComparison.OrdinalIgnoreCase);
+                    }
+                    else
+                    {
+                        var literal = (RoutePatternSeparator)part;
+                        indexOfLiteral = requestSegment.LastIndexOf(
+                        literal.Content,
+                        startIndex,
+                        StringComparison.OrdinalIgnoreCase);
+                    }
+
                     if (indexOfLiteral == -1)
                     {
                         // If we couldn't find this literal index, this segment cannot match
@@ -382,7 +408,11 @@ namespace Microsoft.AspNetCore.Dispatcher
                     // This check is related to the check we do at the very end of this function.
                     if (indexOfLastSegmentUsed == (routeSegment.Parts.Count - 1))
                     {
-                        if ((indexOfLiteral + part.RawText.Length) != requestSegment.Length)
+                        if (part is RoutePatternLiteral literal && ((indexOfLiteral + literal.Content.Length) != requestSegment.Length))
+                        {
+                            return false;
+                        }
+                        else if (part is RoutePatternSeparator separator && ((indexOfLiteral + separator.Content.Length) != requestSegment.Length))
                         {
                             return false;
                         }
@@ -422,7 +452,16 @@ namespace Microsoft.AspNetCore.Dispatcher
                         }
                         else
                         {
-                            parameterStartIndex = newLastIndex + lastLiteral.RawText.Length;
+                            if (lastLiteral.IsLiteral)
+                            {
+                                var literal = (RoutePatternLiteral)lastLiteral;
+                                parameterStartIndex = newLastIndex + literal.Content.Length;
+                            }
+                            else
+                            {
+                                var separator = (RoutePatternSeparator)lastLiteral;
+                                parameterStartIndex = newLastIndex + separator.Content.Length;
+                            }
                             parameterTextLength = lastIndex - parameterStartIndex;
                         }
                     }
