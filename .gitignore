@@ -19,5 +19,4 @@ node_modules
 .r
 .deps
 global.json
-korebuild-lock.txt
 *.binlog
