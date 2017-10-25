@@ -132,7 +132,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 client.Dispose();
 
-
                 // We don't care if this throws, we just expect it to complete
                 try
                 {
@@ -1024,6 +1023,32 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             }
         }
 
+        [Fact]
+        public async Task NonErrorCompletionSentWhenStreamCanceledFromClient()
+        {
+            var serviceProvider = CreateServiceProvider();
+            var endPoint = serviceProvider.GetService<HubEndPoint<StreamingHub>>();
+
+            using (var client = new TestClient())
+            {
+                var endPointLifetime = endPoint.OnConnectedAsync(client.Connection);
+
+                await client.Connected.OrTimeout();
+
+                var invocationId = await client.SendInvocationAsync(nameof(StreamingHub.BlockingStream)).OrTimeout();
+                // cancel the Streaming method
+                await client.SendHubMessageAsync(new CancelInvocationMessage(invocationId)).OrTimeout();
+
+                var hubMessage = Assert.IsType<StreamCompletionMessage>(await client.ReadAsync().OrTimeout());
+                Assert.Equal(invocationId, hubMessage.InvocationId);
+                Assert.Null(hubMessage.Error);
+
+                client.Dispose();
+
+                await endPointLifetime.OrTimeout();
+            }
+        }
+
         public static IEnumerable<object[]> StreamingMethodAndHubProtocols
         {
             get
@@ -1585,6 +1610,11 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 });
 
                 return channel.In;
+            }
+
+            public ReadableChannel<string> BlockingStream()
+            {
+                return Channel.CreateUnbounded<string>().In;
             }
 
             private class CountingObservable : IObservable<string>

@@ -46,7 +46,7 @@ namespace Microsoft.AspNetCore.SignalR
                            IHubContext<THub> hubContext,
                            IOptions<HubOptions> hubOptions,
                            ILogger<HubEndPoint<THub>> logger,
-                           IServiceScopeFactory serviceScopeFactory, 
+                           IServiceScopeFactory serviceScopeFactory,
                            IUserIdProvider userIdProvider)
         {
             _protocolResolver = protocolResolver;
@@ -282,7 +282,8 @@ namespace Microsoft.AspNetCore.SignalR
 
                                     case CancelInvocationMessage cancelInvocationMessage:
                                         // Check if there is an associated active stream and cancel it if it exists.
-                                        if (connection.ActiveRequestCancellationSources.TryRemove(cancelInvocationMessage.InvocationId, out var cts))
+                                        // The cts will be removed when the streaming method completes executing
+                                        if (connection.ActiveRequestCancellationSources.TryGetValue(cancelInvocationMessage.InvocationId, out var cts))
                                         {
                                             _logger.CancelStream(cancelInvocationMessage.InvocationId);
                                             cts.Cancel();
@@ -464,6 +465,8 @@ namespace Microsoft.AspNetCore.SignalR
 
         private async Task StreamResultsAsync(string invocationId, HubConnectionContext connection, IAsyncEnumerator<object> enumerator)
         {
+            string error = null;
+
             try
             {
                 while (await enumerator.MoveNextAsync())
@@ -471,15 +474,20 @@ namespace Microsoft.AspNetCore.SignalR
                     // Send the stream item
                     await SendMessageAsync(connection, new StreamItemMessage(invocationId, enumerator.Current));
                 }
-
-                await SendMessageAsync(connection, new StreamCompletionMessage(invocationId, error: null));
             }
             catch (Exception ex)
             {
-                await SendMessageAsync(connection, new StreamCompletionMessage(invocationId, error: ex.Message));
+                // If the streaming method was canceled we don't want to send a HubException message - this is not an error case
+                if (!(ex is OperationCanceledException && connection.ActiveRequestCancellationSources.TryGetValue(invocationId, out var cts)
+                    && cts.IsCancellationRequested))
+                {
+                    error = ex.Message;
+                }
             }
             finally
             {
+                await SendMessageAsync(connection, new StreamCompletionMessage(invocationId, error: error));
+
                 if (connection.ActiveRequestCancellationSources.TryRemove(invocationId, out var cts))
                 {
                     cts.Dispose();
