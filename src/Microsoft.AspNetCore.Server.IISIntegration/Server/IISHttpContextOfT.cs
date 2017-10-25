@@ -9,7 +9,7 @@ using System.IO.Pipelines;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
-    internal class IISHttpContextOfT<TContext> : HttpProtocol
+    internal class IISHttpContextOfT<TContext> : IISHttpContext
     {
         private readonly IHttpApplication<TContext> _application;
 

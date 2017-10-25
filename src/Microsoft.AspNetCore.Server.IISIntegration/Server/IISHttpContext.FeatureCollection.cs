@@ -16,13 +16,13 @@ using Microsoft.Extensions.Primitives;
 
 namespace Microsoft.AspNetCore.Server.IISIntegration
 {
-    internal partial class HttpProtocol : IFeatureCollection,
-                                          IHttpRequestFeature,
-                                          IHttpResponseFeature,
-                                          IHttpUpgradeFeature,
-                                          IHttpConnectionFeature,
-                                          IHttpRequestLifetimeFeature,
-                                          IHttpRequestIdentifierFeature
+    internal partial class IISHttpContext : IFeatureCollection,
+                                            IHttpRequestFeature,
+                                            IHttpResponseFeature,
+                                            IHttpUpgradeFeature,
+                                            IHttpConnectionFeature,
+                                            IHttpRequestLifetimeFeature,
+                                            IHttpRequestIdentifierFeature
     {
         // NOTE: When feature interfaces are added to or removed from this HttpProtocol implementation,
         // then the list of `implementedFeatures` in the generated code project MUST also be updated.
@@ -266,11 +266,14 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 throw new InvalidOperationException("CoreStrings.UpgradeCannotBeCalledMultipleTimes");
             }
 
-            _wasUpgraded = true;
-
             StatusCode = StatusCodes.Status101SwitchingProtocols;
             ReasonPhrase = ReasonPhrases.GetReasonPhrase(StatusCodes.Status101SwitchingProtocols);
             await UpgradeAsync();
+            NativeMethods.http_enable_websockets(_pHttpContext);
+
+            _wasUpgraded = true;
+            _readWebSocketsOperation = new IISAwaitable();
+            _writeWebSocketsOperation = new IISAwaitable();
 
             return new DuplexStream(RequestBody, ResponseBody);
         }

@@ -13,9 +13,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     internal class IISHttpRequestBody : Stream
     {
-        private readonly HttpProtocol _httpContext;
+        private readonly IISHttpContext _httpContext;
 
-        public IISHttpRequestBody(HttpProtocol httpContext)
+        public IISHttpRequestBody(IISHttpContext httpContext)
         {
             _httpContext = httpContext;
         }
@@ -40,33 +40,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             return ReadAsync(buffer, offset, count, CancellationToken.None).GetAwaiter().GetResult();
         }
 
-        public override async Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
+        public override unsafe Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
         {
-            _httpContext.StartReadingRequestBody();
-
-            while (true)
-            {
-                var result = await _httpContext.Input.Reader.ReadAsync();
-                var readableBuffer = result.Buffer;
-                try
-                {
-                    if (!readableBuffer.IsEmpty)
-                    {
-                        var actual = Math.Min(readableBuffer.Length, count);
-                        readableBuffer = readableBuffer.Slice(0, actual);
-                        readableBuffer.CopyTo(buffer);
-                        return (int)actual;
-                    }
-                    else if (result.IsCompleted)
-                    {
-                        return 0;
-                    }
-                }
-                finally
-                {
-                    _httpContext.Input.Reader.Advance(readableBuffer.End, readableBuffer.End);
-                }
-            }
+            return _httpContext.ReadAsync(buffer, offset, count, cancellationToken);
         }
 
         public override long Seek(long offset, SeekOrigin origin)

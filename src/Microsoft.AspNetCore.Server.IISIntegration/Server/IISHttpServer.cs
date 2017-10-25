@@ -17,6 +17,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     {
         private static NativeMethods.PFN_REQUEST_HANDLER _requestHandler = HandleRequest;
         private static NativeMethods.PFN_SHUTDOWN_HANDLER _shutdownHandler = HandleShutdown;
+        private static NativeMethods.PFN_ASYNC_COMPLETION _onAsyncCompletion = OnAsyncCompletion;
 
         private IISContextFactory _iisContextFactory;
 
@@ -38,7 +39,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
             // Start the server by registering the callback
             // TODO the context may change here for shutdown.
-            NativeMethods.register_callbacks(_requestHandler, _shutdownHandler, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
+            NativeMethods.register_callbacks(_requestHandler, _shutdownHandler, _onAsyncCompletion, (IntPtr)_httpServerHandle, (IntPtr)_httpServerHandle);
 
             return Task.CompletedTask;
         }
@@ -78,7 +79,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE;
             }
 
-            task.ContinueWith((t, state) => CompleteRequest((HttpProtocol)state), context);
+            task.ContinueWith((t, state) => CompleteRequest((IISHttpContext)state), context);
 
             return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
         }
@@ -90,10 +91,17 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
             return true;
         }
 
-        private static void CompleteRequest(HttpProtocol context)
+        private static NativeMethods.REQUEST_NOTIFICATION_STATUS OnAsyncCompletion(IntPtr pvManagedHttpContext, int hr, int bytes)
+        {
+            var context = (IISHttpContext)GCHandle.FromIntPtr(pvManagedHttpContext).Target;
+            context.OnAsyncCompletion(hr, bytes);
+            return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
+        }
+
+        private static void CompleteRequest(IISHttpContext context)
         {
             // Post completion after completing the request to resume the state machine
-            context.PostCompletion();
+            context.PostCompletion(NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_CONTINUE);
 
             // Dispose the context
             context.Dispose();
@@ -110,7 +118,7 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
                 _pipeFactory = pipeFactory;
             }
 
-            public HttpProtocol CreateHttpContext(IntPtr pHttpContext)
+            public IISHttpContext CreateHttpContext(IntPtr pHttpContext)
             {
                 return new IISHttpContextOfT<T>(_pipeFactory, _application, pHttpContext);
             }
@@ -120,6 +128,6 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
     // Over engineering to avoid allocations...
     internal interface IISContextFactory
     {
-        HttpProtocol CreateHttpContext(IntPtr pHttpContext);
+        IISHttpContext CreateHttpContext(IntPtr pHttpContext);
     }
 }

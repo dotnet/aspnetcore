@@ -21,35 +21,24 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 
         private int _cbBytes;
 
-        public static readonly NativeMethods.PFN_ASYNC_COMPLETION ReadCallback = (IntPtr pHttpContext, IntPtr pCompletionInfo, IntPtr pvCompletionContext) =>
+        public static readonly NativeMethods.PFN_WEBSOCKET_ASYNC_COMPLETION ReadCallback = (IntPtr pHttpContext, IntPtr pCompletionInfo, IntPtr pvCompletionContext) =>
         {
-            var context = (HttpProtocol)GCHandle.FromIntPtr(pvCompletionContext).Target;
+            var context = (IISHttpContext)GCHandle.FromIntPtr(pvCompletionContext).Target;
 
             NativeMethods.http_get_completion_info(pCompletionInfo, out int cbBytes, out int hr);
 
-            context.CompleteRead(hr, cbBytes);
+            context.CompleteReadWebSockets(hr, cbBytes);
 
             return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
         };
 
-        public static readonly NativeMethods.PFN_ASYNC_COMPLETION WriteCallback = (IntPtr pHttpContext, IntPtr pCompletionInfo, IntPtr pvCompletionContext) =>
+        public static readonly NativeMethods.PFN_WEBSOCKET_ASYNC_COMPLETION WriteCallback = (IntPtr pHttpContext, IntPtr pCompletionInfo, IntPtr pvCompletionContext) =>
         {
-            var context = (HttpProtocol)GCHandle.FromIntPtr(pvCompletionContext).Target;
+            var context = (IISHttpContext)GCHandle.FromIntPtr(pvCompletionContext).Target;
 
             NativeMethods.http_get_completion_info(pCompletionInfo, out int cbBytes, out int hr);
 
-            context.CompleteWrite(hr, cbBytes);
-
-            return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
-        };
-
-        public static readonly NativeMethods.PFN_ASYNC_COMPLETION FlushCallback = (IntPtr pHttpContext, IntPtr pCompletionInfo, IntPtr pvCompletionContext) =>
-        {
-            var context = (HttpProtocol)GCHandle.FromIntPtr(pvCompletionContext).Target;
-
-            NativeMethods.http_get_completion_info(pCompletionInfo, out int cbBytes, out int hr);
-
-            context.CompleteFlush(hr, cbBytes);
+            context.CompleteWriteWebSockets(hr, cbBytes);
 
             return NativeMethods.REQUEST_NOTIFICATION_STATUS.RQ_NOTIFICATION_PENDING;
         };

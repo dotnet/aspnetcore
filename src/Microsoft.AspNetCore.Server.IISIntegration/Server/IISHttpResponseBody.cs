@@ -10,9 +10,9 @@ namespace Microsoft.AspNetCore.Server.IISIntegration
 {
     internal class IISHttpResponseBody : Stream
     {
-        private readonly HttpProtocol _httpContext;
+        private readonly IISHttpContext _httpContext;
 
-        public IISHttpResponseBody(HttpProtocol httpContext)
+        public IISHttpResponseBody(IISHttpContext httpContext)
         {
             _httpContext = httpContext;
         }
