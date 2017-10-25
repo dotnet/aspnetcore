@@ -3,6 +3,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -19,23 +20,24 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Adapter.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Server.Kestrel.Https;
 using Microsoft.AspNetCore.Server.Kestrel.Https.Internal;
 using Microsoft.AspNetCore.Testing;
-using Microsoft.AspNetCore.Testing.xunit;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
-using Xunit.Sdk;
+using Xunit.Abstractions;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
 {
-    public class ResponseTests
+    public class ResponseTests : LoggedTest
     {
         public static TheoryData<ListenOptions> ConnectionAdapterData => new TheoryData<ListenOptions>
         {
@@ -45,6 +47,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 ConnectionAdapters = { new PassThroughConnectionAdapter() }
             }
         };
+
+        public ResponseTests(ITestOutputHelper outputHelper) : base(outputHelper) { }
 
         [Fact]
         public async Task LargeDownload()
@@ -2447,73 +2451,94 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public void ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate()
         {
-            var chunkSize = 64 * 1024;
-            var chunks = 128;
-            var responseSize = chunks * chunkSize;
-
-            var requestAborted = new ManualResetEventSlim();
-            var messageLogged = new ManualResetEventSlim();
-            var mockKestrelTrace = new Mock<IKestrelTrace>();
-            mockKestrelTrace
-                .Setup(trace => trace.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
-                .Callback(() => messageLogged.Set());
-
-            var testContext = new TestServiceContext
+            using (StartLog(out var loggerFactory))
             {
-                Log = mockKestrelTrace.Object,
-                SystemClock = new SystemClock(),
-                ServerOptions =
+                var logger = loggerFactory.CreateLogger($"{typeof(ResponseTests).FullName}.{nameof(ConnectionClosedWhenResponseDoesNotSatisfyMinimumDataRate)}");
+
+                var chunkSize = 64 * 1024;
+                var chunks = 128;
+                var responseSize = chunks * chunkSize;
+
+                var requestAborted = new ManualResetEventSlim();
+                var messageLogged = new ManualResetEventSlim();
+                var mockKestrelTrace = new Mock<KestrelTrace>(loggerFactory.CreateLogger("Microsoft.AspNetCore.Server.Kestrel")) { CallBase = true };
+                mockKestrelTrace
+                    .Setup(trace => trace.ResponseMininumDataRateNotSatisfied(It.IsAny<string>(), It.IsAny<string>()))
+                    .Callback(() => messageLogged.Set());
+
+                var testContext = new TestServiceContext
                 {
-                    Limits =
+                    LoggerFactory = loggerFactory,
+                    Log = mockKestrelTrace.Object,
+                    SystemClock = new SystemClock(),
+                    ServerOptions =
                     {
-                        MinResponseDataRate = new MinDataRate(bytesPerSecond: double.MaxValue, gracePeriod: TimeSpan.FromSeconds(2))
-                    }
-                }
-            };
-
-            using (var server = new TestServer(async context =>
-            {
-                context.RequestAborted.Register(() => requestAborted.Set());
-
-                context.Response.ContentLength = responseSize;
-
-                for (var i = 0; i < chunks; i++)
-                {
-                    await context.Response.WriteAsync(new string('a', chunkSize), context.RequestAborted);
-                }
-            }, testContext))
-            {
-                using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
-                {
-                    socket.ReceiveBufferSize = 1;
-
-                    socket.Connect(new IPEndPoint(IPAddress.Loopback, server.Port));
-                    socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost: \r\n\r\n"));
-
-                    Assert.True(messageLogged.Wait(TimeSpan.FromSeconds(60)), "The expected message was not logged within the timeout period.");
-                    Assert.True(requestAborted.Wait(TimeSpan.FromSeconds(60)), "The request was not aborted within the timeout period.");
-
-                    var totalReceived = 0;
-                    var received = 0;
-
-                    try
-                    {
-                        var buffer = new byte[chunkSize];
-
-                        do
+                        Limits =
                         {
-                            received = socket.Receive(buffer);
-                            totalReceived += received;
-                        } while (received > 0 && totalReceived < responseSize);
+                            MinResponseDataRate = new MinDataRate(bytesPerSecond: double.MaxValue, gracePeriod: TimeSpan.FromSeconds(2))
+                        }
                     }
-                    catch (SocketException) { }
-                    catch (IOException)
-                    {
-                        // Socket.Receive could throw, and that is fine
-                    }
+                };
 
-                    // Since we expect writes to be cut off by the rate control, we should never see the entire response
-                    Assert.NotEqual(responseSize, totalReceived);
+                var listenOptions = new ListenOptions(new IPEndPoint(IPAddress.Loopback, 0));
+                listenOptions.ConnectionAdapters.Add(new LoggingConnectionAdapter(loggerFactory.CreateLogger<LoggingConnectionAdapter>()));
+
+                var appLogger = loggerFactory.CreateLogger("App");
+                async Task App(HttpContext context)
+                {
+                    appLogger.LogInformation("Request received");
+                    context.RequestAborted.Register(() => requestAborted.Set());
+
+                    context.Response.ContentLength = responseSize;
+
+                    for (var i = 0; i < chunks; i++)
+                    {
+                        await context.Response.WriteAsync(new string('a', chunkSize), context.RequestAborted);
+                        appLogger.LogInformation("Wrote chunk of {chunkSize} bytes", chunkSize);
+                    }
+                }
+
+                using (var server = new TestServer(App, testContext, listenOptions))
+                {
+                    using (var socket = new Socket(AddressFamily.InterNetwork, SocketType.Stream, ProtocolType.Tcp))
+                    {
+                        socket.ReceiveBufferSize = 1;
+
+                        socket.Connect(new IPEndPoint(IPAddress.Loopback, server.Port));
+                        logger.LogInformation("Sending request");
+                        socket.Send(Encoding.ASCII.GetBytes("GET / HTTP/1.1\r\nHost: \r\n\r\n"));
+                        logger.LogInformation("Sent request");
+
+                        var sw = Stopwatch.StartNew();
+                        logger.LogInformation("Waiting for connection to abort.");
+                        Assert.True(messageLogged.Wait(TimeSpan.FromSeconds(120)), "The expected message was not logged within the timeout period.");
+                        Assert.True(requestAborted.Wait(TimeSpan.FromSeconds(120)), "The request was not aborted within the timeout period.");
+                        sw.Stop();
+                        logger.LogInformation("Connection was aborted after {totalMilliseconds}ms.", sw.ElapsedMilliseconds);
+
+                        var totalReceived = 0;
+                        var received = 0;
+
+                        try
+                        {
+                            var buffer = new byte[chunkSize];
+
+                            do
+                            {
+                                received = socket.Receive(buffer);
+                                totalReceived += received;
+                            } while (received > 0 && totalReceived < responseSize);
+                        }
+                        catch (SocketException) { }
+                        catch (IOException)
+                        {
+                            // Socket.Receive could throw, and that is fine
+                        }
+
+                        // Since we expect writes to be cut off by the rate control, we should never see the entire response
+                        logger.LogInformation("Received {totalReceived} bytes", totalReceived);
+                        Assert.NotEqual(responseSize, totalReceived);
+                    }
                 }
             }
         }

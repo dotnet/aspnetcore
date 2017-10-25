@@ -109,7 +109,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _connectionKeepAlive(_logger, connectionId, null);
         }
 
-        public void ConnectionRejected(string connectionId)
+        public virtual void ConnectionRejected(string connectionId)
         {
             _connectionRejected(_logger, connectionId, null);
         }
@@ -129,12 +129,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _connectionHeadResponseBodyWrite(_logger, connectionId, count, null);
         }
 
-        public void NotAllConnectionsClosedGracefully()
+        public virtual void NotAllConnectionsClosedGracefully()
         {
             _notAllConnectionsClosedGracefully(_logger, null);
         }
 
-        public void ConnectionBadRequest(string connectionId, BadHttpRequestException ex)
+        public virtual void ConnectionBadRequest(string connectionId, BadHttpRequestException ex)
         {
             _connectionBadRequest(_logger, connectionId, ex.Message, ex);
         }
@@ -144,7 +144,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _requestProcessingError(_logger, connectionId, ex);
         }
 
-        public void NotAllConnectionsAborted()
+        public virtual void NotAllConnectionsAborted()
         {
             _notAllConnectionsAborted(_logger, null);
         }
@@ -169,27 +169,27 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             _requestBodyDone(_logger, connectionId, traceIdentifier, null);
         }
 
-        public void RequestBodyMininumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate)
+        public virtual void RequestBodyMininumDataRateNotSatisfied(string connectionId, string traceIdentifier, double rate)
         {
             _requestBodyMinimumDataRateNotSatisfied(_logger, connectionId, traceIdentifier, rate, null);
         }
 
-        public void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier)
+        public virtual void ResponseMininumDataRateNotSatisfied(string connectionId, string traceIdentifier)
         {
             _responseMinimumDataRateNotSatisfied(_logger, connectionId, traceIdentifier, null);
         }
 
-        public void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex)
+        public virtual void Http2ConnectionError(string connectionId, Http2ConnectionErrorException ex)
         {
             _http2ConnectionError(_logger, connectionId, ex);
         }
 
-        public void Http2StreamError(string connectionId, Http2StreamErrorException ex)
+        public virtual void Http2StreamError(string connectionId, Http2StreamErrorException ex)
         {
             _http2StreamError(_logger, connectionId, ex);
         }
 
-        public void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
+        public virtual void HPackDecodingError(string connectionId, int streamId, HPackDecodingException ex)
         {
             _hpackDecodingError(_logger, connectionId, streamId, ex);
         }
