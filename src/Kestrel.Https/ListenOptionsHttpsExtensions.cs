@@ -12,7 +12,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.AspNetCore.Hosting
 {
     /// <summary>
-    /// Extension methods fro <see cref="ListenOptions"/> that configure Kestrel to use HTTPS for a given endpoint.
+    /// Extension methods for <see cref="ListenOptions"/> that configure Kestrel to use HTTPS for a given endpoint.
     /// </summary>
     public static class ListenOptionsHttpsExtensions
     {

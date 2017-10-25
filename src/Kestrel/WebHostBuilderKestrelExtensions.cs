@@ -5,6 +5,7 @@ using System;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
+using Microsoft.AspNetCore.Server.Kestrel.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets;
 using Microsoft.Extensions.DependencyInjection;
@@ -33,6 +34,7 @@ namespace Microsoft.AspNetCore.Hosting
 
                 services.AddTransient<IConfigureOptions<KestrelServerOptions>, KestrelServerOptionsSetup>();
                 services.AddSingleton<IServer, KestrelServer>();
+                services.AddSingleton<IDefaultHttpsProvider, DefaultHttpsProvider>();
             });
         }
 

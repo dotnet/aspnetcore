@@ -511,8 +511,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         }
 
         [Theory]
-        [InlineData("https://localhost")]
         [InlineData("ftp://localhost")]
+        [InlineData("ssh://localhost")]
         public void ThrowsForUnsupportedAddressFromHosting(string addr)
         {
             var hostBuilder = TransportSelector.GetWebHostBuilder()

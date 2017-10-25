@@ -8,9 +8,9 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Protocols;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
-using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
 using Xunit;
 
 namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
@@ -55,12 +55,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var addresses = new ServerAddressesFeature();
             addresses.Addresses.Add($"http://{host}");
-            var options = new List<ListenOptions>();
+            var options = new KestrelServerOptions();
 
             var tcs = new TaskCompletionSource<ListenOptions>();
             await AddressBinder.BindAsync(addresses,
                 options,
                 NullLogger.Instance,
+                Mock.Of<IDefaultHttpsProvider>(),
                 endpoint =>
                 {
                     tcs.TrySetResult(endpoint);
@@ -75,13 +76,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         {
             var addresses = new ServerAddressesFeature();
             addresses.Addresses.Add("http://localhost:5000");
-            var options = new List<ListenOptions>();
+            var options = new KestrelServerOptions();
 
             await Assert.ThrowsAsync<IOException>(() =>
                 AddressBinder.BindAsync(addresses,
-                options,
-                NullLogger.Instance,
-                endpoint => throw new AddressInUseException("already in use")));
+                    options,
+                    NullLogger.Instance,
+                    Mock.Of<IDefaultHttpsProvider>(),
+                    endpoint => throw new AddressInUseException("already in use")));
         }
 
         [Theory]
@@ -93,7 +95,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             var logger = new MockLogger();
             var addresses = new ServerAddressesFeature();
             addresses.Addresses.Add(address);
-            var options = new List<ListenOptions>();
+            var options = new KestrelServerOptions();
 
             var ipV6Attempt = false;
             var ipV4Attempt = false;
@@ -101,6 +103,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
             await AddressBinder.BindAsync(addresses,
                 options,
                 logger,
+                Mock.Of<IDefaultHttpsProvider>(),
                 endpoint =>
                 {
                     if (endpoint.IPEndPoint.Address == IPAddress.IPv6Any)

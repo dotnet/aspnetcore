@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation. All rights reserved.
+// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
@@ -18,10 +18,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     internal class AddressBinder
     {
         public static async Task BindAsync(IServerAddressesFeature addresses,
-            List<ListenOptions> listenOptions,
+            KestrelServerOptions serverOptions,
             ILogger logger,
+            IDefaultHttpsProvider defaultHttpsProvider,
             Func<ListenOptions, Task> createBinding)
         {
+            var listenOptions = serverOptions.ListenOptions;
             var strategy = CreateStrategy(
                 listenOptions.ToArray(),
                 addresses.Addresses.ToArray(),
@@ -31,7 +33,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 Addresses = addresses.Addresses,
                 ListenOptions = listenOptions,
+                ServerOptions = serverOptions,
                 Logger = logger,
+                DefaultHttpsProvider = defaultHttpsProvider ?? UnconfiguredDefaultHttpsProvider.Instance,
                 CreateBinding = createBinding
             };
 
@@ -47,7 +51,9 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         {
             public ICollection<string> Addresses { get; set; }
             public List<ListenOptions> ListenOptions { get; set; }
+            public KestrelServerOptions ServerOptions { get; set; }
             public ILogger Logger { get; set; }
+            public IDefaultHttpsProvider DefaultHttpsProvider { get; set; }
 
             public Func<ListenOptions, Task> CreateBinding { get; set; }
         }
@@ -120,7 +126,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             context.ListenOptions.Add(endpoint);
         }
 
-        private static async Task BindLocalhostAsync(ServerAddress address, AddressBindContext context)
+        private static async Task BindLocalhostAsync(ServerAddress address, AddressBindContext context, bool https)
         {
             if (address.Port == 0)
             {
@@ -131,7 +137,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             try
             {
-                await BindEndpointAsync(new IPEndPoint(IPAddress.Loopback, address.Port), context).ConfigureAwait(false);
+                var options = new ListenOptions(new IPEndPoint(IPAddress.Loopback, address.Port));
+                await BindEndpointAsync(options, context).ConfigureAwait(false);
+                
+                if (https)
+                {
+                    options.KestrelServerOptions = context.ServerOptions;
+                    context.DefaultHttpsProvider.ConfigureHttps(options);
+                }
             }
             catch (Exception ex) when (!(ex is IOException))
             {
@@ -141,7 +154,14 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
             try
             {
-                await BindEndpointAsync(new IPEndPoint(IPAddress.IPv6Loopback, address.Port), context).ConfigureAwait(false);
+                var options = new ListenOptions(new IPEndPoint(IPAddress.IPv6Loopback, address.Port));
+                await BindEndpointAsync(options, context).ConfigureAwait(false);
+
+                if (https)
+                {
+                    options.KestrelServerOptions = context.ServerOptions;
+                    context.DefaultHttpsProvider.ConfigureHttps(options);
+                }
             }
             catch (Exception ex) when (!(ex is IOException))
             {
@@ -162,10 +182,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
         private static async Task BindAddressAsync(string address, AddressBindContext context)
         {
             var parsedAddress = ServerAddress.FromUrl(address);
+            var https = false;
 
             if (parsedAddress.Scheme.Equals("https", StringComparison.OrdinalIgnoreCase))
             {
-                throw new InvalidOperationException(CoreStrings.FormatConfigureHttpsFromMethodCall($"{nameof(KestrelServerOptions)}.{nameof(KestrelServerOptions.Listen)}()"));
+                https = true;
             }
             else if (!parsedAddress.Scheme.Equals("http", StringComparison.OrdinalIgnoreCase))
             {
@@ -177,20 +198,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 throw new InvalidOperationException(CoreStrings.FormatConfigurePathBaseFromMethodCall($"{nameof(IApplicationBuilder)}.UsePathBase()"));
             }
 
+            ListenOptions options = null;
             if (parsedAddress.IsUnixPipe)
             {
-                var endPoint = new ListenOptions(parsedAddress.UnixPipePath);
-                await BindEndpointAsync(endPoint, context).ConfigureAwait(false);
-                context.Addresses.Add(endPoint.GetDisplayName());
+                options = new ListenOptions(parsedAddress.UnixPipePath);
+                await BindEndpointAsync(options, context).ConfigureAwait(false);
+                context.Addresses.Add(options.GetDisplayName());
             }
             else if (string.Equals(parsedAddress.Host, "localhost", StringComparison.OrdinalIgnoreCase))
             {
                 // "localhost" for both IPv4 and IPv6 can't be represented as an IPEndPoint.
-                await BindLocalhostAsync(parsedAddress, context).ConfigureAwait(false);
+                await BindLocalhostAsync(parsedAddress, context, https).ConfigureAwait(false);
             }
             else
             {
-                ListenOptions options;
                 if (TryCreateIPEndPoint(parsedAddress, out var endpoint))
                 {
                     options = new ListenOptions(endpoint);
@@ -216,6 +237,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
 
                 context.Addresses.Add(options.GetDisplayName());
             }
+
+            if (https && options != null)
+            {
+                options.KestrelServerOptions = context.ServerOptions;
+                context.DefaultHttpsProvider.ConfigureHttps(options);
+            }
         }
 
         private interface IStrategy
@@ -229,7 +256,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
             {
                 context.Logger.LogDebug(CoreStrings.BindingToDefaultAddress, Constants.DefaultServerAddress);
 
-                await BindLocalhostAsync(ServerAddress.FromUrl(Constants.DefaultServerAddress), context).ConfigureAwait(false);
+                await BindLocalhostAsync(ServerAddress.FromUrl(Constants.DefaultServerAddress), context, https: false).ConfigureAwait(false);
             }
         }
 
@@ -303,6 +330,23 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
                 {
                     await BindAddressAsync(address, context).ConfigureAwait(false);
                 }
+            }
+        }
+
+        private class UnconfiguredDefaultHttpsProvider : IDefaultHttpsProvider
+        {
+            public static readonly UnconfiguredDefaultHttpsProvider Instance = new UnconfiguredDefaultHttpsProvider();
+
+            private UnconfiguredDefaultHttpsProvider()
+            {
+            }
+
+            public void ConfigureHttps(ListenOptions listenOptions)
+            {
+                // We have to throw here. If this is called, it's because the user asked for "https" binding but for some
+                // reason didn't provide a certificate and didn't use the "DefaultHttpsProvider". This means if we no-op,
+                // we'll silently downgrade to HTTP, which is bad.
+                throw new InvalidOperationException(CoreStrings.UnableToConfigureHttpsBindings);
             }
         }
     }

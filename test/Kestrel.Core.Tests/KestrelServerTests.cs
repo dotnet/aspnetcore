@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting.Server;
 using Microsoft.AspNetCore.Hosting.Server.Features;
+using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Transport.Abstractions.Internal;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
@@ -37,20 +38,56 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         }
 
         [Fact]
-        public void StartWithHttpsAddressThrows()
+        public void StartWithHttpsAddressConfiguresHttpsEndpoints()
         {
-            var testLogger = new TestApplicationErrorLogger { ThrowOnCriticalErrors = false };
+            var mockDefaultHttpsProvider = new Mock<IDefaultHttpsProvider>();
 
-            using (var server = CreateServer(new KestrelServerOptions(), testLogger))
+            using (var server = CreateServer(new KestrelServerOptions(), mockDefaultHttpsProvider.Object))
             {
                 server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");
 
-                var exception = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
+                StartDummyApplication(server);
 
-                Assert.Equal(
-                    $"HTTPS endpoints can only be configured using {nameof(KestrelServerOptions)}.{nameof(KestrelServerOptions.Listen)}().",
-                    exception.Message);
-                Assert.Equal(1, testLogger.CriticalErrorsLogged);
+                mockDefaultHttpsProvider.Verify(provider => provider.ConfigureHttps(It.IsAny<ListenOptions>()), Times.Once);
+            }
+        }
+ 
+        [Fact]
+        public void KestrelServerThrowsUsefulExceptionIfDefaultHttpsProviderNotAdded()
+        {
+            using (var server = CreateServer(new KestrelServerOptions(), defaultHttpsProvider: null, throwOnCriticalErrors: false))
+            {
+                server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");
+
+                var ex = Assert.Throws<InvalidOperationException>(() => StartDummyApplication(server));
+                Assert.Equal(CoreStrings.UnableToConfigureHttpsBindings, ex.Message);
+            }
+        }
+ 
+        [Fact]
+        public void KestrelServerDoesNotThrowIfNoDefaultHttpsProviderButNoHttpUrls()
+        {
+            using (var server = CreateServer(new KestrelServerOptions(), defaultHttpsProvider: null))
+            {
+                server.Features.Get<IServerAddressesFeature>().Addresses.Add("http://127.0.0.1:0");
+
+                StartDummyApplication(server);
+            }
+        }
+ 
+        [Fact]
+        public void KestrelServerDoesNotThrowIfNoDefaultHttpsProviderButManualListenOptions()
+        {
+            var mockDefaultHttpsProvider = new Mock<IDefaultHttpsProvider>();
+
+            var serverOptions = new KestrelServerOptions();
+            serverOptions.Listen(new IPEndPoint(IPAddress.Loopback, 0));
+
+            using (var server = CreateServer(serverOptions, defaultHttpsProvider: null))
+            {
+                server.Features.Get<IServerAddressesFeature>().Addresses.Add("https://127.0.0.1:0");
+
+                StartDummyApplication(server);
             }
         }
 
@@ -272,6 +309,11 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Tests
         private static KestrelServer CreateServer(KestrelServerOptions options, ILogger testLogger)
         {
             return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new[] { new KestrelTestLoggerProvider(testLogger) }));
+        }
+
+        private static KestrelServer CreateServer(KestrelServerOptions options, IDefaultHttpsProvider defaultHttpsProvider, bool throwOnCriticalErrors = true)
+        {
+            return new KestrelServer(Options.Create(options), new MockTransportFactory(), new LoggerFactory(new[] { new KestrelTestLoggerProvider(throwOnCriticalErrors) }), defaultHttpsProvider);
         }
 
         private static void StartDummyApplication(IServer server)

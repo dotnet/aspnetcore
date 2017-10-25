@@ -1620,6 +1620,20 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core
         internal static string FormatHttp2ErrorConnectionSpecificHeaderField()
             => GetString("Http2ErrorConnectionSpecificHeaderField");
 
+        /// <summary>
+        /// Unable to configure default https bindings because no IDefaultHttpsProvider service was provided.
+        /// </summary>
+        internal static string UnableToConfigureHttpsBindings
+        {
+            get => GetString("UnableToConfigureHttpsBindings");
+        }
+
+        /// <summary>
+        /// Unable to configure default https bindings because no IDefaultHttpsProvider service was provided.
+        /// </summary>
+        internal static string FormatUnableToConfigureHttpsBindings()
+            => GetString("UnableToConfigureHttpsBindings");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
