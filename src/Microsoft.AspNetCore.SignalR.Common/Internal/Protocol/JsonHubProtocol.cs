@@ -26,7 +26,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const int InvocationMessageType = 1;
         private const int ResultMessageType = 2;
         private const int CompletionMessageType = 3;
-        private const int StreamCompletionMessageType = 4;
+        private const int StreamInvocationMessageType = 4;
         private const int CancelInvocationMessageType = 5;
 
         // ONLY to be used for application payloads (args, return values, etc.)
@@ -110,12 +110,12 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     {
                         case InvocationMessageType:
                             return BindInvocationMessage(json, binder);
+                        case StreamInvocationMessageType:
+                            return BindStreamInvocationMessage(json, binder);
                         case ResultMessageType:
                             return BindResultMessage(json, binder);
                         case CompletionMessageType:
                             return BindCompletionMessage(json, binder);
-                        case StreamCompletionMessageType:
-                            return BindStreamCompletionMessage(json);
                         case CancelInvocationMessageType:
                             return BindCancelInvocationMessage(json);
                         default:
@@ -138,14 +138,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                     case InvocationMessage m:
                         WriteInvocationMessage(m, writer);
                         break;
+                    case StreamInvocationMessage m:
+                        WriteStreamInvocationMessage(m, writer);
+                        break;
                     case StreamItemMessage m:
                         WriteStreamItemMessage(m, writer);
                         break;
                     case CompletionMessage m:
                         WriteCompletionMessage(m, writer);
-                        break;
-                    case StreamCompletionMessage m:
-                        WriteStreamCompletionMessage(m, writer);
                         break;
                     case CancelInvocationMessage m:
                         WriteCancelInvocationMessage(m, writer);
@@ -169,18 +169,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             {
                 writer.WritePropertyName(ResultPropertyName);
                 _payloadSerializer.Serialize(writer, message.Result);
-            }
-            writer.WriteEndObject();
-        }
-
-        private void WriteStreamCompletionMessage(StreamCompletionMessage message, JsonTextWriter writer)
-        {
-            writer.WriteStartObject();
-            WriteHubMessageCommon(message, writer, StreamCompletionMessageType);
-            if (!string.IsNullOrEmpty(message.Error))
-            {
-                writer.WritePropertyName(ErrorPropertyName);
-                writer.WriteValue(message.Error);
             }
             writer.WriteEndObject();
         }
@@ -214,15 +202,32 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 writer.WriteValue(message.NonBlocking);
             }
 
+            WriteArguments(message.Arguments, writer);
+
+            writer.WriteEndObject();
+        }
+
+        private void WriteStreamInvocationMessage(StreamInvocationMessage message, JsonTextWriter writer)
+        {
+            writer.WriteStartObject();
+            WriteHubMessageCommon(message, writer, StreamInvocationMessageType);
+            writer.WritePropertyName(TargetPropertyName);
+            writer.WriteValue(message.Target);
+
+            WriteArguments(message.Arguments, writer);
+
+            writer.WriteEndObject();
+        }
+
+        private void WriteArguments(object[] arguments, JsonTextWriter writer)
+        {
             writer.WritePropertyName(ArgumentsPropertyName);
             writer.WriteStartArray();
-            foreach (var argument in message.Arguments)
+            foreach (var argument in arguments)
             {
                 _payloadSerializer.Serialize(writer, argument);
             }
             writer.WriteEndArray();
-
-            writer.WriteEndObject();
         }
 
         private static void WriteHubMessageCommon(HubMessage message, JsonTextWriter writer, int type)
@@ -251,6 +256,26 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             catch (Exception ex)
             {
                 return new InvocationMessage(invocationId, nonBlocking, target, ExceptionDispatchInfo.Capture(ex));
+            }
+        }
+
+        private StreamInvocationMessage BindStreamInvocationMessage(JObject json, IInvocationBinder binder)
+        {
+            var invocationId = JsonUtils.GetRequiredProperty<string>(json, InvocationIdPropertyName, JTokenType.String);
+            var target = JsonUtils.GetRequiredProperty<string>(json, TargetPropertyName, JTokenType.String);
+
+            var args = JsonUtils.GetRequiredProperty<JArray>(json, ArgumentsPropertyName, JTokenType.Array);
+
+            var paramTypes = binder.GetParameterTypes(target);
+
+            try
+            {
+                var arguments = BindArguments(args, paramTypes);
+                return new StreamInvocationMessage(invocationId, target, argumentBindingException: null, arguments: arguments);
+            }
+            catch (Exception ex)
+            {
+                return new StreamInvocationMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex));
             }
         }
 
@@ -306,13 +331,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             var returnType = binder.GetReturnType(invocationId);
             var payload = resultProp.Value?.ToObject(returnType, _payloadSerializer);
             return new CompletionMessage(invocationId, error, result: payload, hasResult: true);
-        }
-
-        private StreamCompletionMessage BindStreamCompletionMessage(JObject json)
-        {
-            var invocationId = JsonUtils.GetRequiredProperty<string>(json, InvocationIdPropertyName, JTokenType.String);
-            var error = JsonUtils.GetOptionalProperty<string>(json, ErrorPropertyName, JTokenType.String);
-            return new StreamCompletionMessage(invocationId, error);
         }
 
         private CancelInvocationMessage BindCancelInvocationMessage(JObject json)

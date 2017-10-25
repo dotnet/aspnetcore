@@ -3,7 +3,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
@@ -17,7 +16,7 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         private const int InvocationMessageType = 1;
         private const int StreamItemMessageType = 2;
         private const int CompletionMessageType = 3;
-        private const int StreamCompletionMessageType = 4;
+        private const int StreamInvocationMessageType = 4;
         private const int CancelInvocationMessageType = 5;
 
         private const int ErrorResult = 1;
@@ -58,19 +57,19 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
         {
             using (var unpacker = Unpacker.Create(input))
             {
-                var arraySize = ReadArrayLength(unpacker, "elementCount");
+                _ = ReadArrayLength(unpacker, "elementCount");
                 var messageType = ReadInt32(unpacker, "messageType");
 
                 switch (messageType)
                 {
                     case InvocationMessageType:
                         return CreateInvocationMessage(unpacker, binder);
+                    case StreamInvocationMessageType:
+                        return CreateStreamInvocationMessage(unpacker, binder);
                     case StreamItemMessageType:
                         return CreateStreamItemMessage(unpacker, binder);
                     case CompletionMessageType:
                         return CreateCompletionMessage(unpacker, binder);
-                    case StreamCompletionMessageType:
-                        return CreateStreamCompletionMessage(unpacker, arraySize, binder);
                     case CancelInvocationMessageType:
                         return CreateCancelInvocationMessage(unpacker);
                     default:
@@ -94,6 +93,22 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             catch (Exception ex)
             {
                 return new InvocationMessage(invocationId, nonBlocking, target, ExceptionDispatchInfo.Capture(ex));
+            }
+        }
+
+        private static StreamInvocationMessage CreateStreamInvocationMessage(Unpacker unpacker, IInvocationBinder binder)
+        {
+            var invocationId = ReadInvocationId(unpacker);
+            var target = ReadString(unpacker, "target");
+            var parameterTypes = binder.GetParameterTypes(target);
+            try
+            {
+                var arguments = BindArguments(unpacker, parameterTypes);
+                return new StreamInvocationMessage(invocationId, target, argumentBindingException: null, arguments: arguments);
+            }
+            catch (Exception ex)
+            {
+                return new StreamInvocationMessage(invocationId, target, ExceptionDispatchInfo.Capture(ex));
             }
         }
 
@@ -160,16 +175,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             return new CompletionMessage(invocationId, error, result, hasResult);
         }
 
-        private static StreamCompletionMessage CreateStreamCompletionMessage(Unpacker unpacker, long arraySize, IInvocationBinder binder)
-        {
-            Debug.Assert(arraySize == 2 || arraySize == 3, "Unexpected item count");
-
-            var invocationId = ReadInvocationId(unpacker);
-            // Error is optional so StreamCompletion without error has 2 items, StreamCompletion with error has 3 items
-            var error = arraySize == 3 ? ReadString(unpacker, "error") : null;
-            return new StreamCompletionMessage(invocationId, error);
-        }
-
         private static CancelInvocationMessage CreateCancelInvocationMessage(Unpacker unpacker)
         {
             var invocationId = ReadInvocationId(unpacker);
@@ -195,14 +200,14 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 case InvocationMessage invocationMessage:
                     WriteInvocationMessage(invocationMessage, packer);
                     break;
+                case StreamInvocationMessage streamInvocationMessage:
+                    WriteStreamInvocationMessage(streamInvocationMessage, packer);
+                    break;
                 case StreamItemMessage streamItemMessage:
                     WriteStreamingItemMessage(streamItemMessage, packer);
                     break;
                 case CompletionMessage completionMessage:
                     WriteCompletionMessage(completionMessage, packer);
-                    break;
-                case StreamCompletionMessage streamCompletionMessage:
-                    WriteStreamCompletionMessage(streamCompletionMessage, packer);
                     break;
                 case CancelInvocationMessage cancelInvocationMessage:
                     WriteCancelInvocationMessage(cancelInvocationMessage, packer);
@@ -220,6 +225,15 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             packer.Pack(invocationMessage.NonBlocking);
             packer.PackString(invocationMessage.Target);
             packer.PackObject(invocationMessage.Arguments, _serializationContext);
+        }
+
+        private void WriteStreamInvocationMessage(StreamInvocationMessage streamInvocationMessage, Packer packer)
+        {
+            packer.PackArrayHeader(4);
+            packer.Pack(StreamInvocationMessageType);
+            packer.PackString(streamInvocationMessage.InvocationId);
+            packer.PackString(streamInvocationMessage.Target);
+            packer.PackObject(streamInvocationMessage.Arguments, _serializationContext);
         }
 
         private void WriteStreamingItemMessage(StreamItemMessage streamItemMessage, Packer packer)
@@ -250,19 +264,6 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
                 case NonVoidResult:
                     packer.PackObject(completionMessage.Result, _serializationContext);
                     break;
-            }
-        }
-
-        private void WriteStreamCompletionMessage(StreamCompletionMessage streamCompletionMessage, Packer packer)
-        {
-            var hasError = !string.IsNullOrEmpty(streamCompletionMessage.Error);
-            packer.PackArrayHeader(2 + (hasError ? 1 : 0));
-
-            packer.Pack(StreamCompletionMessageType);
-            packer.PackString(streamCompletionMessage.InvocationId);
-            if (hasError)
-            {
-                packer.PackString(streamCompletionMessage.Error);
             }
         }
 

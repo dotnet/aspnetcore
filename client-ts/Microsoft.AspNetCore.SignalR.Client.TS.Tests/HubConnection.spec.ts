@@ -123,32 +123,6 @@ describe("HubConnection", () => {
             let ex = await captureException(async () => await invokePromise);
             expect(ex.message).toBe("Connection lost");
         });
-
-        it("rejects streaming results made using 'invoke'", async () => {
-            let connection = new TestConnection();
-
-            let hubConnection = new HubConnection(connection);
-            let invokePromise = hubConnection.invoke("testMethod");
-
-            connection.receive({ type: MessageType.Result, invocationId: connection.lastInvocationId, item: null });
-            connection.onclose();
-
-            let ex = await captureException(async () => await invokePromise);
-            expect(ex.message).toBe("Streaming methods must be invoked using the 'HubConnection.stream()' method.");
-        });
-
-        it("rejects streaming completions made using 'invoke'", async () => {
-            let connection = new TestConnection();
-
-            let hubConnection = new HubConnection(connection);
-            let invokePromise = hubConnection.invoke("testMethod");
-
-            connection.receive({ type: MessageType.StreamCompletion, invocationId: connection.lastInvocationId });
-            connection.onclose();
-
-            let ex = await captureException(async () => await invokePromise);
-            expect(ex.message).toBe("Streaming methods must be invoked using the 'HubConnection.stream()' method.");
-        });
     });
 
     describe("on", () => {
@@ -301,10 +275,9 @@ describe("HubConnection", () => {
             // Verify the message is sent
             expect(connection.sentData.length).toBe(1);
             expect(JSON.parse(connection.sentData[0])).toEqual({
-                type: MessageType.Invocation,
+                type: MessageType.StreamInvocation,
                 invocationId: connection.lastInvocationId,
                 target: "testStream",
-                nonblocking: false,
                 arguments: [
                     "arg",
                     42
@@ -323,7 +296,7 @@ describe("HubConnection", () => {
             hubConnection.stream<any>("testMethod", "arg", 42)
                 .subscribe(observer);
 
-            connection.receive({ type: MessageType.StreamCompletion, invocationId: connection.lastInvocationId, error: "foo" });
+            connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, error: "foo" });
 
             let ex = await captureException(async () => await observer.completed);
             expect(ex.message).toEqual("Error: foo");
@@ -337,7 +310,7 @@ describe("HubConnection", () => {
             hubConnection.stream<any>("testMethod", "arg", 42)
                 .subscribe(observer);
 
-            connection.receive({ type: MessageType.StreamCompletion, invocationId: connection.lastInvocationId });
+            connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId });
 
             expect(await observer.completed).toEqual([]);
         });
@@ -370,20 +343,6 @@ describe("HubConnection", () => {
             expect(ex.message).toEqual("Error: Connection lost");
         });
 
-        it("rejects completion responses", async () => {
-            let connection = new TestConnection();
-
-            let hubConnection = new HubConnection(connection);
-            let observer = new TestObserver();
-            hubConnection.stream<any>("testMethod")
-                .subscribe(observer);
-
-            connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId, result: "foo" });
-
-            let ex = await captureException(async () => await observer.completed);
-            expect(ex.message).toEqual("Error: Hub methods must be invoked using the 'HubConnection.invoke()' method.");
-        });
-
         it("yields items as they arrive", async () => {
             let connection = new TestConnection();
 
@@ -401,7 +360,7 @@ describe("HubConnection", () => {
             connection.receive({ type: MessageType.Result, invocationId: connection.lastInvocationId, item: 3 });
             expect(observer.itemsReceived).toEqual([1, 2, 3]);
 
-            connection.receive({ type: MessageType.StreamCompletion, invocationId: connection.lastInvocationId });
+            connection.receive({ type: MessageType.Completion, invocationId: connection.lastInvocationId });
             expect(await observer.completed).toEqual([1, 2, 3]);
         });
 

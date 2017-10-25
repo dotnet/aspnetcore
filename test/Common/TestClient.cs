@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
         public async Task<IList<HubMessage>> StreamAsync(string methodName, params object[] args)
         {
-            var invocationId = await SendInvocationAsync(methodName, nonBlocking: false, args: args);
+            var invocationId = await SendStreamInvocationAsync(methodName, args);
 
             var messages = new List<HubMessage>();
             while (true)
@@ -89,7 +89,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                         messages.Add(message);
                         break;
                     case CompletionMessage _:
-                    case StreamCompletionMessage _:
                         messages.Add(message);
                         return messages;
                     default:
@@ -137,6 +136,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         {
             var invocationId = GetInvocationId();
             return SendHubMessageAsync(new InvocationMessage(invocationId, nonBlocking, methodName,
+                argumentBindingException: null, arguments: args));
+        }
+
+        public Task<string> SendStreamInvocationAsync(string methodName, params object[] args)
+        {
+            var invocationId = GetInvocationId();
+            return SendHubMessageAsync(new StreamInvocationMessage(invocationId, methodName,
                 argumentBindingException: null, arguments: args));
         }
 

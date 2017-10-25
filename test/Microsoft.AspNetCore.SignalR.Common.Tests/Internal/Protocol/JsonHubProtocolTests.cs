@@ -46,6 +46,17 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new object[] { CompletionMessage.WithResult("123", new CustomObject()), true, NullValueHandling.Ignore, "{\"invocationId\":\"123\",\"type\":3,\"result\":{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00\",\"byteArrProp\":\"AQID\"}}" },
             new object[] { CompletionMessage.WithResult("123", new CustomObject()), false, NullValueHandling.Include, "{\"invocationId\":\"123\",\"type\":3,\"result\":{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00\",\"NullProp\":null,\"ByteArrProp\":\"AQID\"}}" },
             new object[] { CompletionMessage.WithResult("123", new CustomObject()), true, NullValueHandling.Include, "{\"invocationId\":\"123\",\"type\":3,\"result\":{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00\",\"nullProp\":null,\"byteArrProp\":\"AQID\"}}" },
+
+            new object[] { new StreamInvocationMessage("123", "Target", null, 1, "Foo", 2.0f), true, NullValueHandling.Ignore, "{\"invocationId\":\"123\",\"type\":4,\"target\":\"Target\",\"arguments\":[1,\"Foo\",2.0]}" },
+            new object[] { new StreamInvocationMessage("123", "Target", null, 1, "Foo", 2.0f), true, NullValueHandling.Ignore, "{\"invocationId\":\"123\",\"type\":4,\"target\":\"Target\",\"arguments\":[1,\"Foo\",2.0]}" },
+            new object[] { new StreamInvocationMessage("123", "Target", null, true), true, NullValueHandling.Ignore, "{\"invocationId\":\"123\",\"type\":4,\"target\":\"Target\",\"arguments\":[true]}" },
+            new object[] { new StreamInvocationMessage("123", "Target", null, new object[] { null }), true, NullValueHandling.Ignore, "{\"invocationId\":\"123\",\"type\":4,\"target\":\"Target\",\"arguments\":[null]}" },
+            new object[] { new StreamInvocationMessage("123", "Target", null, new CustomObject()), false, NullValueHandling.Ignore, "{\"invocationId\":\"123\",\"type\":4,\"target\":\"Target\",\"arguments\":[{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00\",\"ByteArrProp\":\"AQID\"}]}" },
+            new object[] { new StreamInvocationMessage("123", "Target", null, new CustomObject()), true, NullValueHandling.Ignore, "{\"invocationId\":\"123\",\"type\":4,\"target\":\"Target\",\"arguments\":[{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00\",\"byteArrProp\":\"AQID\"}]}" },
+            new object[] { new StreamInvocationMessage("123", "Target", null, new CustomObject()), false, NullValueHandling.Include, "{\"invocationId\":\"123\",\"type\":4,\"target\":\"Target\",\"arguments\":[{\"StringProp\":\"SignalR!\",\"DoubleProp\":6.2831853071,\"IntProp\":42,\"DateTimeProp\":\"2017-04-11T00:00:00\",\"NullProp\":null,\"ByteArrProp\":\"AQID\"}]}" },
+            new object[] { new StreamInvocationMessage("123", "Target", null, new CustomObject()), true, NullValueHandling.Include, "{\"invocationId\":\"123\",\"type\":4,\"target\":\"Target\",\"arguments\":[{\"stringProp\":\"SignalR!\",\"doubleProp\":6.2831853071,\"intProp\":42,\"dateTimeProp\":\"2017-04-11T00:00:00\",\"nullProp\":null,\"byteArrProp\":\"AQID\"}]}" },
+
+            new object[] { new CancelInvocationMessage("123"), true, NullValueHandling.Ignore, "{\"invocationId\":\"123\",\"type\":5}" }
         };
 
         [Theory]
@@ -112,6 +123,12 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [InlineData("{'type':3,'invocationId':42}", "Expected 'invocationId' to be of type String.")]
         [InlineData("{'type':3,'invocationId':'42','error':[]}", "Expected 'error' to be of type String.")]
 
+        [InlineData("{'type':4}", "Missing required property 'invocationId'.")]
+        [InlineData("{'type':4,'invocationId':42}", "Expected 'invocationId' to be of type String.")]
+        [InlineData("{'type':4,'invocationId':'42','target':42}", "Expected 'target' to be of type String.")]
+        [InlineData("{'type':4,'invocationId':'42','target':'foo'}", "Missing required property 'arguments'.")]
+        [InlineData("{'type':4,'invocationId':'42','target':'foo','arguments':{}}", "Expected 'arguments' to be of type Array.")]
+
         [InlineData("{'type':9}", "Unknown message type: 9")]
         [InlineData("{'type':'foo'}", "Expected 'type' to be of type Integer.")]
 
@@ -130,6 +147,8 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         [Theory]
         [InlineData("{'type':1,'invocationId':'42','target':'foo','arguments':[]}", "Invocation provides 0 argument(s) but target expects 2.")]
         [InlineData("{'type':1,'invocationId':'42','target':'foo','arguments':[ 'abc', 'xyz']}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
+        [InlineData("{'type':4,'invocationId':'42','target':'foo','arguments':[]}", "Invocation provides 0 argument(s) but target expects 2.")]
+        [InlineData("{'type':4,'invocationId':'42','target':'foo','arguments':[ 'abc', 'xyz']}", "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.")]
         public void ArgumentBindingErrors(string input, string expectedMessage)
         {
             input = Frame(input);
@@ -137,7 +156,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             var binder = new TestBinder(paramTypes: new[] { typeof(int), typeof(string) }, returnType: typeof(bool));
             var protocol = new JsonHubProtocol();
             protocol.TryParseMessages(Encoding.UTF8.GetBytes(input), binder, out var messages);
-            var ex = Assert.Throws<FormatException>(() => ((InvocationMessage)messages[0]).Arguments);
+            var ex = Assert.Throws<FormatException>(() => ((HubMethodInvocationMessage)messages[0]).Arguments);
             Assert.Equal(expectedMessage, ex.Message);
         }
 

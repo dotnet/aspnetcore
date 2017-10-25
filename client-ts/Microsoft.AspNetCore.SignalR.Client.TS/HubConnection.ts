@@ -6,7 +6,7 @@ import { IConnection } from "./IConnection"
 import { HttpConnection} from "./HttpConnection"
 import { TransportType, TransferMode } from "./Transports"
 import { Subject, Observable } from "./Observable"
-import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, StreamCompletionMessage, ResultMessage, InvocationMessage, NegotiationMessage } from "./IHubProtocol";
+import { IHubProtocol, ProtocolType, MessageType, HubMessage, CompletionMessage, ResultMessage, InvocationMessage, StreamInvocationMessage, NegotiationMessage } from "./IHubProtocol";
 import { JsonHubProtocol } from "./JsonHubProtocol";
 import { TextMessageFormat } from "./Formatters"
 import { Base64EncodedHubProtocol } from "./Base64EncodedHubProtocol"
@@ -63,10 +63,9 @@ export class HubConnection {
                     break;
                 case MessageType.Result:
                 case MessageType.Completion:
-                case MessageType.StreamCompletion:
                     let callback = this.callbacks.get(message.invocationId);
                     if (callback != null) {
-                        if (message.type == MessageType.Completion || message.type == MessageType.StreamCompletion) {
+                        if (message.type === MessageType.Completion) {
                             this.callbacks.delete(message.invocationId);
                         }
                         callback(message);
@@ -127,7 +126,7 @@ export class HubConnection {
     }
 
     stream<T>(methodName: string, ...args: any[]): Observable<T> {
-        let invocationDescriptor = this.createInvocation(methodName, args, false);
+        let invocationDescriptor = this.createStreamInvocation(methodName, args);
 
         let subject = new Subject<T>();
 
@@ -137,22 +136,17 @@ export class HubConnection {
                 return;
             }
 
-            switch (invocationEvent.type) {
-                case MessageType.StreamCompletion:
-                    let completionMessage = <StreamCompletionMessage>invocationEvent;
-                    if (completionMessage.error) {
-                        subject.error(new Error(completionMessage.error));
-                    }
-                    else {
-                        subject.complete();
-                    }
-                    break;
-                case MessageType.Result:
-                    subject.next(<T>(<ResultMessage>invocationEvent).item);
-                    break;
-                default:
-                    subject.error(new Error("Hub methods must be invoked using the 'HubConnection.invoke()' method."));
-                    break;
+            if (invocationEvent.type === MessageType.Completion) {
+                let completionMessage = <CompletionMessage>invocationEvent;
+                if (completionMessage.error) {
+                    subject.error(new Error(completionMessage.error));
+                }
+                else {
+                    subject.complete();
+                }
+            }
+            else {
+                subject.next(<T>(<ResultMessage>invocationEvent).item);
             }
         });
 
@@ -194,7 +188,7 @@ export class HubConnection {
                     }
                 }
                 else {
-                    reject(new Error("Streaming methods must be invoked using the 'HubConnection.stream()' method."));
+                    reject(new Error(`Unexpected message type: ${invocationEvent.type}`));
                 }
             });
 
@@ -255,6 +249,18 @@ export class HubConnection {
             target: methodName,
             arguments: args,
             nonblocking: nonblocking
+        };
+    }
+
+    private createStreamInvocation(methodName: string, args: any[]): StreamInvocationMessage {
+        let id = this.id;
+        this.id++;
+
+        return <StreamInvocationMessage>{
+            type: MessageType.StreamInvocation,
+            invocationId: id.toString(),
+            target: methodName,
+            arguments: args,
         };
     }
 }

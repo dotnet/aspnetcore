@@ -1,7 +1,7 @@
 // Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-import { IHubProtocol, ProtocolType, MessageType, HubMessage, InvocationMessage, ResultMessage, CompletionMessage, StreamCompletionMessage } from "./IHubProtocol";
+import { IHubProtocol, ProtocolType, MessageType, HubMessage, InvocationMessage, ResultMessage, CompletionMessage, StreamInvocationMessage } from "./IHubProtocol";
 import { BinaryMessageFormat } from "./Formatters"
 import * as msgpack5 from "msgpack5"
 
@@ -34,8 +34,6 @@ export class MessagePackHubProtocol implements IHubProtocol {
                 return this.createStreamItemMessage(properties);
             case MessageType.Completion:
                 return this.createCompletionMessage(properties);
-            case MessageType.StreamCompletion:
-                return this.createStreamCompletionMessage(properties);
             default:
                 throw new Error("Invalid message type.");
         }
@@ -102,22 +100,12 @@ export class MessagePackHubProtocol implements IHubProtocol {
         return completionMessage as CompletionMessage;
     }
 
-    private createStreamCompletionMessage(properties: any[]): StreamCompletionMessage {
-        if (properties.length < 2) {
-            throw new Error("Invalid payload for Completion message.");
-        }
-
-        return <StreamCompletionMessage>{
-            type: MessageType.StreamCompletion,
-            invocationId: properties[1],
-            error: properties.length == 3 ? properties[2] : null,
-        };
-    }
-
     writeMessage(message: HubMessage): ArrayBuffer {
         switch (message.type) {
             case MessageType.Invocation:
                 return this.writeInvocation(message as InvocationMessage);
+            case MessageType.StreamInvocation:
+                return this.writeStreamInvocation(message as StreamInvocationMessage);
             case MessageType.Result:
             case MessageType.Completion:
                 throw new Error(`Writing messages of type '${message.type}' is not supported.`);
@@ -130,6 +118,14 @@ export class MessagePackHubProtocol implements IHubProtocol {
         let msgpack = msgpack5();
         let payload = msgpack.encode([ MessageType.Invocation, invocationMessage.invocationId,
             invocationMessage.nonblocking, invocationMessage.target, invocationMessage.arguments]);
+
+        return BinaryMessageFormat.write(payload.slice());
+    }
+
+    private writeStreamInvocation(streamInvocationMessage: StreamInvocationMessage): ArrayBuffer {
+        let msgpack = msgpack5();
+        let payload = msgpack.encode([ MessageType.StreamInvocation, streamInvocationMessage.invocationId,
+            streamInvocationMessage.target, streamInvocationMessage.arguments]);
 
         return BinaryMessageFormat.write(payload.slice());
     }

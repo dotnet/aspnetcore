@@ -277,7 +277,15 @@ namespace Microsoft.AspNetCore.SignalR
 
                                         // Don't wait on the result of execution, continue processing other
                                         // incoming messages on this connection.
-                                        _ = ProcessInvocation(connection, invocationMessage);
+                                        _ = ProcessInvocation(connection, invocationMessage, isStreamedInvocation: false);
+                                        break;
+
+                                    case StreamInvocationMessage streamInvocationMessage:
+                                        _logger.ReceivedStreamHubInvocation(streamInvocationMessage);
+
+                                        // Don't wait on the result of execution, continue processing other
+                                        // incoming messages on this connection.
+                                        _ = ProcessInvocation(connection, streamInvocationMessage, isStreamedInvocation: true);
                                         break;
 
                                     case CancelInvocationMessage cancelInvocationMessage:
@@ -312,32 +320,29 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task ProcessInvocation(HubConnectionContext connection, InvocationMessage invocationMessage)
+        private async Task ProcessInvocation(HubConnectionContext connection,
+            HubMethodInvocationMessage hubMethodInvocationMessage, bool isStreamedInvocation)
         {
             try
             {
                 // If an unexpected exception occurs then we want to kill the entire connection
                 // by ending the processing loop
-                await Execute(connection, invocationMessage);
+                if (!_methods.TryGetValue(hubMethodInvocationMessage.Target, out var descriptor))
+                {
+                    // Send an error to the client. Then let the normal completion process occur
+                    _logger.UnknownHubMethod(hubMethodInvocationMessage.Target);
+                    await SendMessageAsync(connection, CompletionMessage.WithError(
+                        hubMethodInvocationMessage.InvocationId, $"Unknown hub method '{hubMethodInvocationMessage.Target}'"));
+                }
+                else
+                {
+                    await Invoke(descriptor, connection, hubMethodInvocationMessage, isStreamedInvocation);
+                }
             }
             catch (Exception ex)
             {
                 // Abort the entire connection if the invocation fails in an unexpected way
                 connection.Abort(ex);
-            }
-        }
-
-        private async Task Execute(HubConnectionContext connection, InvocationMessage invocationMessage)
-        {
-            if (!_methods.TryGetValue(invocationMessage.Target, out var descriptor))
-            {
-                // Send an error to the client. Then let the normal completion process occur
-                _logger.UnknownHubMethod(invocationMessage.Target);
-                await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, $"Unknown hub method '{invocationMessage.Target}'"));
-            }
-            else
-            {
-                await Invoke(descriptor, connection, invocationMessage);
             }
         }
 
@@ -356,7 +361,8 @@ namespace Microsoft.AspNetCore.SignalR
             throw new OperationCanceledException("Outbound channel was closed while trying to write hub message");
         }
 
-        private async Task Invoke(HubMethodDescriptor descriptor, HubConnectionContext connection, InvocationMessage invocationMessage)
+        private async Task Invoke(HubMethodDescriptor descriptor, HubConnectionContext connection,
+            HubMethodInvocationMessage hubMethodInvocationMessage, bool isStreamedInvocation)
         {
             var methodExecutor = descriptor.MethodExecutor;
 
@@ -364,11 +370,14 @@ namespace Microsoft.AspNetCore.SignalR
             {
                 if (!await IsHubMethodAuthorized(scope.ServiceProvider, connection.User, descriptor.Policies))
                 {
-                    _logger.HubMethodNotAuthorized(invocationMessage.Target);
-                    if (!invocationMessage.NonBlocking)
-                    {
-                        await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, $"Failed to invoke '{invocationMessage.Target}' because user is unauthorized"));
-                    }
+                    _logger.HubMethodNotAuthorized(hubMethodInvocationMessage.Target);
+                    await SendInvocationError(hubMethodInvocationMessage, connection,
+                        $"Failed to invoke '{hubMethodInvocationMessage.Target}' because user is unauthorized");
+                    return;
+                }
+
+                if (!await ValidateInvocationMode(methodExecutor.MethodReturnType, isStreamedInvocation, hubMethodInvocationMessage, connection))
+                {
                     return;
                 }
 
@@ -379,45 +388,29 @@ namespace Microsoft.AspNetCore.SignalR
                 {
                     InitializeHub(hub, connection);
 
-                    object result = null;
+                    var result = await ExecuteHubMethod(methodExecutor, hub, hubMethodInvocationMessage.Arguments);
 
-                    // ReadableChannel is awaitable but we don't want to await it.
-                    if (methodExecutor.IsMethodAsync && !IsChannel(methodExecutor.MethodReturnType, out _))
+                    if (isStreamedInvocation)
                     {
-                        if (methodExecutor.MethodReturnType == typeof(Task))
-                        {
-                            await (Task)methodExecutor.Execute(hub, invocationMessage.Arguments);
-                        }
-                        else
-                        {
-                            result = await methodExecutor.ExecuteAsync(hub, invocationMessage.Arguments);
-                        }
+                        var enumerator = GetStreamingEnumerator(connection, hubMethodInvocationMessage.InvocationId, methodExecutor, result, methodExecutor.MethodReturnType);
+                        _logger.StreamingResult(hubMethodInvocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
+                        await StreamResultsAsync(hubMethodInvocationMessage.InvocationId, connection, enumerator);
                     }
-                    else
+                    else if (!hubMethodInvocationMessage.NonBlocking)
                     {
-                        result = methodExecutor.Execute(hub, invocationMessage.Arguments);
-                    }
-
-                    if (IsStreamed(connection, invocationMessage.InvocationId, methodExecutor, result, methodExecutor.MethodReturnType, out var enumerator))
-                    {
-                        _logger.StreamingResult(invocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
-                        await StreamResultsAsync(invocationMessage.InvocationId, connection, enumerator);
-                    }
-                    else if (!invocationMessage.NonBlocking)
-                    {
-                        _logger.SendingResult(invocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
-                        await SendMessageAsync(connection, CompletionMessage.WithResult(invocationMessage.InvocationId, result));
+                        _logger.SendingResult(hubMethodInvocationMessage.InvocationId, methodExecutor.MethodReturnType.FullName);
+                        await SendMessageAsync(connection, CompletionMessage.WithResult(hubMethodInvocationMessage.InvocationId, result));
                     }
                 }
                 catch (TargetInvocationException ex)
                 {
-                    _logger.FailedInvokingHubMethod(invocationMessage.Target, ex);
-                    await SendInvocationError(invocationMessage, connection, methodExecutor.MethodReturnType, ex.InnerException);
+                    _logger.FailedInvokingHubMethod(hubMethodInvocationMessage.Target, ex);
+                    await SendInvocationError(hubMethodInvocationMessage, connection, ex.InnerException.Message);
                 }
                 catch (Exception ex)
                 {
-                    _logger.FailedInvokingHubMethod(invocationMessage.Target, ex);
-                    await SendInvocationError(invocationMessage, connection, methodExecutor.MethodReturnType, ex);
+                    _logger.FailedInvokingHubMethod(hubMethodInvocationMessage.Target, ex);
+                    await SendInvocationError(hubMethodInvocationMessage, connection, ex.Message);
                 }
                 finally
                 {
@@ -426,19 +419,37 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private async Task SendInvocationError(InvocationMessage invocationMessage, HubConnectionContext connection, Type returnType, Exception ex)
+        private static async Task<object> ExecuteHubMethod(ObjectMethodExecutor methodExecutor, THub hub, object[] arguments)
         {
-            if (!invocationMessage.NonBlocking)
+            // ReadableChannel is awaitable but we don't want to await it.
+            if (methodExecutor.IsMethodAsync && !IsChannel(methodExecutor.MethodReturnType, out _))
             {
-                if (IsIObservable(returnType) || IsChannel(returnType, out _))
+                if (methodExecutor.MethodReturnType == typeof(Task))
                 {
-                    await SendMessageAsync(connection, new StreamCompletionMessage(invocationMessage.InvocationId, ex.Message));
+                    await (Task)methodExecutor.Execute(hub, arguments);
                 }
                 else
                 {
-                    await SendMessageAsync(connection, CompletionMessage.WithError(invocationMessage.InvocationId, ex.Message));
+                    return await methodExecutor.ExecuteAsync(hub, arguments);
                 }
             }
+            else
+            {
+                return methodExecutor.Execute(hub, arguments);
+            }
+
+            return null;
+        }
+
+        private async Task SendInvocationError(HubMethodInvocationMessage hubMethodInvocationMessage,
+            HubConnectionContext connection, string errorMessage)
+        {
+            if (hubMethodInvocationMessage.NonBlocking)
+            {
+                return;
+            }
+
+            await SendMessageAsync(connection, CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId, errorMessage));
         }
 
         private void InitializeHub(THub hub, HubConnectionContext connection)
@@ -448,7 +459,7 @@ namespace Microsoft.AspNetCore.SignalR
             hub.Groups = _hubContext.Groups;
         }
 
-        private bool IsChannel(Type type, out Type payloadType)
+        private static bool IsChannel(Type type, out Type payloadType)
         {
             var channelType = type.AllBaseTypes().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ReadableChannel<>));
             if (channelType == null)
@@ -486,7 +497,7 @@ namespace Microsoft.AspNetCore.SignalR
             }
             finally
             {
-                await SendMessageAsync(connection, new StreamCompletionMessage(invocationId, error: error));
+                await SendMessageAsync(connection, new CompletionMessage(invocationId, error: error, result: null, hasResult: false));
 
                 if (connection.ActiveRequestCancellationSources.TryRemove(invocationId, out var cts))
                 {
@@ -495,33 +506,73 @@ namespace Microsoft.AspNetCore.SignalR
             }
         }
 
-        private bool IsStreamed(HubConnectionContext connection, string invocationId, ObjectMethodExecutor methodExecutor, object result, Type resultType, out IAsyncEnumerator<object> enumerator)
+        private async Task<bool> ValidateInvocationMode(Type resultType, bool isStreamedInvocation,
+            HubMethodInvocationMessage hubMethodInvocationMessage, HubConnectionContext connection)
         {
-            if (result == null)
+            var isStreamedResult = IsStreamed(resultType);
+            if (isStreamedResult && !isStreamedInvocation)
             {
-                enumerator = null;
+                if (!hubMethodInvocationMessage.NonBlocking)
+                {
+                    _logger.StreamingMethodCalledWithInvoke(hubMethodInvocationMessage);
+                    await SendMessageAsync(connection, CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId,
+                        $"The client attempted to invoke the streaming '{hubMethodInvocationMessage.Target}' method in a non-streaming fashion."));
+                }
+
                 return false;
             }
 
+            if (!isStreamedResult && isStreamedInvocation)
+            {
+                _logger.NonStreamingMethodCalledWithStream(hubMethodInvocationMessage);
+                await SendMessageAsync(connection, CompletionMessage.WithError(hubMethodInvocationMessage.InvocationId,
+                    $"The client attempted to invoke the non-streaming '{hubMethodInvocationMessage.Target}' method in a streaming fashion."));
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private static bool IsStreamed(Type resultType)
+        {
             var observableInterface = IsIObservable(resultType) ?
                 resultType :
                 resultType.GetInterfaces().FirstOrDefault(IsIObservable);
+
             if (observableInterface != null)
             {
-                enumerator = AsyncEnumeratorAdapters.FromObservable(result, observableInterface, CreateCancellation());
                 return true;
             }
-            else if (IsChannel(resultType, out var payloadType))
+
+            if (IsChannel(resultType, out _))
             {
-                enumerator = AsyncEnumeratorAdapters.FromChannel(result, payloadType, CreateCancellation());
                 return true;
             }
-            else
+
+            return false;
+        }
+
+        private IAsyncEnumerator<object> GetStreamingEnumerator(HubConnectionContext connection, string invocationId, ObjectMethodExecutor methodExecutor, object result, Type resultType)
+        {
+            if (result != null)
             {
-                // Not streamed
-                enumerator = null;
-                return false;
+                var observableInterface = IsIObservable(resultType) ?
+                    resultType :
+                    resultType.GetInterfaces().FirstOrDefault(IsIObservable);
+                if (observableInterface != null)
+                {
+                    return AsyncEnumeratorAdapters.FromObservable(result, observableInterface, CreateCancellation());
+                }
+
+                if (IsChannel(resultType, out var payloadType))
+                {
+                    return AsyncEnumeratorAdapters.FromChannel(result, payloadType, CreateCancellation());
+                }
             }
+
+            _logger.InvalidReturnValueFromStreamingMethod(methodExecutor.MethodInfo.Name);
+            throw new InvalidOperationException($"The value returned by the streaming method '{methodExecutor.MethodInfo.Name}' is null, does not implement the IObservable<> interface or is not a ReadableChannel<>.");
 
             CancellationToken CreateCancellation()
             {

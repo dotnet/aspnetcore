@@ -597,7 +597,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             }
         }
 
-        public class RedisExcludeClientsMessage : InvocationMessage
+        private class RedisExcludeClientsMessage : InvocationMessage
         {
             public IReadOnlyList<string> ExcludedIds;
 

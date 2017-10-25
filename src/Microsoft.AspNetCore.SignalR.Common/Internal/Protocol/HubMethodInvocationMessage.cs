@@ -7,7 +7,7 @@ using System.Runtime.ExceptionServices;
 
 namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 {
-    public class InvocationMessage : HubMessage
+    public abstract class HubMethodInvocationMessage : HubMessage
     {
         private readonly ExceptionDispatchInfo _argumentBindingException;
         private readonly object[] _arguments;
@@ -35,9 +35,9 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             }
         }
 
-        public bool NonBlocking { get; }
+        public bool NonBlocking { get; protected set; }
 
-        public InvocationMessage(string invocationId, bool nonBlocking, string target, ExceptionDispatchInfo argumentBindingException, params object[] arguments)
+        public HubMethodInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, object[] arguments)
             : base(invocationId)
         {
             if (string.IsNullOrEmpty(invocationId))
@@ -58,12 +58,32 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             Target = target;
             _arguments = arguments;
             _argumentBindingException = argumentBindingException;
+        }
+    }
+
+    public class InvocationMessage : HubMethodInvocationMessage
+    {
+        public InvocationMessage(string invocationId, bool nonBlocking, string target, ExceptionDispatchInfo argumentBindingException, params object[] arguments)
+            : base(invocationId, target, argumentBindingException, arguments)
+        {
             NonBlocking = nonBlocking;
         }
 
         public override string ToString()
         {
-            return $"Invocation {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(NonBlocking)}: {NonBlocking}, {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {string.Join(", ", Arguments.Select(a => a?.ToString()))} ] }}";
+            return $"InvocationMessage {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(NonBlocking)}: {NonBlocking}, {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {string.Join(", ", Arguments?.Select(a => a?.ToString())) ?? string.Empty } ] }}";
+        }
+    }
+
+    public class StreamInvocationMessage : HubMethodInvocationMessage
+    {
+        public StreamInvocationMessage(string invocationId, string target, ExceptionDispatchInfo argumentBindingException, params object[] arguments)
+            : base(invocationId, target, argumentBindingException, arguments)
+        { }
+
+        public override string ToString()
+        {
+            return $"StreamInvocation {{ {nameof(InvocationId)}: \"{InvocationId}\", {nameof(Target)}: \"{Target}\", {nameof(Arguments)}: [ {string.Join(", ", Arguments?.Select(a => a?.ToString())) ?? string.Empty} ] }}";
         }
     }
 }

@@ -104,10 +104,10 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await connection.ReadSentTextMessageAsync().OrTimeout();
                 var invokeMessage = await connection.ReadSentTextMessageAsync().OrTimeout();
 
-                Assert.Equal("{\"invocationId\":\"1\",\"type\":1,\"target\":\"Foo\",\"arguments\":[]}\u001e", invokeMessage);
+                Assert.Equal("{\"invocationId\":\"1\",\"type\":4,\"target\":\"Foo\",\"arguments\":[]}\u001e", invokeMessage);
 
                 // Complete the channel
-                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 4 }).OrTimeout();
+                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
                 await channel.Completion;
             }
             finally
@@ -150,7 +150,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var channel = await hubConnection.StreamAsync<int>("Foo");
 
-                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 4 }).OrTimeout();
+                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
 
                 Assert.Empty(await channel.ReadAllAsync());
             }
@@ -184,52 +184,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public async Task StreamFailsIfCompletionMessageIsNotStreamCompletionMessage()
-        {
-            var connection = new TestConnection();
-            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
-            try
-            {
-                await hubConnection.StartAsync();
-
-                var channel = await hubConnection.StreamAsync<string>("Foo");
-
-                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
-
-                var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await channel.ReadAllAsync().OrTimeout());
-                Assert.Equal("Streaming hub methods must be invoked with the 'HubConnection.StreamAsync' method.", ex.Message);
-            }
-            finally
-            {
-                await hubConnection.DisposeAsync().OrTimeout();
-                await connection.DisposeAsync().OrTimeout();
-            }
-        }
-
-        [Fact]
-        public async Task StreamFailsIfErrorCompletionMessageIsNotStreamCompletionMessage()
-        {
-            var connection = new TestConnection();
-            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
-            try
-            {
-                await hubConnection.StartAsync();
-
-                var channel = await hubConnection.StreamAsync<string>("Foo");
-
-                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, error = "error" }).OrTimeout();
-
-                var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await channel.ReadAllAsync().OrTimeout());
-                Assert.Equal("Streaming hub methods must be invoked with the 'HubConnection.StreamAsync' method.", ex.Message);
-            }
-            finally
-            {
-                await hubConnection.DisposeAsync().OrTimeout();
-                await connection.DisposeAsync().OrTimeout();
-            }
-        }
-
-        [Fact]
         public async Task InvokeFailsWithExceptionWhenCompletionWithErrorReceived()
         {
             var connection = new TestConnection();
@@ -253,6 +207,29 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
+        public async Task StreamFailsIfCompletionMessageHasPayload()
+        {
+            var connection = new TestConnection();
+            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
+            try
+            {
+                await hubConnection.StartAsync();
+
+                var channel = await hubConnection.StreamAsync<string>("Foo");
+
+                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, result = "Oops" }).OrTimeout();
+
+                var ex = await Assert.ThrowsAsync<InvalidOperationException>(async () => await channel.ReadAllAsync().OrTimeout());
+                Assert.Equal("Server provided a result in a completion response to a streamed invocation.", ex.Message);
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync().OrTimeout();
+                await connection.DisposeAsync().OrTimeout();
+            }
+        }
+
+        [Fact]
         public async Task StreamFailsWithExceptionWhenCompletionWithErrorReceived()
         {
             var connection = new TestConnection();
@@ -263,7 +240,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
 
                 var channel = await hubConnection.StreamAsync<int>("Foo");
 
-                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 4, error = "An error occurred" }).OrTimeout();
+                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3, error = "An error occurred" }).OrTimeout();
 
                 var ex = await Assert.ThrowsAsync<HubException>(async () => await channel.ReadAllAsync().OrTimeout());
                 Assert.Equal("An error occurred", ex.Message);
@@ -299,52 +276,6 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public async Task InvokeFailsWithErrorWhenStreamCompletionReceived()
-        {
-            var connection = new TestConnection();
-            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
-            try
-            {
-                await hubConnection.StartAsync();
-
-                var invokeTask = hubConnection.InvokeAsync<int>("Foo");
-
-                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 4 }).OrTimeout();
-
-                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => invokeTask).OrTimeout();
-                Assert.Equal("Non-streaming hub methods must be invoked with the 'HubConnection.InvokeAsync' method.", ex.Message);
-            }
-            finally
-            {
-                await hubConnection.DisposeAsync().OrTimeout();
-                await connection.DisposeAsync().OrTimeout();
-            }
-        }
-
-        [Fact]
-        public async Task InvokeFailsWithErrorWhenErrorStreamCompletionReceived()
-        {
-            var connection = new TestConnection();
-            var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
-            try
-            {
-                await hubConnection.StartAsync();
-
-                var invokeTask = hubConnection.InvokeAsync<int>("Foo");
-
-                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 4, error = "error" }).OrTimeout();
-
-                var ex = await Assert.ThrowsAsync<InvalidOperationException>(() => invokeTask).OrTimeout();
-                Assert.Equal("Non-streaming hub methods must be invoked with the 'HubConnection.InvokeAsync' method.", ex.Message);
-            }
-            finally
-            {
-                await hubConnection.DisposeAsync().OrTimeout();
-                await connection.DisposeAsync().OrTimeout();
-            }
-        }
-
-        [Fact]
         public async Task StreamYieldsItemsAsTheyArrive()
         {
             var connection = new TestConnection();
@@ -358,7 +289,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "1" }).OrTimeout();
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "2" }).OrTimeout();
                 await connection.ReceiveJsonMessage(new { invocationId = "1", type = 2, item = "3" }).OrTimeout();
-                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 4 }).OrTimeout();
+                await connection.ReceiveJsonMessage(new { invocationId = "1", type = 3 }).OrTimeout();
 
                 var notifications = await channel.ReadAllAsync().OrTimeout();
 

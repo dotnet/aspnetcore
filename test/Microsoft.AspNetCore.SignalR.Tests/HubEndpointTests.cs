@@ -232,7 +232,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
             {
                 var endPointTask = endPoint.OnConnectedAsync(client.Connection);
 
-                var invocationId = await client.SendInvocationAsync(nameof(ObservableHub.Subscribe), nonBlocking: false).OrTimeout();
+                var invocationId = await client.SendStreamInvocationAsync(nameof(ObservableHub.Subscribe)).OrTimeout();
 
                 await waitForSubscribe.Task.OrTimeout();
 
@@ -1015,7 +1015,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 AssertHubMessage(new StreamItemMessage(string.Empty, "1"), messages[1]);
                 AssertHubMessage(new StreamItemMessage(string.Empty, "2"), messages[2]);
                 AssertHubMessage(new StreamItemMessage(string.Empty, "3"), messages[3]);
-                AssertHubMessage(new StreamCompletionMessage(string.Empty, error: null), messages[4]);
+                AssertHubMessage(CompletionMessage.Empty(string.Empty), messages[4]);
 
                 client.Dispose();
 
@@ -1035,11 +1035,14 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await client.Connected.OrTimeout();
 
-                var invocationId = await client.SendInvocationAsync(nameof(StreamingHub.BlockingStream)).OrTimeout();
+                var invocationId = Guid.NewGuid().ToString("N");
+                await client.SendHubMessageAsync(new StreamInvocationMessage(invocationId, nameof(StreamingHub.BlockingStream),
+                    argumentBindingException: null));
+
                 // cancel the Streaming method
                 await client.SendHubMessageAsync(new CancelInvocationMessage(invocationId)).OrTimeout();
 
-                var hubMessage = Assert.IsType<StreamCompletionMessage>(await client.ReadAsync().OrTimeout());
+                var hubMessage = Assert.IsType<CompletionMessage>(await client.ReadAsync().OrTimeout());
                 Assert.Equal(invocationId, hubMessage.InvocationId);
                 Assert.Null(hubMessage.Error);
 
@@ -1221,7 +1224,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
 
                 await client.SendInvocationAsync(nameof(MethodHub.BroadcastItem)).OrTimeout();
 
-                var message = await client.ReadAsync().OrTimeout() as InvocationMessage;
+                var message = Assert.IsType<InvocationMessage>(await client.ReadAsync().OrTimeout());
 
                 var msgPackObject = Assert.IsType<MessagePackObject>(message.Arguments[0]);
                 // Custom serialization - object was serialized as an array and not a map
@@ -1316,10 +1319,6 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                     Assert.Equal(expectedCompletion.Error, actualCompletion.Error);
                     Assert.Equal(expectedCompletion.HasResult, actualCompletion.HasResult);
                     Assert.Equal(expectedCompletion.Result, actualCompletion.Result);
-                    break;
-                case StreamCompletionMessage expectedStreamCompletion:
-                    var actualStreamCompletion = Assert.IsType<StreamCompletionMessage>(actual);
-                    Assert.Equal(expectedStreamCompletion.Error, actualStreamCompletion.Error);
                     break;
                 case StreamItemMessage expectedStreamItem:
                     var actualStreamItem = Assert.IsType<StreamItemMessage>(actual);

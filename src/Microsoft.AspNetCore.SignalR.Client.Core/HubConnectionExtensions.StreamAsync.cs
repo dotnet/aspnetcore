@@ -114,6 +114,5 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
             return outputChannel.In;
         }
-
     }
 }

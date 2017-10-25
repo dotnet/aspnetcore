@@ -30,15 +30,13 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await manager.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
                 Assert.True(output1.In.TryRead(out var item));
-                var message = item as InvocationMessage;
-                Assert.NotNull(message);
+                var message = Assert.IsType<InvocationMessage>(item);
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
 
                 Assert.True(output2.In.TryRead(out item));
-                message = item as InvocationMessage;
-                Assert.NotNull(message);
+                message = Assert.IsType<InvocationMessage>(item);
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
@@ -66,8 +64,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await manager.InvokeAllAsync("Hello", new object[] { "World" }).OrTimeout();
 
                 Assert.True(output1.In.TryRead(out var item));
-                var message = item as InvocationMessage;
-                Assert.NotNull(message);
+                var message = Assert.IsType<InvocationMessage>(item);
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
@@ -97,8 +94,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await manager.InvokeGroupAsync("gunit", "Hello", new object[] { "World" }).OrTimeout();
 
                 Assert.True(output1.In.TryRead(out var item));
-                var message = item as InvocationMessage;
-                Assert.NotNull(message);
+                var message = Assert.IsType<InvocationMessage>(item);
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);
@@ -121,8 +117,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
                 await manager.InvokeConnectionAsync(connection.ConnectionId, "Hello", new object[] { "World" }).OrTimeout();
 
                 Assert.True(output.In.TryRead(out var item));
-                var message = item as InvocationMessage;
-                Assert.NotNull(message);
+                var message = Assert.IsType<InvocationMessage>(item);
                 Assert.Equal("Hello", message.Target);
                 Assert.Single(message.Arguments);
                 Assert.Equal("World", (string)message.Arguments[0]);

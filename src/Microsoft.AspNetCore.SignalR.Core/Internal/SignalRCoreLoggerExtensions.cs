@@ -58,6 +58,18 @@ namespace Microsoft.AspNetCore.SignalR.Core.Internal
         private static readonly Action<ILogger, Exception> _abortFailed =
             LoggerMessage.Define(LogLevel.Trace, new EventId(15, nameof(AbortFailed)), "Abort callback failed.");
 
+        private static readonly Action<ILogger, StreamInvocationMessage, Exception> _receivedStreamHubInvocation =
+            LoggerMessage.Define<StreamInvocationMessage>(LogLevel.Debug, new EventId(16, nameof(ReceivedStreamHubInvocation)), "Received stream hub invocation: {invocationMessage}.");
+
+        private static readonly Action<ILogger, HubMethodInvocationMessage, Exception> _streamingMethodCalledWithInvoke =
+            LoggerMessage.Define<HubMethodInvocationMessage>(LogLevel.Error, new EventId(17, nameof(StreamingMethodCalledWithInvoke)), "A streaming method was invoked in the non-streaming fashion : {invocationMessage}.");
+
+        private static readonly Action<ILogger, HubMethodInvocationMessage, Exception> _nonStreamingMethodCalledWithStream =
+            LoggerMessage.Define<HubMethodInvocationMessage>(LogLevel.Error, new EventId(18, nameof(NonStreamingMethodCalledWithStream)), "A non-streaming method was invoked in the streaming fashion : {invocationMessage}.");
+
+        private static readonly Action<ILogger, string, Exception> _invalidReturnValueFromStreamingMethod =
+            LoggerMessage.Define<string>(LogLevel.Error, new EventId(19, nameof(InvalidReturnValueFromStreamingMethod)), "A streaming method returned a value that cannot be used to build enumerator {hubMethod}.");
+
         public static void UsingHubProtocol(this ILogger logger, string hubProtocol)
         {
             _usingHubProtocol(logger, hubProtocol, null);
@@ -136,6 +148,26 @@ namespace Microsoft.AspNetCore.SignalR.Core.Internal
         public static void AbortFailed(this ILogger logger, Exception exception)
         {
             _abortFailed(logger, exception);
+        }
+
+        public static void ReceivedStreamHubInvocation(this ILogger logger, StreamInvocationMessage invocationMessage)
+        {
+            _receivedStreamHubInvocation(logger, invocationMessage, null);
+        }
+
+        public static void StreamingMethodCalledWithInvoke(this ILogger logger, HubMethodInvocationMessage invocationMessage)
+        {
+            _streamingMethodCalledWithInvoke(logger, invocationMessage, null);
+        }
+
+        public static void NonStreamingMethodCalledWithStream(this ILogger logger, HubMethodInvocationMessage invocationMessage)
+        {
+            _nonStreamingMethodCalledWithStream(logger, invocationMessage, null);
+        }
+
+        public static void InvalidReturnValueFromStreamingMethod(this ILogger logger, string hubMethod)
+        {
+            _invalidReturnValueFromStreamingMethod(logger, hubMethod, null);
         }
     }
 }

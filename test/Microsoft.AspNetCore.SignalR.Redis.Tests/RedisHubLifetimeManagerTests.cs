@@ -574,8 +574,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
         private void AssertMessage(Channel<HubMessage> channel)
         {
             Assert.True(channel.In.TryRead(out var item));
-            var message = item as InvocationMessage;
-            Assert.NotNull(message);
+            var message = Assert.IsType<InvocationMessage>(item);
             Assert.Equal("Hello", message.Target);
             Assert.Single(message.Arguments);
             Assert.Equal("World", (string)message.Arguments[0]);
@@ -583,7 +582,6 @@ namespace Microsoft.AspNetCore.SignalR.Redis.Tests
 
         private class MyHub : Hub
         {
-
         }
     }
 }

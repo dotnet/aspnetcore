@@ -5,7 +5,7 @@ export const enum MessageType {
     Invocation = 1,
     Result,
     Completion,
-    StreamCompletion
+    StreamInvocation
 }
 
 export interface HubMessage {
@@ -19,12 +19,13 @@ export interface InvocationMessage extends HubMessage {
     readonly nonblocking?: boolean;
 }
 
-export interface ResultMessage extends HubMessage {
-    readonly item?: any;
+export interface StreamInvocationMessage extends HubMessage {
+    readonly target: string;
+    readonly arguments: Array<any>
 }
 
-export interface StreamCompletionMessage extends HubMessage {
-    readonly error?: string;
+export interface ResultMessage extends HubMessage {
+    readonly item?: any;
 }
 
 export interface CompletionMessage extends HubMessage {
