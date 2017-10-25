@@ -12,70 +12,70 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Core.Internal
     public class KestrelTrace : IKestrelTrace
     {
         private static readonly Action<ILogger, string, Exception> _connectionStart =
-            LoggerMessage.Define<string>(LogLevel.Debug, 1, @"Connection id ""{ConnectionId}"" started.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(1, nameof(ConnectionStart)), @"Connection id ""{ConnectionId}"" started.");
 
         private static readonly Action<ILogger, string, Exception> _connectionStop =
-            LoggerMessage.Define<string>(LogLevel.Debug, 2, @"Connection id ""{ConnectionId}"" stopped.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(2, nameof(ConnectionStop)), @"Connection id ""{ConnectionId}"" stopped.");
 
         private static readonly Action<ILogger, string, Exception> _connectionPause =
-            LoggerMessage.Define<string>(LogLevel.Debug, 4, @"Connection id ""{ConnectionId}"" paused.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(4, nameof(ConnectionPause)), @"Connection id ""{ConnectionId}"" paused.");
 
         private static readonly Action<ILogger, string, Exception> _connectionResume =
-            LoggerMessage.Define<string>(LogLevel.Debug, 5, @"Connection id ""{ConnectionId}"" resumed.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(5, nameof(ConnectionResume)), @"Connection id ""{ConnectionId}"" resumed.");
 
         private static readonly Action<ILogger, string, Exception> _connectionKeepAlive =
-            LoggerMessage.Define<string>(LogLevel.Debug, 9, @"Connection id ""{ConnectionId}"" completed keep alive response.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(9, nameof(ConnectionKeepAlive)), @"Connection id ""{ConnectionId}"" completed keep alive response.");
 
         private static readonly Action<ILogger, string, Exception> _connectionDisconnect =
-            LoggerMessage.Define<string>(LogLevel.Debug, 10, @"Connection id ""{ConnectionId}"" disconnecting.");
+            LoggerMessage.Define<string>(LogLevel.Debug, new EventId(10, nameof(ConnectionDisconnect)), @"Connection id ""{ConnectionId}"" disconnecting.");
 
         private static readonly Action<ILogger, string, string, Exception> _applicationError =
-            LoggerMessage.Define<string, string>(LogLevel.Error, 13, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": An unhandled exception was thrown by the application.");
+            LoggerMessage.Define<string, string>(LogLevel.Error, new EventId(13, nameof(ApplicationError)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": An unhandled exception was thrown by the application.");
 
         private static readonly Action<ILogger, Exception> _notAllConnectionsClosedGracefully =
-            LoggerMessage.Define(LogLevel.Debug, 16, "Some connections failed to close gracefully during server shutdown.");
+            LoggerMessage.Define(LogLevel.Debug, new EventId(16, nameof(NotAllConnectionsClosedGracefully)), "Some connections failed to close gracefully during server shutdown.");
 
         private static readonly Action<ILogger, string, string, Exception> _connectionBadRequest =
-            LoggerMessage.Define<string, string>(LogLevel.Information, 17, @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(17, nameof(ConnectionBadRequest)), @"Connection id ""{ConnectionId}"" bad request data: ""{message}""");
 
         private static readonly Action<ILogger, string, long, Exception> _connectionHeadResponseBodyWrite =
-            LoggerMessage.Define<string, long>(LogLevel.Debug, 18, @"Connection id ""{ConnectionId}"" write of ""{count}"" body bytes to non-body HEAD response.");
+            LoggerMessage.Define<string, long>(LogLevel.Debug, new EventId(18, nameof(ConnectionHeadResponseBodyWrite)), @"Connection id ""{ConnectionId}"" write of ""{count}"" body bytes to non-body HEAD response.");
 
         private static readonly Action<ILogger, string, Exception> _requestProcessingError =
-            LoggerMessage.Define<string>(LogLevel.Information, 20, @"Connection id ""{ConnectionId}"" request processing ended abnormally.");
+            LoggerMessage.Define<string>(LogLevel.Information, new EventId(20, nameof(RequestProcessingError)), @"Connection id ""{ConnectionId}"" request processing ended abnormally.");
 
         private static readonly Action<ILogger, Exception> _notAllConnectionsAborted =
-            LoggerMessage.Define(LogLevel.Debug, 21, "Some connections failed to abort during server shutdown.");
+            LoggerMessage.Define(LogLevel.Debug, new EventId(21, nameof(NotAllConnectionsAborted)), "Some connections failed to abort during server shutdown.");
 
         private static readonly Action<ILogger, TimeSpan, DateTimeOffset, Exception> _heartbeatSlow =
-            LoggerMessage.Define<TimeSpan, DateTimeOffset>(LogLevel.Warning, 22, @"Heartbeat took longer than ""{interval}"" at ""{now}"".");
+            LoggerMessage.Define<TimeSpan, DateTimeOffset>(LogLevel.Warning, new EventId(22, nameof(HeartbeatSlow)), @"Heartbeat took longer than ""{interval}"" at ""{now}"".");
 
         private static readonly Action<ILogger, string, Exception> _applicationNeverCompleted =
-            LoggerMessage.Define<string>(LogLevel.Critical, 23, @"Connection id ""{ConnectionId}"" application never completed");
+            LoggerMessage.Define<string>(LogLevel.Critical, new EventId(23, nameof(ApplicationNeverCompleted)), @"Connection id ""{ConnectionId}"" application never completed");
 
         private static readonly Action<ILogger, string, Exception> _connectionRejected =
-            LoggerMessage.Define<string>(LogLevel.Warning, 24, @"Connection id ""{ConnectionId}"" rejected because the maximum number of concurrent connections has been reached.");
+            LoggerMessage.Define<string>(LogLevel.Warning, new EventId(24, nameof(ConnectionRejected)), @"Connection id ""{ConnectionId}"" rejected because the maximum number of concurrent connections has been reached.");
 
         private static readonly Action<ILogger, string, string, Exception> _requestBodyStart =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, 25, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": started reading request body.");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(25, nameof(RequestBodyStart)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": started reading request body.");
 
         private static readonly Action<ILogger, string, string, Exception> _requestBodyDone =
-            LoggerMessage.Define<string, string>(LogLevel.Debug, 26, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.");
+            LoggerMessage.Define<string, string>(LogLevel.Debug, new EventId(26, nameof(RequestBodyDone)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": done reading request body.");
 
         private static readonly Action<ILogger, string, string, double, Exception> _requestBodyMinimumDataRateNotSatisfied =
-            LoggerMessage.Define<string, string, double>(LogLevel.Information, 27, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
+            LoggerMessage.Define<string, string, double>(LogLevel.Information, new EventId(27, nameof(RequestBodyMininumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the request timed out because it was not sent by the client at a minimum of {Rate} bytes/second.");
 
         private static readonly Action<ILogger, string, string, Exception> _responseMinimumDataRateNotSatisfied =
-            LoggerMessage.Define<string, string>(LogLevel.Information, 28, @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed becuase the response was not read by the client at the specified minimum data rate.");
+            LoggerMessage.Define<string, string>(LogLevel.Information, new EventId(28, nameof(ResponseMininumDataRateNotSatisfied)), @"Connection id ""{ConnectionId}"", Request id ""{TraceIdentifier}"": the connection was closed becuase the response was not read by the client at the specified minimum data rate.");
 
         private static readonly Action<ILogger, string, Exception> _http2ConnectionError =
-            LoggerMessage.Define<string>(LogLevel.Information, 29, @"Connection id ""{ConnectionId}"": HTTP/2 connection error.");
+            LoggerMessage.Define<string>(LogLevel.Information, new EventId(29, nameof(Http2ConnectionError)), @"Connection id ""{ConnectionId}"": HTTP/2 connection error.");
 
         private static readonly Action<ILogger, string, Exception> _http2StreamError =
-            LoggerMessage.Define<string>(LogLevel.Information, 30, @"Connection id ""{ConnectionId}"": HTTP/2 stream error.");
+            LoggerMessage.Define<string>(LogLevel.Information, new EventId(30, nameof(Http2StreamError)), @"Connection id ""{ConnectionId}"": HTTP/2 stream error.");
 
         private static readonly Action<ILogger, string, int, Exception> _hpackDecodingError =
-            LoggerMessage.Define<string, int>(LogLevel.Information, 31, @"Connection id ""{ConnectionId}"": HPACK decoding error while decoding headers for stream ID {StreamId}.");
+            LoggerMessage.Define<string, int>(LogLevel.Information, new EventId(31, nameof(HPackDecodingError)), @"Connection id ""{ConnectionId}"": HPACK decoding error while decoding headers for stream ID {StreamId}.");
 
         protected readonly ILogger _logger;
 

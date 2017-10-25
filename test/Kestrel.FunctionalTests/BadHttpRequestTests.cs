@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Server.Kestrel.Core.Internal;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Infrastructure;
 using Microsoft.AspNetCore.Testing;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Testing;
 using Moq;
 using Xunit;
 
@@ -135,23 +136,13 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
         [Fact]
         public async Task BadRequestLogsAreNotHigherThanInformation()
         {
-            var maxLogLevel = LogLevel.Trace;
-
-            var mockLogger = new Mock<ILogger>();
-            mockLogger
-                .Setup(logger => logger.IsEnabled(It.IsAny<LogLevel>()))
-                .Returns(true);
-            mockLogger
-                .Setup(logger => logger.Log(It.IsAny<LogLevel>(), It.IsAny<EventId>(), It.IsAny<object>(), It.IsAny<Exception>(), It.IsAny<Func<object, Exception, string>>()))
-                .Callback<LogLevel, EventId, object, Exception, Func<object, Exception, string>>((logLevel, eventId, state, ex, formatter) =>
-                {
-                    maxLogLevel = logLevel > maxLogLevel ? logLevel : maxLogLevel;
-                });
+            var sink = new TestSink();
+            var logger = new TestLogger("TestLogger", sink, enabled: true);
 
             using (var server = new TestServer(async context =>
             {
                 await context.Request.Body.ReadAsync(new byte[1], 0, 1);
-            }, new TestServiceContext { Log = new KestrelTrace(mockLogger.Object) }))
+            }, new TestServiceContext { Log = new KestrelTrace(logger) }))
             {
                 using (var connection = new TestConnection(server.Port))
                 {
@@ -163,10 +154,8 @@ namespace Microsoft.AspNetCore.Server.Kestrel.FunctionalTests
                 }
             }
 
-            const int badRequestEventId = 17;
-            mockLogger.Verify(logger => logger.Log(LogLevel.Information, badRequestEventId, It.IsAny<object>(), It.IsAny<BadHttpRequestException>(), It.IsAny<Func<object, Exception, string>>()));
-
-            Assert.Equal(LogLevel.Information, maxLogLevel);
+            Assert.All(sink.Writes, w => Assert.InRange(w.LogLevel, LogLevel.Trace, LogLevel.Information));
+            Assert.Contains(sink.Writes, w => w.EventId.Id == 17 && w.LogLevel == LogLevel.Information);
         }
 
         [Fact]
