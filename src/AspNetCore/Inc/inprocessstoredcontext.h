@@ -9,6 +9,7 @@ public:
         IHttpContext* pHttpContext,
         PVOID pvManagedContext
     );
+
     ~IN_PROCESS_STORED_CONTEXT();
 
     virtual
@@ -46,6 +47,26 @@ public:
         VOID
     );
 
+    BOOL
+    QueryIsManagedRequestComplete(
+        VOID
+    );
+
+    VOID
+    IndicateManagedRequestComplete(
+        VOID
+    ); 
+
+    REQUEST_NOTIFICATION_STATUS
+    QueryAsyncCompletionStatus(
+        VOID
+    );
+
+    VOID
+    SetAsyncCompletionStatus(
+        REQUEST_NOTIFICATION_STATUS requestNotificationStatus
+    );
+
     static
     HRESULT
     GetInProcessStoredContext(
@@ -63,5 +84,7 @@ public:
 private:
     PVOID m_pManagedHttpContext;
     IHttpContext* m_pHttpContext;
+    BOOL m_fManagedRequestComplete;
+    REQUEST_NOTIFICATION_STATUS m_requestNotificationStatus;
 };
 

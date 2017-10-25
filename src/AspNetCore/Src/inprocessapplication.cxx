@@ -30,6 +30,7 @@ IN_PROCESS_APPLICATION::OnAsyncCompletion(
 {
     HRESULT hr;
     IN_PROCESS_STORED_CONTEXT* pInProcessStoredContext = NULL;
+    REQUEST_NOTIFICATION_STATUS dwRequestNotificationStatus = RQ_NOTIFICATION_CONTINUE;
 
     hr = IN_PROCESS_STORED_CONTEXT::GetInProcessStoredContext(pHttpContext, &pInProcessStoredContext);
     if (FAILED(hr))
@@ -38,9 +39,18 @@ IN_PROCESS_APPLICATION::OnAsyncCompletion(
         pHttpContext->GetResponse()->SetStatus(500, "Internal Server Error", 19, hr);
         return RQ_NOTIFICATION_FINISH_REQUEST;
     }
-
-    // Call the managed handler for async completion.
-    return m_AsyncCompletionHandler(pInProcessStoredContext->QueryManagedHttpContext(), hrCompletionStatus, cbCompletion);
+    else if (pInProcessStoredContext->QueryIsManagedRequestComplete())
+    {
+        // means PostCompletion has been called and this is the associated callback.
+        dwRequestNotificationStatus = pInProcessStoredContext->QueryAsyncCompletionStatus();
+        // TODO cleanup whatever disconnect listener there is
+        return dwRequestNotificationStatus;
+    }
+    else
+    {
+        // Call the managed handler for async completion.
+        return m_AsyncCompletionHandler(pInProcessStoredContext->QueryManagedHttpContext(), hrCompletionStatus, cbCompletion);
+    }
 }
 
 BOOL

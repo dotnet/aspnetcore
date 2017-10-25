@@ -8,8 +8,10 @@ IN_PROCESS_STORED_CONTEXT::IN_PROCESS_STORED_CONTEXT(
     PVOID pMangedHttpContext
 )
 {
+    // TODO if we want to go by IIS patterns, we should have these in a separate initialize function 
     m_pManagedHttpContext = pMangedHttpContext;
     m_pHttpContext = pHttpContext;
+    m_fManagedRequestComplete = FALSE;
 }
 
 IN_PROCESS_STORED_CONTEXT::~IN_PROCESS_STORED_CONTEXT()
@@ -30,6 +32,38 @@ IN_PROCESS_STORED_CONTEXT::QueryHttpContext(
 )
 {
     return m_pHttpContext;
+}
+
+BOOL
+IN_PROCESS_STORED_CONTEXT::QueryIsManagedRequestComplete(
+    VOID 
+)
+{
+    return m_fManagedRequestComplete;
+}
+
+VOID
+IN_PROCESS_STORED_CONTEXT::IndicateManagedRequestComplete(
+    VOID
+)
+{
+    m_fManagedRequestComplete = TRUE;
+}
+
+REQUEST_NOTIFICATION_STATUS
+IN_PROCESS_STORED_CONTEXT::QueryAsyncCompletionStatus(
+    VOID
+)
+{
+    return m_requestNotificationStatus;
+}
+
+VOID
+IN_PROCESS_STORED_CONTEXT::SetAsyncCompletionStatus(
+    REQUEST_NOTIFICATION_STATUS requestNotificationStatus
+)
+{
+    m_requestNotificationStatus = requestNotificationStatus;
 }
 
 HRESULT

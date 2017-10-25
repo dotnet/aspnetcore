@@ -64,6 +64,30 @@ http_post_completion(
 
 EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
 HRESULT
+http_set_completion_status(
+    _In_ IHttpContext* pHttpContext,
+    REQUEST_NOTIFICATION_STATUS requestNotificationStatus
+)
+{
+    HRESULT hr = S_OK;
+    IN_PROCESS_STORED_CONTEXT* pInProcessStoredContext = NULL;
+
+    hr = IN_PROCESS_STORED_CONTEXT::GetInProcessStoredContext(
+        pHttpContext,
+        &pInProcessStoredContext
+    );
+
+    if (FAILED(hr))
+    {
+        return hr;
+    }
+    pInProcessStoredContext->IndicateManagedRequestComplete();
+    pInProcessStoredContext->SetAsyncCompletionStatus(requestNotificationStatus);
+    return hr;
+}
+
+EXTERN_C __MIDL_DECLSPEC_DLLEXPORT
+HRESULT
 http_set_managed_context(
     _In_ IHttpContext* pHttpContext,
     _In_ PVOID pvManagedContext
