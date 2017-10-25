@@ -35,4 +35,3 @@ global.json
 .deps/
 .rw/
 .ro/
-korebuild-lock.txt
