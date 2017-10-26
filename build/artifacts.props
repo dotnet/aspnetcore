@@ -9,7 +9,8 @@
   <ItemGroup>
     <PackageArtifact Include="Microsoft.AspNet.Identity.AspNetCoreCompat" Category="ship" />
     <PackageArtifact Include="Microsoft.AspNetCore" Category="ship" />
-    <PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" />
+    <!-- Temporariliy comment out while we restructure how we build the runtime store-->
+    <!-- PackageArtifact Include="Microsoft.AspNetCore.All" Category="ship" /> -->
     <PackageArtifact Include="Microsoft.AspNetCore.Antiforgery" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.ApplicationInsights.HostingStartup" Category="ship" Metapackage="true" />
     <PackageArtifact Include="Microsoft.AspNetCore.Authentication" Category="ship" Metapackage="true" />
