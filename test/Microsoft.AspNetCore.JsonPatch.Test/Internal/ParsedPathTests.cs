@@ -2,10 +2,9 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.JsonPatch.Exceptions;
-using Microsoft.AspNetCore.JsonPatch.Internal;
 using Xunit;
 
-namespace Microsoft.AspNetCore.JsonPatch.Test
+namespace Microsoft.AspNetCore.JsonPatch.Internal
 {
     public class ParsedPathTests
     {
@@ -19,7 +18,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
         [InlineData("~0~1foo", new string[] { "~/foo" })]
         public void ParsingValidPathShouldSucceed(string path, string[] expected)
         {
+            // Arrange & Act
             var parsedPath = new ParsedPath(path);
+
+            // Assert
             Assert.Equal(expected, parsedPath.Segments);
         }
 
@@ -30,6 +32,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Test
         [InlineData("foo~3bar")]
         public void PathWithInvalidEscapeSequenceShouldFail(string path)
         {
+            // Arrange, Act & Assert
             Assert.Throws<JsonPatchException>(() =>
             {
                 var parsedPath = new ParsedPath(path);

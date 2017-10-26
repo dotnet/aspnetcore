@@ -24,11 +24,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.False(addStatus);
-            Assert.Equal(
-                string.Format(
-                    "The type '{0}' which is an array is not supported for json patch operations as it has a fixed size.",
-                    targetObject.GetType().FullName),
-                message);
+            Assert.Equal($"The type '{targetObject.GetType().FullName}' which is an array is not supported for json patch operations as it has a fixed size.", message);
         }
 
         [Fact]
@@ -46,11 +42,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.False(addStatus);
-            Assert.Equal(
-                string.Format(
-                    "The type '{0}' which is a non generic list is not supported for json patch operations. Only generic list types are supported.",
-                    targetObject.GetType().FullName),
-                message);
+            Assert.Equal($"The type '{targetObject.GetType().FullName}' which is a non generic list is not supported for json patch operations. Only generic list types are supported.", message);
         }
 
         [Fact]
@@ -88,9 +80,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.False(addStatus);
-            Assert.Equal(
-                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", position),
-                message);
+            Assert.Equal($"The index value provided by path segment '{position}' is out of bounds of the array size.", message);
         }
 
         [Theory]
@@ -108,9 +98,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.False(addStatus);
-            Assert.Equal(
-                string.Format("The path segment '{0}' is invalid for an array index.", position),
-                message);
+            Assert.Equal($"The path segment '{position}' is invalid for an array index.", message);
         }
 
         public static TheoryData<List<int>, List<int>> AppendAtEndOfListData
@@ -200,7 +188,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.False(addStatus);
-            Assert.Equal(string.Format("The value '{0}' is invalid for target location.", "James"), message);
+            Assert.Equal("The value 'James' is invalid for target location.", message);
         }
 
         public static TheoryData<IList, object, string, IList> AddingDifferentComplexTypeWorksData
@@ -255,8 +243,10 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
             Assert.Equal(expected, targetObject);
         }
 
-        public static TheoryData<IList, object, string, IList> AddingKeepsObjectReferenceData {
-            get {
+        public static TheoryData<IList, object, string, IList> AddingKeepsObjectReferenceData
+        {
+            get
+            {
                 var sDto1 = new SimpleObject();
                 var sDto2 = new SimpleObject();
                 var sDto3 = new SimpleObject();
@@ -324,9 +314,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.False(getStatus);
-            Assert.Equal(
-                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", position),
-                message);
+            Assert.Equal($"The index value provided by path segment '{position}' is out of bounds of the array size.", message);
         }
 
         [Theory]
@@ -365,9 +353,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.False(removeStatus);
-            Assert.Equal(
-                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", position),
-                message);
+            Assert.Equal($"The index value provided by path segment '{position}' is out of bounds of the array size.", message);
         }
 
         [Theory]
@@ -402,9 +388,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.False(replaceStatus);
-            Assert.Equal(
-                string.Format("The value '{0}' is invalid for target location.", "James"),
-                message);
+            Assert.Equal("The value 'James' is invalid for target location.", message);
         }
 
         [Fact]

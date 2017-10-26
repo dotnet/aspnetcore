@@ -100,9 +100,7 @@ namespace Microsoft.AspNetCore.JsonPatch
             });
 
             // Assert
-            Assert.Equal(
-                string.Format("The expression '(p.IntegerValue >= 4)' is not supported. Supported expressions include member access and indexer expressions."),
-                exception.Message);
+            Assert.Equal("The expression '(p.IntegerValue >= 4)' is not supported. Supported expressions include member access and indexer expressions.", exception.Message);
         }
     }
 

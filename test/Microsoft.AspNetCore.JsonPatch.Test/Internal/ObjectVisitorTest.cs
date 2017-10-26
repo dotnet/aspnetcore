@@ -1,7 +1,6 @@
 ﻿// Copyright (c) .NET Foundation. All rights reserved.
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
-using System;
 using System.Collections.Generic;
 using System.Dynamic;
 using Newtonsoft.Json.Serialization;
@@ -168,9 +167,7 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.False(visitStatus);
-            Assert.Equal(
-                string.Format("The index value provided by path segment '{0}' is out of bounds of the array size.", position),
-                message);
+            Assert.Equal($"The index value provided by path segment '{position}' is out of bounds of the array size.", message);
         }
 
         [Theory]
@@ -188,12 +185,9 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
 
             // Assert
             Assert.False(visitStatus);
-            Assert.Equal(string.Format(
-                "The path segment '{0}' is invalid for an array index.", position),
-                message);
+            Assert.Equal($"The path segment '{position}' is invalid for an array index.", message);
         }
 
-        // The adapter takes care of the responsibility of validating the final segment
         [Fact]
         public void Visit_DoesNotValidate_FinalPathSegment()
         {

@@ -233,15 +233,21 @@ namespace Microsoft.AspNetCore.JsonPatch.Internal
         {
             var adapter = new DynamicObjectAdapter();
             dynamic target = new DynamicTestObject();
-            target.NewProperty = "Joana";
+            var value = new List<object>()
+            {
+                "Joana",
+                2,
+                new Customer("Joana", 25)
+            };
+            target.NewProperty = value;
             var segment = "NewProperty";
             var resolver = new DefaultContractResolver();
 
             // Act
-            var testStatus = adapter.TryTest(target, segment, resolver, "Joana", out string errorMessage);
+            var testStatus = adapter.TryTest(target, segment, resolver, value, out string errorMessage);
 
             // Assert
-            Assert.Equal("Joana", target.NewProperty);
+            Assert.Equal(value, target.NewProperty);
             Assert.True(testStatus);
             Assert.True(string.IsNullOrEmpty(errorMessage), "Expected no error message");
         }
