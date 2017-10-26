@@ -29,12 +29,12 @@ namespace Microsoft.AspNetCore.Dispatcher
             Template = template;
             Defaults = new DispatcherValueCollection(values);
             DisplayName = displayName;
-            Metadata = metadata.ToArray();
+            Metadata = new MetadataCollection(metadata);
         }
 
         public override string DisplayName { get; }
 
-        public override IReadOnlyList<object> Metadata { get; }
+        public override MetadataCollection Metadata { get; }
 
         public string Template { get; }
 

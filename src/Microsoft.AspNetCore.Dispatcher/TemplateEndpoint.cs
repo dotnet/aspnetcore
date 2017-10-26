@@ -78,7 +78,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             HttpMethod = httpMethod;
             HandlerFactory = (next) => requestDelegate;
             DisplayName = displayName;
-            Metadata = metadata.ToArray();
+            Metadata = new MetadataCollection(metadata);
         }
 
         public TemplateEndpoint(
@@ -109,14 +109,14 @@ namespace Microsoft.AspNetCore.Dispatcher
             HttpMethod = httpMethod;
             HandlerFactory = delegateFactory;
             DisplayName = displayName;
-            Metadata = metadata.ToArray();
+            Metadata = new MetadataCollection(metadata);
         }
 
         public override string DisplayName { get; }
 
         public string HttpMethod { get; }
 
-        public override IReadOnlyList<object> Metadata { get; }
+        public override MetadataCollection Metadata { get; }
 
         public Func<RequestDelegate, RequestDelegate> HandlerFactory { get; }
 
