@@ -30,17 +30,38 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
         private IObjectModelValidator _objectValidator;
         private ITempDataDictionary _tempData;
         private IUrlHelper _urlHelper;
+        private PageContext _pageContext;
 
         /// <summary>
         /// Gets the <see cref="RazorPages.PageContext"/>.
         /// </summary>
         [PageContext]
-        public PageContext PageContext { get; set; }
+        public PageContext PageContext
+        {
+            get
+            {
+                if (_pageContext == null)
+                {
+                    _pageContext = new PageContext();
+                }
+
+                return _pageContext;
+            }
+            set
+            {
+                if (value == null)
+                {
+                    throw new ArgumentNullException(nameof(value));
+                }
+
+                _pageContext = value;
+            }
+        }
 
         /// <summary>
         /// Gets the <see cref="Http.HttpContext"/>.
         /// </summary>
-        public HttpContext HttpContext => PageContext?.HttpContext;
+        public HttpContext HttpContext => PageContext.HttpContext;
 
         /// <summary>
         /// Gets the <see cref="HttpRequest"/>.

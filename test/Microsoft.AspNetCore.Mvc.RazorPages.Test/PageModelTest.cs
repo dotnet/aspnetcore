@@ -25,6 +25,16 @@ namespace Microsoft.AspNetCore.Mvc.RazorPages
     public class PageModelTest
     {
         [Fact]
+        public void PageContext_GetsInitialized()
+        {
+            // Arrange
+            var pageModel = new TestPageModel();
+
+            // Act & Assert
+            Assert.NotNull(pageModel.PageContext);
+        }
+
+        [Fact]
         public void Redirect_WithParameterUrl_SetsRedirectResultSameUrl()
         {
             // Arrange

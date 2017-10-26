@@ -56,7 +56,7 @@ namespace Microsoft.AspNetCore.Mvc
         /// <summary>
         /// Gets the <see cref="ModelStateDictionary"/> that contains the state of the model and of model-binding validation.
         /// </summary>
-        public ModelStateDictionary ModelState => ControllerContext?.ModelState;
+        public ModelStateDictionary ModelState => ControllerContext.ModelState;
 
         /// <summary>
         /// Gets or sets the <see cref="Mvc.ControllerContext"/>.
