@@ -9,7 +9,21 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="@(MetaPackagePackageReference)" />
+    <PackageReference Include="Microsoft.AspNetCore.Diagnostics" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.AspNetCore.Routing" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.IISIntegration" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Https" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.FileExtensions" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.CommandLine" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="$(AspNetCoreVersion)" PrivateAssets="None" />
   </ItemGroup>
 
 </Project>

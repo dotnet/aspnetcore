@@ -1,8 +1,3 @@
 <Project>
   <Import Project="dependencies.props" />
-
-  <ItemGroup>
-    <ExcludeFromPack Include="$(RepositoryRoot)src\Microsoft.AspNetCore.RuntimeStore\Microsoft.AspNetCore.RuntimeStore.csproj" />
-    <ExcludeFromPack Include="$(RepositoryRoot)src\Archive.AspNetCore.All\Archive.AspNetCore.All.csproj" />
-  </ItemGroup>
 </Project>
