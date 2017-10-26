@@ -103,6 +103,47 @@ namespace Microsoft.AspNetCore.Mvc.Internal
         }
 
         [Fact]
+        public void OnProvidersExecuting_MakesControllerVisibleInApiExplorer_IfItIsAnnotatedWithAttribute()
+        {
+            // Arrange
+            var context = GetContext(typeof(TestApiController));
+            var options = new TestOptionsManager<ApiBehaviorOptions>(new ApiBehaviorOptions
+            {
+                SuppressModelStateInvalidFilter = true,
+            });
+
+            var provider = GetProvider(options);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            Assert.True(controller.ApiExplorer.IsVisible);
+        }
+
+        [Fact]
+        public void OnProvidersExecuting_DoesNotModifyVisibilityInApiExplorer_IfValueIsAlreadySet()
+        {
+            // Arrange
+            var context = GetContext(typeof(TestApiController));
+            context.Result.Controllers[0].ApiExplorer.IsVisible = false;
+            var options = new TestOptionsManager<ApiBehaviorOptions>(new ApiBehaviorOptions
+            {
+                SuppressModelStateInvalidFilter = true,
+            });
+
+            var provider = GetProvider(options);
+
+            // Act
+            provider.OnProvidersExecuting(context);
+
+            // Assert
+            var controller = Assert.Single(context.Result.Controllers);
+            Assert.False(controller.ApiExplorer.IsVisible);
+        }
+
+        [Fact]
         public void OnProvidersExecuting_ThrowsIfControllerWithAttribute_HasActionsWithoutAttributeRouting()
         {
             // Arrange

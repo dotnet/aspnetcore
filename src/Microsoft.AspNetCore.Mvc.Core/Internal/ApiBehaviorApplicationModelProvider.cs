@@ -57,6 +57,13 @@ namespace Microsoft.AspNetCore.Mvc.Internal
             foreach (var controllerModel in context.Result.Controllers)
             {
                 var isApiController = controllerModel.Attributes.OfType<IApiBehaviorMetadata>().Any();
+                if (isApiController &&
+                    controllerModel.ApiExplorer.IsVisible == null)
+                {
+                    // Enable ApiExplorer for the controller if it wasn't already explicitly configured.
+                    controllerModel.ApiExplorer.IsVisible = true;
+                }
+
                 var controllerHasSelectorModel = controllerModel.Selectors.Any(s => s.AttributeRouteModel != null);
 
                 foreach (var actionModel in controllerModel.Actions)
