@@ -28,67 +28,44 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 {
     public class OpenIdConnectEventTests
     {
-        private readonly Func<MessageReceivedContext, Task> MessageNotImpl = context => { throw new NotImplementedException("Message"); };
-        private readonly Func<TokenValidatedContext, Task> TokenNotImpl = context => { throw new NotImplementedException("Token"); };
-        private readonly Func<AuthorizationCodeReceivedContext, Task> CodeNotImpl = context => { throw new NotImplementedException("Code"); };
-        private readonly Func<TokenResponseReceivedContext, Task> TokenResponseNotImpl = context => { throw new NotImplementedException("TokenResponse"); };
-        private readonly Func<UserInformationReceivedContext, Task> UserNotImpl = context => { throw new NotImplementedException("User"); };
-        private readonly Func<AuthenticationFailedContext, Task> FailedNotImpl = context => { throw new NotImplementedException("Failed", context.Exception); };
-        private readonly Func<TicketReceivedContext, Task> TicketNotImpl = context => { throw new NotImplementedException("Ticket"); };
-        private readonly Func<RemoteFailureContext, Task> FailureNotImpl = context => { throw new NotImplementedException("Failure", context.Failure); };
-        private readonly Func<RedirectContext, Task> RedirectNotImpl = context => { throw new NotImplementedException("Redirect"); };
-        private readonly Func<RemoteSignOutContext, Task> RemoteSignOutNotImpl = context => { throw new NotImplementedException("Remote"); };
-        private readonly Func<RemoteSignOutContext, Task> SignedOutCallbackNotImpl = context => { throw new NotImplementedException("SingedOut"); };
+        private readonly RequestDelegate AppWritePath = context => context.Response.WriteAsync(context.Request.Path);
         private readonly RequestDelegate AppNotImpl = context => { throw new NotImplementedException("App"); };
 
         [Fact]
         public async Task OnMessageReceived_Skip_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    context.SkipHandler();
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+            };
+            events.OnMessageReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.SkipHandler();
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var response = await PostAsync(server, "signin-oidc", "");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("/signin-oidc", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnMessageReceived_Fail_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var remoteFailure = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    context.Fail("Authentication was aborted from user code.");
-                    return Task.FromResult(0);
-                };
-                events.OnRemoteFailure = context =>
-                {
-                    remoteFailure = true;
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectRemoteFailure = true,
+            };
+            events.OnMessageReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.Fail("Authentication was aborted from user code.");
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var exception = await Assert.ThrowsAsync<Exception>(delegate
             {
@@ -96,95 +73,68 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             });
 
             Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
-
-            Assert.True(messageReceived);
-            Assert.True(remoteFailure);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnMessageReceived_Handled_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+            };
+            events.OnMessageReceived = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTokenValidated_Skip_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    context.SkipHandler();
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+            };
+            events.OnTokenValidated = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.SkipHandler();
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("/signin-oidc", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTokenValidated_Fail_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var remoteFailure = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    context.Fail("Authentication was aborted from user code.");
-                    return Task.FromResult(0);
-                };
-                events.OnRemoteFailure = context =>
-                {
-                    remoteFailure = true;
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectRemoteFailure = true,
+            };
+            events.OnTokenValidated = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.Fail("Authentication was aborted from user code.");
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var exception = await Assert.ThrowsAsync<Exception>(delegate
             {
@@ -192,156 +142,108 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             });
 
             Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
-
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(remoteFailure);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTokenValidated_HandledWithoutTicket_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    context.HandleResponse();
-                    context.Principal = null;
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+            };
+            events.OnTokenValidated = context =>
+            {
+                context.HandleResponse();
+                context.Principal = null;
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
+            events.ValidateExpectations();
         }
 
-        // TODO: Do any other events depend on the presence of the ticket? It's strange we have to double handle this event.
         [Fact]
         public async Task OnTokenValidated_HandledWithTicket_SkipToTicketReceived()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var ticketReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    context.Success();
-                    return Task.FromResult(0);
-                };
-                events.OnTicketReceived = context =>
-                {
-                    ticketReceived = true;
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectTicketReceived = true,
+            };
+            events.OnTokenValidated = context =>
+            {
+                context.HandleResponse();
+                context.Principal = null;
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            events.OnTokenValidated = context =>
+            {
+                context.Success();
+                return Task.FromResult(0);
+            };
+            events.OnTicketReceived = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(ticketReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnAuthorizationCodeReceived_Skip_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    context.SkipHandler();
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+            };
+            events.OnAuthorizationCodeReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.SkipHandler();
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("/signin-oidc", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnAuthorizationCodeReceived_Fail_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var remoteFailure = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    context.Fail("Authentication was aborted from user code.");
-                    return Task.FromResult(0);
-                };
-                events.OnRemoteFailure = context =>
-                {
-                    remoteFailure = true;
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectRemoteFailure = true,
+            };
+            events.OnAuthorizationCodeReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.Fail("Authentication was aborted from user code.");
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var exception = await Assert.ThrowsAsync<Exception>(delegate
             {
@@ -349,183 +251,105 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             });
 
             Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
-
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(remoteFailure);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnAuthorizationCodeReceived_HandledWithoutTicket_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    context.HandleResponse();
-                    context.Principal = null;
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+            };
+            events.OnAuthorizationCodeReceived = context =>
+            {
+                context.HandleResponse();
+                context.Principal = null;
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnAuthorizationCodeReceived_HandledWithTicket_SkipToTicketReceived()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var ticketReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    context.Success();
-                    return Task.FromResult(0);
-                };
-                events.OnTicketReceived = context =>
-                {
-                    ticketReceived = true;
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTicketReceived = true,
+            };
+            events.OnAuthorizationCodeReceived = context =>
+            {
+                context.Success();
+                return Task.FromResult(0);
+            };
+            events.OnTicketReceived = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(ticketReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTokenResponseReceived_Skip_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    context.SkipHandler();
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+            };
+            events.OnTokenResponseReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.SkipHandler();
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("/signin-oidc", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTokenResponseReceived_Fail_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var remoteFailure = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    context.Fail("Authentication was aborted from user code.");
-                    return Task.FromResult(0);
-                };
-                events.OnRemoteFailure = context =>
-                {
-                    remoteFailure = true;
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectRemoteFailure = true,
+            };
+            events.OnTokenResponseReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.Fail("Authentication was aborted from user code.");
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var exception = await Assert.ThrowsAsync<Exception>(delegate
             {
@@ -533,198 +357,107 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             });
 
             Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
-
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(remoteFailure);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTokenResponseReceived_HandledWithoutTicket_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    context.Principal = null;
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+            };
+            events.OnTokenResponseReceived = context =>
+            {
+                context.Principal = null;
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTokenResponseReceived_HandledWithTicket_SkipToTicketReceived()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var ticketReceived = false;
-            var tokenResponseReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    context.Success();
-                    return Task.FromResult(0);
-                };
-                events.OnTicketReceived = context =>
-                {
-                    ticketReceived = true;
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectTicketReceived = true,
+            };
+            events.OnTokenResponseReceived = context =>
+            {
+                context.Success();
+                return Task.FromResult(0);
+            };
+            events.OnTicketReceived = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(ticketReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTokenValidatedBackchannel_Skip_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var tokenValidated = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    context.SkipHandler();
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+            };
+            events.OnTokenValidated = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.SkipHandler();
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var response = await PostAsync(server, "signin-oidc", "state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("/signin-oidc", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(tokenValidated);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTokenValidatedBackchannel_Fail_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var tokenValidated = false;
-            var remoteFailure = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    context.Fail("Authentication was aborted from user code.");
-                    return Task.FromResult(0);
-                };
-                events.OnRemoteFailure = context =>
-                {
-                    remoteFailure = true;
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectRemoteFailure = true,
+            };
+            events.OnTokenValidated = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.Fail("Authentication was aborted from user code.");
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var exception = await Assert.ThrowsAsync<Exception>(delegate
             {
@@ -732,211 +465,109 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             });
 
             Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
-
-            Assert.True(messageReceived);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(tokenValidated);
-            Assert.True(remoteFailure);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTokenValidatedBackchannel_HandledWithoutTicket_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var tokenValidated = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    context.Principal = null;
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+            };
+            events.OnTokenValidated = context =>
+            {
+                context.Principal = null;
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(tokenValidated);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTokenValidatedBackchannel_HandledWithTicket_SkipToTicketReceived()
         {
-            var messageReceived = false;
-            var codeReceived = false;
-            var ticketReceived = false;
-            var tokenResponseReceived = false;
-            var tokenValidated = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    context.Success();
-                    return Task.FromResult(0);
-                };
-                events.OnTicketReceived = context =>
-                {
-                    ticketReceived = true;
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectTicketReceived = true,
+            };
+            events.OnTokenValidated = context =>
+            {
+                context.Success();
+                return Task.FromResult(0);
+            };
+            events.OnTicketReceived = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(tokenValidated);
-            Assert.True(ticketReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnUserInformationReceived_Skip_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    context.SkipHandler();
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+            };
+            events.OnUserInformationReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.SkipHandler();
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("/signin-oidc", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnUserInformationReceived_Fail_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var remoteFailure = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    context.Fail("Authentication was aborted from user code.");
-                    return Task.FromResult(0);
-                };
-                events.OnRemoteFailure = context =>
-                {
-                    remoteFailure = true;
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+                ExpectRemoteFailure = true,
+            };
+            events.OnUserInformationReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.Fail("Authentication was aborted from user code.");
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var exception = await Assert.ThrowsAsync<Exception>(delegate
             {
@@ -944,242 +575,123 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             });
 
             Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
-
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
-            Assert.True(remoteFailure);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnUserInformationReceived_HandledWithoutTicket_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    context.Principal = null;
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+            };
+            events.OnUserInformationReceived = context =>
+            {
+                context.Principal = null;
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnUserInformationReceived_HandledWithTicket_SkipToTicketReceived()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var ticketReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    // context.Ticket = null;
-                    context.Success();
-                    return Task.FromResult(0);
-                };
-                events.OnTicketReceived = context =>
-                {
-                    ticketReceived = true;
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+                ExpectTicketReceived = true,
+            };
+            events.OnUserInformationReceived = context =>
+            {
+                context.Success();
+                return Task.FromResult(0);
+            };
+            events.OnTicketReceived = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
-            Assert.True(ticketReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnAuthenticationFailed_Skip_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var authFailed = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    throw new NotImplementedException("TestException");
-                };
-                events.OnAuthenticationFailed = context =>
-                {
-                    authFailed = true;
-                    Assert.Equal("TestException", context.Exception.Message);
-                    context.SkipHandler();
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+                ExpectAuthenticationFailed = true,
+            };
+            events.OnUserInformationReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                throw new NotImplementedException("TestException");
+            };
+            events.OnAuthenticationFailed = context =>
+            {
+                Assert.Equal("TestException", context.Exception.Message);
+                context.SkipHandler();
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("/signin-oidc", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
-            Assert.True(authFailed);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnAuthenticationFailed_Fail_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var authFailed = false;
-            var remoteFailure = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    throw new NotImplementedException("TestException");
-                };
-                events.OnAuthenticationFailed = context =>
-                {
-                    authFailed = true;
-                    Assert.Equal("TestException", context.Exception.Message);
-                    context.Fail("Authentication was aborted from user code.");
-                    return Task.FromResult(0);
-                };
-                events.OnRemoteFailure = context =>
-                {
-                    remoteFailure = true;
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+                ExpectAuthenticationFailed = true,
+                ExpectRemoteFailure = true,
+            };
+            events.OnUserInformationReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                throw new NotImplementedException("TestException");
+            };
+            events.OnAuthenticationFailed = context =>
+            {
+                Assert.Equal("TestException", context.Exception.Message);
+                context.Fail("Authentication was aborted from user code.");
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var exception = await Assert.ThrowsAsync<Exception>(delegate
             {
@@ -1187,420 +699,222 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             });
 
             Assert.Equal("Authentication was aborted from user code.", exception.InnerException.Message);
-
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
-            Assert.True(authFailed);
-            Assert.True(remoteFailure);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnAuthenticationFailed_HandledWithoutTicket_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var authFailed = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    throw new NotImplementedException("TestException");
-                };
-                events.OnAuthenticationFailed = context =>
-                {
-                    authFailed = true;
-                    Assert.Equal("TestException", context.Exception.Message);
-                    Assert.Null(context.Principal);
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+                ExpectAuthenticationFailed = true,
+            };
+            events.OnUserInformationReceived = context =>
+            {
+                throw new NotImplementedException("TestException");
+            };
+            events.OnAuthenticationFailed = context =>
+            {
+                Assert.Equal("TestException", context.Exception.Message);
+                Assert.Null(context.Principal);
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
-            Assert.True(authFailed);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnAuthenticationFailed_HandledWithTicket_SkipToTicketReceived()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var ticketReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var authFailed = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    throw new NotImplementedException("TestException");
-                };
-                events.OnAuthenticationFailed = context =>
-                {
-                    authFailed = true;
-                    Assert.Equal("TestException", context.Exception.Message);
-                    Assert.Null(context.Principal);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+                ExpectAuthenticationFailed = true,
+                ExpectTicketReceived = true,
+            };
+            events.OnUserInformationReceived = context =>
+            {
+                throw new NotImplementedException("TestException");
+            };
+            events.OnAuthenticationFailed = context =>
+            {
+                Assert.Equal("TestException", context.Exception.Message);
+                Assert.Null(context.Principal);
 
-                    var claims = new[]
-                    {
-                        new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
-                        new Claim(ClaimTypes.Email, "bob@contoso.com"),
-                        new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
-                    };
-
-                    context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
-                    context.Success();
-                    return Task.FromResult(0);
-                };
-                events.OnTicketReceived = context =>
+                var claims = new[]
                 {
-                    ticketReceived = true;
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
+                    new Claim(ClaimTypes.NameIdentifier, "Bob le Magnifique"),
+                    new Claim(ClaimTypes.Email, "bob@contoso.com"),
+                    new Claim(ClaimsIdentity.DefaultNameClaimType, "bob")
                 };
-            }),
-            AppNotImpl);
+
+                context.Principal = new ClaimsPrincipal(new ClaimsIdentity(claims, context.Scheme.Name));
+                context.Success();
+                return Task.FromResult(0);
+            };
+            events.OnTicketReceived = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
-            Assert.True(authFailed);
-            Assert.True(ticketReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnRemoteFailure_Skip_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var authFailed = false;
-            var remoteFailure = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    throw new NotImplementedException("TestException");
-                };
-                events.OnAuthenticationFailed = context =>
-                {
-                    authFailed = true;
-                    Assert.Equal("TestException", context.Exception.Message);
-                    return Task.FromResult(0);
-                };
-                events.OnRemoteFailure = context =>
-                {
-                    remoteFailure = true;
-                    Assert.Equal("TestException", context.Failure.Message);
-                    context.SkipHandler();
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+                ExpectAuthenticationFailed = true,
+                ExpectRemoteFailure = true,
+            };
+            events.OnUserInformationReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                throw new NotImplementedException("TestException");
+            };
+            events.OnAuthenticationFailed = context =>
+            {
+                Assert.Equal("TestException", context.Exception.Message);
+                return Task.FromResult(0);
+            };
+            events.OnRemoteFailure = context =>
+            {
+                Assert.Equal("TestException", context.Failure.Message);
+                context.SkipHandler();
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("/signin-oidc", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
-            Assert.True(authFailed);
-            Assert.True(remoteFailure);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnRemoteFailure_Handled_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var authFailed = false;
-            var remoteFailure = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    throw new NotImplementedException("TestException");
-                };
-                events.OnAuthenticationFailed = context =>
-                {
-                    authFailed = true;
-                    Assert.Equal("TestException", context.Exception.Message);
-                    return Task.FromResult(0);
-                };
-                events.OnRemoteFailure = context =>
-                {
-                    remoteFailure = true;
-                    Assert.Equal("TestException", context.Failure.Message);
-                    Assert.Equal("testvalue", context.Properties.Items["testkey"]);
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+                ExpectAuthenticationFailed = true,
+                ExpectRemoteFailure = true,
+            };
+            events.OnUserInformationReceived = context =>
+            {
+                throw new NotImplementedException("TestException");
+            };
+            events.OnRemoteFailure = context =>
+            {
+                Assert.Equal("TestException", context.Failure.Message);
+                Assert.Equal("testvalue", context.Properties.Items["testkey"]);
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
-            Assert.True(authFailed);
-            Assert.True(remoteFailure);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTicketReceived_Skip_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var ticektReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTicketReceived = context =>
-                {
-                    ticektReceived = true;
-                    context.SkipHandler();
-                    return Task.FromResult(0);
-                };
-            }),
-            context =>
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+                ExpectTicketReceived = true,
+            };
+            events.OnTicketReceived = context =>
             {
-                return context.Response.WriteAsync(context.Request.Path);
-            });
+                context.SkipHandler();
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppWritePath);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
             Assert.Equal("/signin-oidc", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
-            Assert.True(ticektReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnTicketReceived_Handled_NoMoreEventsRun()
         {
-            var messageReceived = false;
-            var tokenValidated = false;
-            var codeReceived = false;
-            var tokenResponseReceived = false;
-            var userInfoReceived = false;
-            var ticektReceived = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnMessageReceived = context =>
-                {
-                    messageReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenValidated = context =>
-                {
-                    tokenValidated = true;
-                    return Task.FromResult(0);
-                };
-                events.OnAuthorizationCodeReceived = context =>
-                {
-                    codeReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTokenResponseReceived = context =>
-                {
-                    tokenResponseReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnUserInformationReceived = context =>
-                {
-                    userInfoReceived = true;
-                    return Task.FromResult(0);
-                };
-                events.OnTicketReceived = context =>
-                {
-                    ticektReceived = true;
-                    context.HandleResponse();
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    return Task.FromResult(0);
-                };
-            }),
-            AppNotImpl);
+                ExpectMessageReceived = true,
+                ExpectTokenValidated = true,
+                ExpectAuthorizationCodeReceived = true,
+                ExpectTokenResponseReceived = true,
+                ExpectUserInfoReceived = true,
+                ExpectTicketReceived = true,
+            };
+            events.OnTicketReceived = context =>
+            {
+                context.HandleResponse();
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                return Task.FromResult(0);
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var response = await PostAsync(server, "signin-oidc", "id_token=my_id_token&state=protected_state&code=my_code");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Equal("", await response.Content.ReadAsStringAsync());
-            Assert.True(messageReceived);
-            Assert.True(tokenValidated);
-            Assert.True(codeReceived);
-            Assert.True(tokenResponseReceived);
-            Assert.True(userInfoReceived);
-            Assert.True(ticektReceived);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnRedirectToIdentityProviderForSignOut_Invoked()
         {
-            var forSignOut = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnRedirectToIdentityProviderForSignOut = context =>
-                {
-                    forSignOut = true;
-                    return Task.CompletedTask;
-                };
-            }),
+                ExpectRedirectForSignOut = true,
+            };
+            var server = CreateServer(events,
             context =>
             {
                 return context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
@@ -1611,23 +925,23 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
             Assert.Equal(HttpStatusCode.Found, response.StatusCode);
             Assert.Equal("http://testhost/end", response.Headers.Location.GetLeftPart(UriPartial.Path));
-            Assert.True(forSignOut);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnRedirectToIdentityProviderForSignOut_Handled_RedirectNotInvoked()
         {
-            var forSignOut = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnRedirectToIdentityProviderForSignOut = context =>
-                {
-                    forSignOut = true;
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    context.HandleResponse();
-                    return Task.CompletedTask;
-                };
-            }),
+                ExpectRedirectForSignOut = true,
+            };
+            events.OnRedirectToIdentityProviderForSignOut = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                context.HandleResponse();
+                return Task.CompletedTask;
+            };
+            var server = CreateServer(events,
             context =>
             {
                 return context.SignOutAsync(OpenIdConnectDefaults.AuthenticationScheme);
@@ -1638,28 +952,23 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Null(response.Headers.Location);
-            Assert.True(forSignOut);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnRemoteSignOut_Invoked()
         {
-            var forSignOut = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnRemoteSignOut = context =>
-                {
-                    forSignOut = true;
-                    return Task.CompletedTask;
-                };
-            }),
-            AppNotImpl);
+                ExpectRemoteSignOut = true,
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var client = server.CreateClient();
             var response = await client.GetAsync("/signout-oidc");
 
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-            Assert.True(forSignOut);
+            events.ValidateExpectations();
             Assert.True(response.Headers.TryGetValues(HeaderNames.SetCookie, out var values));
             Assert.True(SetCookieHeaderValue.TryParseStrictList(values.ToList(), out var parsedValues));
             Assert.Equal(1, parsedValues.Count);
@@ -1669,41 +978,39 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
         [Fact]
         public async Task OnRemoteSignOut_Handled_NoSignout()
         {
-            var forSignOut = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnRemoteSignOut = context =>
-                {
-                    forSignOut = true;
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    context.HandleResponse();
-                    return Task.CompletedTask;
-                };
-            }),
-            AppNotImpl);
+                ExpectRemoteSignOut = true,
+            };
+            events.OnRemoteSignOut = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                context.HandleResponse();
+                return Task.CompletedTask;
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var client = server.CreateClient();
             var response = await client.GetAsync("/signout-oidc");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
-            Assert.True(forSignOut);
+            events.ValidateExpectations();
             Assert.False(response.Headers.TryGetValues(HeaderNames.SetCookie, out var values));
         }
 
         [Fact]
         public async Task OnRemoteSignOut_Skip_NoSignout()
         {
-            var forSignOut = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnRemoteSignOut = context =>
-                {
-                    forSignOut = true;
-                    context.SkipHandler();
-                    return Task.CompletedTask;
-                };
-            }),
-            context =>
+                ExpectRemoteSignOut = true,
+            };
+            events.OnRemoteSignOut = context =>
+            {
+                context.SkipHandler();
+                return Task.CompletedTask;
+            };
+            var server = CreateServer(events, context =>
             {
                 context.Response.StatusCode = StatusCodes.Status202Accepted;
                 return Task.CompletedTask;
@@ -1713,69 +1020,63 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
             var response = await client.GetAsync("/signout-oidc");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
-            Assert.True(forSignOut);
+            events.ValidateExpectations();
             Assert.False(response.Headers.TryGetValues(HeaderNames.SetCookie, out var values));
         }
 
         [Fact]
         public async Task OnRedirectToSignedOutRedirectUri_Invoked()
         {
-            var forSignOut = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnSignedOutCallbackRedirect = context =>
-                {
-                    forSignOut = true;
-                    return Task.CompletedTask;
-                };
-            }),
-            AppNotImpl);
+                ExpectRedirectToSignedOut = true,
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var client = server.CreateClient();
             var response = await client.GetAsync("/signout-callback-oidc?state=protected_state");
 
             Assert.Equal(HttpStatusCode.Found, response.StatusCode);
             Assert.Equal("http://testhost/redirect", response.Headers.Location.AbsoluteUri);
-            Assert.True(forSignOut);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnRedirectToSignedOutRedirectUri_Handled_NoRedirect()
         {
-            var forSignOut = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnSignedOutCallbackRedirect = context =>
-                {
-                    forSignOut = true;
-                    context.Response.StatusCode = StatusCodes.Status202Accepted;
-                    context.HandleResponse();
-                    return Task.CompletedTask;
-                };
-            }),
-            AppNotImpl);
+                ExpectRedirectToSignedOut = true,
+            };
+            events.OnSignedOutCallbackRedirect = context =>
+            {
+                context.Response.StatusCode = StatusCodes.Status202Accepted;
+                context.HandleResponse();
+                return Task.CompletedTask;
+            };
+            var server = CreateServer(events, AppNotImpl);
 
             var client = server.CreateClient();
             var response = await client.GetAsync("/signout-callback-oidc?state=protected_state");
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Null(response.Headers.Location);
-            Assert.True(forSignOut);
+            events.ValidateExpectations();
         }
 
         [Fact]
         public async Task OnRedirectToSignedOutRedirectUri_Skipped_NoRedirect()
         {
-            var forSignOut = false;
-            var server = CreateServer(CreateNotImpEvents(events =>
+            var events = new ExpectedOidcEvents()
             {
-                events.OnSignedOutCallbackRedirect = context =>
-                {
-                    forSignOut = true;
-                    context.SkipHandler();
-                    return Task.CompletedTask;
-                };
-            }),
+                ExpectRedirectToSignedOut = true,
+            };
+            events.OnSignedOutCallbackRedirect = context =>
+            {
+                context.SkipHandler();
+                return Task.CompletedTask;
+            };
+            var server = CreateServer(events,
             context =>
             {
                 context.Response.StatusCode = StatusCodes.Status202Accepted;
@@ -1787,29 +1088,124 @@ namespace Microsoft.AspNetCore.Authentication.Test.OpenIdConnect
 
             Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
             Assert.Null(response.Headers.Location);
-            Assert.True(forSignOut);
+            events.ValidateExpectations();
         }
 
-        private OpenIdConnectEvents CreateNotImpEvents(Action<OpenIdConnectEvents> configureEvents)
+        private class ExpectedOidcEvents : OpenIdConnectEvents
         {
-            var events = new OpenIdConnectEvents()
-            {
-                OnMessageReceived = MessageNotImpl,
-                OnTokenValidated = TokenNotImpl,
-                OnAuthorizationCodeReceived = CodeNotImpl,
-                OnTokenResponseReceived = TokenResponseNotImpl,
-                OnUserInformationReceived = UserNotImpl,
-                OnAuthenticationFailed = FailedNotImpl,
-                OnTicketReceived = TicketNotImpl,
-                OnRemoteFailure = FailureNotImpl,
+            public bool ExpectMessageReceived { get; set; }
+            public bool InvokedMessageReceived { get; set; }
 
-                OnRedirectToIdentityProvider = RedirectNotImpl,
-                OnRedirectToIdentityProviderForSignOut = RedirectNotImpl,
-                OnRemoteSignOut = RemoteSignOutNotImpl,
-                OnSignedOutCallbackRedirect = SignedOutCallbackNotImpl,
-            };
-            configureEvents(events);
-            return events;
+            public bool ExpectTokenValidated { get; set; }
+            public bool InvokedTokenValidated { get; set; }
+
+            public bool ExpectRemoteFailure { get; set; }
+            public bool InvokedRemoteFailure { get; set; }
+
+            public bool ExpectTicketReceived { get; set; }
+            public bool InvokedTicketReceived { get; set; }
+
+            public bool ExpectAuthorizationCodeReceived { get; set; }
+            public bool InvokedAuthorizationCodeReceived { get; set; }
+
+            public bool ExpectTokenResponseReceived { get; set; }
+            public bool InvokedTokenResponseReceived { get; set; }
+
+            public bool ExpectUserInfoReceived { get; set; }
+            public bool InvokedUserInfoReceived { get; set; }
+
+            public bool ExpectAuthenticationFailed { get; set; }
+            public bool InvokeAuthenticationFailed { get; set; }
+
+            public bool ExpectRedirectForSignOut { get; set; }
+            public bool InvokedRedirectForSignOut { get; set; }
+
+            public bool ExpectRemoteSignOut { get; set; }
+            public bool InvokedRemoteSignOut { get; set; }
+
+            public bool ExpectRedirectToSignedOut { get; set; }
+            public bool InvokedRedirectToSignedOut { get; set; }
+
+            public override Task MessageReceived(MessageReceivedContext context)
+            {
+                InvokedMessageReceived = true;
+                return base.MessageReceived(context);
+            }
+
+            public override Task TokenValidated(TokenValidatedContext context)
+            {
+                InvokedTokenValidated = true;
+                return base.TokenValidated(context);
+            }
+
+            public override Task AuthorizationCodeReceived(AuthorizationCodeReceivedContext context)
+            {
+                InvokedAuthorizationCodeReceived = true;
+                return base.AuthorizationCodeReceived(context);
+            }
+
+            public override Task TokenResponseReceived(TokenResponseReceivedContext context)
+            {
+                InvokedTokenResponseReceived = true;
+                return base.TokenResponseReceived(context);
+            }
+
+            public override Task UserInformationReceived(UserInformationReceivedContext context)
+            {
+                InvokedUserInfoReceived = true;
+                return base.UserInformationReceived(context);
+            }
+
+            public override Task AuthenticationFailed(AuthenticationFailedContext context)
+            {
+                InvokeAuthenticationFailed = true;
+                return base.AuthenticationFailed(context);
+            }
+
+            public override Task TicketReceived(TicketReceivedContext context)
+            {
+                InvokedTicketReceived = true;
+                return base.TicketReceived(context);
+            }
+
+            public override Task RemoteFailure(RemoteFailureContext context)
+            {
+                InvokedRemoteFailure = true;
+                return base.RemoteFailure(context);
+            }
+
+            public override Task RedirectToIdentityProviderForSignOut(RedirectContext context)
+            {
+                InvokedRedirectForSignOut = true;
+                return base.RedirectToIdentityProviderForSignOut(context);
+            }
+
+            public override Task RemoteSignOut(RemoteSignOutContext context)
+            {
+                InvokedRemoteSignOut = true;
+                return base.RemoteSignOut(context);
+            }
+
+            public override Task SignedOutCallbackRedirect(RemoteSignOutContext context)
+            {
+                InvokedRedirectToSignedOut = true;
+                return base.SignedOutCallbackRedirect(context);
+            }
+
+            public void ValidateExpectations()
+            {
+                Assert.Equal(ExpectMessageReceived, InvokedMessageReceived);
+                Assert.Equal(ExpectTokenValidated, InvokedTokenValidated);
+                Assert.Equal(ExpectAuthorizationCodeReceived, InvokedAuthorizationCodeReceived);
+                Assert.Equal(ExpectTokenResponseReceived, InvokedTokenResponseReceived);
+                Assert.Equal(ExpectUserInfoReceived, InvokedUserInfoReceived);
+                Assert.Equal(ExpectAuthenticationFailed, InvokeAuthenticationFailed);
+                Assert.Equal(ExpectTicketReceived, InvokedTicketReceived);
+                Assert.Equal(ExpectRemoteFailure, InvokedRemoteFailure);
+                Assert.Equal(ExpectRedirectForSignOut, InvokedRedirectForSignOut);
+                Assert.Equal(ExpectRemoteSignOut, InvokedRemoteSignOut);
+                Assert.Equal(ExpectRedirectToSignedOut, InvokedRedirectToSignedOut);
+            }
         }
 
         private TestServer CreateServer(OpenIdConnectEvents events, RequestDelegate appCode)
