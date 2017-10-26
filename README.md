@@ -1,5 +1,5 @@
 Antiforgery
-===
+===========
 
 AppVeyor: [![AppVeyor](https://ci.appveyor.com/api/projects/status/17l06rulbn328v4k/branch/dev?svg=true)](https://ci.appveyor.com/project/aspnetci/Antiforgery/branch/dev)
 
