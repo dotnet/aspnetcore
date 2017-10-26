@@ -154,7 +154,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
                 {
                     _trace.LogCritical($"Unexpected exeption in {nameof(SocketTransport)}.{nameof(RunAcceptLoopAsync)}.");
                     _listenException = ex;
-                    
+
                     // Request shutdown so we can rethrow this exception
                     // in Stop which should be observable.
                     _appLifetime.StopApplication();
@@ -163,7 +163,7 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
         }
 
         [DllImport("libc", SetLastError = true)]
-        private static extern int setsockopt(IntPtr socket, int level, int option_name, IntPtr option_value, uint option_len);
+        private static extern int setsockopt(int socket, int level, int option_name, IntPtr option_value, uint option_len);
 
         private const int SOL_SOCKET_OSX = 0xffff;
         private const int SO_REUSEADDR_OSX = 0x0004;
@@ -179,12 +179,12 @@ namespace Microsoft.AspNetCore.Server.Kestrel.Transport.Sockets
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                setsockoptStatus = setsockopt(listenSocket.Handle, SOL_SOCKET_LINUX, SO_REUSEADDR_LINUX,
+                setsockoptStatus = setsockopt(listenSocket.Handle.ToInt32(), SOL_SOCKET_LINUX, SO_REUSEADDR_LINUX,
                                               (IntPtr)(&optionValue), sizeof(int));
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                setsockoptStatus = setsockopt(listenSocket.Handle, SOL_SOCKET_OSX, SO_REUSEADDR_OSX,
+                setsockoptStatus = setsockopt(listenSocket.Handle.ToInt32(), SOL_SOCKET_OSX, SO_REUSEADDR_OSX,
                                               (IntPtr)(&optionValue), sizeof(int));
             }
 
