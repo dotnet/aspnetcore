@@ -3,9 +3,10 @@
 
 using System;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.Extensions.Options;
 
-namespace Microsoft.AspNetCore.Dispatcher
+namespace Microsoft.Extensions.DependencyInjection
 {
     internal class DefaultDispatcherConfigureOptions : IConfigureOptions<DispatcherOptions>
     {
