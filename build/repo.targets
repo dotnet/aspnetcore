@@ -1,5 +1,11 @@
 <Project>
 
+  <ItemGroup>
+    <Solutions Update="$(RepositoryRoot)MusicStore.sln" Condition="'$(RUN_RUNTIME_STORE_TESTS)' == 'true'">
+      <AdditionalProperties>Configuration=RuntimeStore</AdditionalProperties>
+    </Solutions>
+  </ItemGroup>
+
   <PropertyGroup>
     <MusicStoreE2ETestProject>$(RepositoryRoot)test\MusicStore.E2ETests\MusicStore.E2ETests.csproj</MusicStoreE2ETestProject>
   </PropertyGroup>
