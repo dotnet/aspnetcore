@@ -15,3 +15,32 @@ function Invoke-Block([scriptblock]$cmd) {
         throw "Command failed to execute: $cmd"
     }
 }
+
+function Get-Submodules([string]$ModuleDirectory)
+{
+    Invoke-Block { & git submodule update --init }
+
+    $gitModules = Join-Path $RepoRoot ".gitmodules"
+    $submodules = @()
+
+    Get-ChildItem "$ModuleDirectory/*" -Directory | % {
+        Push-Location $_
+        try {
+            $data = @{
+                path      = $_
+                module    = $_.Name
+                commit    = $(git rev-parse HEAD)
+                newCommit = $null
+                changed   = $false
+                branch    = $(git config -f $gitModules --get submodule.modules/$($_.Name).branch )
+            }
+
+            $submodules += $data
+        }
+        finally {
+            Pop-Location
+        }
+    }
+
+    return $submodules
+}

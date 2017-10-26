@@ -21,6 +21,7 @@ $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version 2
 
 $RepoRoot = Resolve-Path "$PSScriptRoot\.."
+$ModuleDirectory = Join-Path $RepoRoot "modules"
 
 Import-Module "$PSScriptRoot/common.psm1" -Scope Local -Force
 
@@ -38,32 +39,12 @@ function Get-GitChanges([string]$Path) {
 try {
     Assert-Git
 
-    if (Get-GitChanges "$RepoRoot/modules") {
+    if (Get-GitChanges $ModuleDirectory) {
         Write-Error "$RepoRoot/modules is in an unclean state. Reset submodules first by running ``git submodule update``"
         exit 1
     }
 
-    Invoke-Block { & git submodule update --init }
-
-    $submodules = @()
-
-    Get-ChildItem "$RepoRoot/modules/*" -Directory | % {
-        Push-Location $_
-        try {
-            $data = @{
-                path      = $_
-                module    = $_.Name
-                commit    = $(git rev-parse HEAD)
-                newCommit = $null
-                changed   = $false
-            }
-            Write-Verbose "$($data.module) is at $($data.commit)"
-            $submodules += $data
-        }
-        finally {
-            Pop-Location
-        }
-    }
+    $submodules = Get-Submodules $ModuleDirectory
 
     $changes = $submodules `
     | % {
