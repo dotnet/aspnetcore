@@ -7,10 +7,10 @@ namespace Microsoft.AspNetCore.Dispatcher
 {
     internal class RoutePatternTemplateFactory : TemplateFactory<DispatcherValueCollection>
     {
-        private readonly TemplateAddressSelector _selector;
+        private readonly RoutePatternAddressSelector _selector;
         private readonly RoutePatternBinderFactory _binderFactory;
 
-        public RoutePatternTemplateFactory(TemplateAddressSelector selector, RoutePatternBinderFactory binderFactory)
+        public RoutePatternTemplateFactory(RoutePatternAddressSelector selector, RoutePatternBinderFactory binderFactory)
         {
             if (selector == null)
             {
@@ -39,9 +39,9 @@ namespace Microsoft.AspNetCore.Dispatcher
                 return null;
             }
 
-            if (address is ITemplateAddress templateAddress)
+            if (address is IRoutePatternAddress templateAddress)
             {
-                var binder = _binderFactory.Create(templateAddress.Template, templateAddress.Defaults);
+                var binder = _binderFactory.Create(templateAddress.Pattern, templateAddress.Defaults);
                 return new RoutePatternTemplate(binder);
             }
 

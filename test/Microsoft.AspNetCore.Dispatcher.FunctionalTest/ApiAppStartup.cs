@@ -34,7 +34,7 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
                 logger.LogInformation("Executing fake CORS middleware");
 
                 var feature = context.Features.Get<IDispatcherFeature>();
-                var policy = feature.Endpoint?.Metadata.OfType<CorsPolicyMetadata>().LastOrDefault();
+                var policy = feature.Endpoint?.Metadata.GetMetadata<CorsPolicyMetadata>();
                 logger.LogInformation("using CORS policy {PolicyName}", policy?.Name ?? "default");
 
                 await next(context);
@@ -45,7 +45,7 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
                 logger.LogInformation("Executing fake AuthZ middleware");
 
                 var feature = context.Features.Get<IDispatcherFeature>();
-                var policy = feature.Endpoint?.Metadata.OfType<AuthorizationPolicyMetadata>().LastOrDefault();
+                var policy = feature.Endpoint?.Metadata.GetMetadata<AuthorizationPolicyMetadata>();
                 if (policy != null)
                 {
                     logger.LogInformation("using Auth policy {PolicyName}", policy.Name);
@@ -61,18 +61,18 @@ namespace Microsoft.AspNetCore.Dispatcher.FunctionalTest
             {
                 Endpoints =
                 {
-                    new TemplateEndpoint("api/products", Products_Fallback),
-                    new TemplateEndpoint("api/products", new { controller = "Products", action = "Get", }, "GET", Products_Get),
-                    new TemplateEndpoint("api/products/{id}", new { controller = "Products", action = "Get", }, "GET", Products_GetWithId),
-                    new TemplateEndpoint("api/products", new { controller = "Products", action = "Post", }, "POST", Products_Post),
-                    new TemplateEndpoint("api/products/{id}", new { controller = "Products", action = "Put", }, "PUT", Products_Put),
+                    new RoutePatternEndpoint("api/products", Products_Fallback),
+                    new RoutePatternEndpoint("api/products", new { controller = "Products", action = "Get", }, "GET", Products_Get),
+                    new RoutePatternEndpoint("api/products/{id}", new { controller = "Products", action = "Get", }, "GET", Products_GetWithId),
+                    new RoutePatternEndpoint("api/products", new { controller = "Products", action = "Post", }, "POST", Products_Post),
+                    new RoutePatternEndpoint("api/products/{id}", new { controller = "Products", action = "Put", }, "PUT", Products_Put),
                 },
 
                 Selectors =
                 {
                     new HttpMethodEndpointSelector(),
                 },
-            }, new TemplateEndpointHandlerFactory());
+            }, new RoutePatternEndpointHandlerFactory());
         }
 
         private Task Products_Fallback(HttpContext httpContext) => httpContext.Response.WriteAsync("Hello, Products_Fallback");

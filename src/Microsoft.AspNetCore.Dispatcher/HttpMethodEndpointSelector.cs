@@ -36,7 +36,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             var fallbackEndpoints = new List<Endpoint>();
             for (var i = context.Endpoints.Count - 1; i >= 0; i--)
             {
-                var endpoint = context.Endpoints[i] as ITemplateEndpoint;
+                var endpoint = context.Endpoints[i] as IRoutePatternEndpoint;
                 if (endpoint == null || endpoint.HttpMethod == null)
                 {
                     // No metadata.

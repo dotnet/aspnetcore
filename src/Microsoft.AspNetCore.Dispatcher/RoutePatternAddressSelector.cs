@@ -7,11 +7,11 @@ using System.Collections.Generic;
 namespace Microsoft.AspNetCore.Dispatcher
 {
     // This isn't a proposed design, just a placeholder to demonstrate that things are wired up correctly.
-    public class TemplateAddressSelector
+    public class RoutePatternAddressSelector
     {
         private readonly AddressTable _addressTable;
 
-        public TemplateAddressSelector(AddressTable addressTable)
+        public RoutePatternAddressSelector(AddressTable addressTable)
         {
             if (addressTable == null)
             {
@@ -42,7 +42,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
                 for (var j = 0; j < group.Count; j++)
                 {
-                    var address = group[j] as ITemplateAddress;
+                    var address = group[j] as IRoutePatternAddress;
                     if (address == null)
                     {
                         continue;
@@ -72,7 +72,7 @@ namespace Microsoft.AspNetCore.Dispatcher
             return null;
         }
 
-        private bool IsMatch(ITemplateAddress address, DispatcherValueCollection values)
+        private bool IsMatch(IRoutePatternAddress address, DispatcherValueCollection values)
         {
             foreach (var kvp in address.Defaults)
             {

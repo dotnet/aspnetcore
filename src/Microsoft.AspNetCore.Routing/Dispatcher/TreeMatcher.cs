@@ -82,7 +82,7 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
 
                         if (context.Endpoint != null)
                         {
-                            if (context.Endpoint is ITemplateEndpoint templateEndpoint)
+                            if (context.Endpoint is IRoutePatternEndpoint templateEndpoint)
                             {
                                 foreach (var kvp in templateEndpoint.Values)
                                 {
@@ -128,16 +128,16 @@ namespace Microsoft.AspNetCore.Routing.Dispatcher
             {
                 var endpoint = endpoints[i];
 
-                var templateEndpoint = endpoint as ITemplateEndpoint;
+                var templateEndpoint = endpoint as IRoutePatternEndpoint;
                 if (templateEndpoint == null)
                 {
                     continue;
                 }
 
-                if (!groups.TryGetValue(new Key(0, templateEndpoint.Template), out var group))
+                if (!groups.TryGetValue(new Key(0, templateEndpoint.Pattern), out var group))
                 {
                     group = new List<Endpoint>();
-                    groups.Add(new Key(0, templateEndpoint.Template), group);
+                    groups.Add(new Key(0, templateEndpoint.Pattern), group);
                 }
 
                 group.Add(endpoint);

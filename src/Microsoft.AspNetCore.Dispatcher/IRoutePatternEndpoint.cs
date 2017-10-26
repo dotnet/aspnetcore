@@ -3,10 +3,12 @@
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public interface ITemplateAddress
+    public interface IRoutePatternEndpoint
     {
-        string Template { get; }
+        string HttpMethod { get; }
 
-        DispatcherValueCollection Defaults { get; }
+        string Pattern { get; }
+
+        DispatcherValueCollection Values { get; }
     }
 }

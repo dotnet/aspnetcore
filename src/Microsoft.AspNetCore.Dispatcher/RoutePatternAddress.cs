@@ -2,23 +2,21 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Microsoft.AspNetCore.Dispatcher
 {
-    public class TemplateAddress : Address, ITemplateAddress
+    public class RoutePatternAddress : Address, IRoutePatternAddress
     {
-        public TemplateAddress(string template, object values, params object[] metadata)
-            : this(template, values, null, metadata)
+        public RoutePatternAddress(string pattern, object values, params object[] metadata)
+            : this(pattern, values, null, metadata)
         {
         }
 
-        public TemplateAddress(string template, object values, string displayName, params object[] metadata)
+        public RoutePatternAddress(string pattern, object values, string displayName, params object[] metadata)
         {
-            if (template == null)
+            if (pattern == null)
             {
-                throw new ArgumentNullException(nameof(template));
+                throw new ArgumentNullException(nameof(pattern));
             }
 
             if (metadata == null)
@@ -26,7 +24,7 @@ namespace Microsoft.AspNetCore.Dispatcher
                 throw new ArgumentNullException(nameof(metadata));
             }
 
-            Template = template;
+            Pattern = pattern;
             Defaults = new DispatcherValueCollection(values);
             DisplayName = displayName;
             Metadata = new MetadataCollection(metadata);
@@ -36,7 +34,7 @@ namespace Microsoft.AspNetCore.Dispatcher
 
         public override MetadataCollection Metadata { get; }
 
-        public string Template { get; }
+        public string Pattern { get; }
 
         public DispatcherValueCollection Defaults { get; }
     }

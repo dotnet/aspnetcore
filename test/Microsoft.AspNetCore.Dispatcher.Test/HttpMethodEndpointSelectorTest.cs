@@ -21,15 +21,15 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Arrange
             var endpoints = new List<Endpoint>()
             {
-                new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Get", }, "GET", Products_Get, "Products:Get()"),
-                new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Create", }, "POST", Products_Post, "Products:Post()"),
+                new RoutePatternEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Get", }, "GET", Products_Get, "Products:Get()"),
+                new RoutePatternEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Create", }, "POST", Products_Post, "Products:Post()"),
             };
 
             var (context, selector) = CreateContextAndSelector(httpMethod, endpoints);
 
             // Act
             await selector.SelectAsync(context);
-            var templateEndpoints = context.Endpoints.Cast<TemplateEndpoint>();
+            var templateEndpoints = context.Endpoints.Cast<RoutePatternEndpoint>();
 
             // Assert
             Assert.Collection(
@@ -43,8 +43,8 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Arrange
             var endpoints = new List<Endpoint>()
             {
-                new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Get", }, "GET", Products_Get, "Products:Get()"),
-                new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Create", }, "POST", Products_Post, "Products:Post()"),
+                new RoutePatternEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Get", }, "GET", Products_Get, "Products:Get()"),
+                new RoutePatternEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Create", }, "POST", Products_Post, "Products:Post()"),
             };
 
             var (context, selector) = CreateContextAndSelector("PUT", endpoints);
@@ -64,16 +64,16 @@ namespace Microsoft.AspNetCore.Dispatcher
             // Arrange
             var endpoints = new List<Endpoint>()
             {
-                new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Get", }, "GET", Products_Get, "Products:Get()"),
-                new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Create", }, "POST", Products_Post, "Products:Post()"),
-                new TemplateEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Get", }, Products_Get),
+                new RoutePatternEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Get", }, "GET", Products_Get, "Products:Get()"),
+                new RoutePatternEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Create", }, "POST", Products_Post, "Products:Post()"),
+                new RoutePatternEndpoint("{controller=Home}/{action=Index}/{id?}", new { controller = "Products", action = "Get", }, Products_Get),
             };
 
             var (context, selector) = CreateContextAndSelector(httpMethod, endpoints);
 
             // Act
             await selector.SelectAsync(context);
-            var templateEndpoints = context.Endpoints.Cast<TemplateEndpoint>();
+            var templateEndpoints = context.Endpoints.Cast<RoutePatternEndpoint>();
 
             // Assert
             Assert.Collection(

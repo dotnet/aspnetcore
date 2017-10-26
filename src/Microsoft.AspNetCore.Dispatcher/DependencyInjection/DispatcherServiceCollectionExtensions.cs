@@ -30,14 +30,14 @@ namespace Microsoft.Extensions.DependencyInjection
             services.TryAddSingleton<AddressTable, DefaultAddressTable>();
             services.TryAddSingleton<TemplateFactory, DefaultTemplateFactory>();
             services.TryAddSingleton<ITemplateFactoryComponent, RoutePatternTemplateFactory>();
-            services.TryAddSingleton<TemplateAddressSelector>();
+            services.TryAddSingleton<RoutePatternAddressSelector>();
 
             //
             // Misc Infrastructure
             //
             services.TryAddSingleton<RoutePatternBinderFactory>();
 
-            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHandlerFactory, TemplateEndpointHandlerFactory>());
+            services.TryAddEnumerable(ServiceDescriptor.Singleton<IHandlerFactory, RoutePatternEndpointHandlerFactory>());
 
             return services;
         }
