@@ -3,7 +3,9 @@
 
 using System;
 using System.Text.Encodings.Web;
+using Microsoft.AspNetCore.Dispatcher;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.AspNetCore.Routing.Dispatcher;
 using Microsoft.AspNetCore.Routing.Internal;
 using Microsoft.AspNetCore.Routing.Tree;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -30,6 +32,7 @@ namespace Microsoft.Extensions.DependencyInjection
 
             // Routing shares lots of infrastructure with the dispatcher.
             services.AddDispatcher();
+            services.TryAddSingleton<IDefaultMatcherFactory, TreeMatcherFactory>();
 
             services.TryAddTransient<IInlineConstraintResolver, DefaultInlineConstraintResolver>();
             services.TryAddSingleton(UrlEncoder.Default);
