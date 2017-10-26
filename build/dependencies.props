@@ -128,6 +128,7 @@
     <ExternalDependency Include="Microsoft.AspNet.WebApi.Client" Version="5.2.2" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Azure.KeyVault" Version="2.3.2" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Azure.Management.Fluent" Version="1.1.3" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Microsoft.Azure.Services.AppAuthentication" Version="1.0.0-preview" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Build.Framework" Version="15.3.409" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Build.Runtime" Version="15.3.409" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Microsoft.Build.Tasks.Core" Version="15.3.409" Source="$(DefaultNuGetFeed)"/>
