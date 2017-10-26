@@ -55,60 +55,6 @@
       "datatype": "bool",
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
-    },
-    "MicrosoftAspNetCoreAllPackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.AspNetCore.All",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftAspNetCoreAllPackageVersion}"
-      },
-      "replaces": "$(MicrosoftAspNetCoreAllPackageVersion)"
-    },
-    "MicrosoftAspNetCorePackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.AspNetCore",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftAspNetCorePackageVersion}"
-      },
-      "replaces": "$(MicrosoftAspNetCorePackageVersion)"
-    },
-    "MicrosoftAspNetCoreStaticFilesPackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.AspNetCore.StaticFiles",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftAspNetCoreStaticFilesPackageVersion}"
-      },
-      "replaces": "$(MicrosoftAspNetCoreStaticFilesPackageVersion)"
-    },
-    "MicrosoftAspNetCoreSpaServicesPackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.AspNetCore.SpaServices",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftAspNetCoreSpaServicesPackageVersion}"
-      },
-      "replaces": "$(MicrosoftAspNetCoreSpaServicesPackageVersion)"
-    },
-    "MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.VisualStudio.Web.CodeGeneration.Tools",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion}"
-      },
-      "replaces": "$(MicrosoftVisualStudioWebCodeGenerationToolsPackageVersion)"
-    },
-    "MicrosoftAspNetCoreMvcPackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.AspNetCore.Mvc",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftAspNetCoreMvcPackageVersion}"
-      },
-      "replaces": "$(MicrosoftAspNetCoreMvcPackageVersion)"
     }
   },
   "tags": {

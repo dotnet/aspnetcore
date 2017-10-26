@@ -53,51 +53,6 @@
       "datatype": "bool",
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
-    },
-    "MicrosoftAspNetCoreAllPackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.AspNetCore.All",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftAspNetCoreAllPackageVersion}"
-      },
-      "replaces": "$(MicrosoftAspNetCoreAllPackageVersion)"
-    },
-    "MicrosoftAspNetCorePackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.AspNetCore",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftAspNetCorePackageVersion}"
-      },
-      "replaces": "$(MicrosoftAspNetCorePackageVersion)"
-    },
-    "MicrosoftAspNetCoreStaticFilesPackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.AspNetCore.StaticFiles",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftAspNetCoreStaticFilesPackageVersion}"
-      },
-      "replaces": "$(MicrosoftAspNetCoreStaticFilesPackageVersion)"
-    },
-    "MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.AspNetCore.Mvc.Razor.ViewCompilation",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion}"
-      },
-      "replaces": "$(MicrosoftAspNetCoreMvcRazorViewCompilationPackageVersion)"
-    },
-    "MicrosoftAspNetCoreMvcPackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.AspNetCore.Mvc",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftAspNetCoreMvcPackageVersion}"
-      },
-      "replaces": "$(MicrosoftAspNetCoreMvcPackageVersion)"
     }
   },
   "primaryOutputs": [

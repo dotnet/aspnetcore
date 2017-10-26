@@ -47,7 +47,7 @@
       "binding": "HostIdentifier"
     },
     "NameIsPage": {
-      "type": "computed",      
+      "type": "computed",
       "value": "(name == \"Page\")"
     }
   },

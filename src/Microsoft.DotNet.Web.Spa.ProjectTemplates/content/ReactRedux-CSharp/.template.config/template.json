@@ -2,22 +2,29 @@
   "author": "Microsoft",
   "classifications": [
     "Web",
-    "Empty"
+    "MVC",
+    "SPA"
   ],
-  "name": "ASP.NET Core Empty",
-  "generatorVersions": "[1.0.0.0-*)",
-  "description": "An empty project template for creating an ASP.NET Core application. This template does not have any content in it.",
-  "groupIdentity": "Microsoft.Web.Empty",
-  "precedence": "2000",
-  "identity": "Microsoft.Web.Empty.FSharp.2.0",
-  "shortName": "web",
-  "thirdPartyNotices": "https://aka.ms/template-3pn",
-  "tags": {
-    "language": "F#",
-    "type": "project"
-  },
-  "sourceName": "Company.WebApplication1",
+  "groupIdentity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.ReactRedux",
+  "identity": "Microsoft.DotNet.Web.Spa.ProjectTemplates.ReactRedux.CSharp",
+  "name": "ASP.NET Core with React.js and Redux",
   "preferNameDirectory": true,
+  "primaryOutputs": [
+    {
+      "path": "ReactReduxSpa.csproj"
+    }
+  ],
+  "shortName": "reactredux",
+  "sourceName": "ReactReduxSpa",
+  "sources": [
+    {
+      "source": "./",
+      "target": "./",
+      "exclude": [
+        ".template.config/**"
+      ]
+    }
+  ],
   "symbols": {
     "TargetFrameworkOverride": {
       "type": "parameter",
@@ -39,36 +46,21 @@
       "replaces": "netcoreapp2.0",
       "defaultValue": "netcoreapp2.0"
     },
-    "copyrightYear": {
-      "type": "generated",
-      "generator": "now",
-      "replaces": "1975",
-      "parameters": {
-        "format": "yyyy"
-      }
+    "HostIdentifier": {
+      "type": "bind",
+      "binding": "HostIdentifier"
     },
     "skipRestore": {
       "type": "parameter",
       "datatype": "bool",
       "description": "If specified, skips the automatic restore of the project on create.",
       "defaultValue": "false"
-    },
-    "MicrosoftAspNetCoreAllPackageVersion": {
-      "type": "generated",
-      "description": "The package version for Microsoft.AspNetCore.All",
-      "generator": "constant",
-      "parameters": {
-        "value": "${MicrosoftAspNetCoreAllPackageVersion}"
-      },
-      "replaces": "$(MicrosoftAspNetCoreAllPackageVersion)"
     }
   },
-  "primaryOutputs": [
-    {
-      "path": "Company.WebApplication1.fsproj"
-    }
-  ],
-  "defaultName": "WebApplication1",
+  "tags": {
+    "language": "C#",
+    "type": "project"
+  },
   "postActions": [
     {
       "condition": "(!skipRestore)",
@@ -80,6 +72,16 @@
       ],
       "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
       "continueOnError": true
+    },
+    {
+      "condition": "(HostIdentifier == \"dotnetcli\" || HostIdentifier == \"dotnetcli-preview\")",
+      "actionId": "AC1156F7-BB77-4DB8-B28F-24EEBCCA1E5C",
+      "description": "\n\n-------------------------------------------------------------------\nIMPORTANT: Before running this project on the command line,\n           you must restore NPM packages by running \"npm install\"\n-------------------------------------------------------------------\n",
+      "manualInstructions": [
+        {
+          "text": "Run \"npm install\""
+        }
+      ]
     }
   ]
 }

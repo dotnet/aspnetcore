@@ -35,25 +35,25 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <GeneratedContent Include="EmptyWeb-CSharp.template.json.in" OutputPath="content\EmptyWeb-CSharp\.template.config\template.json">
+    <GeneratedContent Include="EmptyWeb-CSharp.csproj.in" OutputPath="content/EmptyWeb-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="EmptyWeb-FSharp.template.json.in" OutputPath="content\EmptyWeb-FSharp\.template.config\template.json">
+    <GeneratedContent Include="EmptyWeb-FSharp.fsproj.in" OutputPath="content/EmptyWeb-FSharp/Company.WebApplication1.fsproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="RazorPagesWeb-CSharp.template.json.in" OutputPath="content\RazorPagesWeb-CSharp\.template.config\template.json">
+    <GeneratedContent Include="RazorPagesWeb-CSharp.csproj.in" OutputPath="content/RazorPagesWeb-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="StarterWeb-CSharp.template.json.in" OutputPath="content\StarterWeb-CSharp\.template.config\template.json">
+    <GeneratedContent Include="StarterWeb-CSharp.csproj.in" OutputPath="content/StarterWeb-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="StarterWeb-FSharp.template.json.in" OutputPath="content\StarterWeb-FSharp\.template.config\template.json">
+    <GeneratedContent Include="StarterWeb-FSharp.fsproj.in" OutputPath="content/StarterWeb-FSharp/Company.WebApplication1.fsproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="WebApi-CSharp.template.json.in" OutputPath="content\WebApi-CSharp\.template.config\template.json">
+    <GeneratedContent Include="WebApi-CSharp.csproj.in" OutputPath="content/WebApi-CSharp/Company.WebApplication1.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="WebApi-FSharp.template.json.in" OutputPath="content\WebApi-FSharp\.template.config\template.json">
+    <GeneratedContent Include="WebApi-FSharp.fsproj.in" OutputPath="content/WebApi-FSharp/Company.WebApplication1.fsproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
   </ItemGroup>

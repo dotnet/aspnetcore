@@ -21,13 +21,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <GeneratedContent Include="Aurelia-CSharp.template.json.in" OutputPath="content\Aurelia-CSharp\.template.config\template.json">
+    <GeneratedContent Include="Aurelia-CSharp.csproj.in" OutputPath="content/Aurelia-CSharp/AureliaSpa.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="Knockout-CSharp.template.json.in" OutputPath="content\Knockout-CSharp\.template.config\template.json">
+    <GeneratedContent Include="Knockout-CSharp.csproj.in" OutputPath="content/Knockout-CSharp/KnockoutSpa.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
-    <GeneratedContent Include="Vue-CSharp.template.json.in" OutputPath="content\Vue-CSharp\.template.config\template.json">
+    <GeneratedContent Include="Vue-CSharp.csproj.in" OutputPath="content/Vue-CSharp/VueSpa.csproj">
       <Properties>$(GeneratedContentProperties)</Properties>
     </GeneratedContent>
   </ItemGroup>
