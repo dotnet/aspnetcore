@@ -4,8 +4,8 @@
     <_WorkRoot>$(RepositoryRoot).w\</_WorkRoot>
     <TimestampSource>$(RepositoryRoot).deps\Signed\Packages\</TimestampSource>
     <TimestampFreeSource>$(RepositoryRoot).deps\Signed\Packages-NoTimeStamp\</TimestampFreeSource>
-    <TimestampOutputPackageName>nuGetPackagesArchive-$(PackageVersion)</TimestampOutputPackageName>
-    <TimestampFreeOutputPackageName>nuGetPackagesArchive-$(PackageVersionNoTimestamp)</TimestampFreeOutputPackageName>
+    <TimestampOutputPackageName>nuGetPackagesArchive.timestamped</TimestampOutputPackageName>
+    <TimestampFreeOutputPackageName>nuGetPackagesArchive.notimestamp</TimestampFreeOutputPackageName>
   </PropertyGroup>
 
   <Target Name="BuildFallbackArchive">
