@@ -15,6 +15,14 @@ namespace Microsoft.AspNetCore.Identity.Test
     public class IdentityOptionsTest
     {
         [Fact]
+        public void VerifyQuirkChangePhoneNumberTokenProvider1483()
+        {
+            Assert.Equal(TokenOptions.DefaultPhoneProvider, new TokenOptions().ChangePhoneNumberTokenProvider);
+            AppContext.SetSwitch("Microsoft.AspNetCore.Identity.ChangePhoneNumberTokenProvider1483", true);
+            Assert.Equal(TokenOptions.DefaultProvider, new TokenOptions().ChangePhoneNumberTokenProvider);
+        }
+
+        [Fact]
         public void VerifyDefaultOptions()
         {
             var options = new IdentityOptions();

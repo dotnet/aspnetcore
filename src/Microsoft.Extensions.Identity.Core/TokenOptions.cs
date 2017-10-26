@@ -66,7 +66,7 @@ namespace Microsoft.AspNetCore.Identity
         /// <value>
         /// The <see cref="ChangePhoneNumberTokenProvider"/> used to generate tokens used when changing phone numbers.
         /// </value>
-        public string ChangePhoneNumberTokenProvider { get; set; } = DefaultProvider;
+        public string ChangePhoneNumberTokenProvider { get; set; } = GetDefaultChangePhoneNumberTokenProvider();
 
         /// <summary>
         /// Gets or sets the <see cref="AuthenticatorTokenProvider"/> used to validate two factor sign ins with an authenticator.
@@ -75,5 +75,9 @@ namespace Microsoft.AspNetCore.Identity
         /// The <see cref="AuthenticatorTokenProvider"/> used to validate two factor sign ins with an authenticator.
         /// </value>
         public string AuthenticatorTokenProvider { get; set; } = DefaultAuthenticatorProvider;
+
+        private static string GetDefaultChangePhoneNumberTokenProvider()
+            => (AppContext.TryGetSwitch("Microsoft.AspNetCore.Identity.ChangePhoneNumberTokenProvider1483", out var enabled) && enabled)
+               ? DefaultProvider : DefaultPhoneProvider;
     }
 }
