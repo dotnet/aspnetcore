@@ -1,5 +1,6 @@
 <Project>
-  <Import Project="version.xml" />
+  <Import Project="version.props" />
+  <Import Project="build\dependencies.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
@@ -9,20 +10,12 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-    <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NETCore.Compilers" Version="2.6.0-beta2-62211-02" PrivateAssets="All">
-      <!--
-        Suppresses the warning about having an explicit package version in this repo.
-        We are okay with this for now as the experimental version of the compiler is unique to Kestrel (for now).
-
-        See https://github.com/dotnet/csharplang/issues/666 for more details.
-       -->
-      <NoWarn>KRB4002</NoWarn>
-    </PackageReference>
+    <!-- This is an experimental version of the compiler. See https://github.com/dotnet/csharplang/issues/666 for more details. -->
+    <PackageReference Include="Microsoft.NETCore.Compilers" Version="$(MicrosoftNETCoreCompilersPackageVersion)" PrivateAssets="All" />
   </ItemGroup>
 </Project>

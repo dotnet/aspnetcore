@@ -11,9 +11,9 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Hosting" />
-    <PackageReference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" PrivateAssets="All" />
-    <PackageReference Include="System.Security.Cryptography.Cng" />
+    <PackageReference Include="Microsoft.AspNetCore.Hosting" Version="$(MicrosoftAspNetCoreHostingPackageVersion)" />
+    <PackageReference Include="Microsoft.AspNetCore.Certificates.Generation.Sources" PrivateAssets="All" Version="$(MicrosoftAspNetCoreCertificatesGenerationSourcesPackageVersion)" />
+    <PackageReference Include="System.Security.Cryptography.Cng" Version="$(SystemSecurityCryptographyCngPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>
