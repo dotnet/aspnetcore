@@ -96,11 +96,12 @@
   <!-- ASP.NET Core Tools feed -->
   <PropertyGroup>
     <AspNetCoreToolsFeed>https://dotnet.myget.org/F/aspnetcore-tools/api/v3/index.json</AspNetCoreToolsFeed>
+    <InternalAspNetCoreSdkPackageVersion>2.1.0-preview1-15541</InternalAspNetCoreSdkPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="2.1.1-preview1-15540" Source="$(AspNetCoreToolsFeed)" Private="true" Lineup="false" />
-    <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="2.1.0-preview1-15540" Source="$(AspNetCoreToolsFeed)" Private="true" Lineup="false" />
+    <ExternalDependency Include="Internal.AspNetCore.Sdk" Version="$(InternalAspNetCoreSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" Lineup="false" />
+    <ExternalDependency Include="Microsoft.AspNetCore.BuildTools.ApiCheck" Version="$(InternalAspNetCoreSdkPackageVersion)" Source="$(AspNetCoreToolsFeed)" Private="true" Lineup="false" />
   </ItemGroup>
 
   <!-- ASP.NET Core Module -->
