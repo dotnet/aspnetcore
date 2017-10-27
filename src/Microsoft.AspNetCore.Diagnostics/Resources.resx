@@ -247,4 +247,7 @@
   <data name="RuntimeInfoPage_Environment" xml:space="preserve">
     <value>Environment:</value>
   </data>
+  <data name="ExceptionHandlerOptions_NotConfiguredCorrectly" xml:space="preserve">
+    <value>An error occurred when configuring the exception handler middleware. Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' option must be set in 'UseExceptionHandler()'.</value>
+  </data>
 </root>

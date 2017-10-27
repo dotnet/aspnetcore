@@ -494,5 +494,27 @@ namespace Microsoft.AspNetCore.Diagnostics
             Assert.NotNull(listener.DiagnosticHandledException?.HttpContext);
             Assert.NotNull(listener.DiagnosticHandledException?.Exception);
         }
+
+        [Fact]
+        public void UsingExceptionHandler_ThrowsAnException_WhenExceptionHandlingPathNotSet()
+        {
+            // Arrange
+            DiagnosticListener diagnosticListener = null;
+
+            var builder = new WebHostBuilder()
+                .Configure(app =>
+                {
+                    diagnosticListener = app.ApplicationServices.GetRequiredService<DiagnosticListener>();
+                    app.UseExceptionHandler();
+                });
+
+            // Act
+            var exception = Assert.Throws<InvalidOperationException>(() => new TestServer(builder));
+
+            // Assert
+            Assert.Equal($"An error occurred when configuring the exception handler middleware. " +
+                $"Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' option must be set in 'UseExceptionHandler()'.",
+                exception.Message);
+        }
     }
 }

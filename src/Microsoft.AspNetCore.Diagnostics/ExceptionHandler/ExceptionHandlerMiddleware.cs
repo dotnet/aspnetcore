@@ -30,12 +30,19 @@ namespace Microsoft.AspNetCore.Diagnostics
             _next = next;
             _options = options.Value;
             _logger = loggerFactory.CreateLogger<ExceptionHandlerMiddleware>();
-            if (_options.ExceptionHandler == null)
-            {
-                _options.ExceptionHandler = _next;
-            }
             _clearCacheHeadersDelegate = ClearCacheHeaders;
             _diagnosticSource = diagnosticSource;
+            if (_options.ExceptionHandler == null)
+            {
+                if (_options.ExceptionHandlingPath == null)
+                {
+                    throw new InvalidOperationException(Resources.FormatExceptionHandlerOptions_NotConfiguredCorrectly());
+                }
+                else
+                {
+                    _options.ExceptionHandler = _next;
+                }
+            }
         }
 
         public async Task Invoke(HttpContext context)

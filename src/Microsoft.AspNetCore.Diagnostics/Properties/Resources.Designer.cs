@@ -584,6 +584,20 @@ namespace Microsoft.AspNetCore.Diagnostics
         internal static string FormatRuntimeInfoPage_Environment()
             => GetString("RuntimeInfoPage_Environment");
 
+        /// <summary>
+        /// An error occurred when configuring the exception handler middleware. Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' option must be set in 'UseExceptionHandler()'.
+        /// </summary>
+        internal static string ExceptionHandlerOptions_NotConfiguredCorrectly
+        {
+            get => GetString("ExceptionHandlerOptions_NotConfiguredCorrectly");
+        }
+
+        /// <summary>
+        /// An error occurred when configuring the exception handler middleware. Either the 'ExceptionHandlingPath' or the 'ExceptionHandler' option must be set in 'UseExceptionHandler()'.
+        /// </summary>
+        internal static string FormatExceptionHandlerOptions_NotConfiguredCorrectly()
+            => GetString("ExceptionHandlerOptions_NotConfiguredCorrectly");
+
         private static string GetString(string name, params string[] formatterNames)
         {
             var value = _resourceManager.GetString(name);
