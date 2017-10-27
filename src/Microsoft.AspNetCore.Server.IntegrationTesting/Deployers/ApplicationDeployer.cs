@@ -54,7 +54,8 @@ namespace Microsoft.AspNetCore.Server.IntegrationTesting
                 var parameters = $"publish "
                     + $" --output \"{DeploymentParameters.PublishedApplicationRootPath}\""
                     + $" --framework {DeploymentParameters.TargetFramework}"
-                    + $" --configuration {DeploymentParameters.Configuration}";
+                    + $" --configuration {DeploymentParameters.Configuration}"
+                    + (DeploymentParameters.RestoreOnPublish ? "" : " --no-restore");
 
                 if (DeploymentParameters.ApplicationType == ApplicationType.Standalone)
                 {
