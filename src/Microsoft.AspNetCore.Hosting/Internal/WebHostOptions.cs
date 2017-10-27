@@ -4,6 +4,7 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using Microsoft.Extensions.Configuration;
 
 namespace Microsoft.AspNetCore.Hosting.Internal
@@ -33,8 +34,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             SuppressStatusMessages = WebHostUtilities.ParseBool(configuration, WebHostDefaults.SuppressStatusMessagesKey);
 
             // Search the primary assembly and configured assemblies.
-            HostingStartupAssemblies = $"{ApplicationName};{configuration[WebHostDefaults.HostingStartupAssembliesKey]}"
-                .Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries) ?? new string[0];
+            HostingStartupAssemblies = Split($"{ApplicationName};{configuration[WebHostDefaults.HostingStartupAssembliesKey]}");
+            HostingStartupExcludeAssemblies = Split(configuration[WebHostDefaults.HostingStartupExcludeAssembliesKey]);
 
             var timeout = configuration[WebHostDefaults.ShutdownTimeoutKey];
             if (!string.IsNullOrEmpty(timeout)
@@ -52,6 +53,8 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public IReadOnlyList<string> HostingStartupAssemblies { get; set; }
 
+        public IReadOnlyList<string> HostingStartupExcludeAssemblies { get; set; }
+
         public bool DetailedErrors { get; set; }
 
         public bool CaptureStartupErrors { get; set; }
@@ -66,5 +69,28 @@ namespace Microsoft.AspNetCore.Hosting.Internal
 
         public TimeSpan ShutdownTimeout { get; set; } = TimeSpan.FromSeconds(5);
 
+        public IEnumerable<string> GetFinalHostingStartupAssemblies()
+        {
+            return HostingStartupAssemblies.Except(HostingStartupExcludeAssemblies, StringComparer.OrdinalIgnoreCase);
+        }
+
+        private IReadOnlyList<string> Split(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+            {
+                return Array.Empty<string>();
+            }
+
+            var list = new List<string>();
+            foreach (var part in value.Split(new[] { ';' }, StringSplitOptions.RemoveEmptyEntries))
+            {
+                var trimmedPart = part;
+                if (!string.IsNullOrEmpty(trimmedPart))
+                {
+                    list.Add(trimmedPart);
+                }
+            }
+            return list;
+        }
     }
 }

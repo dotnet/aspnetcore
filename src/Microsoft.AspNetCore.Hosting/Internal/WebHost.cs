@@ -135,7 +135,7 @@ namespace Microsoft.AspNetCore.Hosting.Internal
             // Log the fact that we did load hosting startup assemblies.
             if (_logger.IsEnabled(LogLevel.Debug))
             {
-                foreach (var assembly in _options.HostingStartupAssemblies)
+                foreach (var assembly in _options.GetFinalHostingStartupAssemblies())
                 {
                     _logger.LogDebug("Loaded hosting startup assembly {assemblyName}", assembly);
                 }

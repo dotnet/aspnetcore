@@ -176,7 +176,7 @@ namespace Microsoft.AspNetCore.Hosting
 
             var logger = hostingServiceProvider.GetRequiredService<ILogger<WebHost>>();
             // Warn about duplicate HostingStartupAssemblies
-            foreach (var assemblyName in _options.HostingStartupAssemblies.GroupBy(a => a, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
+            foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies().GroupBy(a => a, StringComparer.OrdinalIgnoreCase).Where(g => g.Count() > 1))
             {
                 logger.LogWarning($"The assembly {assemblyName} was specified multiple times. Hosting startup assemblies should only be specified once.");
             }
@@ -206,7 +206,7 @@ namespace Microsoft.AspNetCore.Hosting
                 var exceptions = new List<Exception>();
 
                 // Execute the hosting startup assemblies
-                foreach (var assemblyName in _options.HostingStartupAssemblies.Distinct(StringComparer.OrdinalIgnoreCase))
+                foreach (var assemblyName in _options.GetFinalHostingStartupAssemblies().Distinct(StringComparer.OrdinalIgnoreCase))
                 {
                     try
                     {

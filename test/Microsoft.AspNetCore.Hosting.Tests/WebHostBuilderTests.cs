@@ -780,6 +780,23 @@ namespace Microsoft.AspNetCore.Hosting
         }
 
         [Fact]
+        public void Build_HostingStartupAssemblyCanBeExcluded()
+        {
+            var builder = CreateWebHostBuilder()
+                .CaptureStartupErrors(false)
+                .UseSetting(WebHostDefaults.HostingStartupAssembliesKey, typeof(TestStartupAssembly1.TestHostingStartup1).GetTypeInfo().Assembly.FullName)
+                .UseSetting(WebHostDefaults.HostingStartupExcludeAssembliesKey, typeof(TestStartupAssembly1.TestHostingStartup1).GetTypeInfo().Assembly.FullName)
+                .Configure(app => { })
+                .UseServer(new TestServer());
+
+            using (var host = builder.Build())
+            {
+                Assert.Null(builder.GetSetting("testhostingstartup1"));
+                Assert.Equal("0", builder.GetSetting("testhostingstartup_chain"));
+            }
+        }
+
+        [Fact]
         public void Build_ConfigureLoggingInHostingStartupWorks()
         {
             var builder = CreateWebHostBuilder()
