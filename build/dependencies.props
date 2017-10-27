@@ -50,7 +50,7 @@
   <!-- Roslyn -->
   <PropertyGroup>
     <RoslynFeed>https://dotnet.myget.org/F/roslyn/api/v3/index.json</RoslynFeed>
-    <RoslynDevPackageVersion>2.6.0-beta1-61924-08</RoslynDevPackageVersion>
+    <RoslynDevPackageVersion>2.6.0-beta1-62023-02</RoslynDevPackageVersion>
   </PropertyGroup>
 
   <ItemGroup>
@@ -63,6 +63,9 @@
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
       <VariableName>VSIX_MicrosoftCodeAnalysisCSharpPackageVersion</VariableName>
+    </ExternalDependency>
+    <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Features" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
+      <VariableName>VSIX_MicrosoftCodeAnalysisCSharpFeaturesPackageVersion</VariableName>
     </ExternalDependency>
     <ExternalDependency Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="$(RoslynDevPackageVersion)" Source="$(RoslynFeed)" Private="true" Mirror="true" Lineup="false">
       <VariableName>VSIX_MicrosoftCodeAnalysisCSharpWorkspacesPackageVersion</VariableName>
@@ -188,6 +191,10 @@
     <ExternalDependency Include="NETStandard.Library" Version="2.0.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Newtonsoft.Json.Bson" Version="1.0.1" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Newtonsoft.Json" Version="10.0.1" Source="$(DefaultNuGetFeed)"/>
+    <ExternalDependency Include="Newtonsoft.Json" Version="9.0.1" Source="$(DefaultNuGetFeed)" Lineup="false">
+      <!-- This version is required by MSBuild tasks or Visual Studio extensions. -->
+      <VariableName>VisualStudio_NewtonsoftJsonPackageVersion</VariableName>
+    </ExternalDependency>
     <ExternalDependency Include="NuGet.Frameworks" Version="4.3.0" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Remotion.Linq" Version="2.2.0-alpha-002" Source="$(DefaultNuGetFeed)"/>
     <ExternalDependency Include="Serilog.Extensions.Logging" Version="1.4.0" Source="$(DefaultNuGetFeed)"/>
