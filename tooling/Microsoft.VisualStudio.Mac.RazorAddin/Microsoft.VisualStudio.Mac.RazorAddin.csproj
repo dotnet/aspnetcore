@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <Import Project="AddinMetadata.props" />
   
   <PropertyGroup>
@@ -6,23 +6,23 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <AssemblyAttribute  Include="Mono.Addins.AddinAttribute">
+    <AssemblyAttribute Include="Mono.Addins.AddinAttribute">
       <_Parameter1>$(AddinId)</_Parameter1>
       <Namespace>$(AddinNamespace)</Namespace>
       <Version>$(AddinVersion)</Version>
-    </AssemblyAttribute >
-    <AssemblyAttribute  Include="Mono.Addins.AddinNameAttribute">
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Mono.Addins.AddinNameAttribute">
       <_Parameter1>$(AddinDetailedName)</_Parameter1>
-    </AssemblyAttribute >
-    <AssemblyAttribute  Include="Mono.Addins.AddinCategoryAttribute">
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Mono.Addins.AddinCategoryAttribute">
       <_Parameter1>$(AddinCategory)</_Parameter1>
-    </AssemblyAttribute >
-    <AssemblyAttribute  Include="Mono.Addins.AddinDescriptionAttribute">
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="Mono.Addins.AddinDescriptionAttribute">
       <_Parameter1>$(Description)</_Parameter1>
-    </AssemblyAttribute >
+    </AssemblyAttribute>
     <AssemblyAttribute Include="Mono.Addins.AddinAuthorAttribute">
       <_Parameter1>$(Authors)</_Parameter1>
-    </AssemblyAttribute >
+    </AssemblyAttribute>
     </ItemGroup>
 
   <ItemGroup>
@@ -30,7 +30,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Mono.Addins" />
+    <PackageReference Include="Mono.Addins" Version="$(MonoAddinsPackageVersion)" />
   </ItemGroup>
 
   <ItemGroup>

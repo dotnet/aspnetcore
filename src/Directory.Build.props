@@ -1,5 +1,5 @@
-<Project>
-  <Import Project="..\Directory.Build.props"/>
+﻿<Project>
+  <Import Project="..\Directory.Build.props" />
 
   <PropertyGroup>
     <NoWarn>$(NoWarn);CS1591</NoWarn>
@@ -8,7 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFrameworkIdentifier)'=='.NETFramework' AND '$(OutputType)'=='library'">
-    <PackageReference Include="NETStandard.Library" />
+    <PackageReference Include="NETStandard.Library" Version="$(NETStandardLibraryPackageVersion)" />
   </ItemGroup>
 
 </Project>

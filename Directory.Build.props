@@ -1,6 +1,6 @@
-<Project>
-
-  <Import Project="version.xml" />
+﻿<Project>
+  <Import Project="version.props" />
+  <Import Project="build\dependencies.props" />
 
   <PropertyGroup>
     <Product>Microsoft ASP.NET Core</Product>
@@ -10,17 +10,14 @@
     <AssemblyOriginatorKeyFile>$(MSBuildThisFileDirectory)build\Key.snk</AssemblyOriginatorKeyFile>
     <SignAssembly>true</SignAssembly>
     <PublicSign Condition="'$(OS)' != 'Windows_NT'">true</PublicSign>
-    <VersionSuffix Condition="'$(VersionSuffix)'!='' AND '$(BuildNumber)' != ''">$(VersionSuffix)-$(BuildNumber)</VersionSuffix>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 
     <!-- Generate full pdbs for desktop targeting projects on platforms that support generating full pdbs. -->
     <DebugType Condition="'$(OS)'=='Windows_NT' AND '$(TargetFramework)'=='net46'">full</DebugType>
-    
-    <RoslynDevVersion>2.6.0-beta1-62023-02</RoslynDevVersion>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" />
+    <PackageReference Include="Internal.AspNetCore.Sdk" PrivateAssets="All" Version="$(InternalAspNetCoreSdkPackageVersion)" />
   </ItemGroup>
 
 </Project>

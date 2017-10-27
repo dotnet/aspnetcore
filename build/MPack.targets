@@ -1,4 +1,4 @@
-<Project>
+﻿<Project>
   <PropertyGroup>
     <PackageDependsOn Condition="'$(OS)'=='Windows_NT'">$(PackageDependsOn);GenerateMPack</PackageDependsOn>
     <AddinName>Microsoft.VisualStudio.Mac.RazorAddin</AddinName>
