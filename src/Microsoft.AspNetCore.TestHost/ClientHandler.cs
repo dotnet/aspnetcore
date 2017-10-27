@@ -33,12 +33,7 @@ namespace Microsoft.AspNetCore.TestHost
         /// <param name="application">The <see cref="IHttpApplication{TContext}"/>.</param>
         public ClientHandler(PathString pathBase, IHttpApplication<Context> application)
         {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-
-            _application = application;
+            _application = application ?? throw new ArgumentNullException(nameof(application));
 
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
             if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
@@ -64,187 +59,74 @@ namespace Microsoft.AspNetCore.TestHost
                 throw new ArgumentNullException(nameof(request));
             }
 
-            var state = new RequestState(request, _pathBase, _application);
+            var contextBuilder = new HttpContextBuilder(_application);
+
+            Stream responseBody = null;
             var requestContent = request.Content ?? new StreamContent(Stream.Null);
             var body = await requestContent.ReadAsStreamAsync();
-            if (body.CanSeek)
+            contextBuilder.Configure(context =>
             {
-                // This body may have been consumed before, rewind it.
-                body.Seek(0, SeekOrigin.Begin);
-            }
-            state.Context.HttpContext.Request.Body = body;
-            var registration = cancellationToken.Register(state.AbortRequest);
+                var req = context.Request;
 
-            // Async offload, don't let the test code block the caller.
-            var offload = Task.Factory.StartNew(async () =>
-                {
-                    try
-                    {
-                        await _application.ProcessRequestAsync(state.Context);
-                        await state.CompleteResponseAsync();
-                        state.ServerCleanup(exception: null);
-                    }
-                    catch (Exception ex)
-                    {
-                        state.Abort(ex);
-                        state.ServerCleanup(ex);
-                    }
-                    finally
-                    {
-                        registration.Dispose();
-                    }
-                });
+                req.Protocol = "HTTP/" + request.Version.ToString(fieldCount: 2);
+                req.Method = request.Method.ToString();
 
-            return await state.ResponseTask.ConfigureAwait(false);
-        }
-
-        private class RequestState
-        {
-            private readonly HttpRequestMessage _request;
-            private readonly IHttpApplication<Context> _application;
-            private TaskCompletionSource<HttpResponseMessage> _responseTcs;
-            private ResponseStream _responseStream;
-            private ResponseFeature _responseFeature;
-            private CancellationTokenSource _requestAbortedSource;
-            private bool _pipelineFinished;
-
-            internal RequestState(HttpRequestMessage request, PathString pathBase, IHttpApplication<Context> application)
-            {
-                _request = request;
-                _application = application;
-                _responseTcs = new TaskCompletionSource<HttpResponseMessage>();
-                _requestAbortedSource = new CancellationTokenSource();
-                _pipelineFinished = false;
-
+                req.Scheme = request.RequestUri.Scheme;
+                req.Host = HostString.FromUriComponent(request.RequestUri);
                 if (request.RequestUri.IsDefaultPort)
                 {
-                    request.Headers.Host = request.RequestUri.Host;
+                    req.Host = new HostString(req.Host.Host);
                 }
-                else
+
+                req.Path = PathString.FromUriComponent(request.RequestUri);
+                req.PathBase = PathString.Empty;
+                if (req.Path.StartsWithSegments(_pathBase, out var remainder))
                 {
-                    request.Headers.Host = request.RequestUri.GetComponents(UriComponents.HostAndPort, UriFormat.UriEscaped);
+                    req.Path = remainder;
+                    req.PathBase = _pathBase;
                 }
-
-                var contextFeatures = new FeatureCollection();
-                var requestFeature = new RequestFeature();
-                contextFeatures.Set<IHttpRequestFeature>(requestFeature);
-                _responseFeature = new ResponseFeature();
-                contextFeatures.Set<IHttpResponseFeature>(_responseFeature);
-                var requestLifetimeFeature = new HttpRequestLifetimeFeature();
-                contextFeatures.Set<IHttpRequestLifetimeFeature>(requestLifetimeFeature);
-
-                requestFeature.Protocol = "HTTP/" + request.Version.ToString(fieldCount: 2);
-                requestFeature.Scheme = request.RequestUri.Scheme;
-                requestFeature.Method = request.Method.ToString();
-
-                var fullPath = PathString.FromUriComponent(request.RequestUri);
-                PathString remainder;
-                if (fullPath.StartsWithSegments(pathBase, out remainder))
-                {
-                    requestFeature.PathBase = pathBase.Value;
-                    requestFeature.Path = remainder.Value;
-                }
-                else
-                {
-                    requestFeature.PathBase = string.Empty;
-                    requestFeature.Path = fullPath.Value;
-                }
-
-                requestFeature.QueryString = QueryString.FromUriComponent(request.RequestUri).Value;
+                req.QueryString = QueryString.FromUriComponent(request.RequestUri);
 
                 foreach (var header in request.Headers)
                 {
-                    requestFeature.Headers.Append(header.Key, header.Value.ToArray());
+                    req.Headers.Append(header.Key, header.Value.ToArray());
                 }
-                var requestContent = request.Content;
                 if (requestContent != null)
                 {
-                    foreach (var header in request.Content.Headers)
+                    foreach (var header in requestContent.Headers)
                     {
-                        requestFeature.Headers.Append(header.Key, header.Value.ToArray());
+                        req.Headers.Append(header.Key, header.Value.ToArray());
                     }
                 }
 
-                _responseStream = new ResponseStream(ReturnResponseMessageAsync, AbortRequest);
-                _responseFeature.Body = _responseStream;
-                _responseFeature.StatusCode = 200;
-                requestLifetimeFeature.RequestAborted = _requestAbortedSource.Token;
-
-                Context = application.CreateContext(contextFeatures);
-            }
-
-            public Context Context { get; private set; }
-
-            public Task<HttpResponseMessage> ResponseTask
-            {
-                get { return _responseTcs.Task; }
-            }
-
-            internal void AbortRequest()
-            {
-                if (!_pipelineFinished)
+                if (body.CanSeek)
                 {
-                    _requestAbortedSource.Cancel();
+                    // This body may have been consumed before, rewind it.
+                    body.Seek(0, SeekOrigin.Begin);
                 }
-                _responseStream.Complete();
-            }
+                req.Body = body;
 
-            internal async Task CompleteResponseAsync()
-            {
-                _pipelineFinished = true;
-                await ReturnResponseMessageAsync();
-                _responseStream.Complete();
-                await _responseFeature.FireOnResponseCompletedAsync();
-            }
+                responseBody = context.Response.Body;
+            });
 
-            internal async Task ReturnResponseMessageAsync()
+            var httpContext = await contextBuilder.SendAsync(cancellationToken);
+
+            var response = new HttpResponseMessage();
+            response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
+            response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
+            response.RequestMessage = request;
+
+            response.Content = new StreamContent(responseBody);
+
+            foreach (var header in httpContext.Response.Headers)
             {
-                // Check if the response has already started because the TrySetResult below could happen a bit late
-                // (as it happens on a different thread) by which point the CompleteResponseAsync could run and calls this
-                // method again.
-                if (!Context.HttpContext.Response.HasStarted)
+                if (!response.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value))
                 {
-                    var response = await GenerateResponseAsync();
-                    // Dispatch, as TrySetResult will synchronously execute the waiters callback and block our Write.
-                    var setResult = Task.Factory.StartNew(() => _responseTcs.TrySetResult(response));
+                    bool success = response.Content.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value);
+                    Contract.Assert(success, "Bad header");
                 }
             }
-
-            private async Task<HttpResponseMessage> GenerateResponseAsync()
-            {
-                await _responseFeature.FireOnSendingHeadersAsync();
-                var httpContext = Context.HttpContext;
-
-                var response = new HttpResponseMessage();
-                response.StatusCode = (HttpStatusCode)httpContext.Response.StatusCode;
-                response.ReasonPhrase = httpContext.Features.Get<IHttpResponseFeature>().ReasonPhrase;
-                response.RequestMessage = _request;
-                // response.Version = owinResponse.Protocol;
-
-                response.Content = new StreamContent(_responseStream);
-
-                foreach (var header in httpContext.Response.Headers)
-                {
-                    if (!response.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value))
-                    {
-                        bool success = response.Content.Headers.TryAddWithoutValidation(header.Key, (IEnumerable<string>)header.Value);
-                        Contract.Assert(success, "Bad header");
-                    }
-                }
-                return response;
-            }
-
-            internal void Abort(Exception exception)
-            {
-                _pipelineFinished = true;
-                _responseStream.Abort(exception);
-                _responseTcs.TrySetException(exception);
-            }
-
-            internal void ServerCleanup(Exception exception)
-            {
-                _application.DisposeContext(Context, exception);
-            }
+            return response;
         }
     }
 }

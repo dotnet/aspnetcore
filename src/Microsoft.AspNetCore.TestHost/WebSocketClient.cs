@@ -22,12 +22,7 @@ namespace Microsoft.AspNetCore.TestHost
 
         internal WebSocketClient(PathString pathBase, IHttpApplication<Context> application)
         {
-            if (application == null)
-            {
-                throw new ArgumentNullException(nameof(application));
-            }
-            
-            _application = application;
+            _application = application ?? throw new ArgumentNullException(nameof(application));
 
             // PathString.StartsWithSegments that we use below requires the base path to not end in a slash.
             if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
@@ -53,79 +48,21 @@ namespace Microsoft.AspNetCore.TestHost
 
         public async Task<WebSocket> ConnectAsync(Uri uri, CancellationToken cancellationToken)
         {
-            var state = new RequestState(uri, _pathBase, cancellationToken, _application);
-
-            if (ConfigureRequest != null)
+            WebSocketFeature webSocketFeature = null;
+            var contextBuilder = new HttpContextBuilder(_application);
+            contextBuilder.Configure(context =>
             {
-                ConfigureRequest(state.Context.HttpContext.Request);
-            }
-
-            // Async offload, don't let the test code block the caller.
-            var offload = Task.Factory.StartNew(async () =>
-            {
-                try
-                {
-                    await _application.ProcessRequestAsync(state.Context);
-                    state.PipelineComplete();
-                    state.ServerCleanup(exception: null);
-                }
-                catch (Exception ex)
-                {
-                    state.PipelineFailed(ex);
-                    state.ServerCleanup(ex);
-                }
-                finally
-                {
-                    state.Dispose();
-                }
-            });
-
-            return await state.WebSocketTask;
-        }
-
-        private class RequestState : IDisposable, IHttpWebSocketFeature
-        {
-            private readonly IHttpApplication<Context> _application;
-            private TaskCompletionSource<WebSocket> _clientWebSocketTcs;
-            private CancellationTokenRegistration _cancellationTokenRegistration;
-            private WebSocket _serverWebSocket;
-
-            public Context Context { get; private set; }
-            public Task<WebSocket> WebSocketTask { get { return _clientWebSocketTcs.Task; } }
-
-            public RequestState(Uri uri, PathString pathBase, CancellationToken cancellationToken, IHttpApplication<Context> application)
-            {
-                _clientWebSocketTcs = new TaskCompletionSource<WebSocket>();
-                _cancellationTokenRegistration = cancellationToken.Register(
-                    () => _clientWebSocketTcs.TrySetCanceled(cancellationToken));
-                _application = application;
-
-                // HttpContext
-                var contextFeatures = new FeatureCollection();
-                contextFeatures.Set<IHttpRequestFeature>(new RequestFeature());
-                contextFeatures.Set<IHttpResponseFeature>(new ResponseFeature());
-                Context = _application.CreateContext(contextFeatures);
-                var httpContext = Context.HttpContext;
-
-                // Request
-                var request = httpContext.Request;
-                request.Protocol = "HTTP/1.1";
+                var request = context.Request;
                 var scheme = uri.Scheme;
                 scheme = (scheme == "ws") ? "http" : scheme;
                 scheme = (scheme == "wss") ? "https" : scheme;
                 request.Scheme = scheme;
-                request.Method = "GET";
-                var fullPath = PathString.FromUriComponent(uri);
-                PathString remainder;
-                if (fullPath.StartsWithSegments(pathBase, out remainder))
+                request.Path = PathString.FromUriComponent(uri);
+                request.PathBase = PathString.Empty;
+                if (request.Path.StartsWithSegments(_pathBase, out var remainder))
                 {
-                    request.PathBase = pathBase;
                     request.Path = remainder;
-                }
-                else
-                {
-                    request.PathBase = PathString.Empty;
-                    request.Path = fullPath;
+                    request.PathBase = _pathBase;
                 }
                 request.QueryString = QueryString.FromUriComponent(uri);
                 request.Headers.Add("Connection", new string[] { "Upgrade" });
@@ -134,70 +71,63 @@ namespace Microsoft.AspNetCore.TestHost
                 request.Headers.Add("Sec-WebSocket-Key", new string[] { CreateRequestKey() });
                 request.Body = Stream.Null;
 
-                // Response
-                var response = httpContext.Response;
-                response.Body = Stream.Null;
-                response.StatusCode = 200;
-
                 // WebSocket
-                httpContext.Features.Set<IHttpWebSocketFeature>(this);
-            }
+                webSocketFeature = new WebSocketFeature(context);
+                context.Features.Set<IHttpWebSocketFeature>(webSocketFeature);
 
-            public void PipelineComplete()
+                ConfigureRequest?.Invoke(context.Request);
+            });
+
+            var httpContext = await contextBuilder.SendAsync(cancellationToken);
+
+            if (httpContext.Response.StatusCode != StatusCodes.Status101SwitchingProtocols)
             {
-                PipelineFailed(new InvalidOperationException("Incomplete handshake, status code: " + Context.HttpContext.Response.StatusCode));
+                throw new InvalidOperationException("Incomplete handshake, status code: " + httpContext.Response.StatusCode);
             }
-
-            public void PipelineFailed(Exception ex)
+            if (webSocketFeature.ClientWebSocket == null)
             {
-                _clientWebSocketTcs.TrySetException(new InvalidOperationException("The websocket was not accepted.", ex));
+                throw new InvalidOperationException("Incomplete handshake");
             }
 
-            public void Dispose()
+            return webSocketFeature.ClientWebSocket;
+        }
+
+        private string CreateRequestKey()
+        {
+            byte[] data = new byte[16];
+            var rng = RandomNumberGenerator.Create();
+            rng.GetBytes(data);
+            return Convert.ToBase64String(data);
+        }
+
+        private class WebSocketFeature : IHttpWebSocketFeature
+        {
+            private readonly HttpContext _httpContext;
+
+            public WebSocketFeature(HttpContext context)
             {
-                if (_serverWebSocket != null)
-                {
-                    _serverWebSocket.Dispose();
-                }
+                _httpContext = context;
             }
 
-            internal void ServerCleanup(Exception exception)
-            {
-                _application.DisposeContext(Context, exception);
-            }
+            bool IHttpWebSocketFeature.IsWebSocketRequest => true;
 
-            private string CreateRequestKey()
-            {
-                byte[] data = new byte[16];
-                var rng = RandomNumberGenerator.Create();
-                rng.GetBytes(data);
-                return Convert.ToBase64String(data);
-            }
+            public WebSocket ClientWebSocket { get; private set; }
 
-            bool IHttpWebSocketFeature.IsWebSocketRequest
-            {
-                get
-                {
-                    return true;
-                }
-            }
+            public WebSocket ServerWebSocket { get; private set; }
 
-            Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(WebSocketAcceptContext context)
+            async Task<WebSocket> IHttpWebSocketFeature.AcceptAsync(WebSocketAcceptContext context)
             {
                 var websockets = TestWebSocket.CreatePair(context.SubProtocol);
-                if (_clientWebSocketTcs.TrySetResult(websockets.Item1))
+                if (_httpContext.Response.HasStarted)
                 {
-                    Context.HttpContext.Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
-                    _serverWebSocket = websockets.Item2;
-                    return Task.FromResult(_serverWebSocket);
+                    throw new InvalidOperationException("The response has already started");
                 }
-                else
-                {
-                    Context.HttpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
-                    websockets.Item1.Dispose();
-                    websockets.Item2.Dispose();
-                    return _clientWebSocketTcs.Task; // Canceled or Faulted - no result
-                }
+
+                _httpContext.Response.StatusCode = StatusCodes.Status101SwitchingProtocols;
+                ClientWebSocket = websockets.Item1;
+                ServerWebSocket = websockets.Item2;
+                await _httpContext.Response.Body.FlushAsync(_httpContext.RequestAborted); // Send headers to the client
+                return ServerWebSocket;
             }
         }
     }

@@ -267,14 +267,8 @@ namespace Microsoft.AspNetCore.TestHost
                 }
             };
             var builder = new WebHostBuilder()
-                .ConfigureServices(services =>
-                {
-                    services.AddSingleton<ILogger<IWebHost>>(logger);
-                })
-                .Configure(app =>
-                {
-                    app.Run(appDelegate);
-                });
+                .ConfigureServices(services => services.AddSingleton<ILogger<IWebHost>>(logger))
+                .Configure(app => app.Run(appDelegate));
             var server = new TestServer(builder);
 
             // Act
@@ -283,7 +277,7 @@ namespace Microsoft.AspNetCore.TestHost
             tokenSource.Cancel();
 
             // Assert
-            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await client.ConnectAsync(new System.Uri("http://localhost"), tokenSource.Token));
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await client.ConnectAsync(new Uri("http://localhost"), tokenSource.Token));
         }
 
         private class VerifierLogger : ILogger<IWebHost>

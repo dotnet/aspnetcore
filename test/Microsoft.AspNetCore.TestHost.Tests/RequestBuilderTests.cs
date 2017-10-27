@@ -2,16 +2,13 @@
 // Licensed under the Apache License, Version 2.0. See License.txt in the project root for license information.
 
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Testing.xunit;
 using Xunit;
 
 namespace Microsoft.AspNetCore.TestHost
 {
     public class RequestBuilderTests
     {
-        // c.f. https://github.com/mono/mono/pull/1832
-        [ConditionalFact]
-        [FrameworkSkipCondition(RuntimeFrameworks.Mono)]
+        [Fact]
         public void AddRequestHeader()
         {
             var builder = new WebHostBuilder().Configure(app => { });

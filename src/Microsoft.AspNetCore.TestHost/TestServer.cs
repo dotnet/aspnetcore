@@ -82,6 +82,38 @@ namespace Microsoft.AspNetCore.TestHost
             return new RequestBuilder(this, path);
         }
 
+        /// <summary>
+        /// Creates, configures, sends, and returns a <see cref="HttpContext"/>. This completes as soon as the response is started.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<HttpContext> SendAsync(Action<HttpContext> configureContext, CancellationToken cancellationToken = default)
+        {
+            if (configureContext == null)
+            {
+                throw new ArgumentNullException(nameof(configureContext));
+            }
+
+            var builder = new HttpContextBuilder(_application);
+            builder.Configure(context =>
+            {
+                var request = context.Request;
+                request.Scheme = BaseAddress.Scheme;
+                request.Host = HostString.FromUriComponent(BaseAddress);
+                if (BaseAddress.IsDefaultPort)
+                {
+                    request.Host = new HostString(request.Host.Host);
+                }
+                var pathBase = PathString.FromUriComponent(BaseAddress);
+                if (pathBase.HasValue && pathBase.Value.EndsWith("/"))
+                {
+                    pathBase = new PathString(pathBase.Value.Substring(0, pathBase.Value.Length - 1));
+                }
+                request.PathBase = pathBase;
+            });
+            builder.Configure(configureContext);
+            return await builder.SendAsync(cancellationToken).ConfigureAwait(false);
+        }
+
         public void Dispose()
         {
             if (!_disposed)
