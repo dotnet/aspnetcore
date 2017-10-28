@@ -3,7 +3,6 @@
 
 using System.Linq;
 using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -17,8 +16,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task XForwardedForDefaultSettingsChangeRemoteIpAndPort()
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -26,63 +23,49 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
-                        Assert.Equal(9090, context.Connection.RemotePort);
-                        // No Original set if RemoteIpAddress started null.
-                        Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
-                        // Should have been consumed and removed
-                        Assert.False(context.Request.Headers.ContainsKey("X-Forwarded-For"));
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.Add("X-Forwarded-For", "11.111.111.11:9090");
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-For"] = "11.111.111.11:9090";
+            });
+
+            Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
+            Assert.Equal(9090, context.Connection.RemotePort);
+            // No Original set if RemoteIpAddress started null.
+            Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
+            // Should have been consumed and removed
+            Assert.False(context.Request.Headers.ContainsKey("X-Forwarded-For"));
         }
 
         [Theory]
         [InlineData(1, "11.111.111.11.12345", "10.0.0.1", 99)] // Invalid
         public async Task XForwardedForFirstValueIsInvalid(int limit, string header, string expectedIp, int expectedPort)
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.Use((context, next) =>
-                    {
-                        context.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
-                        context.Connection.RemotePort = 99;
-                        return next();
-                    });
                     app.UseForwardedHeaders(new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
                         ForwardLimit = limit,
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal(expectedIp, context.Connection.RemoteIpAddress.ToString());
-                        Assert.Equal(expectedPort, context.Connection.RemotePort);
-                        Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
-                        Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-For"));
-                        Assert.Equal(header, context.Request.Headers["X-Forwarded-For"]);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.TryAddWithoutValidation("X-Forwarded-For", header);
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-For"] = header;
+                c.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
+                c.Connection.RemotePort = 99;
+            });
+
+            Assert.Equal(expectedIp, context.Connection.RemoteIpAddress.ToString());
+            Assert.Equal(expectedPort, context.Connection.RemotePort);
+            Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
+            Assert.True(context.Request.Headers.ContainsKey("X-Forwarded-For"));
+            Assert.Equal(header, context.Request.Headers["X-Forwarded-For"]);
         }
 
         [Theory]
@@ -106,17 +89,9 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(3, "13.113.113.13:34567, 12.112.112.12:23456, 11.111.111.11:12345", "13.113.113.13", 34567, "", true)]
         public async Task XForwardedForForwardLimit(int limit, string header, string expectedIp, int expectedPort, string remainingHeader, bool requireSymmetry)
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.Use((context, next) =>
-                    {
-                        context.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
-                        context.Connection.RemotePort = 99;
-                        return next();
-                    });
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
@@ -126,21 +101,19 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     options.KnownProxies.Clear();
                     options.KnownNetworks.Clear();
                     app.UseForwardedHeaders(options);
-                    app.Run(context =>
-                    {
-                        Assert.Equal(expectedIp, context.Connection.RemoteIpAddress.ToString());
-                        Assert.Equal(expectedPort, context.Connection.RemotePort);
-                        Assert.Equal(remainingHeader, context.Request.Headers["X-Forwarded-For"].ToString());
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.TryAddWithoutValidation("X-Forwarded-For", header);
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-For"] = header;
+                c.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
+                c.Connection.RemotePort = 99;
+            });
+
+            Assert.Equal(expectedIp, context.Connection.RemoteIpAddress.ToString());
+            Assert.Equal(expectedPort, context.Connection.RemotePort);
+            Assert.Equal(remainingHeader, context.Request.Headers["X-Forwarded-For"].ToString());
         }
 
         [Theory]
@@ -151,47 +124,37 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData("::", false)]
         public async Task XForwardedForLoopback(string originalIp, bool expectForwarded)
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.Use((context, next) =>
-                    {
-                        context.Connection.RemoteIpAddress = IPAddress.Parse(originalIp);
-                        context.Connection.RemotePort = 99;
-                        return next();
-                    });
                     app.UseForwardedHeaders(new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
                     });
-                    app.Run(context =>
-                    {
-                        if (expectForwarded)
-                        {
-                            Assert.Equal("10.0.0.1", context.Connection.RemoteIpAddress.ToString());
-                            Assert.Equal(1234, context.Connection.RemotePort);
-                            Assert.True(context.Request.Headers.ContainsKey("X-Original-For"));
-                            Assert.Equal(new IPEndPoint(IPAddress.Parse(originalIp), 99).ToString(),
-                                context.Request.Headers["X-Original-For"]);
-                        }
-                        else
-                        {
-                            Assert.Equal(originalIp, context.Connection.RemoteIpAddress.ToString());
-                            Assert.Equal(99, context.Connection.RemotePort);
-                            Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
-                        }
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.TryAddWithoutValidation("X-Forwarded-For", "10.0.0.1:1234");
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-For"] = "10.0.0.1:1234";
+                c.Connection.RemoteIpAddress = IPAddress.Parse(originalIp);
+                c.Connection.RemotePort = 99;
+            });
+
+            if (expectForwarded)
+            {
+                Assert.Equal("10.0.0.1", context.Connection.RemoteIpAddress.ToString());
+                Assert.Equal(1234, context.Connection.RemotePort);
+                Assert.True(context.Request.Headers.ContainsKey("X-Original-For"));
+                Assert.Equal(new IPEndPoint(IPAddress.Parse(originalIp), 99).ToString(),
+                    context.Request.Headers["X-Original-For"]);
+            }
+            else
+            {
+                Assert.Equal(originalIp, context.Connection.RemoteIpAddress.ToString());
+                Assert.Equal(99, context.Connection.RemotePort);
+                Assert.False(context.Request.Headers.ContainsKey("X-Original-For"));
+            }
         }
 
         [Theory]
@@ -219,17 +182,9 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(3, "13.113.113.13;34567, 12.112.112.12:23456, 11.111.111.11:12345", "10.0.0.1,11.111.111.11,12.112.112.12", "12.112.112.12", 23456, true)] // Invalid 3rd IP
         public async Task XForwardedForForwardKnownIps(int limit, string header, string knownIPs, string expectedIp, int expectedPort, bool requireSymmetry)
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.Use((context, next) =>
-                    {
-                        context.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
-                        context.Connection.RemotePort = 99;
-                        return next();
-                    });
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor,
@@ -241,27 +196,23 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         options.KnownProxies.Add(ip);
                     }
                     app.UseForwardedHeaders(options);
-                    app.Run(context =>
-                    {
-                        Assert.Equal(expectedIp, context.Connection.RemoteIpAddress.ToString());
-                        Assert.Equal(expectedPort, context.Connection.RemotePort);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.TryAddWithoutValidation("X-Forwarded-For", header);
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-For"] = header;
+                c.Connection.RemoteIpAddress = IPAddress.Parse("10.0.0.1");
+                c.Connection.RemotePort = 99;
+            });
+
+            Assert.Equal(expectedIp, context.Connection.RemoteIpAddress.ToString());
+            Assert.Equal(expectedPort, context.Connection.RemotePort);
         }
 
         [Fact]
         public async Task XForwardedForOverrideBadIpDoesntChangeRemoteIp()
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -269,26 +220,20 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Null(context.Connection.RemoteIpAddress);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.Add("X-Forwarded-For", "BAD-IP");
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-For"] = "BAD-IP";
+            });
+
+            Assert.Null(context.Connection.RemoteIpAddress);
         }
 
         [Fact]
         public async Task XForwardedHostOverrideChangesRequestHost()
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -296,19 +241,15 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedHost
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal("testhost", context.Request.Host.ToString());
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.Add("X-Forwarded-Host", "testhost");
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Host"] = "testhost";
+            });
+
+            Assert.Equal("testhost", context.Request.Host.ToString());
         }
 
         [Theory]
@@ -321,8 +262,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(10, "h3, h2, h1", "h3")]
         public async Task XForwardedProtoOverrideChangesRequestProtocol(int limit, string header, string expected)
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -331,19 +270,15 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         ForwardedHeaders = ForwardedHeaders.XForwardedProto,
                         ForwardLimit = limit,
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal(expected, context.Request.Scheme);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.Add("X-Forwarded-Proto", header);
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = header;
+            });
+
+            Assert.Equal(expected, context.Request.Scheme);
         }
 
         [Theory]
@@ -357,8 +292,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(10, "h3, h2, h1", "::1, badip, ::1", "h1")]
         public async Task XForwardedProtoOverrideLimitedByXForwardedForCount(int limit, string protoHeader, string forHeader, string expected)
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -368,20 +301,16 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         RequireHeaderSymmetry = true,
                         ForwardLimit = limit,
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal(expected, context.Request.Scheme);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.Add("X-Forwarded-Proto", protoHeader);
-            req.Headers.Add("X-Forwarded-For", forHeader);
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = protoHeader;
+                c.Request.Headers["X-Forwarded-For"] = forHeader;
+            });
+
+            Assert.Equal(expected, context.Request.Scheme);
         }
 
         [Theory]
@@ -397,8 +326,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData(10, "h3, h2, h1", "::1, badip, ::1", "h1")]
         public async Task XForwardedProtoOverrideCanBeIndependentOfXForwardedForCount(int limit, string protoHeader, string forHeader, string expected)
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -408,20 +335,16 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         RequireHeaderSymmetry = false,
                         ForwardLimit = limit,
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal(expected, context.Request.Scheme);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.Add("X-Forwarded-Proto", protoHeader);
-            req.Headers.Add("X-Forwarded-For", forHeader);
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = protoHeader;
+                c.Request.Headers["X-Forwarded-For"] = forHeader;
+            });
+
+            Assert.Equal(expected, context.Request.Scheme);
         }
 
         [Theory]
@@ -439,16 +362,9 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [InlineData("h2, h1", "E::, D::", "F::", true, "http")]
         public async Task XForwardedProtoOverrideLimitedByLoopback(string protoHeader, string forHeader, string remoteIp, bool loopback, string expected)
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
-                    app.Use((context, next) =>
-                    {
-                        context.Connection.RemoteIpAddress = IPAddress.Parse(remoteIp);
-                        return next();
-                    });
                     var options = new ForwardedHeadersOptions
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedProto | ForwardedHeaders.XForwardedFor,
@@ -461,20 +377,17 @@ namespace Microsoft.AspNetCore.HttpOverrides
                         options.KnownProxies.Clear();
                     }
                     app.UseForwardedHeaders(options);
-                    app.Run(context =>
-                    {
-                        Assert.Equal(expected, context.Request.Scheme);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.Add("X-Forwarded-Proto", protoHeader);
-            req.Headers.Add("X-Forwarded-For", forHeader);
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = protoHeader;
+                c.Request.Headers["X-Forwarded-For"] = forHeader;
+                c.Connection.RemoteIpAddress = IPAddress.Parse(remoteIp);
+            });
+
+            Assert.Equal(expected, context.Request.Scheme);
         }
 
         [Fact]
@@ -490,8 +403,6 @@ namespace Microsoft.AspNetCore.HttpOverrides
         [Fact]
         public async Task AllForwardsEnabledChangeRequestRemoteIpHostandProtocol()
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -499,30 +410,24 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     {
                         ForwardedHeaders = ForwardedHeaders.All
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
-                        Assert.Equal("testhost", context.Request.Host.ToString());
-                        Assert.Equal("Protocol", context.Request.Scheme);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.Add("X-Forwarded-For", "11.111.111.11");
-            req.Headers.Add("X-Forwarded-Host", "testhost");
-            req.Headers.Add("X-Forwarded-Proto", "Protocol");
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = "Protocol";
+                c.Request.Headers["X-Forwarded-For"] = "11.111.111.11";
+                c.Request.Headers["X-Forwarded-Host"] = "testhost";
+            });
+
+            Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
+            Assert.Equal("testhost", context.Request.Host.ToString());
+            Assert.Equal("Protocol", context.Request.Scheme);
         }
 
         [Fact]
         public async Task AllOptionsDisabledRequestDoesntChange()
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -530,30 +435,24 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     {
                         ForwardedHeaders = ForwardedHeaders.None
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Null(context.Connection.RemoteIpAddress);
-                        Assert.Equal("localhost", context.Request.Host.ToString());
-                        Assert.Equal("http", context.Request.Scheme);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.Add("X-Forwarded-For", "11.111.111.11");
-            req.Headers.Add("X-Forwarded-Host", "otherhost");
-            req.Headers.Add("X-Forwarded-Proto", "Protocol");
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = "Protocol";
+                c.Request.Headers["X-Forwarded-For"] = "11.111.111.11";
+                c.Request.Headers["X-Forwarded-Host"] = "otherhost";
+            });
+
+            Assert.Null(context.Connection.RemoteIpAddress);
+            Assert.Equal("localhost", context.Request.Host.ToString());
+            Assert.Equal("http", context.Request.Scheme);
         }
 
         [Fact]
         public async Task PartiallyEnabledForwardsPartiallyChangesRequest()
         {
-            var assertsExecuted = false;
-
             var builder = new WebHostBuilder()
                 .Configure(app =>
                 {
@@ -561,23 +460,18 @@ namespace Microsoft.AspNetCore.HttpOverrides
                     {
                         ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
                     });
-                    app.Run(context =>
-                    {
-                        Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
-                        Assert.Equal("localhost", context.Request.Host.ToString());
-                        Assert.Equal("Protocol", context.Request.Scheme);
-                        assertsExecuted = true;
-                        return Task.FromResult(0);
-
-                    });
                 });
             var server = new TestServer(builder);
 
-            var req = new HttpRequestMessage(HttpMethod.Get, "");
-            req.Headers.Add("X-Forwarded-For", "11.111.111.11");
-            req.Headers.Add("X-Forwarded-Proto", "Protocol");
-            await server.CreateClient().SendAsync(req);
-            Assert.True(assertsExecuted);
+            var context = await server.SendAsync(c =>
+            {
+                c.Request.Headers["X-Forwarded-Proto"] = "Protocol";
+                c.Request.Headers["X-Forwarded-For"] = "11.111.111.11";
+            });
+
+            Assert.Equal("11.111.111.11", context.Connection.RemoteIpAddress.ToString());
+            Assert.Equal("localhost", context.Request.Host.ToString());
+            Assert.Equal("Protocol", context.Request.Scheme);
         }
     }
 }

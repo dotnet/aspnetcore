@@ -30,7 +30,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         {
 
             var builder = new WebHostBuilder()
-                .UseUrls("https://*:5050", "http://*:5050")
                 .ConfigureServices(services =>
                 {
                     services.Configure<HttpsRedirectionOptions>(options =>

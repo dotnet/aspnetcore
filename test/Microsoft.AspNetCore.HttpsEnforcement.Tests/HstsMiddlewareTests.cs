@@ -22,7 +22,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task SetOptionsWithDefault_SetsMaxAgeToCorrectValue()
         {
             var builder = new WebHostBuilder()
-                .UseUrls("https://*:5050")
                 .ConfigureServices(services =>
                 {
                 })
@@ -57,7 +56,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task SetOptionsThroughConfigure_SetsHeaderCorrectly(int maxAge, bool includeSubDomains, bool preload, string expected)
         {
             var builder = new WebHostBuilder()
-                .UseUrls("https://*:5050")
                 .ConfigureServices(services =>
                 {
                     services.Configure<HstsOptions>(options => {
@@ -96,7 +94,6 @@ namespace Microsoft.AspNetCore.HttpsPolicy.Tests
         public async Task SetOptionsThroughHelper_SetsHeaderCorrectly(int maxAge, bool includeSubDomains, bool preload, string expected)
         {
             var builder = new WebHostBuilder()
-                .UseUrls("https://*:5050")
                 .ConfigureServices(services =>
                 {
                     services.AddHsts(options => {
