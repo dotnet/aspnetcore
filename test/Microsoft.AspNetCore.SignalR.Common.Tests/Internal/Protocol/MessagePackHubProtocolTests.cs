@@ -17,13 +17,13 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
 
         public static IEnumerable<object[]> TestMessages => new[]
         {
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ false, "method") } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method") } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", new object[] { null }) } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", 42) } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", 42, "string") } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", 42, "string", new CustomObject()) } },
-            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", new[] { new CustomObject(), new CustomObject() }) } },
+            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ false, "method", null) } },
+            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null) } },
+            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, new object[] { null }) } },
+            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, 42) } },
+            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, 42, "string") } },
+            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, 42, "string", new CustomObject()) } },
+            new object[] { new[] { new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, new[] { new CustomObject(), new CustomObject() }) } },
 
             new object[] { new[] { new CompletionMessage("xyz", error: "Error not found!", result: null, hasResult: false) } },
             new object[] { new[] { new CompletionMessage("xyz", error: null, result: null, hasResult: false) } },
@@ -52,7 +52,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             {
                 new HubMessage[]
                 {
-                    new InvocationMessage("xyz", /*nonBlocking*/ true, "method", 42, "string", new CustomObject()),
+                    new InvocationMessage("xyz", /*nonBlocking*/ true, "method", null, 42, "string", new CustomObject()),
                     new CompletionMessage("xyz", error: null, result: 42, hasResult: true),
                     new StreamItemMessage("xyz", null),
                     new CompletionMessage("xyz", error: null, result: new CustomObject(), hasResult: true),
@@ -93,12 +93,6 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2 }, "Reading 'target' as String failed." }, // target missing
             new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0x00 }, "Reading 'target' as String failed." }, // 0x00 is Int
             new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1 }, "Reading 'target' as String failed." }, // string is cut
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78 }, "Reading array length for 'arguments' failed." }, // array is missing
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x00 }, "Reading array length for 'arguments' failed." }, // 0x00 is not array marker
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91 }, "Deserializing object of the `String` type for 'argument' failed." }, // array is missing elements
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91, 0xa2, 0x78 }, "Deserializing object of the `String` type for 'argument' failed." }, // array element is cut
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x92, 0xa0, 0x00 }, "Target method expects 1 arguments(s) but invocation has 2 argument(s)." }, // argument count does not match binder argument count
-            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91, 0x00 }, "Deserializing object of the `String` type for 'argument' failed." }, // argument type mismatch
 
             // StreamItemMessage
             new object[] { new byte[] { 0x93, 0x02 }, "Reading 'invocationId' as String failed." }, // 0xc2 is Bool false
@@ -136,6 +130,35 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
             Assert.Equal(expectedExceptionMessage, exception.Message);
         }
 
+        public static IEnumerable<object[]> ArgumentBindingErrors => new[]
+        {
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78 }, "Reading array length for 'arguments' failed." }, // array is missing
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x00 }, "Reading array length for 'arguments' failed." }, // 0x00 is not array marker
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91 }, "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked." }, // array is missing elements
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91, 0xa2, 0x78 }, "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked." }, // array element is cut
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x92, 0xa0, 0x00 }, "Invocation provides 2 argument(s) but target expects 1." }, // argument count does not match binder argument count
+            new object[] { new byte[] { 0x95, 0x01, 0xa3, 0x78, 0x79, 0x7a, 0xc2, 0xa1, 0x78, 0x91, 0x00 }, "Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked." }, // argument type mismatch
+        };
+
+        [Theory]
+        [MemberData(nameof(ArgumentBindingErrors))]
+        public void GettingArgumentsThrowsIfBindingFailed(byte[] payload, string expectedExceptionMessage)
+        {
+            var payloadSize = payload.Length;
+            Debug.Assert(payloadSize <= 0x7f, "This test does not support payloads larger than 127 bytes");
+
+            // prefix payload with the size
+            var buffer = new byte[1 + payloadSize];
+            buffer[0] = (byte)(payloadSize & 0x7f);
+            Array.Copy(payload, 0, buffer, 1, payloadSize);
+
+            var binder = new TestBinder(new[] { typeof(string) }, typeof(string));
+            _hubProtocol.TryParseMessages(buffer, binder, out var messages);
+            var exception = Assert.Throws<FormatException>(() => ((InvocationMessage)messages[0]).Arguments);
+
+            Assert.Equal(expectedExceptionMessage, exception.Message);
+        }
+
         [Theory]
         [InlineData(new object[] { new byte[] { 0x05, 0x01 }, 0 })]
         [InlineData(new object[] {
@@ -157,7 +180,7 @@ namespace Microsoft.AspNetCore.SignalR.Common.Tests.Internal.Protocol
         {
             new object[]
             {
-                new InvocationMessage("0", false, "A", 1, new CustomObject()),
+                new InvocationMessage("0", false, "A", null, 1, new CustomObject()),
                 new byte[]
                 {
                     0x6c, 0x95, 0x01, 0xa1, 0x30, 0xc2, 0xa1, 0x41,

@@ -185,7 +185,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
 
         public override Task InvokeAllAsync(string methodName, object[] args)
         {
-            var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
+            var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, argumentBindingException: null, arguments: args);
 
             return PublishAsync(_channelNamePrefix, message);
         }
@@ -203,7 +203,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 throw new ArgumentNullException(nameof(connectionId));
             }
 
-            var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
+            var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, argumentBindingException: null, arguments: args);
 
             // If the connection is local we can skip sending the message through the bus since we require sticky connections.
             // This also saves serializing and deserializing the message!
@@ -223,14 +223,14 @@ namespace Microsoft.AspNetCore.SignalR.Redis
                 throw new ArgumentNullException(nameof(groupName));
             }
 
-            var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
+            var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, argumentBindingException: null, arguments: args);
 
             return PublishAsync(_channelNamePrefix + ".group." + groupName, message);
         }
 
         public override Task InvokeUserAsync(string userId, string methodName, object[] args)
         {
-            var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, arguments: args);
+            var message = new InvocationMessage(GetInvocationId(), nonBlocking: true, target: methodName, argumentBindingException: null, arguments: args);
 
             return PublishAsync(_channelNamePrefix + ".user." + userId, message);
         }
@@ -556,7 +556,7 @@ namespace Microsoft.AspNetCore.SignalR.Redis
             public IReadOnlyList<string> ExcludedIds;
 
             public RedisExcludeClientsMessage(string invocationId, bool nonBlocking, string target, IReadOnlyList<string> excludedIds, params object[] arguments)
-                : base(invocationId, nonBlocking, target, arguments)
+                : base(invocationId, nonBlocking, target, argumentBindingException: null, arguments: arguments)
             {
                 ExcludedIds = excludedIds;
             }

@@ -391,7 +391,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
             _logger.EndReceive(_connectionId);
         }
 
-        public async Task SendAsync(byte[] data, CancellationToken cancellationToken = default(CancellationToken)) =>
+        public async Task SendAsync(byte[] data, CancellationToken cancellationToken = default) =>
             await SendAsyncCore(data, cancellationToken).ForceAsync();
 
         private async Task SendAsyncCore(byte[] data, CancellationToken cancellationToken)

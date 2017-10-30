@@ -19,7 +19,6 @@ using Microsoft.AspNetCore.Sockets.Features;
 using Microsoft.AspNetCore.Sockets.Internal;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
-using Newtonsoft.Json;
 
 namespace Microsoft.AspNetCore.SignalR.Client
 {
@@ -122,7 +121,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public IDisposable On(string methodName, Type[] parameterTypes, Func<object[], object, Task> handler, object state)
         {
             var invocationHandler = new InvocationHandler(parameterTypes, handler, state);
-            var invocationList = _handlers.AddOrUpdate(methodName,  _ =>  new List<InvocationHandler> { invocationHandler }, 
+            var invocationList = _handlers.AddOrUpdate(methodName,  _ => new List<InvocationHandler> { invocationHandler },
                 (_, invocations) =>
                 {
                     lock (invocations)
@@ -135,7 +134,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return new Subscription(invocationHandler, invocationList);
         }
 
-        public async Task<ReadableChannel<object>> StreamAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default(CancellationToken))
+        public async Task<ReadableChannel<object>> StreamAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default)
         {
             return await StreamAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
         }
@@ -174,7 +173,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return channel;
         }
 
-        public async Task<object> InvokeAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default(CancellationToken)) =>
+        public async Task<object> InvokeAsync(string methodName, Type returnType, object[] args, CancellationToken cancellationToken = default) =>
              await InvokeAsyncCore(methodName, returnType, args, cancellationToken).ForceAsync();
 
         private async Task<object> InvokeAsyncCore(string methodName, Type returnType, object[] args, CancellationToken cancellationToken)
@@ -184,7 +183,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return await task;
         }
 
-        public async Task SendAsync(string methodName, object[] args, CancellationToken cancellationToken = default(CancellationToken)) =>
+        public async Task SendAsync(string methodName, object[] args, CancellationToken cancellationToken = default) =>
             await SendAsyncCore(methodName, args, cancellationToken).ForceAsync();
 
         private Task SendAsyncCore(string methodName, object[] args, CancellationToken cancellationToken)
@@ -206,7 +205,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
             }
 
             // Create an invocation descriptor. Client invocations are always blocking
-            var invocationMessage = new InvocationMessage(irq.InvocationId, nonBlocking, methodName, args);
+            var invocationMessage = new InvocationMessage(irq.InvocationId, nonBlocking, methodName,
+                argumentBindingException: null, arguments: args);
 
             // We don't need to track invocations for fire an forget calls
             if (!nonBlocking)
@@ -252,7 +252,8 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     switch (message)
                     {
                         case InvocationMessage invocation:
-                            _logger.ReceivedInvocation(invocation.InvocationId, invocation.Target, invocation.Arguments);
+                            _logger.ReceivedInvocation(invocation.InvocationId, invocation.Target,
+                                invocation.ArgumentBindingException != null ? null : invocation.Arguments);
                             await DispatchInvocationAsync(invocation, _connectionActive.Token);
                             break;
                         case CompletionMessage completion:
@@ -344,7 +345,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 }
                 catch (Exception ex)
                 {
-                    _logger.ExceptionThrownFromCallback(nameof(On), ex);
+                    _logger.ErrorInvokingClientSideMethod(invocation.Target, ex);
                 }
             }
         }

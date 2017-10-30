@@ -103,7 +103,7 @@ namespace Microsoft.AspNetCore.SignalR.Tests
         [OSSkipCondition(OperatingSystems.Windows, WindowsVersions.Win7, WindowsVersions.Win2008R2, SkipReason = "No WebSockets Client for this platform")]
         public async Task HTTPRequestsNotSentWhenWebSocketsTransportRequested()
         {
-            using (StartLog(out var loggerFactory, testName: nameof(HTTPRequestsNotSentWhenWebSocketsTransportRequested)))
+            using (StartLog(out var loggerFactory))
             {
                 var logger = loggerFactory.CreateLogger<EndToEndTests>();
                 var url = _serverFixture.BaseUrl + "/echo";

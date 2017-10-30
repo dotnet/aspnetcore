@@ -112,8 +112,8 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         private static readonly Action<ILogger, string, Exception> _streamItemOnNonStreamInvocation =
             LoggerMessage.Define<string>(LogLevel.Error, new EventId(4, nameof(StreamItemOnNonStreamInvocation)), "Invocation {invocationId} received stream item but was invoked as a non-streamed invocation.");
 
-        private static readonly Action<ILogger, string, Exception> _exceptionThrownFromCallback =
-           LoggerMessage.Define<string>(LogLevel.Error, new EventId(5, nameof(ExceptionThrownFromCallback)), "An exception was thrown from the '{callback}' callback");
+        private static readonly Action<ILogger, string, Exception> _errorInvokingClientSideMethod =
+           LoggerMessage.Define<string>(LogLevel.Error, new EventId(5, nameof(ErrorInvokingClientSideMethod)), "Invoking client side method '{methodName}' failed.");
 
         private static readonly Action<ILogger, string, string, Exception> _receivedUnexpectedMessageTypeForInvokeCompletion =
             LoggerMessage.Define<string, string>(LogLevel.Error, new EventId(6, nameof(ReceivedUnexpectedMessageTypeForInvokeCompletion)), "Invocation {invocationId} was invoked as a non-streaming hub method but completed with '{messageType}' message.");
@@ -137,7 +137,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         {
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                var argsList = string.Join(", ", args.Select(a => a.GetType().FullName));
+                var argsList = args == null ? string.Empty : string.Join(", ", args.Select(a => a?.GetType().FullName ?? "(null)"));
                 _issueInvocation(logger, invocationId, returnType, methodName, argsList, null);
             }
         }
@@ -161,7 +161,7 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
         {
             if (logger.IsEnabled(LogLevel.Trace))
             {
-                var argsList = string.Join(", ", args.Select(a => a.GetType().FullName));
+                var argsList = args == null ? string.Empty : string.Join(", ", args.Select(a => a?.GetType().FullName ?? "(null)"));
                 _receivedInvocation(logger, invocationId, methodName, argsList, null);
             }
         }
@@ -286,9 +286,9 @@ namespace Microsoft.AspNetCore.SignalR.Client.Internal
             _streamItemOnNonStreamInvocation(logger, invocationId, null);
         }
 
-        public static void ExceptionThrownFromCallback(this ILogger logger, string callbackName, Exception exception)
+        public static void ErrorInvokingClientSideMethod(this ILogger logger, string methodName, Exception exception)
         {
-             _exceptionThrownFromCallback(logger, callbackName, exception);
+             _errorInvokingClientSideMethod(logger, methodName, exception);
         }
 
         public static void ReceivedUnexpectedMessageTypeForStreamCompletion(this ILogger logger, string invocationId, string messageType)

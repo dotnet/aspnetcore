@@ -123,28 +123,16 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
         }
 
         [Fact]
-        public async Task ConnectionClosedOnCallbackArgumentCountMismatch()
+        public async Task ConnectionNotClosedOnCallbackArgumentCountMismatch()
         {
             var connection = new TestConnection();
             var hubConnection = new HubConnection(connection, new JsonHubProtocol(new JsonSerializer()), new LoggerFactory());
-            var closeTcs = new TaskCompletionSource<Exception>();
-            hubConnection.Closed += e =>
-            {
-                if (e == null)
-                {
-                    closeTcs.TrySetResult(null);
-                }
-                else
-                {
-                    closeTcs.TrySetException(e);
-                }
-                return Task.CompletedTask;
-            };
+            var receiveTcs = new TaskCompletionSource<int>();
 
             try
             {
-                hubConnection.On<int>("Foo", r => { });
-                await hubConnection.StartAsync();
+                hubConnection.On<int>("Foo", r => { receiveTcs.SetResult(r); });
+                await hubConnection.StartAsync().OrTimeout();
 
                 await connection.ReceiveJsonMessage(
                     new
@@ -155,39 +143,34 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         arguments = new object[] { 42, "42" }
                     }).OrTimeout();
 
-                var ex = await Assert.ThrowsAsync<FormatException>(async () => await closeTcs.Task.OrTimeout());
-                Assert.Equal("Invocation provides 2 argument(s) but target expects 1.", ex.Message);
+                await connection.ReceiveJsonMessage(
+                    new
+                    {
+                        invocationId = "2",
+                        type = 1,
+                        target = "Foo",
+                        arguments = new object[] { 42 }
+                    }).OrTimeout();
+
+                Assert.Equal(42, await receiveTcs.Task.OrTimeout());
             }
             finally
             {
                 await hubConnection.DisposeAsync().OrTimeout();
-                await connection.DisposeAsync().OrTimeout();
             }
         }
 
         [Fact]
-        public async Task ConnectionClosedOnCallbackArgumentTypeMismatch()
+        public async Task ConnectionNotClosedOnCallbackArgumentTypeMismatch()
         {
             var connection = new TestConnection();
             var hubConnection = new HubConnection(connection, new JsonHubProtocol(), new LoggerFactory());
-            var closeTcs = new TaskCompletionSource<Exception>();
-            hubConnection.Closed += e =>
-            {
-                if (e == null)
-                {
-                    closeTcs.TrySetResult(null);
-                }
-                else
-                {
-                    closeTcs.TrySetException(e);
-                }
-                return Task.CompletedTask;
-            };
+            var receiveTcs = new TaskCompletionSource<int>();
 
             try
             {
-                hubConnection.On<int>("Foo", r => { });
-                await hubConnection.StartAsync();
+                hubConnection.On<int>("Foo", r => { receiveTcs.SetResult(r); });
+                await hubConnection.StartAsync().OrTimeout();
 
                 await connection.ReceiveJsonMessage(
                     new
@@ -198,12 +181,20 @@ namespace Microsoft.AspNetCore.SignalR.Client.Tests
                         arguments = new object[] { "xxx" }
                     }).OrTimeout();
 
-                var ex = await Assert.ThrowsAsync<FormatException>(async () => await closeTcs.Task.OrTimeout());
+                await connection.ReceiveJsonMessage(
+                    new
+                    {
+                        invocationId = "2",
+                        type = 1,
+                        target = "Foo",
+                        arguments = new object[] { 42 }
+                    }).OrTimeout();
+
+                Assert.Equal(42, await receiveTcs.Task.OrTimeout());
             }
             finally
             {
                 await hubConnection.DisposeAsync().OrTimeout();
-                await connection.DisposeAsync().OrTimeout();
             }
         }
     }

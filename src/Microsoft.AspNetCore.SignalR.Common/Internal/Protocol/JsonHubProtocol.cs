@@ -3,8 +3,8 @@
 
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -242,22 +242,40 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             var args = JsonUtils.GetRequiredProperty<JArray>(json, ArgumentsPropertyName, JTokenType.Array);
 
             var paramTypes = binder.GetParameterTypes(target);
+
+            try
+            {
+                var arguments = BindArguments(args, paramTypes);
+                return new InvocationMessage(invocationId, nonBlocking, target, argumentBindingException: null, arguments: arguments);
+            }
+            catch (Exception ex)
+            {
+                return new InvocationMessage(invocationId, nonBlocking, target, ExceptionDispatchInfo.Capture(ex));
+            }
+        }
+
+        private object[] BindArguments(JArray args, Type[] paramTypes)
+        {
             var arguments = new object[args.Count];
             if (paramTypes.Length != arguments.Length)
             {
                 throw new FormatException($"Invocation provides {arguments.Length} argument(s) but target expects {paramTypes.Length}.");
             }
 
-            for (var i = 0; i < paramTypes.Length; i++)
+            try
             {
-                var paramType = paramTypes[i];
+                for (var i = 0; i < paramTypes.Length; i++)
+                {
+                    var paramType = paramTypes[i];
+                    arguments[i] = args[i].ToObject(paramType, _payloadSerializer);
+                }
 
-                // TODO(anurse): We can add some DI magic here to allow users to provide their own serialization
-                // Related Bug: https://github.com/aspnet/SignalR/issues/261
-                arguments[i] = args[i].ToObject(paramType, _payloadSerializer);
+                return arguments;
             }
-
-            return new InvocationMessage(invocationId, nonBlocking, target, arguments);
+            catch (Exception ex)
+            {
+                throw new FormatException("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
+            }
         }
 
         private StreamItemMessage BindResultMessage(JObject json, IInvocationBinder binder)

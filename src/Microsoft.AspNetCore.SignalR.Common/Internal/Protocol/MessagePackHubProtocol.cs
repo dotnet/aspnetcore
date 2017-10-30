@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.ExceptionServices;
 using Microsoft.AspNetCore.SignalR.Internal.Formatters;
 using MsgPack;
 using MsgPack.Serialization;
@@ -55,24 +56,26 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
 
         private static HubMessage ParseMessage(Stream input, IInvocationBinder binder)
         {
-            var unpacker = Unpacker.Create(input);
-            var arraySize = ReadArrayLength(unpacker, "elementCount");
-            var messageType = ReadInt32(unpacker, "messageType");
-
-            switch (messageType)
+            using (var unpacker = Unpacker.Create(input))
             {
-                case InvocationMessageType:
-                    return CreateInvocationMessage(unpacker, binder);
-                case StreamItemMessageType:
-                    return CreateStreamItemMessage(unpacker, binder);
-                case CompletionMessageType:
-                    return CreateCompletionMessage(unpacker, binder);
-                case StreamCompletionMessageType:
-                    return CreateStreamCompletionMessage(unpacker, arraySize, binder);
-                case CancelInvocationMessageType:
-                    return CreateCancelInvocationMessage(unpacker);
-                default:
-                    throw new FormatException($"Invalid message type: {messageType}.");
+                var arraySize = ReadArrayLength(unpacker, "elementCount");
+                var messageType = ReadInt32(unpacker, "messageType");
+
+                switch (messageType)
+                {
+                    case InvocationMessageType:
+                        return CreateInvocationMessage(unpacker, binder);
+                    case StreamItemMessageType:
+                        return CreateStreamItemMessage(unpacker, binder);
+                    case CompletionMessageType:
+                        return CreateCompletionMessage(unpacker, binder);
+                    case StreamCompletionMessageType:
+                        return CreateStreamCompletionMessage(unpacker, arraySize, binder);
+                    case CancelInvocationMessageType:
+                        return CreateCancelInvocationMessage(unpacker);
+                    default:
+                        throw new FormatException($"Invalid message type: {messageType}.");
+                }
             }
         }
 
@@ -81,22 +84,43 @@ namespace Microsoft.AspNetCore.SignalR.Internal.Protocol
             var invocationId = ReadInvocationId(unpacker);
             var nonBlocking = ReadBoolean(unpacker, "nonBlocking");
             var target = ReadString(unpacker, "target");
-            var argumentCount = ReadArrayLength(unpacker, "arguments");
             var parameterTypes = binder.GetParameterTypes(target);
+
+            try
+            {
+                var arguments = BindArguments(unpacker, parameterTypes);
+                return new InvocationMessage(invocationId, nonBlocking, target, argumentBindingException: null, arguments: arguments);
+            }
+            catch (Exception ex)
+            {
+                return new InvocationMessage(invocationId, nonBlocking, target, ExceptionDispatchInfo.Capture(ex));
+            }
+        }
+
+        private static object[] BindArguments(Unpacker unpacker, Type[] parameterTypes)
+        {
+            var argumentCount = ReadArrayLength(unpacker, "arguments");
 
             if (parameterTypes.Length != argumentCount)
             {
                 throw new FormatException(
-                    $"Target method expects {parameterTypes.Length} arguments(s) but invocation has {argumentCount} argument(s).");
+                    $"Invocation provides {argumentCount} argument(s) but target expects {parameterTypes.Length}.");
             }
 
-            var arguments = new object[argumentCount];
-            for (var i = 0; i < argumentCount; i++)
+            try
             {
-                arguments[i] = DeserializeObject(unpacker, parameterTypes[i], "argument");
-            }
+                var arguments = new object[argumentCount];
+                for (var i = 0; i < argumentCount; i++)
+                {
+                    arguments[i] = DeserializeObject(unpacker, parameterTypes[i], "argument");
+                }
 
-            return new InvocationMessage(invocationId, nonBlocking, target, arguments);
+                return arguments;
+            }
+            catch (Exception ex)
+            {
+                throw new FormatException("Error binding arguments. Make sure that the types of the provided values match the types of the hub method being invoked.", ex);
+            }
         }
 
         private static StreamItemMessage CreateStreamItemMessage(Unpacker unpacker, IInvocationBinder binder)
